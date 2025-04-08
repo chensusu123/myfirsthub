@@ -1,12 +1,12 @@
 package mazeshopmodule
 
 import (
+	"gitlab.ifreetalk.com/maze/maze_game_server/common/function/randfuncs"
+	"gitlab.ifreetalk.com/maze/maze_game_server/io/redis/mazeshopseqredis"
 	"gitlab.ifreetalk.com/plate/excel/auto/GMazeShopEquipListV8Cfg"
 	"gitlab.ifreetalk.com/plate/excel/auto/GMazeShopV8Cfg"
 	"gitlab.ifreetalk.com/plate/freetk/common/errors"
 	"gitlab.ifreetalk.com/plate/freetk/fkcore/fklog"
-	"gitlab.ifreetalk.com/servers/maze_game_server/common/function/randfuncs"
-	"gitlab.ifreetalk.com/servers/maze_game_server/io/redis/mazeshopseqredis"
 	"go.uber.org/zap"
 )
 

@@ -4,6 +4,10 @@ import (
 	"sort"
 	"time"
 
+	"gitlab.ifreetalk.com/maze/maze_game_server/common/function/timeutil"
+	"gitlab.ifreetalk.com/maze/maze_game_server/io/redis/mazechallengenumredis"
+	"gitlab.ifreetalk.com/maze/maze_game_server/io/redis/mazeuserbarrierredis"
+	"gitlab.ifreetalk.com/maze/maze_game_server/module/mazeuserinfo"
 	"gitlab.ifreetalk.com/plate/excel/auto/GMazeActionCountV8Cfg"
 	"gitlab.ifreetalk.com/plate/excel/auto/GMazeBarriesV8Cfg"
 	"gitlab.ifreetalk.com/plate/excel/auto/GMazeConfigV8Cfg"
@@ -13,10 +17,6 @@ import (
 	"gitlab.ifreetalk.com/plate/freetk/fkcore/fkprometheus"
 	"gitlab.ifreetalk.com/plate/protodef/MazeCommon"
 	"gitlab.ifreetalk.com/plate/protodef/MazeGame"
-	"gitlab.ifreetalk.com/servers/maze_game_server/common/function/timeutil"
-	"gitlab.ifreetalk.com/servers/maze_game_server/io/redis/mazechallengenumredis"
-	"gitlab.ifreetalk.com/servers/maze_game_server/io/redis/mazeuserbarrierredis"
-	"gitlab.ifreetalk.com/servers/maze_game_server/module/mazeuserinfo"
 
 	"go.uber.org/zap"
 )

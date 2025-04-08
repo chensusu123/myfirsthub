@@ -3,6 +3,7 @@ package process
 import (
 	"time"
 
+	"gitlab.ifreetalk.com/maze/maze_game_server/io/redis/mazecollectredis"
 	"gitlab.ifreetalk.com/plate/excel/auto/GMazeBarriesOnHookV8Cfg"
 	"gitlab.ifreetalk.com/plate/extra/protobuf/proto"
 	"gitlab.ifreetalk.com/plate/freetk/common/errors"
@@ -10,7 +11,6 @@ import (
 	"gitlab.ifreetalk.com/plate/io_interface/redis_interface/common/MustArriveRedis"
 	"gitlab.ifreetalk.com/plate/protodef/MazeCollect"
 	"gitlab.ifreetalk.com/plate/protodef/MazeCollectCache"
-	"gitlab.ifreetalk.com/servers/maze_game_server/io/redis/mazecollectredis"
 	"go.uber.org/zap"
 )
 

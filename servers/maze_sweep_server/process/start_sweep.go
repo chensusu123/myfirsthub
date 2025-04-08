@@ -3,6 +3,11 @@
 package process
 
 import (
+	"gitlab.ifreetalk.com/maze/maze_game_server/common/constdef"
+	"gitlab.ifreetalk.com/maze/maze_game_server/common/function/uniqueid"
+	"gitlab.ifreetalk.com/maze/maze_game_server/io/rpc/mazeenergyrpc"
+	"gitlab.ifreetalk.com/maze/maze_game_server/module/calsweepbarrier"
+	"gitlab.ifreetalk.com/maze/maze_game_server/module/mazeuserinfo"
 	"gitlab.ifreetalk.com/plate/excel/auto/GMazeBarriesV8Cfg"
 	"gitlab.ifreetalk.com/plate/extra/protobuf/proto"
 	"gitlab.ifreetalk.com/plate/freetk/common/errors"
@@ -13,11 +18,6 @@ import (
 	"gitlab.ifreetalk.com/plate/protodef/MazeEnergySvr"
 	"gitlab.ifreetalk.com/plate/protodef/MazeGame"
 	"gitlab.ifreetalk.com/plate/protodef/MessageType"
-	"gitlab.ifreetalk.com/servers/maze_game_server/common/constdef"
-	"gitlab.ifreetalk.com/servers/maze_game_server/common/function/uniqueid"
-	"gitlab.ifreetalk.com/servers/maze_game_server/io/rpc/mazeenergyrpc"
-	"gitlab.ifreetalk.com/servers/maze_game_server/module/calsweepbarrier"
-	"gitlab.ifreetalk.com/servers/maze_game_server/module/mazeuserinfo"
 	"go.uber.org/zap"
 )
 

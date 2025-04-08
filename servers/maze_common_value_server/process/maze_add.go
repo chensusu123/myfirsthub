@@ -3,6 +3,10 @@ package process
 import (
 	"time"
 
+	"gitlab.ifreetalk.com/maze/maze_game_server/common/constdef"
+	"gitlab.ifreetalk.com/maze/maze_game_server/io/kafka/mazemoneykafka"
+	"gitlab.ifreetalk.com/maze/maze_game_server/module/mazecommonvalue"
+	"gitlab.ifreetalk.com/maze/maze_game_server/module/mazemoney"
 	"gitlab.ifreetalk.com/plate/extra/protobuf/proto"
 	"gitlab.ifreetalk.com/plate/freetk/common/errors"
 	"gitlab.ifreetalk.com/plate/freetk/fkcore/fkprometheus"
@@ -10,10 +14,6 @@ import (
 	"gitlab.ifreetalk.com/plate/protodef/MazeCommon"
 	"gitlab.ifreetalk.com/plate/protodef/MazeCommonValueSvr"
 	"gitlab.ifreetalk.com/plate/protodef/MazeGame"
-	"gitlab.ifreetalk.com/servers/maze_game_server/common/constdef"
-	"gitlab.ifreetalk.com/servers/maze_game_server/io/kafka/mazemoneykafka"
-	"gitlab.ifreetalk.com/servers/maze_game_server/module/mazecommonvalue"
-	"gitlab.ifreetalk.com/servers/maze_game_server/module/mazemoney"
 	"go.uber.org/zap"
 )
 

@@ -4,6 +4,12 @@ import (
 	"fmt"
 	"time"
 
+	"gitlab.ifreetalk.com/maze/maze_game_server/common/constdef"
+	"gitlab.ifreetalk.com/maze/maze_game_server/io/kafka/mazebarrieruserkafka"
+	"gitlab.ifreetalk.com/maze/maze_game_server/io/kafka/mazeuserlevelkafka"
+	"gitlab.ifreetalk.com/maze/maze_game_server/io/redis/mazeuserbarrierredis"
+	"gitlab.ifreetalk.com/maze/maze_game_server/module/mazecommonvalue"
+	"gitlab.ifreetalk.com/maze/maze_game_server/module/mazeuserinfo"
 	"gitlab.ifreetalk.com/plate/extra/protobuf/proto"
 	"gitlab.ifreetalk.com/plate/freetk/common/errors"
 	"gitlab.ifreetalk.com/plate/freetk/fkcore/fklog"
@@ -11,12 +17,6 @@ import (
 	"gitlab.ifreetalk.com/plate/freetk/fkcore/fkprometheus"
 	"gitlab.ifreetalk.com/plate/protodef/MazeCommon"
 	"gitlab.ifreetalk.com/plate/protodef/MazeGame"
-	"gitlab.ifreetalk.com/servers/maze_game_server/common/constdef"
-	"gitlab.ifreetalk.com/servers/maze_game_server/io/kafka/mazebarrieruserkafka"
-	"gitlab.ifreetalk.com/servers/maze_game_server/io/kafka/mazeuserlevelkafka"
-	"gitlab.ifreetalk.com/servers/maze_game_server/io/redis/mazeuserbarrierredis"
-	"gitlab.ifreetalk.com/servers/maze_game_server/module/mazecommonvalue"
-	"gitlab.ifreetalk.com/servers/maze_game_server/module/mazeuserinfo"
 
 	"go.uber.org/zap"
 )

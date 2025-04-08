@@ -10,12 +10,12 @@ import (
 	"context"
 	"errors"
 
+	"gitlab.ifreetalk.com/maze/maze_game_server/common/constdef"
 	"gitlab.ifreetalk.com/plate/freetk/fkcore/fkconfig"
 	"gitlab.ifreetalk.com/plate/freetk/fkcore/fklog"
 	"gitlab.ifreetalk.com/plate/freetk/fkcore/fkredis"
 	"gitlab.ifreetalk.com/plate/freetk/fkcore/fkredis/redis"
 	"gitlab.ifreetalk.com/plate/freetk/fkutil"
-	"gitlab.ifreetalk.com/servers/maze_game_server/common/constdef"
 	"go.uber.org/zap"
 )
 

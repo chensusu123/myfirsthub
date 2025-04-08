@@ -1,9 +1,9 @@
 package mazemoney
 
 import (
+	"gitlab.ifreetalk.com/maze/maze_game_server/common/constdef"
+	"gitlab.ifreetalk.com/maze/maze_game_server/io/redis/mazebarriermoneyredis"
 	"gitlab.ifreetalk.com/plate/freetk/fkcore/fklog"
-	"gitlab.ifreetalk.com/servers/maze_game_server/common/constdef"
-	"gitlab.ifreetalk.com/servers/maze_game_server/io/redis/mazebarriermoneyredis"
 	"go.uber.org/zap"
 )
 

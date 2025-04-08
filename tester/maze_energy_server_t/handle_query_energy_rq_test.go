@@ -11,12 +11,12 @@ import (
 	"fmt"
 	"testing"
 
+	"gitlab.ifreetalk.com/maze/maze_game_server/servers/maze_energy_server/process"
 	"gitlab.ifreetalk.com/plate/extra/protobuf/proto"
 	"gitlab.ifreetalk.com/plate/freetk/common/errors"
 	"gitlab.ifreetalk.com/plate/freetk/fkcore/fknet"
 	"gitlab.ifreetalk.com/plate/protodef/Common"
 	"gitlab.ifreetalk.com/plate/protodef/MazeEnergy"
-	"gitlab.ifreetalk.com/servers/maze_game_server/servers/maze_energy_server/process"
 )
 
 var TestUid uint64 = 9003200130206264

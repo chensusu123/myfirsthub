@@ -1,8 +1,8 @@
 package process
 
 import (
+	"gitlab.ifreetalk.com/maze/maze_game_server/servers/maze_gm_server/process/cmdbattledata"
 	"gitlab.ifreetalk.com/plate/freetk/fkcore/fklog"
-	"gitlab.ifreetalk.com/servers/maze_game_server/servers/maze_gm_server/process/cmdbattledata"
 )
 
 func RegGm(logger fklog.FKLogI) {

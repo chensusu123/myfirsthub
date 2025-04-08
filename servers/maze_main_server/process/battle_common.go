@@ -1,6 +1,9 @@
 package process
 
 import (
+	"gitlab.ifreetalk.com/maze/maze_game_server/common/constdef"
+	"gitlab.ifreetalk.com/maze/maze_game_server/common/structsdef"
+	"gitlab.ifreetalk.com/maze/maze_game_server/io/redis/mazecalcattrredis"
 	"gitlab.ifreetalk.com/plate/excel/auto/GMazeAttrSkillV8Cfg"
 	"gitlab.ifreetalk.com/plate/excel/auto/GMazeAttributeV8Cfg"
 	"gitlab.ifreetalk.com/plate/excel/auto/GMazeSkillInfoV8Cfg"
@@ -9,9 +12,6 @@ import (
 	"gitlab.ifreetalk.com/plate/freetk/fkcore/fklog"
 	"gitlab.ifreetalk.com/plate/io_interface/redis_interface/common/commonmustarriveredis"
 	"gitlab.ifreetalk.com/plate/protodef/MazeAIBattle"
-	"gitlab.ifreetalk.com/servers/maze_game_server/common/constdef"
-	"gitlab.ifreetalk.com/servers/maze_game_server/common/structsdef"
-	"gitlab.ifreetalk.com/servers/maze_game_server/io/redis/mazecalcattrredis"
 	"go.uber.org/zap"
 )
 

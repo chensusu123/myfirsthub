@@ -4,6 +4,8 @@ import (
 	"fmt"
 	"strings"
 
+	"gitlab.ifreetalk.com/maze/maze_game_server/common/function/monitor"
+	"gitlab.ifreetalk.com/maze/maze_game_server/io/rpc/mazeitemrpc"
 	"gitlab.ifreetalk.com/plate/extra/protobuf/proto"
 	"gitlab.ifreetalk.com/plate/freetk/common/errors"
 	"gitlab.ifreetalk.com/plate/freetk/fkcore/fkconfig"
@@ -12,8 +14,6 @@ import (
 	"gitlab.ifreetalk.com/plate/protodef/MazeCommon"
 	"gitlab.ifreetalk.com/plate/protodef/MazeItemSvr"
 	"gitlab.ifreetalk.com/plate/protodef/MessageType"
-	"gitlab.ifreetalk.com/servers/maze_game_server/common/function/monitor"
-	"gitlab.ifreetalk.com/servers/maze_game_server/io/rpc/mazeitemrpc"
 	"go.uber.org/zap"
 )
 

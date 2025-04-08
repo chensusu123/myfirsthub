@@ -3,9 +3,9 @@ package mazeuserinfo
 import (
 	"errors"
 
+	"gitlab.ifreetalk.com/maze/maze_game_server/io/redis/mazeuserlevelredis"
 	"gitlab.ifreetalk.com/plate/excel/auto/GMazeLevelV8Cfg"
 	"gitlab.ifreetalk.com/plate/freetk/fkcore/fklog"
-	"gitlab.ifreetalk.com/servers/maze_game_server/io/redis/mazeuserlevelredis"
 )
 
 const (

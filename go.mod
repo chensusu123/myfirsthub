@@ -1,4 +1,4 @@
-module gitlab.ifreetalk.com/servers/maze_game_server
+module gitlab.ifreetalk.com/maze/maze_game_server
 
 go 1.18
 

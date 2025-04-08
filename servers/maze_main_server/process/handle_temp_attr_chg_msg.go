@@ -10,10 +10,9 @@ import (
 	"context"
 	"encoding/json"
 
-	"gitlab.ifreetalk.com/servers/maze_game_server/module/mazeuserinfo"
-
+	"gitlab.ifreetalk.com/maze/maze_game_server/common/structsdef"
+	"gitlab.ifreetalk.com/maze/maze_game_server/module/mazeuserinfo"
 	"gitlab.ifreetalk.com/plate/freetk/fkcore/fklog"
-	"gitlab.ifreetalk.com/servers/maze_game_server/common/structsdef"
 	"go.uber.org/zap"
 )
 

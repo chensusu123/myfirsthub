@@ -3,14 +3,14 @@ package process
 import (
 	"time"
 
+	"gitlab.ifreetalk.com/maze/maze_game_server/common/constdef"
+	"gitlab.ifreetalk.com/maze/maze_game_server/io/redis/mazebarriermoneyredis"
 	"gitlab.ifreetalk.com/plate/extra/protobuf/proto"
 	"gitlab.ifreetalk.com/plate/freetk/common/errors"
 	"gitlab.ifreetalk.com/plate/freetk/fkcore/fklog"
 	"gitlab.ifreetalk.com/plate/io_interface/redis_interface/common/commonmustarriveredis"
 	"gitlab.ifreetalk.com/plate/protodef/Common"
 	"gitlab.ifreetalk.com/plate/protodef/DollMazeBarrier"
-	"gitlab.ifreetalk.com/servers/maze_game_server/common/constdef"
-	"gitlab.ifreetalk.com/servers/maze_game_server/io/redis/mazebarriermoneyredis"
 	"go.uber.org/zap"
 )
 

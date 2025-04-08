@@ -4,8 +4,8 @@ import (
 	"sort"
 	"time"
 
+	"gitlab.ifreetalk.com/maze/maze_game_server/common/constdef"
 	"gitlab.ifreetalk.com/plate/freetk/fkcore/fklog"
-	"gitlab.ifreetalk.com/servers/maze_game_server/common/constdef"
 	"go.uber.org/zap"
 
 	"gitlab.ifreetalk.com/plate/extra/protobuf/proto"

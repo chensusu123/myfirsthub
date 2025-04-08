@@ -3,9 +3,15 @@ package process
 import (
 	"time"
 
-	"gitlab.ifreetalk.com/servers/maze_game_server/module/calequipsequence"
-	"gitlab.ifreetalk.com/servers/maze_game_server/module/mazecommonvalue"
-
+	"gitlab.ifreetalk.com/maze/maze_game_server/common/constdef"
+	"gitlab.ifreetalk.com/maze/maze_game_server/common/function/gentradeno"
+	"gitlab.ifreetalk.com/maze/maze_game_server/io/redis/mazebarriertempbuffredis"
+	"gitlab.ifreetalk.com/maze/maze_game_server/io/redis/mazechallengenumredis"
+	"gitlab.ifreetalk.com/maze/maze_game_server/io/redis/mazeuserbarrierredis"
+	"gitlab.ifreetalk.com/maze/maze_game_server/io/rpc/mazeenergyrpc"
+	"gitlab.ifreetalk.com/maze/maze_game_server/module/calequipsequence"
+	"gitlab.ifreetalk.com/maze/maze_game_server/module/mazecommonvalue"
+	"gitlab.ifreetalk.com/maze/maze_game_server/module/mazeuserinfo"
 	"gitlab.ifreetalk.com/plate/excel/auto/GMazeActionCountV8Cfg"
 	"gitlab.ifreetalk.com/plate/excel/auto/GMazeBarriesV8Cfg"
 	"gitlab.ifreetalk.com/plate/excel/auto/GMazeLevelV8Cfg"
@@ -18,13 +24,6 @@ import (
 	"gitlab.ifreetalk.com/plate/protodef/MazeCommon"
 	"gitlab.ifreetalk.com/plate/protodef/MazeEnergySvr"
 	"gitlab.ifreetalk.com/plate/protodef/MazeGame"
-	"gitlab.ifreetalk.com/servers/maze_game_server/common/constdef"
-	"gitlab.ifreetalk.com/servers/maze_game_server/common/function/gentradeno"
-	"gitlab.ifreetalk.com/servers/maze_game_server/io/redis/mazebarriertempbuffredis"
-	"gitlab.ifreetalk.com/servers/maze_game_server/io/redis/mazechallengenumredis"
-	"gitlab.ifreetalk.com/servers/maze_game_server/io/redis/mazeuserbarrierredis"
-	"gitlab.ifreetalk.com/servers/maze_game_server/io/rpc/mazeenergyrpc"
-	"gitlab.ifreetalk.com/servers/maze_game_server/module/mazeuserinfo"
 
 	"go.uber.org/zap"
 )

@@ -11,7 +11,7 @@ import (
 	"fmt"
 	"sort"
 
-	"gitlab.ifreetalk.com/servers/maze_game_server/common/structsdef"
+	"gitlab.ifreetalk.com/maze/maze_game_server/common/structsdef"
 )
 
 func Int64MapAppend32(in map[int32]int64, adds map[int32]int32) map[int32]int64 {

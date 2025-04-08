@@ -17,9 +17,9 @@ import (
 	"gitlab.ifreetalk.com/plate/freetk/fkserver"
 	"gitlab.ifreetalk.com/plate/protodef/MazeEnergy"
 
-	"gitlab.ifreetalk.com/servers/maze_game_server/excel/mazeconfigv8"
-	"gitlab.ifreetalk.com/servers/maze_game_server/io/kafka/mazeenergyrecord"
-	"gitlab.ifreetalk.com/servers/maze_game_server/module/mazeuserinfo"
+	"gitlab.ifreetalk.com/maze/maze_game_server/excel/mazeconfigv8"
+	"gitlab.ifreetalk.com/maze/maze_game_server/io/kafka/mazeenergyrecord"
+	"gitlab.ifreetalk.com/maze/maze_game_server/module/mazeuserinfo"
 
 	"go.uber.org/zap"
 )

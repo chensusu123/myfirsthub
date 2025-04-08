@@ -13,14 +13,14 @@ import (
 	"net/http"
 	"time"
 
+	"gitlab.ifreetalk.com/maze/maze_game_server/common/function/gm"
+	"gitlab.ifreetalk.com/maze/maze_game_server/io/redis/mazebarriertempbuffredis"
 	"gitlab.ifreetalk.com/plate/excel/auto/GMazeAttributeV8Cfg"
 	"gitlab.ifreetalk.com/plate/freetk/fkcore/fklog"
 	"gitlab.ifreetalk.com/plate/freetk/fkutil"
-	"gitlab.ifreetalk.com/servers/maze_game_server/common/function/gm"
-	"gitlab.ifreetalk.com/servers/maze_game_server/io/redis/mazebarriertempbuffredis"
 	"go.uber.org/zap"
 
-	"gitlab.ifreetalk.com/servers/maze_game_server/servers/maze_main_server/process"
+	"gitlab.ifreetalk.com/maze/maze_game_server/servers/maze_main_server/process"
 )
 
 func RegBattleDataGm(logger fklog.FKLogI) {

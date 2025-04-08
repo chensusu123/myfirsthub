@@ -10,13 +10,13 @@ import (
 	"context"
 	"encoding/json"
 
+	"gitlab.ifreetalk.com/maze/maze_game_server/common/constdef"
+	"gitlab.ifreetalk.com/maze/maze_game_server/common/structsdef"
+	"gitlab.ifreetalk.com/maze/maze_game_server/io/redis/mazecalcattrredis"
+	"gitlab.ifreetalk.com/maze/maze_game_server/module/mazecommonvalue"
+	"gitlab.ifreetalk.com/maze/maze_game_server/module/mazeuserinfo"
 	"gitlab.ifreetalk.com/plate/freetk/fkcore/fklog"
 	"gitlab.ifreetalk.com/plate/protodef/MazeGame"
-	"gitlab.ifreetalk.com/servers/maze_game_server/common/constdef"
-	"gitlab.ifreetalk.com/servers/maze_game_server/common/structsdef"
-	"gitlab.ifreetalk.com/servers/maze_game_server/io/redis/mazecalcattrredis"
-	"gitlab.ifreetalk.com/servers/maze_game_server/module/mazecommonvalue"
-	"gitlab.ifreetalk.com/servers/maze_game_server/module/mazeuserinfo"
 	"go.uber.org/zap"
 )
 

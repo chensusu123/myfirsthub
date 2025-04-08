@@ -7,14 +7,14 @@
 package process
 
 import (
+	"gitlab.ifreetalk.com/maze/maze_game_server/common/structsdef"
+	"gitlab.ifreetalk.com/maze/maze_game_server/excel/mazeconfigv8"
+	"gitlab.ifreetalk.com/maze/maze_game_server/io/redis/mazeuserlevelredis"
 	"gitlab.ifreetalk.com/plate/extra/protobuf/proto"
 	"gitlab.ifreetalk.com/plate/freetk/fkcore/fklog"
 	"gitlab.ifreetalk.com/plate/io_interface/redis_interface/common/commonmustarriveredis"
 	"gitlab.ifreetalk.com/plate/protodef/Common"
 	"gitlab.ifreetalk.com/plate/protodef/MazeGame"
-	"gitlab.ifreetalk.com/servers/maze_game_server/common/structsdef"
-	"gitlab.ifreetalk.com/servers/maze_game_server/excel/mazeconfigv8"
-	"gitlab.ifreetalk.com/servers/maze_game_server/io/redis/mazeuserlevelredis"
 
 	"go.uber.org/zap"
 )

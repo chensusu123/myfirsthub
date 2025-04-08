@@ -1,6 +1,10 @@
 package process
 
 import (
+	"gitlab.ifreetalk.com/maze/maze_game_server/common/constdef"
+	"gitlab.ifreetalk.com/maze/maze_game_server/io/redis/mazebarriertempbuffredis"
+	"gitlab.ifreetalk.com/maze/maze_game_server/io/redis/mazecalcattrredis"
+	"gitlab.ifreetalk.com/maze/maze_game_server/module/mazehurtcalc"
 	"gitlab.ifreetalk.com/plate/excel/auto/GMazeActInfoV8Cfg"
 	"gitlab.ifreetalk.com/plate/excel/auto/GMazeAttrSkillV8Cfg"
 	"gitlab.ifreetalk.com/plate/excel/auto/GMazeBrushFoeV8Cfg"
@@ -13,10 +17,6 @@ import (
 	"gitlab.ifreetalk.com/plate/freetk/fkcore/fklog"
 	"gitlab.ifreetalk.com/plate/freetk/fkcore/fkprometheus"
 	"gitlab.ifreetalk.com/plate/protodef/MazeAIBattle"
-	"gitlab.ifreetalk.com/servers/maze_game_server/common/constdef"
-	"gitlab.ifreetalk.com/servers/maze_game_server/io/redis/mazebarriertempbuffredis"
-	"gitlab.ifreetalk.com/servers/maze_game_server/io/redis/mazecalcattrredis"
-	"gitlab.ifreetalk.com/servers/maze_game_server/module/mazehurtcalc"
 	"go.uber.org/zap"
 )
 

@@ -11,6 +11,10 @@ import (
 	"sort"
 	"time"
 
+	"gitlab.ifreetalk.com/maze/maze_game_server/common/function/gentradeno"
+	"gitlab.ifreetalk.com/maze/maze_game_server/common/function/itemutil"
+	"gitlab.ifreetalk.com/maze/maze_game_server/common/function/uniqueid"
+	"gitlab.ifreetalk.com/maze/maze_game_server/excel/mazeconfigv8"
 	"gitlab.ifreetalk.com/plate/excel/auto/GMazeRebornCostV8Cfg"
 	"gitlab.ifreetalk.com/plate/extra/protobuf/proto"
 	"gitlab.ifreetalk.com/plate/freetk/common/errors"
@@ -18,13 +22,9 @@ import (
 	"gitlab.ifreetalk.com/plate/freetk/fkcore/fkprometheus"
 	"gitlab.ifreetalk.com/plate/protodef/MazeCommon"
 	"gitlab.ifreetalk.com/plate/protodef/MazeGame"
-	"gitlab.ifreetalk.com/servers/maze_game_server/common/function/gentradeno"
-	"gitlab.ifreetalk.com/servers/maze_game_server/common/function/itemutil"
-	"gitlab.ifreetalk.com/servers/maze_game_server/common/function/uniqueid"
-	"gitlab.ifreetalk.com/servers/maze_game_server/excel/mazeconfigv8"
 
-	"gitlab.ifreetalk.com/servers/maze_game_server/io/kafka/mazerebornkafka"
-	"gitlab.ifreetalk.com/servers/maze_game_server/io/redis/mazeuserbarrierredis"
+	"gitlab.ifreetalk.com/maze/maze_game_server/io/kafka/mazerebornkafka"
+	"gitlab.ifreetalk.com/maze/maze_game_server/io/redis/mazeuserbarrierredis"
 	"go.uber.org/zap"
 )
 

@@ -4,10 +4,10 @@ import (
 	"context"
 	"encoding/json"
 
+	"gitlab.ifreetalk.com/maze/maze_game_server/io/redis/mazecollectredis"
+	"gitlab.ifreetalk.com/maze/maze_game_server/module/funcopencheck"
+	"gitlab.ifreetalk.com/maze/maze_game_server/module/mazeuserinfo"
 	"gitlab.ifreetalk.com/plate/freetk/fkcore/fklog"
-	"gitlab.ifreetalk.com/servers/maze_game_server/io/redis/mazecollectredis"
-	"gitlab.ifreetalk.com/servers/maze_game_server/module/funcopencheck"
-	"gitlab.ifreetalk.com/servers/maze_game_server/module/mazeuserinfo"
 	"go.uber.org/zap"
 )
 

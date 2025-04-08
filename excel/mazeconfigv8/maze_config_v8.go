@@ -7,8 +7,8 @@
 package mazeconfigv8
 
 import (
+	"gitlab.ifreetalk.com/maze/maze_game_server/common/constdef"
 	"gitlab.ifreetalk.com/plate/excel/auto/GMazeConfigV8Cfg"
-	"gitlab.ifreetalk.com/servers/maze_game_server/common/constdef"
 )
 
 // 体力初始值

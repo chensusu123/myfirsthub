@@ -1,10 +1,10 @@
 package process
 
 import (
+	"gitlab.ifreetalk.com/maze/maze_game_server/module/mazeuserbarrier"
 	"gitlab.ifreetalk.com/plate/extra/protobuf/proto"
 	"gitlab.ifreetalk.com/plate/freetk/fkcore/fknet"
 	"gitlab.ifreetalk.com/plate/freetk/fkcore/fkprometheus"
-	"gitlab.ifreetalk.com/servers/maze_game_server/module/mazeuserbarrier"
 )
 
 func OnGetFeoAwardRQ(logger fknet.TCPContext, shardingID uint64, rqMsg proto.Message, rsMsg proto.Message) (err error) {

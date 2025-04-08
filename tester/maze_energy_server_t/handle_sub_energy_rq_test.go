@@ -9,9 +9,9 @@ package maze_energy_server_t
 import (
 	"testing"
 
+	"gitlab.ifreetalk.com/maze/maze_game_server/io/rpc/mazeenergyrpc"
 	"gitlab.ifreetalk.com/plate/extra/protobuf/proto"
 	"gitlab.ifreetalk.com/plate/protodef/MazeEnergySvr"
-	"gitlab.ifreetalk.com/servers/maze_game_server/io/rpc/mazeenergyrpc"
 )
 
 func TestSubEnergyRq(t *testing.T) {

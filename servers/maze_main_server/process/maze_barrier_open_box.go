@@ -1,6 +1,8 @@
 package process
 
 import (
+	"gitlab.ifreetalk.com/maze/maze_game_server/common/function/addequip"
+	"gitlab.ifreetalk.com/maze/maze_game_server/common/function/gentradeno"
 	"gitlab.ifreetalk.com/plate/excel/auto/GMazeBoxV8Cfg"
 	"gitlab.ifreetalk.com/plate/extra/protobuf/proto"
 	"gitlab.ifreetalk.com/plate/freetk/common/errors"
@@ -9,8 +11,6 @@ import (
 	"gitlab.ifreetalk.com/plate/freetk/fkutil"
 	"gitlab.ifreetalk.com/plate/protodef/MazeEquipSvr"
 	"gitlab.ifreetalk.com/plate/protodef/MazeGame"
-	"gitlab.ifreetalk.com/servers/maze_game_server/common/function/addequip"
-	"gitlab.ifreetalk.com/servers/maze_game_server/common/function/gentradeno"
 
 	"go.uber.org/zap"
 )

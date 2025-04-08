@@ -1,11 +1,11 @@
 package addequip
 
 import (
+	"gitlab.ifreetalk.com/maze/maze_game_server/io/rpc/dollequipbagrpc"
 	"gitlab.ifreetalk.com/plate/extra/protobuf/proto"
 	"gitlab.ifreetalk.com/plate/freetk/common/errors"
 	"gitlab.ifreetalk.com/plate/freetk/fkcore/fklog"
 	"gitlab.ifreetalk.com/plate/protodef/MazeEquipSvr"
-	"gitlab.ifreetalk.com/servers/maze_game_server/io/rpc/dollequipbagrpc"
 	"go.uber.org/zap"
 )
 
