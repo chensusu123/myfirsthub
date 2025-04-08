@@ -191,8 +191,6 @@ github.com/xdg/scram v0.0.0-20180814205039-7eeb5667e42c/go.mod h1:lB8K/P019DLNhe
 github.com/xdg/stringprep v1.0.0/go.mod h1:Jhud4/sHMO4oL310DaZAKk9ZaJ08SJfe+sJh0HrGL1Y=
 gitlab.ifreetalk.com/plate/definition v1.0.6 h1:jxAJiWFIGV5Nh4GNAySF4qNg+KzWMjg0Frv6eT1/Xzo=
 gitlab.ifreetalk.com/plate/definition v1.0.6/go.mod h1:+g0fTC+E97RYCq+8g9ABuAmTxr6OVwXxo67qxTgymIs=
-gitlab.ifreetalk.com/plate/excel v1.0.83-0.20250328073936-d71acebb84d6 h1:VPbiNOJWCIGycPlqrRKq3xxhfaUtVLN0NvzEOoGSubY=
-gitlab.ifreetalk.com/plate/excel v1.0.83-0.20250328073936-d71acebb84d6/go.mod h1:hHBCdrk+EzZ90cb7r0vW5RyrODsrf0Q0FN2gw33tBQs=
 gitlab.ifreetalk.com/plate/excel v1.0.83-0.20250401063701-8f330c6ae6e3 h1:Bn/ZOgWChug+/KHkUnWbO5b5kpTsEwfkFMfBr9hg3hM=
 gitlab.ifreetalk.com/plate/excel v1.0.83-0.20250401063701-8f330c6ae6e3/go.mod h1:hHBCdrk+EzZ90cb7r0vW5RyrODsrf0Q0FN2gw33tBQs=
 gitlab.ifreetalk.com/plate/extra v1.1.7 h1:LW0uI92Zao8padw+i6582ExxY3PvbuFTQYxT2g/6RO0=
@@ -203,16 +201,6 @@ gitlab.ifreetalk.com/plate/freetk v1.2.61/go.mod h1:wHTaL0xh4wQcy5r0AkYRS1FwNZSZ
 gitlab.ifreetalk.com/plate/io_interface v1.4.102-0.20250326074707-ac26a4cb5dba h1:dNyVsy5Pqp0wPamYL6JdUPEEkBxq6tep54DhKJPoHuM=
 gitlab.ifreetalk.com/plate/io_interface v1.4.102-0.20250326074707-ac26a4cb5dba/go.mod h1:tYP77irKSOBPx0iMlsxGucMnSIumHH75qtyB2hFv4DM=
 gitlab.ifreetalk.com/plate/protodef v1.0.29/go.mod h1:PPI4xcnIz1/Vy4pJeKekYyMupq4U2yE5NNU+TnovEjg=
-gitlab.ifreetalk.com/plate/protodef v1.0.88-0.20250328072547-83a6002c177b h1:FnEZPahG3eEx3/Pi9kHip4H6UrFXHHYBOkzRsag8Zjk=
-gitlab.ifreetalk.com/plate/protodef v1.0.88-0.20250328072547-83a6002c177b/go.mod h1:PPI4xcnIz1/Vy4pJeKekYyMupq4U2yE5NNU+TnovEjg=
-gitlab.ifreetalk.com/plate/protodef v1.0.88-0.20250328095254-23a2345a188a h1:hlRkWquuQx95WfvUtyrIKNdRPQ3EH37KkZ5O4CRNg18=
-gitlab.ifreetalk.com/plate/protodef v1.0.88-0.20250328095254-23a2345a188a/go.mod h1:PPI4xcnIz1/Vy4pJeKekYyMupq4U2yE5NNU+TnovEjg=
-gitlab.ifreetalk.com/plate/protodef v1.0.88-0.20250329031323-aa87c7739f12 h1:xQXHGPCucR5x7ylEOO0tSndHNodlO+7JlbS/YJa+I0o=
-gitlab.ifreetalk.com/plate/protodef v1.0.88-0.20250329031323-aa87c7739f12/go.mod h1:PPI4xcnIz1/Vy4pJeKekYyMupq4U2yE5NNU+TnovEjg=
-gitlab.ifreetalk.com/plate/protodef v1.0.88-0.20250331054419-882d27a46107 h1:t4qKOVMnx+Yy8RRE4BQjNHewarcMefm9ynIALwY9N3s=
-gitlab.ifreetalk.com/plate/protodef v1.0.88-0.20250331054419-882d27a46107/go.mod h1:PPI4xcnIz1/Vy4pJeKekYyMupq4U2yE5NNU+TnovEjg=
-gitlab.ifreetalk.com/plate/protodef v1.0.88-0.20250331111225-1a49a79c486e h1:tRMYPgWRLQLx2JSj/bqTMLmTnn3GxMhmSGAptkYoCkw=
-gitlab.ifreetalk.com/plate/protodef v1.0.88-0.20250331111225-1a49a79c486e/go.mod h1:PPI4xcnIz1/Vy4pJeKekYyMupq4U2yE5NNU+TnovEjg=
 gitlab.ifreetalk.com/plate/protodef v1.0.88-0.20250402074239-ecb88712855b h1:vQ0jZ6t3/9ZHz/WjC+qvIOkROICUmMiEcgOGUcpy9RE=
 gitlab.ifreetalk.com/plate/protodef v1.0.88-0.20250402074239-ecb88712855b/go.mod h1:PPI4xcnIz1/Vy4pJeKekYyMupq4U2yE5NNU+TnovEjg=
 go.uber.org/atomic v1.6.0 h1:Ezj3JGmsOnG1MoRWQkPBsKLe9DwWD9QeXzTRzzldNVk=
