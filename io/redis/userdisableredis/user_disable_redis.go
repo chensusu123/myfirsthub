@@ -1,0 +1,33 @@
+package userdisableredis
+
+import (
+	"context"
+	"fmt"
+	"gitlab.ifreetalk.com/plate/freetk/fkcore/fkconfig"
+	"gitlab.ifreetalk.com/plate/freetk/fkcore/fklog"
+	"gitlab.ifreetalk.com/plate/freetk/fkcore/fkredis"
+	"gitlab.ifreetalk.com/plate/freetk/fkcore/fkredis/redis"
+	"go.uber.org/zap"
+)
+
+var gRedis = &fkredis.FkRedis{}
+
+func init() {
+	_ = fkconfig.RegisterNameNode("userdisableredis", 17545, gRedis)
+}
+
+func getKey(userId uint64) string {
+	return gRedis.GetKey(fmt.Sprintf("%d", userId))
+}
+
+// 获取用户信息是否封禁
+func IsUserDisable(logger fklog.FKLogI, userId uint64) bool {
+	r, err := redis.Bool(gRedis.Do(context.TODO(), "EXISTS", getKey(userId)))
+	if err != nil {
+		if err != redis.ErrNil {
+			logger.ErrorWF("IsUserDisable exists error", zap.Uint64("userId", userId), zap.Error(err))
+		}
+		return false
+	}
+	return r
+}

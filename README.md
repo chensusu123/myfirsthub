@@ -1,2 +1,4 @@
+# maze_game_server
 
-maze-game-server
+
+迷宫游戏小程序版

@@ -1,0 +1,52 @@
+package maze_main_server_t
+
+import (
+	"context"
+	"fmt"
+	"testing"
+	"time"
+
+	"gitlab.ifreetalk.com/plate/extra/protobuf/proto"
+	"gitlab.ifreetalk.com/plate/freetk/common/errors"
+	"gitlab.ifreetalk.com/plate/freetk/fkcore/fknet"
+	"gitlab.ifreetalk.com/plate/protodef/MazeCommon"
+	"gitlab.ifreetalk.com/plate/protodef/MazeItemSvr"
+	"gitlab.ifreetalk.com/servers/maze_game_server/io/rpc/mazeitemrpc"
+)
+
+func TestQueryMoney(t *testing.T) {
+	ctx := fknet.TCPContext{Context: context.Background(), FKLogI: gTestLogger}
+	rq := &MazeItemSvr.QueryItemRQ{
+		UserId: proto.Uint64(9003200130206203),
+		Items: []*MazeCommon.MazeItem{
+			&MazeCommon.MazeItem{ItemId: proto.Int32(46200001), Count: proto.Int64(0)},
+			&MazeCommon.MazeItem{ItemId: proto.Int32(46900001), Count: proto.Int64(10000)},
+		},
+	}
+
+	rs := &MazeItemSvr.QueryItemRS{ErrInfo: errors.NO_ERROR}
+	err := mazeitemrpc.QueryItemsRQ(ctx, rq, rs)
+
+	fmt.Println(err)
+	time.Sleep(time.Second)
+}
+
+func TestAddMoney(t *testing.T) {
+	ctx := fknet.TCPContext{Context: context.Background(), FKLogI: gTestLogger}
+	rq := &MazeItemSvr.AddItemRQ{
+		UserId: proto.Uint64(9003200130206202),
+		OpType: proto.Int32(int32(697)),
+		Header: nil,
+		Items: []*MazeCommon.MazeItem{
+			// &MazeCommon.MazeItem{ItemId: proto.Int32(46200001), Count: proto.Int64(0)},
+			&MazeCommon.MazeItem{ItemId: proto.Int32(46900001), Count: proto.Int64(10000)},
+		},
+	}
+	rq.TradeNumber = proto.Uint64(10000)
+
+	rs := &MazeItemSvr.AddItemRS{ErrInfo: errors.NO_ERROR}
+	err := mazeitemrpc.AddItemsRQ(ctx, rq, rs)
+
+	fmt.Println(err)
+	time.Sleep(time.Second)
+}

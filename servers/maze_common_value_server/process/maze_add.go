@@ -1,0 +1,86 @@
+package process
+
+import (
+	"time"
+
+	"gitlab.ifreetalk.com/plate/extra/protobuf/proto"
+	"gitlab.ifreetalk.com/plate/freetk/common/errors"
+	"gitlab.ifreetalk.com/plate/freetk/fkcore/fkprometheus"
+	"gitlab.ifreetalk.com/plate/freetk/fkcore/fkrpc"
+	"gitlab.ifreetalk.com/plate/protodef/MazeCommon"
+	"gitlab.ifreetalk.com/plate/protodef/MazeCommonValueSvr"
+	"gitlab.ifreetalk.com/plate/protodef/MazeGame"
+	"gitlab.ifreetalk.com/servers/maze_game_server/common/constdef"
+	"gitlab.ifreetalk.com/servers/maze_game_server/io/kafka/mazemoneykafka"
+	"gitlab.ifreetalk.com/servers/maze_game_server/module/mazecommonvalue"
+	"gitlab.ifreetalk.com/servers/maze_game_server/module/mazemoney"
+	"go.uber.org/zap"
+)
+
+func OnMazeCommonValueAddRQ(ctx fkrpc.RPCContext, shardingID int64, rqMsg proto.Message, rsMsg proto.Message) (err error) {
+	defer fkprometheus.DebugPMT("OnMazeCommonValueAddRQ")()
+
+	req := rqMsg.(*MazeCommonValueSvr.MazeCommonValueAddRQ)
+	res := rsMsg.(*MazeCommonValueSvr.MazeCommonValueAddRS)
+	res.ErrInfo = errors.NO_ERROR
+	res.UserId = req.UserId
+	logger := ctx.FKLogI
+	logger.WarnWF("OnMazeCommonValueAddRQ with", zap.Any("rq", req))
+
+	addStartTime := time.Now()
+	defer func() {
+		costTime := time.Since(addStartTime).Seconds()
+		logger.WarnWF("OnMazeCommonValueAddRQ end ", zap.Any("req", req), zap.Any("res", res), zap.Float64("costTime", costTime))
+		if costTime >= 0.5 {
+			logger.ErrorWF("OnMazeCommonValueAddRQ timeout", zap.Any("req", req), zap.Any("res", res), zap.Float64("costTime", costTime))
+		}
+	}()
+
+	query := req.GetAddItems()
+	oldCoin, oldDiamond, err := mazemoney.GetUserMoney(logger, req.GetUserId())
+	if err != nil {
+		logger.ErrorWF("OnMazeCommonValueAddRQ GetUserMoney fail", zap.Error(err))
+		res.ErrInfo = errors.MODULE_ERROR.ToInfo()
+		return
+	}
+	oldMap := map[int32]int64{constdef.MazeCommonItemCoin: oldCoin, constdef.MazeCommonItemDiamond: oldDiamond}
+	moneyMap := make(map[int32]int64)
+
+	for _, item := range query {
+		if item.GetItemId() == constdef.MazeCommonItemCoin {
+			moneyMap[item.GetItemId()] = item.GetCount() + oldCoin
+		} else if item.GetItemId() == constdef.MazeCommonItemDiamond {
+			moneyMap[item.GetItemId()] = item.GetCount() + oldDiamond
+		}
+		res.Items = append(res.Items, &MazeCommon.MazeItem{ItemId: proto.Int32(item.GetItemId()), Count: proto.Int64(moneyMap[item.GetItemId()])})
+	}
+
+	err = mazemoney.BatchSetUserMoney(logger, req.GetUserId(), moneyMap)
+	if err != nil {
+		logger.ErrorWF("OnMazeCommonValueAddRQ BatchSetUserMoney fail", zap.Error(err))
+		res.ErrInfo = errors.MODULE_ERROR.ToInfo()
+		return
+	}
+	commonList := make([]*mazecommonvalue.CommonValueStruct, 0)
+	moneyCommon := mazecommonvalue.MakeCommonValueList(logger, map[int32]int64{
+		int32(MazeGame.MAZE_DATA_TYPE_ENUM_MAZE_DATA_TYPE_MONEY):   moneyMap[constdef.MazeCommonItemCoin],
+		int32(MazeGame.MAZE_DATA_TYPE_ENUM_MAZE_DATA_TYPE_DIAMOND): moneyMap[constdef.MazeCommonItemDiamond]},
+		map[int32]int32{}, map[int32]string{})
+	commonList = append(commonList, moneyCommon...)
+	mazecommonvalue.SendCommonValueIdPack(logger, req.GetUserId(), commonList)
+
+	for _, item := range query {
+		record := &mazemoneykafka.MazeMoneyRecord{
+			UserId:        req.GetUserId(),
+			OldMoneyId:    item.GetItemId(),
+			OldMoneyCount: oldMap[item.GetItemId()],
+			NewMoneyId:    item.GetItemId(),
+			NewMoneyCount: moneyMap[item.GetItemId()],
+			TradeNo:       int64(req.GetTradeNumber()),
+			ChgReason:     req.GetOpType(),
+		}
+		mazemoneykafka.PushMazeMoneyRecord(logger, record)
+	}
+
+	return
+}

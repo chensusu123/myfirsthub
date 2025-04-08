@@ -1,0 +1,41 @@
+package mazeuserlevelkafka
+
+import (
+	"time"
+
+	jsoniter "github.com/json-iterator/go"
+	"gitlab.ifreetalk.com/plate/freetk/fkcore/fkafka"
+	"gitlab.ifreetalk.com/plate/freetk/fkcore/fkconfig"
+	"gitlab.ifreetalk.com/plate/freetk/fkcore/fklog"
+	"go.uber.org/zap"
+)
+
+var json = jsoniter.ConfigCompatibleWithStandardLibrary
+
+// 用户等级变化流水
+type MazeUserLevelRecord struct {
+	UserId      uint64 `json:"user_id"`       // 用户id
+	OldLevel    int32  `json:"old_level"`     // 旧等级
+	OldTotalExp int64  `json:"old_total_exp"` // 旧经验总值
+	NewLevel    int32  `json:"new_level"`     // 新等级
+	NewTotalExp int32  `json:"new_total_exp"` // 新经验总值
+	GroupID     uint32 `json:"group_id"`      // 组id
+	CreateTime  int64  `json:"create_time"`   // 操作时间 毫秒
+}
+
+var gKafka = &fkafka.KafkaProducer{}
+
+func init() {
+	fkconfig.RegisterNameNode("mazeuserlevelkafka", 1001084, gKafka)
+}
+
+func PushMazeLevelRecord(agent fklog.FKLogI, record *MazeUserLevelRecord) error {
+	record.CreateTime = time.Now().UnixNano() / 1e6
+	record.GroupID = fkconfig.EnvVal.GroupID
+	cnt, err := json.Marshal(record)
+	if err != nil {
+		return err
+	}
+	agent.InfoWF("PushMazeLevelRecord data", zap.Any("userId", record.UserId), zap.Any("record", record))
+	return gKafka.SendWithUserID(record.UserId, cnt)
+}
