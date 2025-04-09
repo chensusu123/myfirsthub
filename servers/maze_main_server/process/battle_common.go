@@ -81,7 +81,7 @@ func GetUserBattleAttr(logger fklog.FKLogI, userId uint64, skillIds []int32, use
 					UserValueType: proto.Int32(attrCfg.Figure),
 				}
 			}
-			attrMap[constdef.AtkNumber].UserValue = proto.Int32(100000)
+			attrMap[constdef.AtkNumber].UserValue = proto.Int32(attrMap[constdef.AtkNumber].GetUserValue() + skillCfg.Target_num)
 			attrMap[constdef.AtkDis].UserValue = proto.Int32(attrMap[constdef.AtkDis].GetUserValue() + skillCfg.Distance_max)
 		}
 	}
