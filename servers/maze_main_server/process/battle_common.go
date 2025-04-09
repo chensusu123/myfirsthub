@@ -6,6 +6,7 @@ import (
 	"gitlab.ifreetalk.com/maze/maze_game_server/io/redis/mazecalcattrredis"
 	"gitlab.ifreetalk.com/plate/excel/auto/GMazeAttrSkillV8Cfg"
 	"gitlab.ifreetalk.com/plate/excel/auto/GMazeAttributeV8Cfg"
+	"gitlab.ifreetalk.com/plate/excel/auto/GMazeSkillInfoV8Cfg"
 	"gitlab.ifreetalk.com/plate/extra/protobuf/proto"
 	"gitlab.ifreetalk.com/plate/freetk/common/errors"
 	"gitlab.ifreetalk.com/plate/freetk/fkcore/fklog"
@@ -53,37 +54,37 @@ func GetUserBattleAttr(logger fklog.FKLogI, userId uint64, skillIds []int32, use
 			UserValueType: proto.Int32(attrCfg.Figure),
 		}
 	}
-	//if len(skillIds) > 0 {
-	//	skillCfg := GMazeSkillInfoV8Cfg.Get(skillIds[0])
-	//	if skillCfg != nil {
-	//		if attrMap[constdef.AtkNumber] == nil {
-	//			attrCfg := GMazeAttributeV8Cfg.GetMazeAttributeV8Config(constdef.AtkNumber)
-	//			if attrCfg == nil {
-	//				logger.WarnWF("GetUserBattleAttr GetAttributeConfig error", zap.Uint64("userId", userId), zap.Any("attrId", constdef.AtkNumber))
-	//				return nil, errors.New("配置不存在")
-	//			}
-	//			attrMap[constdef.AtkNumber] = &MazeAIBattle.MazeAIAttrInfo{
-	//				Type:          proto.Int32(attrTypeMap[constdef.AtkNumber]),
-	//				UserValue:     proto.Int32(0),
-	//				UserValueType: proto.Int32(attrCfg.Figure),
-	//			}
-	//		}
-	//		if attrMap[constdef.AtkDis] == nil {
-	//			attrCfg := GMazeAttributeV8Cfg.GetMazeAttributeV8Config(constdef.AtkDis)
-	//			if attrCfg == nil {
-	//				logger.WarnWF("GetUserBattleAttr GetAttributeConfig error", zap.Uint64("userId", userId), zap.Any("attrId", constdef.AtkDis))
-	//				return nil, errors.New("配置不存在")
-	//			}
-	//			attrMap[constdef.AtkDis] = &MazeAIBattle.MazeAIAttrInfo{
-	//				Type:          proto.Int32(attrTypeMap[constdef.AtkDis]),
-	//				UserValue:     proto.Int32(0),
-	//				UserValueType: proto.Int32(attrCfg.Figure),
-	//			}
-	//		}
-	//		attrMap[constdef.AtkNumber].UserValue = proto.Int32(attrMap[constdef.AtkNumber].GetUserValue())
-	//		attrMap[constdef.AtkDis].UserValue = proto.Int32(attrMap[constdef.AtkDis].GetUserValue())
-	//	}
-	//}
+	if len(skillIds) > 0 {
+		skillCfg := GMazeSkillInfoV8Cfg.Get(skillIds[0])
+		if skillCfg != nil {
+			//if attrMap[constdef.AtkNumber] == nil {
+			//	attrCfg := GMazeAttributeV8Cfg.GetMazeAttributeV8Config(constdef.AtkNumber)
+			//	if attrCfg == nil {
+			//		logger.WarnWF("GetUserBattleAttr GetAttributeConfig error", zap.Uint64("userId", userId), zap.Any("attrId", constdef.AtkNumber))
+			//		return nil, errors.New("配置不存在")
+			//	}
+			//	attrMap[constdef.AtkNumber] = &MazeAIBattle.MazeAIAttrInfo{
+			//		Type:          proto.Int32(attrTypeMap[constdef.AtkNumber]),
+			//		UserValue:     proto.Int32(0),
+			//		UserValueType: proto.Int32(attrCfg.Figure),
+			//	}
+			//}
+			if attrMap[constdef.AtkDis] == nil {
+				attrCfg := GMazeAttributeV8Cfg.GetMazeAttributeV8Config(constdef.AtkDis)
+				if attrCfg == nil {
+					logger.WarnWF("GetUserBattleAttr GetAttributeConfig error", zap.Uint64("userId", userId), zap.Any("attrId", constdef.AtkDis))
+					return nil, errors.New("配置不存在")
+				}
+				attrMap[constdef.AtkDis] = &MazeAIBattle.MazeAIAttrInfo{
+					Type:          proto.Int32(attrTypeMap[constdef.AtkDis]),
+					UserValue:     proto.Int32(0),
+					UserValueType: proto.Int32(attrCfg.Figure),
+				}
+			}
+			//attrMap[constdef.AtkNumber].UserValue = proto.Int32(attrMap[constdef.AtkNumber].GetUserValue())
+			attrMap[constdef.AtkDis].UserValue = proto.Int32(attrMap[constdef.AtkDis].GetUserValue() + skillCfg.Distance_max)
+		}
+	}
 	return attrMap, nil
 }
 
