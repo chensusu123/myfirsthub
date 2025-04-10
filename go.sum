@@ -203,6 +203,8 @@ gitlab.ifreetalk.com/plate/io_interface v1.4.102-0.20250326074707-ac26a4cb5dba/g
 gitlab.ifreetalk.com/plate/protodef v1.0.29/go.mod h1:PPI4xcnIz1/Vy4pJeKekYyMupq4U2yE5NNU+TnovEjg=
 gitlab.ifreetalk.com/plate/protodef v1.0.88-0.20250402074239-ecb88712855b h1:vQ0jZ6t3/9ZHz/WjC+qvIOkROICUmMiEcgOGUcpy9RE=
 gitlab.ifreetalk.com/plate/protodef v1.0.88-0.20250402074239-ecb88712855b/go.mod h1:PPI4xcnIz1/Vy4pJeKekYyMupq4U2yE5NNU+TnovEjg=
+gitlab.ifreetalk.com/plate/protodef v1.0.88-0.20250410072158-063f65314121 h1:OSuCUdN2BsIXPK+CLXw5DNdGF3SnQRe+lONVclEU7lg=
+gitlab.ifreetalk.com/plate/protodef v1.0.88-0.20250410072158-063f65314121/go.mod h1:PPI4xcnIz1/Vy4pJeKekYyMupq4U2yE5NNU+TnovEjg=
 go.uber.org/atomic v1.6.0 h1:Ezj3JGmsOnG1MoRWQkPBsKLe9DwWD9QeXzTRzzldNVk=
 go.uber.org/atomic v1.6.0/go.mod h1:sABNBOSYdrvTF6hTgEIbc7YasKWGhgEQZyfxyTvoXHQ=
 go.uber.org/multierr v1.5.0 h1:KCa4XfM8CWFCpxXRGok+Q0SS/0XBhMDbHHGABQLvD2A=

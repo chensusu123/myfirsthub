@@ -272,6 +272,8 @@ func BattleSkillTopPb(logger fklog.FKLogI, skillId int32, attrMap map[int32]int6
 				ActId:           proto.Int32(actId),
 				ToughBrokeValue: proto.Int32(mazeActCfg.Tough_broke_value),
 				ToughTempValue:  proto.Int32(mazeActCfg.Temp_tough),
+				InitSkillCd:     proto.Int32(skillCfg.Initial_cool_time),
+				SkillCd:         proto.Int32(skillCfg.Skill_cool_time),
 			}
 			actDamageConfigs = append(actDamageConfigs, actDamageConfig)
 			for k, v := range mazeActCfg.Attack_point_damage_ratio {
