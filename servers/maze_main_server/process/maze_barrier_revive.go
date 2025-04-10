@@ -108,11 +108,20 @@ func OnMazeBarrierRebornRQ(logger fknet.TCPContext, shardingID uint64, rqMsg pro
 			res.ErrInfo = errors.ARGS_NOT_MATCH.ToInfo()
 			return
 		}
+
+		nextCost, _, nextCanReborn := GetReviveCost(barrierInfo.GetRebornCount() + 2)
+		res.RebornCost = nextCost
+		if !nextCanReborn {
+			res.RebornCost = []*MazeCommon.MazeItem{}
+		}
+
 		if !itemutil.CheckItemMatch(req.GetRebornCost(), svrCost) {
 			logger.ErrorWF("OnMazeBarrierRebornRQ cost check fail",
 				zap.Any("rqCost", req.GetRebornCost()),
 				zap.Any("svrCost", svrCost))
 			res.ErrInfo = errors.NewErrorInfo(ERROR_CODE_REBORN_COST_NOT_MATCH, "消耗不匹配")
+
+			res.RebornAckTime = proto.Int64(mazeconfigv8.GetUserReviveTime() + time.Now().Unix())
 			return
 		}
 
@@ -143,12 +152,6 @@ func OnMazeBarrierRebornRQ(logger fknet.TCPContext, shardingID uint64, rqMsg pro
 				zap.Any("barrierInfo", barrierInfo))
 			res.ErrInfo = errors.DB_SAVE_ERROR.ToInfo()
 			return
-		}
-
-		nextCost, _, nextCanReborn := GetReviveCost(barrierInfo.GetRebornCount() + 1)
-		res.RebornCost = nextCost
-		if !nextCanReborn {
-			res.RebornCost = []*MazeCommon.MazeItem{}
 		}
 
 		res.RebornCount = proto.Int32(barrierInfo.GetRebornCount())
