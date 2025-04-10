@@ -24,7 +24,7 @@ func GMDel(logger fklog.FKLogI, userId uint64) error {
 		logger.ErrorWF("GMDel failed with", zap.Error(err), zap.Any("key", key))
 		return err
 	}
-	logger.InfoWF("GMDel succ", zap.Any("key", key))
+	logger.InfoWF("mazeequipgetnumredis GMDel succ", zap.Any("key", key))
 	return nil
 }
 

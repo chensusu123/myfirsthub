@@ -9,6 +9,7 @@ import (
 	"gitlab.ifreetalk.com/maze/maze_game_server/io/redis/mazebarriermoneyredis"
 	"gitlab.ifreetalk.com/maze/maze_game_server/io/redis/mazechallengenumredis"
 	"gitlab.ifreetalk.com/maze/maze_game_server/io/redis/mazecollectredis"
+	"gitlab.ifreetalk.com/maze/maze_game_server/io/redis/mazeequipgetnumredis"
 	"gitlab.ifreetalk.com/maze/maze_game_server/io/redis/mazeshopseqredis"
 	"gitlab.ifreetalk.com/maze/maze_game_server/io/redis/mazeuserbarrierredis"
 	"gitlab.ifreetalk.com/maze/maze_game_server/io/redis/mazeuserlevelredis"
@@ -250,6 +251,8 @@ func ClearBarrier(logger fklog.FKLogI, userId uint64) (err error) {
 	if err != nil {
 		return
 	}
+
+	err = mazeequipgetnumredis.GMDel(logger, userId)
 
 	return
 
