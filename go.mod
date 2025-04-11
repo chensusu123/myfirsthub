@@ -9,7 +9,7 @@ require (
 	gitlab.ifreetalk.com/plate/extra v1.1.7
 	gitlab.ifreetalk.com/plate/freetk v1.2.61
 	gitlab.ifreetalk.com/plate/io_interface v1.4.102-0.20250326074707-ac26a4cb5dba
-	gitlab.ifreetalk.com/plate/protodef v1.0.88-0.20250410072158-063f65314121
+	gitlab.ifreetalk.com/plate/protodef v1.0.88-0.20250411061731-9605484aea29
 	go.uber.org/zap v1.15.0
 )
 
