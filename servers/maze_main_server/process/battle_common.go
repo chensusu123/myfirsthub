@@ -109,6 +109,10 @@ func GetAttrType() map[int32]int32 {
 	attrTypeMap[constdef.BeHurtValue] = int32(MazeAIBattle.MAZE_AI_ATTR_TYPE_BE_HURT_VALUE_PER)
 	attrTypeMap[constdef.ExtraHurtValue] = int32(MazeAIBattle.MAZE_AI_ATTR_TYPE_EXTRA_HURT_VALUE_ADD)
 	attrTypeMap[constdef.ExtraBeHurtValue] = int32(MazeAIBattle.MAZE_AI_ATTR_TYPE_EXTRA_BE_HURT_VALUE_ADD)
+	attrTypeMap[constdef.ContinuousDamageHurtValue] = int32(MazeAIBattle.MAZE_AI_ATTR_TYPE_CONTINUOUS_DAMAGE_HURT_VALUE)
+	attrTypeMap[constdef.ContinuousDamageBeHurtValue] = int32(MazeAIBattle.MAZE_AI_ATTR_TYPE_CONTINUOUS_DAMAGE_BE_HURT_VALUE)
+	attrTypeMap[constdef.ContinuousDamageExtraHurtValueAdd] = int32(MazeAIBattle.MAZE_AI_ATTR_TYPE_CONTINUOUS_DAMAGE_EXTRA_HURT_VALUE_ADD)
+	attrTypeMap[constdef.ContinuousDamageExtraBeHurtValueAdd] = int32(MazeAIBattle.MAZE_AI_ATTR_TYPE_CONTINUOUS_DAMAGE_EXTRA_BE_HURT_VALUE_ADD)
 
 	attrTypeMap[constdef.IceTagAttrId] = int32(MazeAIBattle.MAZE_AI_ATTR_TYPE_ICE_TAG_ATTR_ID)
 	attrTypeMap[constdef.IceAtkAppendElementHurtValue] = int32(MazeAIBattle.MAZE_AI_ATTR_TYPE_ICE_ATK_APPEND_ELEMENT_HURT_VALUE)
@@ -118,6 +122,10 @@ func GetAttrType() map[int32]int32 {
 	attrTypeMap[constdef.IceBeHurtValuePer] = int32(MazeAIBattle.MAZE_AI_ATTR_TYPE_ICE_BE_HURT_VALUE_PER)
 	attrTypeMap[constdef.IceExtraHurtValueAdd] = int32(MazeAIBattle.MAZE_AI_ATTR_TYPE_ICE_EXTRA_HURT_VALUE_ADD)
 	attrTypeMap[constdef.IceBeExtraHurtValueAdd] = int32(MazeAIBattle.MAZE_AI_ATTR_TYPE_ICE_BE_EXTRA_HURT_VALUE_ADD)
+	attrTypeMap[constdef.IceContinuousDamageHurtValue] = int32(MazeAIBattle.MAZE_AI_ATTR_TYPE_ICE_CONTINUOUS_DAMAGE_HURT_VALUE)
+	attrTypeMap[constdef.IceContinuousDamageBeHurtValue] = int32(MazeAIBattle.MAZE_AI_ATTR_TYPE_ICE_CONTINUOUS_DAMAGE_BE_HURT_VALUE)
+	attrTypeMap[constdef.IceContinuousDamageExtraHurtValueAdd] = int32(MazeAIBattle.MAZE_AI_ATTR_TYPE_ICE_CONTINUOUS_DAMAGE_EXTRA_HURT_VALUE_ADD)
+	attrTypeMap[constdef.IceContinuousDamageExtraBeHurtValueAdd] = int32(MazeAIBattle.MAZE_AI_ATTR_TYPE_ICE_CONTINUOUS_DAMAGE_EXTRA_BE_HURT_VALUE_ADD)
 
 	attrTypeMap[constdef.FireTagAttrId] = int32(MazeAIBattle.MAZE_AI_ATTR_TYPE_FIRE_TAG_ATTR_ID)
 	attrTypeMap[constdef.FireAtkAppendElementHurtValue] = int32(MazeAIBattle.MAZE_AI_ATTR_TYPE_FIRE_ATK_APPEND_ELEMENT_HURT_VALUE)
@@ -127,6 +135,10 @@ func GetAttrType() map[int32]int32 {
 	attrTypeMap[constdef.FireBeHurtValuePer] = int32(MazeAIBattle.MAZE_AI_ATTR_TYPE_FIRE_BE_HURT_VALUE_PER)
 	attrTypeMap[constdef.FireExtraHurtValueAdd] = int32(MazeAIBattle.MAZE_AI_ATTR_TYPE_FIRE_EXTRA_HURT_VALUE_ADD)
 	attrTypeMap[constdef.FireBeExtraHurtValueAdd] = int32(MazeAIBattle.MAZE_AI_ATTR_TYPE_FIRE_BE_EXTRA_HURT_VALUE_ADD)
+	attrTypeMap[constdef.FireContinuousDamageHurtValue] = int32(MazeAIBattle.MAZE_AI_ATTR_TYPE_FIRE_CONTINUOUS_DAMAGE_HURT_VALUE)
+	attrTypeMap[constdef.FireContinuousDamageBeHurtValue] = int32(MazeAIBattle.MAZE_AI_ATTR_TYPE_FIRE_CONTINUOUS_DAMAGE_BE_HURT_VALUE)
+	attrTypeMap[constdef.FireContinuousDamageExtraHurtValueAdd] = int32(MazeAIBattle.MAZE_AI_ATTR_TYPE_FIRE_CONTINUOUS_DAMAGE_EXTRA_HURT_VALUE_ADD)
+	attrTypeMap[constdef.FireContinuousDamageExtraBeHurtValueAdd] = int32(MazeAIBattle.MAZE_AI_ATTR_TYPE_FIRE_CONTINUOUS_DAMAGE_EXTRA_BE_HURT_VALUE_ADD)
 
 	attrTypeMap[constdef.ElectricityTagAttrId] = int32(MazeAIBattle.MAZE_AI_ATTR_TYPE_ELECTRICITY_TAG_ATTR_ID)
 	attrTypeMap[constdef.ElectricityAtkAppendElementHurtValue] = int32(MazeAIBattle.MAZE_AI_ATTR_TYPE_ELECTRICITY_ATK_APPEND_ELEMENT_HURT_VALUE)
@@ -136,6 +148,10 @@ func GetAttrType() map[int32]int32 {
 	attrTypeMap[constdef.ElectricityBeHurtValuePer] = int32(MazeAIBattle.MAZE_AI_ATTR_TYPE_ELECTRICITY_BE_HURT_VALUE_PER)
 	attrTypeMap[constdef.ElectricityExtraHurtValueAdd] = int32(MazeAIBattle.MAZE_AI_ATTR_TYPE_ELECTRICITY_EXTRA_HURT_VALUE_ADD)
 	attrTypeMap[constdef.ElectricityBeExtraHurtValueAdd] = int32(MazeAIBattle.MAZE_AI_ATTR_TYPE_ELECTRICITY_BE_EXTRA_HURT_VALUE_ADD)
+	attrTypeMap[constdef.ElectricityContinuousDamageHurtValue] = int32(MazeAIBattle.MAZE_AI_ATTR_TYPE_ELECTRICITY_CONTINUOUS_DAMAGE_HURT_VALUE)
+	attrTypeMap[constdef.ElectricityContinuousDamageBeHurtValue] = int32(MazeAIBattle.MAZE_AI_ATTR_TYPE_ELECTRICITY_CONTINUOUS_DAMAGE_BE_HURT_VALUE)
+	attrTypeMap[constdef.ElectricityContinuousDamageExtraHurtValueAdd] = int32(MazeAIBattle.MAZE_AI_ATTR_TYPE_ELECTRICITY_CONTINUOUS_DAMAGE_EXTRA_HURT_VALUE_ADD)
+	attrTypeMap[constdef.ElectricityContinuousDamageExtraBeHurtValueAdd] = int32(MazeAIBattle.MAZE_AI_ATTR_TYPE_ELECTRICITY_CONTINUOUS_DAMAGE_EXTRA_BE_HURT_VALUE_ADD)
 
 	attrTypeMap[constdef.PoisonTagAttrId] = int32(MazeAIBattle.MAZE_AI_ATTR_TYPE_POISON_TAG_ATTR_ID)
 	attrTypeMap[constdef.PoisonAtkAppendElementHurtValue] = int32(MazeAIBattle.MAZE_AI_ATTR_TYPE_POISON_ATK_APPEND_ELEMENT_HURT_VALUE)
@@ -145,6 +161,10 @@ func GetAttrType() map[int32]int32 {
 	attrTypeMap[constdef.PoisonBeHurtValuePer] = int32(MazeAIBattle.MAZE_AI_ATTR_TYPE_POISON_BE_HURT_VALUE_PER)
 	attrTypeMap[constdef.PoisonExtraHurtValueAdd] = int32(MazeAIBattle.MAZE_AI_ATTR_TYPE_POISON_EXTRA_HURT_VALUE_ADD)
 	attrTypeMap[constdef.PoisonBeExtraHurtValueAdd] = int32(MazeAIBattle.MAZE_AI_ATTR_TYPE_POISON_BE_EXTRA_HURT_VALUE_ADD)
+	attrTypeMap[constdef.PoisonContinuousDamageHurtValue] = int32(MazeAIBattle.MAZE_AI_ATTR_TYPE_POISON_CONTINUOUS_DAMAGE_HURT_VALUE)
+	attrTypeMap[constdef.PoisonContinuousDamageBeHurtValue] = int32(MazeAIBattle.MAZE_AI_ATTR_TYPE_POISON_CONTINUOUS_DAMAGE_BE_HURT_VALUE)
+	attrTypeMap[constdef.PoisonContinuousDamageExtraHurtValueAdd] = int32(MazeAIBattle.MAZE_AI_ATTR_TYPE_POISON_CONTINUOUS_DAMAGE_EXTRA_HURT_VALUE_ADD)
+	attrTypeMap[constdef.PoisonContinuousDamageExtraBeHurtValueAdd] = int32(MazeAIBattle.MAZE_AI_ATTR_TYPE_POISON_CONTINUOUS_DAMAGE_EXTRA_BE_HURT_VALUE_ADD)
 	return attrTypeMap
 }
 

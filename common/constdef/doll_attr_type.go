@@ -42,6 +42,10 @@ const (
 	BeHurtValue      = 3040401 // 受到伤害
 	ExtraHurtValue   = 3040501 // 额外伤害
 	ExtraBeHurtValue = 3040601 // 受到额外伤害
+	ContinuousDamageHurtValue = 3041601 //无元素持续伤害提高，万分比
+	ContinuousDamageBeHurtValue = 3041701 //受到无元素持续伤害提高，万分比
+	ContinuousDamageExtraHurtValueAdd = 3041801 //额外无元素持续伤害，固定值
+	ContinuousDamageExtraBeHurtValueAdd = 3041901 //受到额外无元素持续伤害，固定值
 
 	//冰属性id列表
 	IceTagAttrId                 = 3050000 // 冰属性标记Id
@@ -52,6 +56,10 @@ const (
 	IceBeHurtValuePer            = 3050401 // 受到冰元素伤害
 	IceExtraHurtValueAdd         = 3050501 // 额外冰伤害
 	IceBeExtraHurtValueAdd       = 3050601 // 受到额外冰伤害
+	IceContinuousDamageHurtValue = 3050701 //冰元素持续伤害提高，万分比
+	IceContinuousDamageBeHurtValue = 3050801 //受到冰元素持续伤害提高，万分比
+	IceContinuousDamageExtraHurtValueAdd = 3050901 //额外冰元素持续伤害，固定值
+	IceContinuousDamageExtraBeHurtValueAdd = 3051001 //受到额外冰元素持续伤害，固定值
 
 	//火属性id列表
 	FireTagAttrId                 = 3060000 // 火属性标记Id
@@ -62,6 +70,10 @@ const (
 	FireBeHurtValuePer            = 3060401 // 受到火元素伤害
 	FireExtraHurtValueAdd         = 3060501 // 额外火伤害
 	FireBeExtraHurtValueAdd       = 3060601 // 受到额外火伤害
+	FireContinuousDamageHurtValue = 3060701 //火元素持续伤害提高，万分比
+	FireContinuousDamageBeHurtValue = 3060801 //受到火元素持续伤害提高，万分比
+	FireContinuousDamageExtraHurtValueAdd = 3060901 //额外火元素持续伤害，固定值
+	FireContinuousDamageExtraBeHurtValueAdd = 3061001 //受到额外火元素持续伤害，固定值
 
 	//电属性id列表
 	ElectricityTagAttrId                 = 3070000 // 电属性标记Id
@@ -72,6 +84,10 @@ const (
 	ElectricityBeHurtValuePer            = 3070401 // 受到电元素伤害
 	ElectricityExtraHurtValueAdd         = 3070501 // 额外电伤害
 	ElectricityBeExtraHurtValueAdd       = 3070601 // 受到额外电伤害
+	ElectricityContinuousDamageHurtValue = 3070701 //电元素持续伤害提高，万分比
+	ElectricityContinuousDamageBeHurtValue = 3070801 //受到电元素持续伤害提高，万分比
+	ElectricityContinuousDamageExtraHurtValueAdd = 3070901 //额外电元素持续伤害，固定值
+	ElectricityContinuousDamageExtraBeHurtValueAdd = 3071001 //受到额外电元素持续伤害，固定值
 
 	//毒属性id列表
 	PoisonTagAttrId                 = 3080000 // 毒属性标记Id
@@ -82,4 +98,8 @@ const (
 	PoisonBeHurtValuePer            = 3080401 // 受到毒元素伤害
 	PoisonExtraHurtValueAdd         = 3080501 // 额外毒伤害
 	PoisonBeExtraHurtValueAdd       = 3080601 // 受到额外毒伤害
+	PoisonContinuousDamageHurtValue = 3080701 //毒元素持续伤害提高，万分比
+	PoisonContinuousDamageBeHurtValue = 3080801 //受到毒元素持续伤害提高，万分比
+	PoisonContinuousDamageExtraHurtValueAdd = 3080901 //额外毒元素持续伤害，固定值
+	PoisonContinuousDamageExtraBeHurtValueAdd = 3081001 //受到额外毒元素持续伤害，固定值
 )
