@@ -131,38 +131,42 @@ func CalUserSweepBarrierAward(logger fklog.FKLogI, uid uint64, barrierId int32, 
 	}
 
 	//加经验 加钱 加装备
-	oldLevel := userInfo.Level
-	oldExp := userInfo.TotalExp
-	err = userInfo.AddExp(int64(addExp))
-	if err != nil {
-		logger.ErrorWF("CalUserSweepBarrierAward addExp fail", zap.Any("addExp", addExp))
-		return
-	}
-	newLevel := userInfo.Level
-	err = mazeuserinfo.SetUserInfoV2(logger, uid, userInfo)
-	if err != nil {
-		logger.ErrorWF("CalUserSweepBarrierAward SetUserInfoV2 fail", zap.Error(err))
-		return
-	}
-
-	mazecommonvalue.HandleUserLevelExpChg(logger, uid, userInfo.Level, userInfo.Exp, header.GetSession())
-	defer func() {
-		if oldLevel != newLevel {
-			levelRecord := &mazeuserlevelkafka.MazeUserLevelRecord{
-				UserId:      uid,
-				OldLevel:    int32(oldLevel),
-				OldTotalExp: oldExp,
-				NewLevel:    int32(newLevel),
-				NewTotalExp: int32(userInfo.TotalExp),
-			}
-			mazeuserlevelkafka.PushMazeLevelRecord(logger, levelRecord)
+	if addExp > 0 {
+		oldLevel := userInfo.Level
+		oldExp := userInfo.TotalExp
+		err = userInfo.AddExp(int64(addExp))
+		if err != nil {
+			logger.ErrorWF("CalUserSweepBarrierAward addExp fail", zap.Any("addExp", addExp))
+			return
 		}
-	}()
+		newLevel := userInfo.Level
+		err = mazeuserinfo.SetUserInfoV2(logger, uid, userInfo)
+		if err != nil {
+			logger.ErrorWF("CalUserSweepBarrierAward SetUserInfoV2 fail", zap.Error(err))
+			return
+		}
+
+		mazecommonvalue.HandleUserLevelExpChg(logger, uid, userInfo.Level, userInfo.Exp, header.GetSession())
+		defer func() {
+			if oldLevel != newLevel {
+				levelRecord := &mazeuserlevelkafka.MazeUserLevelRecord{
+					UserId:      uid,
+					OldLevel:    int32(oldLevel),
+					OldTotalExp: oldExp,
+					NewLevel:    int32(newLevel),
+					NewTotalExp: int32(userInfo.TotalExp),
+				}
+				mazeuserlevelkafka.PushMazeLevelRecord(logger, levelRecord)
+			}
+		}()
+	}
 
 	awardItem = make([]*MazeCommon.MazeItem, 0)
 	rareItem = make([]*MazeCommon.MazeItem, 0)
 
-	awardItem = append(awardItem, &MazeCommon.MazeItem{ItemId: proto.Int32(constdef.MazeCommonItemExp), Count: proto.Int64(addExp)})
+	if addExp > 0 {
+		awardItem = append(awardItem, &MazeCommon.MazeItem{ItemId: proto.Int32(constdef.MazeCommonItemExp), Count: proto.Int64(addExp)})
+	}
 
 	tradeNo := gentradeno.GetTradeNum()
 	addItems[constdef.MazeCommonItemCoin] += addMoney
