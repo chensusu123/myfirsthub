@@ -10,6 +10,7 @@ import (
 	"gitlab.ifreetalk.com/plate/excel/auto/GMazeBrushFoeV8Cfg"
 	"gitlab.ifreetalk.com/plate/excel/auto/GMazeFoeV8Cfg"
 	"gitlab.ifreetalk.com/plate/excel/auto/GMazeSkillActV8Cfg"
+	"gitlab.ifreetalk.com/plate/excel/auto/GMazeSkillAutoReleaseV8Cfg"
 	"gitlab.ifreetalk.com/plate/excel/auto/GMazeSkillInfoV8Cfg"
 	"gitlab.ifreetalk.com/plate/excel/auto/GMazeSkilleffectV8Cfg"
 	"gitlab.ifreetalk.com/plate/extra/protobuf/proto"
@@ -215,6 +216,7 @@ func GetUserAttrInfo(logger fklog.FKLogI, userId uint64, forceVal int64, userAtt
 	//	}
 	//}
 	skillIds := make([]int32, 0)
+	autoSkillId := make([]int32, 0)
 	for _, cfg := range GMazeSkillInfoV8Cfg.GetAll() {
 		if cfg.Type != 1 {
 			continue
@@ -228,6 +230,9 @@ func GetUserAttrInfo(logger fklog.FKLogI, userId uint64, forceVal int64, userAtt
 	for _, cfg := range GMazeAttrSkillV8Cfg.GetAll() {
 		if userAttrMap[cfg.Attr_id] > 0 {
 			skillIds = append(skillIds, cfg.Skill_id)
+			if cfg.Auto_skill_id > 0{
+				autoSkillId = append(autoSkillId,cfg.Auto_skill_id)
+			}
 		}
 	}
 	roleConfigInfo := &MazeAIBattle.MazeAIRoleConfigInfo{}
@@ -250,6 +255,7 @@ func GetUserAttrInfo(logger fklog.FKLogI, userId uint64, forceVal int64, userAtt
 	roleConfigInfo.UserAttrInfo = userAttrInfo
 	userSkillInfo := &MazeAIBattle.MazeAISkillTotalInfo{}
 	userSkillInfo.SkillInfoList = make([]*MazeAIBattle.MazeAISkillInfo, 0)
+	userSkillInfo.AutoSkillInfoList = make([]*MazeAIBattle.MazeAIAutoSkillInfo, 0)
 	actDamageConfigList := make([]*MazeAIBattle.MazeAIActAttackValue, 0)
 	for _, skillId := range skillIds {
 		if skillId == 0 {
@@ -262,6 +268,17 @@ func GetUserAttrInfo(logger fklog.FKLogI, userId uint64, forceVal int64, userAtt
 		}
 		userSkillInfo.SkillInfoList = append(userSkillInfo.SkillInfoList, skillInfo)
 		actDamageConfigList = append(actDamageConfigList, actDamageConfigs...)
+	}
+	for _, skillId := range autoSkillId{
+		if skillId == 0 {
+			continue
+		}
+		autoSkillInfo,err := GetMazeAIAutoSkillInfo(logger,skillId, userAttrMap)
+		if err != nil{
+			logger.WarnWF("GetUserBattleAttr GetMazeAIAutoSkillInfo nil", zap.Uint64("userId", userId), zap.Any("skillId", skillId))
+			return nil, err
+		}
+		userSkillInfo.AutoSkillInfoList = append(userSkillInfo.AutoSkillInfoList, autoSkillInfo)
 	}
 	roleConfigInfo.UserSkillInfo = userSkillInfo
 	roleConfigInfo.ActDamageConfig = actDamageConfigList
@@ -579,5 +596,26 @@ func GetFoeSkillConfigInfo(logger fklog.FKLogI, skillId int32) (*MazeAIBattle.Ma
 		}
 	}
 	skillConfigInfo.ActDamageConfig = actDamageConfigs
+	return skillConfigInfo, nil
+}
+
+func GetMazeAIAutoSkillInfo(logger fklog.FKLogI, skillId int32, attrMap map[int32]int64) (*MazeAIBattle.MazeAIAutoSkillInfo, error) {
+	skillAutoCfg := GMazeSkillAutoReleaseV8Cfg.Get(skillId)
+	if skillAutoCfg == nil{
+		logger.ErrorWF("GetMazeAIAutoSkillInfo GMazeSkillAutoReleaseV8Cfg err", zap.Any("skillId", skillId))
+		return nil, errors.New("配置不存在")
+	}
+	skillConfigInfo := &MazeAIBattle.MazeAIAutoSkillInfo{
+		SkillId:     proto.Int32(skillId),
+		AttrId: proto.Int32(skillAutoCfg.Attr),
+		BaseHitrate:     proto.Int32(int32(GetEffectAttrValue(skillAutoCfg.Attr_value_2, skillAutoCfg.Attr_value_2_variable_id, attrMap))),
+		TriggerCount:     proto.Int32(int32(GetEffectAttrValue(skillAutoCfg.Attr_value_3, skillAutoCfg.Attr_value_3_variable_id, attrMap))),
+		TriggerSkillId:     proto.Int32(skillAutoCfg.Attr_value_4[0]),
+	}
+	skillConfigInfo.ValueList = append(skillConfigInfo.ValueList, &MazeAIBattle.MazeAIEffectValueInfo{
+		Value:     proto.Int64(GetEffectAttrValue(skillAutoCfg.Attr_value_1, skillAutoCfg.Attr_value_1_variable_id, attrMap)),
+		ValueType: proto.Int32(skillAutoCfg.Attr_value_1_type),
+		Index:     proto.Int32(1),
+	})
 	return skillConfigInfo, nil
 }
