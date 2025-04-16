@@ -5,7 +5,7 @@ go 1.18
 require (
 	github.com/json-iterator/go v1.1.12
 	gitlab.ifreetalk.com/plate/definition v1.0.6
-	gitlab.ifreetalk.com/plate/excel v1.0.83-0.20250415140716-dfe8c43d85eb
+	gitlab.ifreetalk.com/plate/excel v1.0.83-0.20250416115013-dfa0c6ffb38f
 	gitlab.ifreetalk.com/plate/extra v1.1.7
 	gitlab.ifreetalk.com/plate/freetk v1.2.61
 	gitlab.ifreetalk.com/plate/io_interface v1.4.102-0.20250326074707-ac26a4cb5dba
