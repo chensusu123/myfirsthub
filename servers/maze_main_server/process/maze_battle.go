@@ -391,6 +391,7 @@ func GetUserBattleSkillInfo(logger fklog.FKLogI, skillId int32, attrMap map[int3
 			ValueType: proto.Int32(effectCfg.Attr_value_3_type),
 			Index:     proto.Int32(3),
 		})
+		skillEffectOther.IntervalTime = proto.Int32(int32(GetEffectAttrValue(effectCfg.Attr_value_8, effectCfg.Attr_value_8_variable_id, attrMap)))
 		skillInfo.SkillEffectOther = append(skillInfo.SkillEffectOther, skillEffectOther)
 	}
 
@@ -428,6 +429,7 @@ func GetUserBattleSkillInfo(logger fklog.FKLogI, skillId int32, attrMap map[int3
 			ValueType: proto.Int32(effectCfg.Attr_value_3_type),
 			Index:     proto.Int32(3),
 		})
+		SkillEffectSelf.IntervalTime = proto.Int32(int32(GetEffectAttrValue(effectCfg.Attr_value_8, effectCfg.Attr_value_8_variable_id, attrMap)))
 		skillInfo.SkillEffectSelf = append(skillInfo.SkillEffectSelf, SkillEffectSelf)
 	}
 	return skillInfo, actDamageConfigs, nil
@@ -507,6 +509,7 @@ func GetFoeBattleSkillInfo(logger fklog.FKLogI, skillId int32, attrMap map[int32
 			ValueType: proto.Int32(effectCfg.Attr_value_3_type),
 			Index:     proto.Int32(3),
 		})
+		skillEffectOther.IntervalTime = proto.Int32(int32(GetEffectAttrValue(effectCfg.Attr_value_8, effectCfg.Attr_value_8_variable_id, attrMap)))
 		skillInfo.SkillEffectOther = append(skillInfo.SkillEffectOther, skillEffectOther)
 	}
 
@@ -544,6 +547,7 @@ func GetFoeBattleSkillInfo(logger fklog.FKLogI, skillId int32, attrMap map[int32
 			ValueType: proto.Int32(effectCfg.Attr_value_3_type),
 			Index:     proto.Int32(3),
 		})
+		SkillEffectSelf.IntervalTime = proto.Int32(int32(GetEffectAttrValue(effectCfg.Attr_value_8, effectCfg.Attr_value_8_variable_id, attrMap)))
 		skillInfo.SkillEffectSelf = append(skillInfo.SkillEffectSelf, SkillEffectSelf)
 	}
 	return skillInfo, nil
