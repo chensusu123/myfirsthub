@@ -205,7 +205,7 @@ func SendMazeBarrierChgPack(logger fklog.FKLogI, userId uint64, mazeBattleInfo *
 	moneyPack := &MazeAIBattle.MazeBarrierInfoChangeID{
 		MazeBarrierInfo: mazeBattleInfo,
 	}
-	logger.InfoWF("SendMazeBarrierChgPack send client with", zap.Any("moneyPack", moneyPack))
+	logger.InfoWF("SendMazeBarrierChgPack send client with", zap.Uint64("userId", userId), zap.Any("moneyPack", moneyPack))
 	return commonmustarriveredis.SendArrivePacketFix(userId, 16172, moneyPack)
 }
 
