@@ -3,8 +3,6 @@ package process
 import (
 	"gitlab.ifreetalk.com/maze/maze_game_server/common/constdef"
 	"gitlab.ifreetalk.com/maze/maze_game_server/io/redis/mazebarriertempbuffredis"
-	"gitlab.ifreetalk.com/maze/maze_game_server/io/redis/mazecalcattrredis"
-	"gitlab.ifreetalk.com/maze/maze_game_server/module/mazehurtcalc"
 	"gitlab.ifreetalk.com/plate/excel/auto/GMazeActInfoV8Cfg"
 	"gitlab.ifreetalk.com/plate/excel/auto/GMazeAttrSkillV8Cfg"
 	"gitlab.ifreetalk.com/plate/excel/auto/GMazeBrushFoeV8Cfg"
@@ -27,11 +25,6 @@ func GetMazeBattleData(logger fklog.FKLogI, userId uint64, barrierId int32) (maz
 	mazeBattleInfo = &MazeAIBattle.MazeBarrierInfo{
 		BarrierId: proto.Int32(barrierId),
 	}
-	forceVal, err := mazecalcattrredis.GetMazeForce(logger, userId)
-	if err != nil {
-		logger.ErrorWF("GetMazeBattleData GetMazeForce fail", zap.Error(err))
-		return nil, err
-	}
 	userAttrMap, err := GetUserAttrMap(logger, userId)
 	if err != nil {
 		logger.ErrorWF("GetMazeBattleData GetUserAttrMap err", zap.Error(err))
@@ -48,47 +41,15 @@ func GetMazeBattleData(logger fklog.FKLogI, userId uint64, barrierId int32) (maz
 	}
 
 	userStiffRatio := userAttrMap[constdef.MazeAttr3000101]
-	userTotalBlood := userAttrMap[constdef.DollFormulaBlood]
-	areaFoeMap := make(map[int32]map[int32]struct{})
-	for _, cfg := range GMazeBrushFoeV8Cfg.GetAll() {
-		if cfg.Barries_id != barrierId {
-			continue
-		}
-		if areaFoeMap[cfg.Brush_area_id] == nil {
-			areaFoeMap[cfg.Brush_area_id] = make(map[int32]struct{})
-		}
-		for _, foeId := range cfg.Monsters_id {
-			areaFoeMap[cfg.Brush_area_id][foeId] = struct{}{}
-		}
-	}
-	for areaId, foeMap := range areaFoeMap {
-		areaInfo := &MazeAIBattle.MazeAIAreaInfo{
-			AreaId: proto.Int32(areaId),
-		}
-		areaInfo.MonsterConfigInfos = make([]*MazeAIBattle.MazeAIMonsterConfigInfo, 0)
-		//areaInfo.BrushConfigInfo = &MazeAIBattle.MazeAIBrushAreaConfigInfo{
-		//	FirstFoe: proto.Int32(cfg.First_foe),
-		//	MinFoe:   proto.Int32(cfg.Min_foe),
-		//	MaxFoe:   proto.Int32(cfg.Max_foe),
-		//	BrushCd:  proto.Int32(cfg.Brush_cd),
-		//}
-		for foeId := range foeMap {
-			monsterConfigInfo, err := GetMazeAIMonsterConfig(logger, userId, foeId, forceVal, userStiffRatio, userTotalBlood)
-			if err != nil {
-				logger.ErrorWF("GetMazeBattleData GetMazeAIMonsterConfig err", zap.Any("foeId", foeId))
-				return nil, err
-			}
-			areaInfo.MonsterConfigInfos = append(areaInfo.MonsterConfigInfos, monsterConfigInfo)
-			//areaInfo.BrushConfigInfo.FoePool = append(areaInfo.BrushConfigInfo.FoePool, &MazeAIBattle.BrushFoePoolInfo{
-			//	MonsterId:    proto.Int32(foeId),
-			//	MonsterCount: proto.Int32(count),
-			//})
-		}
-		mazeBattleInfo.AreaInfos = append(mazeBattleInfo.AreaInfos, areaInfo)
-	}
-	userAttrInfo, err := GetUserAttrInfo(logger, userId, forceVal, userAttrMap)
+	areaInfos,err := GetFoeAreaInfos(logger, userId,barrierId,userStiffRatio)
 	if err != nil {
-		logger.ErrorWF("GetMazeBattleData GetUserAttrInfo err", zap.Error(err), zap.Any("userId", userId), zap.Any("forceVal", forceVal))
+		logger.ErrorWF("GetMazeBattleData GetFoeAreaInfos err", zap.Any("barrierId", barrierId), zap.Error(err))
+		return nil, err
+	}
+	mazeBattleInfo.AreaInfos = areaInfos
+	userAttrInfo, err := GetUserAttrInfo(logger, userId, userAttrMap)
+	if err != nil {
+		logger.ErrorWF("GetMazeBattleData GetUserAttrInfo err", zap.Error(err), zap.Any("userId", userId))
 		return nil, err
 	}
 	mazeBattleInfo.RoleConfigInfo = userAttrInfo
@@ -99,7 +60,7 @@ func GetMazeBattleData(logger fklog.FKLogI, userId uint64, barrierId int32) (maz
 		if cfg.Foe_type == 1 {
 			continue
 		}
-		eliteMonsterConfig, err := GetMazeAIMonsterConfig(logger, userId, cfg.Order, forceVal, userStiffRatio, userTotalBlood)
+		eliteMonsterConfig, err := GetMazeAIMonsterConfig(logger, userId, cfg.Order, userStiffRatio)
 		if err != nil {
 			logger.ErrorWF("GetMazeBattleData GetMazeAIMonsterConfig err", zap.Any("foeId", cfg.Order))
 			return nil, err
@@ -131,22 +92,43 @@ func GetMazeBattleData(logger fklog.FKLogI, userId uint64, barrierId int32) (maz
 	return mazeBattleInfo, nil
 }
 
+func GetFoeAreaInfos(logger fklog.FKLogI, userId uint64, barrierId int32, userStiffRatio int64) ([]*MazeAIBattle.MazeAIAreaInfo, error) {
+	areaInfos := make([]*MazeAIBattle.MazeAIAreaInfo,0)
+	areaFoeMap := make(map[int32]map[int32]struct{})
+	for _, cfg := range GMazeBrushFoeV8Cfg.GetAll() {
+		if cfg.Barries_id != barrierId {
+			continue
+		}
+		if areaFoeMap[cfg.Brush_area_id] == nil {
+			areaFoeMap[cfg.Brush_area_id] = make(map[int32]struct{})
+		}
+		for _, foeId := range cfg.Monsters_id {
+			areaFoeMap[cfg.Brush_area_id][foeId] = struct{}{}
+		}
+	}
+	for areaId, foeMap := range areaFoeMap {
+		areaInfo := &MazeAIBattle.MazeAIAreaInfo{
+			AreaId: proto.Int32(areaId),
+		}
+		areaInfo.MonsterConfigInfos = make([]*MazeAIBattle.MazeAIMonsterConfigInfo, 0)
+		for foeId := range foeMap {
+			monsterConfigInfo, err := GetMazeAIMonsterConfig(logger, userId, foeId, userStiffRatio)
+			if err != nil {
+				logger.ErrorWF("GetMazeBattleData GetMazeAIMonsterConfig err", zap.Any("foeId", foeId))
+				return nil, err
+			}
+			areaInfo.MonsterConfigInfos = append(areaInfo.MonsterConfigInfos, monsterConfigInfo)
+		}
+		areaInfos = append(areaInfos, areaInfo)
+	}
+	return areaInfos, nil
+}
+
 // todo 技能公共cd
-func GetMazeAIMonsterConfig(logger fklog.FKLogI, userId uint64, foeId int32, forceVal int64, userStiffRatio int64, userTotalBlood int64) (*MazeAIBattle.MazeAIMonsterConfigInfo, error) {
+func GetMazeAIMonsterConfig(logger fklog.FKLogI, userId uint64, foeId int32, userStiffRatio int64) (*MazeAIBattle.MazeAIMonsterConfigInfo, error) {
 	foeCfg := GMazeFoeV8Cfg.Get(foeId)
 	if foeCfg == nil {
 		logger.ErrorWF("GetMazeAIMonsterConfig GMazeFoeV8Cfg err", zap.Any("foeId", foeId))
-		return nil, errors.New("配置不存在")
-	}
-	p1 := mazehurtcalc.MazeAttrInfo{}
-	p1.Force = forceVal
-	p1.Hp = userTotalBlood
-	p2 := mazehurtcalc.MazeAttrInfo{}
-	p2.Force = int64(foeCfg.Kongfu)
-	p2.Hp = int64(foeCfg.Hp_max)
-	r, e := mazehurtcalc.CalcLoseHurt(logger, foeCfg.Hp_lose_type, &p1, &p2)
-	if e != nil {
-		logger.ErrorWF("GetMazeAIMonsterConfig CalcLoseHurt err", zap.Any("foeId", foeId), zap.Error(e))
 		return nil, errors.New("配置不存在")
 	}
 	monsterConfigInfo := &MazeAIBattle.MazeAIMonsterConfigInfo{
@@ -154,8 +136,6 @@ func GetMazeAIMonsterConfig(logger fklog.FKLogI, userId uint64, foeId int32, for
 	}
 	attackValue := &MazeAIBattle.MazeAIAttackValue{
 		ConfigId:          proto.Int32(foeId),
-		MonsterValue:      proto.Int64(r.PlayerLoseHurt),
-		UserBaseValue:     proto.Int64(r.FoeLoseHurt),
 		MaxHp:             proto.Int64(int64(foeCfg.Hp_max)),
 		MonsterStiffRatio: proto.Int64(int64(foeCfg.Tough_max)),
 		UserStiffRatio:    proto.Int64(userStiffRatio),
@@ -207,14 +187,7 @@ func GetMazeAIMonsterConfig(logger fklog.FKLogI, userId uint64, foeId int32, for
 	return monsterConfigInfo, nil
 }
 
-func GetUserAttrInfo(logger fklog.FKLogI, userId uint64, forceVal int64, userAttrMap map[int32]int64) (*MazeAIBattle.MazeAIRoleConfigInfo, error) {
-	//displayLevel := int32(1)
-	//for _, cfg := range GMazeKongfuDisplayV8Cfg.GetAll() {
-	//	if forceVal >= cfg.Kongfu_min && forceVal <= cfg.Kongfu_max {
-	//		displayLevel = cfg.Display_level
-	//		break
-	//	}
-	//}
+func GetUserAttrInfo(logger fklog.FKLogI, userId uint64, userAttrMap map[int32]int64) (*MazeAIBattle.MazeAIRoleConfigInfo, error) {
 	skillIds := make([]int32, 0)
 	autoSkillId := make([]int32, 0)
 	for _, cfg := range GMazeSkillInfoV8Cfg.GetAll() {
@@ -239,7 +212,7 @@ func GetUserAttrInfo(logger fklog.FKLogI, userId uint64, forceVal int64, userAtt
 	userAttrInfo := &MazeAIBattle.MazeAIUserAttrInfo{}
 	attrMap, err := GetUserBattleAttr(logger, userId, userAttrMap)
 	if err != nil {
-		logger.WarnWF("GetUserBattleAttr BatchGetDollCalcAttr nil", zap.Uint64("userId", userId), zap.Any("forceVal", forceVal))
+		logger.WarnWF("GetUserBattleAttr BatchGetDollCalcAttr nil", zap.Uint64("userId", userId))
 		return nil, err
 	}
 	if attrMap[constdef.DollFormulaBlood] != nil {
