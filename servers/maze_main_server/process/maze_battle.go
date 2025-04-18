@@ -237,7 +237,7 @@ func GetUserAttrInfo(logger fklog.FKLogI, userId uint64, forceVal int64, userAtt
 	}
 	roleConfigInfo := &MazeAIBattle.MazeAIRoleConfigInfo{}
 	userAttrInfo := &MazeAIBattle.MazeAIUserAttrInfo{}
-	attrMap, err := GetUserBattleAttr(logger, userId, skillIds, userAttrMap)
+	attrMap, err := GetUserBattleAttr(logger, userId, userAttrMap)
 	if err != nil {
 		logger.WarnWF("GetUserBattleAttr BatchGetDollCalcAttr nil", zap.Uint64("userId", userId), zap.Any("forceVal", forceVal))
 		return nil, err
@@ -257,6 +257,23 @@ func GetUserAttrInfo(logger fklog.FKLogI, userId uint64, forceVal int64, userAtt
 	userSkillInfo.SkillInfoList = make([]*MazeAIBattle.MazeAISkillInfo, 0)
 	userSkillInfo.AutoSkillInfoList = make([]*MazeAIBattle.MazeAIAutoSkillInfo, 0)
 	actDamageConfigList := make([]*MazeAIBattle.MazeAIActAttackValue, 0)
+	for _, skillId := range autoSkillId{
+		if skillId == 0 {
+			continue
+		}
+		autoSkillInfo,err := GetMazeAIAutoSkillInfo(logger,skillId, userAttrMap)
+		if err != nil{
+			logger.WarnWF("GetUserBattleAttr GetMazeAIAutoSkillInfo nil", zap.Uint64("userId", userId), zap.Any("skillId", skillId))
+			return nil, err
+		}
+		userSkillInfo.AutoSkillInfoList = append(userSkillInfo.AutoSkillInfoList, autoSkillInfo)
+	}
+	for _,skillInfo := range userSkillInfo.AutoSkillInfoList{
+		if len(skillInfo.TriggerSkillId) <= 0{
+			continue
+		}
+		skillIds = append(skillIds,skillInfo.TriggerSkillId...)
+	}
 	for _, skillId := range skillIds {
 		if skillId == 0 {
 			continue
@@ -268,17 +285,6 @@ func GetUserAttrInfo(logger fklog.FKLogI, userId uint64, forceVal int64, userAtt
 		}
 		userSkillInfo.SkillInfoList = append(userSkillInfo.SkillInfoList, skillInfo)
 		actDamageConfigList = append(actDamageConfigList, actDamageConfigs...)
-	}
-	for _, skillId := range autoSkillId{
-		if skillId == 0 {
-			continue
-		}
-		autoSkillInfo,err := GetMazeAIAutoSkillInfo(logger,skillId, userAttrMap)
-		if err != nil{
-			logger.WarnWF("GetUserBattleAttr GetMazeAIAutoSkillInfo nil", zap.Uint64("userId", userId), zap.Any("skillId", skillId))
-			return nil, err
-		}
-		userSkillInfo.AutoSkillInfoList = append(userSkillInfo.AutoSkillInfoList, autoSkillInfo)
 	}
 	roleConfigInfo.UserSkillInfo = userSkillInfo
 	roleConfigInfo.ActDamageConfig = actDamageConfigList

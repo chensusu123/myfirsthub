@@ -35,7 +35,7 @@ func GetUserAttrMap(logger fklog.FKLogI, userId uint64) (map[int32]int64, error)
 	}
 	return attrMap, nil
 }
-func GetUserBattleAttr(logger fklog.FKLogI, userId uint64, skillIds []int32, userAttrMap map[int32]int64) (map[int32]*MazeAIBattle.MazeAIAttrInfo, error) {
+func GetUserBattleAttr(logger fklog.FKLogI, userId uint64, userAttrMap map[int32]int64) (map[int32]*MazeAIBattle.MazeAIAttrInfo, error) {
 	attrTypeMap := GetAttrType()
 	attrMap := make(map[int32]*MazeAIBattle.MazeAIAttrInfo, 0)
 	for attrId, attrVal := range userAttrMap {
