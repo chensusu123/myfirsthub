@@ -2,6 +2,7 @@ package process
 
 import (
 	"fmt"
+	"gitlab.ifreetalk.com/maze/maze_game_server/io/kafka/mazecollectrecord"
 	"strings"
 	"time"
 
@@ -199,6 +200,7 @@ func ItemCollect(logger fklog.FKLogI, userId uint64, collectInfo *MazeCollectCac
 		return
 	}
 
+	PushDollMazeCollectInfoLog(logger,userId,collectInfo,lastTime,collectTimes,mazecollectrecord.MazeCollectTimeOut,0,nil,0)
 	return
 }
 

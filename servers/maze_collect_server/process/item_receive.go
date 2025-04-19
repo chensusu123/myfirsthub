@@ -2,6 +2,7 @@ package process
 
 import (
 	"fmt"
+	"gitlab.ifreetalk.com/maze/maze_game_server/io/kafka/mazecollectrecord"
 	"time"
 
 	"gitlab.ifreetalk.com/maze/maze_game_server/common/function/gentradeno"
@@ -110,8 +111,8 @@ func OnMazeCollectItemReceiveRQ(ctx fknet.TCPContext, userId uint64, rq proto.Me
 	errInfo := gentradeno.AddItemEx(userCtx, userCtx.UserID, 692, tradeNo, req.Header, items...)
 	if errInfo != nil {
 		ctx.ErrorWF("GetAllEquipDismantleAward AddItemEx fail", zap.Any("items", items))
-		res.ErrInfo = errInfo
-		return nil
+		//res.ErrInfo = errInfo
+		//return nil
 	}
 
 	mazeCollectInfoPb, err := MazeCollectToCliPB(ctx, resetCollectInfo, userInfo.PassBarrier)
@@ -120,6 +121,7 @@ func OnMazeCollectItemReceiveRQ(ctx fknet.TCPContext, userId uint64, rq proto.Me
 		return
 	}
 	res.MazeCollectInfo = mazeCollectInfoPb
+	PushDollMazeCollectInfoLog(userCtx,userId,resetCollectInfo,collectInfo.GetLastTime(),0,mazecollectrecord.MazeCollectReceive,tradeNo,items,0)
 	return
 }
 

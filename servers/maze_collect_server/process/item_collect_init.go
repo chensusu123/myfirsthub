@@ -1,6 +1,7 @@
 package process
 
 import (
+	"gitlab.ifreetalk.com/maze/maze_game_server/io/kafka/mazecollectrecord"
 	"time"
 
 	"gitlab.ifreetalk.com/maze/maze_game_server/io/redis/mazecollectredis"
@@ -54,6 +55,7 @@ func InitMazeCollectLand(logger fklog.FKLogI, userId uint64, barrierId int32) (e
 		logger.ErrorWF("InitMazeCollectLand SetCollectTimer err", zap.Any("collectInfo", collectInfo), zap.Error(err))
 		return
 	}
+	PushDollMazeCollectInfoLog(logger,userId,collectInfo,collectInfo.GetLastTime(),0,mazecollectrecord.MazeCollectInit,0,nil,0)
 
 	pack := &MazeCollect.MazeCollectOpenID{
 		FreshTime: proto.Int64(GetFreshTime(collectInfo)),
