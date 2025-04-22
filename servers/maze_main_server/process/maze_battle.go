@@ -602,5 +602,10 @@ func GetMazeAIAutoSkillInfo(logger fklog.FKLogI, skillId int32, attrMap map[int3
 		ValueType: proto.Int32(skillAutoCfg.Attr_value_1_type),
 		Index:     proto.Int32(1),
 	})
+	skillConfigInfo.ValueList = append(skillConfigInfo.ValueList, &MazeAIBattle.MazeAIEffectValueInfo{
+		Value:     proto.Int64(GetEffectAttrValue(skillAutoCfg.Attr_value_8, skillAutoCfg.Attr_value_8_variable_id, attrMap)),
+		ValueType: proto.Int32(skillAutoCfg.Attr_value_8_type),
+		Index:     proto.Int32(8),
+	})
 	return skillConfigInfo, nil
 }
