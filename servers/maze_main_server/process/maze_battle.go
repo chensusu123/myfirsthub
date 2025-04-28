@@ -41,7 +41,7 @@ func GetMazeBattleData(logger fklog.FKLogI, userId uint64, barrierId int32) (maz
 	}
 
 	userStiffRatio := userAttrMap[constdef.MazeAttr3000101]
-	areaInfos,err := GetFoeAreaInfos(logger, userId,barrierId,userStiffRatio)
+	areaInfos, err := GetFoeAreaInfos(logger, userId, barrierId, userStiffRatio)
 	if err != nil {
 		logger.ErrorWF("GetMazeBattleData GetFoeAreaInfos err", zap.Any("barrierId", barrierId), zap.Error(err))
 		return nil, err
@@ -93,7 +93,7 @@ func GetMazeBattleData(logger fklog.FKLogI, userId uint64, barrierId int32) (maz
 }
 
 func GetFoeAreaInfos(logger fklog.FKLogI, userId uint64, barrierId int32, userStiffRatio int64) ([]*MazeAIBattle.MazeAIAreaInfo, error) {
-	areaInfos := make([]*MazeAIBattle.MazeAIAreaInfo,0)
+	areaInfos := make([]*MazeAIBattle.MazeAIAreaInfo, 0)
 	areaFoeMap := make(map[int32]map[int32]struct{})
 	for _, cfg := range GMazeBrushFoeV8Cfg.GetAll() {
 		if cfg.Barries_id != barrierId {
@@ -309,23 +309,24 @@ func GetUserBattleSkillInfo(logger fklog.FKLogI, skillId int32, attrMap map[int3
 	}
 	//todo 缺少触发cd
 	skillInfo := &MazeAIBattle.MazeAISkillInfo{
-		SkillId:                proto.Int32(skillCfg.Id),
-		SkillGroup:             proto.Int32(skillCfg.Group),
-		CampType:               proto.Int32(skillCfg.Target_type),
-		TargetType:             proto.Int32(skillCfg.Scope_type),
-		RangeRadius:            proto.Int32(skillCfg.Scope_param1),
-		ReleaseDistance:        proto.Int32(skillCfg.Distance_max),
-		ReleaseCd:              proto.Int32(0),
-		TargetMaxCount:         proto.Int32(skillCfg.Target_num),
-		CanReleaseState:        skillCfg.Is_allow,
-		CanReleaseTargetState:  skillCfg.Is_target,
-		MainTargetDamageRate:   proto.Int32(skillCfg.Main_target_damage),
-		SecondTargetDamageRate: proto.Int32(skillCfg.Second_target_damage),
-		SkillDamageFixed:       proto.Int32(skillCfg.Main_target_damage_fix),
-		SkillMappingActionId:   skillActCfg.Act_id,
-		Level:                  proto.Int32(skillCfg.Level),
-		SkillType:              proto.Int32(skillCfg.Type),
-		SkillMappingEffectId:   proto.Int32(skillActCfg.Effect_id),
+		SkillId:                      proto.Int32(skillCfg.Id),
+		SkillGroup:                   proto.Int32(skillCfg.Group),
+		CampType:                     proto.Int32(skillCfg.Target_type),
+		TargetType:                   proto.Int32(skillCfg.Scope_type),
+		RangeRadius:                  proto.Int32(skillCfg.Scope_param1),
+		ReleaseDistance:              proto.Int32(skillCfg.Distance_max),
+		ReleaseCd:                    proto.Int32(0),
+		TargetMaxCount:               proto.Int32(skillCfg.Target_num),
+		CanReleaseState:              skillCfg.Is_allow,
+		CanReleaseTargetState:        skillCfg.Is_target,
+		MainTargetDamageRate:         proto.Int32(skillCfg.Main_target_damage),
+		SecondTargetDamageRate:       proto.Int32(skillCfg.Second_target_damage),
+		SkillDamageFixed:             proto.Int32(skillCfg.Main_target_damage_fix),
+		SkillMappingActionId:         skillActCfg.Act_id,
+		Level:                        proto.Int32(skillCfg.Level),
+		SkillType:                    proto.Int32(skillCfg.Type),
+		SkillMappingEffectId:         proto.Int32(skillActCfg.Effect_id),
+		SecondTargetSkillDamageFixed: proto.Int32(skillCfg.Second_target_damage_fix),
 	}
 	for k, v := range skillCfg.Target_effect_pro {
 		if k == 0 {
@@ -428,23 +429,24 @@ func GetFoeBattleSkillInfo(logger fklog.FKLogI, skillId int32, attrMap map[int32
 	}
 	//todo 缺少触发cd
 	skillInfo := &MazeAIBattle.MazeAISkillInfo{
-		SkillId:                proto.Int32(skillCfg.Id),
-		SkillGroup:             proto.Int32(skillCfg.Group),
-		CampType:               proto.Int32(skillCfg.Target_type),
-		TargetType:             proto.Int32(skillCfg.Scope_type),
-		RangeRadius:            proto.Int32(skillCfg.Scope_param1),
-		ReleaseDistance:        proto.Int32(skillCfg.Distance_max),
-		ReleaseCd:              proto.Int32(0),
-		TargetMaxCount:         proto.Int32(skillCfg.Target_num),
-		CanReleaseState:        skillCfg.Is_allow,
-		CanReleaseTargetState:  skillCfg.Is_target,
-		MainTargetDamageRate:   proto.Int32(skillCfg.Main_target_damage),
-		SecondTargetDamageRate: proto.Int32(skillCfg.Second_target_damage),
-		SkillDamageFixed:       proto.Int32(skillCfg.Main_target_damage_fix),
-		SkillMappingActionId:   skillActCfg.Act_id,
-		Level:                  proto.Int32(skillCfg.Level),
-		SkillType:              proto.Int32(skillCfg.Type),
-		SkillMappingEffectId:   proto.Int32(skillActCfg.Effect_id),
+		SkillId:                      proto.Int32(skillCfg.Id),
+		SkillGroup:                   proto.Int32(skillCfg.Group),
+		CampType:                     proto.Int32(skillCfg.Target_type),
+		TargetType:                   proto.Int32(skillCfg.Scope_type),
+		RangeRadius:                  proto.Int32(skillCfg.Scope_param1),
+		ReleaseDistance:              proto.Int32(skillCfg.Distance_max),
+		ReleaseCd:                    proto.Int32(0),
+		TargetMaxCount:               proto.Int32(skillCfg.Target_num),
+		CanReleaseState:              skillCfg.Is_allow,
+		CanReleaseTargetState:        skillCfg.Is_target,
+		MainTargetDamageRate:         proto.Int32(skillCfg.Main_target_damage),
+		SecondTargetDamageRate:       proto.Int32(skillCfg.Second_target_damage),
+		SkillDamageFixed:             proto.Int32(skillCfg.Main_target_damage_fix),
+		SkillMappingActionId:         skillActCfg.Act_id,
+		Level:                        proto.Int32(skillCfg.Level),
+		SkillType:                    proto.Int32(skillCfg.Type),
+		SkillMappingEffectId:         proto.Int32(skillActCfg.Effect_id),
+		SecondTargetSkillDamageFixed: proto.Int32(skillCfg.Second_target_damage_fix),
 	}
 	for k, v := range skillCfg.Target_effect_pro {
 		if k == 0 {

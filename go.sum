@@ -223,6 +223,8 @@ gitlab.ifreetalk.com/plate/protodef v1.0.88-0.20250415131722-2f8f2eb04618 h1:Hir
 gitlab.ifreetalk.com/plate/protodef v1.0.88-0.20250415131722-2f8f2eb04618/go.mod h1:PPI4xcnIz1/Vy4pJeKekYyMupq4U2yE5NNU+TnovEjg=
 gitlab.ifreetalk.com/plate/protodef v1.0.88-0.20250416113530-fe6c7564ad5e h1:HgYTKiaueQ5yNQgOaVVGGnlgDJ+MHrzPIZ3Gaj4DukQ=
 gitlab.ifreetalk.com/plate/protodef v1.0.88-0.20250416113530-fe6c7564ad5e/go.mod h1:PPI4xcnIz1/Vy4pJeKekYyMupq4U2yE5NNU+TnovEjg=
+gitlab.ifreetalk.com/plate/protodef v1.0.88-0.20250428071505-c13e9e413d31 h1:dEHCPAViAlFaI8xRGB/ihZjjzPy+6tO0FkQLY4d1Dow=
+gitlab.ifreetalk.com/plate/protodef v1.0.88-0.20250428071505-c13e9e413d31/go.mod h1:PPI4xcnIz1/Vy4pJeKekYyMupq4U2yE5NNU+TnovEjg=
 go.uber.org/atomic v1.6.0 h1:Ezj3JGmsOnG1MoRWQkPBsKLe9DwWD9QeXzTRzzldNVk=
 go.uber.org/atomic v1.6.0/go.mod h1:sABNBOSYdrvTF6hTgEIbc7YasKWGhgEQZyfxyTvoXHQ=
 go.uber.org/multierr v1.5.0 h1:KCa4XfM8CWFCpxXRGok+Q0SS/0XBhMDbHHGABQLvD2A=
