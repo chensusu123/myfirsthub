@@ -32,8 +32,7 @@ func RegGm(logger fklog.FKLogI) {
 		oldExp := userInfo.TotalExp
 
 		//更新等级经验
-		userInfo.TotalExp += exp
-		err = userInfo.CalExp()
+		err = userInfo.AddExp(exp)
 		if err != nil {
 			logger.ErrorWF("AddExp CalExp fail", zap.Error(err))
 			writer.Write([]byte(err.Error()))
