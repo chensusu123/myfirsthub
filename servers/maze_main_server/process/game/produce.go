@@ -1,4 +1,4 @@
-package process
+package game
 
 // // 进出区域、心跳、打怪等生产变化掉用
 // func StopMazeProduce(logger fklog.FKLogI, userId uint64) (err error) {

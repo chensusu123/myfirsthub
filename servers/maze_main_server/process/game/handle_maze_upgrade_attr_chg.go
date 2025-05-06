@@ -4,7 +4,7 @@
  * @Last Modified by: majian
  * @Last Modified time: 2025-03-28 16:22:04
  */
-package process
+package game
 
 import (
 	"gitlab.ifreetalk.com/maze/maze_game_server/common/structsdef"

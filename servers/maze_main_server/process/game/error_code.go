@@ -1,4 +1,4 @@
-package process
+package game
 
 const (
 	ERROR_CODE_NOT_IN_HIGH_AREA      int64 = 80001 //不在最高区域

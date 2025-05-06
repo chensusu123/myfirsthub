@@ -5,7 +5,7 @@
  * @Last Modified time: 2025-03-25 15:03:02
  * @Desc 游戏复活
  */
-package process
+package game
 
 import (
 	"sort"

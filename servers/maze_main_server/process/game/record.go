@@ -1,4 +1,4 @@
-package process
+package game
 
 // func PushDollMazeShopInfoLog(logger fklog.FKLogI, userId uint64, areaId int32, mazeShopInfo *dollmazeshopseqredis.MazeShopInfo, addEquipList []*MazeEquipSvr.MazeEquipInfoSvr, opType int32, tradeNumber uint64, retCode int32) error {
 // 	addEquipGuidStr := make([]string, 0)

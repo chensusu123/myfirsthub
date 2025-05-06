@@ -4,7 +4,7 @@
  * @Last Modified by: majian
  * @Last Modified time: 2025-03-20 13:47:21
  */
-package process
+package game
 
 import (
 	"context"

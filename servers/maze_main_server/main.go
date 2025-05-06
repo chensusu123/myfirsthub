@@ -2,6 +2,7 @@ package main
 
 import (
 	"gitlab.ifreetalk.com/maze/maze_game_server/servers/maze_main_server/process"
+	"gitlab.ifreetalk.com/maze/maze_game_server/servers/maze_main_server/process/game"
 	"gitlab.ifreetalk.com/plate/freetk/fkcore/fklog"
 	"gitlab.ifreetalk.com/plate/freetk/fkserver"
 	"gitlab.ifreetalk.com/plate/freetk/fkserver/exportlogservice"
@@ -28,12 +29,12 @@ func main() {
 	kafka_consumer.PlugKafkaConsumer("maze_user_attr_chg_msg",
 		1001083,
 		kafka_consumer.WithGroup(fkserver.MonitorName),
-		kafka_consumer.WithKafkaCustomKeyContent(process.HandleUserAttrMsg))
+		kafka_consumer.WithKafkaCustomKeyContent(game.HandleUserAttrMsg))
 
 	kafka_consumer.PlugKafkaConsumer("maze_temp_buff_chg_msg",
 		1001104,
 		kafka_consumer.WithGroup(fkserver.MonitorName),
-		kafka_consumer.WithKafkaCustomKeyContent(process.HandleTempBuffMsg))
+		kafka_consumer.WithKafkaCustomKeyContent(game.HandleTempBuffMsg))
 
 	fkserver.Run()
 }

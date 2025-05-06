@@ -1,4 +1,4 @@
-package process
+package game
 
 import (
 	"gitlab.ifreetalk.com/maze/maze_game_server/module/mazeuserbarrier"
