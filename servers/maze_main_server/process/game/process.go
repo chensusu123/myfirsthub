@@ -1,6 +1,8 @@
 package game
 
 import (
+	"gitlab.ifreetalk.com/plate/freetk/fkserver"
+	"gitlab.ifreetalk.com/plate/freetk/fkserver/kafka_consumer"
 	"gitlab.ifreetalk.com/plate/freetk/fkserver/tcp_service"
 	"gitlab.ifreetalk.com/plate/protodef/MazeGame"
 )
@@ -120,4 +122,22 @@ func RegTcpHandler() {
 func RegisterRpcPackProcessor() {
 	// thrift_service.RegisterTwowaySimple(131421, &MazeEquipSvr.SvrAddMazeEquipRQ{},
 	// 	131422, &MazeEquipSvr.SvrAddMazeEquipRS{}, OnSvrAddMazeEquipRQ)
+}
+
+func RegConsumeHandler() {
+	// // 1001071 topic-doll-attr-chg-notify-msg 人偶属性变化通知消息
+	// kafka_consumer.PlugKafkaConsumer("user_attr_chg_msg",
+	// 	1001071,
+	// 	kafka_consumer.WithGroup(fkserver.MonitorName),
+	// 	kafka_consumer.WithKafkaCustomKeyContent(process.HandleUserAttrMsg))
+	// 1001083 topic-maze-attr-chg-notify-msg 迷宫属性变化通知消息
+	kafka_consumer.PlugKafkaConsumer("maze_user_attr_chg_msg",
+		1001083,
+		kafka_consumer.WithGroup(fkserver.MonitorName),
+		kafka_consumer.WithKafkaCustomKeyContent(HandleUserAttrMsg))
+
+	kafka_consumer.PlugKafkaConsumer("maze_temp_buff_chg_msg",
+		1001104,
+		kafka_consumer.WithGroup(fkserver.MonitorName),
+		kafka_consumer.WithKafkaCustomKeyContent(HandleTempBuffMsg))
 }
