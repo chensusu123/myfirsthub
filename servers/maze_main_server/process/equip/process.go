@@ -46,7 +46,7 @@ func RegRpcHandler() {
 func RegConsumeHandler() {
 	_ = kafka_consumer.PlugKafkaConsumer("maze_lv_chg",
 		1001084,
-		kafka_consumer.WithGroup(fkserver.MonitorName),
+		kafka_consumer.WithGroup(fkserver.GroupNameGO+"."+fkserver.ProjectNamePPWD+".maze_equip_main_server"),
 		kafka_consumer.WithKafkaCustomKeyContent(HandleMazeLvChg))
 }
 
