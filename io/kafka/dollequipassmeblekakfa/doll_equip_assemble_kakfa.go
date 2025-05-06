@@ -1,0 +1,63 @@
+package dollequipassmeblekakfa
+
+import (
+	"time"
+
+	jsoniter "github.com/json-iterator/go"
+	"gitlab.ifreetalk.com/plate/freetk/fkcore/fkafka"
+	"gitlab.ifreetalk.com/plate/freetk/fkcore/fkconfig"
+	"gitlab.ifreetalk.com/plate/freetk/fkcore/fklog"
+	"go.uber.org/zap"
+)
+
+var kp = &fkafka.KafkaProducer{}
+var json = jsoniter.ConfigCompatibleWithStandardLibrary
+
+func init() {
+	// 1001087 topic-maze-game-equip-assemble-chg-record 迷宫游戏装备装配流水
+	// 3548  db_doll_equip_assemble_chg_log 人偶装备装配流水
+	fkconfig.RegisterNameNode("dollequipassmeblekakfa", 1001087, kp)
+}
+
+const (
+	DollEquipAssembleOpDress    int32 = 1    // 穿戴装备
+	DollEquipAssembleOpReplace  int32 = 2    // 更换装备
+	DollEquipAssembleOpDown     int32 = 3    // 卸下装备
+	DollEquipAssembleOpIdentify int32 = 4    // 鉴定装备
+	DollEquipAssembleOpInit     int32 = 5    // 初始穿戴
+	DollEquipAssembleOpBag      int32 = 1000 // 背包操作最终类型= DollEquipAssembleOpBag+ 背包ENUM_EQUIP_BAG_OP_TYPE
+)
+
+type MazeGameEquipAssembleRecord struct {
+	UserId     uint64 `json:"user_id"`      // 用户Id
+	GroupId    uint32 `json:"group_id"`     // 分组ID  当时服务分片所属分组
+	EquipPos   int32  `json:"equip_pos"`    // 装备位ID
+	OpType     int32  `json:"op_type"`      // 穿戴装备/更换装备/卸下装备
+	NewEquipId int32  `json:"new_equip_id"` // 穿戴装备配置ID
+	NewGuid    uint64 `json:"new_guid"`     // 穿戴装备guid
+	OldEquipId int32  `json:"old_equip_id"` // 卸下装备配置ID
+	OldGuid    uint64 `json:"old_guid"`     // 卸下装备guid
+	OldFElem   string `json:"old_f_elem"`   // 变化前激活信息
+	NewFElem   string `json:"new_f_elem"`   // 变化后激活信息
+	RetCode    int32  `json:"ret_code"`     // 0:成功  其他失败
+	CodeMask   int32  `json:"code_mask"`    // 业务掩码
+	TransID    uint64 `json:"trans_id"`     // 事务Id
+	OpTime     int64  `json:"op_time"`      // 流水时间戳
+}
+
+func SendMazeGameEquipAssembleRecord(logger fklog.FKLogI, record *MazeGameEquipAssembleRecord) error {
+	record.GroupId = fkconfig.EnvVal.GroupID
+	record.OpTime = time.Now().UnixNano() / 1000000
+	jbs, e := json.Marshal(record)
+	if e != nil {
+		logger.ErrorWF("SendMazeGameEquipAssembleRecord Marshal fail", zap.Error(e), zap.Any("record", record))
+		return e
+	}
+	e = kp.SendWithUserID(record.UserId, jbs)
+	if e != nil {
+		logger.ErrorWF("SendMazeGameEquipAssembleRecord SendWithUserID fail", zap.Error(e), zap.Any("record", record))
+		return e
+	}
+	logger.InfoWF("SendMazeGameEquipAssembleRecord SendWithUserID succ", zap.Any("record", record))
+	return e
+}
