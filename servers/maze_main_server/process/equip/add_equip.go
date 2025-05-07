@@ -2,6 +2,7 @@ package equip
 
 import (
 	"fmt"
+	"gitlab.ifreetalk.com/plate/freetk/fkcore/fknet"
 	"sort"
 	"sync"
 	"time"
@@ -13,26 +14,25 @@ import (
 	"gitlab.ifreetalk.com/plate/freetk/fkcore/fkprometheus"
 	"gitlab.ifreetalk.com/plate/protodef/MazeEquipSvr"
 
+	"gitlab.ifreetalk.com/maze/maze_game_server/common/function/packtopb"
+	"gitlab.ifreetalk.com/maze/maze_game_server/excel/mazeequipaffixrandpoolv8"
+	"gitlab.ifreetalk.com/maze/maze_game_server/excel/mazeequipconfigv8"
+	"gitlab.ifreetalk.com/maze/maze_game_server/io/kafka/mazeequipbagrecord"
+	"gitlab.ifreetalk.com/maze/maze_game_server/io/kafka/mazeequipinstancerecord"
+	"gitlab.ifreetalk.com/maze/maze_game_server/io/redis/mazeequipgetnumredis"
+	"gitlab.ifreetalk.com/maze/maze_game_server/io/redis/mazeequipguidredis"
+	"gitlab.ifreetalk.com/maze/maze_game_server/module/bagmodule"
 	"gitlab.ifreetalk.com/plate/extra/protobuf/proto"
 	"gitlab.ifreetalk.com/plate/freetk/common/errors"
 	"gitlab.ifreetalk.com/plate/freetk/fkcore/fklog"
-	"gitlab.ifreetalk.com/plate/freetk/fkcore/fkrpc"
 	"gitlab.ifreetalk.com/plate/freetk/fkserver"
 	"gitlab.ifreetalk.com/plate/io_interface/frontcache/UserBlackDiamondFC"
 	"gitlab.ifreetalk.com/plate/io_interface/redis_interface/common/MonthlyCardRedis"
 	"gitlab.ifreetalk.com/plate/protodef/MazeGameEquip"
 	"go.uber.org/zap"
-	"gitlab.ifreetalk.com/maze/maze_game_server/excel/mazeequipconfigv8"
-	"gitlab.ifreetalk.com/maze/maze_game_server/common/function/packtopb"
-	"gitlab.ifreetalk.com/maze/maze_game_server/module/bagmodule"
-	"gitlab.ifreetalk.com/maze/maze_game_server/io/kafka/mazeequipinstancerecord"
-	"gitlab.ifreetalk.com/maze/maze_game_server/excel/mazeequipaffixrandpoolv8"
-	"gitlab.ifreetalk.com/maze/maze_game_server/io/kafka/mazeequipbagrecord"
-	"gitlab.ifreetalk.com/maze/maze_game_server/io/redis/mazeequipguidredis"
-	"gitlab.ifreetalk.com/maze/maze_game_server/io/redis/mazeequipgetnumredis"
 )
 
-func OnSvrAddMazeEquipRQ(ctx fkrpc.RPCContext, shardingID int64, rqMsg proto.Message, rsMsg proto.Message) (err error) {
+func OnSvrAddMazeEquipRQ(ctx fknet.TCPContext, shardingID int64, rqMsg proto.Message, rsMsg proto.Message) (err error) {
 	defer fkprometheus.DebugPMT("OnSvrAddMazeEquipRQ")()
 	userCtx := fkserver.NewUserContext(ctx.Context, uint64(shardingID), ctx.FKLogI)
 	req := rqMsg.(*MazeEquipSvr.SvrAddMazeEquipRQ)

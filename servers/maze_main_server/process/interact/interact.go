@@ -6,9 +6,12 @@ import (
 	"gitlab.ifreetalk.com/maze/maze_game_server/common/equipmix"
 	"gitlab.ifreetalk.com/maze/maze_game_server/common/tradeno"
 	"gitlab.ifreetalk.com/maze/maze_game_server/io/redis/mazeequipmixdb"
+	itemrpc "gitlab.ifreetalk.com/maze/maze_game_server/servers/maze_main_server/process/item"
+	"gitlab.ifreetalk.com/plate/protodef/MazeItemSvr"
 
 	"gitlab.ifreetalk.com/maze/maze_game_server/excel/equipmixcostcfg"
 	"gitlab.ifreetalk.com/maze/maze_game_server/io/redis/mazeuserlevelredis"
+	equiprpc "gitlab.ifreetalk.com/maze/maze_game_server/servers/maze_main_server/process/equip"
 	"gitlab.ifreetalk.com/plate/excel/auto/GMazeEquipMixListV8Cfg"
 	"gitlab.ifreetalk.com/plate/extra/protobuf/proto"
 	"gitlab.ifreetalk.com/plate/freetk/common/errors"
@@ -197,7 +200,16 @@ func OnMazeEquipMixRQ(ctx fknet.TCPContext, uid uint64, rqMsg proto.Message, rsM
 		cost := cfg.Cost
 
 		var errorInfo *MessageType.ErrorInfo
-		errorInfo, err = itemrpc.DeductItems(ctx, uid, 695, tradeNo, cost...)
+
+		rpcreq := &MazeItemSvr.ConsumeItemRQ{
+			UserId:      proto.Uint64(uid),
+			Items:       cost,
+			OpType:      proto.Int32(695),
+			TradeNumber: proto.Uint64(tradeNo),
+		}
+		rpcres := &MazeItemSvr.ConsumeItemRS{}
+
+		err = itemrpc.OnAddItemRQ(ctx, int64(uid), rpcreq, rpcres)
 		if err != nil {
 			ctx.ErrorWF("OnMazeEquipMixRQ DeductItems err", zap.Uint64("tradeNo", tradeNo), zap.Any("cost", cost),
 				zap.Any("errorInfo", errorInfo), zap.Error(err),
@@ -205,7 +217,7 @@ func OnMazeEquipMixRQ(ctx fknet.TCPContext, uid uint64, rqMsg proto.Message, rsM
 			res.ErrInfo = errors.NewCommonCodeError("sub item err")
 			return
 		}
-		if errorInfo != nil {
+		if rpcres.ErrInfo != nil {
 			ctx.WarnWF("OnMazeEquipMixRQ DeductItems invalid", zap.Uint64("tradeNo", tradeNo), zap.Any("cost", cost),
 				zap.Any("errorInfo", errorInfo), zap.Error(err),
 			)
@@ -227,7 +239,7 @@ func OnMazeEquipMixRQ(ctx fknet.TCPContext, uid uint64, rqMsg proto.Message, rsM
 
 	equipRes := &MazeEquipSvr.SvrAddMazeEquipRS{}
 
-	errInfo, err := equiprpc.AddEquipRQ(ctx, equipReq, equipRes)
+	err = equiprpc.OnSvrAddMazeEquipRQ(ctx, int64(uid), equipReq, equipRes)
 	if err != nil {
 		ctx.ErrorWF("OnMazeEquipMixRQ add equip err",
 			zap.Uint64("tradeNo", tradeNo),
@@ -236,14 +248,14 @@ func OnMazeEquipMixRQ(ctx fknet.TCPContext, uid uint64, rqMsg proto.Message, rsM
 		res.ErrInfo = errors.NewCommonCodeError("add equip err")
 		return
 	}
-	if errInfo != nil {
-		ctx.WarnWF("OnMazeEquipMixRQ add equip err",
-			zap.Uint64("tradeNo", tradeNo),
-			zap.Any("errorInfo", errInfo),
-		)
-		res.ErrInfo = errInfo
-		return
-	}
+	//if errInfo != nil {
+	//	ctx.WarnWF("OnMazeEquipMixRQ add equip err",
+	//		zap.Uint64("tradeNo", tradeNo),
+	//		zap.Any("errorInfo", errInfo),
+	//	)
+	//	res.ErrInfo = errInfo
+	//	return
+	//}
 
 	res.Equip = []*MazeCommon.MazeItem{
 		{

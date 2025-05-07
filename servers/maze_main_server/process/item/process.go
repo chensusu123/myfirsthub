@@ -12,7 +12,6 @@ import (
 	"gitlab.ifreetalk.com/plate/freetk/fkcore/fkprometheus"
 	"gitlab.ifreetalk.com/plate/freetk/fkcore/fkrpc"
 	"gitlab.ifreetalk.com/plate/freetk/fkserver/tcp_service"
-	"gitlab.ifreetalk.com/plate/freetk/fkserver/thrift_service"
 	"gitlab.ifreetalk.com/plate/protodef/MazeBag"
 	"gitlab.ifreetalk.com/plate/protodef/MazeItemSvr"
 	"gitlab.ifreetalk.com/plate/protodef/MessageType"
@@ -92,21 +91,21 @@ func OnResetMazeBagRQ(ctx fknet.TCPContext, uid uint64, rqMsg proto.Message, rsM
 
 var GloRegIns = additemdefine.NewRegister()
 
-func RegisterThriftRPCPackage() {
-	thrift_service.RegisterTwowaySimple(131437, &MazeItemSvr.AddItemRQ{},
-		131438, &MazeItemSvr.AddItemRS{}, OnAddItemRQ)
+//func RegisterThriftRPCPackage() {
+//	thrift_service.RegisterTwowaySimple(131437, &MazeItemSvr.AddItemRQ{},
+//		131438, &MazeItemSvr.AddItemRS{}, OnAddItemRQ)
+//
+//	thrift_service.RegisterTwowaySimple(131439, &MazeItemSvr.ConsumeItemRQ{},
+//		131440, &MazeItemSvr.ConsumeItemRS{}, OnConsumeItemRQ)
+//
+//	thrift_service.RegisterTwowaySimple(131441, &MazeItemSvr.QueryItemRQ{},
+//		131442, &MazeItemSvr.QueryItemRS{}, OnQueryItemRQ)
+//
+//	thrift_service.RegisterTwowaySimple(131443, &MazeItemSvr.CheckAddItemRQ{},
+//		131444, &MazeItemSvr.CheckAddItemRS{}, OnCheckAddItemRQ)
+//}
 
-	thrift_service.RegisterTwowaySimple(131439, &MazeItemSvr.ConsumeItemRQ{},
-		131440, &MazeItemSvr.ConsumeItemRS{}, OnConsumeItemRQ)
-
-	thrift_service.RegisterTwowaySimple(131441, &MazeItemSvr.QueryItemRQ{},
-		131442, &MazeItemSvr.QueryItemRS{}, OnQueryItemRQ)
-
-	thrift_service.RegisterTwowaySimple(131443, &MazeItemSvr.CheckAddItemRQ{},
-		131444, &MazeItemSvr.CheckAddItemRS{}, OnCheckAddItemRQ)
-}
-
-func OnAddItemRQ(ctx fkrpc.RPCContext, _ int64, rqMsg proto.Message, rsMsg proto.Message) (err error) {
+func OnAddItemRQ(ctx fknet.TCPContext, _ int64, rqMsg proto.Message, rsMsg proto.Message) (err error) {
 	req, ok := rqMsg.(*MazeItemSvr.AddItemRQ)
 	if !ok {
 		ctx.ErrorWF("OnAddItemRQ pb is wrong", zap.Any("rqMsg", rqMsg))
