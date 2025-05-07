@@ -3,6 +3,8 @@ package process
 import (
 	"gitlab.ifreetalk.com/maze/maze_game_server/servers/maze_main_server/process/equip"
 	"gitlab.ifreetalk.com/maze/maze_game_server/servers/maze_main_server/process/game"
+	"gitlab.ifreetalk.com/maze/maze_game_server/servers/maze_main_server/process/interact"
+	"gitlab.ifreetalk.com/maze/maze_game_server/servers/maze_main_server/process/item"
 	"gitlab.ifreetalk.com/plate/freetk/fkcore/fklog"
 	"gitlab.ifreetalk.com/plate/freetk/fkserver/tcp_service"
 	"gitlab.ifreetalk.com/plate/freetk/fkserver/web_service"
@@ -17,6 +19,9 @@ func RegisterHandler() {
 		// energy.RegTcpHandler()
 		// 装备功能接口
 		equip.RegTcpHandler()
+		item.RegTcpHandler()
+		interact.RegTcpHandler()
+		
 		// // 挂机收集接口
 		// collect.RegTcpHandler()
 	})
