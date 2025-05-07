@@ -17,6 +17,7 @@ import (
 	"gitlab.ifreetalk.com/maze/maze_game_server/common/function/dollattr"
 	"gitlab.ifreetalk.com/maze/maze_game_server/common/constdef"
 	"gitlab.ifreetalk.com/maze/maze_game_server/common/vardef"
+	"gitlab.ifreetalk.com/maze/maze_game_server/servers/maze_main_server/process/attr_calc/commonlogic"
 )
 
 func AddtionMazeAttr(in map[int32]int64, attr *MazeBuffData.MazeBuffAttr) {
@@ -83,7 +84,7 @@ func GetSrcName(src int) string {
 	if desc, ok := vardef.MazeBuffSrcDescMap[int32(src)]; ok {
 		return desc
 	}
-	if desc, ok := DollAttrSrcMapCfg.Load(int32(src)); ok {
+	if desc, ok := commonlogic.DollAttrSrcMapCfg.Load(int32(src)); ok {
 		return desc.(string)
 	}
 	return ""
