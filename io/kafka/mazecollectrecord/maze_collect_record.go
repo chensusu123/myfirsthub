@@ -1,18 +1,19 @@
 package mazecollectrecord
 
 import (
+	"time"
+
 	jsoniter "github.com/json-iterator/go"
 	"gitlab.ifreetalk.com/plate/freetk/fkcore/fkafka"
 	"gitlab.ifreetalk.com/plate/freetk/fkcore/fkconfig"
 	"gitlab.ifreetalk.com/plate/freetk/fkcore/fklog"
 	"go.uber.org/zap"
-	"time"
 )
 
 var json = jsoniter.ConfigCompatibleWithStandardLibrary
 
 const (
-	MazeCollectInit = 1 // 迷宫挂机初始化
+	MazeCollectInit    = 1 // 迷宫挂机初始化
 	MazeCollectTimeOut = 2 // 定时收集
 	MazeCollectReceive = 3 // 领取
 )
@@ -28,19 +29,19 @@ type MazeCollectChgRecord struct {
 	EndTime       int64  `json:"end_time"`       // 结束时间
 	PeriodTime    int32  `json:"period_time"`    // 产出周期
 	CollectTimes  int64  `json:"collect_times"`  //道具产出周期数
-	BarrierId     int32  `json:"barrier_id"`   // 关卡id
-	TradeNo       uint64 `json:"trade_no"`     // 加物品流水号
-	AddItems      string `json:"add_items"`    // 收集的道具/领取的道具
-	RemainItems   string `json:"remain_items"` // 累计产出道具/领取后遗留的道具
-	RetCode        int64 `json:"ret_code"`     //0:成功  其他失败
-	GroupID       uint32 `json:"group_id"`     // 组id
-	CreateTime    int64  `json:"create_time"`  // 操作时间
+	BarrierId     int32  `json:"barrier_id"`     // 关卡id
+	TradeNo       uint64 `json:"trade_no"`       // 加物品流水号
+	AddItems      string `json:"add_items"`      // 收集的道具/领取的道具
+	RemainItems   string `json:"remain_items"`   // 累计产出道具/领取后遗留的道具
+	RetCode       int64  `json:"ret_code"`       //0:成功  其他失败
+	GroupID       uint32 `json:"group_id"`       // 组id
+	CreateTime    int64  `json:"create_time"`    // 操作时间
 }
 
 var gKafka = &fkafka.KafkaProducer{}
 
 func init() {
-	fkconfig.RegisterNameNode("mazeenergyrecord", 1001106, gKafka)
+	fkconfig.RegisterNameNode("mazecollectrecord", 1001106, gKafka)
 }
 
 func PushMazeCollectChgRecord(agent fklog.FKLogI, record *MazeCollectChgRecord) error {
