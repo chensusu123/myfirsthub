@@ -20,7 +20,8 @@ import (
 	"gitlab.ifreetalk.com/maze/maze_game_server/module/calcassembleattr"
 	"gitlab.ifreetalk.com/maze/maze_game_server/io/redis/mazebuffinforedis"
 	"gitlab.ifreetalk.com/maze/maze_game_server/io/redis/mazeuserlevelredis"
-	"gitlab.ifreetalk.com/maze/maze_game_server/servers/maze_main_server/process/equip/equipbaggm"
+	"gitlab.ifreetalk.com/maze/maze_game_server/servers/maze_main_server/process/equip_gm/equipbaggm"
+	"gitlab.ifreetalk.com/maze/maze_game_server/servers/maze_main_server/process/equip"
 )
 
 var EndLine = "-----------------------------------------------------------\n"
@@ -292,17 +293,17 @@ func RegGm(logger fklog.FKLogI) {
 							continue
 						}
 					}
-					e := process.ChkEquipPosUnlock(logger, uid, "gm", true)
+					e := equip.ChkEquipPosUnlock(logger, uid, "gm", true)
 					if e != nil {
 						continue
 					}
 					// 初始装备套检查
-					e = process.InitDollEquipSuitSeq(logger, uid)
+					e = equip.InitDollEquipSuitSeq(logger, uid)
 					if e != nil {
 						continue
 					}
 					// 处理初始化装备
-					e = process.HandleDollEquipInit(logger, uid, true)
+					e = equip.HandleDollEquipInit(logger, uid, true)
 					if e != nil {
 						continue
 					}
@@ -337,19 +338,19 @@ func RegGm(logger fklog.FKLogI) {
 				atomic.AddInt32(&fail, 1)
 				return true
 			}
-			e = process.ChkEquipPosUnlock(logger, uid, "gm", true)
+			e = equip.ChkEquipPosUnlock(logger, uid, "gm", true)
 			if e != nil {
 				atomic.AddInt32(&fail, 1)
 				return true
 			}
 			// 初始装备套检查
-			e = process.InitDollEquipSuitSeq(logger, uid)
+			e = equip.InitDollEquipSuitSeq(logger, uid)
 			if e != nil {
 				atomic.AddInt32(&fail, 1)
 				return true
 			}
 			// 处理初始化装备
-			e = process.HandleDollEquipInit(logger, uid, true)
+			e = equip.HandleDollEquipInit(logger, uid, true)
 			if e != nil {
 				atomic.AddInt32(&fail, 1)
 				return true
@@ -370,19 +371,19 @@ func RegGm(logger fklog.FKLogI) {
 				return
 			}
 		}
-		e := process.ChkEquipPosUnlock(logger, uid, "gm", true)
+		e := equip.ChkEquipPosUnlock(logger, uid, "gm", true)
 		if e != nil {
 			writer.Write([]byte(fmt.Sprintf("解锁装备位失败:%s", e.Error())))
 			return
 		}
 		// 初始装备套检查
-		e = process.InitDollEquipSuitSeq(logger, uid)
+		e = equip.InitDollEquipSuitSeq(logger, uid)
 		if e != nil {
 			writer.Write([]byte(fmt.Sprintf("初始化当前套装失败:%s", e.Error())))
 			return
 		}
 		// 处理初始化装备
-		e = process.HandleDollEquipInit(logger, uid, true)
+		e = equip.HandleDollEquipInit(logger, uid, true)
 		if e != nil {
 			writer.Write([]byte(fmt.Sprintf("初始化装备失败:%s", e.Error())))
 			return

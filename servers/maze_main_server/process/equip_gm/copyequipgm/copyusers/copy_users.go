@@ -4,10 +4,10 @@ import (
 	"sync"
 	"time"
 
-	"gitlab.ifreetalk.com/maze/maze_equip_server/common/function/fileio"
-	"gitlab.ifreetalk.com/maze/maze_equip_server/servers/maze_equip_gm_server/asynctask"
 	"gitlab.ifreetalk.com/plate/freetk/common/fkfmt"
 	"gitlab.ifreetalk.com/plate/freetk/fkcore/fklog"
+	"gitlab.ifreetalk.com/maze/maze_game_server/common/function/fileio"
+	"gitlab.ifreetalk.com/maze/maze_game_server/servers/maze_main_server/process/equip_gm/asynctask"
 )
 
 type CopyUsers struct {

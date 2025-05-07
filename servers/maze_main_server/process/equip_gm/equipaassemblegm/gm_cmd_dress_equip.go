@@ -20,6 +20,7 @@ import (
 	"gitlab.ifreetalk.com/maze/maze_game_server/io/redis/mazebagequipredis"
 	"gitlab.ifreetalk.com/maze/maze_game_server/common/constdef"
 	"gitlab.ifreetalk.com/maze/maze_game_server/common/function/assemble"
+	"gitlab.ifreetalk.com/maze/maze_game_server/servers/maze_main_server/process/equip"
 )
 
 func DressEquipGm(logger fklog.FKLogI, userId uint64, pos int32, equipGuid int64) error {
@@ -81,5 +82,5 @@ func gmDressOneEquip(logger fklog.FKLogI, userId uint64, pos, equipId int32, gui
 	rq.EquipGuid = proto.Int64(guid)
 	rq.OpSrc = proto.Int32(0)
 	rq.OpType = proto.Int32(1)
-	return process.OnDressMazeEquipRQ(ctx, userId, rq, rs)
+	return equip.OnDressMazeEquipRQ(ctx, userId, rq, rs)
 }
