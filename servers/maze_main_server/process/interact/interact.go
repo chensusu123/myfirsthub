@@ -3,6 +3,9 @@ package interact
 import (
 	"fmt"
 	"gitlab.ifreetalk.com/maze/maze_game_server/common/cache/simCache"
+	"gitlab.ifreetalk.com/maze/maze_game_server/common/equipmix"
+	"gitlab.ifreetalk.com/maze/maze_game_server/common/tradeno"
+	"gitlab.ifreetalk.com/maze/maze_game_server/io/redis/mazeequipmixdb"
 
 	"gitlab.ifreetalk.com/maze/maze_game_server/excel/equipmixcostcfg"
 	"gitlab.ifreetalk.com/maze/maze_game_server/io/redis/mazeuserlevelredis"
@@ -11,12 +14,13 @@ import (
 	"gitlab.ifreetalk.com/plate/freetk/common/errors"
 	"gitlab.ifreetalk.com/plate/freetk/fkcore/fklog"
 	"gitlab.ifreetalk.com/plate/freetk/fkcore/fknet"
+
 	"gitlab.ifreetalk.com/plate/freetk/fkcore/fkprometheus"
 	"gitlab.ifreetalk.com/plate/freetk/fkserver/tcp_service"
 
+	"gitlab.ifreetalk.com/maze/maze_game_server/servers/maze_main_server/process/interact/MazeEquipMix"
 	"gitlab.ifreetalk.com/plate/freetk/fkutil/saferand"
 	"gitlab.ifreetalk.com/plate/protodef/MazeCommon"
-	"gitlab.ifreetalk.com/plate/protodef/MazeEquipMix"
 	"gitlab.ifreetalk.com/plate/protodef/MazeEquipSvr"
 	"gitlab.ifreetalk.com/plate/protodef/MessageType"
 	"go.uber.org/zap"
