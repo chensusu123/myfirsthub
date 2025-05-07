@@ -10,6 +10,8 @@ import (
 	"gitlab.ifreetalk.com/plate/freetk/fkcore/fklog"
 	"gitlab.ifreetalk.com/plate/freetk/fkserver/tcp_service"
 	"gitlab.ifreetalk.com/plate/freetk/fkserver/web_service"
+	"gitlab.ifreetalk.com/plate/freetk/fkserver/thrift_service"
+	"gitlab.ifreetalk.com/maze/maze_game_server/servers/maze_main_server/process/attr_calc"
 )
 
 func RegisterHandler() {
@@ -30,6 +32,15 @@ func RegisterHandler() {
 		// collect.RegTcpHandler()
 	})
 
+	// 注册Rpc接口
+	thrift_service.PlugThriftRpcService(func() {
+		// 装备rpc
+		equip.RegRpcHandler()
+		// 属性计算rpc
+		attr_calc.RegRpcHandler()
+	},
+	)
+
 	// 消费队列
 	{
 		// 主功能队列
@@ -38,6 +49,7 @@ func RegisterHandler() {
 		equip.RegConsumeHandler()
 		// 挂机收集队列
 		collect.RegConsumeHandler()
+		attr_calc.RegConsumeHandler()
 	}
 
 	// 注册Web接口

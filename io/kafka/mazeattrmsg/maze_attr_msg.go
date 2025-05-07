@@ -1,0 +1,46 @@
+/*
+ * @Author: majian
+ * @Date: 2025-03-11 20:09:57
+ * @Last Modified by: majian
+ * @Last Modified time: 2025-03-15 14:23:36
+ */
+package mazeattrmsg
+
+import (
+	"time"
+
+	jsoniter "github.com/json-iterator/go"
+	"gitlab.ifreetalk.com/plate/freetk/fkcore/fkafka"
+	"gitlab.ifreetalk.com/plate/freetk/fkcore/fkconfig"
+	"gitlab.ifreetalk.com/plate/freetk/fkcore/fklog"
+	"go.uber.org/zap"
+	"gitlab.ifreetalk.com/maze/maze_game_server/common/structsdef"
+)
+
+var kp = &fkafka.KafkaProducer{}
+var json = jsoniter.ConfigCompatibleWithStandardLibrary
+
+func init() {
+	// 1001083 topic-maze-attr-chg-notify-msg 迷宫属性变化通知消息
+	fkconfig.RegisterNameNode("mazeattrmsg", 1001083, kp)
+}
+
+func SendMazeAttrChgNotify(logger fklog.FKLogI, msg *structsdef.DollAttrChgNotify) error {
+	msg.GroupId = fkconfig.EnvVal.GroupID
+	if msg.CreateTime == 0 {
+		msg.CreateTime = time.Now().UnixNano() / 1000000
+	}
+
+	jbs, e := json.Marshal(msg)
+	if e != nil {
+		logger.ErrorWF("SendMazeAttrChgNotify Marshal fail", zap.Error(e), zap.Any("msg", msg))
+		return e
+	}
+	e = kp.SendWithUserID(msg.UserId, jbs)
+	if e != nil {
+		logger.ErrorWF("SendMazeAttrChgNotify SendWithUserID fail", zap.Error(e), zap.Any("msg", msg))
+		return e
+	}
+	logger.InfoWF("SendMazeAttrChgNotify SendWithUserID succ", zap.Any("msg", msg))
+	return e
+}
