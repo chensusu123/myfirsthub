@@ -8,7 +8,7 @@ import (
 	"gitlab.ifreetalk.com/plate/protodef/MazeEquipPos"
 	"gitlab.ifreetalk.com/plate/protodef/MazeGameEquip"
 	"gitlab.ifreetalk.com/plate/freetk/fkserver/tcp_service"
-	"gitlab.ifreetalk.com/plate/protodef/KafkaMsgNotify"
+	"gitlab.ifreetalk.com/maze/maze_game_server/common/constdef"
 )
 
 var GtcpLimiter = limiter.NewLimiter("tcpLimiter")
@@ -35,8 +35,8 @@ func RegTcpHandler() {
 		16223, &MazeGameEquip.SelectDressMazeEquipRS{}, OnSelectDressMazeEquipRQ)
 
 	// 处理kafkatcp消息
-	_ = tcp_service.RegProcSimple(20989, &KafkaMsgNotify.KafkaMsgDistributeRQ{},
-		20990, &KafkaMsgNotify.KafkaMsgDistributeRS{}, OnKafkaTcpMsgRQ)
+	// _ = tcp_service.RegProcSimple(20989, &KafkaMsgNotify.KafkaMsgDistributeRQ{},
+	// 	20990, &KafkaMsgNotify.KafkaMsgDistributeRS{}, OnKafkaTcpMsgRQ)
 
 	// 拉取背包装备列表
 	_ = tcp_service.RegProcSimple(16190, &MazeGameEquip.GetMazeBagEquipListRQ{},
@@ -72,4 +72,10 @@ func RegConsumeHandler() {
 		1001084,
 		kafka_consumer.WithGroup(fkserver.GroupNameGO+"."+fkserver.ProjectNamePPWD+".maze_equip_main_server"),
 		kafka_consumer.WithKafkaCustomKeyContent(HandleMazeLvChg))
+
+	// 性别变化流水
+	_ = kafka_consumer.PlugKafkaConsumer(constdef.KafkaMDTSexDesc,
+		1000159,
+		kafka_consumer.WithGroup(fkserver.GroupNameGO+"."+fkserver.ProjectNamePPWD+"."+constdef.KafkaMDTSexDesc),
+		kafka_consumer.WithKafkaCustomKeyContent(HandleDollSexChg))
 }

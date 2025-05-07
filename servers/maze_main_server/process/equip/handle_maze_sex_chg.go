@@ -7,22 +7,24 @@ import (
 	"gitlab.ifreetalk.com/plate/freetk/fkutil"
 	"go.uber.org/zap"
 	"gitlab.ifreetalk.com/maze/maze_game_server/common/structsdef"
-	"gitlab.ifreetalk.com/maze/maze_game_server/common/constdef"
+	"context"
 )
 
 // 处理人偶性别变化消息
 
-func init() {
-	RegTcpMsgCallBackFunc(constdef.KafkaMDTSex, HandleDollSexChg)
-}
+// func init() {
+// RegTcpMsgCallBackFunc(constdef.KafkaMDTSex, HandleDollSexChg)
+// }
 
-func HandleDollSexChg(logger fklog.FKLogI, userId uint64, msg []byte) error {
+// func HandleDollSexChg(logger fklog.FKLogI, userId uint64, msg []byte) error {
+func HandleDollSexChg(ctx context.Context, logger fklog.FKLogI, index int, key, msg []byte) (err error) {
 	info := &structsdef.SexChangeInfo{}
-	err := json.Unmarshal(msg, info)
+	err = json.Unmarshal(msg, info)
 	if err != nil {
 		logger.ErrorWF("HandleDollSexChg unmarshal comsume info fail", zap.Error(err))
 		return err
 	}
+	userId := fkutil.ToUint64(info.UserId)
 
 	// 过滤用户创建和非性别变化
 	if info.CreateChg != 2 || info.FromType != 1 {

@@ -14,7 +14,6 @@ import (
 	"gitlab.ifreetalk.com/plate/freetk/fkserver/thrift_service"
 	"gitlab.ifreetalk.com/plate/freetk/fkserver/web_service"
 	"gitlab.ifreetalk.com/maze/maze_game_server/servers/maze_main_server/process/equip_gm"
-	"gitlab.ifreetalk.com/maze/maze_game_server/servers/maze_main_server/process/kafka_dispatch"
 )
 
 func RegisterHandler() {
@@ -57,8 +56,8 @@ func RegisterHandler() {
 		collect.RegConsumeHandler()
 		// 属性计算队列
 		attr_calc.RegConsumeHandler()
-		// kafka转发队列
-		kafka_dispatch.RegConsumeHandler()
+		// kafka转发队列 废弃
+		// kafka_dispatch.RegConsumeHandler()
 	}
 
 	// 注册Web接口
