@@ -1,13 +1,13 @@
-package equip
+package equip_gm
 
 import (
 	"math/rand"
 	"time"
 
 	"gitlab.ifreetalk.com/plate/freetk/fkcore/fklog"
-	"gitlab.ifreetalk.com/maze/maze_game_server/servers/maze_main_server/process/equip/equipbaggm"
-	"gitlab.ifreetalk.com/maze/maze_game_server/servers/maze_main_server/process/equip/equipaassemblegm"
-	"gitlab.ifreetalk.com/maze/maze_game_server/servers/maze_main_server/process/equip/copyequipgm"
+	"gitlab.ifreetalk.com/maze/maze_game_server/servers/maze_main_server/process/equip_gm/copyequipgm"
+	"gitlab.ifreetalk.com/maze/maze_game_server/servers/maze_main_server/process/equip_gm/equipaassemblegm"
+	"gitlab.ifreetalk.com/maze/maze_game_server/servers/maze_main_server/process/equip_gm/equipbaggm"
 )
 
 func RegEquipGm(logger fklog.FKLogI) {

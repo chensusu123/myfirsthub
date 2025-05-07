@@ -9,6 +9,7 @@ import (
 	"gitlab.ifreetalk.com/plate/protodef/MazeEquipCache"
 	"go.uber.org/zap"
 	"gitlab.ifreetalk.com/maze/maze_game_server/io/redis/mazebagequipredis"
+	"gitlab.ifreetalk.com/maze/maze_game_server/servers/maze_main_server/process/equip"
 )
 
 func fixAllEquipAttrLimit(logger fklog.FKLogI, userId uint64) error {
@@ -49,10 +50,10 @@ func fixEquipAttr(logger fklog.FKLogI, userId uint64, equipInfo *MazeEquipCache.
 				zap.Int32("rollId", cfg.Roll_type))
 			return nil, false, errors.New("配置不存在")
 		}
-		calcAddCount, calcRangeCount := process.CalcAttrRealRoll(logger, cfg.Add_attr_min, cfg.Add_attr_max, cfg.Show_attr_min, cfg.Show_attr_max, int64(attrInfo.GetRandWeight()), rollTypeCfg.Round_value)
+		calcAddCount, calcRangeCount := equip.CalcAttrRealRoll(logger, cfg.Add_attr_min, cfg.Add_attr_max, cfg.Show_attr_min, cfg.Show_attr_max, int64(attrInfo.GetRandWeight()), rollTypeCfg.Round_value)
 		for index := 0; index <= len(attrInfo.ShowAttrList); index++ {
 			showAttrInfo := attrInfo.ShowAttrList[index]
-			attrValue := process.CalcAttrValByRoll(cfg.Show_attr_min[showAttrInfo.GetAttrId()], cfg.Show_attr_max[showAttrInfo.GetAttrId()], rollTypeCfg.Round_value, calcAddCount, calcRangeCount)
+			attrValue := equip.CalcAttrValByRoll(cfg.Show_attr_min[showAttrInfo.GetAttrId()], cfg.Show_attr_max[showAttrInfo.GetAttrId()], rollTypeCfg.Round_value, calcAddCount, calcRangeCount)
 			if showAttrInfo.GetAttrValue() != attrValue {
 				showAttrInfo.AttrValue = proto.Int64(attrValue)
 				chgEquip = true
@@ -60,7 +61,7 @@ func fixEquipAttr(logger fklog.FKLogI, userId uint64, equipInfo *MazeEquipCache.
 		}
 		for index := 0; index <= len(attrInfo.RealAttrList); index++ {
 			realAttrInfo := attrInfo.RealAttrList[index]
-			attrValue := process.CalcAttrValByRoll(cfg.Add_attr_min[realAttrInfo.GetAttrId()], cfg.Add_attr_max[realAttrInfo.GetAttrId()], rollTypeCfg.Round_value, calcAddCount, calcRangeCount)
+			attrValue := equip.CalcAttrValByRoll(cfg.Add_attr_min[realAttrInfo.GetAttrId()], cfg.Add_attr_max[realAttrInfo.GetAttrId()], rollTypeCfg.Round_value, calcAddCount, calcRangeCount)
 			if realAttrInfo.GetAttrValue() != attrValue {
 				realAttrInfo.AttrValue = proto.Int64(attrValue)
 				chgEquip = true

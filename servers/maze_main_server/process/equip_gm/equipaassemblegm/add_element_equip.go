@@ -9,10 +9,6 @@ package equipaassemblegm
 import (
 	"fmt"
 
-	"gitlab.ifreetalk.com/maze/maze_equip_server/common/function/packtopb"
-	"gitlab.ifreetalk.com/maze/maze_equip_server/common/function/uniqueid"
-	"gitlab.ifreetalk.com/maze/maze_equip_server/io/rpc/dollequipbagrpc"
-	"gitlab.ifreetalk.com/maze/maze_equip_server/module/effectequip"
 	"gitlab.ifreetalk.com/plate/excel/auto/GMazeEquipInfoV8Cfg"
 	"gitlab.ifreetalk.com/plate/excel/auto/GMazeEquipPosRankV8Cfg"
 	"gitlab.ifreetalk.com/plate/extra/protobuf/proto"
@@ -20,6 +16,10 @@ import (
 	"gitlab.ifreetalk.com/plate/freetk/fkcore/fklog"
 	"gitlab.ifreetalk.com/plate/protodef/MazeEquipSvr"
 	"gitlab.ifreetalk.com/plate/protodef/MazeGameEquip"
+	"gitlab.ifreetalk.com/maze/maze_game_server/common/function/uniqueid"
+	"gitlab.ifreetalk.com/maze/maze_game_server/io/rpc/dollequipbagrpc"
+	"gitlab.ifreetalk.com/maze/maze_game_server/module/effectequip"
+	"gitlab.ifreetalk.com/maze/maze_game_server/common/function/packtopb"
 )
 
 type EquipParam struct {

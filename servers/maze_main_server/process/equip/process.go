@@ -49,10 +49,6 @@ func RegTcpHandler() {
 	// 装备分解
 	_ = tcp_service.RegProcSimple(16188, &MazeGameEquip.MazeEquipDismantleRQ{},
 		16189, &MazeGameEquip.MazeEquipDismantleRS{}, OnDollEquipDismantleRQ)
-
-	// 处理装备命令
-	_ = tcp_service.RegProcSimple(16186, &MazeGameEquip.SendMazeEquipCmdRQ{},
-		16187, &MazeGameEquip.SendMazeEquipCmdRS{}, OnSendMazeEquipCmdRQ)
 }
 
 func RegRpcHandler() {

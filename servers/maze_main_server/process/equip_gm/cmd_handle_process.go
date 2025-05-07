@@ -1,4 +1,4 @@
-package equip
+package equip_gm
 
 import (
 	"gitlab.ifreetalk.com/plate/extra/protobuf/proto"
@@ -9,8 +9,15 @@ import (
 	"gitlab.ifreetalk.com/plate/freetk/fkutil"
 	"gitlab.ifreetalk.com/plate/protodef/MazeGameEquip"
 	"go.uber.org/zap"
-	"gitlab.ifreetalk.com/maze/maze_game_server/servers/maze_main_server/process/equip/resetequipcmd"
+	"gitlab.ifreetalk.com/maze/maze_game_server/servers/maze_main_server/process/equip_gm/resetequipcmd"
+	"gitlab.ifreetalk.com/plate/freetk/fkserver/tcp_service"
 )
+
+func RegTcpHandler() {
+	// 处理装备命令
+	_ = tcp_service.RegProcSimple(16186, &MazeGameEquip.SendMazeEquipCmdRQ{},
+		16187, &MazeGameEquip.SendMazeEquipCmdRS{}, OnSendMazeEquipCmdRQ)
+}
 
 func OnSendMazeEquipCmdRQ(ctx fknet.TCPContext, shardingID uint64, request proto.Message, response proto.Message) (err error) {
 	defer fkprometheus.DebugPMT("OnSendMazeEquipCmdRQ")()

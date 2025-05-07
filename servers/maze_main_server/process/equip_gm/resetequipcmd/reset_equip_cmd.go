@@ -7,9 +7,9 @@
 package resetequipcmd
 
 import (
-	"gitlab.ifreetalk.com/maze/maze_equip_server/servers/maze_equip_gm_server/process/equipbaggm"
-	"gitlab.ifreetalk.com/maze/maze_equip_server/servers/maze_equip_main_server/process"
 	"gitlab.ifreetalk.com/plate/freetk/fkcore/fklog"
+	"gitlab.ifreetalk.com/maze/maze_game_server/servers/maze_main_server/process/equip_gm/equipbaggm"
+	"gitlab.ifreetalk.com/maze/maze_game_server/servers/maze_main_server/process/equip"
 )
 
 func RunCmd1001(logger fklog.FKLogI, userID uint64, session string, param string) error {
@@ -17,17 +17,17 @@ func RunCmd1001(logger fklog.FKLogI, userID uint64, session string, param string
 	if e != nil {
 		return e
 	}
-	e = process.ChkEquipPosUnlock(logger, userID, "gm", true)
+	e = equip.ChkEquipPosUnlock(logger, userID, "gm", true)
 	if e != nil {
 		return e
 	}
 	// 初始装备套检查
-	e = process.InitDollEquipSuitSeq(logger, userID)
+	e = equip.InitDollEquipSuitSeq(logger, userID)
 	if e != nil {
 		return e
 	}
 	// 处理初始化装备
-	e = process.HandleDollEquipInit(logger, userID, true)
+	e = equip.HandleDollEquipInit(logger, userID, true)
 	if e != nil {
 		return e
 	}

@@ -11,7 +11,6 @@ import (
 	"gitlab.ifreetalk.com/plate/freetk/fkcore/fklog"
 	"gitlab.ifreetalk.com/plate/protodef/MazeEquipCache"
 	"go.uber.org/zap"
-	"gitlab.ifreetalk.com/maze/maze_game_server/servers/maze_main_server/process/equip/copyequipgm/copyinterface"
 	"gitlab.ifreetalk.com/maze/maze_game_server/module/dollassembleinfo"
 	"gitlab.ifreetalk.com/maze/maze_game_server/io/redis/dollassemblesuitredis"
 	"gitlab.ifreetalk.com/maze/maze_game_server/common/constdef"
@@ -22,6 +21,7 @@ import (
 	"gitlab.ifreetalk.com/maze/maze_game_server/common/structsdef"
 	"gitlab.ifreetalk.com/maze/maze_game_server/io/redis/mazeattrcalcnotifyqueue"
 	"gitlab.ifreetalk.com/maze/maze_game_server/module/mazebuffchgrrecordapi"
+	"gitlab.ifreetalk.com/maze/maze_game_server/servers/maze_main_server/process/equip_gm/copyequipgm/copyinterface"
 )
 
 func CopyAssembleData(logger fklog.FKLogI, srcUserId uint64, dstUsers []uint64, param copyinterface.CopyParam) error {
