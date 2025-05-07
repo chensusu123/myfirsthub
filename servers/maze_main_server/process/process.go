@@ -1,15 +1,16 @@
 package process
 
 import (
+	"gitlab.ifreetalk.com/maze/maze_game_server/servers/maze_main_server/process/attr_calc"
 	"gitlab.ifreetalk.com/maze/maze_game_server/servers/maze_main_server/process/collect"
 	"gitlab.ifreetalk.com/maze/maze_game_server/servers/maze_main_server/process/equip"
 	"gitlab.ifreetalk.com/maze/maze_game_server/servers/maze_main_server/process/game"
 	"gitlab.ifreetalk.com/maze/maze_game_server/servers/maze_main_server/process/game/energy"
+	"gitlab.ifreetalk.com/maze/maze_game_server/servers/maze_main_server/process/game/sweep"
 	"gitlab.ifreetalk.com/plate/freetk/fkcore/fklog"
 	"gitlab.ifreetalk.com/plate/freetk/fkserver/tcp_service"
-	"gitlab.ifreetalk.com/plate/freetk/fkserver/web_service"
 	"gitlab.ifreetalk.com/plate/freetk/fkserver/thrift_service"
-	"gitlab.ifreetalk.com/maze/maze_game_server/servers/maze_main_server/process/attr_calc"
+	"gitlab.ifreetalk.com/plate/freetk/fkserver/web_service"
 )
 
 func RegisterHandler() {
@@ -17,6 +18,8 @@ func RegisterHandler() {
 	tcp_service.PlugTcpService(func() {
 		// 主功能接口
 		game.RegTcpHandler()
+		// 扫荡功能接口
+		sweep.RegTcpHandler()
 		// 体力相关接口
 		energy.RegTcpHandler()
 		// 装备功能接口
