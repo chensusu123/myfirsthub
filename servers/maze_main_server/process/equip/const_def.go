@@ -16,3 +16,11 @@ const (
 )
 
 var MySvr = "maze_equip_main_server(19578)"
+
+var PosMySvr = "maze_equip_pos_server(19993)"
+
+const (
+	MazeEquipPosErrDB         = 1 // 保存装备位数据失败
+	MazeEquipPosErrSaveBuff   = 2 // 更新buff数据失败
+	MazeEquipPosErrBuffNotify = 4 // 通知buff计算失败
+)

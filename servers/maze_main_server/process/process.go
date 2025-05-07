@@ -13,6 +13,8 @@ import (
 	"gitlab.ifreetalk.com/plate/freetk/fkserver/tcp_service"
 	"gitlab.ifreetalk.com/plate/freetk/fkserver/thrift_service"
 	"gitlab.ifreetalk.com/plate/freetk/fkserver/web_service"
+	"gitlab.ifreetalk.com/maze/maze_game_server/servers/maze_main_server/process/equip_gm"
+	"gitlab.ifreetalk.com/maze/maze_game_server/servers/maze_main_server/process/kafka_dispatch"
 )
 
 func RegisterHandler() {
@@ -30,7 +32,8 @@ func RegisterHandler() {
 		collect.RegTcpHandler()
 		item.RegTcpHandler()
 		interact.RegTcpHandler()
-
+		// 装备gm接口
+		equip_gm.RegTcpHandler()
 		// // 挂机收集接口
 		// collect.RegTcpHandler()
 	})
@@ -38,7 +41,7 @@ func RegisterHandler() {
 	// 注册Rpc接口
 	thrift_service.PlugThriftRpcService(func() {
 		// 装备rpc
-		//equip.RegRpcHandler()
+		// equip.RegRpcHandler()
 		// 属性计算rpc
 		attr_calc.RegRpcHandler()
 	},
@@ -52,12 +55,16 @@ func RegisterHandler() {
 		equip.RegConsumeHandler()
 		// 挂机收集队列
 		collect.RegConsumeHandler()
+		// 属性计算队列
 		attr_calc.RegConsumeHandler()
+		// kafka转发队列
+		kafka_dispatch.RegConsumeHandler()
 	}
 
 	// 注册Web接口
 	web_service.PlugWebService(func(logger fklog.FKLogI) {
-
+		// 装备gm
+		equip_gm.RegGm(logger)
 	})
 
 }
