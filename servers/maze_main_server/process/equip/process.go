@@ -1,7 +1,6 @@
 package equip
 
 import (
-	"gitlab.ifreetalk.com/plate/freetk/fkcore/fklog"
 	"gitlab.ifreetalk.com/plate/freetk/fkserver/tcp_service"
 	"gitlab.ifreetalk.com/plate/protodef/KafkaMsgNotify"
 	"gitlab.ifreetalk.com/plate/protodef/MazeGameEquip"
@@ -9,6 +8,8 @@ import (
 	"gitlab.ifreetalk.com/plate/freetk/fkserver"
 	"gitlab.ifreetalk.com/maze/maze_game_server/common/function/limiter"
 	"fmt"
+	"gitlab.ifreetalk.com/plate/freetk/fkserver/thrift_service"
+	"gitlab.ifreetalk.com/plate/protodef/MazeEquipSvr"
 )
 
 var GtcpLimiter = limiter.NewLimiter("tcpLimiter")
@@ -37,10 +38,30 @@ func RegTcpHandler() {
 	// 处理kafkatcp消息
 	_ = tcp_service.RegProcSimple(20989, &KafkaMsgNotify.KafkaMsgDistributeRQ{},
 		20990, &KafkaMsgNotify.KafkaMsgDistributeRS{}, OnKafkaTcpMsgRQ)
+
+	// 拉取背包装备列表
+	_ = tcp_service.RegProcSimple(16190, &MazeGameEquip.GetMazeBagEquipListRQ{},
+		16191, &MazeGameEquip.GetMazeBagEquipListRS{}, OnGetMazeBagEquipListRQ)
+
+	_ = tcp_service.RegProcSimple(16192, &MazeGameEquip.QueryMazeEquipDetailRQ{},
+		16193, &MazeGameEquip.QueryMazeEquipDetailRS{}, OnQueryMazeEquipDetailRQ)
+
+	// 装备分解
+	_ = tcp_service.RegProcSimple(16188, &MazeGameEquip.MazeEquipDismantleRQ{},
+		16189, &MazeGameEquip.MazeEquipDismantleRS{}, OnDollEquipDismantleRQ)
+
+	// 处理装备命令
+	_ = tcp_service.RegProcSimple(16186, &MazeGameEquip.SendMazeEquipCmdRQ{},
+		16187, &MazeGameEquip.SendMazeEquipCmdRS{}, OnSendMazeEquipCmdRQ)
 }
 
 func RegRpcHandler() {
-
+	thrift_service.RegisterTwowaySimple(131421, &MazeEquipSvr.SvrAddMazeEquipRQ{},
+		131422, &MazeEquipSvr.SvrAddMazeEquipRS{}, OnSvrAddMazeEquipRQ)
+	thrift_service.RegisterTwowaySimple(131423, &MazeEquipSvr.SvrMazeEquipAssembleRQ{},
+		131424, &MazeEquipSvr.SvrMazeEquipAssembleRS{}, OnSvrMazeEquipAssembleRQ)
+	thrift_service.RegisterTwowaySimple(131425, &MazeEquipSvr.SvrMazeEquipSaleRQ{},
+		131426, &MazeEquipSvr.SvrMazeEquipSaleRS{}, OnSvrDollEquipSaleRQ)
 }
 
 func RegConsumeHandler() {
@@ -48,8 +69,4 @@ func RegConsumeHandler() {
 		1001084,
 		kafka_consumer.WithGroup(fkserver.GroupNameGO+"."+fkserver.ProjectNamePPWD+".maze_equip_main_server"),
 		kafka_consumer.WithKafkaCustomKeyContent(HandleMazeLvChg))
-}
-
-func WebHandler(logger fklog.FKLogI) {
-
 }
