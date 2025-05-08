@@ -1,8 +1,6 @@
 package buff
 
 import (
-	"gitlab.ifreetalk.com/plate/freetk/fkserver"
-	"gitlab.ifreetalk.com/plate/freetk/fkserver/kafka_consumer"
 	"gitlab.ifreetalk.com/plate/freetk/fkserver/tcp_service"
 	"gitlab.ifreetalk.com/plate/protodef/MazeTempBuff"
 )
@@ -33,10 +31,10 @@ func RegTcpHandler() {
 
 func InitKafkaConsumer() {
 	// 1001105 topic-maze-barrier-user-record 用户迷宫闯关纪录
-	_ = kafka_consumer.PlugKafkaConsumer("MazeBarrierNotify",
-		1001105,
-		kafka_consumer.WithGroup(fkserver.MonitorName),
-		kafka_consumer.WithKafkaCustomKeyContent(MazeBarrierNotifyProcess),
-	)
+	// _ = kafka_consumer.PlugKafkaConsumer("MazeBarrierNotify",
+	// 	1001105,
+	// 	kafka_consumer.WithGroup(fkserver.MonitorName),
+	// 	kafka_consumer.WithKafkaCustomKeyContent(MazeBarrierNotifyProcess),
+	// )
 
 }

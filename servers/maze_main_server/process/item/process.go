@@ -10,13 +10,14 @@ import (
 	"gitlab.ifreetalk.com/plate/freetk/common/errors"
 	"gitlab.ifreetalk.com/plate/freetk/fkcore/fknet"
 	"gitlab.ifreetalk.com/plate/freetk/fkcore/fkprometheus"
-	"gitlab.ifreetalk.com/plate/freetk/fkcore/fkrpc"
 	"gitlab.ifreetalk.com/plate/freetk/fkserver/tcp_service"
 	"gitlab.ifreetalk.com/plate/protodef/MazeBag"
 	"gitlab.ifreetalk.com/plate/protodef/MazeItemSvr"
 	"gitlab.ifreetalk.com/plate/protodef/MessageType"
 	"go.uber.org/zap"
 	"time"
+	"gitlab.ifreetalk.com/plate/freetk/fkcore/fklog"
+	"context"
 )
 
 func RegTcpHandler() {
@@ -91,7 +92,7 @@ func OnResetMazeBagRQ(ctx fknet.TCPContext, uid uint64, rqMsg proto.Message, rsM
 
 var GloRegIns = additemdefine.NewRegister()
 
-//func RegisterThriftRPCPackage() {
+// func RegisterThriftRPCPackage() {
 //	thrift_service.RegisterTwowaySimple(131437, &MazeItemSvr.AddItemRQ{},
 //		131438, &MazeItemSvr.AddItemRS{}, OnAddItemRQ)
 //
@@ -103,9 +104,9 @@ var GloRegIns = additemdefine.NewRegister()
 //
 //	thrift_service.RegisterTwowaySimple(131443, &MazeItemSvr.CheckAddItemRQ{},
 //		131444, &MazeItemSvr.CheckAddItemRS{}, OnCheckAddItemRQ)
-//}
+// }
 
-func OnAddItemRQ(ctx fknet.TCPContext, _ int64, rqMsg proto.Message, rsMsg proto.Message) (err error) {
+func OnAddItemRQ(ctx fklog.FKLogI, rqMsg proto.Message, rsMsg proto.Message) (err error) {
 	req, ok := rqMsg.(*MazeItemSvr.AddItemRQ)
 	if !ok {
 		ctx.ErrorWF("OnAddItemRQ pb is wrong", zap.Any("rqMsg", rqMsg))
@@ -131,7 +132,7 @@ func OnAddItemRQ(ctx fknet.TCPContext, _ int64, rqMsg proto.Message, rsMsg proto
 		return
 	}
 
-	userCtx := itemutil.WrapUserContext(ctx, uid, ctx, req.GetHeader())
+	userCtx := itemutil.WrapUserContext(context.TODO(), uid, ctx, req.GetHeader())
 
 	// 检查并合并物品
 	realAddItems := itemutil.CheckAndMergeItem(req.GetItems())
@@ -169,7 +170,7 @@ func OnAddItemRQ(ctx fknet.TCPContext, _ int64, rqMsg proto.Message, rsMsg proto
 	return
 }
 
-func OnConsumeItemRQ(ctx fkrpc.RPCContext, _ int64, rqMsg proto.Message, rsMsg proto.Message) (err error) {
+func OnConsumeItemRQ(ctx fklog.FKLogI, rqMsg proto.Message, rsMsg proto.Message) (err error) {
 	req, ok := rqMsg.(*MazeItemSvr.ConsumeItemRQ)
 	if !ok {
 		ctx.ErrorWF("OnConsumeItemRQ pb is wrong", zap.Any("rqMsg", rqMsg))
@@ -194,7 +195,7 @@ func OnConsumeItemRQ(ctx fkrpc.RPCContext, _ int64, rqMsg proto.Message, rsMsg p
 		return
 	}
 
-	userCtx := itemutil.WrapUserContext(ctx, uid, ctx, nil)
+	userCtx := itemutil.WrapUserContext(context.TODO(), uid, ctx, nil)
 
 	// 检查并合并物品
 	realSubItems := itemutil.CheckAndMergeItem(req.GetItems())
@@ -222,7 +223,7 @@ func OnConsumeItemRQ(ctx fkrpc.RPCContext, _ int64, rqMsg proto.Message, rsMsg p
 	return
 }
 
-func OnQueryItemRQ(ctx fkrpc.RPCContext, _ int64, rqMsg proto.Message, rsMsg proto.Message) (err error) {
+func OnQueryItemRQ(ctx fklog.FKLogI, rqMsg proto.Message, rsMsg proto.Message) (err error) {
 	req, ok := rqMsg.(*MazeItemSvr.QueryItemRQ)
 	if !ok {
 		ctx.ErrorWF("OnQueryItemRQ pb is wrong", zap.Any("rqMsg", rqMsg))
@@ -248,7 +249,7 @@ func OnQueryItemRQ(ctx fkrpc.RPCContext, _ int64, rqMsg proto.Message, rsMsg pro
 		return
 	}
 
-	userCtx := itemutil.WrapUserContext(ctx, uid, ctx, nil)
+	userCtx := itemutil.WrapUserContext(context.TODO(), uid, ctx, nil)
 
 	queryItems := itemutil.MergeQueryItems(req.GetItems())
 	if len(queryItems) == 0 {
@@ -271,7 +272,7 @@ func OnQueryItemRQ(ctx fkrpc.RPCContext, _ int64, rqMsg proto.Message, rsMsg pro
 	return
 }
 
-func OnCheckAddItemRQ(ctx fkrpc.RPCContext, _ int64, rqMsg proto.Message, rsMsg proto.Message) (err error) {
+func OnCheckAddItemRQ(ctx fklog.FKLogI, rqMsg proto.Message, rsMsg proto.Message) (err error) {
 	req, ok := rqMsg.(*MazeItemSvr.CheckAddItemRQ)
 	if !ok {
 		ctx.ErrorWF("OnCheckAddItemRQ pb is wrong", zap.Any("rqMsg", rqMsg))
@@ -296,7 +297,7 @@ func OnCheckAddItemRQ(ctx fkrpc.RPCContext, _ int64, rqMsg proto.Message, rsMsg 
 		return
 	}
 
-	userCtx := itemutil.WrapUserContext(ctx, uid, ctx, nil)
+	userCtx := itemutil.WrapUserContext(context.TODO(), uid, ctx, nil)
 
 	mergeItems := itemutil.CheckAndMergeItem(req.GetItems())
 	if len(mergeItems) == 0 {

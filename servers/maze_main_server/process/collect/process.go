@@ -2,8 +2,6 @@ package collect
 
 import (
 	"gitlab.ifreetalk.com/plate/definition/uncgkconst"
-	"gitlab.ifreetalk.com/plate/freetk/fkserver"
-	"gitlab.ifreetalk.com/plate/freetk/fkserver/kafka_consumer"
 	"gitlab.ifreetalk.com/plate/freetk/fkserver/tcp_service"
 	"gitlab.ifreetalk.com/plate/protodef/MazeCollect"
 	"gitlab.ifreetalk.com/plate/protodef/SeaTaskSvr"
@@ -22,10 +20,10 @@ func RegTcpHandler() {
 }
 
 func RegConsumeHandler() {
-	kafka_consumer.PlugKafkaConsumer("maze_barrier_chg_msg",
-		1001105,
-		kafka_consumer.WithGroup(fkserver.GroupNameGO+"."+fkserver.ProjectNamePPWD+".maze_collect_server"),
-		kafka_consumer.WithKafkaCustomKeyContent(HandleMazeBarrierMsg))
+	// kafka_consumer.PlugKafkaConsumer("maze_barrier_chg_msg",
+	// 	1001105,
+	// 	kafka_consumer.WithGroup(fkserver.GroupNameGO+"."+fkserver.ProjectNamePPWD+".maze_collect_server"),
+	// 	kafka_consumer.WithKafkaCustomKeyContent(HandleMazeBarrierMsg))
 
 	// kafka_consumer.PlugKafkaConsumer("maze_level_chg_msg",
 	// 	1001084,
