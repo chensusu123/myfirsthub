@@ -2,6 +2,7 @@ package process
 
 import (
 	"gitlab.ifreetalk.com/maze/maze_game_server/servers/maze_main_server/process/buff"
+	"gitlab.ifreetalk.com/maze/maze_game_server/servers/maze_main_server/process/card"
 	"gitlab.ifreetalk.com/maze/maze_game_server/servers/maze_main_server/process/collect"
 	"gitlab.ifreetalk.com/maze/maze_game_server/servers/maze_main_server/process/equip"
 	"gitlab.ifreetalk.com/maze/maze_game_server/servers/maze_main_server/process/equip_gm"
@@ -10,6 +11,7 @@ import (
 	"gitlab.ifreetalk.com/maze/maze_game_server/servers/maze_main_server/process/game/sweep"
 	"gitlab.ifreetalk.com/maze/maze_game_server/servers/maze_main_server/process/interact"
 	"gitlab.ifreetalk.com/maze/maze_game_server/servers/maze_main_server/process/item"
+	"gitlab.ifreetalk.com/maze/maze_game_server/servers/maze_main_server/process/rob"
 	"gitlab.ifreetalk.com/plate/freetk/fkcore/fklog"
 	"gitlab.ifreetalk.com/plate/freetk/fkserver/tcp_service"
 	"gitlab.ifreetalk.com/plate/freetk/fkserver/thrift_service"
@@ -39,6 +41,9 @@ func RegisterHandler() {
 
 		// 属性计算
 		attr_calc.RegTcpHandler()
+		card.RegTcpHandler()
+		
+		rob.RegTcpHandler()
 
 		// // 挂机收集接口
 		// collect.RegTcpHandler()

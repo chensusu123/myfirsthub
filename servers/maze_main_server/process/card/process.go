@@ -8,7 +8,7 @@ import (
 	"gitlab.ifreetalk.com/plate/protodef/MazeCard"
 )
 
-func InitTcp() {
+func RegTcpHandler() {
 	// 获取迷宫月卡
 	tcp_service.RegProcSimple(16198, &MazeCard.GetMazeCardRQ{},
 		16199, &MazeCard.GetMazeCardRS{}, GetMazeCardRQ)

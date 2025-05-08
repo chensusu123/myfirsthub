@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"gitlab.ifreetalk.com/maze/maze_game_server/common/constdef"
+	"gitlab.ifreetalk.com/maze/maze_game_server/common/structsdef"
 	"gitlab.ifreetalk.com/maze/maze_game_server/excel/mazeconfigv8config"
 	"gitlab.ifreetalk.com/maze/maze_game_server/io/redis/mazeattrcalcnotifyqueue"
 	"gitlab.ifreetalk.com/maze/maze_game_server/io/redis/mazebuffinforedis"
@@ -83,7 +84,7 @@ func AddMazeCard(logger fklog.FKLogI, userId uint64, expirationTime int64) error
 		}
 
 		// 推送属性变化通知
-		msg := &mazeattrcalcnotifyqueue.MazeCalcAttrNotifyMsg{
+		msg := &structsdef.MazeCalcAttrNotifyMsg{
 			UserId:     userId,
 			FromServer: fmt.Sprintf("%d %s", fkconfig.EnvVal.ServerType, fkconfig.EnvVal.AppName),
 			BuffSrc:    constdef.MazeBuffSrcMonthCard,
@@ -121,7 +122,7 @@ func DeleteMazeCard(logger fklog.FKLogI, userId uint64) error {
 	}
 
 	// 推送属性变化通知
-	msg := &mazeattrcalcnotifyqueue.MazeCalcAttrNotifyMsg{
+	msg := &structsdef.MazeCalcAttrNotifyMsg{
 		UserId:     userId,
 		FromServer: fmt.Sprintf("%d %s", fkconfig.EnvVal.ServerType, fkconfig.EnvVal.AppName),
 		BuffSrc:    constdef.MazeBuffSrcMonthCard,
