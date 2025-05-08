@@ -13,7 +13,7 @@ import (
 	"gitlab.ifreetalk.com/maze/maze_game_server/io/redis/mazeshopseqredis"
 	"gitlab.ifreetalk.com/maze/maze_game_server/io/redis/mazeuserbarrierredis"
 	"gitlab.ifreetalk.com/maze/maze_game_server/io/redis/mazeuserlevelredis"
-	"gitlab.ifreetalk.com/maze/maze_game_server/io/rpc/mazeenergyrpc"
+	"gitlab.ifreetalk.com/maze/maze_game_server/servers/maze_main_server/process/game/energy"
 	"gitlab.ifreetalk.com/plate/extra/protobuf/proto"
 	"gitlab.ifreetalk.com/plate/freetk/common/errors"
 	"gitlab.ifreetalk.com/plate/freetk/fkcore/fklog"
@@ -320,5 +320,7 @@ func CmdAddEnergy(logger fklog.FKLogI, userId uint64, args map[string]string) er
 	rq.OpType = proto.Int32(int32(MazeEnergySvr.ENUM_MAZE_ENERGY_OP_TYPE_GMADD))
 	rq.OpDesc = proto.String("CmdGmAdd")
 	rq.TradeNumber = proto.Uint64(uniqueid.GenUniqueIdUInt64())
-	return mazeenergyrpc.AddMazeEnergyRQ(logger, rq, rs)
+	// 合并服务，直接访问函数
+	// return mazeenergyrpc.AddMazeEnergyRQ(logger, rq, rs)
+	return energy.AddMazeEnergyRQ(logger, int64(userId), rq, rs)
 }

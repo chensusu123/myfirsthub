@@ -8,10 +8,10 @@ import (
 	"gitlab.ifreetalk.com/maze/maze_game_server/io/redis/mazebarriertempbuffredis"
 	"gitlab.ifreetalk.com/maze/maze_game_server/io/redis/mazechallengenumredis"
 	"gitlab.ifreetalk.com/maze/maze_game_server/io/redis/mazeuserbarrierredis"
-	"gitlab.ifreetalk.com/maze/maze_game_server/io/rpc/mazeenergyrpc"
 	"gitlab.ifreetalk.com/maze/maze_game_server/module/calequipsequence"
 	"gitlab.ifreetalk.com/maze/maze_game_server/module/mazecommonvalue"
 	"gitlab.ifreetalk.com/maze/maze_game_server/module/mazeuserinfo"
+	"gitlab.ifreetalk.com/maze/maze_game_server/servers/maze_main_server/process/game/energy"
 	"gitlab.ifreetalk.com/plate/excel/auto/GMazeActionCountV8Cfg"
 	"gitlab.ifreetalk.com/plate/excel/auto/GMazeBarriesV8Cfg"
 	"gitlab.ifreetalk.com/plate/excel/auto/GMazeLevelV8Cfg"
@@ -233,7 +233,9 @@ func SubUserEnergy(logger fklog.FKLogI, uid uint64, subEnergy int32) (isSucc boo
 		TradeNumber: proto.Uint64(gentradeno.GetTradeNum()),
 	}
 	res := &MazeEnergySvr.SubMazeEnergyRS{}
-	err = mazeenergyrpc.SubMazeEnergyRQ(logger, req, res)
+	// 合并服务，内聚接口
+	// err = mazeenergyrpc.SubMazeEnergyRQ(logger, req, res)
+	err = energy.SubMazeEnergyRQ(logger, int64(uid), req, res)
 	if err != nil {
 		logger.ErrorWF("OnMazeBarrierEnterRQ SubMazeEnergyRQ fail", zap.Error(err), zap.Any("req", req), zap.Any("res", res))
 		return
