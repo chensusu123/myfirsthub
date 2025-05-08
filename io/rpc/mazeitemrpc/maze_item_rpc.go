@@ -13,10 +13,10 @@ import (
 var itemRpc = thrift_rpc.AsyncRpc{}
 
 func init() {
-	//迷宫物品管理rpc代理 20010
-	fkconfig.RegisterNode(20010, &itemRpc)
+	// 迷宫物品管理rpc代理 20010
+	fkconfig.RegisterNameNode("mazeitemrpcex", 20010, &itemRpc)
 	// 17565
-	//fkconfig.RegisterNode(un_cgk_svr_type.UN_CGK_SVR_TYPE_ITEM_SERVER, &itemRpc)
+	// fkconfig.RegisterNode(un_cgk_svr_type.UN_CGK_SVR_TYPE_ITEM_SERVER, &itemRpc)
 }
 
 func DeductItemsRQ(logger fklog.FKLogI, req *MazeItemSvr.ConsumeItemRQ, res *MazeItemSvr.ConsumeItemRS) (err error) {

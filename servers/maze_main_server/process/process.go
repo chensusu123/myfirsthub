@@ -61,8 +61,8 @@ func RegisterHandler() {
 		equip.RegConsumeHandler()
 		// 挂机收集队列
 		collect.RegConsumeHandler()
-		// 属性计算队列
-		attr_calc.RegConsumeHandler()
+		// 属性计算队列 废弃
+		// attr_calc.RegConsumeHandler()
 		// kafka转发队列 废弃
 		// kafka_dispatch.RegConsumeHandler()
 	}
