@@ -27,6 +27,7 @@ import (
 	"gitlab.ifreetalk.com/plate/protodef/MazeEquipSvr"
 	"gitlab.ifreetalk.com/plate/protodef/MessageType"
 	"go.uber.org/zap"
+	"gitlab.ifreetalk.com/plate/freetk/fkcore/fkrpc"
 )
 
 func RegTcpHandler() {
@@ -238,8 +239,8 @@ func OnMazeEquipMixRQ(ctx fknet.TCPContext, uid uint64, rqMsg proto.Message, rsM
 	})
 
 	equipRes := &MazeEquipSvr.SvrAddMazeEquipRS{}
-
-	err = equiprpc.OnSvrAddMazeEquipRQ(ctx, int64(uid), equipReq, equipRes)
+	rpcCtx := fkrpc.RPCContext{ctx, ctx}
+	err = equiprpc.OnSvrAddMazeEquipRQ(rpcCtx, int64(uid), equipReq, equipRes)
 	if err != nil {
 		ctx.ErrorWF("OnMazeEquipMixRQ add equip err",
 			zap.Uint64("tradeNo", tradeNo),
@@ -248,14 +249,14 @@ func OnMazeEquipMixRQ(ctx fknet.TCPContext, uid uint64, rqMsg proto.Message, rsM
 		res.ErrInfo = errors.NewCommonCodeError("add equip err")
 		return
 	}
-	//if errInfo != nil {
+	// if errInfo != nil {
 	//	ctx.WarnWF("OnMazeEquipMixRQ add equip err",
 	//		zap.Uint64("tradeNo", tradeNo),
 	//		zap.Any("errorInfo", errInfo),
 	//	)
 	//	res.ErrInfo = errInfo
 	//	return
-	//}
+	// }
 
 	res.Equip = []*MazeCommon.MazeItem{
 		{
