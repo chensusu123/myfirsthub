@@ -15,7 +15,9 @@ func RegRpcHandler() {
 	// 人偶属性成对预览
 	thrift_service.RegisterTwowaySimple(131429, &MazeAttrCalcSvr.MazeAttrPairPreviewRQ{},
 		131430, &MazeAttrCalcSvr.MazeAttrPairPreviewRS{}, OnMazeAttrPairPreviewRQ)
+}
 
+func RegTcpHandler() {
 	// 查询属性面板
 	_ = tcp_service.RegProcSimple(16220, &MazePropertyPanel.QueryMazePropertyPanelRQ{},
 		16221, &MazePropertyPanel.QueryMazePropertyPanelRS{}, OnQueryPropertyPanelRQ)

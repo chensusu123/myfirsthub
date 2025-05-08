@@ -210,7 +210,7 @@ func OnMazeEquipMixRQ(ctx fknet.TCPContext, uid uint64, rqMsg proto.Message, rsM
 		}
 		rpcres := &MazeItemSvr.ConsumeItemRS{}
 
-		err = itemrpc.OnAddItemRQ(ctx, int64(uid), rpcreq, rpcres)
+		err = itemrpc.OnAddItemRQ(ctx, rpcreq, rpcres)
 		if err != nil {
 			ctx.ErrorWF("OnMazeEquipMixRQ DeductItems err", zap.Uint64("tradeNo", tradeNo), zap.Any("cost", cost),
 				zap.Any("errorInfo", errorInfo), zap.Error(err),

@@ -5,7 +5,6 @@ import (
 	"strings"
 
 	"gitlab.ifreetalk.com/maze/maze_game_server/common/function/monitor"
-	"gitlab.ifreetalk.com/maze/maze_game_server/io/rpc/mazeitemrpc"
 	"gitlab.ifreetalk.com/plate/extra/protobuf/proto"
 	"gitlab.ifreetalk.com/plate/freetk/common/errors"
 	"gitlab.ifreetalk.com/plate/freetk/fkcore/fkconfig"
@@ -15,6 +14,7 @@ import (
 	"gitlab.ifreetalk.com/plate/protodef/MazeItemSvr"
 	"gitlab.ifreetalk.com/plate/protodef/MessageType"
 	"go.uber.org/zap"
+	"gitlab.ifreetalk.com/maze/maze_game_server/servers/maze_main_server/process/item"
 )
 
 var (
@@ -39,7 +39,8 @@ func AddItemEx(logger fklog.FKLogI, userId uint64, opType int32, tradeNo uint64,
 	m1.StartV1()
 	defer m1.EndV1()
 
-	err := mazeitemrpc.AddItemsRQ(logger, rq, rs)
+	// err := mazeitemrpc.AddItemsRQ(logger, rq, rs)
+	err := item.OnAddItemRQ(logger, rq, rs)
 	if err != nil {
 		logger.ErrorWF("AddItemEx AddItemsRQ net error", zap.Error(err), zap.Any("rq", rq), zap.Any("rs", rs))
 		// 记录异常

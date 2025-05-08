@@ -3,6 +3,7 @@ module gitlab.ifreetalk.com/maze/maze_game_server
 go 1.18
 
 require (
+	github.com/gogo/protobuf v1.1.1
 	github.com/gomodule/redigo v1.8.9
 	github.com/json-iterator/go v1.1.12
 	gitlab.ifreetalk.com/plate/definition v1.0.6

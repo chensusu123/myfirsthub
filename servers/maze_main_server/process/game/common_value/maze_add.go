@@ -16,7 +16,7 @@ import (
 	"go.uber.org/zap"
 )
 
-func MazeCommonValueAddRQ(logger fklog.FKLogI, userID int64, req *MazeCommonValueSvr.MazeCommonValueAddRQ, res MazeCommonValueSvr.MazeCommonValueAddRS) (err error) {
+func MazeCommonValueAddRQ(logger fklog.FKLogI, userID int64, req *MazeCommonValueSvr.MazeCommonValueAddRQ, res *MazeCommonValueSvr.MazeCommonValueAddRS) (err error) {
 	res.ErrInfo = errors.NO_ERROR
 	res.UserId = req.UserId
 

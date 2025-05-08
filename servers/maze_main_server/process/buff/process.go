@@ -37,6 +37,7 @@ func InitKafkaConsumer() {
 	// 	kafka_consumer.WithGroup(fkserver.MonitorName),
 	// 	kafka_consumer.WithKafkaCustomKeyContent(MazeBarrierNotifyProcess),
 	// )
+
 	mazebarrieruserkafka.Watch(MazeBarrierNotifyProcess)
 
 }

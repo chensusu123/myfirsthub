@@ -1,7 +1,6 @@
 package gentradeno
 
 import (
-	"gitlab.ifreetalk.com/maze/maze_game_server/io/rpc/mazeitemrpc"
 	"gitlab.ifreetalk.com/plate/extra/protobuf/proto"
 	"gitlab.ifreetalk.com/plate/freetk/common/errors"
 	"gitlab.ifreetalk.com/plate/freetk/fkcore/fklog"
@@ -9,6 +8,7 @@ import (
 	"gitlab.ifreetalk.com/plate/protodef/MazeItemSvr"
 	"gitlab.ifreetalk.com/plate/protodef/MessageType"
 	"go.uber.org/zap"
+	"gitlab.ifreetalk.com/maze/maze_game_server/servers/maze_main_server/process/item"
 )
 
 func QueryItems(logger fklog.FKLogI, userId uint64, items ...*MazeCommon.MazeItem) (queryItems []*MazeCommon.MazeItem, errInfo *MessageType.ErrorInfo) {
@@ -19,7 +19,8 @@ func QueryItems(logger fklog.FKLogI, userId uint64, items ...*MazeCommon.MazeIte
 	rq.Items = append(rq.Items, items...)
 
 	rs := &MazeItemSvr.QueryItemRS{ErrInfo: errors.NO_ERROR}
-	err := mazeitemrpc.QueryItemsRQ(logger, rq, rs)
+	// err := mazeitemrpc.QueryItemsRQ(logger, rq, rs)
+	err := item.OnQueryItemRQ(logger, rq, rs)
 	if err != nil {
 		logger.ErrorWF("QueryItems QueryItemsRQ net error", zap.Error(err), zap.Any("rq", rq), zap.Any("rs", rs))
 		errInfo = errors.COMMON_ERROR_TIPS.Wrap(err.Error())

@@ -1,7 +1,6 @@
 package gentradeno
 
 import (
-	"gitlab.ifreetalk.com/maze/maze_game_server/io/rpc/mazeitemrpc"
 	"gitlab.ifreetalk.com/plate/extra/protobuf/proto"
 	"gitlab.ifreetalk.com/plate/freetk/common/errors"
 	"gitlab.ifreetalk.com/plate/freetk/fkcore/fklog"
@@ -9,6 +8,7 @@ import (
 	"gitlab.ifreetalk.com/plate/protodef/MazeItemSvr"
 	"gitlab.ifreetalk.com/plate/protodef/MessageType"
 	"go.uber.org/zap"
+	"gitlab.ifreetalk.com/maze/maze_game_server/servers/maze_main_server/process/item"
 )
 
 var (
@@ -27,7 +27,8 @@ func DeductItemsEx(logger fklog.FKLogI, userId uint64, opType int32, tradeNo uin
 
 	rs := &MazeItemSvr.ConsumeItemRS{ErrInfo: errors.NO_ERROR}
 
-	err := mazeitemrpc.DeductItemsRQ(logger, rq, rs)
+	// err := mazeitemrpc.DeductItemsRQ(logger, rq, rs)
+	err := item.OnConsumeItemRQ(logger, rq, rs)
 	if err != nil {
 		logger.ErrorWF("DeductItemsEx1 net error", zap.Error(err), zap.Any("rq", rq), zap.Any("rs", rs))
 
