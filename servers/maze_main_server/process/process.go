@@ -2,6 +2,7 @@ package process
 
 import (
 	"gitlab.ifreetalk.com/maze/maze_game_server/servers/maze_main_server/process/attr_calc"
+	"gitlab.ifreetalk.com/maze/maze_game_server/servers/maze_main_server/process/buff"
 	"gitlab.ifreetalk.com/maze/maze_game_server/servers/maze_main_server/process/collect"
 	"gitlab.ifreetalk.com/maze/maze_game_server/servers/maze_main_server/process/equip"
 	"gitlab.ifreetalk.com/maze/maze_game_server/servers/maze_main_server/process/equip_gm"
@@ -34,6 +35,9 @@ func RegisterHandler() {
 		interact.RegTcpHandler()
 		// 装备gm接口
 		equip_gm.RegTcpHandler()
+
+		buff.RegTcpHandler()
+		
 		// // 挂机收集接口
 		// collect.RegTcpHandler()
 	})
