@@ -14,6 +14,7 @@ import (
 	"gitlab.ifreetalk.com/plate/freetk/fkserver/tcp_service"
 	"gitlab.ifreetalk.com/plate/freetk/fkserver/thrift_service"
 	"gitlab.ifreetalk.com/plate/freetk/fkserver/web_service"
+	"gitlab.ifreetalk.com/maze/maze_game_server/servers/maze_main_server/process/attr_calc"
 )
 
 func RegisterHandler() {
@@ -35,6 +36,9 @@ func RegisterHandler() {
 		equip_gm.RegTcpHandler()
 
 		buff.RegTcpHandler()
+
+		// 属性计算
+		attr_calc.RegTcpHandler()
 
 		// // 挂机收集接口
 		// collect.RegTcpHandler()
