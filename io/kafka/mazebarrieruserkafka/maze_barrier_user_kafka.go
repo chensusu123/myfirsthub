@@ -3,11 +3,9 @@ package mazebarrieruserkafka
 import (
 	"time"
 
-	jsoniter "github.com/json-iterator/go"
-	"gitlab.ifreetalk.com/plate/freetk/fkcore/fkafka"
+	"gitlab.ifreetalk.com/maze/maze_game_server/io/dispatcher"
 	"gitlab.ifreetalk.com/plate/freetk/fkcore/fkconfig"
 	"gitlab.ifreetalk.com/plate/freetk/fkcore/fklog"
-	"go.uber.org/zap"
 )
 
 const (
@@ -16,7 +14,9 @@ const (
 	GameRetSweep = 3
 )
 
-var json = jsoniter.ConfigCompatibleWithStandardLibrary
+var d = dispatcher.NewDispatcher[*MazeBarrierUserGameRecord]()
+
+// var json = jsoniter.ConfigCompatibleWithStandardLibrary
 
 // 用户迷宫闯关纪录
 type MazeBarrierUserGameRecord struct {
@@ -28,19 +28,25 @@ type MazeBarrierUserGameRecord struct {
 	CreateTime int64  `json:"create_time"` // 操作时间
 }
 
-var gKafka = &fkafka.KafkaProducer{}
+// var gKafka = &fkafka.KafkaProducer{}
 
 func init() {
-	fkconfig.RegisterNameNode("mazebarrieruserkafka", 1001105, gKafka)
+	// fkconfig.RegisterNameNode("mazebarrieruserkafka", 1001105, gKafka)
 }
 
 func PushMazeBarrierUserRecord(agent fklog.FKLogI, record *MazeBarrierUserGameRecord) error {
 	record.CreateTime = time.Now().UnixNano() / 1e6
 	record.GroupID = fkconfig.EnvVal.GroupID
-	cnt, err := json.Marshal(record)
-	if err != nil {
-		return err
-	}
-	agent.InfoWF("PushMazeBarrierUserRecord data", zap.Any("userId", record.UserId), zap.Any("record", record))
-	return gKafka.SendWithUserID(record.UserId, cnt)
+	// cnt, err := json.Marshal(record)
+	// if err != nil {
+	// 	return err
+	// }
+	// agent.InfoWF("PushMazeBarrierUserRecord data", zap.Any("userId", record.UserId), zap.Any("record", record))
+	// return gKafka.SendWithUserID(record.UserId, cnt)
+	d.Push(agent, record)
+	return nil
+}
+
+func Watch(fn func(logger fklog.FKLogI, msg *MazeBarrierUserGameRecord)) {
+	d.Watch(fn)
 }

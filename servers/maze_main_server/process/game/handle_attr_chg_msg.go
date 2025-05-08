@@ -7,9 +7,6 @@
 package game
 
 import (
-	"context"
-	"encoding/json"
-
 	"gitlab.ifreetalk.com/maze/maze_game_server/common/constdef"
 	"gitlab.ifreetalk.com/maze/maze_game_server/common/structsdef"
 	"gitlab.ifreetalk.com/maze/maze_game_server/io/redis/mazecalcattrredis"
@@ -20,14 +17,14 @@ import (
 	"go.uber.org/zap"
 )
 
-func HandleUserAttrMsg(ctx context.Context, logger fklog.FKLogI, index int, key, data []byte) (err error) {
-	msg := &structsdef.DollAttrChgNotify{}
-	err = json.Unmarshal(data, msg)
-	if err != nil {
-		logger.ErrorWF("HandleUserAttrMsg Unmarshal", zap.Error(err),
-			zap.Int("msg's len", len(data)), zap.Uint64("userId", msg.UserId))
-		return
-	}
+func HandleUserAttrMsg(logger fklog.FKLogI, msg *structsdef.DollAttrChgNotify) {
+	// msg := &structsdef.DollAttrChgNotify{}
+	// err = json.Unmarshal(data, msg)
+	// if err != nil {
+	// 	logger.ErrorWF("HandleUserAttrMsg Unmarshal", zap.Error(err),
+	// 		zap.Int("msg's len", len(data)), zap.Uint64("userId", msg.UserId))
+	// 	return
+	// }
 
 	userId := msg.UserId
 	logger.InfoWF("HandleUserAttrMsg start", zap.Any("msg", msg),
@@ -43,7 +40,7 @@ func HandleUserAttrMsg(ctx context.Context, logger fklog.FKLogI, index int, key,
 	handleMazeCommonValueChg(logger, msg.UserId, msg)
 
 	// TODO 处理战斗数据变化(武力 血量 技能属性等)
-	return nil
+	return
 }
 
 func HasForceAttr(chgAttrs []*structsdef.AttrChgInfo) int32 {

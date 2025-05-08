@@ -7,32 +7,32 @@
 package equip
 
 import (
-	"context"
-	"encoding/json"
-
+	"gitlab.ifreetalk.com/maze/maze_game_server/common/constdef"
+	"gitlab.ifreetalk.com/maze/maze_game_server/common/structsdef"
+	"gitlab.ifreetalk.com/maze/maze_game_server/io/kafka/mazeuserlevelkafka"
+	"gitlab.ifreetalk.com/maze/maze_game_server/io/redis/mazeattrcalcnotifyqueue"
+	"gitlab.ifreetalk.com/maze/maze_game_server/io/redis/mazebuffinforedis"
+	"gitlab.ifreetalk.com/maze/maze_game_server/io/redis/mazeuserlevelredis"
+	"gitlab.ifreetalk.com/maze/maze_game_server/servers/maze_main_server/process/equip/demconstdef"
 	"gitlab.ifreetalk.com/plate/excel/auto/GMazeLevelV8Cfg"
 	"gitlab.ifreetalk.com/plate/extra/protobuf/proto"
 	"gitlab.ifreetalk.com/plate/freetk/fkcore/fklog"
 	"gitlab.ifreetalk.com/plate/protodef/MazeBuffData"
 	"go.uber.org/zap"
-	"gitlab.ifreetalk.com/maze/maze_game_server/common/structsdef"
-	"gitlab.ifreetalk.com/maze/maze_game_server/io/redis/mazeuserlevelredis"
-	"gitlab.ifreetalk.com/maze/maze_game_server/io/redis/mazebuffinforedis"
-	"gitlab.ifreetalk.com/maze/maze_game_server/servers/maze_main_server/process/equip/demconstdef"
-	"gitlab.ifreetalk.com/maze/maze_game_server/common/constdef"
-	"gitlab.ifreetalk.com/maze/maze_game_server/io/redis/mazeattrcalcnotifyqueue"
 )
 
-func HandleMazeLvChg(ctx context.Context, logger fklog.FKLogI, index int, key, data []byte) (err error) {
-	pack := &structsdef.MazeUserLevelRecord{}
-	err = json.Unmarshal(data, pack)
-	if err != nil {
-		logger.ErrorWF("HandleMazeLvChg Unmarshal",
-			zap.String("Value", string(data)),
-			zap.Any("err", err),
-		)
-		return err
-	}
+type MazeUserLevelRecord = mazeuserlevelkafka.MazeUserLevelRecord
+
+func HandleMazeLvChg(logger fklog.FKLogI, pack *MazeUserLevelRecord) {
+	// pack := &structsdef.MazeUserLevelRecord{}
+	// err = json.Unmarshal(data, pack)
+	// if err != nil {
+	// 	logger.ErrorWF("HandleMazeLvChg Unmarshal",
+	// 		zap.String("Value", string(data)),
+	// 		zap.Any("err", err),
+	// 	)
+	// 	return err
+	// }
 	if pack.UserId <= 0 {
 		return
 	}
@@ -42,7 +42,7 @@ func HandleMazeLvChg(ctx context.Context, logger fklog.FKLogI, index int, key, d
 	ChkEquipPosUnlock(logger, pack.UserId, UnlockSrcDollLv, true)
 
 	UpdateMazeLvBuff(logger, pack.UserId)
-	return nil
+	return
 }
 
 func UpdateMazeLvBuff(logger fklog.FKLogI, userId uint64) error {

@@ -9,20 +9,20 @@ package mazeattrmsg
 import (
 	"time"
 
-	jsoniter "github.com/json-iterator/go"
-	"gitlab.ifreetalk.com/plate/freetk/fkcore/fkafka"
+	"gitlab.ifreetalk.com/maze/maze_game_server/common/structsdef"
+	"gitlab.ifreetalk.com/maze/maze_game_server/io/dispatcher"
 	"gitlab.ifreetalk.com/plate/freetk/fkcore/fkconfig"
 	"gitlab.ifreetalk.com/plate/freetk/fkcore/fklog"
-	"go.uber.org/zap"
-	"gitlab.ifreetalk.com/maze/maze_game_server/common/structsdef"
 )
 
-var kp = &fkafka.KafkaProducer{}
-var json = jsoniter.ConfigCompatibleWithStandardLibrary
+// var kp = &fkafka.KafkaProducer{}
+var d = dispatcher.NewDispatcher[*structsdef.DollAttrChgNotify]()
+
+// var json = jsoniter.ConfigCompatibleWithStandardLibrary
 
 func init() {
 	// 1001083 topic-maze-attr-chg-notify-msg 迷宫属性变化通知消息
-	fkconfig.RegisterNameNode("mazeattrmsg", 1001083, kp)
+	// fkconfig.RegisterNameNode("mazeattrmsg", 1001083, kp)
 }
 
 func SendMazeAttrChgNotify(logger fklog.FKLogI, msg *structsdef.DollAttrChgNotify) error {
@@ -31,16 +31,21 @@ func SendMazeAttrChgNotify(logger fklog.FKLogI, msg *structsdef.DollAttrChgNotif
 		msg.CreateTime = time.Now().UnixNano() / 1000000
 	}
 
-	jbs, e := json.Marshal(msg)
-	if e != nil {
-		logger.ErrorWF("SendMazeAttrChgNotify Marshal fail", zap.Error(e), zap.Any("msg", msg))
-		return e
-	}
-	e = kp.SendWithUserID(msg.UserId, jbs)
-	if e != nil {
-		logger.ErrorWF("SendMazeAttrChgNotify SendWithUserID fail", zap.Error(e), zap.Any("msg", msg))
-		return e
-	}
-	logger.InfoWF("SendMazeAttrChgNotify SendWithUserID succ", zap.Any("msg", msg))
-	return e
+	// jbs, e := json.Marshal(msg)
+	// if e != nil {
+	// 	logger.ErrorWF("SendMazeAttrChgNotify Marshal fail", zap.Error(e), zap.Any("msg", msg))
+	// 	return e
+	// }
+	// e = kp.SendWithUserID(msg.UserId, jbs)
+	// if e != nil {
+	// 	logger.ErrorWF("SendMazeAttrChgNotify SendWithUserID fail", zap.Error(e), zap.Any("msg", msg))
+	// 	return e
+	// }
+	// logger.InfoWF("SendMazeAttrChgNotify SendWithUserID succ", zap.Any("msg", msg))
+	d.Push(logger, msg)
+	return nil
+}
+
+func Watch(fn func(logger fklog.FKLogI, msg *structsdef.DollAttrChgNotify)) {
+	d.Watch(fn)
 }

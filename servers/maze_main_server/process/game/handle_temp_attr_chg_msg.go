@@ -7,23 +7,22 @@
 package game
 
 import (
-	"context"
-	"encoding/json"
-
-	"gitlab.ifreetalk.com/maze/maze_game_server/common/structsdef"
+	"gitlab.ifreetalk.com/maze/maze_game_server/io/kafka/mazetempbuffchgmsg"
 	"gitlab.ifreetalk.com/maze/maze_game_server/module/mazeuserinfo"
 	"gitlab.ifreetalk.com/plate/freetk/fkcore/fklog"
 	"go.uber.org/zap"
 )
 
-func HandleTempBuffMsg(ctx context.Context, logger fklog.FKLogI, index int, key, data []byte) (err error) {
-	msg := &structsdef.MazeTempBuffChangeMsg{}
-	err = json.Unmarshal(data, msg)
-	if err != nil {
-		logger.ErrorWF("HandleTempBuffMsg Unmarshal", zap.Error(err),
-			zap.Int("msg's len", len(data)), zap.Uint64("userId", msg.UserId))
-		return
-	}
+type MazeTempBuffChangeMsg = mazetempbuffchgmsg.MazeTempBuffChangeMsg
+
+func HandleTempBuffMsg(logger fklog.FKLogI, msg *MazeTempBuffChangeMsg) {
+	// msg := &structsdef.MazeTempBuffChangeMsg{}
+	// err = json.Unmarshal(data, msg)
+	// if err != nil {
+	// 	logger.ErrorWF("HandleTempBuffMsg Unmarshal", zap.Error(err),
+	// 		zap.Int("msg's len", len(data)), zap.Uint64("userId", msg.UserId))
+	// 	return
+	// }
 
 	userId := msg.UserId
 	logger.InfoWF("HandleTempBuffMsg start", zap.Any("msg", msg),
@@ -44,5 +43,5 @@ func HandleTempBuffMsg(ctx context.Context, logger fklog.FKLogI, index int, key,
 	SendMazeBarrierChgPack(logger, userId, mazeBattleInfo)
 
 	// TODO 处理战斗数据变化(武力 血量 技能属性等)
-	return nil
+	return
 }

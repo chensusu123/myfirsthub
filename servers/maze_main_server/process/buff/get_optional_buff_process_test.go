@@ -5,7 +5,7 @@ import (
 	"testing"
 	"time"
 
-	"gitlab.ifreetalk.com/maze/maze_buff_server/excel/mazeenergyaffixlibraryv8config"
+	"gitlab.ifreetalk.com/maze/maze_game_server/excel/mazeenergyaffixlibraryv8config"
 	"gitlab.ifreetalk.com/plate/extra/protobuf/proto"
 	"gitlab.ifreetalk.com/plate/freetk/fkcore/fknet"
 	"gitlab.ifreetalk.com/plate/protodef/MazeTempBuff"

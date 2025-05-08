@@ -3,8 +3,7 @@ package mazetempbuffchgmsg
 import (
 	"time"
 
-	jsoniter "github.com/json-iterator/go"
-	"gitlab.ifreetalk.com/plate/freetk/fkcore/fkafka"
+	"gitlab.ifreetalk.com/maze/maze_game_server/io/dispatcher"
 	"gitlab.ifreetalk.com/plate/freetk/fkcore/fkconfig"
 	"gitlab.ifreetalk.com/plate/freetk/fkcore/fklog"
 	"go.uber.org/zap"
@@ -33,11 +32,13 @@ type MazeTempBuffChangeMsg struct {
 	CreateTime int64          `json:"create_time"` // 时间戳 ms
 }
 
-var mazeTempBuffChangeKafka = &fkafka.KafkaProducer{}
-var json = jsoniter.ConfigCompatibleWithStandardLibrary
+var d = dispatcher.NewDispatcher[*MazeTempBuffChangeMsg]()
+
+// var mazeTempBuffChangeKafka = &fkafka.KafkaProducer{}
+// var json = jsoniter.ConfigCompatibleWithStandardLibrary
 
 func init() {
-	_ = fkconfig.RegisterNameNode("mazeTempBuffChangeKafka", 1001104, mazeTempBuffChangeKafka)
+	// _ = fkconfig.RegisterNameNode("mazeTempBuffChangeKafka", 1001104, mazeTempBuffChangeKafka)
 }
 
 func PushTempBuffChangeMsg(logger fklog.FKLogI, msg *MazeTempBuffChangeMsg) error {
@@ -46,18 +47,23 @@ func PushTempBuffChangeMsg(logger fklog.FKLogI, msg *MazeTempBuffChangeMsg) erro
 		msg.CreateTime = time.Now().UnixNano() / 1000000
 	}
 
-	cnt, err := json.Marshal(msg)
-	if err != nil {
-		logger.ErrorWF("PushTempBuffChangeMsg marshal failed", zap.Uint64("uid", msg.UserId), zap.Error(err))
-		return err
-	}
+	// cnt, err := json.Marshal(msg)
+	// if err != nil {
+	// 	logger.ErrorWF("PushTempBuffChangeMsg marshal failed", zap.Uint64("uid", msg.UserId), zap.Error(err))
+	// 	return err
+	// }
 
-	err = mazeTempBuffChangeKafka.SendWithUserID(msg.UserId, cnt)
-	if err != nil {
-		logger.ErrorWF("PushTempBuffChangeMsg SendWithUserID error", zap.Uint64("uid", msg.UserId),
-			zap.Any("msg", msg), zap.Error(err))
-		return err
-	}
+	// err = mazeTempBuffChangeKafka.SendWithUserID(msg.UserId, cnt)
+	// if err != nil {
+	// 	logger.ErrorWF("PushTempBuffChangeMsg SendWithUserID error", zap.Uint64("uid", msg.UserId),
+	// 		zap.Any("msg", msg), zap.Error(err))
+	// 	return err
+	// }
+	d.Push(logger, msg)
 	logger.DebugWF("PushTempBuffChangeMsg end", zap.Any("pushData", msg))
 	return nil
+}
+
+func Watch(fn func(logger fklog.FKLogI, msg *MazeTempBuffChangeMsg)) {
+	d.Watch(fn)
 }
