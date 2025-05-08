@@ -12,7 +12,6 @@ import (
 	"gitlab.ifreetalk.com/maze/maze_game_server/servers/maze_main_server/process/game/sweep"
 	"gitlab.ifreetalk.com/maze/maze_game_server/servers/maze_main_server/process/interact"
 	"gitlab.ifreetalk.com/maze/maze_game_server/servers/maze_main_server/process/item"
-	"gitlab.ifreetalk.com/maze/maze_game_server/servers/maze_main_server/process/mail"
 	"gitlab.ifreetalk.com/maze/maze_game_server/servers/maze_main_server/process/rob"
 	"gitlab.ifreetalk.com/plate/freetk/fkcore/fklog"
 	"gitlab.ifreetalk.com/plate/freetk/fkserver/tcp_service"
@@ -45,7 +44,6 @@ func RegisterHandler() {
 		card.RegTcpHandler()
 
 		rob.RegTcpHandler()
-		mail.RegTcpHandler()
 	})
 
 	// 注册Rpc接口
