@@ -1,16 +1,18 @@
 package equip
 
 import (
-	"gitlab.ifreetalk.com/maze/maze_game_server/common/function/limiter"
 	"fmt"
-	"gitlab.ifreetalk.com/plate/protodef/MazeEquipPos"
-	"gitlab.ifreetalk.com/plate/protodef/MazeGameEquip"
-	"gitlab.ifreetalk.com/plate/freetk/fkserver/tcp_service"
-	"gitlab.ifreetalk.com/plate/freetk/fkserver/kafka_consumer"
+
 	"gitlab.ifreetalk.com/maze/maze_game_server/common/constdef"
+	"gitlab.ifreetalk.com/maze/maze_game_server/common/function/limiter"
+	"gitlab.ifreetalk.com/maze/maze_game_server/io/kafka/mazeuserlevelkafka"
 	"gitlab.ifreetalk.com/plate/freetk/fkserver"
+	"gitlab.ifreetalk.com/plate/freetk/fkserver/kafka_consumer"
+	"gitlab.ifreetalk.com/plate/freetk/fkserver/tcp_service"
 	"gitlab.ifreetalk.com/plate/freetk/fkserver/thrift_service"
+	"gitlab.ifreetalk.com/plate/protodef/MazeEquipPos"
 	"gitlab.ifreetalk.com/plate/protodef/MazeEquipSvr"
+	"gitlab.ifreetalk.com/plate/protodef/MazeGameEquip"
 )
 
 var GtcpLimiter = limiter.NewLimiter("tcpLimiter")
@@ -74,6 +76,7 @@ func RegConsumeHandler() {
 	// 	1001084,
 	// 	kafka_consumer.WithGroup(fkserver.GroupNameGO+"."+fkserver.ProjectNamePPWD+".maze_equip_main_server"),
 	// 	kafka_consumer.WithKafkaCustomKeyContent(HandleMazeLvChg))
+	mazeuserlevelkafka.Watch(HandleMazeLvChg)
 
 	// 性别变化流水
 	_ = kafka_consumer.PlugKafkaConsumer(constdef.KafkaMDTSexDesc,

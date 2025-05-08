@@ -4,13 +4,10 @@ import (
 	"time"
 
 	jsoniter "github.com/json-iterator/go"
-	"gitlab.ifreetalk.com/plate/freetk/fkcore/fkafka"
+	"gitlab.ifreetalk.com/maze/maze_game_server/io/dispatcher"
 	"gitlab.ifreetalk.com/plate/freetk/fkcore/fkconfig"
 	"gitlab.ifreetalk.com/plate/freetk/fkcore/fklog"
 	"go.uber.org/zap"
-	"gitlab.ifreetalk.com/maze/maze_game_server/servers/maze_main_server/process/collect"
-	"context"
-	"gitlab.ifreetalk.com/maze/maze_game_server/servers/maze_main_server/process/equip"
 )
 
 var json = jsoniter.ConfigCompatibleWithStandardLibrary
@@ -26,31 +23,37 @@ type MazeUserLevelRecord struct {
 	CreateTime  int64  `json:"create_time"`   // 操作时间 毫秒
 }
 
-var gKafka = &fkafka.KafkaProducer{}
+// var gKafka = &fkafka.KafkaProducer{}
+var d = dispatcher.NewDispatcher[*MazeUserLevelRecord]()
 
 func init() {
-	fkconfig.RegisterNameNode("mazeuserlevelkafka", 1001084, gKafka)
+	// fkconfig.RegisterNameNode("mazeuserlevelkafka", 1001084, gKafka)
 }
 
 func PushMazeLevelRecord(agent fklog.FKLogI, record *MazeUserLevelRecord) error {
 	record.CreateTime = time.Now().UnixNano() / 1e6
 	record.GroupID = fkconfig.EnvVal.GroupID
-	cnt, err := json.Marshal(record)
-	if err != nil {
-		return err
-	}
+	// cnt, err := json.Marshal(record)
+	// if err != nil {
+	// 	return err
+	// }
 	agent.InfoWF("PushMazeLevelRecord data", zap.Any("userId", record.UserId), zap.Any("record", record))
-	ctx := context.TODO()
-	err = collect.HandleMazeLevelMsg(ctx, agent, 0, nil, cnt)
-	if err != nil {
-		agent.ErrorWF("PushMazeLevelRecord HandleMazeLevelMsg", zap.Any("cnt", cnt), zap.Error(err))
-		return err
-	}
-	err = equip.HandleMazeLvChg(ctx, agent, 0, nil, cnt)
-	if err != nil {
-		agent.ErrorWF("PushMazeLevelRecord HandleMazeLvChg", zap.Any("cnt", cnt), zap.Error(err))
-		return err
-	}
+
+	// ctx := context.TODO()
+	// err = collect.HandleMazeLevelMsg(ctx, agent, 0, nil, cnt)
+	// if err != nil {
+	// 	agent.ErrorWF("PushMazeLevelRecord HandleMazeLevelMsg", zap.Any("cnt", cnt), zap.Error(err))
+	// 	return err
+	// }
+	// err = equip.HandleMazeLvChg(ctx, agent, 0, nil, cnt)
+	// if err != nil {
+	// 	agent.ErrorWF("PushMazeLevelRecord HandleMazeLvChg", zap.Any("cnt", cnt), zap.Error(err))
+	// 	return err
+	// }
+	d.Push(agent, record)
 	return nil
-	return gKafka.SendWithUserID(record.UserId, cnt)
+}
+
+func Watch(fn func(logger fklog.FKLogI, record *MazeUserLevelRecord)) {
+	d.Watch(fn)
 }

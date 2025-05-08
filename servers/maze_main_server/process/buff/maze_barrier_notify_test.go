@@ -2,7 +2,6 @@ package buff
 
 import (
 	"context"
-	"encoding/json"
 	"testing"
 	"time"
 
@@ -47,14 +46,12 @@ func TestMazeBarrierNotifyProcess(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			msg, err := json.Marshal(tt.args.data)
-			if (err != nil) != tt.wantErr {
-				t.Errorf("Marshal() error = %v, wantErr %v", err, tt.wantErr)
-			}
+			// msg, err := json.Marshal(tt.args.data)
+			// if (err != nil) != tt.wantErr {
+			// 	t.Errorf("Marshal() error = %v, wantErr %v", err, tt.wantErr)
+			// }
 
-			if err = MazeBarrierNotifyProcess(tt.args.c, tt.args.logger, tt.args.index, tt.args.key, msg); (err != nil) != tt.wantErr {
-				t.Errorf("MazeBarrierNotifyProcess() error = %v, wantErr %v", err, tt.wantErr)
-			}
+			MazeBarrierNotifyProcess(tt.args.logger, tt.args.data)
 		})
 	}
 }

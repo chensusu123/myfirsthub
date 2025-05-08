@@ -1,6 +1,7 @@
 package buff
 
 import (
+	"gitlab.ifreetalk.com/maze/maze_game_server/io/kafka/mazebarrieruserkafka"
 	"gitlab.ifreetalk.com/plate/freetk/fkserver/tcp_service"
 	"gitlab.ifreetalk.com/plate/protodef/MazeTempBuff"
 )
@@ -36,5 +37,7 @@ func InitKafkaConsumer() {
 	// 	kafka_consumer.WithGroup(fkserver.MonitorName),
 	// 	kafka_consumer.WithKafkaCustomKeyContent(MazeBarrierNotifyProcess),
 	// )
+
+	mazebarrieruserkafka.Watch(MazeBarrierNotifyProcess)
 
 }
