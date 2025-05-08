@@ -3,6 +3,8 @@ module gitlab.ifreetalk.com/maze/maze_game_server
 go 1.18
 
 require (
+	github.com/gogo/protobuf v1.1.1
+	github.com/gomodule/redigo v1.8.9
 	github.com/json-iterator/go v1.1.12
 	gitlab.ifreetalk.com/plate/definition v1.0.6
 	gitlab.ifreetalk.com/plate/excel v1.0.83-0.20250506053436-ef2c9ea111c0
@@ -26,7 +28,6 @@ require (
 	github.com/goinggo/mapstructure v0.0.0-20140717182941-194205d9b4a9 // indirect
 	github.com/golang/protobuf v1.4.3 // indirect
 	github.com/golang/snappy v0.0.1 // indirect
-	github.com/gomodule/redigo v1.8.9 // indirect
 	github.com/hashicorp/go-uuid v1.0.2 // indirect
 	github.com/jcmturner/gofork v1.0.0 // indirect
 	github.com/klauspost/compress v1.9.8 // indirect

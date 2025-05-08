@@ -5,9 +5,9 @@ package sweep
 import (
 	"gitlab.ifreetalk.com/maze/maze_game_server/common/constdef"
 	"gitlab.ifreetalk.com/maze/maze_game_server/common/function/uniqueid"
-	"gitlab.ifreetalk.com/maze/maze_game_server/io/rpc/mazeenergyrpc"
 	"gitlab.ifreetalk.com/maze/maze_game_server/module/calsweepbarrier"
 	"gitlab.ifreetalk.com/maze/maze_game_server/module/mazeuserinfo"
+	"gitlab.ifreetalk.com/maze/maze_game_server/servers/maze_main_server/process/game/energy"
 	"gitlab.ifreetalk.com/plate/excel/auto/GMazeBarriesV8Cfg"
 	"gitlab.ifreetalk.com/plate/extra/protobuf/proto"
 	"gitlab.ifreetalk.com/plate/freetk/common/errors"
@@ -102,7 +102,9 @@ func SubSweepEnergy(logger fklog.FKLogI, userID uint64, barrierId int32, subVal 
 		OpDesc:      proto.String(fkconfig.GetServerConfig().ServerName),
 	}
 	subEnergyRs := &MazeEnergySvr.SubMazeEnergyRS{}
-	err := mazeenergyrpc.SubMazeEnergyRQ(logger, subEnergyRq, subEnergyRs)
+	// 合并服务，内聚接口
+	// err := mazeenergyrpc.SubMazeEnergyRQ(logger, subEnergyRq, subEnergyRs)
+	err := energy.SubMazeEnergyRQ(logger, userID, subEnergyRq, subEnergyRs)
 	if err != nil {
 		errInfo = errors.COMMON_ERROR_TIPS.Wrap("扣体力失败")
 		logger.ErrorWF("SubSweepEnergy SubMazeEnergyRQ fail", zap.Int32("barrierId", barrierId),

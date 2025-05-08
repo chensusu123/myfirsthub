@@ -16,6 +16,8 @@ import (
 
 	"go.uber.org/zap"
 	"gitlab.ifreetalk.com/maze/maze_game_server/common/structsdef"
+	"gitlab.ifreetalk.com/maze/maze_game_server/servers/maze_main_server/process/attr_calc"
+	"context"
 )
 
 var (
@@ -40,6 +42,8 @@ type MazeCalcAttrNotifyMsg struct {
 }
 
 func SendMazeAttrCalcNotify(agent fklog.FKLogI, msg *structsdef.MazeCalcAttrNotifyMsg) error {
+	agent.InfoWF("SendMazeAttrCalcNotify start", zap.Any("msg", msg))
+	return attr_calc.OnMazeAttrCalcMsg(context.TODO(), agent, 0, msg)
 	if msg.Stamp == 0 {
 		msg.Stamp = time.Now().UnixNano() / 1000000
 	}

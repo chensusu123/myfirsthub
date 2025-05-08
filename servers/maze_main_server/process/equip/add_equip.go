@@ -2,7 +2,6 @@ package equip
 
 import (
 	"fmt"
-	"gitlab.ifreetalk.com/plate/freetk/fkcore/fknet"
 	"sort"
 	"sync"
 	"time"
@@ -30,9 +29,10 @@ import (
 	"gitlab.ifreetalk.com/plate/io_interface/redis_interface/common/MonthlyCardRedis"
 	"gitlab.ifreetalk.com/plate/protodef/MazeGameEquip"
 	"go.uber.org/zap"
+	"gitlab.ifreetalk.com/plate/freetk/fkcore/fkrpc"
 )
 
-func OnSvrAddMazeEquipRQ(ctx fknet.TCPContext, shardingID int64, rqMsg proto.Message, rsMsg proto.Message) (err error) {
+func OnSvrAddMazeEquipRQ(ctx fkrpc.RPCContext, shardingID int64, rqMsg proto.Message, rsMsg proto.Message) (err error) {
 	defer fkprometheus.DebugPMT("OnSvrAddMazeEquipRQ")()
 	userCtx := fkserver.NewUserContext(ctx.Context, uint64(shardingID), ctx.FKLogI)
 	req := rqMsg.(*MazeEquipSvr.SvrAddMazeEquipRQ)

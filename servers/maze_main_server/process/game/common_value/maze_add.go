@@ -9,37 +9,32 @@ import (
 	"gitlab.ifreetalk.com/maze/maze_game_server/module/mazemoney"
 	"gitlab.ifreetalk.com/plate/extra/protobuf/proto"
 	"gitlab.ifreetalk.com/plate/freetk/common/errors"
-	"gitlab.ifreetalk.com/plate/freetk/fkcore/fkprometheus"
-	"gitlab.ifreetalk.com/plate/freetk/fkcore/fkrpc"
+	"gitlab.ifreetalk.com/plate/freetk/fkcore/fklog"
 	"gitlab.ifreetalk.com/plate/protodef/MazeCommon"
 	"gitlab.ifreetalk.com/plate/protodef/MazeCommonValueSvr"
 	"gitlab.ifreetalk.com/plate/protodef/MazeGame"
 	"go.uber.org/zap"
 )
 
-func OnMazeCommonValueAddRQ(ctx fkrpc.RPCContext, shardingID int64, rqMsg proto.Message, rsMsg proto.Message) (err error) {
-	defer fkprometheus.DebugPMT("OnMazeCommonValueAddRQ")()
-
-	req := rqMsg.(*MazeCommonValueSvr.MazeCommonValueAddRQ)
-	res := rsMsg.(*MazeCommonValueSvr.MazeCommonValueAddRS)
+func MazeCommonValueAddRQ(logger fklog.FKLogI, userID int64, req *MazeCommonValueSvr.MazeCommonValueAddRQ, res *MazeCommonValueSvr.MazeCommonValueAddRS) (err error) {
 	res.ErrInfo = errors.NO_ERROR
 	res.UserId = req.UserId
-	logger := ctx.FKLogI
-	logger.WarnWF("OnMazeCommonValueAddRQ with", zap.Any("rq", req))
+
+	logger.WarnWF("MazeCommonValueAddRQ with", zap.Any("rq", req))
 
 	addStartTime := time.Now()
 	defer func() {
 		costTime := time.Since(addStartTime).Seconds()
-		logger.WarnWF("OnMazeCommonValueAddRQ end ", zap.Any("req", req), zap.Any("res", res), zap.Float64("costTime", costTime))
+		logger.WarnWF("MazeCommonValueAddRQ end ", zap.Any("req", req), zap.Any("res", res), zap.Float64("costTime", costTime))
 		if costTime >= 0.5 {
-			logger.ErrorWF("OnMazeCommonValueAddRQ timeout", zap.Any("req", req), zap.Any("res", res), zap.Float64("costTime", costTime))
+			logger.ErrorWF("MazeCommonValueAddRQ timeout", zap.Any("req", req), zap.Any("res", res), zap.Float64("costTime", costTime))
 		}
 	}()
 
 	query := req.GetAddItems()
 	oldCoin, oldDiamond, err := mazemoney.GetUserMoney(logger, req.GetUserId())
 	if err != nil {
-		logger.ErrorWF("OnMazeCommonValueAddRQ GetUserMoney fail", zap.Error(err))
+		logger.ErrorWF("MazeCommonValueAddRQ GetUserMoney fail", zap.Error(err))
 		res.ErrInfo = errors.MODULE_ERROR.ToInfo()
 		return
 	}
@@ -57,7 +52,7 @@ func OnMazeCommonValueAddRQ(ctx fkrpc.RPCContext, shardingID int64, rqMsg proto.
 
 	err = mazemoney.BatchSetUserMoney(logger, req.GetUserId(), moneyMap)
 	if err != nil {
-		logger.ErrorWF("OnMazeCommonValueAddRQ BatchSetUserMoney fail", zap.Error(err))
+		logger.ErrorWF("MazeCommonValueAddRQ BatchSetUserMoney fail", zap.Error(err))
 		res.ErrInfo = errors.MODULE_ERROR.ToInfo()
 		return
 	}

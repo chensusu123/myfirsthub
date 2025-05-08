@@ -1,14 +1,16 @@
 package equip
 
 import (
-	"gitlab.ifreetalk.com/plate/freetk/fkserver/kafka_consumer"
-	"gitlab.ifreetalk.com/plate/freetk/fkserver"
 	"gitlab.ifreetalk.com/maze/maze_game_server/common/function/limiter"
 	"fmt"
 	"gitlab.ifreetalk.com/plate/protodef/MazeEquipPos"
 	"gitlab.ifreetalk.com/plate/protodef/MazeGameEquip"
 	"gitlab.ifreetalk.com/plate/freetk/fkserver/tcp_service"
+	"gitlab.ifreetalk.com/plate/freetk/fkserver/kafka_consumer"
 	"gitlab.ifreetalk.com/maze/maze_game_server/common/constdef"
+	"gitlab.ifreetalk.com/plate/freetk/fkserver"
+	"gitlab.ifreetalk.com/plate/freetk/fkserver/thrift_service"
+	"gitlab.ifreetalk.com/plate/protodef/MazeEquipSvr"
 )
 
 var GtcpLimiter = limiter.NewLimiter("tcpLimiter")
@@ -58,20 +60,20 @@ func RegTcpHandler() {
 		16204, &MazeEquipPos.MazeEquipPosLvUpRS{}, OnEquipPosLvUpRQ)
 }
 
-// func RegRpcHandler() {
-//	thrift_service.RegisterTwowaySimple(131421, &MazeEquipSvr.SvrAddMazeEquipRQ{},
-//		131422, &MazeEquipSvr.SvrAddMazeEquipRS{}, OnSvrAddMazeEquipRQ)
-//	thrift_service.RegisterTwowaySimple(131423, &MazeEquipSvr.SvrMazeEquipAssembleRQ{},
-//		131424, &MazeEquipSvr.SvrMazeEquipAssembleRS{}, OnSvrMazeEquipAssembleRQ)
-//	thrift_service.RegisterTwowaySimple(131425, &MazeEquipSvr.SvrMazeEquipSaleRQ{},
-//		131426, &MazeEquipSvr.SvrMazeEquipSaleRS{}, OnSvrDollEquipSaleRQ)
-// }
+func RegRpcHandler() {
+	thrift_service.RegisterTwowaySimple(131421, &MazeEquipSvr.SvrAddMazeEquipRQ{},
+		131422, &MazeEquipSvr.SvrAddMazeEquipRS{}, OnSvrAddMazeEquipRQ)
+	thrift_service.RegisterTwowaySimple(131423, &MazeEquipSvr.SvrMazeEquipAssembleRQ{},
+		131424, &MazeEquipSvr.SvrMazeEquipAssembleRS{}, OnSvrMazeEquipAssembleRQ)
+	thrift_service.RegisterTwowaySimple(131425, &MazeEquipSvr.SvrMazeEquipSaleRQ{},
+		131426, &MazeEquipSvr.SvrMazeEquipSaleRS{}, OnSvrDollEquipSaleRQ)
+}
 
 func RegConsumeHandler() {
-	_ = kafka_consumer.PlugKafkaConsumer("maze_lv_chg",
-		1001084,
-		kafka_consumer.WithGroup(fkserver.GroupNameGO+"."+fkserver.ProjectNamePPWD+".maze_equip_main_server"),
-		kafka_consumer.WithKafkaCustomKeyContent(HandleMazeLvChg))
+	// _ = kafka_consumer.PlugKafkaConsumer("maze_lv_chg",
+	// 	1001084,
+	// 	kafka_consumer.WithGroup(fkserver.GroupNameGO+"."+fkserver.ProjectNamePPWD+".maze_equip_main_server"),
+	// 	kafka_consumer.WithKafkaCustomKeyContent(HandleMazeLvChg))
 
 	// 性别变化流水
 	_ = kafka_consumer.PlugKafkaConsumer(constdef.KafkaMDTSexDesc,

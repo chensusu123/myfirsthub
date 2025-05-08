@@ -7,30 +7,24 @@ import (
 	"gitlab.ifreetalk.com/maze/maze_game_server/module/mazemoney"
 	"gitlab.ifreetalk.com/plate/extra/protobuf/proto"
 	"gitlab.ifreetalk.com/plate/freetk/common/errors"
-	"gitlab.ifreetalk.com/plate/freetk/fkcore/fkprometheus"
-	"gitlab.ifreetalk.com/plate/freetk/fkcore/fkrpc"
+	"gitlab.ifreetalk.com/plate/freetk/fkcore/fklog"
 	"gitlab.ifreetalk.com/plate/protodef/MazeCommon"
 	"gitlab.ifreetalk.com/plate/protodef/MazeCommonValueSvr"
 	"go.uber.org/zap"
 )
 
-func OnMazeCommonValueQueryRQ(ctx fkrpc.RPCContext, shardingID int64, rqMsg proto.Message, rsMsg proto.Message) (err error) {
-	defer fkprometheus.DebugPMT("OnMazeCommonValueQueryRQ")()
-
-	req := rqMsg.(*MazeCommonValueSvr.MazeCommonValueQueryRQ)
-	res := rsMsg.(*MazeCommonValueSvr.MazeCommonValueQueryRS)
+func MazeCommonValueQueryRQ(logger fklog.FKLogI, userID int64, req *MazeCommonValueSvr.MazeCommonValueQueryRQ, res *MazeCommonValueSvr.MazeCommonValueQueryRS) (err error) {
 	res.ErrInfo = errors.NO_ERROR
 	res.UserId = req.UserId
 
-	logger := ctx.FKLogI
-	logger.WarnWF("OnMazeCommonValueQueryRQ with", zap.Any("rq", req))
+	logger.WarnWF("MazeCommonValueQueryRQ with", zap.Any("rq", req))
 
 	addStartTime := time.Now()
 	defer func() {
 		costTime := time.Since(addStartTime).Seconds()
-		logger.WarnWF("OnMazeCommonValueQueryRQ end ", zap.Any("req", req), zap.Any("res", res), zap.Float64("costTime", costTime))
+		logger.WarnWF("MazeCommonValueQueryRQ end ", zap.Any("req", req), zap.Any("res", res), zap.Float64("costTime", costTime))
 		if costTime >= 0.5 {
-			logger.ErrorWF("OnMazeCommonValueQueryRQ timeout", zap.Any("req", req), zap.Any("res", res), zap.Float64("costTime", costTime))
+			logger.ErrorWF("MazeCommonValueQueryRQ timeout", zap.Any("req", req), zap.Any("res", res), zap.Float64("costTime", costTime))
 		}
 	}()
 
@@ -38,7 +32,7 @@ func OnMazeCommonValueQueryRQ(ctx fkrpc.RPCContext, shardingID int64, rqMsg prot
 
 	coin, diamond, err := mazemoney.GetUserMoney(logger, req.GetUserId())
 	if err != nil {
-		logger.ErrorWF("OnMazeCommonValueQueryRQ GetUserMoney fail", zap.Error(err))
+		logger.ErrorWF("MazeCommonValueQueryRQ GetUserMoney fail", zap.Error(err))
 		res.ErrInfo = errors.MODULE_ERROR.ToInfo()
 		return
 	}

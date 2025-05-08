@@ -8,6 +8,9 @@ import (
 	"gitlab.ifreetalk.com/plate/freetk/fkcore/fkconfig"
 	"gitlab.ifreetalk.com/plate/freetk/fkcore/fklog"
 	"go.uber.org/zap"
+	"gitlab.ifreetalk.com/maze/maze_game_server/servers/maze_main_server/process/buff"
+	"gitlab.ifreetalk.com/maze/maze_game_server/servers/maze_main_server/process/collect"
+	"context"
 )
 
 const (
@@ -42,5 +45,15 @@ func PushMazeBarrierUserRecord(agent fklog.FKLogI, record *MazeBarrierUserGameRe
 		return err
 	}
 	agent.InfoWF("PushMazeBarrierUserRecord data", zap.Any("userId", record.UserId), zap.Any("record", record))
-	return gKafka.SendWithUserID(record.UserId, cnt)
+	ctx := context.TODO()
+	err = buff.MazeBarrierNotifyProcess(ctx, agent, 0, nil, cnt)
+	if err != nil {
+		return err
+	}
+	err = collect.HandleMazeBarrierMsg(ctx, agent, 0, nil, cnt)
+	if err != nil {
+		return err
+	}
+	return nil
+	// return gKafka.SendWithUserID(record.UserId, cnt)
 }

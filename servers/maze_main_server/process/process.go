@@ -1,14 +1,12 @@
 package process
 
 import (
-	"gitlab.ifreetalk.com/maze/maze_game_server/servers/maze_main_server/process/attr_calc"
 	"gitlab.ifreetalk.com/maze/maze_game_server/servers/maze_main_server/process/buff"
 	"gitlab.ifreetalk.com/maze/maze_game_server/servers/maze_main_server/process/card"
 	"gitlab.ifreetalk.com/maze/maze_game_server/servers/maze_main_server/process/collect"
 	"gitlab.ifreetalk.com/maze/maze_game_server/servers/maze_main_server/process/equip"
 	"gitlab.ifreetalk.com/maze/maze_game_server/servers/maze_main_server/process/equip_gm"
 	"gitlab.ifreetalk.com/maze/maze_game_server/servers/maze_main_server/process/game"
-	"gitlab.ifreetalk.com/maze/maze_game_server/servers/maze_main_server/process/game/common_value"
 	"gitlab.ifreetalk.com/maze/maze_game_server/servers/maze_main_server/process/game/energy"
 	"gitlab.ifreetalk.com/maze/maze_game_server/servers/maze_main_server/process/game/sweep"
 	"gitlab.ifreetalk.com/maze/maze_game_server/servers/maze_main_server/process/interact"
@@ -18,6 +16,7 @@ import (
 	"gitlab.ifreetalk.com/plate/freetk/fkserver/tcp_service"
 	"gitlab.ifreetalk.com/plate/freetk/fkserver/thrift_service"
 	"gitlab.ifreetalk.com/plate/freetk/fkserver/web_service"
+	"gitlab.ifreetalk.com/maze/maze_game_server/servers/maze_main_server/process/attr_calc"
 )
 
 func RegisterHandler() {
@@ -40,6 +39,8 @@ func RegisterHandler() {
 
 		buff.RegTcpHandler()
 
+		// 属性计算
+		attr_calc.RegTcpHandler()
 		card.RegTcpHandler()
 		
 		rob.RegTcpHandler()
@@ -52,10 +53,10 @@ func RegisterHandler() {
 	thrift_service.PlugThriftRpcService(func() {
 		// 装备rpc
 		// equip.RegRpcHandler()
-		// 属性计算rpc
-		attr_calc.RegRpcHandler()
+		// 属性计算rpc todo 目前看没有地方调用，先注释掉
+		// attr_calc.RegRpcHandler()
 		// 通用数值
-		common_value.RegisterRpcPackProcessor()
+		// common_value.RegisterRpcPackProcessor()
 	},
 	)
 
