@@ -6,7 +6,6 @@ import (
 	"gitlab.ifreetalk.com/maze/maze_game_server/servers/maze_main_server/process/equip"
 	"gitlab.ifreetalk.com/maze/maze_game_server/servers/maze_main_server/process/equip_gm"
 	"gitlab.ifreetalk.com/maze/maze_game_server/servers/maze_main_server/process/game"
-	"gitlab.ifreetalk.com/maze/maze_game_server/servers/maze_main_server/process/game/common_value"
 	"gitlab.ifreetalk.com/maze/maze_game_server/servers/maze_main_server/process/game/energy"
 	"gitlab.ifreetalk.com/maze/maze_game_server/servers/maze_main_server/process/game/sweep"
 	"gitlab.ifreetalk.com/maze/maze_game_server/servers/maze_main_server/process/interact"
@@ -48,7 +47,7 @@ func RegisterHandler() {
 		// 属性计算rpc todo 目前看没有地方调用，先注释掉
 		// attr_calc.RegRpcHandler()
 		// 通用数值
-		common_value.RegisterRpcPackProcessor()
+		// common_value.RegisterRpcPackProcessor()
 	},
 	)
 

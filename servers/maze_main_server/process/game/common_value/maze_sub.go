@@ -9,30 +9,25 @@ import (
 	"gitlab.ifreetalk.com/maze/maze_game_server/module/mazemoney"
 	"gitlab.ifreetalk.com/plate/extra/protobuf/proto"
 	"gitlab.ifreetalk.com/plate/freetk/common/errors"
-	"gitlab.ifreetalk.com/plate/freetk/fkcore/fkprometheus"
-	"gitlab.ifreetalk.com/plate/freetk/fkcore/fkrpc"
+	"gitlab.ifreetalk.com/plate/freetk/fkcore/fklog"
 	"gitlab.ifreetalk.com/plate/protodef/MazeCommon"
 	"gitlab.ifreetalk.com/plate/protodef/MazeCommonValueSvr"
 	"gitlab.ifreetalk.com/plate/protodef/MazeGame"
 	"go.uber.org/zap"
 )
 
-func OnMazeCommonValueSubRQ(ctx fkrpc.RPCContext, shardingID int64, rqMsg proto.Message, rsMsg proto.Message) (err error) {
-	defer fkprometheus.DebugPMT("OnMazeCommonValueSubRQ")()
-
-	req := rqMsg.(*MazeCommonValueSvr.MazeCommonValueSubRQ)
-	res := rsMsg.(*MazeCommonValueSvr.MazeCommonValueSubRS)
+func MazeCommonValueSubRQ(logger fklog.FKLogI, shardingID int64, req MazeCommonValueSvr.MazeCommonValueSubRQ, res MazeCommonValueSvr.MazeCommonValueSubRS) (err error) {
 	res.ErrInfo = errors.NO_ERROR
 	res.UserId = req.UserId
-	logger := ctx.FKLogI
-	logger.WarnWF("OnMazeCommonValueSubRQ with", zap.Any("rq", req))
+
+	logger.WarnWF("MazeCommonValueSubRQ with", zap.Any("rq", req))
 
 	addStartTime := time.Now()
 	defer func() {
 		costTime := time.Since(addStartTime).Seconds()
-		logger.WarnWF("OnMazeCommonValueSubRQ end ", zap.Any("req", req), zap.Any("res", res), zap.Float64("costTime", costTime))
+		logger.WarnWF("MazeCommonValueSubRQ end ", zap.Any("req", req), zap.Any("res", res), zap.Float64("costTime", costTime))
 		if costTime >= 0.5 {
-			logger.ErrorWF("OnMazeCommonValueSubRQ timeout", zap.Any("req", req), zap.Any("res", res), zap.Float64("costTime", costTime))
+			logger.ErrorWF("MazeCommonValueSubRQ timeout", zap.Any("req", req), zap.Any("res", res), zap.Float64("costTime", costTime))
 		}
 	}()
 
@@ -40,7 +35,7 @@ func OnMazeCommonValueSubRQ(ctx fkrpc.RPCContext, shardingID int64, rqMsg proto.
 
 	oldCoin, oldDiamond, err := mazemoney.GetUserMoney(logger, req.GetUserId())
 	if err != nil {
-		logger.ErrorWF("OnMazeCommonValueSubRQ GetUserMoney fail", zap.Error(err))
+		logger.ErrorWF("MazeCommonValueSubRQ GetUserMoney fail", zap.Error(err))
 		res.ErrInfo = errors.MODULE_ERROR.ToInfo()
 		return
 	}
@@ -66,7 +61,7 @@ func OnMazeCommonValueSubRQ(ctx fkrpc.RPCContext, shardingID int64, rqMsg proto.
 
 	err = mazemoney.BatchSetUserMoney(logger, req.GetUserId(), moneyMap)
 	if err != nil {
-		logger.ErrorWF("OnMazeCommonValueSubRQ BatchSetUserMoney fail", zap.Error(err))
+		logger.ErrorWF("MazeCommonValueSubRQ BatchSetUserMoney fail", zap.Error(err))
 		res.ErrInfo = errors.MODULE_ERROR.ToInfo()
 		return
 	}

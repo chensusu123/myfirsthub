@@ -34,7 +34,7 @@ import (
 // 	return AddMazeEnergyRQ(ctx, shardingID, req, res)
 // }
 
-func AddMazeEnergyRQ(logger fklog.FKLogI, shardingID int64, req *MazeEnergySvr.AddMazeEnergyRQ, res *MazeEnergySvr.AddMazeEnergyRS) (err error) {
+func AddMazeEnergyRQ(logger fklog.FKLogI, userID uint64, req *MazeEnergySvr.AddMazeEnergyRQ, res *MazeEnergySvr.AddMazeEnergyRS) (err error) {
 	res.ErrInfo = errors.NO_ERROR
 
 	if req.GetUserId() == 0 {

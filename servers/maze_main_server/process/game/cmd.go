@@ -322,5 +322,5 @@ func CmdAddEnergy(logger fklog.FKLogI, userId uint64, args map[string]string) er
 	rq.TradeNumber = proto.Uint64(uniqueid.GenUniqueIdUInt64())
 	// 合并服务，直接访问函数
 	// return mazeenergyrpc.AddMazeEnergyRQ(logger, rq, rs)
-	return energy.AddMazeEnergyRQ(logger, int64(userId), rq, rs)
+	return energy.AddMazeEnergyRQ(logger, userId, rq, rs)
 }

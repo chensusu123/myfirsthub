@@ -104,7 +104,7 @@ func SubSweepEnergy(logger fklog.FKLogI, userID uint64, barrierId int32, subVal 
 	subEnergyRs := &MazeEnergySvr.SubMazeEnergyRS{}
 	// 合并服务，内聚接口
 	// err := mazeenergyrpc.SubMazeEnergyRQ(logger, subEnergyRq, subEnergyRs)
-	err := energy.SubMazeEnergyRQ(logger, int64(userID), subEnergyRq, subEnergyRs)
+	err := energy.SubMazeEnergyRQ(logger, userID, subEnergyRq, subEnergyRs)
 	if err != nil {
 		errInfo = errors.COMMON_ERROR_TIPS.Wrap("扣体力失败")
 		logger.ErrorWF("SubSweepEnergy SubMazeEnergyRQ fail", zap.Int32("barrierId", barrierId),

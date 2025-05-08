@@ -34,7 +34,7 @@ import (
 // 	return SubMazeEnergyRQ(ctx, shardingID, req, res)
 // }
 
-func SubMazeEnergyRQ(logger fklog.FKLogI, shardingID int64, req *MazeEnergySvr.SubMazeEnergyRQ, res *MazeEnergySvr.SubMazeEnergyRS) (err error) {
+func SubMazeEnergyRQ(logger fklog.FKLogI, userID uint64, req *MazeEnergySvr.SubMazeEnergyRQ, res *MazeEnergySvr.SubMazeEnergyRS) (err error) {
 	res.ErrInfo = errors.NO_ERROR
 
 	if req.GetUserId() == 0 {

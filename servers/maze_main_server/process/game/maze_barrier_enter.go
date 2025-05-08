@@ -235,7 +235,7 @@ func SubUserEnergy(logger fklog.FKLogI, uid uint64, subEnergy int32) (isSucc boo
 	res := &MazeEnergySvr.SubMazeEnergyRS{}
 	// 合并服务，内聚接口
 	// err = mazeenergyrpc.SubMazeEnergyRQ(logger, req, res)
-	err = energy.SubMazeEnergyRQ(logger, int64(uid), req, res)
+	err = energy.SubMazeEnergyRQ(logger, uid, req, res)
 	if err != nil {
 		logger.ErrorWF("OnMazeBarrierEnterRQ SubMazeEnergyRQ fail", zap.Error(err), zap.Any("req", req), zap.Any("res", res))
 		return
