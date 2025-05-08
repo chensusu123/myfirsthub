@@ -14,7 +14,6 @@ import (
 	"gitlab.ifreetalk.com/plate/freetk/fkcore/fklog"
 	"go.uber.org/zap"
 	"gitlab.ifreetalk.com/maze/maze_game_server/common/structsdef"
-	"gitlab.ifreetalk.com/maze/maze_game_server/io/redis/mazeattrcalcnotifyqueue"
 )
 
 var (
@@ -58,7 +57,11 @@ func doMazeAttrCalcRetry(logger fklog.FKLogI, msg *structsdef.MazeCalcAttrNotify
 		return
 	}
 	time.AfterFunc(time.Millisecond*time.Duration(RetryTimeInterval), func() {
-		mazeattrcalcnotifyqueue.SendMazeAttrCalcNotify(logger, msg)
+		// mazeattrcalcnotifyqueue.SendMazeAttrCalcNotify(logger, msg)
+		err := OnMazeAttrCalcMsg(nil, logger, 0, msg)
+		if err != nil {
+			logger.ErrorWF("doMazeAttrCalcRetry OnMazeAttrCalcMsg failed", zap.Any("msg", msg), zap.Error(err))
+		}
 		atomic.AddInt64(&ConRetryCounter, -1)
 	})
 }
