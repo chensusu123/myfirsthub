@@ -27,8 +27,8 @@ func RegConsumeHandler() {
 		kafka_consumer.WithGroup(fkserver.GroupNameGO+"."+fkserver.ProjectNamePPWD+".maze_collect_server"),
 		kafka_consumer.WithKafkaCustomKeyContent(HandleMazeBarrierMsg))
 
-	kafka_consumer.PlugKafkaConsumer("maze_level_chg_msg",
-		1001084,
-		kafka_consumer.WithGroup(fkserver.GroupNameGO+"."+fkserver.ProjectNamePPWD+".maze_collect_server"),
-		kafka_consumer.WithKafkaCustomKeyContent(HandleMazeLevelMsg))
+	// kafka_consumer.PlugKafkaConsumer("maze_level_chg_msg",
+	// 	1001084,
+	// 	kafka_consumer.WithGroup(fkserver.GroupNameGO+"."+fkserver.ProjectNamePPWD+".maze_collect_server"),
+	// 	kafka_consumer.WithKafkaCustomKeyContent(HandleMazeLevelMsg))
 }

@@ -1,7 +1,6 @@
 package process
 
 import (
-	"gitlab.ifreetalk.com/maze/maze_game_server/servers/maze_main_server/process/attr_calc"
 	"gitlab.ifreetalk.com/maze/maze_game_server/servers/maze_main_server/process/buff"
 	"gitlab.ifreetalk.com/maze/maze_game_server/servers/maze_main_server/process/collect"
 	"gitlab.ifreetalk.com/maze/maze_game_server/servers/maze_main_server/process/equip"
@@ -37,7 +36,7 @@ func RegisterHandler() {
 		equip_gm.RegTcpHandler()
 
 		buff.RegTcpHandler()
-		
+
 		// // 挂机收集接口
 		// collect.RegTcpHandler()
 	})
@@ -46,8 +45,8 @@ func RegisterHandler() {
 	thrift_service.PlugThriftRpcService(func() {
 		// 装备rpc
 		// equip.RegRpcHandler()
-		// 属性计算rpc
-		attr_calc.RegRpcHandler()
+		// 属性计算rpc todo 目前看没有地方调用，先注释掉
+		// attr_calc.RegRpcHandler()
 		// 通用数值
 		common_value.RegisterRpcPackProcessor()
 	},

@@ -1,14 +1,14 @@
 package equip
 
 import (
-	"gitlab.ifreetalk.com/plate/freetk/fkserver/kafka_consumer"
-	"gitlab.ifreetalk.com/plate/freetk/fkserver"
 	"gitlab.ifreetalk.com/maze/maze_game_server/common/function/limiter"
 	"fmt"
 	"gitlab.ifreetalk.com/plate/protodef/MazeEquipPos"
 	"gitlab.ifreetalk.com/plate/protodef/MazeGameEquip"
 	"gitlab.ifreetalk.com/plate/freetk/fkserver/tcp_service"
+	"gitlab.ifreetalk.com/plate/freetk/fkserver/kafka_consumer"
 	"gitlab.ifreetalk.com/maze/maze_game_server/common/constdef"
+	"gitlab.ifreetalk.com/plate/freetk/fkserver"
 )
 
 var GtcpLimiter = limiter.NewLimiter("tcpLimiter")
@@ -68,10 +68,10 @@ func RegTcpHandler() {
 // }
 
 func RegConsumeHandler() {
-	_ = kafka_consumer.PlugKafkaConsumer("maze_lv_chg",
-		1001084,
-		kafka_consumer.WithGroup(fkserver.GroupNameGO+"."+fkserver.ProjectNamePPWD+".maze_equip_main_server"),
-		kafka_consumer.WithKafkaCustomKeyContent(HandleMazeLvChg))
+	// _ = kafka_consumer.PlugKafkaConsumer("maze_lv_chg",
+	// 	1001084,
+	// 	kafka_consumer.WithGroup(fkserver.GroupNameGO+"."+fkserver.ProjectNamePPWD+".maze_equip_main_server"),
+	// 	kafka_consumer.WithKafkaCustomKeyContent(HandleMazeLvChg))
 
 	// 性别变化流水
 	_ = kafka_consumer.PlugKafkaConsumer(constdef.KafkaMDTSexDesc,

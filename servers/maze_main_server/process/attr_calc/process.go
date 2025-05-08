@@ -3,9 +3,6 @@ package attr_calc
 import (
 	"gitlab.ifreetalk.com/plate/freetk/fkserver/thrift_service"
 	"gitlab.ifreetalk.com/plate/protodef/MazeAttrCalcSvr"
-	"gitlab.ifreetalk.com/plate/freetk/fkserver/redis_consumer"
-	"gitlab.ifreetalk.com/maze/maze_game_server/common/structsdef"
-	"time"
 	"gitlab.ifreetalk.com/plate/freetk/fkserver/tcp_service"
 	"gitlab.ifreetalk.com/plate/protodef/MazePropertyPanel"
 )
@@ -25,9 +22,9 @@ func RegRpcHandler() {
 }
 
 func RegConsumeHandler() {
-	_ = redis_consumer.PlugRedisConsumer("doll_calc_attr_consumer",
-		21645,
-		redis_consumer.WithThreadCount(4),
-		redis_consumer.WithErrorWaitTime(500*time.Millisecond),
-		redis_consumer.WithListJSONContent(&structsdef.MazeCalcAttrNotifyMsg{}, OnMazeAttrCalcMsg))
+	// _ = redis_consumer.PlugRedisConsumer("doll_calc_attr_consumer",
+	// 	21645,
+	// 	redis_consumer.WithThreadCount(4),
+	// 	redis_consumer.WithErrorWaitTime(500*time.Millisecond),
+	// 	redis_consumer.WithListJSONContent(&structsdef.MazeCalcAttrNotifyMsg{}, OnMazeAttrCalcMsg))
 }
