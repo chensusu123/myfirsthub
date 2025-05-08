@@ -19,7 +19,6 @@ import (
 	"gitlab.ifreetalk.com/maze/maze_game_server/common/constdef"
 	"gitlab.ifreetalk.com/maze/maze_game_server/common/function/itemutil"
 	"gitlab.ifreetalk.com/maze/maze_game_server/common/function/uniqueid"
-	"gitlab.ifreetalk.com/maze/maze_game_server/io/rpc/dollequipbagrpc"
 	"gitlab.ifreetalk.com/maze/maze_game_server/common/function/gentradeno"
 	"gitlab.ifreetalk.com/maze/maze_game_server/excel/toastmsgtipexcel"
 	"gitlab.ifreetalk.com/maze/maze_game_server/io/kafka/dollequipdismantlekafka"
@@ -165,7 +164,8 @@ func OnDollEquipDismantleRQ(ctx fknet.TCPContext, shardingID uint64, rqMsg proto
 	}
 	rsSale := &MazeEquipSvr.SvrMazeEquipSaleRS{}
 	userCtx.DebugWF("OnDollEquipDismantleRQ SvrDollEquipSaleRS dump", zap.Any("rqSale", rqSale), zap.Any("rsSale", rsSale))
-	err = dollequipbagrpc.MazeEquipSaleRQ(userCtx, rqSale, rsSale)
+	// err = dollequipbagrpc.MazeEquipSaleRQ(userCtx, rqSale, rsSale)
+	err = OnSvrDollEquipSaleRQ(userCtx, int64(shardingID), rqSale, rsSale)
 	if err != nil {
 		userCtx.ErrorWF("OnDollEquipDismantleRQ SvrDollEquipSaleRS fail", zap.Error(err), zap.Any("rq", rqSale))
 		res.ErrInfo = errors.MODULE_ERROR.ToInfo()

@@ -36,7 +36,6 @@ import (
 	"gitlab.ifreetalk.com/maze/maze_game_server/io/redis/mazeattrcalcnotifyqueue"
 	"gitlab.ifreetalk.com/maze/maze_game_server/module/mazebuffchgrrecordapi"
 	"gitlab.ifreetalk.com/maze/maze_game_server/module/assembleidpack"
-	"gitlab.ifreetalk.com/maze/maze_game_server/io/rpc/dollequipbagrpc"
 	"gitlab.ifreetalk.com/maze/maze_game_server/common/function/maputil"
 	"gitlab.ifreetalk.com/maze/maze_game_server/common/function/pbutil"
 )
@@ -350,7 +349,8 @@ func NotifyBagSvr(logger fklog.FKLogI, userId uint64, pos, src int32, upGuid, do
 	rq.ReplacedEquipGuid = proto.Int64(downGuid)
 	rq.EquipSrc = proto.Int32(src)
 	rs := &MazeEquipSvr.SvrMazeEquipAssembleRS{}
-	e := dollequipbagrpc.MazeEquipAssembleRQ(logger, rq, rs)
+	// e := dollequipbagrpc.MazeEquipAssembleRQ(logger, rq, rs)
+	e := OnSvrMazeEquipAssembleRQ(logger, int64(userId), rq, rs)
 	if e != nil {
 		return e
 	}

@@ -24,7 +24,6 @@ import (
 	"gitlab.ifreetalk.com/maze/maze_game_server/module/effectequip"
 	"gitlab.ifreetalk.com/maze/maze_game_server/common/constdef"
 	"gitlab.ifreetalk.com/maze/maze_game_server/common/function/uniqueid"
-	"gitlab.ifreetalk.com/maze/maze_game_server/io/rpc/dollequipbagrpc"
 	"gitlab.ifreetalk.com/maze/maze_game_server/io/kafka/dollequipassmeblekakfa"
 	"gitlab.ifreetalk.com/maze/maze_game_server/module/dollassembleinfo"
 	"gitlab.ifreetalk.com/maze/maze_game_server/servers/maze_main_server/process/equip/module"
@@ -208,7 +207,8 @@ func addInitEquipToBag(logger fklog.FKLogI, userId uint64, equips map[int32]int6
 	}
 
 	rsAdd := &MazeEquipSvr.SvrAddMazeEquipRS{}
-	err = dollequipbagrpc.MazeBagAddRQ(logger, rqAdd, rsAdd)
+	// err = dollequipbagrpc.MazeBagAddRQ(logger, rqAdd, rsAdd)
+	err = OnSvrAddMazeEquipRQ(logger, int64(userId), rqAdd, rsAdd)
 	if err != nil {
 		logger.ErrorWF("addInitEquipToBag MazeBagAddRQ fail", zap.Error(err), zap.Any("req", rqAdd), zap.Any("rs", rsAdd))
 	} else {

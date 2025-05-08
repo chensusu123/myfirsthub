@@ -10,6 +10,8 @@ import (
 	"gitlab.ifreetalk.com/plate/freetk/fkcore/fklog"
 	"gitlab.ifreetalk.com/plate/freetk/fkcore/fkrpc/thrift_rpc"
 	"go.uber.org/zap"
+	"gitlab.ifreetalk.com/maze/maze_game_server/servers/maze_main_server/process/equip"
+	"gitlab.ifreetalk.com/plate/freetk/common/errors"
 )
 
 var gRpcClient = thrift_rpc.AsyncRpc{}
@@ -20,6 +22,17 @@ func init() {
 
 // 添加装备
 func MazeBagAddRQ(logger fklog.FKLogI, req *MazeEquipSvr.SvrAddMazeEquipRQ, res *MazeEquipSvr.SvrAddMazeEquipRS) error {
+	logger.InfoWF("MazeBagAddRQ start", zap.Any("req", req))
+	err := equip.OnSvrAddMazeEquipRQ(logger, int64(req.GetUserId()), req, res)
+	if err != nil {
+		logger.ErrorWF("MazeBagAddRQ OnSvrAddMazeEquipRQ failed", zap.Any("req", req), zap.Error(err))
+		return err
+	}
+	if res.GetErrInfo() != nil && res.GetErrInfo().GetErrCode() != errors.NO_ERROR_CODE {
+		err = errors.New(string(res.GetErrInfo().ErrMsg))
+		logger.ErrorWF("MazeBagAddRQ res failed", zap.Any("req", req), zap.Error(err))
+	}
+	return err
 	now := time.Now()
 	response, err := gRpcClient.DealTwowayMessage(131421, req, req.GetUserId())
 	err = gRpcClient.CheckReplyType(response, err, 131422)
@@ -41,6 +54,17 @@ func MazeBagAddRQ(logger fklog.FKLogI, req *MazeEquipSvr.SvrAddMazeEquipRQ, res 
 
 // 更换装备rpc
 func MazeEquipAssembleRQ(logger fklog.FKLogI, req *MazeEquipSvr.SvrMazeEquipAssembleRQ, res *MazeEquipSvr.SvrMazeEquipAssembleRS) error {
+	logger.InfoWF("MazeEquipAssembleRQ start", zap.Any("req", req))
+	err := equip.OnSvrMazeEquipAssembleRQ(logger, int64(req.GetUserId()), req, res)
+	if err != nil {
+		logger.ErrorWF("MazeEquipAssembleRQ OnSvrMazeEquipAssembleRQ failed", zap.Any("req", req), zap.Error(err))
+		return err
+	}
+	if res.GetErrInfo() != nil && res.GetErrInfo().GetErrCode() != errors.NO_ERROR_CODE {
+		err = errors.New(string(res.GetErrInfo().ErrMsg))
+		logger.ErrorWF("MazeEquipAssembleRQ res failed", zap.Any("req", req), zap.Error(err))
+	}
+	return err
 	response, err := gRpcClient.DealTwowayMessage(131423, req, req.GetUserId())
 	err = gRpcClient.CheckReplyType(response, err, 131424)
 	if err != nil {
@@ -60,6 +84,17 @@ func MazeEquipAssembleRQ(logger fklog.FKLogI, req *MazeEquipSvr.SvrMazeEquipAsse
 
 // 出售装备rpc
 func MazeEquipSaleRQ(logger fklog.FKLogI, req *MazeEquipSvr.SvrMazeEquipSaleRQ, res *MazeEquipSvr.SvrMazeEquipSaleRS) error {
+	logger.InfoWF("MazeEquipSaleRQ start", zap.Any("req", req))
+	err := equip.OnSvrDollEquipSaleRQ(logger, int64(req.GetUserId()), req, res)
+	if err != nil {
+		logger.ErrorWF("MazeEquipSaleRQ OnSvrDollEquipSaleRQ failed", zap.Any("req", req), zap.Error(err))
+		return err
+	}
+	if res.GetErrInfo() != nil && res.GetErrInfo().GetErrCode() != errors.NO_ERROR_CODE {
+		err = errors.New(string(res.GetErrInfo().ErrMsg))
+		logger.ErrorWF("MazeEquipSaleRQ res failed", zap.Any("req", req), zap.Error(err))
+	}
+	return err
 	response, err := gRpcClient.DealTwowayMessage(131425, req, req.GetUserId())
 	err = gRpcClient.CheckReplyType(response, err, 131426)
 	if err != nil {

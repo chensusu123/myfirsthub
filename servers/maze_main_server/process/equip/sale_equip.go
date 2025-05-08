@@ -3,7 +3,6 @@ package equip
 import (
 	"gitlab.ifreetalk.com/plate/extra/protobuf/proto"
 	"gitlab.ifreetalk.com/plate/freetk/common/errors"
-	"gitlab.ifreetalk.com/plate/freetk/fkcore/fkrpc"
 	"gitlab.ifreetalk.com/plate/freetk/fkserver"
 	"gitlab.ifreetalk.com/plate/protodef/MazeEquipCache"
 	"gitlab.ifreetalk.com/plate/protodef/MazeEquipSvr"
@@ -12,10 +11,12 @@ import (
 	"gitlab.ifreetalk.com/maze/maze_game_server/common/function/packtopb"
 	"gitlab.ifreetalk.com/maze/maze_game_server/module/bagmodule"
 	"gitlab.ifreetalk.com/maze/maze_game_server/io/kafka/mazeequipbagrecord"
+	"gitlab.ifreetalk.com/plate/freetk/fkcore/fklog"
+	"context"
 )
 
-func OnSvrDollEquipSaleRQ(ctx fkrpc.RPCContext, shardingID int64, rqMsg proto.Message, rsMsg proto.Message) (err error) {
-	agent := fkserver.NewUserContext(ctx.Context, uint64(shardingID), ctx.FKLogI)
+func OnSvrDollEquipSaleRQ(ctx fklog.FKLogI, shardingID int64, rqMsg proto.Message, rsMsg proto.Message) (err error) {
+	agent := fkserver.NewUserContext(context.TODO(), uint64(shardingID), ctx)
 	req := rqMsg.(*MazeEquipSvr.SvrMazeEquipSaleRQ)
 	res := rsMsg.(*MazeEquipSvr.SvrMazeEquipSaleRS)
 	res.ErrInfo = errors.NO_ERROR

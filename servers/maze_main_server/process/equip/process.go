@@ -9,9 +9,7 @@ import (
 	"gitlab.ifreetalk.com/plate/freetk/fkserver"
 	"gitlab.ifreetalk.com/plate/freetk/fkserver/kafka_consumer"
 	"gitlab.ifreetalk.com/plate/freetk/fkserver/tcp_service"
-	"gitlab.ifreetalk.com/plate/freetk/fkserver/thrift_service"
 	"gitlab.ifreetalk.com/plate/protodef/MazeEquipPos"
-	"gitlab.ifreetalk.com/plate/protodef/MazeEquipSvr"
 	"gitlab.ifreetalk.com/plate/protodef/MazeGameEquip"
 )
 
@@ -63,12 +61,12 @@ func RegTcpHandler() {
 }
 
 func RegRpcHandler() {
-	thrift_service.RegisterTwowaySimple(131421, &MazeEquipSvr.SvrAddMazeEquipRQ{},
-		131422, &MazeEquipSvr.SvrAddMazeEquipRS{}, OnSvrAddMazeEquipRQ)
-	thrift_service.RegisterTwowaySimple(131423, &MazeEquipSvr.SvrMazeEquipAssembleRQ{},
-		131424, &MazeEquipSvr.SvrMazeEquipAssembleRS{}, OnSvrMazeEquipAssembleRQ)
-	thrift_service.RegisterTwowaySimple(131425, &MazeEquipSvr.SvrMazeEquipSaleRQ{},
-		131426, &MazeEquipSvr.SvrMazeEquipSaleRS{}, OnSvrDollEquipSaleRQ)
+	// thrift_service.RegisterTwowaySimple(131421, &MazeEquipSvr.SvrAddMazeEquipRQ{},
+	// 	131422, &MazeEquipSvr.SvrAddMazeEquipRS{}, OnSvrAddMazeEquipRQ)
+	// thrift_service.RegisterTwowaySimple(131423, &MazeEquipSvr.SvrMazeEquipAssembleRQ{},
+	// 	131424, &MazeEquipSvr.SvrMazeEquipAssembleRS{}, OnSvrMazeEquipAssembleRQ)
+	// thrift_service.RegisterTwowaySimple(131425, &MazeEquipSvr.SvrMazeEquipSaleRQ{},
+	// 	131426, &MazeEquipSvr.SvrMazeEquipSaleRS{}, OnSvrDollEquipSaleRQ)
 }
 
 func RegConsumeHandler() {

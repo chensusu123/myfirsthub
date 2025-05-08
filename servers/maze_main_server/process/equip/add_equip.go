@@ -29,12 +29,12 @@ import (
 	"gitlab.ifreetalk.com/plate/io_interface/redis_interface/common/MonthlyCardRedis"
 	"gitlab.ifreetalk.com/plate/protodef/MazeGameEquip"
 	"go.uber.org/zap"
-	"gitlab.ifreetalk.com/plate/freetk/fkcore/fkrpc"
+	"context"
 )
 
-func OnSvrAddMazeEquipRQ(ctx fkrpc.RPCContext, shardingID int64, rqMsg proto.Message, rsMsg proto.Message) (err error) {
+func OnSvrAddMazeEquipRQ(ctx fklog.FKLogI, shardingID int64, rqMsg proto.Message, rsMsg proto.Message) (err error) {
 	defer fkprometheus.DebugPMT("OnSvrAddMazeEquipRQ")()
-	userCtx := fkserver.NewUserContext(ctx.Context, uint64(shardingID), ctx.FKLogI)
+	userCtx := fkserver.NewUserContext(context.TODO(), uint64(shardingID), ctx)
 	req := rqMsg.(*MazeEquipSvr.SvrAddMazeEquipRQ)
 	res := rsMsg.(*MazeEquipSvr.SvrAddMazeEquipRS)
 	res.ErrInfo = errors.NO_ERROR

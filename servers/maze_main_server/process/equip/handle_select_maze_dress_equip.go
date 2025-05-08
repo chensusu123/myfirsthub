@@ -34,7 +34,6 @@ import (
 	"gitlab.ifreetalk.com/maze/maze_game_server/io/redis/mazeattrcalcnotifyqueue"
 	"gitlab.ifreetalk.com/maze/maze_game_server/module/mazebuffchgrrecordapi"
 	"gitlab.ifreetalk.com/maze/maze_game_server/module/assembleidpack"
-	"gitlab.ifreetalk.com/maze/maze_game_server/io/rpc/dollequipbagrpc"
 )
 
 func OnSelectDressMazeEquipRQ(ctx fknet.TCPContext, shardingID uint64, request proto.Message, response proto.Message) (err error) {
@@ -291,7 +290,8 @@ func NotifyBagSvrV2(logger fklog.FKLogI, userId uint64, pos, src int32, upGuid, 
 	rq.DiscardedGuids = loseGuids
 	rq.EquipSrc = proto.Int32(1)
 	rs := &MazeEquipSvr.SvrMazeEquipAssembleRS{}
-	e := dollequipbagrpc.MazeEquipAssembleRQ(logger, rq, rs)
+	// e := dollequipbagrpc.MazeEquipAssembleRQ(logger, rq, rs)
+	e := OnSvrMazeEquipAssembleRQ(logger, int64(userId), rq, rs)
 	if e != nil {
 		return e
 	}
