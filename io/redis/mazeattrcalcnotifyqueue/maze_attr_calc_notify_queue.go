@@ -15,6 +15,7 @@ import (
 	"gitlab.ifreetalk.com/plate/freetk/fkcore/fkredis"
 
 	"go.uber.org/zap"
+	"gitlab.ifreetalk.com/maze/maze_game_server/common/structsdef"
 )
 
 var (
@@ -23,7 +24,7 @@ var (
 )
 
 func init() {
-	//21645 maze:attr:calc:notify:que 迷宫游戏buff变化通知队列
+	// 21645 maze:attr:calc:notify:que 迷宫游戏buff变化通知队列
 	fkconfig.RegisterNameNode("dollattrcalcnotifyqueue", 21645, gRedis)
 }
 
@@ -38,7 +39,7 @@ type MazeCalcAttrNotifyMsg struct {
 	RetryFlag  int32  `json:"retry_flag"`  // 失败重试用,内部用不用设置
 }
 
-func SendMazeAttrCalcNotify(agent fklog.FKLogI, msg *MazeCalcAttrNotifyMsg) error {
+func SendMazeAttrCalcNotify(agent fklog.FKLogI, msg *structsdef.MazeCalcAttrNotifyMsg) error {
 	if msg.Stamp == 0 {
 		msg.Stamp = time.Now().UnixNano() / 1000000
 	}
