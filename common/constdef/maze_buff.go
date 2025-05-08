@@ -35,3 +35,15 @@ const (
 	MazeBuffCenter            = 501 // buff中心
 	MazeBuffChgMonthCard      = 601 // 月卡
 )
+
+const (
+	MazeCardChgOpenType       = 1 // 月卡开通
+	MazeCardChgRenewType      = 2 // 月卡续费
+	MazeCardChgExpirationType = 3 // 月卡过期
+)
+
+const (
+	MazeBuffChgTypeCardOpen       = 1001 // 月卡开通
+	MazeBuffChgTypeCardRenew      = 1002 // 月卡续费
+	MazeBuffChgTypeCardExpiration = 1003 // 月卡过期
+)

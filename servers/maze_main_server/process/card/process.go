@@ -1,23 +1,25 @@
-package process
+package card
 
 import (
-	"gitlab.ifreetalk.com/maze-plate/freetk/fkserver/custom"
-	"gitlab.ifreetalk.com/maze-plate/freetk/fkserver/tcp_service"
-	"gitlab.ifreetalk.com/maze-plate/protodef/MazeCard"
+	"gitlab.ifreetalk.com/plate/freetk/fkserver"
+	"gitlab.ifreetalk.com/plate/freetk/fkserver/custom"
+	"gitlab.ifreetalk.com/plate/freetk/fkserver/kafka_consumer"
+	"gitlab.ifreetalk.com/plate/freetk/fkserver/tcp_service"
+	"gitlab.ifreetalk.com/plate/protodef/MazeCard"
 )
 
 func InitTcp() {
 	// 获取迷宫月卡
-	tcp_service.RegProcSimple(10430, &MazeCard.GetMazeCardRQ{},
-		10431, &MazeCard.GetMazeCardRS{}, GetMazeCardRQ)
+	tcp_service.RegProcSimple(16198, &MazeCard.GetMazeCardRQ{},
+		16199, &MazeCard.GetMazeCardRS{}, GetMazeCardRQ)
 }
 
 func InitKafkaConsumer() {
-	//_ = kafka_consumer.PlugKafkaConsumer("MazeCardNotifyMsg",
-	//	0,
-	//	kafka_consumer.WithGroup(fkserver.MonitorName),
-	//	kafka_consumer.WithKafkaCustomKeyContent(OnMazeCardChangeProcess),
-	//)
+	_ = kafka_consumer.PlugKafkaConsumer("MazeCardNotifyMsg",
+		1001098,
+		kafka_consumer.WithGroup(fkserver.MonitorName),
+		kafka_consumer.WithKafkaCustomKeyContent(OnMazeCardChangeProcess),
+	)
 }
 
 func InitCustom() {

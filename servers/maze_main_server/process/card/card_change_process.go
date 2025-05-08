@@ -1,23 +1,24 @@
-package process
+package card
 
 import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"gitlab.ifreetalk.com/maze/maze_game_server/common/constdef"
+	"gitlab.ifreetalk.com/maze/maze_game_server/excel/mazeconfigv8config"
+	"gitlab.ifreetalk.com/maze/maze_game_server/io/redis/mazeattrcalcnotifyqueue"
+	"gitlab.ifreetalk.com/maze/maze_game_server/io/redis/mazebuffinforedis"
+	"gitlab.ifreetalk.com/maze/maze_game_server/io/redis/mazecardlistgroupredis"
+	"gitlab.ifreetalk.com/maze/maze_game_server/io/redis/userriddlemonthlyredis"
 	"time"
 
-	"gitlab.ifreetalk.com/maze-plate/extra/protobuf/proto"
-	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fkconfig"
-	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fklog"
-	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fkprometheus"
-	"gitlab.ifreetalk.com/maze-plate/io/redisio/commonmustarriveredis"
-	"gitlab.ifreetalk.com/maze-plate/protodef/MazeBuffData"
-	"gitlab.ifreetalk.com/maze-plate/protodef/MazeCard"
-	"gitlab.ifreetalk.com/maze/maze_buff_server/common/constdef"
-	"gitlab.ifreetalk.com/maze/maze_buff_server/excel/mazeconfigv8config"
-	"gitlab.ifreetalk.com/maze/maze_buff_server/io/redis/mazeattrcalcnotifyqueue"
-	"gitlab.ifreetalk.com/maze/maze_buff_server/io/redis/mazebuffinforedis"
-	"gitlab.ifreetalk.com/maze/maze_buff_server/io/redis/mazecardlistgroupredis"
+	"gitlab.ifreetalk.com/plate/extra/protobuf/proto"
+	"gitlab.ifreetalk.com/plate/freetk/fkcore/fkconfig"
+	"gitlab.ifreetalk.com/plate/freetk/fkcore/fklog"
+	"gitlab.ifreetalk.com/plate/freetk/fkcore/fkprometheus"
+	"gitlab.ifreetalk.com/plate/io_interface/redis_interface/common/commonmustarriveredis"
+	"gitlab.ifreetalk.com/plate/protodef/MazeBuffData"
+	"gitlab.ifreetalk.com/plate/protodef/MazeCard"
 	"go.uber.org/zap"
 )
 
@@ -51,13 +52,12 @@ func OnMazeCardChangeProcess(c context.Context, logger fklog.FKLogI, index int, 
 	logger.SetUid(userId)
 	logger.InfoWF("OnMazeCardChangeProcess start", zap.Any("msg", msg))
 	// 检查月卡状态
-	//expirationTime, err := userriddlemonthlyredis.GetMazeCardExpirationTime(logger, userId)
-	//if err != nil {
-	//	logger.ErrorWF("OnMazeCardChangeProcess GetMazeCardExpirationTime failed", zap.Error(err))
-	//	return err
-	//}
+	expirationTime, err := userriddlemonthlyredis.GetMazeCardExpirationTime(logger, userId)
+	if err != nil {
+		logger.ErrorWF("OnMazeCardChangeProcess GetMazeCardExpirationTime failed", zap.Error(err))
+		return err
+	}
 
-	var expirationTime int64
 	if expirationTime == 0 || expirationTime < time.Now().Unix() {
 		logger.WarnWF("OnMazeCardChangeProcess is expiration", zap.Int64("expirationTime", expirationTime))
 		return nil
@@ -153,7 +153,7 @@ func SendMazeCardMsg(logger fklog.FKLogI, userId uint64, state int32, expiration
 		ExpirationTime: proto.Int64(expirationTime),
 	}
 
-	_ = commonmustarriveredis.SendArrivePacketWithLog(logger, userId, 10432, msg)
+	_ = commonmustarriveredis.SendArrivePacketWithLogFix(logger, userId, 16200, msg)
 }
 
 func PackMazeBuff(buffMap map[int32]int64) []*MazeBuffData.MazeBuffAttr {
