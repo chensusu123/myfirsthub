@@ -76,3 +76,5 @@ require (
 	gopkg.in/jcmturner/rpc.v1 v1.1.0 // indirect
 	gopkg.in/yaml.v2 v2.4.0 // indirect
 )
+
+replace gitlab.ifreetalk.com/plate/freetk v1.2.61 => /Users/majiange/data/dev/go_work/go_plate/src/gitlab.ifreetalk.com/plate/freetk
