@@ -7,7 +7,7 @@
 package process
 
 import (
-	"gitlab.ifreetalk.com/plate/freetk/fkserver/tcp_service"
+	"gitlab.ifreetalk.com/maze/maze_game_server/lib/net/websocket_service"
 	"gitlab.ifreetalk.com/plate/freetk/fkserver/thrift_service"
 	"gitlab.ifreetalk.com/plate/protodef/MazeEnergy"
 	"gitlab.ifreetalk.com/plate/protodef/MazeEnergySvr"
@@ -15,7 +15,7 @@ import (
 
 func RegTcpHandler() {
 	// 迷宫体力查询
-	tcp_service.RegProcSimple(16240, &MazeEnergy.QueryMazeEnergyRQ{},
+	websocket_service.RegProcSimple(16240, &MazeEnergy.QueryMazeEnergyRQ{},
 		16241, &MazeEnergy.QueryMazeEnergyRS{}, OnQueryMazeEnergyRQ)
 
 }

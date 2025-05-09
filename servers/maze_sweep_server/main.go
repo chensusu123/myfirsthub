@@ -8,7 +8,7 @@ import (
 	"gitlab.ifreetalk.com/plate/freetk/fkserver"
 	"gitlab.ifreetalk.com/plate/freetk/fkserver/exportlogservice"
 	"gitlab.ifreetalk.com/plate/freetk/fkserver/frontcache_service"
-	"gitlab.ifreetalk.com/plate/freetk/fkserver/tcp_service"
+	"gitlab.ifreetalk.com/maze/maze_game_server/lib/net/websocket_service"
 	"gitlab.ifreetalk.com/plate/freetk/fkserver/web_service"
 	"gitlab.ifreetalk.com/plate/io_interface/kafka_interface/exportlogkafka"
 )

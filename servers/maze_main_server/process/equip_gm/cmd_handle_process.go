@@ -10,12 +10,12 @@ import (
 	"gitlab.ifreetalk.com/plate/protodef/MazeGameEquip"
 	"go.uber.org/zap"
 	"gitlab.ifreetalk.com/maze/maze_game_server/servers/maze_main_server/process/equip_gm/resetequipcmd"
-	"gitlab.ifreetalk.com/plate/freetk/fkserver/tcp_service"
+	"gitlab.ifreetalk.com/maze/maze_game_server/lib/net/websocket_service"
 )
 
 func RegTcpHandler() {
 	// 处理装备命令
-	_ = tcp_service.RegProcSimple(16186, &MazeGameEquip.SendMazeEquipCmdRQ{},
+	_ = websocket_service.RegProcSimple(16186, &MazeGameEquip.SendMazeEquipCmdRQ{},
 		16187, &MazeGameEquip.SendMazeEquipCmdRS{}, OnSendMazeEquipCmdRQ)
 }
 

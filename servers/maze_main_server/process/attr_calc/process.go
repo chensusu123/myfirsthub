@@ -3,7 +3,7 @@ package attr_calc
 import (
 	"gitlab.ifreetalk.com/plate/freetk/fkserver/thrift_service"
 	"gitlab.ifreetalk.com/plate/protodef/MazeAttrCalcSvr"
-	"gitlab.ifreetalk.com/plate/freetk/fkserver/tcp_service"
+	"gitlab.ifreetalk.com/maze/maze_game_server/lib/net/websocket_service"
 	"gitlab.ifreetalk.com/plate/protodef/MazePropertyPanel"
 )
 
@@ -19,7 +19,7 @@ func RegRpcHandler() {
 
 func RegTcpHandler() {
 	// 查询属性面板
-	_ = tcp_service.RegProcSimple(16220, &MazePropertyPanel.QueryMazePropertyPanelRQ{},
+	_ = websocket_service.RegProcSimple(16220, &MazePropertyPanel.QueryMazePropertyPanelRQ{},
 		16221, &MazePropertyPanel.QueryMazePropertyPanelRS{}, OnQueryPropertyPanelRQ)
 }
 

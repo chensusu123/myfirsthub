@@ -1,6 +1,7 @@
 package process
 
 import (
+	"gitlab.ifreetalk.com/maze/maze_game_server/lib/net/websocket_service"
 	"gitlab.ifreetalk.com/maze/maze_game_server/servers/maze_main_server/process/attr_calc"
 	"gitlab.ifreetalk.com/maze/maze_game_server/servers/maze_main_server/process/buff"
 	"gitlab.ifreetalk.com/maze/maze_game_server/servers/maze_main_server/process/card"
@@ -14,14 +15,13 @@ import (
 	"gitlab.ifreetalk.com/maze/maze_game_server/servers/maze_main_server/process/item"
 	"gitlab.ifreetalk.com/maze/maze_game_server/servers/maze_main_server/process/rob"
 	"gitlab.ifreetalk.com/plate/freetk/fkcore/fklog"
-	"gitlab.ifreetalk.com/plate/freetk/fkserver/tcp_service"
 	"gitlab.ifreetalk.com/plate/freetk/fkserver/thrift_service"
 	"gitlab.ifreetalk.com/plate/freetk/fkserver/web_service"
 )
 
 func RegisterHandler() {
 	// 注册Tcp接口
-	tcp_service.PlugTcpService(func() {
+	websocket_service.PlugTcpRawService(func() {
 		// 主功能接口
 		game.RegTcpHandler()
 		// 扫荡功能接口
@@ -76,5 +76,4 @@ func RegisterHandler() {
 		// 装备gm
 		equip_gm.RegGm(logger)
 	})
-
 }

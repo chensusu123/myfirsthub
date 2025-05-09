@@ -19,7 +19,7 @@ import (
 	"gitlab.ifreetalk.com/plate/freetk/fkcore/fknet"
 
 	"gitlab.ifreetalk.com/plate/freetk/fkcore/fkprometheus"
-	"gitlab.ifreetalk.com/plate/freetk/fkserver/tcp_service"
+	"gitlab.ifreetalk.com/maze/maze_game_server/lib/net/websocket_service"
 
 	"gitlab.ifreetalk.com/maze/maze_game_server/servers/maze_main_server/process/interact/MazeEquipMix"
 	"gitlab.ifreetalk.com/plate/freetk/fkutil/saferand"
@@ -33,11 +33,11 @@ import (
 func RegTcpHandler() {
 
 	// 迷宫装备合成消耗
-	tcp_service.RegProcSimple(16265, &MazeEquipMix.MazeEquipMixCostRQ{},
+	websocket_service.RegProcSimple(16265, &MazeEquipMix.MazeEquipMixCostRQ{},
 		16266, &MazeEquipMix.MazeEquipMixCostRS{}, OnMazeEquipMixCostRQ)
 
 	// 迷宫装备合成
-	tcp_service.RegProcSimple(16267, &MazeEquipMix.MazeEquipMixRQ{},
+	websocket_service.RegProcSimple(16267, &MazeEquipMix.MazeEquipMixRQ{},
 		16268, &MazeEquipMix.MazeEquipMixRS{}, OnMazeEquipMixRQ)
 
 }

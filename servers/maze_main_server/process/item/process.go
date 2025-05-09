@@ -10,7 +10,7 @@ import (
 	"gitlab.ifreetalk.com/plate/freetk/common/errors"
 	"gitlab.ifreetalk.com/plate/freetk/fkcore/fknet"
 	"gitlab.ifreetalk.com/plate/freetk/fkcore/fkprometheus"
-	"gitlab.ifreetalk.com/plate/freetk/fkserver/tcp_service"
+	"gitlab.ifreetalk.com/maze/maze_game_server/lib/net/websocket_service"
 	"gitlab.ifreetalk.com/plate/protodef/MazeBag"
 	"gitlab.ifreetalk.com/plate/protodef/MazeItemSvr"
 	"gitlab.ifreetalk.com/plate/protodef/MessageType"
@@ -22,11 +22,11 @@ import (
 
 func RegTcpHandler() {
 	// 获取迷宫背包列表
-	_ = tcp_service.RegProcSimple(16248, &MazeBag.MazeBagListRQ{},
+	_ = websocket_service.RegProcSimple(16248, &MazeBag.MazeBagListRQ{},
 		16249, &MazeBag.MazeBagListRS{}, OnMazeBagListRQ)
 
 	// 重置迷宫背包列表
-	_ = tcp_service.RegProcSimple(16273, &MazeBag.ResetMazeBagRQ{},
+	_ = websocket_service.RegProcSimple(16273, &MazeBag.ResetMazeBagRQ{},
 		16274, &MazeBag.ResetMazeBagRS{}, OnResetMazeBagRQ)
 }
 

@@ -5,7 +5,7 @@ package rob
 
 import (
 	"gitlab.ifreetalk.com/plate/freetk/fkcore/fklog"
-	"gitlab.ifreetalk.com/plate/freetk/fkserver/tcp_service"
+	"gitlab.ifreetalk.com/maze/maze_game_server/lib/net/websocket_service"
 	"gitlab.ifreetalk.com/plate/freetk/fkutil"
 	"gitlab.ifreetalk.com/plate/protodef/MazeRobGuaJi"
 	"go.uber.org/zap"
@@ -16,11 +16,11 @@ import (
 func RegTcpHandler() {
 
 	// 迷宫掠夺列表
-	tcp_service.RegProcSimple(16275, &MazeRobGuaJi.MazeRobGuaJiListRQ{},
+	websocket_service.RegProcSimple(16275, &MazeRobGuaJi.MazeRobGuaJiListRQ{},
 		16276, &MazeRobGuaJi.MazeRobGuaJiListRS{}, OnMazeRobGuaJiListRQ)
 
 	// 迷宫掠夺
-	tcp_service.RegProcSimple(16277, &MazeRobGuaJi.MazeRobGuaJiRQ{},
+	websocket_service.RegProcSimple(16277, &MazeRobGuaJi.MazeRobGuaJiRQ{},
 		16278, &MazeRobGuaJi.MazeRobGuaJiRS{}, OnMazeRobGuaJiRQ)
 
 }
