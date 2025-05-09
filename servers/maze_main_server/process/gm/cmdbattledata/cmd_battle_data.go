@@ -20,7 +20,7 @@ import (
 	"gitlab.ifreetalk.com/plate/freetk/fkutil"
 	"go.uber.org/zap"
 
-	"gitlab.ifreetalk.com/maze/maze_game_server/servers/maze_main_server/process"
+	"gitlab.ifreetalk.com/maze/maze_game_server/servers/maze_main_server/process/game"
 )
 
 func RegBattleDataGm(logger fklog.FKLogI) {
@@ -30,7 +30,7 @@ func RegBattleDataGm(logger fklog.FKLogI) {
 		logger.SetLogId(time.Now().UnixNano())
 		logger.SetUid(userId)
 		logger.InfoWF("DumpBattleData begin")
-		battleData, e := process.GetMazeBattleData(logger, userId, barrierId)
+		battleData, e := game.GetMazeBattleData(logger, userId, barrierId)
 		if e != nil {
 			writer.Write([]byte(e.Error()))
 			return
@@ -51,7 +51,7 @@ func RegBattleDataGm(logger fklog.FKLogI) {
 			tb, _ := json.Marshal(tempBuffInfo.TotalBuff)
 			bs.WriteString(fmt.Sprintf("临时buff数据:%s\n", string(tb)))
 		}
-		attrMap := process.GetAttrType()
+		attrMap := game.GetAttrType()
 		bs.WriteString("属性ID<->枚举映射关系:\n")
 		for k, v := range attrMap {
 			var attrName string

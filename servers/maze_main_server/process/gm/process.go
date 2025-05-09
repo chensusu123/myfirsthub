@@ -1,4 +1,4 @@
-package process
+package gm
 
 import (
 	"net/http"
@@ -8,13 +8,14 @@ import (
 	"gitlab.ifreetalk.com/maze/maze_game_server/io/kafka/mazeuserlevelkafka"
 	"gitlab.ifreetalk.com/maze/maze_game_server/module/mazecommonvalue"
 	"gitlab.ifreetalk.com/maze/maze_game_server/module/mazeuserinfo"
+	"gitlab.ifreetalk.com/maze/maze_game_server/servers/maze_main_server/process/gm/cmdbattledata"
 	"gitlab.ifreetalk.com/plate/freetk/fkcore/fklog"
 	"gitlab.ifreetalk.com/plate/freetk/fkutil"
 	"go.uber.org/zap"
 )
 
 func RegGm(logger fklog.FKLogI) {
-	// cmdbattledata.RegBattleDataGm(logger)
+	cmdbattledata.RegBattleDataGm(logger)
 
 	gm.SafeHttpRegister(logger, "/AddExp", func(writer http.ResponseWriter, request *http.Request) {
 		userId := fkutil.ToUint64(request.Form.Get("userId"))

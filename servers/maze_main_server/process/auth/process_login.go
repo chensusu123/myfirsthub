@@ -24,6 +24,10 @@ func OnLoginRQ(ctx fknet.TCPContext, shardingID uint64, rqMsg proto.Message, rsM
 
 	// 认证
 	// 失败直接返回
+	if req.GetUserID() == 0 {
+		res.Error = errors.COMMON_ERROR_TIPS.Wrap("id is 0")
+		return nil
+	}
 
 	res.Error = errors.NO_ERROR
 
