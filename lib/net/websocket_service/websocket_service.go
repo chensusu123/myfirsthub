@@ -58,25 +58,25 @@ func newTCPServer(pkgCtl pkg_ctl.TCPPkgCtler) *tTCPRawService {
 
 // FKServiceI 服务接口
 func (ts *tTCPRawService) Name() string {
-	return "tcp-service"
+	return "websocket-service"
 }
 
 func (ts *tTCPRawService) OnInit(logger fklog.FKLogI, config fkcore.FkConfigerI) (err error) {
 	// 读取tcp配置
 	tcpCfg := fkconfig.GetServerConfig()
-	logger.InfoWF("tcp-service init begin.", zap.String("addr", tcpCfg.GetTCPAddr()))
+	logger.InfoWF("websocket-service init begin.", zap.String("addr", tcpCfg.GetTCPAddr()))
 	// 检查tcp接口
-	if tcpCfg.GetTCPAddr() == "" {
-		err = errors.New("tcp-service port is 0")
-		fkfmt.Println("tcp-service port is 0.", tcpCfg)
-		logger.ErrorWF("tcp-service port is 0.", zap.Any("addr", tcpCfg.GetTCPAddr()))
+	if tcpCfg.GetThriftRPCAddr() == "" {
+		err = errors.New("websocket-service port is 0")
+		fkfmt.Println("websocket-service port is 0.", tcpCfg)
+		logger.ErrorWF("websocket-service port is 0.", zap.Any("addr", tcpCfg.GetTCPAddr()))
 		return
 	}
 	// 绑定时，不指定ip地址
 	_, port, err := net.SplitHostPort(tcpCfg.GetTCPAddr())
 	if err != nil {
-		fkfmt.Println("tcp-service split ip/port failed.", tcpCfg.GetTCPAddr(), err)
-		logger.ErrorWF("tcp-service split ip/port failed.", zap.String("addr", tcpCfg.GetTCPAddr()), zap.Error(err))
+		fkfmt.Println("websocket-service split ip/port failed.", tcpCfg.GetTCPAddr(), err)
+		logger.ErrorWF("websocket-service split ip/port failed.", zap.String("addr", tcpCfg.GetTCPAddr()), zap.Error(err))
 		return
 	}
 	addr := ":" + port
@@ -85,50 +85,50 @@ func (ts *tTCPRawService) OnInit(logger fklog.FKLogI, config fkcore.FkConfigerI)
 		return ts
 	})
 	if err != nil {
-		fkfmt.Println("tcp-service listen failed.", tcpCfg.GetTCPAddr(), err)
-		logger.ErrorWF("tcp-service listen failed.", zap.String("addr", tcpCfg.GetTCPAddr()), zap.Error(err))
+		fkfmt.Println("websocket-service listen failed.", tcpCfg.GetTCPAddr(), err)
+		logger.ErrorWF("websocket-service listen failed.", zap.String("addr", tcpCfg.GetTCPAddr()), zap.Error(err))
 		return
 	}
 	// 初始化线程池
 	ts.initFlag.Store(true)
 	ts.pkgCtl.InitWorkGrop(cacheSize, threadCount, logger)
-	fkfmt.Println("tcp-service init success.", tcpCfg.GetTCPAddr(), tcpCfg)
-	logger.InfoWF("tcp-service init success.", zap.String("addr", tcpCfg.GetTCPAddr()))
+	fkfmt.Println("websocket-service init success.", tcpCfg.GetTCPAddr(), tcpCfg)
+	logger.InfoWF("websocket-service init success.", zap.String("addr", tcpCfg.GetTCPAddr()))
 	return
 }
 
 func (ts *tTCPRawService) OnStart(logger fklog.FKLogI, config fkcore.FkConfigerI) (err error) {
-	logger.InfoWF("tcp-service start begin")
+	logger.InfoWF("websocket-service start begin")
 	// 启动服务
 	err = ts.WebsocketServer.Start()
 	if err != nil {
-		fkfmt.Println("tcp-service start tcp server failed.")
-		logger.ErrorWF("tcp-service start tcp server failed.", zap.Error(err))
+		fkfmt.Println("websocket-service start tcp server failed.")
+		logger.ErrorWF("websocket-service start tcp server failed.", zap.Error(err))
 		return
 	}
-	logger.InfoWF("tcp-service start success.")
+	logger.InfoWF("websocket-service start success.")
 	return
 }
 
 func (ts *tTCPRawService) OnStop(logger fklog.FKLogI) (err error) {
-	logger.WarnWF("tcp-service stop begin.")
+	logger.WarnWF("websocket-service stop begin.")
 	go func() {
 		ts.WebsocketServer.StopServer()
-		logger.WarnWF("tcp-service stop end.")
+		logger.WarnWF("websocket-service stop end.")
 	}()
 
 	time.Sleep(500 * time.Millisecond)
-	logger.InfoWF("tcp-service stop success.")
+	logger.InfoWF("websocket-service stop success.")
 	return
 }
 
 func (ts *tTCPRawService) OnFinish(logger fklog.FKLogI) (err error) {
-	logger.InfoWF("tcp-service finish success.")
+	logger.InfoWF("websocket-service finish success.")
 	return
 }
 
 func (ts *tTCPRawService) OnTransportMade(conn fknet.FkTransport) {
-	ts.WarnWF("tcp-service recv conn", zap.Stringer("addr", conn.RemoteAddr()))
+	ts.WarnWF("websocket-service recv conn", zap.Stringer("addr", conn.RemoteAddr()))
 
 	if ts.protocol != nil {
 		ts.protocol.OnTransportMade(conn)
@@ -136,7 +136,7 @@ func (ts *tTCPRawService) OnTransportMade(conn fknet.FkTransport) {
 }
 
 func (ts *tTCPRawService) OnTransportLost(conn fknet.FkTransport) {
-	ts.WarnWF("tcp-service lose conn", zap.Stringer("addr", conn.RemoteAddr()))
+	ts.WarnWF("websocket-service lose conn", zap.Stringer("addr", conn.RemoteAddr()))
 
 	if ts.protocol != nil {
 		ts.protocol.OnTransportLost(conn)
@@ -152,13 +152,13 @@ func (ts *tTCPRawService) OnTransportData(conn fknet.FkTransport, data []byte) {
 func (ts *tTCPRawService) SetPkgCtrl(ctl pkg_ctl.TCPPkgCtler) error {
 	// 服务已经初始化.不允许替换接口
 	if ts.initFlag.Load() {
-		panic("tcp-service is inited before. You Shoud Call SetPkgCtrl in func init().")
+		panic("websocket-service is inited before. You Shoud Call SetPkgCtrl in func init().")
 	}
 	ts.pkgCtl = ctl
 	if ts.FKLogI != nil {
-		ts.FKLogI.InfoWF("tcp-service update pkg ctrl.")
+		ts.FKLogI.InfoWF("websocket-service update pkg ctrl.")
 	}
-	fkfmt.Println("tcp-service update pkg ctrl.")
+	fkfmt.Println("websocket-service update pkg ctrl.")
 	return nil
 }
 
@@ -204,7 +204,7 @@ var gDefaultTCPPkgCtl raw_pkg_ctl.SvrEsRawPackageCtrl
 func RegProc(packType uint16, pf raw_pkg_ctl.SvrTCPEsRawProc) (err error) {
 	err = gDefaultTCPPkgCtl.RegProc(packType, pf)
 	if err != nil {
-		fkfmt.Println("tcp-service reg tcp packet ", packType, " failed.", err)
+		fkfmt.Println("websocket-service reg tcp packet ", packType, " failed.", err)
 		fkutil.PanicIfError(err)
 	}
 	// 注册包ID
@@ -216,7 +216,7 @@ func RegProc(packType uint16, pf raw_pkg_ctl.SvrTCPEsRawProc) (err error) {
 func IgnoreProc(packType uint16) (err error) {
 	err = gDefaultTCPPkgCtl.IgnoreProc(packType)
 	if err != nil {
-		fkfmt.Println("tcp-service ingore tcp packet ", packType, " failed.", err)
+		fkfmt.Println("websocket-service ingore tcp packet ", packType, " failed.", err)
 		fkutil.PanicIfError(err)
 	}
 	// 注册包ID
@@ -358,7 +358,7 @@ func RegProcSimple(rqID uint16, rqMsg proto.Message, rsID uint16, rsMsg proto.Me
 
 	err := gDefaultTCPPkgCtl.RegProc(rqID, raw_pkg_ctl.SvrTCPEsRawProc(handler))
 	if err != nil {
-		fkfmt.Println("tcp-service reg tcp packet ", rqID, " failed.", err)
+		fkfmt.Println("websocket-service reg tcp packet ", rqID, " failed.", err)
 		fkutil.PanicIfError(err)
 	}
 	// 注册包ID
@@ -444,34 +444,34 @@ func (ts *tTCPRawService) SendData(logger fklog.FKLogI, userID int64, sessionID 
 func MockOnInit(logger fklog.FKLogI, addr string) (err error) {
 	// 读取tcp配置
 	tcpCfg := fkconfig.GetServerConfig()
-	logger.InfoWF("tcp-service init begin.", zap.String("addr", tcpCfg.GetTCPAddr()))
-	gGlobalTCPRawServer.FKLogI = logger.Clone("tcp-service")
+	logger.InfoWF("websocket-service init begin.", zap.String("addr", tcpCfg.GetTCPAddr()))
+	gGlobalTCPRawServer.FKLogI = logger.Clone("websocket-service")
 	// 启动tcp服务器
 	err = gGlobalTCPRawServer.WebsocketServer.Init(addr, func() fknet.FkProtocol {
 		return gGlobalTCPRawServer
 	})
 	if err != nil {
-		fkfmt.Println("tcp-service listen failed.", tcpCfg.GetTCPAddr(), err)
-		logger.ErrorWF("tcp-service listen failed.", zap.String("addr", tcpCfg.GetTCPAddr()), zap.Error(err))
+		fkfmt.Println("websocket-service listen failed.", tcpCfg.GetTCPAddr(), err)
+		logger.ErrorWF("websocket-service listen failed.", zap.String("addr", tcpCfg.GetTCPAddr()), zap.Error(err))
 		return
 	}
 	// 初始化线程池
 	gGlobalTCPRawServer.initFlag.Store(true)
 	gGlobalTCPRawServer.pkgCtl.InitWorkGrop(cacheSize, threadCount, logger)
-	fkfmt.Println("tcp-service init success.", tcpCfg.GetTCPAddr(), tcpCfg)
-	logger.InfoWF("tcp-service init success.", zap.String("addr", tcpCfg.GetTCPAddr()))
+	fkfmt.Println("websocket-service init success.", tcpCfg.GetTCPAddr(), tcpCfg)
+	logger.InfoWF("websocket-service init success.", zap.String("addr", tcpCfg.GetTCPAddr()))
 	return
 }
 
 func MockOnStart(logger fklog.FKLogI) (err error) {
-	logger.InfoWF("tcp-service start begin")
+	logger.InfoWF("websocket-service start begin")
 	// 启动服务
 	err = gGlobalTCPRawServer.WebsocketServer.Start()
 	if err != nil {
-		fkfmt.Println("tcp-service start tcp server failed.")
-		logger.ErrorWF("tcp-service start tcp server failed.", zap.Error(err))
+		fkfmt.Println("websocket-service start tcp server failed.")
+		logger.ErrorWF("websocket-service start tcp server failed.", zap.Error(err))
 		return
 	}
-	logger.InfoWF("tcp-service start success.")
+	logger.InfoWF("websocket-service start success.")
 	return
 }
