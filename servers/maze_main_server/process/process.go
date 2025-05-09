@@ -12,6 +12,7 @@ import (
 	"gitlab.ifreetalk.com/maze/maze_game_server/servers/maze_main_server/process/game"
 	"gitlab.ifreetalk.com/maze/maze_game_server/servers/maze_main_server/process/game/energy"
 	"gitlab.ifreetalk.com/maze/maze_game_server/servers/maze_main_server/process/game/sweep"
+	"gitlab.ifreetalk.com/maze/maze_game_server/servers/maze_main_server/process/gm"
 	"gitlab.ifreetalk.com/maze/maze_game_server/servers/maze_main_server/process/interact"
 	"gitlab.ifreetalk.com/maze/maze_game_server/servers/maze_main_server/process/item"
 	"gitlab.ifreetalk.com/maze/maze_game_server/servers/maze_main_server/process/rob"
@@ -82,6 +83,8 @@ func RegisterHandler() {
 
 	// 注册Web接口
 	web_service.PlugWebService(func(logger fklog.FKLogI) {
+		// 主服务gm
+		gm.RegGm(logger)
 		// 装备gm
 		equip_gm.RegGm(logger)
 	})
