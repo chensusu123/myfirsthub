@@ -64,19 +64,19 @@ func (ts *tTCPRawService) Name() string {
 func (ts *tTCPRawService) OnInit(logger fklog.FKLogI, config fkcore.FkConfigerI) (err error) {
 	// 读取tcp配置
 	tcpCfg := fkconfig.GetServerConfig()
-	logger.InfoWF("websocket-service init begin.", zap.String("addr", tcpCfg.GetTCPAddr()))
+	logger.InfoWF("websocket-service init begin.", zap.String("addr", tcpCfg.GetThriftRPCAddr()))
 	// 检查tcp接口
 	if tcpCfg.GetThriftRPCAddr() == "" {
 		err = errors.New("websocket-service port is 0")
 		fkfmt.Println("websocket-service port is 0.", tcpCfg)
-		logger.ErrorWF("websocket-service port is 0.", zap.Any("addr", tcpCfg.GetTCPAddr()))
+		logger.ErrorWF("websocket-service port is 0.", zap.Any("addr", tcpCfg.GetThriftRPCAddr()))
 		return
 	}
 	// 绑定时，不指定ip地址
-	_, port, err := net.SplitHostPort(tcpCfg.GetTCPAddr())
+	_, port, err := net.SplitHostPort(tcpCfg.GetThriftRPCAddr())
 	if err != nil {
-		fkfmt.Println("websocket-service split ip/port failed.", tcpCfg.GetTCPAddr(), err)
-		logger.ErrorWF("websocket-service split ip/port failed.", zap.String("addr", tcpCfg.GetTCPAddr()), zap.Error(err))
+		fkfmt.Println("websocket-service split ip/port failed.", tcpCfg.GetThriftRPCAddr(), err)
+		logger.ErrorWF("websocket-service split ip/port failed.", zap.String("addr", tcpCfg.GetThriftRPCAddr()), zap.Error(err))
 		return
 	}
 	addr := ":" + port
@@ -85,15 +85,15 @@ func (ts *tTCPRawService) OnInit(logger fklog.FKLogI, config fkcore.FkConfigerI)
 		return ts
 	})
 	if err != nil {
-		fkfmt.Println("websocket-service listen failed.", tcpCfg.GetTCPAddr(), err)
-		logger.ErrorWF("websocket-service listen failed.", zap.String("addr", tcpCfg.GetTCPAddr()), zap.Error(err))
+		fkfmt.Println("websocket-service listen failed.", tcpCfg.GetThriftRPCAddr(), err)
+		logger.ErrorWF("websocket-service listen failed.", zap.String("addr", tcpCfg.GetThriftRPCAddr()), zap.Error(err))
 		return
 	}
 	// 初始化线程池
 	ts.initFlag.Store(true)
 	ts.pkgCtl.InitWorkGrop(cacheSize, threadCount, logger)
-	fkfmt.Println("websocket-service init success.", tcpCfg.GetTCPAddr(), tcpCfg)
-	logger.InfoWF("websocket-service init success.", zap.String("addr", tcpCfg.GetTCPAddr()))
+	fkfmt.Println("websocket-service init success.", tcpCfg.GetThriftRPCAddr(), tcpCfg)
+	logger.InfoWF("websocket-service init success.", zap.String("addr", tcpCfg.GetThriftRPCAddr()))
 	return
 }
 
@@ -444,22 +444,22 @@ func (ts *tTCPRawService) SendData(logger fklog.FKLogI, userID int64, sessionID 
 func MockOnInit(logger fklog.FKLogI, addr string) (err error) {
 	// 读取tcp配置
 	tcpCfg := fkconfig.GetServerConfig()
-	logger.InfoWF("websocket-service init begin.", zap.String("addr", tcpCfg.GetTCPAddr()))
+	logger.InfoWF("websocket-service init begin.", zap.String("addr", tcpCfg.GetThriftRPCAddr()))
 	gGlobalTCPRawServer.FKLogI = logger.Clone("websocket-service")
 	// 启动tcp服务器
 	err = gGlobalTCPRawServer.WebsocketServer.Init(addr, func() fknet.FkProtocol {
 		return gGlobalTCPRawServer
 	})
 	if err != nil {
-		fkfmt.Println("websocket-service listen failed.", tcpCfg.GetTCPAddr(), err)
-		logger.ErrorWF("websocket-service listen failed.", zap.String("addr", tcpCfg.GetTCPAddr()), zap.Error(err))
+		fkfmt.Println("websocket-service listen failed.", tcpCfg.GetThriftRPCAddr(), err)
+		logger.ErrorWF("websocket-service listen failed.", zap.String("addr", tcpCfg.GetThriftRPCAddr()), zap.Error(err))
 		return
 	}
 	// 初始化线程池
 	gGlobalTCPRawServer.initFlag.Store(true)
 	gGlobalTCPRawServer.pkgCtl.InitWorkGrop(cacheSize, threadCount, logger)
-	fkfmt.Println("websocket-service init success.", tcpCfg.GetTCPAddr(), tcpCfg)
-	logger.InfoWF("websocket-service init success.", zap.String("addr", tcpCfg.GetTCPAddr()))
+	fkfmt.Println("websocket-service init success.", tcpCfg.GetThriftRPCAddr(), tcpCfg)
+	logger.InfoWF("websocket-service init success.", zap.String("addr", tcpCfg.GetThriftRPCAddr()))
 	return
 }
 
