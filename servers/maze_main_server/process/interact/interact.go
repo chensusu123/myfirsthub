@@ -71,7 +71,8 @@ func OnMazeEquipMixCostRQ(ctx fknet.TCPContext, uid uint64, rqMsg proto.Message,
 		return
 	}
 
-	res.Cost = cfg.Cost
+	//todo： temp fix pb error
+	//res.Cost = cfg.Cost
 
 	return
 }
@@ -114,12 +115,12 @@ func OnMazeEquipMixRQ(ctx fknet.TCPContext, uid uint64, rqMsg proto.Message, rsM
 		return
 	}
 
-	// 校验参数消耗
-	if !checkReqCost(req.GetCost(), cfg.Cost) {
-		ctx.WarnWF("OnMazeEquipMixRQ cost check invalid", zap.Any("reqCost", req.GetCost()), zap.Any("cfgCost", cfg.Cost))
-		res.ErrInfo = errors.COST_NOT_MATCH.ToInfo()
-		return
-	}
+	// 校验参数消耗 //todo： temp fix pb error
+	//if !checkReqCost(req.GetCost(), cfg.Cost) {
+	//	ctx.WarnWF("OnMazeEquipMixRQ cost check invalid", zap.Any("reqCost", req.GetCost()), zap.Any("cfgCost", cfg.Cost))
+	//	res.ErrInfo = errors.COST_NOT_MATCH.ToInfo()
+	//	return
+	//}
 
 	// 读取合成信息. 取上次等级、配置、索引。 有变化重新随
 	lastData, err := mazeequipmixdb.GetEquipMixData(ctx, uid)
@@ -258,12 +259,13 @@ func OnMazeEquipMixRQ(ctx fknet.TCPContext, uid uint64, rqMsg proto.Message, rsM
 	//	return
 	// }
 
-	res.Equip = []*MazeCommon.MazeItem{
-		{
-			ItemId: proto.Int32(equip),
-			Count:  proto.Int64(1),
-		},
-	}
+	//todo： temp fix pb error
+	//res.Equip = []*MazeCommon.MazeItem{
+	//	{
+	//		ItemId: proto.Int32(equip),
+	//		Count:  proto.Int64(1),
+	//	},
+	//}
 	return
 }
 
