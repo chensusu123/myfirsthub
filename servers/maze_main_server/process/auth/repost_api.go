@@ -10,7 +10,7 @@ import (
 func SendArrivePacket(logger fklog.FKLogI, userID int64, packetType uint16, pack proto.Message) error {
 	data, err := proto.Marshal(pack)
 	if err != nil {
-		logger.ErrorWF("SendArrivePacket Marshal err:%v",
+		logger.ErrorWF("SendArrivePacket Marshal ",
 			zap.Any("userID", userID),
 			zap.Any("packetType", packetType), zap.Error(err))
 		return err
