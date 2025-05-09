@@ -7,6 +7,7 @@ import (
 	"gitlab.ifreetalk.com/maze/maze_game_server/common/tradeno"
 	"gitlab.ifreetalk.com/maze/maze_game_server/io/redis/mazeequipmixdb"
 	itemrpc "gitlab.ifreetalk.com/maze/maze_game_server/servers/maze_main_server/process/item"
+	"gitlab.ifreetalk.com/plate/protodef/MazeEquipMix"
 	"gitlab.ifreetalk.com/plate/protodef/MazeItemSvr"
 
 	"gitlab.ifreetalk.com/maze/maze_game_server/excel/equipmixcostcfg"
@@ -18,16 +19,15 @@ import (
 	"gitlab.ifreetalk.com/plate/freetk/fkcore/fklog"
 	"gitlab.ifreetalk.com/plate/freetk/fkcore/fknet"
 
-	"gitlab.ifreetalk.com/plate/freetk/fkcore/fkprometheus"
 	"gitlab.ifreetalk.com/maze/maze_game_server/lib/net/websocket_service"
+	"gitlab.ifreetalk.com/plate/freetk/fkcore/fkprometheus"
 
-	"gitlab.ifreetalk.com/maze/maze_game_server/servers/maze_main_server/process/interact/MazeEquipMix"
+	"gitlab.ifreetalk.com/plate/freetk/fkcore/fkrpc"
 	"gitlab.ifreetalk.com/plate/freetk/fkutil/saferand"
 	"gitlab.ifreetalk.com/plate/protodef/MazeCommon"
 	"gitlab.ifreetalk.com/plate/protodef/MazeEquipSvr"
 	"gitlab.ifreetalk.com/plate/protodef/MessageType"
 	"go.uber.org/zap"
-	"gitlab.ifreetalk.com/plate/freetk/fkcore/fkrpc"
 )
 
 func RegTcpHandler() {

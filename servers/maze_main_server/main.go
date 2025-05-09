@@ -11,8 +11,6 @@ import (
 func main() {
 	fkserver.SetMonitorName(fkserver.GroupNameGO, fkserver.ProjectNamePPWD, "maze_main_server")
 	exportlogservice.PlugExportLogService(exportlogkafka.GetProducer())
-
 	process.RegisterHandler()
-
 	fkserver.Run()
 }

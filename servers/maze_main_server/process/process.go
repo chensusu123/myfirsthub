@@ -12,7 +12,6 @@ import (
 	"gitlab.ifreetalk.com/maze/maze_game_server/servers/maze_main_server/process/game"
 	"gitlab.ifreetalk.com/maze/maze_game_server/servers/maze_main_server/process/game/energy"
 	"gitlab.ifreetalk.com/maze/maze_game_server/servers/maze_main_server/process/game/sweep"
-	"gitlab.ifreetalk.com/maze/maze_game_server/servers/maze_main_server/process/interact"
 	"gitlab.ifreetalk.com/maze/maze_game_server/servers/maze_main_server/process/item"
 	"gitlab.ifreetalk.com/maze/maze_game_server/servers/maze_main_server/process/rob"
 	"gitlab.ifreetalk.com/plate/freetk/fkcore/fklog"
@@ -35,7 +34,7 @@ func RegisterHandler() {
 		// 挂机收集接口
 		collect.RegTcpHandler()
 		item.RegTcpHandler()
-		interact.RegTcpHandler()
+		//interact.RegTcpHandler()
 		// 装备gm接口
 		equip_gm.RegTcpHandler()
 
