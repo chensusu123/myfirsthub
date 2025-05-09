@@ -16,12 +16,19 @@ import (
 	"gitlab.ifreetalk.com/maze/maze_game_server/servers/maze_main_server/process/item"
 	"gitlab.ifreetalk.com/maze/maze_game_server/servers/maze_main_server/process/rob"
 	"gitlab.ifreetalk.com/plate/freetk/fkcore/fklog"
+	"gitlab.ifreetalk.com/plate/freetk/fkserver/tcp_service"
 	"gitlab.ifreetalk.com/plate/freetk/fkserver/thrift_service"
 	"gitlab.ifreetalk.com/plate/freetk/fkserver/web_service"
 )
 
 func RegisterHandler() {
 	// 注册Tcp接口
+	tcp_service.PlugTcpService(func() {
+		// 目前只有一个Timer触发接口
+		collect.RegTcpHandler()
+	})
+
+	// 注册WebSocket接口
 	websocket_service.PlugTcpRawService(func() {
 		auth.RegisterHandler()
 		// 主功能接口
@@ -33,7 +40,7 @@ func RegisterHandler() {
 		// 装备功能接口
 		equip.RegTcpHandler()
 		// 挂机收集接口
-		collect.RegTcpHandler()
+		collect.RegWsHandler()
 		item.RegTcpHandler()
 		interact.RegTcpHandler()
 		// 装备gm接口
