@@ -1,6 +1,7 @@
 package main
 
 import (
+	"gitlab.ifreetalk.com/maze/maze_game_server/lib/net/websocket_service"
 	"gitlab.ifreetalk.com/maze/maze_game_server/servers/maze_es/process"
 	"gitlab.ifreetalk.com/plate/freetk/fkserver"
 	"gitlab.ifreetalk.com/plate/freetk/fkserver/exportlogservice"
@@ -12,7 +13,7 @@ func main() {
 	fkserver.SetMonitorName(fkserver.GroupNameGO, fkserver.ProjectNamePPWD, "maze_es")
 	exportlogservice.PlugExportLogService(exportlogkafka.GetProducer())
 
-	process.RegisterHandler()
+	websocket_service.PlugTcpRawService(process.RegisterHandler)
 
 	fkserver.Run()
 }
