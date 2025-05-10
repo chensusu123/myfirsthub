@@ -36,6 +36,7 @@ type Hub struct {
 	sendDataQueue chan *SendDataMsg
 
 	sessionId atomic.Uint64
+	isRun     bool
 }
 
 type ClientLogin struct {
@@ -68,6 +69,10 @@ func (h *Hub) MakeSession() uint64 {
 }
 
 func (h *Hub) run(logger fklog.FKLogI) {
+	if h.isRun {
+		return
+	}
+	h.isRun = true
 	h.FKLogI = logger.Clone("websocket_hub")
 	h.sessionId.Store(1)
 	for {

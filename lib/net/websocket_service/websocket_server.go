@@ -9,7 +9,6 @@ import (
 	"gitlab.ifreetalk.com/plate/freetk/fkcore/fklog"
 	"gitlab.ifreetalk.com/plate/freetk/fkcore/fknet"
 	"go.uber.org/zap"
-	"trpc.group/trpc-go/tnet"
 
 	"github.com/cloudwego/hertz/pkg/app"
 	"github.com/cloudwego/hertz/pkg/app/server"
@@ -21,8 +20,8 @@ type WebsocketServer struct {
 	pf     fknet.FkProtocolFactory
 	wg     sync.WaitGroup
 	fklog.FKLogI
-	tsvr tnet.Service
-	h    server.Hertz
+	h     server.Hertz
+	isRun bool
 }
 
 func NewWebsocketServer() *WebsocketServer {
@@ -53,15 +52,15 @@ func (t *WebsocketServer) OpenServer(addr string, pf fknet.FkProtocolFactory) er
 	t.server = true
 	t.pf = pf
 	// t.h = h
-	go t.beginServer()
+	// go t.beginServer()
 	return nil
 }
 
 func (t *WebsocketServer) beginServer() {
 	for t.server {
-		t.InfoWF("begin server", zap.String("addr", t.addr))
+		t.InfoWF("WebsocketServer begin server", zap.String("addr", t.addr))
 		t.h.Spin()
-		// t.tsvr.Serve(context.Background())
+		break
 	}
 }
 
@@ -86,6 +85,7 @@ func (t *WebsocketServer) Init(addr string, pf fknet.FkProtocolFactory) error {
 }
 
 func (t *WebsocketServer) Start() error {
+	t.InfoWF("WebsocketServer Start begin server", zap.String("addr", t.addr))
 	go hub.run(t.FKLogI)
 	go t.beginServer()
 	return nil
