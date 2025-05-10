@@ -17,7 +17,6 @@ import (
 	"gitlab.ifreetalk.com/maze/maze_game_server/servers/maze_main_server/process/rob"
 	"gitlab.ifreetalk.com/plate/freetk/fkcore/fklog"
 	"gitlab.ifreetalk.com/plate/freetk/fkserver/tcp_service"
-	"gitlab.ifreetalk.com/plate/freetk/fkserver/thrift_service"
 	"gitlab.ifreetalk.com/plate/freetk/fkserver/web_service"
 )
 
@@ -42,7 +41,7 @@ func RegisterHandler() {
 		// 挂机收集接口
 		collect.RegWsHandler()
 		item.RegTcpHandler()
-		//interact.RegTcpHandler()
+		// interact.RegTcpHandler()
 		// 装备gm接口
 		equip_gm.RegTcpHandler()
 
@@ -56,15 +55,15 @@ func RegisterHandler() {
 	})
 
 	// 注册Rpc接口
-	thrift_service.PlugThriftRpcService(func() {
-		// 装备rpc
-		// equip.RegRpcHandler()
-		// 属性计算rpc todo 目前看没有地方调用，先注释掉
-		// attr_calc.RegRpcHandler()
-		// 通用数值
-		// common_value.RegisterRpcPackProcessor()
-	},
-	)
+	// thrift_service.PlugThriftRpcService(func() {
+	// 	// 装备rpc
+	// 	// equip.RegRpcHandler()
+	// 	// 属性计算rpc todo 目前看没有地方调用，先注释掉
+	// 	// attr_calc.RegRpcHandler()
+	// 	// 通用数值
+	// 	// common_value.RegisterRpcPackProcessor()
+	// },
+	// )
 
 	// 消费队列
 	{

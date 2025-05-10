@@ -4,7 +4,6 @@ import (
 	un_rpc_pack_type "gitlab.ifreetalk.com/plate/definition/uncgkconst"
 	"gitlab.ifreetalk.com/plate/extra/protobuf/proto"
 	"gitlab.ifreetalk.com/plate/freetk/common/errors"
-	"gitlab.ifreetalk.com/plate/freetk/fkcore/fkconfig"
 	"gitlab.ifreetalk.com/plate/freetk/fkcore/fklog"
 	"gitlab.ifreetalk.com/plate/freetk/fkcore/fkrpc"
 	"gitlab.ifreetalk.com/plate/protodef/SeaTaskSvr"
@@ -15,7 +14,7 @@ import (
 var setSeaTaskRpc = fkrpc.ThriftRPCClient{}
 
 func init() {
-	fkconfig.RegisterNameNode("SetSeaTaskRpc", 17762, &setSeaTaskRpc)
+	// fkconfig.RegisterNameNode("SetSeaTaskRpc", 17762, &setSeaTaskRpc)
 }
 
 // SetSeaTask 设置定时器
