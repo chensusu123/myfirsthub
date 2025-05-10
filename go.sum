@@ -264,12 +264,6 @@ gitlab.ifreetalk.com/plate/excel v1.0.83-0.20250506053436-ef2c9ea111c0/go.mod h1
 gitlab.ifreetalk.com/plate/extra v1.1.7 h1:LW0uI92Zao8padw+i6582ExxY3PvbuFTQYxT2g/6RO0=
 gitlab.ifreetalk.com/plate/extra v1.1.7/go.mod h1:xFhTpaG8d/8FkQ6TSaT2kaBR5V/H0wR/A40AxUmkyEU=
 gitlab.ifreetalk.com/plate/freetk v1.2.34/go.mod h1:jmIcxB7ZSBddsvZQv7uIASgQCNNJ7PzfJF7eFEohTS0=
-gitlab.ifreetalk.com/plate/freetk v1.2.62 h1:kncy+bCQYYbpZA2QjRyWv+ObQZRELJj5eIY8JA2c+VQ=
-gitlab.ifreetalk.com/plate/freetk v1.2.62/go.mod h1:wHTaL0xh4wQcy5r0AkYRS1FwNZSZTaTTf5lIizj5n8g=
-gitlab.ifreetalk.com/plate/freetk v1.2.63-0.20250510040138-fb21e6b67b52 h1:Fh+7JpzE3gjlw6F6wnjlvlDMtLOOey7RpcKptNr9Z1w=
-gitlab.ifreetalk.com/plate/freetk v1.2.63-0.20250510040138-fb21e6b67b52/go.mod h1:wHTaL0xh4wQcy5r0AkYRS1FwNZSZTaTTf5lIizj5n8g=
-gitlab.ifreetalk.com/plate/freetk v1.2.63-0.20250510060235-3d2190a851c5 h1:J6MDF6fa+rinqbD692X/z5MkHlL7fTU/L/y7Rae7Wzk=
-gitlab.ifreetalk.com/plate/freetk v1.2.63-0.20250510060235-3d2190a851c5/go.mod h1:wHTaL0xh4wQcy5r0AkYRS1FwNZSZTaTTf5lIizj5n8g=
 gitlab.ifreetalk.com/plate/freetk v1.2.63-0.20250510061936-c0513fc5c752 h1:eViScXjLzZNsOCkoVPmhL33NunZ90OtUhmrnTSA7n0o=
 gitlab.ifreetalk.com/plate/freetk v1.2.63-0.20250510061936-c0513fc5c752/go.mod h1:wHTaL0xh4wQcy5r0AkYRS1FwNZSZTaTTf5lIizj5n8g=
 gitlab.ifreetalk.com/plate/io_interface v1.4.102-0.20250326074707-ac26a4cb5dba h1:dNyVsy5Pqp0wPamYL6JdUPEEkBxq6tep54DhKJPoHuM=
