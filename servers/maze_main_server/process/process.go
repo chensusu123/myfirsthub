@@ -12,6 +12,7 @@ import (
 	"gitlab.ifreetalk.com/maze/maze_game_server/servers/maze_main_server/process/game"
 	"gitlab.ifreetalk.com/maze/maze_game_server/servers/maze_main_server/process/game/energy"
 	"gitlab.ifreetalk.com/maze/maze_game_server/servers/maze_main_server/process/game/sweep"
+	"gitlab.ifreetalk.com/maze/maze_game_server/servers/maze_main_server/process/gm"
 	"gitlab.ifreetalk.com/maze/maze_game_server/servers/maze_main_server/process/item"
 	"gitlab.ifreetalk.com/maze/maze_game_server/servers/maze_main_server/process/rob"
 	"gitlab.ifreetalk.com/plate/freetk/fkcore/fklog"
