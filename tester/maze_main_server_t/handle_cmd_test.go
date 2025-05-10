@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"testing"
 
-	"gitlab.ifreetalk.com/maze/maze_game_server/servers/maze_main_server/process"
+	"gitlab.ifreetalk.com/maze/maze_game_server/servers/maze_main_server/process/game"
 	"gitlab.ifreetalk.com/plate/extra/protobuf/proto"
 	"gitlab.ifreetalk.com/plate/freetk/fkcore/fknet"
 	"gitlab.ifreetalk.com/plate/protodef/Common"
@@ -20,7 +20,7 @@ func TestOnMazeCmdRQ(t *testing.T) {
 	req.CmdCode = proto.String("1006")
 	req.CmdParam = proto.String("add_cnt=100")
 	res := &MazeGame.SendDollMazeCmdRS{}
-	e := process.OnSendDollMazeCmdRQ(ctx, 9003200130206264, req, res)
+	e := game.OnSendDollMazeCmdRQ(ctx, 9003200130206264, req, res)
 	l, _ := proto.Marshal(res)
 	fmt.Println("l", len(l), "e", e, "res", res)
 }

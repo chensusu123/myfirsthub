@@ -13,7 +13,7 @@ import (
 	"time"
 
 	"gitlab.ifreetalk.com/maze/maze_game_server/io/redis/mazeuserbarrierredis"
-	"gitlab.ifreetalk.com/maze/maze_game_server/servers/maze_main_server/process"
+	"gitlab.ifreetalk.com/maze/maze_game_server/servers/maze_main_server/process/game"
 	"gitlab.ifreetalk.com/plate/extra/protobuf/proto"
 	"gitlab.ifreetalk.com/plate/freetk/fkcore/fklog"
 	"gitlab.ifreetalk.com/plate/freetk/fkcore/fknet"
@@ -31,7 +31,7 @@ func TestOnMazeBarrierRebornRQ(t *testing.T) {
 	req.BarrierId = proto.Int32(1)
 	req.RebornAck = proto.Int32(1)
 	res := &MazeGame.MazeBarrierRebornRS{}
-	e := process.OnMazeBarrierRebornRQ(ctx, 9003200130206264, req, res)
+	e := game.OnMazeBarrierRebornRQ(ctx, 9003200130206264, req, res)
 	l, _ := proto.Marshal(res)
 	fmt.Println("l", len(l), "e", e, "res", res)
 }
@@ -46,7 +46,7 @@ func TestOnMazeBarrierRebornAckRQ(t *testing.T) {
 	req.RebornCost = append(req.RebornCost, &MazeCommon.MazeItem{ItemId: proto.Int32(46900001),
 		Count: proto.Int64(500)})
 	res := &MazeGame.MazeBarrierRebornRS{}
-	e := process.OnMazeBarrierRebornRQ(ctx, 9003200130206264, req, res)
+	e := game.OnMazeBarrierRebornRQ(ctx, 9003200130206264, req, res)
 	l, _ := proto.Marshal(res)
 	fmt.Println("l", len(l), "e", e, "res", res)
 }

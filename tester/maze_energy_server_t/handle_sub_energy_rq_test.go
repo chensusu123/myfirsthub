@@ -9,7 +9,7 @@ package maze_energy_server_t
 import (
 	"testing"
 
-	"gitlab.ifreetalk.com/maze/maze_game_server/io/rpc/mazeenergyrpc"
+	"gitlab.ifreetalk.com/maze/maze_game_server/servers/maze_main_server/process/game/energy"
 	"gitlab.ifreetalk.com/plate/extra/protobuf/proto"
 	"gitlab.ifreetalk.com/plate/protodef/MazeEnergySvr"
 )
@@ -21,5 +21,6 @@ func TestSubEnergyRq(t *testing.T) {
 	rq.SubVal = proto.Int32(10)
 	rq.OpType = proto.Int32(1)
 	rq.TradeNumber = proto.Uint64(131223)
-	mazeenergyrpc.SubMazeEnergyRQ(gTestLogger, rq, rs)
+	energy.SubMazeEnergyRQ(gTestLogger, TestUid, rq, rs)
+	// mazeenergyrpc.SubMazeEnergyRQ(gTestLogger, rq, rs)
 }

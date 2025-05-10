@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"testing"
 
-	"gitlab.ifreetalk.com/maze/maze_game_server/servers/maze_collect_server/process"
+	"gitlab.ifreetalk.com/maze/maze_game_server/servers/maze_main_server/process/collect"
 	"gitlab.ifreetalk.com/plate/extra/protobuf/proto"
 	"gitlab.ifreetalk.com/plate/freetk/common/errors"
 	"gitlab.ifreetalk.com/plate/freetk/fkcore/fknet"
@@ -20,7 +20,7 @@ func TestMazeCollectInfoQueryRQ(t *testing.T) {
 	req.Header.Session = proto.String("fdsfdsfd")
 	res := &MazeCollect.MazeCollectInfoQueryRS{}
 	res.ErrInfo = errors.NO_ERROR
-	e := process.OnMazeCollectInfoQueryRQ(ctx, 9003200130064576, req, res)
+	e := collect.OnMazeCollectInfoQueryRQ(ctx, 9003200130064576, req, res)
 	fmt.Println("e", e, "res", res)
 }
 
@@ -31,7 +31,7 @@ func TestMazeCollectItemReceiveRQ(t *testing.T) {
 	req1.Header.Session = proto.String("fdsfdsfd")
 	res1 := &MazeCollect.MazeCollectInfoQueryRS{}
 	res1.ErrInfo = errors.NO_ERROR
-	e1 := process.OnMazeCollectInfoQueryRQ(ctx, 9003200130064576, req1, res1)
+	e1 := collect.OnMazeCollectInfoQueryRQ(ctx, 9003200130064576, req1, res1)
 	fmt.Println("e", e1, "res", res1)
 	req := &MazeCollect.MazeCollectItemReceiveRQ{}
 	req.Header = &Common.PacketHeader{}
@@ -39,6 +39,6 @@ func TestMazeCollectItemReceiveRQ(t *testing.T) {
 	req.Items = res1.MazeCollectInfo.Items
 	res := &MazeCollect.MazeCollectItemReceiveRS{}
 	res.ErrInfo = errors.NO_ERROR
-	e := process.OnMazeCollectItemReceiveRQ(ctx, 9003200130064576, req, res)
+	e := collect.OnMazeCollectItemReceiveRQ(ctx, 9003200130064576, req, res)
 	fmt.Println("e", e, "res", res)
 }

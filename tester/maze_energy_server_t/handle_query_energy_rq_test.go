@@ -11,7 +11,7 @@ import (
 	"fmt"
 	"testing"
 
-	"gitlab.ifreetalk.com/maze/maze_game_server/servers/maze_energy_server/process"
+	"gitlab.ifreetalk.com/maze/maze_game_server/servers/maze_main_server/process/game/energy"
 	"gitlab.ifreetalk.com/plate/extra/protobuf/proto"
 	"gitlab.ifreetalk.com/plate/freetk/common/errors"
 	"gitlab.ifreetalk.com/plate/freetk/fkcore/fknet"
@@ -28,7 +28,7 @@ func TestQueryMazeEnergyRQ(t *testing.T) {
 	req.Header.Session = proto.String("fdsfdsfd")
 	res := &MazeEnergy.QueryMazeEnergyRS{}
 	res.ErrInfo = errors.NO_ERROR
-	e := process.OnQueryMazeEnergyRQ(ctx, TestUid, req, res)
+	e := energy.OnQueryMazeEnergyRQ(ctx, TestUid, req, res)
 	l, _ := proto.Marshal(res)
 	fmt.Println("l", len(l), "e", e, "res", res)
 }

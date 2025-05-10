@@ -11,7 +11,7 @@ import (
 	"fmt"
 	"testing"
 
-	"gitlab.ifreetalk.com/maze/maze_game_server/servers/maze_main_server/process"
+	"gitlab.ifreetalk.com/maze/maze_game_server/servers/maze_main_server/process/game"
 	"gitlab.ifreetalk.com/plate/extra/protobuf/proto"
 	"gitlab.ifreetalk.com/plate/freetk/fkcore/fknet"
 	"gitlab.ifreetalk.com/plate/protodef/Common"
@@ -28,7 +28,7 @@ func TestReportDataRQ(t *testing.T) {
 	req.Header = &Common.PacketHeader{}
 	req.Header.Session = proto.String("fdsfdsfd")
 	res := &MazeGame.ReportDataRS{}
-	e := process.OnReportDataRQ(ctx, 9003200130206264, req, res)
+	e := game.OnReportDataRQ(ctx, 9003200130206264, req, res)
 	l, _ := proto.Marshal(res)
 	fmt.Println("l", len(l), "e", e, "res", res)
 }

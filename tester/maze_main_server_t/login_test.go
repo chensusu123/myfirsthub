@@ -5,7 +5,7 @@ import (
 	"testing"
 	"time"
 
-	"gitlab.ifreetalk.com/maze/maze_game_server/servers/maze_main_server/process"
+	"gitlab.ifreetalk.com/maze/maze_game_server/servers/maze_main_server/process/game"
 	"gitlab.ifreetalk.com/plate/extra/protobuf/proto"
 	"gitlab.ifreetalk.com/plate/freetk/fkcore/fknet"
 	"gitlab.ifreetalk.com/plate/protodef/MazeCommon"
@@ -20,7 +20,7 @@ func TestLogin(t *testing.T) {
 		MazeVersion: proto.Int32(1),
 	}
 	res := &MazeGame.MazeLoginRS{}
-	process.OnMazeLoginRQ(ctx, gTestUser, req, res)
+	game.OnMazeLoginRQ(ctx, gTestUser, req, res)
 	time.Sleep(time.Second)
 }
 
@@ -28,7 +28,7 @@ func TestBarrierList(t *testing.T) {
 	ctx := fknet.TCPContext{Context: context.Background(), FKLogI: gTestLogger}
 	req := &MazeGame.MazeBarrierListRQ{}
 	res := &MazeGame.MazeBarrierListRS{}
-	process.OnMazeBarrierListRQ(ctx, gTestUser, req, res)
+	game.OnMazeBarrierListRQ(ctx, gTestUser, req, res)
 	time.Sleep(time.Second)
 }
 
@@ -38,7 +38,7 @@ func TestEnter(t *testing.T) {
 		BarrierId: proto.Int32(1),
 	}
 	res := &MazeGame.MazeBarrierEnterRS{}
-	process.OnMazeBarrierEnterRQ(ctx, gTestUser, req, res)
+	game.OnMazeBarrierEnterRQ(ctx, gTestUser, req, res)
 	time.Sleep(time.Second)
 }
 
@@ -49,7 +49,7 @@ func TestDeath(t *testing.T) {
 		FoeExp:    proto.Int32(5),
 	}
 	res := &MazeGame.BarrierDeathRS{}
-	process.OnMazeBarrierDeathRQ(ctx, gTestUser, req, res)
+	game.OnMazeBarrierDeathRQ(ctx, gTestUser, req, res)
 	time.Sleep(time.Second)
 }
 
@@ -63,7 +63,7 @@ func TestReborn(t *testing.T) {
 		},
 	}
 	res := &MazeGame.MazeBarrierRebornRS{}
-	process.OnMazeBarrierRebornRQ(ctx, gTestUser, req, res)
+	game.OnMazeBarrierRebornRQ(ctx, gTestUser, req, res)
 	time.Sleep(time.Second)
 }
 func TestPass(t *testing.T) {
@@ -73,7 +73,7 @@ func TestPass(t *testing.T) {
 		FoeExp:    proto.Int32(100),
 	}
 	res := &MazeGame.MazeBarrierPassRS{}
-	process.OnMazeBarrierPassRQ(ctx, gTestUser, req, res)
+	game.OnMazeBarrierPassRQ(ctx, gTestUser, req, res)
 	time.Sleep(time.Second)
 }
 
@@ -88,7 +88,7 @@ func TestReport(t *testing.T) {
 		},
 	}
 	res := &MazeGame.ReportDataRS{}
-	process.OnMazeLoginRQ(ctx, gTestUser, req, res)
+	game.OnMazeLoginRQ(ctx, gTestUser, req, res)
 	time.Sleep(time.Second)
 }
 
@@ -100,6 +100,6 @@ func TestReportAddEquip(t *testing.T) {
 		EquipNum:  proto.Int32(1),
 	}
 	res := &MazeGame.ReportAwardFoeEquipRS{}
-	process.OnReportAwardFoeEquipRQ(ctx, gTestUser, req, res)
+	game.OnReportAwardFoeEquipRQ(ctx, gTestUser, req, res)
 	time.Sleep(time.Second)
 }
