@@ -1,5 +1,8 @@
 .idea
 servers/maze_main_server/maze_main_server
+servers/maze_main_server/logs
+servers/maze_main_server/extern.conf
+servers/maze_main_server/status.txt
 servers/maze_es/maze_es
 servers/maze_es/logs
 servers/maze_es/extern.conf

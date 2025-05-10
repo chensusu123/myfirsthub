@@ -2,6 +2,7 @@ package main
 
 import (
 	"gitlab.ifreetalk.com/maze/maze_game_server/servers/maze_main_server/process"
+	"gitlab.ifreetalk.com/maze/maze_game_server/usecase/business"
 	"gitlab.ifreetalk.com/plate/freetk/fkserver"
 )
 
@@ -10,5 +11,7 @@ func main() {
 	fkserver.SetMonitorName(fkserver.GroupNameGO, fkserver.ProjectNamePPWD, "maze_main_server")
 
 	process.RegisterHandler()
+
+	fkserver.AddBusiness(&business.GCustomBusiness)
 	fkserver.Run()
 }

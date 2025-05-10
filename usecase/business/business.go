@@ -12,6 +12,7 @@ import (
 	"gitlab.ifreetalk.com/plate/freetk/fkcore/fkconfig/param"
 	"gitlab.ifreetalk.com/plate/freetk/fkcore/fklog"
 	"gitlab.ifreetalk.com/plate/freetk/fkserver"
+	"gitlab.ifreetalk.com/plate/freetk/fkserver/config_manager/loadconfigapi"
 	"gitlab.ifreetalk.com/plate/freetk/fkutil/filemonitor"
 	"go.uber.org/atomic"
 	"go.uber.org/zap"
@@ -44,6 +45,9 @@ func init() {
 	param.IntP(&cacheApplyCheck, "cache:apply:check", 1000, "配置同步时间间隔.单位毫秒")
 	param.IntP(&bufferLen, "buffer:len", 5000, "配表拉取消息缓冲区长度")
 	param.IntP(&statOpen, "stat:open", 0, "是否打开程序统计")
+
+	loadconfigapi.SetLoadConfigFunc(GCustomBusiness.LoadCacheConfig)
+	loadconfigapi.SetInitConfigCacheFunc(GCustomBusiness.Init)
 }
 
 type excelReadResult struct {
