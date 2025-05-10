@@ -33,7 +33,7 @@ func PlugTcpRawService(regPack func()) {
 		panic("PlugTcpRawService with nil regPack")
 	}
 	fkserver.AppServer.AddServeService(gGlobalTCPRawServer)
-	fkconfig.SetTcpMonitor()
+	fkconfig.SetThriftRpcMonitor()
 	regPack()
 }
 
@@ -181,8 +181,8 @@ func init() {
 	gDefaultTCPPkgCtl.IgnoreProc(43003)
 	// 初始化tcp服务器
 	gGlobalTCPRawServer = newTCPServer(&gDefaultTCPPkgCtl)
-	param.Uint32P(&cacheSize, "cache:size", 1000, "tcp包缓冲大小")
-	param.Uint32P(&threadCount, "thread:count", 1024, "处理线程数量")
+	param.Uint32P(&cacheSize, "websocket:cache:size", 1000, "tcp包缓冲大小")
+	param.Uint32P(&threadCount, "websocket:thread:count", 1024, "处理线程数量")
 
 	// 添加tcp服务
 }

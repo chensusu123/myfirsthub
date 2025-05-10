@@ -1,12 +1,15 @@
 package process
 
 import (
+	_ "gitlab.ifreetalk.com/plate/excel/auto/GMazeEquipPosLvV8Cfg"
 	"gitlab.ifreetalk.com/plate/extra/protobuf/proto"
 	"gitlab.ifreetalk.com/plate/freetk/common/errors"
 	"gitlab.ifreetalk.com/plate/freetk/fkcore/fknet"
 	"gitlab.ifreetalk.com/plate/freetk/fkcore/fkprometheus"
 	"gitlab.ifreetalk.com/plate/protodef/MazeGame"
 	"gitlab.ifreetalk.com/plate/protodef/SysPackDef"
+
+	_ "gitlab.ifreetalk.com/maze/maze_game_server/io/redis/mazeequipgetnumredis"
 
 	"go.uber.org/zap"
 )
