@@ -81,6 +81,6 @@ require (
 	gopkg.in/yaml.v2 v2.4.0 // indirect
 )
 
-replace gitlab.ifreetalk.com/plate/excel => gitlab.ifreetalk.com/plate/excel v1.0.83-0.20250506053436-ef2c9ea111c0
+//replace gitlab.ifreetalk.com/plate/excel => gitlab.ifreetalk.com/plate/excel v1.0.83-0.20250506053436-ef2c9ea111c0
 
 //replace gitlab.ifreetalk.com/plate/freetk v1.2.61 => /Users/majiange/data/dev/go_work/go_plate/src/gitlab.ifreetalk.com/plate/freetk
