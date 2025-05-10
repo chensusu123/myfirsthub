@@ -4,10 +4,8 @@ import (
 	"gitlab.ifreetalk.com/maze/maze_game_server/io/kafka/mazebarrieruserkafka"
 	"gitlab.ifreetalk.com/maze/maze_game_server/io/kafka/mazeuserlevelkafka"
 	"gitlab.ifreetalk.com/maze/maze_game_server/lib/net/websocket_service"
-	"gitlab.ifreetalk.com/plate/definition/uncgkconst"
-	"gitlab.ifreetalk.com/plate/freetk/fkserver/tcp_service"
+	"gitlab.ifreetalk.com/maze/maze_game_server/usecase/tasktimer"
 	"gitlab.ifreetalk.com/plate/protodef/MazeCollect"
-	"gitlab.ifreetalk.com/plate/protodef/SeaTaskSvr"
 )
 
 func RegWsHandler() {
@@ -21,8 +19,11 @@ func RegWsHandler() {
 
 func RegTcpHandler() {
 	// Timer服务触发接口
-	_ = tcp_service.RegProcSimple(uncgkconst.UN_TCP_PACK_SVR_SEA_TASK_EXPIRE_NOTIFY_RQ, &SeaTaskSvr.TaskExpireNotifyRQ{},
-		uncgkconst.UN_TCP_PACK_SVR_SEA_TASK_EXPIRE_NOTIFY_RS, &SeaTaskSvr.TaskExpireNotifyRS{}, OnTimeOut)
+	// _ = tcp_service.RegProcSimple(uncgkconst.UN_TCP_PACK_SVR_SEA_TASK_EXPIRE_NOTIFY_RQ, &SeaTaskSvr.TaskExpireNotifyRQ{},
+	// 	uncgkconst.UN_TCP_PACK_SVR_SEA_TASK_EXPIRE_NOTIFY_RS, &SeaTaskSvr.TaskExpireNotifyRS{}, OnTimeOut)
+
+	// 本地定时器
+	tasktimer.RegOnTimeoutFunc(ProcessTimeOut)
 }
 
 func RegConsumeHandler() {
