@@ -29,10 +29,11 @@ type Task struct {
 }
 
 // new ticker
-func New(logger fklog.FKLogI, interval time.Duration, bucketName string, callbackFunc func(interface{}) bool) (*BucketTicker, error) {
+func New(logger fklog.FKLogI, interval time.Duration, bucketName string, redisAddr string, callbackFunc func(interface{}) bool) (*BucketTicker, error) {
 	if interval <= 0 || callbackFunc == nil {
 		return nil, errors.New("create bucket ticker instance fail")
 	}
+	redisclient.Init(redisAddr)
 	bucket := &BucketTicker{
 		Interval:     interval,
 		Name:         bucketName,

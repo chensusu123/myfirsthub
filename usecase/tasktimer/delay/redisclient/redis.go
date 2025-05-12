@@ -4,6 +4,14 @@ import (
 	"github.com/go-redis/redis"
 )
 
+func Init(redisAddr string) {
+	client = redis.NewClient(&redis.Options{
+		Addr:     redisAddr,
+		Password: "",
+		DB:       0,
+	})
+}
+
 var client = redis.NewClient(&redis.Options{
 	Addr:     "127.0.0.1:6379",
 	Password: "",

@@ -27,7 +27,14 @@ func (tb *TaskTimerBusiness) Name() string {
 func (tb *TaskTimerBusiness) OnInit(logger fklog.FKLogI, cfg fkconfig.FkConfigerI) (err error) {
 	logger.InfoWF("TaskTimerBusiness OnInit")
 	loopLogger := logger.Clone("loop")
-	delay, err := redisdelay.New(logger, 1*time.Second, "TaskTimerBusiness", func(data interface{}) bool {
+
+	cgkCfg := &fkconfig.CgkCfg{}
+
+	err = cfg.LoadConfig(cgkCfg, "CgkCfg", 0)
+	redisAddr := cgkCfg.RedisAddr
+	redisAddr = "127.0.0.1:6379"
+
+	delay, err := redisdelay.New(logger, 1*time.Second, "TaskTimerBusiness", redisAddr, func(data interface{}) bool {
 		taskLogger := loopLogger.Clone("task")
 		taskLogger.SetLogId(time.Now().UnixNano())
 		pack := SeaTaskSvr.TaskInfo{}
