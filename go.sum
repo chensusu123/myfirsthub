@@ -268,6 +268,10 @@ gitlab.ifreetalk.com/plate/extra v1.1.7/go.mod h1:xFhTpaG8d/8FkQ6TSaT2kaBR5V/H0w
 gitlab.ifreetalk.com/plate/freetk v1.2.34/go.mod h1:jmIcxB7ZSBddsvZQv7uIASgQCNNJ7PzfJF7eFEohTS0=
 gitlab.ifreetalk.com/plate/freetk v1.2.63-0.20250510061936-c0513fc5c752 h1:eViScXjLzZNsOCkoVPmhL33NunZ90OtUhmrnTSA7n0o=
 gitlab.ifreetalk.com/plate/freetk v1.2.63-0.20250510061936-c0513fc5c752/go.mod h1:wHTaL0xh4wQcy5r0AkYRS1FwNZSZTaTTf5lIizj5n8g=
+gitlab.ifreetalk.com/plate/freetk v1.2.63-0.20250512061655-a712bcbe95cf h1:oHMQU6R6LBiMZ0Aj/602MaY8Q721pvn8zeU+WYfpeYE=
+gitlab.ifreetalk.com/plate/freetk v1.2.63-0.20250512061655-a712bcbe95cf/go.mod h1:wHTaL0xh4wQcy5r0AkYRS1FwNZSZTaTTf5lIizj5n8g=
+gitlab.ifreetalk.com/plate/freetk v1.2.63-0.20250512062718-32f64ef701f1 h1:N6ESoNKWtT1kMBkBRFhMCPvNjvzJMLiWnoZ2XAtkNH0=
+gitlab.ifreetalk.com/plate/freetk v1.2.63-0.20250512062718-32f64ef701f1/go.mod h1:wHTaL0xh4wQcy5r0AkYRS1FwNZSZTaTTf5lIizj5n8g=
 gitlab.ifreetalk.com/plate/io_interface v1.4.102-0.20250326074707-ac26a4cb5dba h1:dNyVsy5Pqp0wPamYL6JdUPEEkBxq6tep54DhKJPoHuM=
 gitlab.ifreetalk.com/plate/io_interface v1.4.102-0.20250326074707-ac26a4cb5dba/go.mod h1:tYP77irKSOBPx0iMlsxGucMnSIumHH75qtyB2hFv4DM=
 gitlab.ifreetalk.com/plate/protodef v1.0.29/go.mod h1:PPI4xcnIz1/Vy4pJeKekYyMupq4U2yE5NNU+TnovEjg=
