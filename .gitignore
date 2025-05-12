@@ -7,3 +7,7 @@ servers/maze_es/maze_es
 servers/maze_es/logs
 servers/maze_es/extern.conf
 servers/maze_es/status.txt
+servers/maze_main_server_dev/maze_main_server_dev
+servers/maze_main_server_dev/logs
+servers/maze_main_server_dev/extern.conf
+servers/maze_main_server_dev/status.txt
