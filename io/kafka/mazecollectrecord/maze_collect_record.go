@@ -3,14 +3,13 @@ package mazecollectrecord
 import (
 	"time"
 
-	jsoniter "github.com/json-iterator/go"
-	"gitlab.ifreetalk.com/plate/freetk/fkcore/fkafka"
+	"gitlab.ifreetalk.com/maze/maze_game_server/io/dispatcher"
 	"gitlab.ifreetalk.com/plate/freetk/fkcore/fkconfig"
 	"gitlab.ifreetalk.com/plate/freetk/fkcore/fklog"
 	"go.uber.org/zap"
 )
 
-var json = jsoniter.ConfigCompatibleWithStandardLibrary
+// var json = jsoniter.ConfigCompatibleWithStandardLibrary
 
 const (
 	MazeCollectInit    = 1 // 迷宫挂机初始化
@@ -38,19 +37,27 @@ type MazeCollectChgRecord struct {
 	CreateTime    int64  `json:"create_time"`    // 操作时间
 }
 
-var gKafka = &fkafka.KafkaProducer{}
+// var gKafka = &fkafka.KafkaProducer{}
 
 func init() {
-	fkconfig.RegisterNameNode("mazecollectrecord", 1001106, gKafka)
+	// fkconfig.RegisterNameNode("mazecollectrecord", 1001106, gKafka)
+}
+
+var d = dispatcher.NewDispatcher[*MazeCollectChgRecord]()
+
+func Watch(fn func(logger fklog.FKLogI, msg *MazeCollectChgRecord)) {
+	d.Watch(fn)
 }
 
 func PushMazeCollectChgRecord(agent fklog.FKLogI, record *MazeCollectChgRecord) error {
 	record.CreateTime = time.Now().UnixNano() / 1e6
 	record.GroupID = fkconfig.EnvVal.GroupID
-	data, err := json.Marshal(record)
-	if err != nil {
-		return err
-	}
+	// data, err := json.Marshal(record)
+	// if err != nil {
+	// return err
+	// }
+	d.Push(agent, record)
 	agent.InfoWF("SendMazeCollectChgRecord data", zap.Any("record", record))
-	return gKafka.SendWithUserID(record.UserId, data)
+	// return gKafka.SendWithUserID(record.UserId, data)
+	return nil
 }

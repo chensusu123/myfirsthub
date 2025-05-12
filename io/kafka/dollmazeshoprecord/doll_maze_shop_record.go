@@ -1,15 +1,15 @@
 package dollmazeshoprecord
 
 import (
-	jsoniter "github.com/json-iterator/go"
-	"gitlab.ifreetalk.com/plate/freetk/fkcore/fkafka"
+	"time"
+
+	"gitlab.ifreetalk.com/maze/maze_game_server/io/dispatcher"
 	"gitlab.ifreetalk.com/plate/freetk/fkcore/fkconfig"
 	"gitlab.ifreetalk.com/plate/freetk/fkcore/fklog"
 	"go.uber.org/zap"
-	"time"
 )
 
-var json = jsoniter.ConfigCompatibleWithStandardLibrary
+// var json = jsoniter.ConfigCompatibleWithStandardLibrary
 
 // 人偶迷宫商店流水
 type DollMazeShopRecord struct {
@@ -29,23 +29,30 @@ type DollMazeShopRecord struct {
 	CreateTime    int64  `json:"create_time"`     // 操作时间
 }
 
-var mazeShopQueue = &fkafka.KafkaProducer{}
+// var mazeShopQueue = &fkafka.KafkaProducer{}
 
 func init() {
-	fkconfig.RegisterNameNode("dollmazeshoprecord", 1001078, mazeShopQueue)
+	// fkconfig.RegisterNameNode("dollmazeshoprecord", 1001078, mazeShopQueue)
+}
+
+var d = dispatcher.NewDispatcher[*DollMazeShopRecord]()
+
+func Watch(fn func(logger fklog.FKLogI, msg *DollMazeShopRecord)) {
+	d.Watch(fn)
 }
 
 func PushDollMazeShopRecord(agent fklog.FKLogI, data *DollMazeShopRecord) (err error) {
 	data.CreateTime = time.Now().UnixNano() / 1000000
 	data.GroupID = fkconfig.EnvVal.GroupID
-	cnt, err := json.Marshal(data)
-	if err != nil {
-		return err
-	}
+	// cnt, err := json.Marshal(data)
+	// if err != nil {
+	// 	return err
+	// }
+	d.Push(agent, data)
 	agent.DebugWF("PushDollMazeShopRecord data", zap.Any("userId", data.UserId), zap.Any("detail", data))
-	err = mazeShopQueue.SendWithUserID(data.UserId, cnt)
-	if err != nil {
-		agent.ErrorWF("PushDollMazeShopRecord SendWithUserID err", zap.ByteString("cnt", cnt), zap.Error(err))
-	}
+	// err = mazeShopQueue.SendWithUserID(data.UserId, cnt)
+	// if err != nil {
+	// 	agent.ErrorWF("PushDollMazeShopRecord SendWithUserID err", zap.ByteString("cnt", cnt), zap.Error(err))
+	// }
 	return
 }

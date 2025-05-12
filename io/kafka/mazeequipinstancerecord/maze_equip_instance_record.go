@@ -3,14 +3,13 @@ package mazeequipinstancerecord
 import (
 	"time"
 
-	jsoniter "github.com/json-iterator/go"
-	"gitlab.ifreetalk.com/plate/freetk/fkcore/fkafka"
+	"gitlab.ifreetalk.com/maze/maze_game_server/io/dispatcher"
 	"gitlab.ifreetalk.com/plate/freetk/fkcore/fkconfig"
 	"gitlab.ifreetalk.com/plate/freetk/fkcore/fklog"
 	"go.uber.org/zap"
 )
 
-var json = jsoniter.ConfigCompatibleWithStandardLibrary
+// var json = jsoniter.ConfigCompatibleWithStandardLibrary
 
 const (
 	MazeAddEquip         int32 = 1 // 添加装备
@@ -38,24 +37,31 @@ type MazeGameEquipInstanceRecord struct {
 	EquipSubType   int32  `json:"equip_sub_type"`   //装备子类型
 }
 
-var equipInstanceChgQueue = &fkafka.KafkaProducer{}
+// var equipInstanceChgQueue = &fkafka.KafkaProducer{}
 
 func init() {
-	// 1001090 topic-maze-equip-instance-log 迷宫游戏装备实例化流水
-	fkconfig.RegisterNameNode("dollequipinstancerecord", 1001090, equipInstanceChgQueue)
+	// // 1001090 topic-maze-equip-instance-log 迷宫游戏装备实例化流水
+	// fkconfig.RegisterNameNode("dollequipinstancerecord", 1001090, equipInstanceChgQueue)
+}
+
+var d = dispatcher.NewDispatcher[*MazeGameEquipInstanceRecord]()
+
+func Watch(fn func(logger fklog.FKLogI, msg *MazeGameEquipInstanceRecord)) {
+	d.Watch(fn)
 }
 
 func PushMazeGameEquipInstanceRecord(agent fklog.FKLogI, data *MazeGameEquipInstanceRecord) (err error) {
 	data.CreateTime = time.Now().UnixNano() / 1000000
 	data.GroupID = fkconfig.EnvVal.GroupID
-	cnt, err := json.Marshal(data)
-	if err != nil {
-		return err
-	}
+	// cnt, err := json.Marshal(data)
+	// if err != nil {
+	// 	return err
+	// }
+	d.Push(agent, data)
 	agent.InfoWF("PushMazeGameEquipInstanceRecord data", zap.Any("userId", data.UserId), zap.Any("detail", data))
-	err = equipInstanceChgQueue.SendWithUserID(data.UserId, cnt)
-	if err != nil {
-		agent.ErrorWF("PushDollEquipInstanceRecord SendWithUserID err", zap.ByteString("cnt", cnt), zap.Error(err))
-	}
+	// err = equipInstanceChgQueue.SendWithUserID(data.UserId, cnt)
+	// if err != nil {
+	// 	agent.ErrorWF("PushDollEquipInstanceRecord SendWithUserID err", zap.ByteString("cnt", cnt), zap.Error(err))
+	// }
 	return
 }

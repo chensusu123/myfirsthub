@@ -9,14 +9,13 @@ package mazeenergyrecord
 import (
 	"time"
 
-	jsoniter "github.com/json-iterator/go"
-	"gitlab.ifreetalk.com/plate/freetk/fkcore/fkafka"
+	"gitlab.ifreetalk.com/maze/maze_game_server/io/dispatcher"
 	"gitlab.ifreetalk.com/plate/freetk/fkcore/fkconfig"
 	"gitlab.ifreetalk.com/plate/freetk/fkcore/fklog"
 	"go.uber.org/zap"
 )
 
-var json = jsoniter.ConfigCompatibleWithStandardLibrary
+// var json = jsoniter.ConfigCompatibleWithStandardLibrary
 
 const (
 	TimerRecovery int32 = 100 // 时间恢复
@@ -37,21 +36,29 @@ type MazeEnergyChgRecord struct {
 	CreateTime int64  `json:"create_time"` // 操作时间
 }
 
-var gKafka = &fkafka.KafkaProducer{}
+// var gKafka = &fkafka.KafkaProducer{}
 
 func init() {
-	// 3876 db_maze_energy_chg_log 迷宫体力变化流水
-	// 1001106 topic-maze-energy-chg-log 迷宫体力变化流水
-	fkconfig.RegisterNameNode("mazeenergyrecord", 1001106, gKafka)
+	// // 3876 db_maze_energy_chg_log 迷宫体力变化流水
+	// // 1001106 topic-maze-energy-chg-log 迷宫体力变化流水
+	// fkconfig.RegisterNameNode("mazeenergyrecord", 1001106, gKafka)
+}
+
+var d = dispatcher.NewDispatcher[*MazeEnergyChgRecord]()
+
+func Watch(fn func(logger fklog.FKLogI, msg *MazeEnergyChgRecord)) {
+	d.Watch(fn)
 }
 
 func SendMazeEnergyChgRecord(agent fklog.FKLogI, record *MazeEnergyChgRecord) error {
 	record.CreateTime = time.Now().UnixNano() / 1e6
 	record.GroupID = fkconfig.EnvVal.GroupID
-	data, err := json.Marshal(record)
-	if err != nil {
-		return err
-	}
+	// data, err := json.Marshal(record)
+	// if err != nil {
+	// return err
+	// }
+	d.Push(agent, record)
 	agent.InfoWF("SendMazeEnergyChgRecord data", zap.Any("record", record))
-	return gKafka.SendWithUserID(record.UserId, data)
+	// return gKafka.SendWithUserID(record.UserId, data)
+	return nil
 }

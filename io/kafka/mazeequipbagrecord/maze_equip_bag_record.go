@@ -1,14 +1,12 @@
 package mazeequipbagrecord
 
 import (
-	jsoniter "github.com/json-iterator/go"
-	"gitlab.ifreetalk.com/plate/freetk/fkcore/fkafka"
-	"gitlab.ifreetalk.com/plate/freetk/fkcore/fkconfig"
+	"gitlab.ifreetalk.com/maze/maze_game_server/io/dispatcher"
 	"gitlab.ifreetalk.com/plate/freetk/fkcore/fklog"
 	"go.uber.org/zap"
 )
 
-var json = jsoniter.ConfigCompatibleWithStandardLibrary
+// var json = jsoniter.ConfigCompatibleWithStandardLibrary
 
 const (
 	MazeAddEquip         int32 = 1 // 添加装备
@@ -31,18 +29,26 @@ type MazeGameEquipBagRecord struct {
 	CreateTime    int64  `json:"create_time"`     // 操作时间
 }
 
-var equipBagChgQueue = &fkafka.KafkaProducer{}
+// var equipBagChgQueue = &fkafka.KafkaProducer{}
 
 func init() {
-	//	1001088 topic-maze-equip-bag-chg-log 迷宫游戏装备背包添加流水
-	fkconfig.RegisterNameNode("dollequipbagrecord", 1001088, equipBagChgQueue)
+	// //	1001088 topic-maze-equip-bag-chg-log 迷宫游戏装备背包添加流水
+	// fkconfig.RegisterNameNode("dollequipbagrecord", 1001088, equipBagChgQueue)
+}
+
+var d = dispatcher.NewDispatcher[*MazeGameEquipBagRecord]()
+
+func Watch(fn func(logger fklog.FKLogI, msg *MazeGameEquipBagRecord)) {
+	d.Watch(fn)
 }
 
 func PushMazeGameEquipBagRecord(agent fklog.FKLogI, data *MazeGameEquipBagRecord) error {
-	cnt, err := json.Marshal(data)
-	if err != nil {
-		return err
-	}
+	// cnt, err := json.Marshal(data)
+	// if err != nil {
+	// 	return err
+	// }
+	d.Push(agent, data)
 	agent.InfoWF("PushMazeGameEquipBagRecord data", zap.Any("userId", data.UserId), zap.Any("detail", data))
-	return equipBagChgQueue.SendWithUserID(data.UserId, cnt)
+	// return equipBagChgQueue.SendWithUserID(data.UserId, cnt)
+	return nil
 }

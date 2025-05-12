@@ -4,13 +4,13 @@ go 1.18
 
 require (
 	github.com/cloudwego/hertz v0.9.7
+	github.com/go-redis/redis v6.15.9+incompatible
 	github.com/gogo/protobuf v1.1.1
 	github.com/gomodule/redigo v1.8.9
 	github.com/gorilla/websocket v1.5.3
 	github.com/hertz-contrib/websocket v0.2.0
 	github.com/json-iterator/go v1.1.12
 	github.com/xuri/excelize/v2 v2.9.0
-	gitlab.ifreetalk.com/plate/definition v1.0.6
 	gitlab.ifreetalk.com/plate/excel v1.0.83-0.20250506053436-ef2c9ea111c0
 	gitlab.ifreetalk.com/plate/extra v1.1.7
 	gitlab.ifreetalk.com/plate/freetk v1.2.63-0.20250510061936-c0513fc5c752
@@ -35,7 +35,6 @@ require (
 	github.com/eapache/go-xerial-snappy v0.0.0-20180814174437-776d5712da21 // indirect
 	github.com/eapache/queue v1.1.0 // indirect
 	github.com/fsnotify/fsnotify v1.5.4 // indirect
-	github.com/go-redis/redis v6.15.9+incompatible // indirect
 	github.com/goinggo/mapstructure v0.0.0-20140717182941-194205d9b4a9 // indirect
 	github.com/golang/protobuf v1.5.0 // indirect
 	github.com/golang/snappy v0.0.1 // indirect
@@ -66,6 +65,7 @@ require (
 	github.com/twitchyliquid64/golang-asm v0.15.1 // indirect
 	github.com/xuri/efp v0.0.0-20240408161823-9ad904a10d6d // indirect
 	github.com/xuri/nfp v0.0.0-20240318013403-ab9948c2c4a7 // indirect
+	gitlab.ifreetalk.com/plate/definition v1.0.6 // indirect
 	go.uber.org/multierr v1.6.0 // indirect
 	golang.org/x/arch v0.0.0-20210923205945-b76863e36670 // indirect
 	golang.org/x/crypto v0.28.0 // indirect

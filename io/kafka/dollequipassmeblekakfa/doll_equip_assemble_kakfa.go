@@ -3,20 +3,25 @@ package dollequipassmeblekakfa
 import (
 	"time"
 
-	jsoniter "github.com/json-iterator/go"
-	"gitlab.ifreetalk.com/plate/freetk/fkcore/fkafka"
+	"gitlab.ifreetalk.com/maze/maze_game_server/io/dispatcher"
 	"gitlab.ifreetalk.com/plate/freetk/fkcore/fkconfig"
 	"gitlab.ifreetalk.com/plate/freetk/fkcore/fklog"
 	"go.uber.org/zap"
 )
 
-var kp = &fkafka.KafkaProducer{}
-var json = jsoniter.ConfigCompatibleWithStandardLibrary
+var d = dispatcher.NewDispatcher[*MazeGameEquipAssembleRecord]()
+
+func Watch(fn func(logger fklog.FKLogI, msg *MazeGameEquipAssembleRecord)) {
+	d.Watch(fn)
+}
+
+// var kp = &fkafka.KafkaProducer{}
+// var json = jsoniter.ConfigCompatibleWithStandardLibrary
 
 func init() {
 	// 1001087 topic-maze-game-equip-assemble-chg-record 迷宫游戏装备装配流水
 	// 3548  db_doll_equip_assemble_chg_log 人偶装备装配流水
-	fkconfig.RegisterNameNode("dollequipassmeblekakfa", 1001087, kp)
+	// fkconfig.RegisterNameNode("dollequipassmeblekakfa", 1001087, kp)
 }
 
 const (
@@ -48,16 +53,17 @@ type MazeGameEquipAssembleRecord struct {
 func SendMazeGameEquipAssembleRecord(logger fklog.FKLogI, record *MazeGameEquipAssembleRecord) error {
 	record.GroupId = fkconfig.EnvVal.GroupID
 	record.OpTime = time.Now().UnixNano() / 1000000
-	jbs, e := json.Marshal(record)
-	if e != nil {
-		logger.ErrorWF("SendMazeGameEquipAssembleRecord Marshal fail", zap.Error(e), zap.Any("record", record))
-		return e
-	}
-	e = kp.SendWithUserID(record.UserId, jbs)
-	if e != nil {
-		logger.ErrorWF("SendMazeGameEquipAssembleRecord SendWithUserID fail", zap.Error(e), zap.Any("record", record))
-		return e
-	}
+	// jbs, e := json.Marshal(record)
+	// if e != nil {
+	// 	logger.ErrorWF("SendMazeGameEquipAssembleRecord Marshal fail", zap.Error(e), zap.Any("record", record))
+	// 	return e
+	// }
+	// e = kp.SendWithUserID(record.UserId, jbs)
+	// if e != nil {
+	// 	logger.ErrorWF("SendMazeGameEquipAssembleRecord SendWithUserID fail", zap.Error(e), zap.Any("record", record))
+	// 	return e
+	// }
+	d.Push(logger, record)
 	logger.InfoWF("SendMazeGameEquipAssembleRecord SendWithUserID succ", zap.Any("record", record))
-	return e
+	return nil
 }

@@ -3,8 +3,7 @@ package dollequipdismantlekafka
 import (
 	"time"
 
-	jsoniter "github.com/json-iterator/go"
-	"gitlab.ifreetalk.com/plate/freetk/fkcore/fkafka"
+	"gitlab.ifreetalk.com/maze/maze_game_server/io/dispatcher"
 	"gitlab.ifreetalk.com/plate/freetk/fkcore/fkconfig"
 	"gitlab.ifreetalk.com/plate/freetk/fkcore/fklog"
 	"go.uber.org/zap"
@@ -18,7 +17,7 @@ const (
 	OpTypeFromTempBagTimeoutFix int32 = 4 // 临时背包过期分解
 )
 
-var json = jsoniter.ConfigCompatibleWithStandardLibrary
+// var json = jsoniter.ConfigCompatibleWithStandardLibrary
 
 // 装备分解流水
 type MazeGameEquipDismantleRecord struct {
@@ -32,20 +31,28 @@ type MazeGameEquipDismantleRecord struct {
 	CreateTime int64  `json:"create_time"` // 操作时间
 }
 
-var gKafka = &fkafka.KafkaProducer{}
+// var gKafka = &fkafka.KafkaProducer{}
 
 func init() {
-	// 1001089 topic-maze-equip-dismantle-record-log 迷宫游戏装备分解流水
-	fkconfig.RegisterNameNode("dollequipdismantlekafka", 1001089, gKafka)
+	// // 1001089 topic-maze-equip-dismantle-record-log 迷宫游戏装备分解流水
+	// fkconfig.RegisterNameNode("dollequipdismantlekafka", 1001089, gKafka)
+}
+
+var d = dispatcher.NewDispatcher[*MazeGameEquipDismantleRecord]()
+
+func Watch(fn func(logger fklog.FKLogI, msg *MazeGameEquipDismantleRecord)) {
+	d.Watch(fn)
 }
 
 func PushDollEquipDismantleRecord(agent fklog.FKLogI, record *MazeGameEquipDismantleRecord) error {
 	record.CreateTime = time.Now().Unix()
 	record.GroupID = fkconfig.EnvVal.GroupID
-	cnt, err := json.Marshal(record)
-	if err != nil {
-		return err
-	}
+	// cnt, err := json.Marshal(record)
+	// if err != nil {
+	// 	return err
+	// }
+	// return gKafka.SendWithUserID(record.UserId, cnt)
+	d.Push(agent, record)
 	agent.InfoWF("PushDollEquipDismantleRecord data", zap.Any("userId", record.UserId), zap.Any("record", record))
-	return gKafka.SendWithUserID(record.UserId, cnt)
+	return nil
 }

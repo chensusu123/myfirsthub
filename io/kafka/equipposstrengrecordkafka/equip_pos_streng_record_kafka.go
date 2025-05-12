@@ -1,14 +1,14 @@
 package equipposstrengrecordkafka
 
 import (
-	"encoding/json"
 	"time"
 
-	"gitlab.ifreetalk.com/plate/freetk/fkcore/fkafka"
+	"gitlab.ifreetalk.com/maze/maze_game_server/common/function/itemutil"
+	"gitlab.ifreetalk.com/maze/maze_game_server/io/dispatcher"
 	"gitlab.ifreetalk.com/plate/freetk/fkcore/fkconfig"
 	"gitlab.ifreetalk.com/plate/freetk/fkcore/fklog"
 	"gitlab.ifreetalk.com/plate/protodef/MazeCommon"
-	"gitlab.ifreetalk.com/maze/maze_game_server/common/function/itemutil"
+	"go.uber.org/zap"
 )
 
 // 装备位强化流水
@@ -28,19 +28,25 @@ type EquipPosLevelUpRecord struct {
 	Result    int32  `json:"result"`     // 结果 0:成功 1:强化失败 2:存储武力值属性失败 3:存储非武力值属性失败
 }
 
-var logCli = &fkafka.KafkaProducer{}
+// var logCli = &fkafka.KafkaProducer{}
 
 func init() {
-	fkconfig.RegisterNameNode("equipposstrengrecordkafka", 1001030, logCli)
+	// fkconfig.RegisterNameNode("equipposstrengrecordkafka", 1001030, logCli)
 }
 
-func pushRecord(logger fklog.FKLogI, data *EquipPosLevelUpRecord) error {
-	msg, err := json.Marshal(data)
-	if err != nil {
-		return err
-	}
-	return logCli.SendWithUserID(data.UserId, msg)
+var d = dispatcher.NewDispatcher[*EquipPosLevelUpRecord]()
+
+func Watch(fn func(logger fklog.FKLogI, msg *EquipPosLevelUpRecord)) {
+	d.Watch(fn)
 }
+
+// func pushRecord(logger fklog.FKLogI, data *EquipPosLevelUpRecord) error {
+// msg, err := json.Marshal(data)
+// if err != nil {
+// 	return err
+// }
+// return logCli.SendWithUserID(data.UserId, msg)
+// }
 
 func PushEquipPosStrengRecord(logger fklog.FKLogI, userId uint64, posId,
 	oldPosLv, newPosLv, oldPosSuitId, newPosSuitId int32, tradeNo uint64, items []*MazeCommon.MazeItem, result, mask int32) error {
@@ -59,5 +65,7 @@ func PushEquipPosStrengRecord(logger fklog.FKLogI, userId uint64, posId,
 		CostItems: itemutil.CommonItemsToString(items),
 		Result:    result,
 	}
-	return pushRecord(logger, data)
+	logger.InfoWF("PushEquipPosStrengRecord", zap.Any("data", data))
+	d.Push(logger, data)
+	return nil
 }

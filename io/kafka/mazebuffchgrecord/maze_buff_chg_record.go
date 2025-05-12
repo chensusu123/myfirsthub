@@ -9,20 +9,25 @@ package mazebuffchgrecord
 import (
 	"time"
 
-	jsoniter "github.com/json-iterator/go"
-	"gitlab.ifreetalk.com/plate/freetk/fkcore/fkafka"
+	"gitlab.ifreetalk.com/maze/maze_game_server/common/structsdef"
+	"gitlab.ifreetalk.com/maze/maze_game_server/io/dispatcher"
 	"gitlab.ifreetalk.com/plate/freetk/fkcore/fkconfig"
 	"gitlab.ifreetalk.com/plate/freetk/fkcore/fklog"
 	"go.uber.org/zap"
-	"gitlab.ifreetalk.com/maze/maze_game_server/common/structsdef"
 )
 
-var kp = &fkafka.KafkaProducer{}
-var json = jsoniter.ConfigCompatibleWithStandardLibrary
+// var kp = &fkafka.KafkaProducer{}
+// var json = jsoniter.ConfigCompatibleWithStandardLibrary
 
 func init() {
-	// 1001091 topic-maze-buff-attr-chg-log 迷宫游戏buff属性变化流水
-	fkconfig.RegisterNameNode("mazebuffchgrecord", 1001091, kp)
+	// // 1001091 topic-maze-buff-attr-chg-log 迷宫游戏buff属性变化流水
+	// fkconfig.RegisterNameNode("mazebuffchgrecord", 1001091, kp)
+}
+
+var d = dispatcher.NewDispatcher[*structsdef.MazeGameBuffAttrChgRecord]()
+
+func Watch(fn func(logger fklog.FKLogI, msg *structsdef.MazeGameBuffAttrChgRecord)) {
+	d.Watch(fn)
 }
 
 func SendMazeBuffAttrRecord(logger fklog.FKLogI, record *structsdef.MazeGameBuffAttrChgRecord) error {
@@ -31,16 +36,17 @@ func SendMazeBuffAttrRecord(logger fklog.FKLogI, record *structsdef.MazeGameBuff
 		record.CreateTime = time.Now().UnixNano() / 1000000
 	}
 
-	jbs, e := json.Marshal(record)
-	if e != nil {
-		logger.ErrorWF("SendMazeBuffAttrRecord Marshal fail", zap.Error(e), zap.Any("record", record))
-		return e
-	}
-	e = kp.SendWithUserID(record.UserId, jbs)
-	if e != nil {
-		logger.ErrorWF("SendMazeBuffAttrRecord SendWithUserID fail", zap.Error(e), zap.Any("record", record))
-		return e
-	}
+	// jbs, e := json.Marshal(record)
+	// if e != nil {
+	// 	logger.ErrorWF("SendMazeBuffAttrRecord Marshal fail", zap.Error(e), zap.Any("record", record))
+	// 	return e
+	// }
+	// e = kp.SendWithUserID(record.UserId, jbs)
+	// if e != nil {
+	// 	logger.ErrorWF("SendMazeBuffAttrRecord SendWithUserID fail", zap.Error(e), zap.Any("record", record))
+	// 	return e
+	// }
+	d.Push(logger, record)
 	logger.InfoWF("SendMazeBuffAttrRecord SendWithUserID succ", zap.Any("record", record))
-	return e
+	return nil
 }
