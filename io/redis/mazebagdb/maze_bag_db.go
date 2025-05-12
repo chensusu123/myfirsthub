@@ -8,6 +8,8 @@ package mazebagdb
 
 import (
 	"context"
+	"fmt"
+
 	"gitlab.ifreetalk.com/plate/freetk/fkcore/fkconfig"
 	"gitlab.ifreetalk.com/plate/freetk/fkcore/fklog"
 	"gitlab.ifreetalk.com/plate/freetk/fkcore/fkredis"
@@ -22,7 +24,7 @@ func init() {
 }
 
 func getKey(uid uint64) string {
-	return db.GetKey(uid)
+	return fmt.Sprintf("maze:bag:%d", uid)
 }
 
 func IncrBagItem(_ fklog.FKLogI, uid uint64, itemId int32, count int64) (curCount int64, err error) {

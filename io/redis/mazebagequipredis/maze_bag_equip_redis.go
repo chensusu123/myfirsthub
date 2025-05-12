@@ -3,6 +3,7 @@ package mazebagequipredis
 import (
 	"context"
 	"errors"
+	"fmt"
 
 	"gitlab.ifreetalk.com/plate/extra/protobuf/proto"
 	"gitlab.ifreetalk.com/plate/freetk/fkcore/fkconfig"
@@ -21,7 +22,7 @@ func init() {
 }
 
 func GetEquipInfo(logger fklog.FKLogI, userId uint64, equipGuid int64) (equipInfo *MazeEquipCache.MazeEquipInfoDb, err error) {
-	key := gRedis.GetKey(userId)
+	key := fmt.Sprintf("maze:bag:equip:info:%d", userId)
 	ret, err := redis.Bytes(gRedis.Do(context.TODO(), "hget", key, equipGuid))
 	if err != nil {
 		if err == redis.ErrNil {
@@ -41,7 +42,7 @@ func GetEquipInfo(logger fklog.FKLogI, userId uint64, equipGuid int64) (equipInf
 }
 
 func GetBatchEquipInfo(logger fklog.FKLogI, userId uint64, equipGuids ...int64) (equipMap map[int64]*MazeEquipCache.MazeEquipInfoDb, err error) {
-	key := gRedis.GetKey(userId)
+	key := fmt.Sprintf("maze:bag:equip:info:%d", userId)
 	var args []interface{}
 	args = append(args, key)
 	for _, equipGuid := range equipGuids {
@@ -69,7 +70,7 @@ func GetBatchEquipInfo(logger fklog.FKLogI, userId uint64, equipGuids ...int64) 
 }
 
 func SaveEquipInfo(logger fklog.FKLogI, userId uint64, equipInfo *MazeEquipCache.MazeEquipInfoDb) (err error) {
-	key := gRedis.GetKey(userId)
+	key := fmt.Sprintf("maze:bag:equip:info:%d", userId)
 
 	data, err := proto.Marshal(equipInfo)
 	if err != nil {
@@ -91,7 +92,7 @@ func SaveEquipInfo(logger fklog.FKLogI, userId uint64, equipInfo *MazeEquipCache
 func BatchSaveEquipInfo(logger fklog.FKLogI, userId uint64, equipList []*MazeEquipCache.MazeEquipInfoDb) error {
 	args := make([]interface{}, 0, 1+2*len(equipList))
 
-	key := gRedis.GetKey(userId)
+	key := fmt.Sprintf("maze:bag:equip:info:%d", userId)
 	args = append(args, key)
 	for _, equip := range equipList {
 		args = append(args, equip.GetEquipGuid())
@@ -122,7 +123,7 @@ func BatchSaveEquipInfo(logger fklog.FKLogI, userId uint64, equipList []*MazeEqu
 
 // GM DEL背包
 func GMDelEquip(logger fklog.FKLogI, userId uint64) (err error) {
-	key := gRedis.GetKey(userId)
+	key := fmt.Sprintf("maze:bag:equip:info:%d", userId)
 
 	_, err = gRedis.Do(context.TODO(), "DEL", key)
 	if err != nil {
@@ -134,7 +135,7 @@ func GMDelEquip(logger fklog.FKLogI, userId uint64) (err error) {
 }
 
 func BatchDelEquip(logger fklog.FKLogI, userId uint64, equipGuids ...int64) (err error) {
-	key := gRedis.GetKey(userId)
+	key := fmt.Sprintf("maze:bag:equip:info:%d", userId)
 	args := make([]interface{}, 0)
 	args = append(args, key)
 	for _, guid := range equipGuids {
@@ -154,7 +155,7 @@ func BatchDelEquip(logger fklog.FKLogI, userId uint64, equipGuids ...int64) (err
 }
 
 func GetAllEquipInfo(logger fklog.FKLogI, userId uint64) (equipMap map[int64]*MazeEquipCache.MazeEquipInfoDb, err error) {
-	key := gRedis.GetKey(userId)
+	key := fmt.Sprintf("maze:bag:equip:info:%d", userId)
 	batchCount := 300
 	cursor := 0 // 初始hscan游标
 	equipMap = make(map[int64]*MazeEquipCache.MazeEquipInfoDb, 0)

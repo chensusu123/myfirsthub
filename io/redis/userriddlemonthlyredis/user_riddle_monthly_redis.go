@@ -2,6 +2,7 @@ package userriddlemonthlyredis
 
 import (
 	"context"
+	"fmt"
 
 	"gitlab.ifreetalk.com/plate/freetk/fkcore/fkconfig"
 	"gitlab.ifreetalk.com/plate/freetk/fkcore/fklog"
@@ -18,7 +19,7 @@ func init() {
 }
 
 func GetMazeCardExpirationTime(logger fklog.FKLogI, userId uint64) (int64, error) {
-	key := gRedis.GetKey(userId)
+	key := fmt.Sprintf("u:%d:riddle:monthly", userId)
 	expirationTime, err := redis.Int64(gRedis.Do(context.TODO(), "get", key))
 	if err != nil && err != redis.ErrNil {
 		logger.InfoWF("GetMazeCardExpirationTime get failed", zap.String("key", key), zap.Error(err))

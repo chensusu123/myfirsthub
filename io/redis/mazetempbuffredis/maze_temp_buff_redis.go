@@ -2,6 +2,7 @@ package mazetempbuffredis
 
 import (
 	"context"
+	"fmt"
 
 	"gitlab.ifreetalk.com/plate/extra/protobuf/proto"
 	"gitlab.ifreetalk.com/plate/freetk/fkcore/fkconfig"
@@ -25,7 +26,7 @@ func init() {
 }
 
 func getKey(userId uint64, stateId int32) string {
-	return gRedis.GetKey(userId, stateId)
+	return fmt.Sprintf("maze:shop:seq:%d", userId, stateId)
 }
 
 func SetMazeTempBuff(logger fklog.FKLogI, userId uint64, stateId int32, buffInfo *MazeTempBuffSvr.TempBuffInfo) error {

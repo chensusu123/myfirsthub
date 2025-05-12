@@ -2,6 +2,7 @@ package dollmazeshopredis
 
 import (
 	"context"
+	"fmt"
 
 	"gitlab.ifreetalk.com/plate/freetk/fkcore/fkconfig"
 	"gitlab.ifreetalk.com/plate/freetk/fkcore/fklog"
@@ -19,7 +20,7 @@ func init() {
 }
 
 func GetMazeShopNum(logger fklog.FKLogI, userId uint64, barrierId int32, itemId int32) (int64, error) {
-	key := gRedis.GetKey(userId, barrierId)
+	key := fmt.Sprintf("doll:maze:shop:%d:%d", userId, barrierId)
 	ret, err := redis.Int64(gRedis.Do(context.TODO(), "hget", key, itemId))
 	if err == redis.ErrNil {
 		err = nil
@@ -35,7 +36,7 @@ func GetMazeShopNum(logger fklog.FKLogI, userId uint64, barrierId int32, itemId 
 
 // 保存商店数量
 func SetMazeShopNum(logger fklog.FKLogI, userId uint64, barrierId int32, itemId, count int32) error {
-	key := gRedis.GetKey(userId, barrierId)
+	key := fmt.Sprintf("doll:maze:shop:%d:%d", userId, barrierId)
 	_, err := gRedis.Do(context.TODO(), "hset", key, itemId, count)
 	if err != nil {
 		logger.ErrorWF("SetMazeShopNum set score failed with", zap.Error(err),
@@ -50,7 +51,7 @@ func SetMazeShopNum(logger fklog.FKLogI, userId uint64, barrierId int32, itemId,
 }
 
 func BatchSetMazeShopNum(logger fklog.FKLogI, userId uint64, barrierId int32, mazeShopMap map[int32]int32) (err error) {
-	key := gRedis.GetKey(userId, barrierId)
+	key := fmt.Sprintf("doll:maze:shop:%d:%d", userId, barrierId)
 
 	args := make([]interface{}, 0, len(mazeShopMap)*2+1)
 	args = append(args, key)
@@ -72,7 +73,7 @@ func BatchSetMazeShopNum(logger fklog.FKLogI, userId uint64, barrierId int32, ma
 
 func GetBatchMazeShopNum(logger fklog.FKLogI, userId uint64, barrierId int32, itemIds []int32) (mazeShopMap map[int32]int32, err error) {
 	mazeShopMap = make(map[int32]int32)
-	key := gRedis.GetKey(userId, barrierId)
+	key := fmt.Sprintf("doll:maze:shop:%d:%d", userId, barrierId)
 	args := make([]interface{}, 0, len(itemIds)+1)
 	args = append(args, key)
 	for _, field := range itemIds {
@@ -100,7 +101,7 @@ func GetBatchMazeShopNum(logger fklog.FKLogI, userId uint64, barrierId int32, it
 
 func GetMazeShopAllNum(logger fklog.FKLogI, userId uint64, barrierId int32) (map[int32]int32, error) {
 	mazeShopMap := make(map[int32]int32)
-	key := gRedis.GetKey(userId, barrierId)
+	key := fmt.Sprintf("doll:maze:shop:%d:%d", userId, barrierId)
 	ret, err := redis.Int64Map(gRedis.Do(context.TODO(), "HGETALL", key))
 	if err != nil {
 		logger.ErrorWF("GetMazeShopAllNum redis op failed with ",

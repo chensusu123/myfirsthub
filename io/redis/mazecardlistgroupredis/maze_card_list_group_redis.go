@@ -2,6 +2,7 @@ package mazecardlistgroupredis
 
 import (
 	"context"
+	"fmt"
 	"time"
 
 	"github.com/gomodule/redigo/redis"
@@ -19,7 +20,7 @@ func init() {
 }
 
 func SetMazeCard(logger fklog.FKLogI, userId uint64, expirationTime int64) error {
-	key := gRedis.GetKey(fkconfig.EnvVal.GroupID)
+	key := fmt.Sprintf("maze:card:group:%d:list", fkconfig.EnvVal.GroupID)
 	_, err := gRedis.Do(context.TODO(), "zadd", key, expirationTime, userId)
 	if err != nil {
 		logger.ErrorWF("SetMazeCard zadd failed", zap.String("key", key), zap.Uint64("userId", userId),
@@ -32,7 +33,7 @@ func SetMazeCard(logger fklog.FKLogI, userId uint64, expirationTime int64) error
 }
 
 func GetMazeCard(logger fklog.FKLogI, userId uint64) (int64, error) {
-	key := gRedis.GetKey(fkconfig.EnvVal.GroupID)
+	key := fmt.Sprintf("maze:card:group:%d:list", fkconfig.EnvVal.GroupID)
 	expirationTime, err := redis.Int64(gRedis.Do(context.TODO(), "zscore", key, userId))
 	if err != nil && err != redis.ErrNil {
 		logger.ErrorWF("GetMazeCard zscore failed", zap.Uint64("userId", userId), zap.Error(err))
@@ -49,7 +50,7 @@ func BatchDelMazeCard(logger fklog.FKLogI, userList []int64) error {
 	}
 
 	param := make([]interface{}, 0, len(userList)+2)
-	param = append(param, gRedis.GetKey(fkconfig.EnvVal.GroupID))
+	param = append(param, fmt.Sprintf("maze:card:group:%d:list", fkconfig.EnvVal.GroupID))
 	for _, userId := range userList {
 		param = append(param, userId)
 	}
@@ -65,7 +66,7 @@ func BatchDelMazeCard(logger fklog.FKLogI, userList []int64) error {
 }
 
 func DelMazeCard(logger fklog.FKLogI, userId uint64) error {
-	key := gRedis.GetKey(fkconfig.EnvVal.GroupID)
+	key := fmt.Sprintf("maze:card:group:%d:list", fkconfig.EnvVal.GroupID)
 	_, err := gRedis.Do(context.TODO(), "zrem", key, userId)
 	if err != nil {
 		logger.ErrorWF("DelMazeCard zrem failed", zap.Uint64("userId", userId), zap.Error(err))
@@ -77,7 +78,7 @@ func DelMazeCard(logger fklog.FKLogI, userId uint64) error {
 }
 
 func GetMazeCardExpirationList(logger fklog.FKLogI) ([]int64, error) {
-	key := gRedis.GetKey(fkconfig.EnvVal.GroupID)
+	key := fmt.Sprintf("maze:card:group:%d:list", fkconfig.EnvVal.GroupID)
 	userList, err := redis.Int64s(gRedis.Do(context.TODO(), "zrangebyscore", key, "-inf", time.Now().Unix()))
 	if err != nil {
 		logger.ErrorWF("GetMazeCardExpirationList zrangebyscore failed", zap.Error(err))

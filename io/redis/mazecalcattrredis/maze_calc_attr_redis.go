@@ -9,6 +9,7 @@ package mazecalcattrredis
 import (
 	"context"
 	"errors"
+	"fmt"
 
 	"gitlab.ifreetalk.com/maze/maze_game_server/common/constdef"
 	"gitlab.ifreetalk.com/plate/freetk/fkcore/fkconfig"
@@ -29,7 +30,7 @@ func init() {
 }
 
 func SaveMazeCalcAttr(logger fklog.FKLogI, userId uint64, attrs map[int32]int64) error {
-	key := gRedis.GetKey(userId)
+	key := fmt.Sprintf("maze:calc:attr:u:%d", userId)
 	var args []interface{}
 	args = append(args, key)
 	for k, v := range attrs {
@@ -52,7 +53,7 @@ func SaveMazeCalcAttr(logger fklog.FKLogI, userId uint64, attrs map[int32]int64)
 }
 
 func GetAllMazeCalcAttr(logger fklog.FKLogI, userId uint64) (attrDbs map[int32]int64, err error) {
-	key := gRedis.GetKey(userId)
+	key := fmt.Sprintf("maze:calc:attr:u:%d", userId)
 	res, err := redis.ByteSlices(gRedis.Do(context.TODO(), "hgetall", key))
 	if err == redis.ErrNil {
 		err = nil
@@ -90,7 +91,7 @@ func GetAllMazeCalcAttr(logger fklog.FKLogI, userId uint64) (attrDbs map[int32]i
 
 func HScanMazeCalcAttr(logger fklog.FKLogI, userId uint64) (attrDbs map[int32]int64, err error) {
 	var cursor int64 = 0
-	key := gRedis.GetKey(userId)
+	key := fmt.Sprintf("maze:calc:attr:u:%d", userId)
 	attrDbs = make(map[int32]int64)
 	for {
 		rs1, err1 := redis.Values(gRedis.Do(context.TODO(), "HSCAN", key, cursor, "match", "*", "count", 100))
@@ -139,7 +140,7 @@ func HScanMazeCalcAttr(logger fklog.FKLogI, userId uint64) (attrDbs map[int32]in
 }
 
 func DelMazeCalcAttr(logger fklog.FKLogI, userId uint64) error {
-	key := gRedis.GetKey(userId)
+	key := fmt.Sprintf("maze:calc:attr:u:%d", userId)
 
 	_, err := gRedis.Do(context.TODO(), "DEL", key)
 	if err != nil {
@@ -154,7 +155,7 @@ func DelMazeCalcAttr(logger fklog.FKLogI, userId uint64) error {
 }
 
 func BatchGetMazeCalcAttr(logger fklog.FKLogI, userId uint64, attrIds []int32) (attrDbs map[int32]int64, err error) {
-	key := gRedis.GetKey(userId)
+	key := fmt.Sprintf("maze:calc:attr:u:%d", userId)
 	var args []interface{}
 	args = append(args, key)
 	for _, attrId := range attrIds {
@@ -194,7 +195,7 @@ func BatchGetMazeCalcAttr(logger fklog.FKLogI, userId uint64, attrIds []int32) (
 
 // 删除指定属性
 func HDelMazeCalcAttr(logger fklog.FKLogI, userId uint64, attrIds []int32) error {
-	key := gRedis.GetKey(userId)
+	key := fmt.Sprintf("maze:calc:attr:u:%d", userId)
 	args := make([]interface{}, 0, len(attrIds)+1)
 	args = append(args, key)
 	for _, id := range attrIds {
@@ -215,7 +216,7 @@ func HDelMazeCalcAttr(logger fklog.FKLogI, userId uint64, attrIds []int32) error
 }
 
 func GetMazeForce(logger fklog.FKLogI, userId uint64) (force int64, err error) {
-	key := gRedis.GetKey(userId)
+	key := fmt.Sprintf("maze:calc:attr:u:%d", userId)
 	force, err = redis.Int64(gRedis.Do(context.TODO(), "HGET", key, constdef.MazeForce))
 	var empty bool
 	if err == redis.ErrNil {
@@ -234,7 +235,7 @@ func GetMazeForce(logger fklog.FKLogI, userId uint64) (force int64, err error) {
 
 // 取计算属性长度
 func HlenMazeCalcAttr(logger fklog.FKLogI, userId uint64) (slen int64, err error) {
-	key := gRedis.GetKey(userId)
+	key := fmt.Sprintf("maze:calc:attr:u:%d", userId)
 	slen, err = redis.Int64(gRedis.Do(context.TODO(), "HLEN", key))
 	if err != nil {
 		logger.ErrorWF("HlenMazeCalcAttr fail",

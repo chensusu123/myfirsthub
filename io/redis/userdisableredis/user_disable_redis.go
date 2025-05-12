@@ -3,6 +3,7 @@ package userdisableredis
 import (
 	"context"
 	"fmt"
+
 	"gitlab.ifreetalk.com/plate/freetk/fkcore/fkconfig"
 	"gitlab.ifreetalk.com/plate/freetk/fkcore/fklog"
 	"gitlab.ifreetalk.com/plate/freetk/fkcore/fkredis"
@@ -17,7 +18,7 @@ func init() {
 }
 
 func getKey(userId uint64) string {
-	return gRedis.GetKey(fmt.Sprintf("%d", userId))
+	return fmt.Sprintf("uid:%d", fmt.Sprintf("%d", userId))
 }
 
 // 获取用户信息是否封禁

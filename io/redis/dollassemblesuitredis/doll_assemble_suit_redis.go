@@ -9,7 +9,9 @@ package dollassemblesuitredis
 import (
 	"context"
 	"errors"
+	"fmt"
 
+	"gitlab.ifreetalk.com/maze/maze_game_server/common/function/assemble"
 	"gitlab.ifreetalk.com/plate/extra/protobuf/proto"
 	"gitlab.ifreetalk.com/plate/freetk/fkcore/fkconfig"
 	"gitlab.ifreetalk.com/plate/freetk/fkcore/fklog"
@@ -18,7 +20,6 @@ import (
 	"gitlab.ifreetalk.com/plate/freetk/fkutil"
 	"gitlab.ifreetalk.com/plate/protodef/MazeEquipCache"
 	"go.uber.org/zap"
-	"gitlab.ifreetalk.com/maze/maze_game_server/common/function/assemble"
 )
 
 var (
@@ -32,7 +33,7 @@ func init() {
 
 // 查询指定装备套
 func GetDollAssembleSuit(logger fklog.FKLogI, userId uint64, index int32, posCnt int) (equipSuit []*MazeEquipCache.MazeEquipPosDb, err error) {
-	key := gRedis.GetKey(userId)
+	key := fmt.Sprintf("maze:dressed:equip:u:%d", userId)
 
 	args := make([]interface{}, 0, 1+posCnt)
 	args = append(args, key)
@@ -70,7 +71,7 @@ func GetDollAssembleSuit(logger fklog.FKLogI, userId uint64, index int32, posCnt
 
 // 查询指定装备套的指定位置的装备信息
 func GetDollAssembleByPos(logger fklog.FKLogI, userId uint64, index int32, pos int32) (assembleDb *MazeEquipCache.MazeEquipPosDb, err error) {
-	key := gRedis.GetKey(userId)
+	key := fmt.Sprintf("maze:dressed:equip:u:%d", userId)
 
 	field := assemble.EnCodeAssembleEquipField(index, pos)
 
@@ -99,7 +100,7 @@ func GetDollAssembleByPos(logger fklog.FKLogI, userId uint64, index int32, pos i
 
 // 查询所有装备套
 func GetAllDollAssembleSuit(logger fklog.FKLogI, userId uint64) (allEquipSuit map[int32][]*MazeEquipCache.MazeEquipPosDb, err error) {
-	key := gRedis.GetKey(userId)
+	key := fmt.Sprintf("maze:dressed:equip:u:%d", userId)
 	res, err := redis.ByteSlices(gRedis.Do(context.TODO(), "hgetall", key))
 	if err == redis.ErrNil {
 		err = nil
@@ -139,7 +140,7 @@ func SetDollAssembleSuit(logger fklog.FKLogI, userId uint64, index int32, equips
 	if len(equips) == 0 {
 		return
 	}
-	key := gRedis.GetKey(userId)
+	key := fmt.Sprintf("maze:dressed:equip:u:%d", userId)
 	args = append(args, key)
 	for _, equip := range equips {
 		args = append(args, assemble.EnCodeAssembleEquipField(index, equip.GetPos()))
@@ -199,7 +200,7 @@ func SaveEquipAssembleInfoV2(logger fklog.FKLogI, userId uint64, index int32, eq
 
 // 删除套装信息
 func DelEquipSuitInfo(logger fklog.FKLogI, userId uint64) error {
-	key := gRedis.GetKey(userId)
+	key := fmt.Sprintf("maze:dressed:equip:u:%d", userId)
 
 	_, err := gRedis.Do(context.TODO(), "DEL", key)
 	if err != nil {
@@ -219,7 +220,7 @@ func BatchSaveDollAssembleSuit(logger fklog.FKLogI, userId uint64, equipsMap map
 	if len(equipsMap) == 0 {
 		return
 	}
-	key := gRedis.GetKey(userId)
+	key := fmt.Sprintf("maze:dressed:equip:u:%d", userId)
 	args = append(args, key)
 	for key, equip := range equipsMap {
 		equipPosPb, e := proto.Marshal(equip)

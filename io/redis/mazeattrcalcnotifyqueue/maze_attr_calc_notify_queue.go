@@ -7,6 +7,7 @@
 package mazeattrcalcnotifyqueue
 
 import (
+	"fmt"
 	"time"
 
 	jsoniter "github.com/json-iterator/go"
@@ -14,10 +15,11 @@ import (
 	"gitlab.ifreetalk.com/plate/freetk/fkcore/fklog"
 	"gitlab.ifreetalk.com/plate/freetk/fkcore/fkredis"
 
-	"go.uber.org/zap"
+	"context"
+
 	"gitlab.ifreetalk.com/maze/maze_game_server/common/structsdef"
 	"gitlab.ifreetalk.com/maze/maze_game_server/servers/maze_main_server/process/attr_calc"
-	"context"
+	"go.uber.org/zap"
 )
 
 var (
@@ -48,7 +50,7 @@ func SendMazeAttrCalcNotify(agent fklog.FKLogI, msg *structsdef.MazeCalcAttrNoti
 		msg.Stamp = time.Now().UnixNano() / 1000000
 	}
 
-	key := gRedis.GetKey()
+	key := fmt.Sprintf("maze:attr:calc:notify:que")
 
 	data, err := json.Marshal(msg)
 	if err != nil {

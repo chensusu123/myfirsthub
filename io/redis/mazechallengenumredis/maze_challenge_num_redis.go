@@ -2,6 +2,7 @@ package mazechallengenumredis
 
 import (
 	"context"
+	"fmt"
 
 	"gitlab.ifreetalk.com/plate/freetk/fkcore/fkconfig"
 	"gitlab.ifreetalk.com/plate/freetk/fkcore/fklog"
@@ -17,7 +18,7 @@ func init() {
 }
 
 func GetUserChallengeNum(logger fklog.FKLogI, userId uint64, dateTime int) (num int, err error) {
-	key := gRedis.GetKey(userId, dateTime)
+	key := fmt.Sprintf("maze:u:%d:date:%d", userId, dateTime)
 	num, err = redis.Int(gRedis.Do(context.TODO(), "get", key))
 	if err == redis.ErrNil {
 		err = nil
@@ -33,7 +34,7 @@ func GetUserChallengeNum(logger fklog.FKLogI, userId uint64, dateTime int) (num 
 }
 
 func AddUserChallengeNum(logger fklog.FKLogI, userId uint64, dateTime int, count int32) (err error) {
-	key := gRedis.GetKey(userId, dateTime)
+	key := fmt.Sprintf("maze:u:%d:date:%d", userId, dateTime)
 	newCount, err := redis.Int(gRedis.Do(context.TODO(), "incrby", key, count))
 	if err != nil {
 		logger.ErrorWF("AddUserChallengeNum incr fail", zap.String("key", key), zap.Error(err))
@@ -44,7 +45,7 @@ func AddUserChallengeNum(logger fklog.FKLogI, userId uint64, dateTime int, count
 }
 
 func GMDel(logger fklog.FKLogI, userId uint64, dateTime int) (err error) {
-	key := gRedis.GetKey(userId, dateTime)
+	key := fmt.Sprintf("maze:u:%d:date:%d", userId, dateTime)
 	_, err = redis.Int(gRedis.Do(context.TODO(), "del", key))
 	if err != nil {
 		logger.ErrorWF("GMDel del fail", zap.String("key", key), zap.Error(err))

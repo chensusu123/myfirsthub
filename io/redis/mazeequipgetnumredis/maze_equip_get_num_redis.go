@@ -2,13 +2,14 @@ package mazeequipgetnumredis
 
 import (
 	"context"
+	"fmt"
 
 	"gitlab.ifreetalk.com/plate/freetk/fkcore/fkconfig"
 	"gitlab.ifreetalk.com/plate/freetk/fkcore/fklog"
 	"gitlab.ifreetalk.com/plate/freetk/fkcore/fkredis"
 	"gitlab.ifreetalk.com/plate/freetk/fkcore/fkredis/redis"
-	"go.uber.org/zap"
 	"gitlab.ifreetalk.com/plate/freetk/fkutil"
+	"go.uber.org/zap"
 )
 
 var gRedis = &fkredis.FkRedis{}
@@ -19,7 +20,7 @@ func init() {
 }
 
 func GMDel(logger fklog.FKLogI, userId uint64) error {
-	key := gRedis.GetKey(userId)
+	key := fmt.Sprintf("maze:equip:get:num:%d", userId)
 	_, err := redis.Int64(gRedis.Do(context.TODO(), "del", key))
 	if err != nil {
 		logger.ErrorWF("GMDel failed with", zap.Error(err), zap.Any("key", key))
@@ -30,7 +31,7 @@ func GMDel(logger fklog.FKLogI, userId uint64) error {
 }
 
 func GetEquipGetNum(logger fklog.FKLogI, userId uint64, equipId int32) (int64, error) {
-	key := gRedis.GetKey(userId)
+	key := fmt.Sprintf("maze:equip:get:num:%d", userId)
 	ret, err := redis.Int64(gRedis.Do(context.TODO(), "hget", key, equipId))
 	if err == redis.ErrNil {
 		err = nil
@@ -45,7 +46,7 @@ func GetEquipGetNum(logger fklog.FKLogI, userId uint64, equipId int32) (int64, e
 }
 
 func GetEquipGetNumInc(logger fklog.FKLogI, userId uint64, equipId int32, addition int32) (int64, error) {
-	key := gRedis.GetKey(userId)
+	key := fmt.Sprintf("maze:equip:get:num:%d", userId)
 	ret, err := redis.Int64(gRedis.Do(context.TODO(), "HINCRBY", key, equipId, addition))
 	if err != nil {
 		logger.ErrorWF("GetEquipGetNumInc get new guid failed with", zap.Error(err), zap.Int32("equipId", equipId), zap.Int32("add", addition))
@@ -57,7 +58,7 @@ func GetEquipGetNumInc(logger fklog.FKLogI, userId uint64, equipId int32, additi
 
 // 保存装备的次数分值
 func SetEquipGetNum(logger fklog.FKLogI, userId uint64, equipId, score int32) error {
-	key := gRedis.GetKey(userId)
+	key := fmt.Sprintf("maze:equip:get:num:%d", userId)
 	_, err := gRedis.Do(context.TODO(), "hset", key, equipId, score)
 	if err != nil {
 		logger.ErrorWF("SetEquipGetNum set score failed with", zap.Error(err),
@@ -72,7 +73,7 @@ func SetEquipGetNum(logger fklog.FKLogI, userId uint64, equipId, score int32) er
 }
 
 func BatchSetEquipGetNum(logger fklog.FKLogI, userId uint64, equipScoreMap map[int32]int32) (err error) {
-	key := gRedis.GetKey(userId)
+	key := fmt.Sprintf("maze:equip:get:num:%d", userId)
 
 	args := make([]interface{}, 0, len(equipScoreMap)*2+1)
 	args = append(args, key)
@@ -94,7 +95,7 @@ func BatchSetEquipGetNum(logger fklog.FKLogI, userId uint64, equipScoreMap map[i
 
 func GetBatchEquipGetNum(logger fklog.FKLogI, userId uint64, equipIds []int32) (equipScoreMap map[int32]int32, err error) {
 	equipScoreMap = make(map[int32]int32)
-	key := gRedis.GetKey(userId)
+	key := fmt.Sprintf("maze:equip:get:num:%d", userId)
 	args := make([]interface{}, 0, len(equipIds)+1)
 	args = append(args, key)
 	for _, field := range equipIds {
@@ -123,7 +124,7 @@ func GetBatchEquipGetNum(logger fklog.FKLogI, userId uint64, equipIds []int32) (
 
 func GetAllEquipGetNum(logger fklog.FKLogI, userId uint64) (map[int32]int32, error) {
 	equipScoreMap := make(map[int32]int32)
-	key := gRedis.GetKey(userId)
+	key := fmt.Sprintf("maze:equip:get:num:%d", userId)
 	ret, err := redis.Int64Map(gRedis.Do(context.TODO(), "HGETALL", key))
 	if err != nil {
 		logger.ErrorWF("GetAllEquipGetNum redis op failed with ",

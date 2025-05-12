@@ -8,19 +8,20 @@ package dollassembleredis
 
 import (
 	"context"
+	"fmt"
 
+	"gitlab.ifreetalk.com/maze/maze_game_server/common/function/assemble"
 	"gitlab.ifreetalk.com/plate/extra/protobuf/proto"
 	"gitlab.ifreetalk.com/plate/freetk/common/errors"
 	"gitlab.ifreetalk.com/plate/freetk/fkcore/fklog"
 	"gitlab.ifreetalk.com/plate/freetk/fkcore/fkredis/redis"
 	"gitlab.ifreetalk.com/plate/protodef/MazeEquipCache"
 	"go.uber.org/zap"
-	"gitlab.ifreetalk.com/maze/maze_game_server/common/function/assemble"
 )
 
 // 获取人偶装备位信息
 func GetDollEquipPosInfo(logger fklog.FKLogI, userId uint64, posCnt int) (equipList map[int32]*MazeEquipCache.MazeEquipSlotDb, err error) {
-	key := gRedis.GetKey(userId)
+	key := fmt.Sprintf("maze:assemble:info:u:%d", userId)
 
 	args := make([]interface{}, 0, 1+posCnt)
 	args = append(args, key)
@@ -68,7 +69,7 @@ func GetDollEquipPosInfo(logger fklog.FKLogI, userId uint64, posCnt int) (equipL
 
 // 更新装备位信息
 func SetDollEquipPosInfo(logger fklog.FKLogI, userId uint64, posList []*MazeEquipCache.MazeEquipSlotDb) (err error) {
-	key := gRedis.GetKey(userId)
+	key := fmt.Sprintf("maze:assemble:info:u:%d", userId)
 
 	args := make([]interface{}, 0, 1+len(posList))
 	args = append(args, key)

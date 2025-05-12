@@ -8,7 +8,9 @@ package mazebuffinforedis
 
 import (
 	"context"
+	"fmt"
 
+	"gitlab.ifreetalk.com/maze/maze_game_server/common/constdef"
 	"gitlab.ifreetalk.com/plate/extra/protobuf/proto"
 	"gitlab.ifreetalk.com/plate/freetk/fkcore/fkconfig"
 	"gitlab.ifreetalk.com/plate/freetk/fkcore/fklog"
@@ -17,7 +19,6 @@ import (
 	"gitlab.ifreetalk.com/plate/freetk/fkutil"
 	"gitlab.ifreetalk.com/plate/protodef/MazeBuffData"
 	"go.uber.org/zap"
-	"gitlab.ifreetalk.com/maze/maze_game_server/common/constdef"
 )
 
 var (
@@ -43,7 +44,7 @@ func SaveMazeEquipPosBuff(logger fklog.FKLogI, userId uint64, attrs *MazeBuffDat
 }
 
 func SaveMazeBuffInfo(logger fklog.FKLogI, userId uint64, field int32, attrs *MazeBuffData.MazeBuffDb) error {
-	key := gRedis.GetKey(userId)
+	key := fmt.Sprintf("maze:buff:center:u:%d", userId)
 	data, err := proto.Marshal(attrs)
 	if err != nil {
 		logger.ErrorWF("SaveMazeBuffInfo Marshal pb fail",
@@ -69,7 +70,7 @@ func SaveMazeBuffInfo(logger fklog.FKLogI, userId uint64, field int32, attrs *Ma
 }
 
 func GetMazeBuffBySrc(logger fklog.FKLogI, userId uint64, field int32) (attrDb *MazeBuffData.MazeBuffDb, err error) {
-	key := gRedis.GetKey(userId)
+	key := fmt.Sprintf("maze:buff:center:u:%d", userId)
 	res, err := redis.Bytes(gRedis.Do(context.TODO(), "hget", key, field))
 	if err == redis.ErrNil {
 		err = nil
@@ -101,7 +102,7 @@ func GetMazeEquipBuff(logger fklog.FKLogI, userId uint64) (attrDb *MazeBuffData.
 
 // 1=展示属性 2=实际属性
 func GetMazeBuffsV2(logger fklog.FKLogI, userId uint64, mask int32) (attrDbs map[int32][]*MazeBuffData.MazeBuffAttr, err error) {
-	key := gRedis.GetKey(userId)
+	key := fmt.Sprintf("maze:buff:center:u:%d", userId)
 	res, err := redis.ByteSlices(gRedis.Do(context.TODO(), "HGETALL", key))
 	if err == redis.ErrNil {
 		err = nil
@@ -143,7 +144,7 @@ func GetMazeBuffsV2(logger fklog.FKLogI, userId uint64, mask int32) (attrDbs map
 }
 
 func GetAllMazeBuffs(logger fklog.FKLogI, userId uint64) (attrDbs map[int32]*MazeBuffData.MazeBuffDb, err error) {
-	key := gRedis.GetKey(userId)
+	key := fmt.Sprintf("maze:buff:center:u:%d", userId)
 	res, err := redis.ByteSlices(gRedis.Do(context.TODO(), "HGETALL", key))
 	if err == redis.ErrNil {
 		err = nil
@@ -177,7 +178,7 @@ func GetAllMazeBuffs(logger fklog.FKLogI, userId uint64) (attrDbs map[int32]*Maz
 }
 
 func DelMazeBuff(logger fklog.FKLogI, userId uint64) error {
-	key := gRedis.GetKey(userId)
+	key := fmt.Sprintf("maze:buff:center:u:%d", userId)
 
 	_, err := gRedis.Do(context.TODO(), "DEL", key)
 	if err != nil {
@@ -192,7 +193,7 @@ func DelMazeBuff(logger fklog.FKLogI, userId uint64) error {
 }
 
 func DelMazeBuffBySrc(logger fklog.FKLogI, userId uint64, field int32) error {
-	key := gRedis.GetKey(userId)
+	key := fmt.Sprintf("maze:buff:center:u:%d", userId)
 
 	_, err := gRedis.Do(context.TODO(), "HDEL", key, field)
 	if err != nil {

@@ -2,6 +2,7 @@ package mazeuserlevelredis
 
 import (
 	"context"
+	"fmt"
 
 	"gitlab.ifreetalk.com/plate/freetk/fkcore/fkconfig"
 	"gitlab.ifreetalk.com/plate/freetk/fkcore/fklog"
@@ -28,7 +29,7 @@ func init() {
 }
 
 func GetUserLevel(logger fklog.FKLogI, userId uint64) (level int64, err error) {
-	key := gRedis.GetKey(userId)
+	key := fmt.Sprintf("maze:u:%d:level:exp", userId)
 	level, err = redis.Int64(gRedis.Do(context.TODO(), "hget", key, USER_LEVEL))
 	if err == redis.ErrNil {
 		err = nil
@@ -44,7 +45,7 @@ func GetUserLevel(logger fklog.FKLogI, userId uint64) (level int64, err error) {
 }
 
 func GetUserInfo(logger fklog.FKLogI, userId uint64) (userInfo map[string]int64, err error) {
-	key := gRedis.GetKey(userId)
+	key := fmt.Sprintf("maze:u:%d:level:exp", userId)
 	res, err := redis.StringMap(gRedis.Do(context.TODO(), "hgetall", key))
 	if err == redis.ErrNil {
 		err = nil
@@ -67,7 +68,7 @@ func GetUserInfo(logger fklog.FKLogI, userId uint64) (userInfo map[string]int64,
 }
 
 func SetUserInfo(logger fklog.FKLogI, userId uint64, userInfo map[string]int64) (err error) {
-	key := gRedis.GetKey(userId)
+	key := fmt.Sprintf("maze:u:%d:level:exp", userId)
 	var args []interface{}
 	args = append(args, key)
 	for k, v := range userInfo {
@@ -88,7 +89,7 @@ func SetUserInfo(logger fklog.FKLogI, userId uint64, userInfo map[string]int64) 
 }
 
 func GMDel(logger fklog.FKLogI, userId uint64) (err error) {
-	key := gRedis.GetKey(userId)
+	key := fmt.Sprintf("maze:u:%d:level:exp", userId)
 	_, err = redis.Int64(gRedis.Do(context.TODO(), "del", key))
 	if err != nil {
 		logger.ErrorWF("GMDel fail", zap.String("key", key), zap.Error(err))

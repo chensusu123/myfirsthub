@@ -3,6 +3,7 @@ package mazeshopseqredis
 import (
 	"context"
 	"encoding/json"
+	"fmt"
 
 	"gitlab.ifreetalk.com/plate/freetk/fkcore/fkconfig"
 	"gitlab.ifreetalk.com/plate/freetk/fkcore/fklog"
@@ -30,7 +31,7 @@ type MazeShopInfo struct {
 }
 
 func GetMazeShopInfo(logger fklog.FKLogI, userId uint64, level int32) (mazeShopInfo *MazeShopInfo, err error) {
-	key := gRedis.GetKey(userId)
+	key := fmt.Sprintf("maze:shop:seq:%d", userId)
 	res, err := redis.Bytes(gRedis.Do(context.TODO(), "hget", key, level))
 	if err == redis.ErrNil {
 		err = nil
@@ -51,7 +52,7 @@ func GetMazeShopInfo(logger fklog.FKLogI, userId uint64, level int32) (mazeShopI
 }
 
 func SetMazeShopInfo(logger fklog.FKLogI, userId uint64, level int32, mazeShopInfo *MazeShopInfo) (err error) {
-	key := gRedis.GetKey(userId)
+	key := fmt.Sprintf("maze:shop:seq:%d", userId)
 	data, err := json.Marshal(mazeShopInfo)
 	if err != nil {
 		logger.ErrorWF("SetRideAttrInfo marshal fail", zap.Error(err))
@@ -69,7 +70,7 @@ func SetMazeShopInfo(logger fklog.FKLogI, userId uint64, level int32, mazeShopIn
 
 // gm删除
 func GMDel(logger fklog.FKLogI, userId uint64) (err error) {
-	key := gRedis.GetKey(userId)
+	key := fmt.Sprintf("maze:shop:seq:%d", userId)
 	_, err = redis.Int(gRedis.Do(context.TODO(), "DEL", key))
 	if err != nil {
 		logger.ErrorWF("GMDel fail", zap.String("key", key), zap.Error(err))

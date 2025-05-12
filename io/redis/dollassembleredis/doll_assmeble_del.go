@@ -8,6 +8,7 @@ package dollassembleredis
 
 import (
 	"context"
+	"fmt"
 
 	"gitlab.ifreetalk.com/plate/freetk/fkcore/fklog"
 	"go.uber.org/zap"
@@ -15,7 +16,7 @@ import (
 
 // 删除装配信息
 func DelAssmebleInfo(logger fklog.FKLogI, userId uint64) error {
-	key := gRedis.GetKey(userId)
+	key := fmt.Sprintf("maze:assemble:info:u:%d", userId)
 
 	_, err := gRedis.Do(context.TODO(), "DEL", key)
 	if err != nil {
@@ -30,7 +31,7 @@ func DelAssmebleInfo(logger fklog.FKLogI, userId uint64) error {
 }
 
 func BatchDelAssmebleInfo(logger fklog.FKLogI, userId uint64, fields ...string) error {
-	key := gRedis.GetKey(userId)
+	key := fmt.Sprintf("maze:assemble:info:u:%d", userId)
 	var args []interface{}
 	args = append(args, key)
 	for _, field := range fields {

@@ -2,6 +2,7 @@ package mazeuserbarrierredis
 
 import (
 	"context"
+	"fmt"
 
 	"gitlab.ifreetalk.com/plate/extra/protobuf/proto"
 	"gitlab.ifreetalk.com/plate/freetk/fkcore/fkconfig"
@@ -20,7 +21,7 @@ func init() {
 }
 
 func GMDel(logger fklog.FKLogI, userId uint64, barrierId int32) (err error) {
-	key := gRedis.GetKey(userId, 0)
+	key := fmt.Sprintf("maze:u:%d:barrier:%d", userId, 0)
 	_, err = redis.Int(gRedis.Do(context.TODO(), "DEL", key))
 	if err != nil {
 		logger.ErrorWF("GMDel fail", zap.String("key", key), zap.Error(err))
@@ -31,7 +32,7 @@ func GMDel(logger fklog.FKLogI, userId uint64, barrierId int32) (err error) {
 
 func GetUserBarrierInfo(logger fklog.FKLogI, userId uint64, barrierId int32) (data *MazeBarrierCache.MazeBarrierCache, err error) {
 	data = &MazeBarrierCache.MazeBarrierCache{}
-	key := gRedis.GetKey(userId, 0)
+	key := fmt.Sprintf("maze:u:%d:barrier:%d", userId, 0)
 
 	res, err := redis.Bytes(gRedis.Do(context.TODO(), "get", key))
 	if err == redis.ErrNil {
@@ -60,7 +61,7 @@ func SetUserBarrierInfo(logger fklog.FKLogI, userId uint64, barrierId int32, dat
 		return
 	}
 
-	key := gRedis.GetKey(userId, 0)
+	key := fmt.Sprintf("maze:u:%d:barrier:%d", userId, 0)
 	_, err = gRedis.Do(context.TODO(), "set", key, res)
 	if err != nil {
 		logger.ErrorWF("SetUserBarrierInfo set fail", zap.String("key", key), zap.Error(err))

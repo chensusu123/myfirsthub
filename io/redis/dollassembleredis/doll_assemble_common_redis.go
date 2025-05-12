@@ -8,6 +8,7 @@ package dollassembleredis
 
 import (
 	"context"
+	"fmt"
 
 	"gitlab.ifreetalk.com/plate/freetk/common/errors"
 	"gitlab.ifreetalk.com/plate/freetk/fkcore/fklog"
@@ -47,7 +48,7 @@ func hmgetAssembleData(logger fklog.FKLogI, uid uint64, fields []string) (rs map
 		return
 	}
 
-	key := gRedis.GetKey(uid)
+	key := fmt.Sprintf("maze:assemble:info:u:%d", uid)
 	args := make([]interface{}, 0, len(fields)+1)
 	args = append(args, key)
 	for _, field := range fields {
@@ -71,7 +72,7 @@ func hmgetAssembleData(logger fklog.FKLogI, uid uint64, fields []string) (rs map
 
 func hgetAllAssembleData(agent fklog.FKLogI, uid uint64) (rs map[string][]byte, err error) {
 	rs = make(map[string][]byte)
-	key := gRedis.GetKey(uid)
+	key := fmt.Sprintf("maze:assemble:info:u:%d", uid)
 
 	rs1, e := redis.ByteSlices(gRedis.Do(context.TODO(), "HGETALL", key))
 	if e == redis.ErrNil {
@@ -96,7 +97,7 @@ func hmsetAssembleData(agent fklog.FKLogI, uid uint64, fields map[string]interfa
 		return
 	}
 
-	key := gRedis.GetKey(uid)
+	key := fmt.Sprintf("maze:assemble:info:u:%d", uid)
 	args := make([]interface{}, 0, len(fields)*2+1)
 	args = append(args, key)
 	for k, v := range fields {

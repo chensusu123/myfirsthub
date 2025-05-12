@@ -8,6 +8,8 @@ package mazecommonvaluedb
 
 import (
 	"context"
+	"fmt"
+
 	"gitlab.ifreetalk.com/plate/freetk/fkcore/fkconfig"
 	"gitlab.ifreetalk.com/plate/freetk/fkcore/fklog"
 	"gitlab.ifreetalk.com/plate/freetk/fkcore/fkredis"
@@ -21,7 +23,7 @@ func init() {
 }
 
 func getKey(uid uint64) string {
-	return db.GetKey(uid)
+	return fmt.Sprintf("maze:barrier:money:u:%d", uid)
 }
 
 func BatchGetItem(_ fklog.FKLogI, uid uint64, itemIds []int32) (countMap map[int32]int64, err error) {

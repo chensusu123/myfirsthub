@@ -17,7 +17,7 @@ func init() {
 // 获取人偶装配信息
 // func GetDollAssembleInfo(logger fklog.FKLogI, userId uint64) (assembleInfo *MazeEquipCache.MazeAssembleDb, err error) {
 // 	assembleInfo = new(MazeEquipCache.MazeAssembleDb)
-// 	key := gRedis.GetKey(userId)
+// 	key := fmt.Sprintf("maze:assemble:info:u:%d",userId)
 // 	res, err := redis.ByteSlices(gRedis.Do(context.TODO(), "hgetall", key))
 // 	if err == redis.ErrNil {
 // 		err = nil

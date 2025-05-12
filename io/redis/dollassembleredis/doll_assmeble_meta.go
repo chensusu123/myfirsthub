@@ -8,12 +8,13 @@ package dollassembleredis
 
 import (
 	"context"
+	"fmt"
 
+	"gitlab.ifreetalk.com/maze/maze_game_server/common/constdef"
 	"gitlab.ifreetalk.com/plate/freetk/fkcore/fklog"
 	"gitlab.ifreetalk.com/plate/freetk/fkcore/fkredis/redis"
 	"gitlab.ifreetalk.com/plate/freetk/fkutil"
 	"go.uber.org/zap"
-	"gitlab.ifreetalk.com/maze/maze_game_server/common/constdef"
 )
 
 type DollAssembleMetaSt struct {
@@ -44,7 +45,7 @@ func (m *DollAssembleMetaSt) GetInitState() int64 {
 }
 
 func GetDollAssembleMetaInfo(logger fklog.FKLogI, userId uint64, fields ...string) (result *DollAssembleMetaSt, err error) {
-	key := gRedis.GetKey(userId)
+	key := fmt.Sprintf("maze:assemble:info:u:%d", userId)
 	var args []interface{}
 	args = append(args, key)
 	for _, field := range fields {
@@ -102,7 +103,7 @@ func GetDollAssembleMetaInfo(logger fklog.FKLogI, userId uint64, fields ...strin
 }
 
 func SetDollAssmebleMetaInfo(logger fklog.FKLogI, userId uint64, info *DollAssembleMetaSt) (err error) {
-	key := gRedis.GetKey(userId)
+	key := fmt.Sprintf("maze:assemble:info:u:%d", userId)
 	var args []interface{}
 	args = append(args, key)
 

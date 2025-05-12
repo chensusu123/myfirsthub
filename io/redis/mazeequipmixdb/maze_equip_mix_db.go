@@ -6,6 +6,8 @@ package mazeequipmixdb
 import (
 	"context"
 	"errors"
+	"fmt"
+
 	"gitlab.ifreetalk.com/maze/maze_game_server/common/equipmix"
 
 	"gitlab.ifreetalk.com/plate/freetk/fkcore/fkconfig"
@@ -27,7 +29,7 @@ func init() {
 }
 
 func getKey(uid uint64) string {
-	return db.GetKey(uid)
+	return fmt.Sprintf("maze:equip:mix:%d", uid)
 }
 
 const (

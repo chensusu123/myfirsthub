@@ -2,6 +2,7 @@ package mazeproduceredis
 
 import (
 	"context"
+	"fmt"
 
 	"gitlab.ifreetalk.com/plate/freetk/fkcore/fkconfig"
 	"gitlab.ifreetalk.com/plate/freetk/fkcore/fklog"
@@ -19,7 +20,7 @@ func init() {
 
 // // 查询生产
 // func GetUserProduce(logger fklog.FKLogI, userId uint64) (producePb *DollMazeBarrierCache.DollMazeMoneyDb, err error) {
-// 	key := gRedis.GetKey(userId)
+// 	key := fmt.Sprintf("maze:produce:u:%d",userId)
 
 // 	res, err := redis.Bytes(gRedis.Do(context.TODO(), "get", key))
 // 	if err == redis.ErrNil {
@@ -51,7 +52,7 @@ func init() {
 // 		logger.ErrorWF("SetUserProduce Marshal fail", zap.Error(err), zap.Any("producePb", producePb))
 // 		return
 // 	}
-// 	key := gRedis.GetKey(userId)
+// 	key := fmt.Sprintf("maze:produce:u:%d",userId)
 // 	_, err = gRedis.Do(context.TODO(), "set", key, data)
 // 	if err != nil {
 // 		logger.ErrorWF("SetUserProduce set fail", zap.String("key", key), zap.Any("producePb", producePb), zap.Error(err))
@@ -63,7 +64,7 @@ func init() {
 // }
 
 func ClearProduce(logger fklog.FKLogI, userId uint64, barrierId int32) (err error) {
-	key := gRedis.GetKey(userId)
+	key := fmt.Sprintf("maze:produce:u:%d", userId)
 	_, err = redis.Int(gRedis.Do(context.TODO(), "DEL", key))
 	if err != nil {
 		logger.ErrorWF("ClearProduce fail", zap.String("key", key), zap.Error(err))
@@ -74,7 +75,7 @@ func ClearProduce(logger fklog.FKLogI, userId uint64, barrierId int32) (err erro
 
 // gm删除
 func GMDel(logger fklog.FKLogI, userId uint64) (err error) {
-	key := gRedis.GetKey(userId)
+	key := fmt.Sprintf("maze:produce:u:%d", userId)
 	_, err = redis.Int(gRedis.Do(context.TODO(), "DEL", key))
 	if err != nil {
 		logger.ErrorWF("GMDel fail", zap.String("key", key), zap.Error(err))

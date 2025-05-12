@@ -2,6 +2,7 @@ package mazebarriermoneyredis
 
 import (
 	"context"
+	"fmt"
 
 	"gitlab.ifreetalk.com/plate/freetk/fkcore/fkconfig"
 	"gitlab.ifreetalk.com/plate/freetk/fkcore/fklog"
@@ -19,7 +20,7 @@ func init() {
 // 查所有
 func GetAllMoney(logger fklog.FKLogI, userId uint64) (moneyMap map[int32]int64, err error) {
 	moneyMap = make(map[int32]int64)
-	key := gRedis.GetKey(userId)
+	key := fmt.Sprintf("maze:barrier:money:u:%d", userId)
 	res, err := redis.Int64s(gRedis.Do(context.TODO(), "hgetall", key))
 	if err == redis.ErrNil {
 		err = nil
@@ -42,7 +43,7 @@ func GetAllMoney(logger fklog.FKLogI, userId uint64) (moneyMap map[int32]int64, 
 
 // 指定查
 func GetMoneyCount(logger fklog.FKLogI, userId uint64, moneyId int32) (moneyCount int64, err error) {
-	key := gRedis.GetKey(userId)
+	key := fmt.Sprintf("maze:barrier:money:u:%d", userId)
 	moneyCount, err = redis.Int64(gRedis.Do(context.TODO(), "hget", key, moneyId))
 	if err == redis.ErrNil {
 		err = nil
@@ -59,7 +60,7 @@ func GetMoneyCount(logger fklog.FKLogI, userId uint64, moneyId int32) (moneyCoun
 }
 
 func SetMoney(logger fklog.FKLogI, userId uint64, moneyId int32, moneyCount int64) (err error) {
-	key := gRedis.GetKey(userId)
+	key := fmt.Sprintf("maze:barrier:money:u:%d", userId)
 	_, err = gRedis.Do(context.TODO(), "hset", key, moneyId, moneyCount)
 	if err != nil {
 		logger.ErrorWF("SetMoney hset fail", zap.Error(err))
@@ -74,7 +75,7 @@ func HMSetMoney(logger fklog.FKLogI, userId uint64, moneyMap map[int32]int64) (e
 	if len(moneyMap) <= 0 {
 		return
 	}
-	key := gRedis.GetKey(userId)
+	key := fmt.Sprintf("maze:barrier:money:u:%d", userId)
 	var args []interface{}
 	args = append(args, key)
 	for k, v := range moneyMap {
@@ -92,7 +93,7 @@ func HMSetMoney(logger fklog.FKLogI, userId uint64, moneyMap map[int32]int64) (e
 
 // 加钱
 func AddMoney(logger fklog.FKLogI, userId uint64, moneyId int32, moneyCount int64) (newCount int64, err error) {
-	key := gRedis.GetKey(userId)
+	key := fmt.Sprintf("maze:barrier:money:u:%d", userId)
 	newCount, err = redis.Int64(gRedis.Do(context.TODO(), "hincrby", key, moneyId, moneyCount))
 	if err != nil {
 		logger.ErrorWF("AddMoney hincrby fail", zap.Error(err))
@@ -105,7 +106,7 @@ func AddMoney(logger fklog.FKLogI, userId uint64, moneyId int32, moneyCount int6
 
 // 扣钱
 func SubMoney(logger fklog.FKLogI, userId uint64, moneyId int32, moneyCount int64) (err error) {
-	key := gRedis.GetKey(userId)
+	key := fmt.Sprintf("maze:barrier:money:u:%d", userId)
 	_, err = gRedis.Do(context.TODO(), "hincrby", key, moneyId, 0-moneyCount)
 	if err != nil {
 		logger.ErrorWF("SubMoney hincrby fail", zap.Error(err))
@@ -118,7 +119,7 @@ func SubMoney(logger fklog.FKLogI, userId uint64, moneyId int32, moneyCount int6
 
 // 删除所有数据
 func GMDel(logger fklog.FKLogI, userId uint64) (err error) {
-	key := gRedis.GetKey(userId)
+	key := fmt.Sprintf("maze:barrier:money:u:%d", userId)
 
 	_, err = gRedis.Do(context.TODO(), "DEL", key)
 	if err != nil {
@@ -130,7 +131,7 @@ func GMDel(logger fklog.FKLogI, userId uint64) (err error) {
 }
 
 func GMSet(logger fklog.FKLogI, userId uint64, moneyId int32, moneyCount int64) (err error) {
-	key := gRedis.GetKey(userId)
+	key := fmt.Sprintf("maze:barrier:money:u:%d", userId)
 
 	_, err = gRedis.Do(context.TODO(), "HSET", key, moneyId, moneyCount)
 	if err != nil {

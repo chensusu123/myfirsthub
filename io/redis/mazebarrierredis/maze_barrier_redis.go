@@ -2,6 +2,7 @@ package mazebarrierredis
 
 import (
 	"context"
+	"fmt"
 
 	"gitlab.ifreetalk.com/plate/freetk/fkcore/fkconfig"
 	"gitlab.ifreetalk.com/plate/freetk/fkcore/fklog"
@@ -23,7 +24,7 @@ func init() {
 
 // 查询当前关卡id
 func GetCurrBarrier(logger fklog.FKLogI, userId uint64) (barrierId int32, err error) {
-	key := gRedis.GetKey(userId)
+	key := fmt.Sprintf("maze:u:%d:barrier:%d", userId)
 
 	res, err := redis.Int(gRedis.Do(context.TODO(), "hget", key, CURR_BARRIER_FIELD))
 	if err == redis.ErrNil {
@@ -43,7 +44,7 @@ func GetCurrBarrier(logger fklog.FKLogI, userId uint64) (barrierId int32, err er
 }
 
 func GetBarrierAndArea(logger fklog.FKLogI, userId uint64) (barrierId int32, areaId int32, highArea int32, err error) {
-	key := gRedis.GetKey(userId)
+	key := fmt.Sprintf("maze:u:%d:barrier:%d", userId)
 	res, err := redis.StringMap(gRedis.Do(context.TODO(), "hgetall", key))
 	if err == redis.ErrNil {
 		err = nil
@@ -83,7 +84,7 @@ func SetBarrier(logger fklog.FKLogI, userId uint64, barrierId int32) (err error)
 }
 
 func BatchSet(logger fklog.FKLogI, userId uint64, setMap map[string]int32) (err error) {
-	key := gRedis.GetKey(userId)
+	key := fmt.Sprintf("maze:u:%d:barrier:%d", userId)
 	var args []interface{}
 	args = append(args, key)
 	for k, v := range setMap {
@@ -101,7 +102,7 @@ func BatchSet(logger fklog.FKLogI, userId uint64, setMap map[string]int32) (err 
 
 // 删除
 func GMDel(logger fklog.FKLogI, userId uint64) (err error) {
-	key := gRedis.GetKey(userId)
+	key := fmt.Sprintf("maze:u:%d:barrier:%d", userId)
 
 	_, err = gRedis.Do(context.TODO(), "DEL", key)
 	if err != nil {
@@ -113,7 +114,7 @@ func GMDel(logger fklog.FKLogI, userId uint64) (err error) {
 }
 
 func GMHDEL(logger fklog.FKLogI, userId uint64, barrierId int32) (err error) {
-	key := gRedis.GetKey(userId)
+	key := fmt.Sprintf("maze:u:%d:barrier:%d", userId)
 
 	_, err = gRedis.Do(context.TODO(), "HDEL", key, barrierId)
 	if err != nil {
