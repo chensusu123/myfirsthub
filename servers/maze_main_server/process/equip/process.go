@@ -3,11 +3,8 @@ package equip
 import (
 	"fmt"
 
-	"gitlab.ifreetalk.com/maze/maze_game_server/common/constdef"
 	"gitlab.ifreetalk.com/maze/maze_game_server/common/function/limiter"
 	"gitlab.ifreetalk.com/maze/maze_game_server/io/kafka/mazeuserlevelkafka"
-	"gitlab.ifreetalk.com/plate/freetk/fkserver"
-	"gitlab.ifreetalk.com/plate/freetk/fkserver/kafka_consumer"
 	"gitlab.ifreetalk.com/maze/maze_game_server/lib/net/websocket_service"
 	"gitlab.ifreetalk.com/plate/protodef/MazeEquipPos"
 	"gitlab.ifreetalk.com/plate/protodef/MazeGameEquip"
@@ -77,8 +74,8 @@ func RegConsumeHandler() {
 	mazeuserlevelkafka.Watch(HandleMazeLvChg)
 
 	// 性别变化流水
-	_ = kafka_consumer.PlugKafkaConsumer(constdef.KafkaMDTSexDesc,
-		1000159,
-		kafka_consumer.WithGroup(fkserver.GroupNameGO+"."+fkserver.ProjectNamePPWD+"."+constdef.KafkaMDTSexDesc),
-		kafka_consumer.WithKafkaCustomKeyContent(HandleDollSexChg))
+	// _ = kafka_consumer.PlugKafkaConsumer(constdef.KafkaMDTSexDesc,
+	// 	1000159,
+	// 	kafka_consumer.WithGroup(fkserver.GroupNameGO+"."+fkserver.ProjectNamePPWD+"."+constdef.KafkaMDTSexDesc),
+	// 	kafka_consumer.WithKafkaCustomKeyContent(HandleDollSexChg))
 }
