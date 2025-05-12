@@ -13,7 +13,7 @@ require (
 	github.com/xuri/excelize/v2 v2.9.0
 	gitlab.ifreetalk.com/plate/excel v1.0.83-0.20250506053436-ef2c9ea111c0
 	gitlab.ifreetalk.com/plate/extra v1.1.7
-	gitlab.ifreetalk.com/plate/freetk v1.2.63-0.20250512080523-d87165cd07df
+	gitlab.ifreetalk.com/plate/freetk v1.2.63-0.20250512112353-94a790b6060f
 	gitlab.ifreetalk.com/plate/io_interface v1.4.102-0.20250326074707-ac26a4cb5dba
 	gitlab.ifreetalk.com/plate/protodef v1.0.88-0.20250506033541-f36724e7bf51
 	go.uber.org/atomic v1.9.0

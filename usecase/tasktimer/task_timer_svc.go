@@ -28,12 +28,11 @@ func (tb *TaskTimerBusiness) OnInit(logger fklog.FKLogI, cfg fkconfig.FkConfiger
 	logger.InfoWF("TaskTimerBusiness OnInit")
 	loopLogger := logger.Clone("loop")
 
-	cgkCfg := &fkconfig.CgkCfg{}
-
-	err = cfg.LoadConfig(cgkCfg, "CgkCfg", 0)
-	redisAddr := cgkCfg.RedisAddr
-	redisAddr = "127.0.0.1:6379"
-
+	redisAddr := fkconfig.EnvVal.RedisAddr // 从环境变量中获取 Redis 地址
+	if redisAddr == "" {
+		redisAddr = "127.0.0.1:6379"
+		logger.WarnWF("Redis address not found in environment variables, using default address", zap.String("default_address", redisAddr))
+	}
 	delay, err := redisdelay.New(logger, 1*time.Second, "TaskTimerBusiness", redisAddr, func(data interface{}) bool {
 		taskLogger := loopLogger.Clone("task")
 		taskLogger.SetLogId(time.Now().UnixNano())
