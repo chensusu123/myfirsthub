@@ -72,6 +72,7 @@ func (ts *tTCPRawService) OnInit(logger fklog.FKLogI, config fkcore.FkConfigerI)
 		logger.ErrorWF("websocket-service port is 0.", zap.Any("addr", tcpCfg.GetThriftRPCAddr()))
 		return
 	}
+	//
 	// 绑定时，不指定ip地址
 	_, port, err := net.SplitHostPort(tcpCfg.GetThriftRPCAddr())
 	if err != nil {
