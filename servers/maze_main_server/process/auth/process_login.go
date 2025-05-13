@@ -17,7 +17,7 @@ func OnLoginRQ(ctx fknet.TCPContext, shardingID uint64, rqMsg proto.Message, rsM
 	res := rsMsg.(*SysPackDef.UserLoginRs)
 
 	logger := ctx
-
+	res.Session = req.Session
 	defer func() {
 		logger.InfoWF("OnLoginRQ end", zap.Any("req", req), zap.Any("res", res))
 	}()

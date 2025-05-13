@@ -28,6 +28,7 @@ const (
 
 func (pkg *StruSvrEsRawBaseHead) SetTeaflag() {
 	pkg.flag = pkg.flag | TeaEncryption
+	pkg.flag = pkg.flag | 0x20
 }
 
 func (pkg *StruSvrEsRawBaseHead) IsTea() bool {
@@ -63,7 +64,7 @@ func (pkg *StruSvrEsRawBaseHead) Pack() ([]byte, error) {
 		pkg.PackLen = packLen
 		returnData := make([]byte, packLen)
 
-		binary.LittleEndian.PutUint16(returnData[:2], uint16(len(ret)))
+		binary.LittleEndian.PutUint16(returnData[:2], packLen)
 		binary.LittleEndian.PutUint16(returnData[2:4], pkg.flag)
 		returnData[4] = uint8(pkg.CompressType)
 		binary.LittleEndian.PutUint32(returnData[5:9], pkg.SessionID)

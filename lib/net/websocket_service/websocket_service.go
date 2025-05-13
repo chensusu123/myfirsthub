@@ -284,7 +284,7 @@ func RegProcSimple(rqID uint16, rqMsg proto.Message, rsID uint16, rsMsg proto.Me
 		pkg.PackType = rsID
 		pkg.SessionID = es.SessionID
 		pkg.EsRqTime = es.EsRqTime
-
+		pkg.SetTeaflag()
 		needRS := false
 		// 回包
 		defer func() {
@@ -303,7 +303,25 @@ func RegProcSimple(rqID uint16, rqMsg proto.Message, rsID uint16, rsMsg proto.Me
 			}
 			pkg.Data = dataPB
 			pkg.EsRsTime = uint64(time.Now().UnixNano())
-			err = ctx.Send(pkg)
+			sendData, errPack := pkg.Pack()
+			if errPack != nil {
+				ctx.ErrorWF("send pack failed.",
+					zap.Uint16("rqID", rqID), zap.Uint16("rsID", rsID), zap.String("func", funcName),
+					zap.String("rqType", rqTypeString), zap.String("rsType", rsTypeString),
+					zap.Int("len", len(data)),
+					zap.Uint64("sessionID", uint64(es.SessionID)),
+					zap.Error(errPack))
+				return
+			}
+			err = ctx.SendData(sendData)
+			ctx.InfoWF("send respond.",
+				zap.Uint16("rqID", rqID), zap.Uint16("rsID", rsID), zap.String("func", funcName),
+				zap.String("rqType", rqTypeString), zap.String("rsType", rsTypeString),
+				zap.Int("dataLen", len(data)),
+				zap.Uint64("sessionID", uint64(es.SessionID)),
+				zap.Int("dataPBLen", len(dataPB)),
+				zap.Int("sendDataLen", len(sendData)),
+				zap.Error(err))
 			if err != nil {
 				ctx.ErrorWF("send respond failed.",
 					zap.Uint16("rqID", rqID), zap.Uint16("rsID", rsID), zap.String("func", funcName),
