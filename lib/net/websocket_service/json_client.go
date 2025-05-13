@@ -90,7 +90,7 @@ func (c *Client) writeJsonPump() {
 				return
 			}
 
-			w, err := c.conn.NextWriter(websocket.BinaryMessage)
+			w, err := c.conn.NextWriter(websocket.TextMessage)
 			if err != nil {
 				c.ErrorWF("write message NextWriter error", zap.Error(err))
 				return
