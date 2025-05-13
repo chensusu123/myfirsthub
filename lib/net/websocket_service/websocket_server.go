@@ -74,8 +74,12 @@ func (t *WebsocketServer) Init(addr string, pf fknet.FkProtocolFactory) error {
 
 	h := server.Default(server.WithHostPorts(addr))
 
-	h.GET("/", func(c context.Context, ctx *app.RequestContext) {
+	h.GET("/pb", func(c context.Context, ctx *app.RequestContext) {
 		serveWs(ctx, t.FKLogI)
+	})
+
+	h.GET("/json", func(c context.Context, ctx *app.RequestContext) {
+		serveJsonWs(ctx, t.FKLogI)
 	})
 
 	t.server = true

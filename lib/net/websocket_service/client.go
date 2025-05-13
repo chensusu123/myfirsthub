@@ -291,6 +291,24 @@ func serveWs(ctx *app.RequestContext, logger fklog.FKLogI) {
 	}
 }
 
+func serveJsonWs(ctx *app.RequestContext, logger fklog.FKLogI) {
+	err := upgrader.Upgrade(ctx, func(conn *websocket.Conn) {
+		clientLogger := logger.Clone(fmt.Sprintf("client-addr:%s", conn.RemoteAddr().String()))
+		clientLogger.InfoWF("serveJsonWs client connected", zap.Any("addr", conn.RemoteAddr().String()))
+		client := &Client{conn: conn, send: make(chan []byte, 1024), FkTags: fknet.NewFkTags(), sessionId: hub.MakeSession()}
+		client.SetTag("mySelf", client)
+		client.SetTag("mySelfSession", client.sessionId)
+		client.FKLogI = clientLogger
+		hub.register <- client
+
+		go client.writeJsonPump()
+		client.readJsonPump()
+	})
+	if err != nil {
+		logger.ErrorWF("serveJsonWs upgrade error", zap.Error(err))
+	}
+}
+
 func (c *Client) MockLogger(logger fklog.FKLogI) {
 	c.FKLogI = logger.Clone("websocket_client")
 }

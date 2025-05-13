@@ -8,6 +8,7 @@ import (
 
 	"go.uber.org/zap"
 
+	jsoniter "github.com/json-iterator/go"
 	"gitlab.ifreetalk.com/maze/maze_game_server/lib/net/raw_pkg"
 	"gitlab.ifreetalk.com/plate/freetk/fkcore/fkalert"
 	"gitlab.ifreetalk.com/plate/freetk/fkcore/fklog"
@@ -16,13 +17,25 @@ import (
 	"gitlab.ifreetalk.com/plate/freetk/fkutil/workergroup"
 )
 
+var json = jsoniter.ConfigCompatibleWithStandardLibrary
+
 // SvrTCPEsRawProc 服务端 es包头tcp处理函数
 type SvrTCPEsRawProc func(ctx fknet.TCPContext, es *raw_pkg.StruSvrEsRawBaseHead, data []byte) error
 
 // SvrEsRawPackageCtrl es pb包管理器
 type SvrEsRawPackageCtrl struct {
 	*workergroup.FkWorkGroup
-	route sync.Map
+	route     sync.Map
+	jsonRoute sync.Map
+}
+
+type MiniJsonMsg struct {
+	MsgType uint16 `json:"msg_type"`
+}
+
+type ErrorJsonMsg struct {
+	MsgType int    `json:"msg_type"`
+	Data    string `json:"data"`
 }
 
 func (ctl *SvrEsRawPackageCtrl) SetPkgReader(fkpkg.PkgReader) {
@@ -32,6 +45,23 @@ func (ctl *SvrEsRawPackageCtrl) SetPkgReader(fkpkg.PkgReader) {
 func (ctl *SvrEsRawPackageCtrl) RegProc(packType uint16, pf SvrTCPEsRawProc) error {
 	if _, load := ctl.route.LoadOrStore(packType, pf); load {
 		return fmt.Errorf("packType %d is already registered", packType)
+	}
+	return nil
+}
+
+func (ctl *SvrEsRawPackageCtrl) RegJsonProc(packType uint16, pf SvrTCPEsRawProc) error {
+	if _, load := ctl.jsonRoute.LoadOrStore(packType, pf); load {
+		return fmt.Errorf("packType %d is already registered", packType)
+	}
+	return nil
+}
+
+func (ctl *SvrEsRawPackageCtrl) IgnoreJsonProc(packType uint16) error {
+	if _, load := ctl.jsonRoute.LoadOrStore(packType, SvrTCPEsRawProc(func(ctx fknet.TCPContext, es *raw_pkg.StruSvrEsRawBaseHead, data []byte) error {
+		ctx.DebugWF("ignore msg.", zap.Uint16("packType", packType))
+		return nil
+	})); load {
+		return fmt.Errorf("packType %d is already registered or ignored", packType)
 	}
 	return nil
 }
@@ -109,6 +139,52 @@ func (ctl *SvrEsRawPackageCtrl) Proc(ctx fknet.TCPContext, data []byte) (err err
 	if err != nil {
 		ctx.WarnWF("deal proc failed.", zap.Uint16("packType", msg.PackType),
 			zap.Uint32("SessionID", msg.SessionID),
+			zap.Int("len", len(data)), zap.Error(err))
+		return
+	}
+	return
+}
+
+// Proc 处理tcp包
+func (ctl *SvrEsRawPackageCtrl) ProcJson(ctx fknet.TCPContext, data []byte) (err error) {
+	// 防止异常中断
+	defer fkalert.RecoverAlertException()
+	//
+	ctx.FKLogI.SetLogId(time.Now().UnixNano())
+
+	msg := MiniJsonMsg{}
+	err = json.Unmarshal(data, &msg)
+	if err != nil {
+		ctx.ErrorWF("recv unpack package.", zap.Error(err))
+		return
+	}
+	v, ok := ctl.jsonRoute.Load(msg.MsgType)
+	if !ok {
+		ctx.WarnWF("recv unreg msg.", zap.Uint16("packType", msg.MsgType), zap.Int("len", len(data)))
+		packt := ErrorJsonMsg{
+			MsgType: int(1),
+			Data:    "recv unreg msg.",
+		}
+		data, err = json.Marshal(packt)
+		if err == nil {
+			ctx.SendData(data)
+		}
+		return
+	}
+	pf, ok := v.(SvrTCPEsRawProc)
+	if !ok {
+		ctx.WarnWF("invalid reg proc.(func convert failed.)", zap.Uint16("packType", msg.MsgType), zap.Int("len", len(data)))
+		return
+	}
+	// 设置用户ID
+	// ctx.FKLogI.SetUid(uint64(msg.SessionID))
+
+	tcpPacket := raw_pkg.StruSvrEsRawBaseHead{
+		PackType: msg.MsgType,
+	}
+	err = pf(ctx, &tcpPacket, data)
+	if err != nil {
+		ctx.WarnWF("deal proc failed.", zap.Uint16("packType", msg.MsgType),
 			zap.Int("len", len(data)), zap.Error(err))
 		return
 	}

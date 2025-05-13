@@ -9,6 +9,7 @@ import (
 	"sync"
 	"time"
 
+	jsoniter "github.com/json-iterator/go"
 	"gitlab.ifreetalk.com/maze/maze_game_server/lib/net/raw_pkg"
 	"gitlab.ifreetalk.com/maze/maze_game_server/lib/net/raw_pkg_ctl"
 	"gitlab.ifreetalk.com/plate/extra/protobuf/proto"
@@ -26,6 +27,8 @@ import (
 	"go.uber.org/atomic"
 	"go.uber.org/zap"
 )
+
+var json = jsoniter.ConfigCompatibleWithStandardLibrary
 
 // PlugTcpService 添加tcp服务
 func PlugTcpRawService(regPack func()) {
@@ -313,6 +316,7 @@ func RegProcSimple(rqID uint16, rqMsg proto.Message, rsID uint16, rsMsg proto.Me
 		}()
 
 		foundUserID := uint64(0)
+		var hasUserID bool
 		if es.PackType != 5183 {
 			// 非登录包
 			tmpUserID := ctx.GetTag("userID")
@@ -327,6 +331,17 @@ func RegProcSimple(rqID uint16, rqMsg proto.Message, rsID uint16, rsMsg proto.Me
 				return
 			}
 			ctx.SetUid(foundUserID)
+		} else {
+			tmpUserID := ctx.GetTag("userID")
+			switch v := tmpUserID.(type) {
+			case int64:
+				foundUserID = uint64(v)
+			case uint64:
+				foundUserID = v
+			}
+			if foundUserID != 0 {
+				hasUserID = true
+			}
 		}
 
 		needRS = true
@@ -349,7 +364,7 @@ func RegProcSimple(rqID uint16, rqMsg proto.Message, rsID uint16, rsMsg proto.Me
 			case uint64:
 				foundUserID = v
 			}
-			if foundUserID != 0 {
+			if foundUserID != 0 && !hasUserID {
 				// 登录成功
 				hub.OnLogin(foundUserID, ctx)
 			}
@@ -360,6 +375,130 @@ func RegProcSimple(rqID uint16, rqMsg proto.Message, rsID uint16, rsMsg proto.Me
 	err := gDefaultTCPPkgCtl.RegProc(rqID, raw_pkg_ctl.SvrTCPEsRawProc(handler))
 	if err != nil {
 		fkfmt.Println("websocket-service reg tcp packet ", rqID, " failed.", err)
+		fkutil.PanicIfError(err)
+	}
+
+	// 封包函数
+	jsonHandler := func(ctx fknet.TCPContext, es *raw_pkg.StruSvrEsRawBaseHead, data []byte) (err error) {
+		// 监控
+		defer dealMonitor.Start(func() bool {
+			return err == nil
+		})()
+
+		// 新建请求包
+		rq := reflect.New(rqMsgType).Elem().Addr().Interface().(proto.Message)
+		rs := reflect.New(rsMsgType).Elem().Addr().Interface().(proto.Message)
+		recvPacket := &NoramlJsonMsg{
+			MsgType: int(rqID),
+			Data:    rq,
+		}
+		// 解包
+		err = json.Unmarshal(data, recvPacket)
+		if err != nil {
+			fkalert.Alert(fkalert.AlertTCPUnMarshalFailed, alertTip)
+			// 解包失败.丢弃.
+			ctx.ErrorWF("unmarshal tcp request failed.",
+				zap.Uint16("rqID", rqID), zap.Uint16("rsID", rsID), zap.String("func", funcName),
+				zap.String("rqType", rqTypeString), zap.String("rsType", rsTypeString),
+				zap.Int("len", len(data)),
+				zap.Uint64("sessionID", uint64(es.SessionID)),
+				zap.Error(err))
+			return
+		}
+
+		sendPacket := &NoramlJsonMsg{
+			MsgType: int(rsID),
+			Data:    rs,
+		}
+		needRS := false
+		// 回包
+		defer func() {
+			if !needRS {
+				return
+			}
+			dataJson, errMarshal := json.Marshal(sendPacket)
+			if errMarshal != nil {
+				ctx.ErrorWF("send resMarshalpond failed.",
+					zap.Uint16("rqID", rqID), zap.Uint16("rsID", rsID), zap.String("func", funcName),
+					zap.String("rqType", rqTypeString), zap.String("rsType", rsTypeString),
+					zap.Int("len", len(data)),
+					zap.Uint64("sessionID", uint64(es.SessionID)),
+					zap.Error(errMarshal))
+				return
+			}
+
+			err = ctx.SendData(dataJson)
+			if err != nil {
+				ctx.ErrorWF("send respond failed.",
+					zap.Uint16("rqID", rqID), zap.Uint16("rsID", rsID), zap.String("func", funcName),
+					zap.String("rqType", rqTypeString), zap.String("rsType", rsTypeString),
+					zap.Int("len", len(data)),
+					zap.Uint64("sessionID", uint64(es.SessionID)),
+					zap.Error(err))
+				return
+			}
+		}()
+
+		foundUserID := uint64(0)
+		var hasUserID bool
+		if es.PackType != 5183 {
+			// 非登录包
+			tmpUserID := ctx.GetTag("userID")
+			switch v := tmpUserID.(type) {
+			case int64:
+				foundUserID = uint64(v)
+			case uint64:
+				foundUserID = v
+			}
+			if foundUserID == 0 {
+				ctx.WarnWF("user not login", zap.Uint16("rqID", rqID))
+				return
+			}
+			ctx.SetUid(foundUserID)
+		} else {
+			tmpUserID := ctx.GetTag("userID")
+			switch v := tmpUserID.(type) {
+			case int64:
+				foundUserID = uint64(v)
+			case uint64:
+				foundUserID = v
+			}
+			if foundUserID != 0 {
+				hasUserID = true
+			}
+		}
+
+		needRS = true
+		// 处理请求
+		err = deal(ctx, foundUserID, rq, rs)
+		if err != nil {
+			ctx.ErrorWF("deal rpc request failed.",
+				zap.Uint16("rqID", rqID), zap.Uint16("rsID", rsID), zap.String("func", funcName),
+				zap.String("rqType", rqTypeString), zap.String("rsType", rsTypeString),
+				zap.Int("len", len(data)), zap.Uint64("sharedingID", foundUserID),
+				zap.Uint64("sessionID", uint64(es.SessionID)),
+				zap.Error(err))
+		}
+		if es.PackType == 5183 {
+			// 登录包
+			tmpUserID := ctx.GetTag("userID")
+			switch v := tmpUserID.(type) {
+			case int64:
+				foundUserID = uint64(v)
+			case uint64:
+				foundUserID = v
+			}
+			if foundUserID != 0 && !hasUserID {
+				// 登录成功
+				hub.OnLogin(foundUserID, ctx)
+			}
+		}
+		return
+	}
+
+	err = gDefaultTCPPkgCtl.RegJsonProc(rqID, raw_pkg_ctl.SvrTCPEsRawProc(jsonHandler))
+	if err != nil {
+		fkfmt.Println("websocket-service reg tcp json packet ", rqID, " failed.", err)
 		fkutil.PanicIfError(err)
 	}
 	// 注册包ID
