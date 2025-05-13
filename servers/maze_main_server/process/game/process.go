@@ -1,11 +1,20 @@
 package game
 
 import (
+	"github.com/lonng/nano/component"
 	"gitlab.ifreetalk.com/maze/maze_game_server/io/kafka/mazeattrmsg"
 	"gitlab.ifreetalk.com/maze/maze_game_server/io/kafka/mazetempbuffchgmsg"
 	"gitlab.ifreetalk.com/maze/maze_game_server/lib/net/websocket_service"
 	"gitlab.ifreetalk.com/plate/protodef/MazeGame"
 )
+
+type Game struct {
+	component.Base
+}
+
+func NewGame() *Game {
+	return &Game{}
+}
 
 func RegTcpHandler() {
 	// 人偶版本新手引导关卡信息查询RQ
@@ -86,7 +95,7 @@ func RegTcpHandler() {
 	websocket_service.RegProcSimple(
 		16206, &MazeGame.MazeLoginRQ{},
 		16207, &MazeGame.MazeLoginRS{},
-		OnMazeLoginRQ)
+		nil /* OnMazeLoginRQ */)
 
 	// 上报人物等级和关卡
 	websocket_service.RegProcSimple(
