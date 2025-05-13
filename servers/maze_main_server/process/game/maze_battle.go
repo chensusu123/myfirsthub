@@ -1,8 +1,11 @@
 package game
 
 import (
+	"sort"
+
 	"gitlab.ifreetalk.com/maze/maze_game_server/common/constdef"
 	"gitlab.ifreetalk.com/maze/maze_game_server/io/redis/mazebarriertempbuffredis"
+	"gitlab.ifreetalk.com/maze/maze_game_server/io/redis/mazecalcattrredis"
 	"gitlab.ifreetalk.com/plate/excel/auto/GMazeActInfoV8Cfg"
 	"gitlab.ifreetalk.com/plate/excel/auto/GMazeAttrSkillV8Cfg"
 	"gitlab.ifreetalk.com/plate/excel/auto/GMazeBrushFoeV8Cfg"
@@ -31,6 +34,12 @@ func GetMazeBattleData(logger fklog.FKLogI, userId uint64, barrierId int32) (maz
 		return nil, err
 	}
 
+	force, err := mazecalcattrredis.GetMazeForce(logger, userId)
+	if err != nil {
+		logger.ErrorWF("OnMazeLoginRQ GetMazeForce fail", zap.Error(err))
+		return nil, err
+	}
+
 	tempBuffInfo, err := mazebarriertempbuffredis.GetBarrierTempBuff(logger, userId, barrierId)
 	if err != nil {
 		logger.ErrorWF("GetMazeBattleData GetBarrierTempBuff err", zap.Error(err))
@@ -41,7 +50,7 @@ func GetMazeBattleData(logger fklog.FKLogI, userId uint64, barrierId int32) (maz
 	}
 
 	userStiffRatio := userAttrMap[constdef.MazeAttr3000101]
-	areaInfos, err := GetFoeAreaInfos(logger, userId, barrierId, userStiffRatio)
+	areaInfos, err := GetFoeAreaInfos(logger, userId, force, barrierId, userStiffRatio)
 	if err != nil {
 		logger.ErrorWF("GetMazeBattleData GetFoeAreaInfos err", zap.Any("barrierId", barrierId), zap.Error(err))
 		return nil, err
@@ -60,7 +69,7 @@ func GetMazeBattleData(logger fklog.FKLogI, userId uint64, barrierId int32) (maz
 		if cfg.Foe_type == 1 {
 			continue
 		}
-		eliteMonsterConfig, err := GetMazeAIMonsterConfig(logger, userId, cfg.Order, userStiffRatio)
+		eliteMonsterConfig, err := GetMazeAIMonsterConfig(logger, userId, force, cfg.Order, userStiffRatio)
 		if err != nil {
 			logger.ErrorWF("GetMazeBattleData GetMazeAIMonsterConfig err", zap.Any("foeId", cfg.Order))
 			return nil, err
@@ -92,7 +101,7 @@ func GetMazeBattleData(logger fklog.FKLogI, userId uint64, barrierId int32) (maz
 	return mazeBattleInfo, nil
 }
 
-func GetFoeAreaInfos(logger fklog.FKLogI, userId uint64, barrierId int32, userStiffRatio int64) ([]*MazeAIBattle.MazeAIAreaInfo, error) {
+func GetFoeAreaInfos(logger fklog.FKLogI, userId uint64, force int64, barrierId int32, userStiffRatio int64) ([]*MazeAIBattle.MazeAIAreaInfo, error) {
 	areaInfos := make([]*MazeAIBattle.MazeAIAreaInfo, 0)
 	areaFoeMap := make(map[int32]map[int32]struct{})
 	for _, cfg := range GMazeBrushFoeV8Cfg.GetAll() {
@@ -112,7 +121,7 @@ func GetFoeAreaInfos(logger fklog.FKLogI, userId uint64, barrierId int32, userSt
 		}
 		areaInfo.MonsterConfigInfos = make([]*MazeAIBattle.MazeAIMonsterConfigInfo, 0)
 		for foeId := range foeMap {
-			monsterConfigInfo, err := GetMazeAIMonsterConfig(logger, userId, foeId, userStiffRatio)
+			monsterConfigInfo, err := GetMazeAIMonsterConfig(logger, userId, force, foeId, userStiffRatio)
 			if err != nil {
 				logger.ErrorWF("GetMazeBattleData GetMazeAIMonsterConfig err", zap.Any("foeId", foeId))
 				return nil, err
@@ -125,7 +134,7 @@ func GetFoeAreaInfos(logger fklog.FKLogI, userId uint64, barrierId int32, userSt
 }
 
 // todo 技能公共cd
-func GetMazeAIMonsterConfig(logger fklog.FKLogI, userId uint64, foeId int32, userStiffRatio int64) (*MazeAIBattle.MazeAIMonsterConfigInfo, error) {
+func GetMazeAIMonsterConfig(logger fklog.FKLogI, userId uint64, force int64, foeId int32, userStiffRatio int64) (*MazeAIBattle.MazeAIMonsterConfigInfo, error) {
 	foeCfg := GMazeFoeV8Cfg.Get(foeId)
 	if foeCfg == nil {
 		logger.ErrorWF("GetMazeAIMonsterConfig GMazeFoeV8Cfg err", zap.Any("foeId", foeId))
@@ -138,7 +147,8 @@ func GetMazeAIMonsterConfig(logger fklog.FKLogI, userId uint64, foeId int32, use
 		ConfigId:          proto.Int32(foeId),
 		MaxHp:             proto.Int64(int64(foeCfg.Hp_max)),
 		MonsterStiffRatio: proto.Int64(int64(foeCfg.Tough_max)),
-		UserStiffRatio:    proto.Int64(userStiffRatio),
+		// UserStiffRatio:    proto.Int64(userStiffRatio),
+		UserStiffRatio: proto.Int64(CalcUserStiffRatio(foeCfg, force)),
 	}
 	monsterConfigInfo.AttackValue = attackValue
 	monsterConfigInfo.AttrInfo = make([]*MazeAIBattle.MazeAIAttrInfo, 0)
@@ -150,6 +160,12 @@ func GetMazeAIMonsterConfig(logger fklog.FKLogI, userId uint64, foeId int32, use
 	monsterConfigInfo.AttrInfo = append(monsterConfigInfo.AttrInfo, &MazeAIBattle.MazeAIAttrInfo{
 		Type:          proto.Int32(int32(MazeAIBattle.MAZE_AI_ATTR_TYPE_ROLE_DEF_VALUE)),
 		UserValue:     proto.Int32(foeCfg.Def_max),
+		UserValueType: proto.Int32(1),
+	})
+	// 怪物韧性上限
+	monsterConfigInfo.AttrInfo = append(monsterConfigInfo.AttrInfo, &MazeAIBattle.MazeAIAttrInfo{
+		Type:          proto.Int32(int32(MazeAIBattle.MAZE_AI_ATTR_TYPE_TOUGH_MAX)),
+		UserValue:     proto.Int32(foeCfg.Tough_max),
 		UserValueType: proto.Int32(1),
 	})
 	skillIds := make([]int32, 0)
@@ -610,4 +626,28 @@ func GetMazeAIAutoSkillInfo(logger fklog.FKLogI, skillId int32, attrMap map[int3
 		Index:     proto.Int32(8),
 	})
 	return skillConfigInfo, nil
+}
+func CalcUserStiffRatio(cfg *GMazeFoeV8Cfg.MazeFoeV8ConfigRow, force int64) (ratio int64) {
+	if cfg == nil {
+		return 0
+	}
+	keys := make([]int64, 0, len(cfg.Tough_borke_raitio))
+	for k, _ := range cfg.Tough_borke_raitio {
+		keys = append(keys, k)
+	}
+	sort.Slice(keys, func(i, j int) bool {
+		return keys[i] < keys[j]
+	})
+	for i, k := range keys {
+		if force < k {
+			if i == 0 {
+				return 0
+			}
+			return int64(cfg.Tough_borke_raitio[keys[i-1]])
+		}
+	}
+	if len(keys) > 0 {
+		return int64(cfg.Tough_borke_raitio[keys[len(keys)-1]])
+	}
+	return 0
 }

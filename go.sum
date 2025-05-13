@@ -261,8 +261,8 @@ github.com/xuri/nfp v0.0.0-20240318013403-ab9948c2c4a7 h1:hPVCafDV85blFTabnqKgNh
 github.com/xuri/nfp v0.0.0-20240318013403-ab9948c2c4a7/go.mod h1:WwHg+CVyzlv/TX9xqBFXEZAuxOPxn2k1GNHwG41IIUQ=
 gitlab.ifreetalk.com/plate/definition v1.0.6 h1:jxAJiWFIGV5Nh4GNAySF4qNg+KzWMjg0Frv6eT1/Xzo=
 gitlab.ifreetalk.com/plate/definition v1.0.6/go.mod h1:+g0fTC+E97RYCq+8g9ABuAmTxr6OVwXxo67qxTgymIs=
-gitlab.ifreetalk.com/plate/excel v1.0.83-0.20250509135614-584a730455c6 h1:huwrnRhJcFwEip5RvzqW8jvOTX8MrrCegWeN0Sq+VH0=
-gitlab.ifreetalk.com/plate/excel v1.0.83-0.20250509135614-584a730455c6/go.mod h1:hHBCdrk+EzZ90cb7r0vW5RyrODsrf0Q0FN2gw33tBQs=
+gitlab.ifreetalk.com/plate/excel v1.0.83-0.20250512070910-97290fea265a h1:BIRDcXTixPXgSwtopJTsUAjD0ZT8v6i1lNx11R7rdmA=
+gitlab.ifreetalk.com/plate/excel v1.0.83-0.20250512070910-97290fea265a/go.mod h1:hHBCdrk+EzZ90cb7r0vW5RyrODsrf0Q0FN2gw33tBQs=
 gitlab.ifreetalk.com/plate/extra v1.1.7 h1:LW0uI92Zao8padw+i6582ExxY3PvbuFTQYxT2g/6RO0=
 gitlab.ifreetalk.com/plate/extra v1.1.7/go.mod h1:xFhTpaG8d/8FkQ6TSaT2kaBR5V/H0wR/A40AxUmkyEU=
 gitlab.ifreetalk.com/plate/freetk v1.2.34/go.mod h1:jmIcxB7ZSBddsvZQv7uIASgQCNNJ7PzfJF7eFEohTS0=
@@ -271,8 +271,8 @@ gitlab.ifreetalk.com/plate/freetk v1.2.63-0.20250512134146-0937833e27e4/go.mod h
 gitlab.ifreetalk.com/plate/io_interface v1.4.102-0.20250326074707-ac26a4cb5dba h1:dNyVsy5Pqp0wPamYL6JdUPEEkBxq6tep54DhKJPoHuM=
 gitlab.ifreetalk.com/plate/io_interface v1.4.102-0.20250326074707-ac26a4cb5dba/go.mod h1:tYP77irKSOBPx0iMlsxGucMnSIumHH75qtyB2hFv4DM=
 gitlab.ifreetalk.com/plate/protodef v1.0.29/go.mod h1:PPI4xcnIz1/Vy4pJeKekYyMupq4U2yE5NNU+TnovEjg=
-gitlab.ifreetalk.com/plate/protodef v1.0.88-0.20250506033541-f36724e7bf51 h1:8vRQhfNrUY8eE3TT+cipte0z6F1xTCjkPkKDUNLIJ54=
-gitlab.ifreetalk.com/plate/protodef v1.0.88-0.20250506033541-f36724e7bf51/go.mod h1:PPI4xcnIz1/Vy4pJeKekYyMupq4U2yE5NNU+TnovEjg=
+gitlab.ifreetalk.com/plate/protodef v1.0.88-0.20250509114533-682a3cdb0fb7 h1:SM+p62kjxJIGCGiCHgYJtyTzIIC+4lCO+OC1/AZylR0=
+gitlab.ifreetalk.com/plate/protodef v1.0.88-0.20250509114533-682a3cdb0fb7/go.mod h1:PPI4xcnIz1/Vy4pJeKekYyMupq4U2yE5NNU+TnovEjg=
 go.uber.org/atomic v1.6.0/go.mod h1:sABNBOSYdrvTF6hTgEIbc7YasKWGhgEQZyfxyTvoXHQ=
 go.uber.org/atomic v1.7.0/go.mod h1:fEN4uk6kAWBTFdckzkM89CLk9XfWZrxpCo0nPH17wJc=
 go.uber.org/atomic v1.9.0 h1:ECmE8Bn/WFTYwEW/bpKD3M8VtR/zQVbavAoalC1PYyE=

@@ -11,11 +11,11 @@ require (
 	github.com/hertz-contrib/websocket v0.2.0
 	github.com/json-iterator/go v1.1.12
 	github.com/xuri/excelize/v2 v2.9.0
-	gitlab.ifreetalk.com/plate/excel v1.0.83-0.20250509135614-584a730455c6
+	gitlab.ifreetalk.com/plate/excel v1.0.83-0.20250512070910-97290fea265a
 	gitlab.ifreetalk.com/plate/extra v1.1.7
 	gitlab.ifreetalk.com/plate/freetk v1.2.63-0.20250512134146-0937833e27e4
 	gitlab.ifreetalk.com/plate/io_interface v1.4.102-0.20250326074707-ac26a4cb5dba
-	gitlab.ifreetalk.com/plate/protodef v1.0.88-0.20250506033541-f36724e7bf51
+	gitlab.ifreetalk.com/plate/protodef v1.0.88-0.20250509114533-682a3cdb0fb7
 	go.uber.org/atomic v1.9.0
 	go.uber.org/zap v1.24.0
 )

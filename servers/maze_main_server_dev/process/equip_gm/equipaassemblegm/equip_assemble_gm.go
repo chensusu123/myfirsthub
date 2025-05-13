@@ -8,20 +8,20 @@ import (
 	"sync/atomic"
 	"time"
 
+	"gitlab.ifreetalk.com/maze/maze_game_server/common/function/fileio"
+	"gitlab.ifreetalk.com/maze/maze_game_server/common/function/gm"
+	"gitlab.ifreetalk.com/maze/maze_game_server/io/redis/mazebuffinforedis"
+	"gitlab.ifreetalk.com/maze/maze_game_server/io/redis/mazeuserlevelredis"
+	"gitlab.ifreetalk.com/maze/maze_game_server/module/calcassembleattr"
+	"gitlab.ifreetalk.com/maze/maze_game_server/module/dollassembleinfo"
+	"gitlab.ifreetalk.com/maze/maze_game_server/servers/maze_main_server/process/equip"
+	"gitlab.ifreetalk.com/maze/maze_game_server/servers/maze_main_server/process/equip_gm/equipbaggm"
 	"gitlab.ifreetalk.com/plate/freetk/fkcore/fklog"
 	"gitlab.ifreetalk.com/plate/freetk/fkutil"
 	"gitlab.ifreetalk.com/plate/io_interface/redis_interface/common/new_map_db/FamilyAllocUserRedis"
 	"gitlab.ifreetalk.com/plate/io_interface/redis_interface/common/new_map_db/LeagueFamilyRedis"
 	"gitlab.ifreetalk.com/plate/io_interface/redis_interface/common/new_map_db/WorldLeagueRedis"
 	"go.uber.org/zap"
-	"gitlab.ifreetalk.com/maze/maze_game_server/module/dollassembleinfo"
-	"gitlab.ifreetalk.com/maze/maze_game_server/common/function/gm"
-	"gitlab.ifreetalk.com/maze/maze_game_server/common/function/fileio"
-	"gitlab.ifreetalk.com/maze/maze_game_server/module/calcassembleattr"
-	"gitlab.ifreetalk.com/maze/maze_game_server/io/redis/mazebuffinforedis"
-	"gitlab.ifreetalk.com/maze/maze_game_server/io/redis/mazeuserlevelredis"
-	"gitlab.ifreetalk.com/maze/maze_game_server/servers/maze_main_server/process/equip_gm/equipbaggm"
-	"gitlab.ifreetalk.com/maze/maze_game_server/servers/maze_main_server/process/equip"
 )
 
 var EndLine = "-----------------------------------------------------------\n"
@@ -682,6 +682,18 @@ func RegGm(logger fklog.FKLogI) {
 		pos := fkutil.ToInt32(request.Form.Get("pos"))
 		guid := fkutil.ToInt64(request.Form.Get("guid"))
 		e := DressEquipGm(logger, uid, pos, guid)
+		if e == nil {
+			writer.Write([]byte(string("ok")))
+		} else {
+			writer.Write([]byte(e.Error()))
+		}
+	})
+
+	gm.SafeHttpRegister(logger, "/GmEquipPosLvUp", func(writer http.ResponseWriter, request *http.Request) {
+		uid := fkutil.ToUint64(request.Form.Get("uid"))
+		logger.SetUid(uid)
+		targetLv := fkutil.ToInt32(request.Form.Get("pos"))
+		e := equip.OnGmEquipPosLvUp(logger, uid, targetLv)
 		if e == nil {
 			writer.Write([]byte(string("ok")))
 		} else {

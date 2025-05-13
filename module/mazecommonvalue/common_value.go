@@ -133,12 +133,12 @@ func MakeAllCommonValue(logger fklog.FKLogI, userId uint64, level, exp, expMax, 
 		Session: session,
 	}
 
-	// forceStruct := &CommonValueStruct{
-	// 	DataType:     int32(MazeGame.MAZE_DATA_TYPE_ENUM_MAZE_DATA_TYPE_FORCE),
-	// 	DataValueInt: force,
-	// 	// ChgReason:    int32(1),
-	// 	Session: session,
-	// }
+	forceStruct := &CommonValueStruct{
+		DataType:     int32(MazeGame.MAZE_DATA_TYPE_ENUM_MAZE_DATA_TYPE_FORCE),
+		DataValueInt: force,
+		// ChgReason:    int32(1),
+		Session: session,
+	}
 
 	moneyStruct := &CommonValueStruct{
 		DataType:     int32(MazeGame.MAZE_DATA_TYPE_ENUM_MAZE_DATA_TYPE_MONEY),
@@ -169,6 +169,6 @@ func MakeAllCommonValue(logger fklog.FKLogI, userId uint64, level, exp, expMax, 
 	}
 
 	// commonList = append(commonList, lvStruct, expStruct, expMaxStruct, forceStruct, moneyStruct, extraStruct)
-	commonList = append(commonList, lvStruct, expStruct, extraStruct, expMaxStruct, moneyStruct, diamondStruct)
+	commonList = append(commonList, lvStruct, expStruct, extraStruct, expMaxStruct, moneyStruct, diamondStruct, forceStruct)
 	return
 }

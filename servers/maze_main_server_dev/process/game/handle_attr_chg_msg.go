@@ -75,7 +75,7 @@ func handleMazeCommonValueChg(logger fklog.FKLogI, userId uint64, msg *structsde
 	// 是否有武力属性
 	mazeForceId := HasForceAttr(msg.ChgAttrs)
 	if mazeForceId > 0 {
-		// needAttrs = append(needAttrs, mazeForceId)
+		needAttrs = append(needAttrs, mazeForceId)
 		needAttrs = append(needAttrs, constdef.MazeMoneyBuff10258)
 		needAttrs = append(needAttrs, constdef.MazeExpBuff10261)
 	} else {
@@ -83,14 +83,14 @@ func handleMazeCommonValueChg(logger fklog.FKLogI, userId uint64, msg *structsde
 		mazeMoneyId := HasMoneyAttr(msg.ChgAttrs)
 		if mazeMoneyId > 0 {
 			needAttrs = append(needAttrs, mazeMoneyId)
-			// needAttrs = append(needAttrs, constdef.MazeForce)
+			needAttrs = append(needAttrs, constdef.MazeForce)
 		}
 
 		// 是否有经验加成
 		mazeExpId := HasExpAttr(msg.ChgAttrs)
 		if mazeExpId > 0 {
 			needAttrs = append(needAttrs, mazeExpId)
-			// needAttrs = append(needAttrs, constdef.MazeForce)
+			needAttrs = append(needAttrs, constdef.MazeForce)
 		}
 	}
 
@@ -107,7 +107,7 @@ func handleMazeCommonValueChg(logger fklog.FKLogI, userId uint64, msg *structsde
 	}
 
 	//武力及属性变化影响的数值有   武力、额外加成
-	// force := attrsMap[constdef.MazeForce]
+	force := attrsMap[constdef.MazeForce]
 
 	userInfo, err := mazeuserinfo.GetUserInfoV2(logger, userId)
 	if err != nil {
@@ -130,7 +130,7 @@ func handleMazeCommonValueChg(logger fklog.FKLogI, userId uint64, msg *structsde
 	commonList := make([]*mazecommonvalue.CommonValueStruct, 0)
 	if okMoney {
 		moneyCommon := mazecommonvalue.MakeCommonValueList(logger, map[int32]int64{
-			// int32(MazeGame.MAZE_DATA_TYPE_ENUM_MAZE_DATA_TYPE_FORCE):      force,
+			int32(MazeGame.MAZE_DATA_TYPE_ENUM_MAZE_DATA_TYPE_FORCE): force,
 			// int32(MazeGame.MAZE_DATA_TYPE_ENUM_MAZE_DATA_TYPE_EXP_INCOME): expIncome,
 			int32(MazeGame.MAZE_DATA_TYPE_ENUM_MAZE_DATA_TYPE_INCOME): moneyIncome},
 			map[int32]int32{}, map[int32]string{})
@@ -138,7 +138,7 @@ func handleMazeCommonValueChg(logger fklog.FKLogI, userId uint64, msg *structsde
 	}
 	if okExp {
 		expCommon := mazecommonvalue.MakeCommonValueList(logger, map[int32]int64{
-			// int32(MazeGame.MAZE_DATA_TYPE_ENUM_MAZE_DATA_TYPE_FORCE):      force,
+			int32(MazeGame.MAZE_DATA_TYPE_ENUM_MAZE_DATA_TYPE_FORCE):      force,
 			int32(MazeGame.MAZE_DATA_TYPE_ENUM_MAZE_DATA_TYPE_EXP_INCOME): expIncome},
 			// int32(MazeGame.MAZE_DATA_TYPE_ENUM_MAZE_DATA_TYPE_INCOME):     moneyIncome},
 			map[int32]int32{}, map[int32]string{})

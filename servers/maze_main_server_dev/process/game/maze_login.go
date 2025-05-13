@@ -2,6 +2,7 @@ package game
 
 import (
 	"gitlab.ifreetalk.com/maze/maze_game_server/io/kafka/mazeuserlevelkafka"
+	"gitlab.ifreetalk.com/maze/maze_game_server/io/redis/mazecalcattrredis"
 	"gitlab.ifreetalk.com/maze/maze_game_server/module/mazecommonvalue"
 	"gitlab.ifreetalk.com/maze/maze_game_server/module/mazemoney"
 	"gitlab.ifreetalk.com/maze/maze_game_server/module/mazeuserinfo"
@@ -83,12 +84,12 @@ func OnMazeLoginRQ(logger fknet.TCPContext, shardingID uint64, rqMsg proto.Messa
 		}
 	}
 
-	// force, err = mazecalcattrredis.GetMazeForce(logger, userId)
-	// if err != nil {
-	// 	logger.ErrorWF("OnMazeLoginRQ GetMazeForce fail", zap.Error(err))
-	// 	res.ErrInfo = errors.MODULE_ERROR.ToInfo()
-	// 	return
-	// }
+	force, err = mazecalcattrredis.GetMazeForce(logger, userId)
+	if err != nil {
+		logger.ErrorWF("OnMazeLoginRQ GetMazeForce fail", zap.Error(err))
+		res.ErrInfo = errors.MODULE_ERROR.ToInfo()
+		return
+	}
 
 	extra, err2 := mazecommonvalue.MakeCommonValueExtra(logger, userId, level, 0)
 	if err2 != nil {
