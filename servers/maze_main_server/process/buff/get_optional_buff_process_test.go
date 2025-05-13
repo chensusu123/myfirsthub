@@ -70,8 +70,8 @@ func Test_randomBuff(t *testing.T) {
 		},
 	}
 	optionalMap := make(map[int32]struct{})
-	affixList := mazeenergyaffixlibraryv8config.GetEnergyLibraryAffixList(1)
-	optionalList, totalWeight := filterBuffList(buffInfo, optionalMap, affixList)
+	affixList, certainly_list := mazeenergyaffixlibraryv8config.GetEnergyLibraryAffixList(1)
+	optionalList, totalWeight := filterBuffList(buffInfo, optionalMap, affixList, certainly_list)
 	buffMap := make(map[int32]int64)
 	for i := 0; i < 1000000000; i++ {
 		buffId, _ := randomId(optionalList, totalWeight)

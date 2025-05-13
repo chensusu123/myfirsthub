@@ -10,11 +10,11 @@ import (
  * @Description:
  */
 
-func GetEnergyLibraryAffixList(configId int32) []int32 {
+func GetEnergyLibraryAffixList(configId int32) ([]int32, []int32) {
 	config := GMazeEnergyAffixLibraryV8Cfg.Get(configId)
 	if config == nil {
-		return nil
+		return nil, nil
 	}
 
-	return config.Affix_id_list
+	return config.Affix_id_list, config.Certainly_affix_id_list
 }

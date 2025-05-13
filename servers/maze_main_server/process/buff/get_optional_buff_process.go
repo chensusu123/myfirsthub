@@ -1,6 +1,9 @@
 package buff
 
 import (
+	"math/rand"
+	"time"
+
 	"gitlab.ifreetalk.com/maze/maze_game_server/excel/mazebarriesv8config"
 	"gitlab.ifreetalk.com/maze/maze_game_server/excel/mazeconfigv8config"
 	"gitlab.ifreetalk.com/maze/maze_game_server/excel/mazeenergyaffixfrontv8config"
@@ -10,9 +13,6 @@ import (
 	"gitlab.ifreetalk.com/maze/maze_game_server/excel/mazeenergylevelv8config"
 	"gitlab.ifreetalk.com/maze/maze_game_server/excel/mazeenergyresetcostv8config"
 	"gitlab.ifreetalk.com/maze/maze_game_server/io/redis/mazetempbuffredis"
-	"math/rand"
-	"time"
-
 	"gitlab.ifreetalk.com/plate/extra/protobuf/proto"
 	"gitlab.ifreetalk.com/plate/freetk/common/errors"
 	"gitlab.ifreetalk.com/plate/freetk/fkcore/fklog"
@@ -236,13 +236,13 @@ func createOptionalBuffList(logger fklog.FKLogI, buffInfo *MazeTempBuffSvr.TempB
 		}
 
 		// 随机库id
-		affixList := mazeenergyaffixlibraryv8config.GetEnergyLibraryAffixList(libraryId)
+		affixList, certainly_list := mazeenergyaffixlibraryv8config.GetEnergyLibraryAffixList(libraryId)
 		if len(affixList) == 0 {
 			return nil, errors.New("affixList is nil")
 		}
 
 		// 过滤不可选择的词条
-		optionalList, totalWeight := filterBuffList(buffInfo, optionalMap, affixList)
+		optionalList, totalWeight := filterBuffList(buffInfo, optionalMap, affixList, certainly_list)
 		// 随机选择个词条
 		buffId, weight := randomId(optionalList, totalWeight)
 		if buffId != 0 {
@@ -288,8 +288,7 @@ type WeightInfo struct {
 	Weight int32
 }
 
-func filterBuffList(buffInfo *MazeTempBuffSvr.TempBuffInfo, optionalMap map[int32]struct{},
-	buffList []int32) ([]*WeightInfo, int32) {
+func filterBuffList(buffInfo *MazeTempBuffSvr.TempBuffInfo, optionalMap map[int32]struct{}, buffList []int32, ce_buffList []int32) ([]*WeightInfo, int32) {
 	buffMap := make(map[int32]int32)
 	for _, info := range buffInfo.GetSelectedBuff() {
 		buffMap[info.GetBuffId()] += 1
@@ -299,6 +298,26 @@ func filterBuffList(buffInfo *MazeTempBuffSvr.TempBuffInfo, optionalMap map[int3
 		optionalList []*WeightInfo
 		totalWeight  int32
 	)
+
+	// 先添加必选buff
+	for _, buffId := range ce_buffList {
+		if _, ok := optionalMap[buffId]; ok {
+			continue
+		}
+
+		buffWeight := getOptionBuffWeightInfo(buffId, buffMap)
+		if buffWeight == nil {
+			continue
+		}
+
+		optionalList = append(optionalList, buffWeight)
+		totalWeight += buffWeight.Weight
+	}
+
+	if len(optionalList) > 0 {
+		return optionalList, totalWeight
+	}
+
 	for _, buffId := range buffList {
 		if _, ok := optionalMap[buffId]; ok {
 			continue

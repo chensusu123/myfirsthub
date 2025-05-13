@@ -72,6 +72,9 @@ func OnMazeBarrierEnterRQ(logger fknet.TCPContext, shardingID uint64, rqMsg prot
 	//	res.Energy = proto.Int32(userInfo.Energy)
 	var isNewBarrier bool
 
+	//进入清临时buff
+	mazebarriertempbuffredis.ClearBarrierTempBuff(logger, userId, req.GetBarrierId())
+
 	mazeBattleInfo, err3 := GetMazeBattleData(logger, userId, req.GetBarrierId())
 	if err3 != nil {
 		logger.ErrorWF("OnMazeBarrierEnterRQ GetMazeBattleData fail", zap.Error(err3))
@@ -175,8 +178,8 @@ func OnMazeBarrierEnterRQ(logger fknet.TCPContext, shardingID uint64, rqMsg prot
 
 		//2. 判断是否切换装备序列 清空装备积分 (不需要清 旧关卡积分保留 扫荡会继续加)
 
-		//3. 首次进入清临时buff
-		mazebarriertempbuffredis.ClearBarrierTempBuff(logger, userId, req.GetBarrierId())
+		// //3. 首次进入清临时buff
+		// mazebarriertempbuffredis.ClearBarrierTempBuff(logger, userId, req.GetBarrierId())
 	}
 
 	_, rebornMax, _ := GetReviveCost(userBarrier.GetRebornCount() + 1)
