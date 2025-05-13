@@ -74,7 +74,7 @@ func (t *WebsocketServer) Init(addr string, pf fknet.FkProtocolFactory) error {
 
 	h := server.Default(server.WithHostPorts(addr))
 
-	h.GET("/ws", func(c context.Context, ctx *app.RequestContext) {
+	h.GET("/", func(c context.Context, ctx *app.RequestContext) {
 		serveWs(ctx, t.FKLogI)
 	})
 
