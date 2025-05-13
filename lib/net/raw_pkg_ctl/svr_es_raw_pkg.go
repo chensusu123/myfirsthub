@@ -156,6 +156,14 @@ func (ctl *SvrEsRawPackageCtrl) ProcJson(ctx fknet.TCPContext, data []byte) (err
 	err = json.Unmarshal(data, &msg)
 	if err != nil {
 		ctx.ErrorWF("recv unpack package.", zap.Error(err))
+		packt := ErrorJsonMsg{
+			MsgType: int(1),
+			Data:    "json.Unmarshal failed",
+		}
+		data, err = json.Marshal(packt)
+		if err == nil {
+			ctx.SendData(data)
+		}
 		return
 	}
 	v, ok := ctl.jsonRoute.Load(msg.MsgType)
@@ -163,7 +171,7 @@ func (ctl *SvrEsRawPackageCtrl) ProcJson(ctx fknet.TCPContext, data []byte) (err
 		ctx.WarnWF("recv unreg msg.", zap.Uint16("packType", msg.MsgType), zap.Int("len", len(data)))
 		packt := ErrorJsonMsg{
 			MsgType: int(1),
-			Data:    "recv unreg msg.",
+			Data:    fmt.Sprintf("msg %d unreg", msg.MsgType),
 		}
 		data, err = json.Marshal(packt)
 		if err == nil {
