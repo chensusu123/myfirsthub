@@ -1,6 +1,7 @@
 package game
 
 import (
+	"github.com/lonng/nano/session"
 	"gitlab.ifreetalk.com/maze/maze_game_server/io/kafka/mazeuserlevelkafka"
 	"gitlab.ifreetalk.com/maze/maze_game_server/io/redis/mazecalcattrredis"
 	"gitlab.ifreetalk.com/maze/maze_game_server/module/mazecommonvalue"
@@ -9,17 +10,16 @@ import (
 	"gitlab.ifreetalk.com/plate/excel/auto/GMazeLevelV8Cfg"
 	"gitlab.ifreetalk.com/plate/extra/protobuf/proto"
 	"gitlab.ifreetalk.com/plate/freetk/common/errors"
-	"gitlab.ifreetalk.com/plate/freetk/fkcore/fknet"
+	"gitlab.ifreetalk.com/plate/freetk/fkcore/fklog"
 	"gitlab.ifreetalk.com/plate/freetk/fkcore/fkprometheus"
 	"gitlab.ifreetalk.com/plate/protodef/MazeGame"
-
 	"go.uber.org/zap"
 )
 
-func OnMazeLoginRQ(logger fknet.TCPContext, shardingID uint64, rqMsg proto.Message, rsMsg proto.Message) (err error) {
+func (g *Game) OnMazeLoginRQ(s *session.Session, req *MazeGame.MazeLoginRQ, rsMsg proto.Message) (err error) {
 	fkprometheus.InfoPMT("OnMazeLoginRQ")()
+	logger := fklog.AppLogger().Clone("game")
 
-	req := rqMsg.(*MazeGame.MazeLoginRQ)
 	res := rsMsg.(*MazeGame.MazeLoginRS)
 
 	logger.InfoWF("OnMazeLoginRQ start", zap.Any("req", req))
@@ -31,12 +31,13 @@ func OnMazeLoginRQ(logger fknet.TCPContext, shardingID uint64, rqMsg proto.Messa
 	res.ErrInfo = errors.NO_ERROR
 	res.MazeVersion = req.MazeVersion
 
-	userId := shardingID
+	userId := req.GetHeader().GetSharding()
+	s.Bind(int64(userId))
 
 	var level, exp, expMax, force, money, extra, extraExp, diamond int64
 	var isInit bool
 
-	userInfo, err := mazeuserinfo.GetUserInfoV2(logger, userId)
+	userInfo, err := mazeuserinfo.GetUserInfoV2(logger, uint64(userId))
 	if err != nil {
 		logger.ErrorWF("OnMazeLoginRQ GetUserInfo fail", zap.Error(err))
 		res.ErrInfo = errors.MODULE_ERROR.ToInfo()
@@ -45,7 +46,7 @@ func OnMazeLoginRQ(logger fknet.TCPContext, shardingID uint64, rqMsg proto.Messa
 	if userInfo.Level == 0 {
 		isInit = true
 		levelRecord := &mazeuserlevelkafka.MazeUserLevelRecord{
-			UserId:   userId,
+			UserId:   uint64(userId),
 			OldLevel: 0,
 			NewLevel: 1,
 		}
@@ -61,37 +62,37 @@ func OnMazeLoginRQ(logger fknet.TCPContext, shardingID uint64, rqMsg proto.Messa
 	levelCfg := GMazeLevelV8Cfg.Get(int32(level))
 	if levelCfg == nil {
 		res.ErrInfo = errors.CONFIG_NOT_FOUND.Wrap("等级表获取失败")
-		return
+		return s.Response(res)
 	}
 	expMax = levelCfg.Next_level_need_exp
 
-	money, diamond, err = mazemoney.GetUserMoney(logger, userId)
+	money, diamond, err = mazemoney.GetUserMoney(logger, uint64(userId))
 	if err != nil {
 		logger.ErrorWF("OnMazeLoginRQ GetUserMoney fail", zap.Error(err))
 		res.ErrInfo = errors.MODULE_ERROR.ToInfo()
-		return
+		return s.Response(res)
 	}
 
 	if isInit || (userInfo.UserType != req.GetMazeVersion()) {
 		if userInfo.UserType != req.GetMazeVersion() {
 			userInfo.SetUserType(req.GetMazeVersion())
 		}
-		err = mazeuserinfo.SetUserInfoV2(logger, userId, userInfo)
+		err = mazeuserinfo.SetUserInfoV2(logger, uint64(userId), userInfo)
 		if err != nil {
 			logger.ErrorWF("OnMazeLoginRQ SetUserInfo fail", zap.Error(err))
 			res.ErrInfo = errors.MODULE_ERROR.ToInfo()
-			return
+			return s.Response(res)
 		}
 	}
 
-	force, err = mazecalcattrredis.GetMazeForce(logger, userId)
+	force, err = mazecalcattrredis.GetMazeForce(logger, uint64(userId))
 	if err != nil {
 		logger.ErrorWF("OnMazeLoginRQ GetMazeForce fail", zap.Error(err))
 		res.ErrInfo = errors.MODULE_ERROR.ToInfo()
 		return
 	}
 
-	extra, err2 := mazecommonvalue.MakeCommonValueExtra(logger, userId, level, 0)
+	extra, err2 := mazecommonvalue.MakeCommonValueExtra(logger, uint64(userId), level, 0)
 	if err2 != nil {
 		logger.ErrorWF("OnMazeLoginRQ MakeCommonValueExtra fail", zap.Error(err2))
 		// res.ErrInfo = errors.MODULE_ERROR.ToInfo()
@@ -105,9 +106,9 @@ func OnMazeLoginRQ(logger fknet.TCPContext, shardingID uint64, rqMsg proto.Messa
 	// 	return
 	// }
 
-	commonList := mazecommonvalue.MakeAllCommonValue(logger, userId, level, exp, expMax, force, money, extra, extraExp, diamond, req.GetHeader().GetSession())
+	commonList := mazecommonvalue.MakeAllCommonValue(logger, uint64(userId), level, exp, expMax, force, money, extra, extraExp, diamond, req.GetHeader().GetSession())
 
-	mazecommonvalue.SendCommonValueIdPack(logger, userId, commonList)
+	mazecommonvalue.SendCommonValueIdPack(logger, uint64(userId), commonList)
 
-	return nil
+	return s.Response(res)
 }
