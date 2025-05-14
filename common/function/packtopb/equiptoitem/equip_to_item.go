@@ -7,8 +7,8 @@ import (
 	"gitlab.ifreetalk.com/plate/excel/auto/GMazeEquipInfoV8Cfg"
 	"gitlab.ifreetalk.com/plate/excel/auto/GMazeEquipTypeResV8Cfg"
 	"gitlab.ifreetalk.com/plate/extra/protobuf/proto"
-	"gitlab.ifreetalk.com/plate/protodef/MazeCommon"
-	"gitlab.ifreetalk.com/plate/protodef/MazeEquipSvr"
+	"gitlab.ifreetalk.com/maze-plate/protodef/MazeCommon"
+	"gitlab.ifreetalk.com/maze-plate/protodef/MazeEquipSvr"
 )
 
 func PackEquipToItem(equip *MazeEquipSvr.MazeEquipInfoSvr) (item *MazeCommon.MazeItem, err error) {

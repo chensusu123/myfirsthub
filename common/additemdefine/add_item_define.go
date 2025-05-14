@@ -12,8 +12,8 @@ import (
 	"gitlab.ifreetalk.com/plate/excel/auto/GMazeItemsV8Cfg"
 	"gitlab.ifreetalk.com/plate/freetk/fkcore/fklog"
 	"gitlab.ifreetalk.com/plate/freetk/fkserver"
-	"gitlab.ifreetalk.com/plate/protodef/MazeCommon"
-	"gitlab.ifreetalk.com/plate/protodef/MessageType"
+	"gitlab.ifreetalk.com/maze-plate/protodef/MazeCommon"
+	"gitlab.ifreetalk.com/maze-plate/protodef/MessageType"
 	"go.uber.org/zap"
 	"reflect"
 )

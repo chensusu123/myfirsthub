@@ -6,12 +6,12 @@ import (
 	"sync"
 	"time"
 
-	"gitlab.ifreetalk.com/plate/protodef/MazeEquipCache"
+	"gitlab.ifreetalk.com/maze-plate/protodef/MazeEquipCache"
 
 	"gitlab.ifreetalk.com/plate/excel/auto/GMazeEquipAttrStageV8Cfg"
 	"gitlab.ifreetalk.com/plate/excel/auto/GMazeEquipInfoV8Cfg"
 	"gitlab.ifreetalk.com/plate/freetk/fkcore/fkprometheus"
-	"gitlab.ifreetalk.com/plate/protodef/MazeEquipSvr"
+	"gitlab.ifreetalk.com/maze-plate/protodef/MazeEquipSvr"
 
 	"gitlab.ifreetalk.com/maze/maze_game_server/common/function/packtopb"
 	"gitlab.ifreetalk.com/maze/maze_game_server/excel/mazeequipaffixrandpoolv8"
@@ -27,7 +27,7 @@ import (
 	"gitlab.ifreetalk.com/plate/freetk/fkserver"
 	"gitlab.ifreetalk.com/plate/io_interface/frontcache/UserBlackDiamondFC"
 	"gitlab.ifreetalk.com/plate/io_interface/redis_interface/common/MonthlyCardRedis"
-	"gitlab.ifreetalk.com/plate/protodef/MazeGameEquip"
+	"gitlab.ifreetalk.com/maze-plate/protodef/MazeGameEquip"
 	"go.uber.org/zap"
 	"context"
 )

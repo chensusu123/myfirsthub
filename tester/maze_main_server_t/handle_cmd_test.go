@@ -8,8 +8,8 @@ import (
 	"gitlab.ifreetalk.com/maze/maze_game_server/servers/maze_main_server/process/game"
 	"gitlab.ifreetalk.com/plate/extra/protobuf/proto"
 	"gitlab.ifreetalk.com/plate/freetk/fkcore/fknet"
-	"gitlab.ifreetalk.com/plate/protodef/Common"
-	"gitlab.ifreetalk.com/plate/protodef/MazeGame"
+	"gitlab.ifreetalk.com/maze-plate/protodef/Common"
+	"gitlab.ifreetalk.com/maze-plate/protodef/MazeGame"
 )
 
 func TestOnMazeCmdRQ(t *testing.T) {

@@ -5,9 +5,9 @@ import (
 	"gitlab.ifreetalk.com/plate/extra/protobuf/proto"
 	"gitlab.ifreetalk.com/plate/freetk/common/errors"
 	"gitlab.ifreetalk.com/plate/freetk/fkcore/fklog"
-	"gitlab.ifreetalk.com/plate/protodef/MazeCollect"
-	"gitlab.ifreetalk.com/plate/protodef/MazeCollectCache"
-	"gitlab.ifreetalk.com/plate/protodef/MazeCommon"
+	"gitlab.ifreetalk.com/maze-plate/protodef/MazeCollect"
+	"gitlab.ifreetalk.com/maze-plate/protodef/MazeCollectCache"
+	"gitlab.ifreetalk.com/maze-plate/protodef/MazeCommon"
 	"go.uber.org/zap"
 )
 

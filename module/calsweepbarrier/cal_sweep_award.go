@@ -22,9 +22,9 @@ import (
 	"gitlab.ifreetalk.com/plate/excel/auto/GMazeShopV8Cfg"
 	"gitlab.ifreetalk.com/plate/extra/protobuf/proto"
 	"gitlab.ifreetalk.com/plate/freetk/fkcore/fklog"
-	"gitlab.ifreetalk.com/plate/protodef/Common"
-	"gitlab.ifreetalk.com/plate/protodef/MazeCommon"
-	"gitlab.ifreetalk.com/plate/protodef/MazeEquipSvr"
+	"gitlab.ifreetalk.com/maze-plate/protodef/Common"
+	"gitlab.ifreetalk.com/maze-plate/protodef/MazeCommon"
+	"gitlab.ifreetalk.com/maze-plate/protodef/MazeEquipSvr"
 	"go.uber.org/zap"
 )
 

@@ -16,8 +16,8 @@ import (
 	"gitlab.ifreetalk.com/plate/extra/protobuf/proto"
 	"gitlab.ifreetalk.com/plate/freetk/fkcore/fklog"
 	"gitlab.ifreetalk.com/plate/freetk/fkcore/fkprometheus"
-	"gitlab.ifreetalk.com/plate/protodef/MazeEquipCache"
-	"gitlab.ifreetalk.com/plate/protodef/MazeGameEquip"
+	"gitlab.ifreetalk.com/maze-plate/protodef/MazeEquipCache"
+	"gitlab.ifreetalk.com/maze-plate/protodef/MazeGameEquip"
 	"go.uber.org/zap"
 )
 

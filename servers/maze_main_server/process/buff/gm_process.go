@@ -14,8 +14,8 @@ import (
 	"gitlab.ifreetalk.com/plate/freetk/fkcore/fklog"
 	"gitlab.ifreetalk.com/plate/freetk/fkutil"
 	"gitlab.ifreetalk.com/plate/io_interface/redis_interface/common/CheckGM"
-	"gitlab.ifreetalk.com/plate/protodef/MazeCommon"
-	"gitlab.ifreetalk.com/plate/protodef/MazeTempBuffSvr"
+	"gitlab.ifreetalk.com/maze-plate/protodef/MazeCommon"
+	"gitlab.ifreetalk.com/maze-plate/protodef/MazeTempBuffSvr"
 	"go.uber.org/zap"
 )
 

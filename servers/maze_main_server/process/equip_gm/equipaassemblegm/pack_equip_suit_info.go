@@ -12,7 +12,7 @@ import (
 
 	"gitlab.ifreetalk.com/plate/excel/auto/GMazeEquipPosLvSuiteV8Cfg"
 	"gitlab.ifreetalk.com/plate/freetk/fkcore/fklog"
-	"gitlab.ifreetalk.com/plate/protodef/MazeEquipCache"
+	"gitlab.ifreetalk.com/maze-plate/protodef/MazeEquipCache"
 	"gitlab.ifreetalk.com/maze/maze_game_server/module/calcassembleattr"
 )
 

@@ -3,7 +3,7 @@ package mazecommonvalue
 import (
 	"gitlab.ifreetalk.com/plate/excel/auto/GMazeLevelV8Cfg"
 	"gitlab.ifreetalk.com/plate/freetk/fkcore/fklog"
-	"gitlab.ifreetalk.com/plate/protodef/MazeGame"
+	"gitlab.ifreetalk.com/maze-plate/protodef/MazeGame"
 	"go.uber.org/zap"
 )
 

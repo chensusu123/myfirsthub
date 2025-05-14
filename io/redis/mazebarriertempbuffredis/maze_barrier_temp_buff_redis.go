@@ -5,7 +5,7 @@ import (
 	"fmt"
 
 	"gitlab.ifreetalk.com/plate/extra/protobuf/proto"
-	"gitlab.ifreetalk.com/plate/protodef/MazeTempBuffSvr"
+	"gitlab.ifreetalk.com/maze-plate/protodef/MazeTempBuffSvr"
 
 	"gitlab.ifreetalk.com/plate/freetk/fkcore/fkconfig"
 	"gitlab.ifreetalk.com/plate/freetk/fkcore/fklog"

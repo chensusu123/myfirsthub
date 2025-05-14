@@ -6,7 +6,7 @@ import (
 	"gitlab.ifreetalk.com/maze/maze_game_server/io/kafka/mazeuserlevelkafka"
 	"gitlab.ifreetalk.com/maze/maze_game_server/lib/net/websocket_service"
 	"gitlab.ifreetalk.com/maze/maze_game_server/usecase/tasktimer"
-	"gitlab.ifreetalk.com/plate/protodef/MazeCollect"
+	"gitlab.ifreetalk.com/maze-plate/protodef/MazeCollect"
 )
 
 type Collect struct {

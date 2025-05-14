@@ -11,8 +11,8 @@ import (
 	"gitlab.ifreetalk.com/maze/maze_game_server/io/redis/mazecollectredis"
 	"gitlab.ifreetalk.com/maze/maze_game_server/module/mazeuserinfo"
 	"gitlab.ifreetalk.com/plate/excel/auto/GMazeBarriesOnHookV8Cfg"
-	"gitlab.ifreetalk.com/plate/protodef/MazeCollect"
-	"gitlab.ifreetalk.com/plate/protodef/MazeCollectCache"
+	"gitlab.ifreetalk.com/maze-plate/protodef/MazeCollect"
+	"gitlab.ifreetalk.com/maze-plate/protodef/MazeCollectCache"
 
 	"gitlab.ifreetalk.com/plate/extra/protobuf/proto"
 	"gitlab.ifreetalk.com/plate/freetk/common/errors"

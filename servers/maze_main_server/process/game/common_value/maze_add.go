@@ -10,9 +10,9 @@ import (
 	"gitlab.ifreetalk.com/plate/extra/protobuf/proto"
 	"gitlab.ifreetalk.com/plate/freetk/common/errors"
 	"gitlab.ifreetalk.com/plate/freetk/fkcore/fklog"
-	"gitlab.ifreetalk.com/plate/protodef/MazeCommon"
-	"gitlab.ifreetalk.com/plate/protodef/MazeCommonValueSvr"
-	"gitlab.ifreetalk.com/plate/protodef/MazeGame"
+	"gitlab.ifreetalk.com/maze-plate/protodef/MazeCommon"
+	"gitlab.ifreetalk.com/maze-plate/protodef/MazeCommonValueSvr"
+	"gitlab.ifreetalk.com/maze-plate/protodef/MazeGame"
 	"go.uber.org/zap"
 )
 

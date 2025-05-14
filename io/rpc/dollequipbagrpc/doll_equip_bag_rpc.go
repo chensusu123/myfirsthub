@@ -3,7 +3,7 @@ package dollequipbagrpc
 import (
 	"time"
 
-	"gitlab.ifreetalk.com/plate/protodef/MazeEquipSvr"
+	"gitlab.ifreetalk.com/maze-plate/protodef/MazeEquipSvr"
 
 	"gitlab.ifreetalk.com/maze/maze_game_server/servers/maze_main_server/process/equip"
 	"gitlab.ifreetalk.com/plate/extra/protobuf/proto"

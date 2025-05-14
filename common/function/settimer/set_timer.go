@@ -6,7 +6,7 @@ import (
 	"gitlab.ifreetalk.com/maze/maze_game_server/io/rpc/setseataskrpc"
 	"gitlab.ifreetalk.com/plate/extra/protobuf/proto"
 	"gitlab.ifreetalk.com/plate/freetk/fkcore/fklog"
-	"gitlab.ifreetalk.com/plate/protodef/SeaTaskSvr"
+	"gitlab.ifreetalk.com/maze-plate/protodef/SeaTaskSvr"
 )
 
 // 设置定时器

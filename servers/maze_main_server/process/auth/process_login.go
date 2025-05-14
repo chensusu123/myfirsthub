@@ -5,7 +5,7 @@ import (
 	"gitlab.ifreetalk.com/plate/freetk/common/errors"
 	"gitlab.ifreetalk.com/plate/freetk/fkcore/fknet"
 	"gitlab.ifreetalk.com/plate/freetk/fkcore/fkprometheus"
-	"gitlab.ifreetalk.com/plate/protodef/SysPackDef"
+	"gitlab.ifreetalk.com/maze-plate/protodef/SysPackDef"
 
 	"go.uber.org/zap"
 )

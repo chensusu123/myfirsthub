@@ -14,7 +14,7 @@ import (
 	"gitlab.ifreetalk.com/plate/freetk/common/errors"
 	"gitlab.ifreetalk.com/plate/freetk/fkcore/fklog"
 	"gitlab.ifreetalk.com/plate/freetk/fkcore/fkprometheus"
-	"gitlab.ifreetalk.com/plate/protodef/MazeEnergy"
+	"gitlab.ifreetalk.com/maze-plate/protodef/MazeEnergy"
 
 	"gitlab.ifreetalk.com/maze/maze_game_server/excel/mazeconfigv8"
 	"gitlab.ifreetalk.com/maze/maze_game_server/io/kafka/mazeenergyrecord"

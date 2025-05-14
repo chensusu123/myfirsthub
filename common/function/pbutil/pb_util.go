@@ -4,7 +4,7 @@ import (
 	"gitlab.ifreetalk.com/plate/excel/auto/GMazeEquipSuiteNameV8Cfg"
 	"gitlab.ifreetalk.com/plate/excel/auto/GMazeItemsV8Cfg"
 	"gitlab.ifreetalk.com/plate/freetk/fkcore/fklog"
-	"gitlab.ifreetalk.com/plate/protodef/MazeEquipCache"
+	"gitlab.ifreetalk.com/maze-plate/protodef/MazeEquipCache"
 	"go.uber.org/zap"
 	"gitlab.ifreetalk.com/maze/maze_game_server/excel/mazeequipconfigv8"
 	"gitlab.ifreetalk.com/maze/maze_game_server/excel/mazeequiptyperesv8"

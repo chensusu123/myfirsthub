@@ -15,8 +15,8 @@ import (
 	"gitlab.ifreetalk.com/plate/extra/protobuf/proto"
 	"gitlab.ifreetalk.com/plate/freetk/common/errors"
 	"gitlab.ifreetalk.com/plate/freetk/fkcore/fknet"
-	"gitlab.ifreetalk.com/plate/protodef/Common"
-	"gitlab.ifreetalk.com/plate/protodef/MazeEnergy"
+	"gitlab.ifreetalk.com/maze-plate/protodef/Common"
+	"gitlab.ifreetalk.com/maze-plate/protodef/MazeEnergy"
 )
 
 var TestUid uint64 = 9003200130206264

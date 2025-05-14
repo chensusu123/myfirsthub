@@ -8,7 +8,7 @@ package commonlogic
 
 import (
 	"gitlab.ifreetalk.com/plate/excel/auto/GMazeAttributeV8Cfg"
-	"gitlab.ifreetalk.com/plate/protodef/MazeBuffData"
+	"gitlab.ifreetalk.com/maze-plate/protodef/MazeBuffData"
 	"gitlab.ifreetalk.com/maze/maze_game_server/common/function/simpleset"
 	"gitlab.ifreetalk.com/maze/maze_game_server/common/vardef"
 	"gitlab.ifreetalk.com/maze/maze_game_server/common/function/dollattr"

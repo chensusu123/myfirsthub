@@ -7,8 +7,8 @@ import (
 
 	"gitlab.ifreetalk.com/maze/maze_game_server/io/kafka/mazecollectrecord"
 	"gitlab.ifreetalk.com/plate/freetk/fkcore/fklog"
-	"gitlab.ifreetalk.com/plate/protodef/MazeCollectCache"
-	"gitlab.ifreetalk.com/plate/protodef/MazeCommon"
+	"gitlab.ifreetalk.com/maze-plate/protodef/MazeCollectCache"
+	"gitlab.ifreetalk.com/maze-plate/protodef/MazeCommon"
 	"go.uber.org/zap"
 )
 

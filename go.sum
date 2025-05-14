@@ -1881,6 +1881,8 @@ github.com/zeebo/assert v1.3.0/go.mod h1:Pq9JiuJQpG8JLJdtkwrJESF0Foym2/D9XMU5ciN
 github.com/zeebo/xxh3 v1.0.2/go.mod h1:5NWz9Sef7zIDm2JHfFlcQvNekmcEl9ekUZQQKCYaDcA=
 github.com/zsai001/nano-ex v0.0.0-20250513093902-993404574160 h1:/xRf4UQaos1Mm/UnalNsY3L5dxoxbsvexccCoZ7XcNg=
 github.com/zsai001/nano-ex v0.0.0-20250513093902-993404574160/go.mod h1:WeoYvyTRkP8ZnzbE+sqK/ZXB0enn97CJtqcBPufmI0Y=
+gitlab.ifreetalk.com/maze-plate/protodef v0.0.0-20250514120308-80f18114a335 h1:I5WV1cOvIJWg4bg/7+FoloNxkgPbQdzJiXiz7AW6/Hc=
+gitlab.ifreetalk.com/maze-plate/protodef v0.0.0-20250514120308-80f18114a335/go.mod h1:xcrmInzqjTtBsqnftJRmoq0UY+82LRu9Gh+xm/EftcU=
 gitlab.ifreetalk.com/plate/definition v1.0.6 h1:jxAJiWFIGV5Nh4GNAySF4qNg+KzWMjg0Frv6eT1/Xzo=
 gitlab.ifreetalk.com/plate/definition v1.0.6/go.mod h1:+g0fTC+E97RYCq+8g9ABuAmTxr6OVwXxo67qxTgymIs=
 gitlab.ifreetalk.com/plate/excel v1.0.83-0.20250512070910-97290fea265a h1:BIRDcXTixPXgSwtopJTsUAjD0ZT8v6i1lNx11R7rdmA=

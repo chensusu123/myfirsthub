@@ -67,6 +67,7 @@ require (
 	github.com/twitchyliquid64/golang-asm v0.15.1 // indirect
 	github.com/xuri/efp v0.0.0-20240408161823-9ad904a10d6d // indirect
 	github.com/xuri/nfp v0.0.0-20240318013403-ab9948c2c4a7 // indirect
+	gitlab.ifreetalk.com/maze-plate/protodef v0.0.0-20250514120308-80f18114a335 // indirect
 	gitlab.ifreetalk.com/plate/definition v1.0.6 // indirect
 	go.uber.org/multierr v1.7.0 // indirect
 	golang.org/x/arch v0.0.0-20210923205945-b76863e36670 // indirect

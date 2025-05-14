@@ -10,7 +10,7 @@ import (
 	"gitlab.ifreetalk.com/maze/maze_game_server/common/additemdefine"
 	"gitlab.ifreetalk.com/maze/maze_game_server/common/structdefine"
 	"gitlab.ifreetalk.com/plate/freetk/fkserver"
-	"gitlab.ifreetalk.com/plate/protodef/MazeCommon"
+	"gitlab.ifreetalk.com/maze-plate/protodef/MazeCommon"
 	"go.uber.org/zap"
 )
 

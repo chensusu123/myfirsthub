@@ -9,8 +9,8 @@ import (
 	"go.uber.org/zap"
 
 	"gitlab.ifreetalk.com/plate/extra/protobuf/proto"
-	"gitlab.ifreetalk.com/plate/protodef/MazeCollectCache"
-	"gitlab.ifreetalk.com/plate/protodef/MazeCommon"
+	"gitlab.ifreetalk.com/maze-plate/protodef/MazeCollectCache"
+	"gitlab.ifreetalk.com/maze-plate/protodef/MazeCommon"
 )
 
 // 获取道具刷新时间

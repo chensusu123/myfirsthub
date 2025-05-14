@@ -8,8 +8,8 @@ package calcassembleattr
 
 import (
 	"gitlab.ifreetalk.com/plate/extra/protobuf/proto"
-	"gitlab.ifreetalk.com/plate/protodef/MazeBuffData"
-	"gitlab.ifreetalk.com/plate/protodef/MazeEquipCache"
+	"gitlab.ifreetalk.com/maze-plate/protodef/MazeBuffData"
+	"gitlab.ifreetalk.com/maze-plate/protodef/MazeEquipCache"
 )
 
 // 打包普通属性

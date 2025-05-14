@@ -15,9 +15,9 @@ import (
 	"gitlab.ifreetalk.com/plate/freetk/fkcore/fkconfig"
 	"gitlab.ifreetalk.com/plate/freetk/fkcore/fklog"
 	"gitlab.ifreetalk.com/plate/freetk/fkcore/fkprometheus"
-	"gitlab.ifreetalk.com/plate/protodef/MazeEnergySvr"
-	"gitlab.ifreetalk.com/plate/protodef/MazeGame"
-	"gitlab.ifreetalk.com/plate/protodef/MessageType"
+	"gitlab.ifreetalk.com/maze-plate/protodef/MazeEnergySvr"
+	"gitlab.ifreetalk.com/maze-plate/protodef/MazeGame"
+	"gitlab.ifreetalk.com/maze-plate/protodef/MessageType"
 	"go.uber.org/zap"
 )
 

@@ -9,7 +9,7 @@ package asequipsuittopb
 import (
 	"gitlab.ifreetalk.com/plate/excel/auto/GMazeEquipSuiteAttrV8Cfg"
 	"gitlab.ifreetalk.com/plate/extra/protobuf/proto"
-	"gitlab.ifreetalk.com/plate/protodef/MazeGameEquip"
+	"gitlab.ifreetalk.com/maze-plate/protodef/MazeGameEquip"
 )
 
 func PackAsEquipSuitInfo(suitKey int32) *MazeGameEquip.AsEquipSuitInfo {

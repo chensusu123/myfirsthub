@@ -4,7 +4,7 @@ package sweep
 
 import (
 	"gitlab.ifreetalk.com/plate/extra/protobuf/proto"
-	"gitlab.ifreetalk.com/plate/protodef/Common"
+	"gitlab.ifreetalk.com/maze-plate/protodef/Common"
 )
 
 func ItemsMapToList(itemsMap map[int32]int64) []*Common.Item {

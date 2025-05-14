@@ -11,8 +11,8 @@ import (
 	"gitlab.ifreetalk.com/maze/maze_game_server/lib/net/raw_pkg"
 	"gitlab.ifreetalk.com/plate/extra/protobuf/proto"
 	"gitlab.ifreetalk.com/plate/freetk/fkcore/fklog"
-	"gitlab.ifreetalk.com/plate/protodef/MazeGame"
-	"gitlab.ifreetalk.com/plate/protodef/SysPackDef"
+	"gitlab.ifreetalk.com/maze-plate/protodef/MazeGame"
+	"gitlab.ifreetalk.com/maze-plate/protodef/SysPackDef"
 	"go.uber.org/zap"
 )
 

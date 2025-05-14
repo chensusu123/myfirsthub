@@ -9,7 +9,7 @@ import (
 	"gitlab.ifreetalk.com/plate/freetk/fkcore/fknet"
 	"gitlab.ifreetalk.com/plate/freetk/fkcore/fkprometheus"
 	"gitlab.ifreetalk.com/plate/freetk/fkserver"
-	"gitlab.ifreetalk.com/plate/protodef/SeaTaskSvr"
+	"gitlab.ifreetalk.com/maze-plate/protodef/SeaTaskSvr"
 	"go.uber.org/zap"
 )
 

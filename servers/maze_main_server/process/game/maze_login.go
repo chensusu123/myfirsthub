@@ -11,7 +11,7 @@ import (
 	"gitlab.ifreetalk.com/plate/freetk/common/errors"
 	"gitlab.ifreetalk.com/plate/freetk/fkcore/fklog"
 	"gitlab.ifreetalk.com/plate/freetk/fkcore/fkprometheus"
-	"gitlab.ifreetalk.com/plate/protodef/MazeGame"
+	"gitlab.ifreetalk.com/maze-plate/protodef/MazeGame"
 	"go.uber.org/zap"
 )
 

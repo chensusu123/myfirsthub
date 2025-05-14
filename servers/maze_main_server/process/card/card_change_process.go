@@ -18,8 +18,8 @@ import (
 	"gitlab.ifreetalk.com/plate/freetk/fkcore/fklog"
 	"gitlab.ifreetalk.com/plate/freetk/fkcore/fkprometheus"
 	"gitlab.ifreetalk.com/plate/io_interface/redis_interface/common/commonmustarriveredis"
-	"gitlab.ifreetalk.com/plate/protodef/MazeBuffData"
-	"gitlab.ifreetalk.com/plate/protodef/MazeCard"
+	"gitlab.ifreetalk.com/maze-plate/protodef/MazeBuffData"
+	"gitlab.ifreetalk.com/maze-plate/protodef/MazeCard"
 	"go.uber.org/zap"
 )
 

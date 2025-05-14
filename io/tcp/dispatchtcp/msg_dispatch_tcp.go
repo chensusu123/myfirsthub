@@ -15,7 +15,7 @@ import (
 	"gitlab.ifreetalk.com/plate/freetk/fkcore/fknet"
 	"gitlab.ifreetalk.com/plate/freetk/fkcore/fktcpclient"
 	"gitlab.ifreetalk.com/plate/freetk/fkutil"
-	"gitlab.ifreetalk.com/plate/protodef/KafkaMsgNotify"
+	"gitlab.ifreetalk.com/maze-plate/protodef/KafkaMsgNotify"
 	"go.uber.org/zap"
 	"gitlab.ifreetalk.com/maze/maze_game_server/common/constdef"
 )

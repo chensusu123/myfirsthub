@@ -9,7 +9,7 @@ import (
 	"gitlab.ifreetalk.com/plate/freetk/fkcore/fklog"
 	"gitlab.ifreetalk.com/plate/freetk/fkcore/fkredis"
 	"gitlab.ifreetalk.com/plate/freetk/fkcore/fkredis/redis"
-	"gitlab.ifreetalk.com/plate/protodef/MazeBarrierCache"
+	"gitlab.ifreetalk.com/maze-plate/protodef/MazeBarrierCache"
 	"go.uber.org/zap"
 )
 

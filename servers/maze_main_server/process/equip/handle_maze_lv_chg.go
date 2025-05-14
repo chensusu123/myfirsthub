@@ -17,7 +17,7 @@ import (
 	"gitlab.ifreetalk.com/plate/excel/auto/GMazeLevelV8Cfg"
 	"gitlab.ifreetalk.com/plate/extra/protobuf/proto"
 	"gitlab.ifreetalk.com/plate/freetk/fkcore/fklog"
-	"gitlab.ifreetalk.com/plate/protodef/MazeBuffData"
+	"gitlab.ifreetalk.com/maze-plate/protodef/MazeBuffData"
 	"go.uber.org/zap"
 )
 

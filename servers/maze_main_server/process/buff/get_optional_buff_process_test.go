@@ -8,8 +8,8 @@ import (
 	"gitlab.ifreetalk.com/maze/maze_game_server/excel/mazeenergyaffixlibraryv8config"
 	"gitlab.ifreetalk.com/plate/extra/protobuf/proto"
 	"gitlab.ifreetalk.com/plate/freetk/fkcore/fknet"
-	"gitlab.ifreetalk.com/plate/protodef/MazeTempBuff"
-	"gitlab.ifreetalk.com/plate/protodef/MazeTempBuffSvr"
+	"gitlab.ifreetalk.com/maze-plate/protodef/MazeTempBuff"
+	"gitlab.ifreetalk.com/maze-plate/protodef/MazeTempBuffSvr"
 	"go.uber.org/zap"
 )
 

@@ -9,7 +9,7 @@ import (
 	"gitlab.ifreetalk.com/plate/freetk/fkcore/fklog"
 	"gitlab.ifreetalk.com/plate/freetk/fkcore/fkredis"
 	"gitlab.ifreetalk.com/plate/freetk/fkcore/fkredis/redis"
-	"gitlab.ifreetalk.com/plate/protodef/MazeTempBuffSvr"
+	"gitlab.ifreetalk.com/maze-plate/protodef/MazeTempBuffSvr"
 	"go.uber.org/zap"
 )
 

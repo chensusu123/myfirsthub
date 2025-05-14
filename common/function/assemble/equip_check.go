@@ -8,7 +8,7 @@ import (
 	"gitlab.ifreetalk.com/plate/excel/auto/GMazeEquipPosRankV8Cfg"
 	"gitlab.ifreetalk.com/plate/extra/protobuf/proto"
 	"gitlab.ifreetalk.com/plate/freetk/fkutil"
-	"gitlab.ifreetalk.com/plate/protodef/MazeEquipCache"
+	"gitlab.ifreetalk.com/maze-plate/protodef/MazeEquipCache"
 )
 
 // 是否有效的装备位

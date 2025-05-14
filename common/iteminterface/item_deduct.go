@@ -11,8 +11,8 @@ import (
 	"gitlab.ifreetalk.com/maze/maze_game_server/common/structdefine"
 	"gitlab.ifreetalk.com/plate/freetk/common/errors"
 	"gitlab.ifreetalk.com/plate/freetk/fkserver"
-	"gitlab.ifreetalk.com/plate/protodef/MazeCommon"
-	"gitlab.ifreetalk.com/plate/protodef/MessageType"
+	"gitlab.ifreetalk.com/maze-plate/protodef/MazeCommon"
+	"gitlab.ifreetalk.com/maze-plate/protodef/MessageType"
 	"go.uber.org/zap"
 )
 

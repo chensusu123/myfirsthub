@@ -14,7 +14,7 @@ import (
 	"gitlab.ifreetalk.com/plate/freetk/fkcore/fknet"
 	"gitlab.ifreetalk.com/plate/freetk/fkcore/fkprometheus"
 	"gitlab.ifreetalk.com/plate/freetk/fkserver"
-	"gitlab.ifreetalk.com/plate/protodef/KafkaMsgNotify"
+	"gitlab.ifreetalk.com/maze-plate/protodef/KafkaMsgNotify"
 	"go.uber.org/zap"
 )
 

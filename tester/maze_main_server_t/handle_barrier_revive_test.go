@@ -17,10 +17,10 @@ import (
 	"gitlab.ifreetalk.com/plate/extra/protobuf/proto"
 	"gitlab.ifreetalk.com/plate/freetk/fkcore/fklog"
 	"gitlab.ifreetalk.com/plate/freetk/fkcore/fknet"
-	"gitlab.ifreetalk.com/plate/protodef/Common"
-	"gitlab.ifreetalk.com/plate/protodef/MazeBarrierCache"
-	"gitlab.ifreetalk.com/plate/protodef/MazeCommon"
-	"gitlab.ifreetalk.com/plate/protodef/MazeGame"
+	"gitlab.ifreetalk.com/maze-plate/protodef/Common"
+	"gitlab.ifreetalk.com/maze-plate/protodef/MazeBarrierCache"
+	"gitlab.ifreetalk.com/maze-plate/protodef/MazeCommon"
+	"gitlab.ifreetalk.com/maze-plate/protodef/MazeGame"
 )
 
 func TestOnMazeBarrierRebornRQ(t *testing.T) {

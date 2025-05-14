@@ -7,8 +7,8 @@ package mail_send_queue
 //	"gitlab.ifreetalk.com/plate/freetk/fkcore/fkconfig"
 //	"gitlab.ifreetalk.com/plate/freetk/fkcore/fklog"
 //	"gitlab.ifreetalk.com/plate/freetk/fkcore/fkredis"
-//	"gitlab.ifreetalk.com/plate/protodef/MailBoxSvr"
-//	"gitlab.ifreetalk.com/plate/protodef/MazeMail"
+//	"gitlab.ifreetalk.com/maze-plate/protodef/MailBoxSvr"
+//	"gitlab.ifreetalk.com/maze-plate/protodef/MazeMail"
 //	"go.uber.org/zap"
 //)
 //

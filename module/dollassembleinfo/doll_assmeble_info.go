@@ -5,7 +5,7 @@ import (
 	"gitlab.ifreetalk.com/plate/extra/protobuf/proto"
 	"gitlab.ifreetalk.com/plate/freetk/common/errors"
 	"gitlab.ifreetalk.com/plate/freetk/fkcore/fklog"
-	"gitlab.ifreetalk.com/plate/protodef/MazeEquipCache"
+	"gitlab.ifreetalk.com/maze-plate/protodef/MazeEquipCache"
 	"go.uber.org/zap"
 	"gitlab.ifreetalk.com/maze/maze_game_server/io/redis/dollassembleredis"
 	"gitlab.ifreetalk.com/maze/maze_game_server/module/calcassembleattr"

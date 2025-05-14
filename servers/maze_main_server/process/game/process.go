@@ -5,7 +5,7 @@ import (
 	"gitlab.ifreetalk.com/maze/maze_game_server/io/kafka/mazeattrmsg"
 	"gitlab.ifreetalk.com/maze/maze_game_server/io/kafka/mazetempbuffchgmsg"
 	"gitlab.ifreetalk.com/maze/maze_game_server/lib/net/websocket_service"
-	"gitlab.ifreetalk.com/plate/protodef/MazeGame"
+	"gitlab.ifreetalk.com/maze-plate/protodef/MazeGame"
 )
 
 type Game struct {

@@ -12,7 +12,7 @@ import (
 	"gitlab.ifreetalk.com/plate/freetk/fkcore/fkprometheus"
 	"gitlab.ifreetalk.com/plate/freetk/fkcore/fkrpc"
 	"gitlab.ifreetalk.com/plate/freetk/fkserver"
-	"gitlab.ifreetalk.com/plate/protodef/MazeAttrCalcSvr"
+	"gitlab.ifreetalk.com/maze-plate/protodef/MazeAttrCalcSvr"
 	"go.uber.org/zap"
 )
 

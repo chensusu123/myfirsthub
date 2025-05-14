@@ -4,7 +4,7 @@ import (
 	"sort"
 
 	"gitlab.ifreetalk.com/plate/excel/auto/GMazeEquipAffixOrderV8Cfg"
-	"gitlab.ifreetalk.com/plate/protodef/MazeGameEquip"
+	"gitlab.ifreetalk.com/maze-plate/protodef/MazeGameEquip"
 
 	"gitlab.ifreetalk.com/plate/excel/auto/GMazeAttributeV8Cfg"
 	"gitlab.ifreetalk.com/plate/excel/auto/GMazeEquipConfigV8Cfg"
@@ -16,7 +16,7 @@ import (
 	"gitlab.ifreetalk.com/plate/excel/auto/GMazeAttrSpDescV8Cfg"
 	"gitlab.ifreetalk.com/plate/excel/auto/GMazeEquipInfoV8Cfg"
 	"gitlab.ifreetalk.com/plate/extra/protobuf/proto"
-	"gitlab.ifreetalk.com/plate/protodef/MazeEquipCache"
+	"gitlab.ifreetalk.com/maze-plate/protodef/MazeEquipCache"
 	"gitlab.ifreetalk.com/maze/maze_game_server/common/function/pbutil"
 	"gitlab.ifreetalk.com/maze/maze_game_server/common/constdef"
 	"gitlab.ifreetalk.com/maze/maze_game_server/common/function/randfuncs"

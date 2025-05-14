@@ -18,10 +18,10 @@ import (
 	"gitlab.ifreetalk.com/plate/freetk/fkcore/fklog"
 	"gitlab.ifreetalk.com/plate/freetk/fkcore/fknet"
 	"gitlab.ifreetalk.com/plate/freetk/fkcore/fkprometheus"
-	"gitlab.ifreetalk.com/plate/protodef/MazeCommon"
-	"gitlab.ifreetalk.com/plate/protodef/MazeTempBuff"
-	"gitlab.ifreetalk.com/plate/protodef/MazeTempBuffSvr"
-	"gitlab.ifreetalk.com/plate/protodef/MessageType"
+	"gitlab.ifreetalk.com/maze-plate/protodef/MazeCommon"
+	"gitlab.ifreetalk.com/maze-plate/protodef/MazeTempBuff"
+	"gitlab.ifreetalk.com/maze-plate/protodef/MazeTempBuffSvr"
+	"gitlab.ifreetalk.com/maze-plate/protodef/MessageType"
 	"go.uber.org/zap"
 )
 

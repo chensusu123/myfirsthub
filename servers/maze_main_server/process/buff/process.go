@@ -3,7 +3,7 @@ package buff
 import (
 	"gitlab.ifreetalk.com/maze/maze_game_server/io/kafka/mazebarrieruserkafka"
 	"gitlab.ifreetalk.com/maze/maze_game_server/lib/net/websocket_service"
-	"gitlab.ifreetalk.com/plate/protodef/MazeTempBuff"
+	"gitlab.ifreetalk.com/maze-plate/protodef/MazeTempBuff"
 )
 
 /**

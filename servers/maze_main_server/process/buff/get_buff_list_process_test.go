@@ -13,7 +13,7 @@ import (
 	"gitlab.ifreetalk.com/plate/freetk/fkcore/fknet"
 	"gitlab.ifreetalk.com/plate/freetk/fkserver/frontcache_service"
 	"gitlab.ifreetalk.com/plate/freetk/fktestutil/testio"
-	"gitlab.ifreetalk.com/plate/protodef/MazeTempBuff"
+	"gitlab.ifreetalk.com/maze-plate/protodef/MazeTempBuff"
 )
 
 /**

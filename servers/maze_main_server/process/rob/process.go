@@ -7,7 +7,7 @@ import (
 	"gitlab.ifreetalk.com/plate/freetk/fkcore/fklog"
 	"gitlab.ifreetalk.com/maze/maze_game_server/lib/net/websocket_service"
 	"gitlab.ifreetalk.com/plate/freetk/fkutil"
-	"gitlab.ifreetalk.com/plate/protodef/MazeRobGuaJi"
+	"gitlab.ifreetalk.com/maze-plate/protodef/MazeRobGuaJi"
 	"go.uber.org/zap"
 	"net/http"
 	"time"

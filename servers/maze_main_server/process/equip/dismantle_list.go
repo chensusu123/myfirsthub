@@ -7,7 +7,7 @@ import (
 	"gitlab.ifreetalk.com/plate/freetk/fkcore/fknet"
 	"gitlab.ifreetalk.com/plate/freetk/fkcore/fkprometheus"
 	"gitlab.ifreetalk.com/plate/freetk/fkserver"
-	"gitlab.ifreetalk.com/plate/protodef/DollEquipDismantle"
+	"gitlab.ifreetalk.com/maze-plate/protodef/DollEquipDismantle"
 	"go.uber.org/zap"
 )
 

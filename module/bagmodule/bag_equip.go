@@ -1,7 +1,7 @@
 package bagmodule
 
 import (
-	"gitlab.ifreetalk.com/plate/protodef/MazeEquipCache"
+	"gitlab.ifreetalk.com/maze-plate/protodef/MazeEquipCache"
 )
 
 type MainBagEquip struct {
