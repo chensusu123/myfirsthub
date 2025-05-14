@@ -8,14 +8,15 @@ package additemdefine
 
 import (
 	"fmt"
-	"gitlab.ifreetalk.com/plate/excel/auto/GItemsCfg"
+	"reflect"
+
+	"gitlab.ifreetalk.com/maze/maze_game_server/common/structdefine"
+	"gitlab.ifreetalk.com/plate/excel/auto/GMazeItemsV8Cfg"
 	"gitlab.ifreetalk.com/plate/freetk/fkcore/fklog"
 	"gitlab.ifreetalk.com/plate/freetk/fkserver"
 	"gitlab.ifreetalk.com/plate/protodef/MazeCommon"
 	"gitlab.ifreetalk.com/plate/protodef/MessageType"
 	"go.uber.org/zap"
-	"reflect"
-	"gitlab.ifreetalk.com/maze/maze_game_server/common/structdefine"
 )
 
 type AddItemOption struct {
@@ -120,10 +121,10 @@ func (reg *RegisterInfo) GetClassByID(logger fklog.FKLogI, itemID int32) (v Item
 		err = fmt.Errorf("item id 0")
 		return
 	}
-	itemCfg := GItemsCfg.Get(itemID)
+	itemCfg := GMazeItemsV8Cfg.Get(itemID)
 	if itemCfg == nil {
 		logger.ErrorWF("GetClassByID not find item", zap.Int32("itemID", itemID))
-		return nil, fmt.Errorf("GItemsCfg nil %d", itemID)
+		return nil, fmt.Errorf("GMazeItemsV8Cfg nil %d", itemID)
 	}
 
 	ok := false

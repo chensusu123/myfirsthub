@@ -9,7 +9,7 @@ package additemdefine
 import (
 	"fmt"
 	"gitlab.ifreetalk.com/maze/maze_game_server/common/structdefine"
-	"gitlab.ifreetalk.com/plate/excel/auto/GItemsCfg"
+	"gitlab.ifreetalk.com/plate/excel/auto/GMazeItemsV8Cfg"
 	"gitlab.ifreetalk.com/plate/freetk/fkcore/fklog"
 	"gitlab.ifreetalk.com/plate/freetk/fkserver"
 	"gitlab.ifreetalk.com/plate/protodef/MazeCommon"
@@ -19,8 +19,8 @@ import (
 )
 
 type AddItemOption struct {
-	OpType      int32                                         /// 添加类型 ENUM_OP_TYPE,必填
-	TradeNumber uint64                                        /// 交易流水号
+	OpType      int32                                         // / 添加类型 ENUM_OP_TYPE,必填
+	TradeNumber uint64                                        // / 交易流水号
 	RegIns      *RegisterInfo                                 `json:"-"` // 物品管理注册, 有的业务需要根据情况 再次添加物品
 	CheckResMap map[ItemClassProcess]*structdefine.AddItemRes `json:"-"` // 提前校验所有物品上限，如果有该值则不再校验
 }
@@ -120,10 +120,10 @@ func (reg *RegisterInfo) GetClassByID(logger fklog.FKLogI, itemID int32) (v Item
 		err = fmt.Errorf("item id 0")
 		return
 	}
-	itemCfg := GItemsCfg.Get(itemID)
+	itemCfg := GMazeItemsV8Cfg.Get(itemID)
 	if itemCfg == nil {
 		logger.ErrorWF("GetClassByID not find item", zap.Int32("itemID", itemID))
-		return nil, fmt.Errorf("GItemsCfg nil %d", itemID)
+		return nil, fmt.Errorf("GMazeItemsV8Cfg nil %d", itemID)
 	}
 
 	ok := false
