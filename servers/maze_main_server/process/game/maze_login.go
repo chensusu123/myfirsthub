@@ -8,7 +8,6 @@ import (
 	"gitlab.ifreetalk.com/maze/maze_game_server/module/mazemoney"
 	"gitlab.ifreetalk.com/maze/maze_game_server/module/mazeuserinfo"
 	"gitlab.ifreetalk.com/plate/excel/auto/GMazeLevelV8Cfg"
-	"gitlab.ifreetalk.com/plate/extra/protobuf/proto"
 	"gitlab.ifreetalk.com/plate/freetk/common/errors"
 	"gitlab.ifreetalk.com/plate/freetk/fkcore/fklog"
 	"gitlab.ifreetalk.com/plate/freetk/fkcore/fkprometheus"
@@ -16,11 +15,11 @@ import (
 	"go.uber.org/zap"
 )
 
-func (g *Game) OnMazeLoginRQ(s *session.Session, req *MazeGame.MazeLoginRQ, rsMsg proto.Message) (err error) {
+func (g *Game) OnMazeLoginRQ(s *session.Session, req *MazeGame.MazeLoginRQ) (err error) {
 	fkprometheus.InfoPMT("OnMazeLoginRQ")()
 	logger := fklog.AppLogger().Clone("game")
 
-	res := rsMsg.(*MazeGame.MazeLoginRS)
+	res := &MazeGame.MazeLoginRS{}
 
 	logger.InfoWF("OnMazeLoginRQ start", zap.Any("req", req))
 	defer func() {
@@ -32,7 +31,6 @@ func (g *Game) OnMazeLoginRQ(s *session.Session, req *MazeGame.MazeLoginRQ, rsMs
 	res.MazeVersion = req.MazeVersion
 
 	userId := req.GetHeader().GetSharding()
-	s.Bind(int64(userId))
 
 	var level, exp, expMax, force, money, extra, extraExp, diamond int64
 	var isInit bool
@@ -109,6 +107,10 @@ func (g *Game) OnMazeLoginRQ(s *session.Session, req *MazeGame.MazeLoginRQ, rsMs
 	commonList := mazecommonvalue.MakeAllCommonValue(logger, uint64(userId), level, exp, expMax, force, money, extra, extraExp, diamond, req.GetHeader().GetSession())
 
 	mazecommonvalue.SendCommonValueIdPack(logger, uint64(userId), commonList)
+
+	// 用户登录成功后，将UserID绑定到会话上，方便后续操作
+	// TODO 这个操作应该在验证成功后执行，待调整
+	s.Bind(userId)
 
 	return s.Response(res)
 }
