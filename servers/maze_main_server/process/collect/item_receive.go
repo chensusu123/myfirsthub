@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"time"
 
+	"github.com/lonng/nano/session"
 	"gitlab.ifreetalk.com/maze/maze_game_server/io/kafka/mazecollectrecord"
 
 	"gitlab.ifreetalk.com/maze/maze_game_server/common/function/gentradeno"
@@ -16,43 +17,44 @@ import (
 	"gitlab.ifreetalk.com/plate/extra/protobuf/proto"
 	"gitlab.ifreetalk.com/plate/freetk/common/errors"
 	"gitlab.ifreetalk.com/plate/freetk/fkcore/fklog"
-	"gitlab.ifreetalk.com/plate/freetk/fkcore/fknet"
-	"gitlab.ifreetalk.com/plate/freetk/fkserver"
 	"go.uber.org/zap"
 )
 
 // 道具领取
-func OnMazeCollectItemReceiveRQ(ctx fknet.TCPContext, userId uint64, rq proto.Message, rs proto.Message) (err error) {
-	req := rq.(*MazeCollect.MazeCollectItemReceiveRQ)
-	res := rs.(*MazeCollect.MazeCollectItemReceiveRS)
+func (c *Collect) OnMazeCollectItemReceiveRQ(s *session.Session, req *MazeCollect.MazeCollectItemReceiveRQ) (err error) {
+
+	logger := fklog.AppLogger().Clone("collect")
+	res := &MazeCollect.MazeCollectItemReceiveRS{}
 	res.Header = req.Header
 	res.ErrInfo = errors.NO_ERROR
-	userCtx := fkserver.UserContext{UserID: userId, FKLogI: ctx.FKLogI, Header: req.Header, Context: ctx.Context}
 
-	ctx.InfoWF("OnMazeCollectItemReceiveRQ start", zap.Any("req", req))
+	userId := uint64(s.UID())
+
+	logger.InfoWF("OnMazeCollectItemReceiveRQ start", zap.Any("req", req))
 	defer func() {
-		ctx.InfoWF("OnMazeCollectItemReceiveRQ end", zap.Any("res", res))
+		err = s.Response(res)
+		logger.InfoWF("OnMazeCollectItemReceiveRQ end", zap.Any("res", res))
 	}()
 
 	// 是否已经初始化
-	collectInfo, err := mazecollectredis.GetCollectInfo(ctx, userId)
+	collectInfo, err := mazecollectredis.GetCollectInfo(logger, userId)
 	if err != nil {
-		ctx.ErrorWF("OnMazeCollectItemReceiveRQ GetCollectInfo error",
+		logger.ErrorWF("OnMazeCollectItemReceiveRQ GetCollectInfo error",
 			zap.Any("userId", userId),
 			zap.Error(err))
 		return
 	}
 
-	userInfo, err := mazeuserinfo.GetUserInfoV2(ctx, userId)
+	userInfo, err := mazeuserinfo.GetUserInfoV2(logger, userId)
 	if err != nil {
-		ctx.ErrorWF("OnMazeCollectItemReceiveRQ GetUserInfoV2", zap.Error(err))
+		logger.ErrorWF("OnMazeCollectItemReceiveRQ GetUserInfoV2", zap.Error(err))
 		res.ErrInfo = errors.MODULE_ERROR.ToInfo()
 		return err
 	}
 
 	// 确保领取时道具产出是正确的
 	if !CheckReceiveItems(collectInfo) {
-		ctx.ErrorWF("OnMazeCollectItemReceiveRQ CheckReceiveItems",
+		logger.ErrorWF("OnMazeCollectItemReceiveRQ CheckReceiveItems",
 			zap.Int64("nowSecond", time.Now().Unix()), zap.Any("collectInfo", collectInfo))
 		res.ErrInfo = errors.MODULE_ERROR.ToInfo()
 		return
@@ -61,9 +63,9 @@ func OnMazeCollectItemReceiveRQ(ctx fknet.TCPContext, userId uint64, rq proto.Me
 	rqItems := req.GetItems()
 
 	// 已收集道具
-	collectItems, remainItems := GetUserItemsAndRemains(ctx, collectInfo.GetItems())
+	collectItems, remainItems := GetUserItemsAndRemains(logger, collectInfo.GetItems())
 	if err != nil {
-		ctx.ErrorWF("OnMazeCollectItemReceiveRQ GetUserItemsAndRemains", zap.Error(err))
+		logger.ErrorWF("OnMazeCollectItemReceiveRQ GetUserItemsAndRemains", zap.Error(err))
 		res.ErrInfo = errors.MODULE_ERROR.ToInfo()
 		return
 	}
@@ -75,7 +77,7 @@ func OnMazeCollectItemReceiveRQ(ctx fknet.TCPContext, userId uint64, rq proto.Me
 		addItems[item.GetItemId()] = item.GetCount()
 	}
 	if len(addItems) == 0 {
-		ctx.WarnWF("OnMazeCollectItemReceiveRQ no items",
+		logger.WarnWF("OnMazeCollectItemReceiveRQ no items",
 			zap.Any("rqItems", rqItems), zap.Any("collectInfo", collectInfo))
 		res.ErrInfo = errors.MODULE_ERROR.Wrap("没有可领取道具")
 		return
@@ -86,7 +88,7 @@ func OnMazeCollectItemReceiveRQ(ctx fknet.TCPContext, userId uint64, rq proto.Me
 		for _, rqItem := range rqItems {
 			rqItemId, rqItemCount := rqItem.GetItemId(), rqItem.GetCount()
 			if svrItemCount, ok := addItems[rqItemId]; !ok || svrItemCount < rqItemCount {
-				ctx.ErrorWF("OnMazeCollectItemReceiveRQ rq items invalid", zap.Any("itemId", rqItemId),
+				logger.ErrorWF("OnMazeCollectItemReceiveRQ rq items invalid", zap.Any("itemId", rqItemId),
 					zap.Any("reItemCount", rqItemCount), zap.Any("svrItemCount", svrItemCount), zap.Any("exist", ok))
 				res.ErrInfo = errors.MODULE_ERROR.Wrap("道具参数校验失败")
 				return
@@ -96,33 +98,33 @@ func OnMazeCollectItemReceiveRQ(ctx fknet.TCPContext, userId uint64, rq proto.Me
 
 	// 清理已收集道具
 	now := time.Now().Unix()
-	resetCollectInfo, err := ResetMazeCollect(ctx, userId, now, collectInfo, remainItems)
+	resetCollectInfo, err := ResetMazeCollect(logger, userId, now, collectInfo, remainItems)
 	if err != nil {
-		ctx.ErrorWF("OnMazeCollectItemReceiveRQ ResetMazeCollect", zap.Error(err))
+		logger.ErrorWF("OnMazeCollectItemReceiveRQ ResetMazeCollect", zap.Error(err))
 		res.ErrInfo = errors.DB_SAVE_ERROR.Wrap("服务器繁忙")
 		return
 	}
-	ctx.InfoWF("OnMazeCollectItemReceiveRQ ResetMazeCollect",
+	logger.InfoWF("OnMazeCollectItemReceiveRQ ResetMazeCollect",
 		zap.Any("old collect info", collectInfo), zap.Any("reset collect info", resetCollectInfo))
 
 	res.FreshTime = proto.Int64(GetFreshTime(resetCollectInfo))
 
 	tradeNo := gentradeno.GetTradeNum()
 	items := Map2Common(addItems)
-	errInfo := gentradeno.AddItemEx(userCtx, userCtx.UserID, 692, tradeNo, req.Header, items...)
+	errInfo := gentradeno.AddItemEx(logger, userId, 692, tradeNo, req.Header, items...)
 	if errInfo != nil {
-		ctx.ErrorWF("GetAllEquipDismantleAward AddItemEx fail", zap.Any("items", items))
+		logger.ErrorWF("GetAllEquipDismantleAward AddItemEx fail", zap.Any("items", items))
 		//res.ErrInfo = errInfo
 		//return nil
 	}
 
-	mazeCollectInfoPb, err := MazeCollectToCliPB(ctx, resetCollectInfo, userInfo.PassBarrier)
+	mazeCollectInfoPb, err := MazeCollectToCliPB(logger, resetCollectInfo, userInfo.PassBarrier)
 	if err != nil {
-		ctx.ErrorWF("ItemCollect MazeCollectToCliPB err", zap.Any("collectInfo", collectInfo), zap.Error(err))
+		logger.ErrorWF("ItemCollect MazeCollectToCliPB err", zap.Any("collectInfo", collectInfo), zap.Error(err))
 		return
 	}
 	res.MazeCollectInfo = mazeCollectInfoPb
-	PushDollMazeCollectInfoLog(userCtx, userId, resetCollectInfo, collectInfo.GetLastTime(), 0, mazecollectrecord.MazeCollectReceive, tradeNo, items, 0)
+	PushDollMazeCollectInfoLog(logger, userId, resetCollectInfo, collectInfo.GetLastTime(), 0, mazecollectrecord.MazeCollectReceive, tradeNo, items, 0)
 	return
 }
 

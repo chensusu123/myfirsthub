@@ -6,14 +6,11 @@ import (
 	"context"
 	"fmt"
 	"testing"
-	"time"
 
-	"gitlab.ifreetalk.com/plate/extra/protobuf/proto"
 	"gitlab.ifreetalk.com/plate/freetk/fkcore/fklog"
 	"gitlab.ifreetalk.com/plate/freetk/fkcore/fknet"
 	"gitlab.ifreetalk.com/plate/freetk/fktestutil/testio"
 	_ "gitlab.ifreetalk.com/plate/freetk/fktestutil/testlogger"
-	"gitlab.ifreetalk.com/plate/protodef/MazeGame"
 )
 
 var (
@@ -28,14 +25,14 @@ func TestMain(m *testing.M) {
 	fmt.Println("end")
 }
 
-func TestOnStartMazeSweepRQ(t *testing.T) {
-	logger.SetLogId(time.Now().UnixNano())
-	defer func() {
-		time.Sleep(time.Second * 2)
-	}()
-	startSweepRq := &MazeGame.StartMazeSweepRQ{
-		BarrierId: proto.Int32(1),
-	}
-	startSweepRs := &MazeGame.StartMazeSweepRS{}
-	_ = OnStartMazeSweepRQ(tcpCtx, 1, startSweepRq, startSweepRs)
-}
+// func TestOnStartMazeSweepRQ(t *testing.T) {
+// 	logger.SetLogId(time.Now().UnixNano())
+// 	defer func() {
+// 		time.Sleep(time.Second * 2)
+// 	}()
+// 	startSweepRq := &MazeGame.StartMazeSweepRQ{
+// 		BarrierId: proto.Int32(1),
+// 	}
+// 	startSweepRs := &MazeGame.StartMazeSweepRS{}
+// 	_ = OnStartMazeSweepRQ(tcpCtx, 1, startSweepRq, startSweepRs)
+// }

@@ -7,14 +7,23 @@
 package energy
 
 import (
+	"github.com/lonng/nano/component"
 	"gitlab.ifreetalk.com/maze/maze_game_server/lib/net/websocket_service"
 	"gitlab.ifreetalk.com/plate/protodef/MazeEnergy"
 )
 
+type Energy struct {
+	component.Base
+}
+
+func NewEnergy() *Energy {
+	return &Energy{}
+}
+
 func RegTcpHandler() {
 	// 迷宫体力查询
 	websocket_service.RegProcSimple(16240, &MazeEnergy.QueryMazeEnergyRQ{},
-		16241, &MazeEnergy.QueryMazeEnergyRS{}, OnQueryMazeEnergyRQ)
+		16241, &MazeEnergy.QueryMazeEnergyRS{}, nil /* OnQueryMazeEnergyRQ */)
 
 }
 
