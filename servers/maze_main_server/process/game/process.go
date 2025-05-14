@@ -45,13 +45,13 @@ func RegTcpHandler() {
 	websocket_service.RegProcSimple(
 		16208, &MazeGame.BarrierOpenBoxRQ{},
 		16209, &MazeGame.BarrierOpenBoxRS{},
-		OnBarrierOpenBoxRQ)
+		nil /* OnBarrierOpenBoxRQ */)
 
 	// 人偶版本迷宫进出关卡RQ
 	websocket_service.RegProcSimple(
 		16210, &MazeGame.MazeBarrierEnterRQ{},
 		16211, &MazeGame.MazeBarrierEnterRS{},
-		OnMazeBarrierEnterRQ)
+		nil /* OnMazeBarrierEnterRQ */)
 
 	// 人偶版本迷宫进出关卡区域RQ
 	// websocket_service.RegProcSimple(
@@ -69,7 +69,7 @@ func RegTcpHandler() {
 	websocket_service.RegProcSimple(
 		16212, &MazeGame.BarrierDeathRQ{},
 		16213, &MazeGame.BarrierDeathRS{},
-		OnMazeBarrierDeathRQ)
+		nil /* OnMazeBarrierDeathRQ */)
 
 	// 人偶版本迷宫查询关卡区域RQ
 	// websocket_service.RegProcSimple(
@@ -83,7 +83,7 @@ func RegTcpHandler() {
 
 	// 处理装备命令
 	_ = websocket_service.RegProcSimple(16218, &MazeGame.SendDollMazeCmdRQ{},
-		16219, &MazeGame.SendDollMazeCmdRS{}, OnSendDollMazeCmdRQ)
+		16219, &MazeGame.SendDollMazeCmdRS{}, nil /* OnSendDollMazeCmdRQ */)
 
 	// 人偶版本迷宫上报闲置装备数量RQ
 	// websocket_service.RegProcSimple(
@@ -101,31 +101,31 @@ func RegTcpHandler() {
 	websocket_service.RegProcSimple(
 		16214, &MazeGame.ReportDataRQ{},
 		16215, &MazeGame.ReportDataRS{},
-		OnReportDataRQ)
+		nil /* OnReportDataRQ */)
 
 	// 打怪上报申请加装备
 	websocket_service.RegProcSimple(
 		16216, &MazeGame.ReportAwardFoeEquipRQ{},
 		16217, &MazeGame.ReportAwardFoeEquipRS{},
-		OnReportAwardFoeEquipRQ)
+		nil /* OnReportAwardFoeEquipRQ */)
 
 	// 关卡列表
 	websocket_service.RegProcSimple(
 		16251, &MazeGame.MazeBarrierListRQ{},
 		16252, &MazeGame.MazeBarrierListRS{},
-		OnMazeBarrierListRQ)
+		nil /* OnMazeBarrierListRQ */)
 
 	// 通关
 	websocket_service.RegProcSimple(
 		16253, &MazeGame.MazeBarrierPassRQ{},
 		16254, &MazeGame.MazeBarrierPassRS{},
-		OnMazeBarrierPassRQ)
+		nil /* OnMazeBarrierPassRQ */)
 
 	// 挑战复活
 	websocket_service.RegProcSimple(
 		16269, &MazeGame.MazeBarrierRebornRQ{},
 		16270, &MazeGame.MazeBarrierRebornRS{},
-		OnMazeBarrierRebornRQ)
+		nil /* OnMazeBarrierRebornRQ */)
 }
 
 func RegisterRpcPackProcessor() {

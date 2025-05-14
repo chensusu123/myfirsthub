@@ -4,6 +4,7 @@ import (
 	"strings"
 	"time"
 
+	"github.com/lonng/nano/session"
 	"gitlab.ifreetalk.com/maze/maze_game_server/common/constdef"
 	"gitlab.ifreetalk.com/maze/maze_game_server/common/function/uniqueid"
 	"gitlab.ifreetalk.com/maze/maze_game_server/io/redis/mazebarriermoneyredis"
@@ -17,9 +18,7 @@ import (
 	"gitlab.ifreetalk.com/plate/extra/protobuf/proto"
 	"gitlab.ifreetalk.com/plate/freetk/common/errors"
 	"gitlab.ifreetalk.com/plate/freetk/fkcore/fklog"
-	"gitlab.ifreetalk.com/plate/freetk/fkcore/fknet"
 	"gitlab.ifreetalk.com/plate/freetk/fkcore/fkprometheus"
-	"gitlab.ifreetalk.com/plate/freetk/fkserver"
 	"gitlab.ifreetalk.com/plate/freetk/fkutil"
 	"gitlab.ifreetalk.com/plate/protodef/MazeEnergySvr"
 	"gitlab.ifreetalk.com/plate/protodef/MazeGame"
@@ -27,22 +26,25 @@ import (
 	"go.uber.org/zap"
 )
 
-func OnSendDollMazeCmdRQ(ctx fknet.TCPContext, shardingID uint64, request proto.Message, response proto.Message) (err error) {
+func (g *Game) OnSendDollMazeCmdRQ(s *session.Session, req *MazeGame.SendDollMazeCmdRQ) (err error) {
 	defer fkprometheus.DebugPMT("OnSendDollMazeCmdRQ")()
-	req := request.(*MazeGame.SendDollMazeCmdRQ)
-	res := response.(*MazeGame.SendDollMazeCmdRS)
+
+	logger := fklog.AppLogger().Clone("game")
+	res := &MazeGame.SendDollMazeCmdRS{}
+
+	userID := uint64(s.UID())
 
 	res.ErrInfo = errors.NO_ERROR
 	res.Header = req.Header
 	res.CmdCode = req.CmdCode
 	res.CmdParam = req.CmdParam
-	userCtx := fkserver.NewUserContext(ctx.Context, shardingID, ctx.FKLogI)
 
 	defer func() {
-		userCtx.InfoWF("OnSendDollMazeCmdRQ end", zap.Any("res", res))
+		err = s.Response(res)
+		logger.InfoWF("OnSendDollMazeCmdRQ end", zap.Any("res", res))
 	}()
 
-	userCtx.InfoWF("OnSendDollMazeCmdRQ with", zap.Any("req", req))
+	logger.InfoWF("OnSendDollMazeCmdRQ with", zap.Any("req", req))
 	// if !BreedVersionFC.IsDollVersion(userCtx, shardingID) {
 	// 	userCtx.WarnWF("OnSendDollMazeCmdRQ not doll version", zap.Uint64("userID", shardingID))
 	// 	return
@@ -57,27 +59,27 @@ func OnSendDollMazeCmdRQ(ctx fknet.TCPContext, shardingID uint64, request proto.
 	// 		err = errors.New("执行失败")
 	// 	}
 	case 1002:
-		err = ParseCmd(userCtx, shardingID, code, req.GetCmdParam(), req.GetHeader().GetSession())
+		err = ParseCmd(logger, userID, code, req.GetCmdParam(), req.GetHeader().GetSession())
 		if err != nil {
 			err = errors.New("执行失败")
 		}
 	case 1003:
-		err = ParseCmd(userCtx, shardingID, code, req.GetCmdParam(), req.GetHeader().GetSession())
+		err = ParseCmd(logger, userID, code, req.GetCmdParam(), req.GetHeader().GetSession())
 		if err != nil {
 			err = errors.New("执行失败")
 		}
 	case 1004:
-		err = ParseCmd(userCtx, shardingID, code, req.GetCmdParam(), req.GetHeader().GetSession())
+		err = ParseCmd(logger, userID, code, req.GetCmdParam(), req.GetHeader().GetSession())
 		if err != nil {
 			err = errors.New("执行失败")
 		}
 	case 1005:
-		err = ParseCmd(userCtx, shardingID, code, req.GetCmdParam(), req.GetHeader().GetSession())
+		err = ParseCmd(logger, userID, code, req.GetCmdParam(), req.GetHeader().GetSession())
 		if err != nil {
 			err = errors.New("执行失败")
 		}
 	case 1006: // 添加体力
-		err = CmdAddEnergy(userCtx, shardingID, args)
+		err = CmdAddEnergy(logger, userID, args)
 		if err != nil {
 			err = errors.New("执行失败")
 		}

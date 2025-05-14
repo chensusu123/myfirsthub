@@ -1,12 +1,12 @@
 package game
 
 import (
+	"github.com/lonng/nano/session"
 	"gitlab.ifreetalk.com/maze/maze_game_server/common/function/addequip"
 	"gitlab.ifreetalk.com/maze/maze_game_server/common/function/gentradeno"
 	"gitlab.ifreetalk.com/plate/excel/auto/GMazeBoxV8Cfg"
-	"gitlab.ifreetalk.com/plate/extra/protobuf/proto"
 	"gitlab.ifreetalk.com/plate/freetk/common/errors"
-	"gitlab.ifreetalk.com/plate/freetk/fkcore/fknet"
+	"gitlab.ifreetalk.com/plate/freetk/fkcore/fklog"
 	"gitlab.ifreetalk.com/plate/freetk/fkcore/fkprometheus"
 	"gitlab.ifreetalk.com/plate/freetk/fkutil"
 	"gitlab.ifreetalk.com/plate/protodef/MazeEquipSvr"
@@ -15,14 +15,15 @@ import (
 	"go.uber.org/zap"
 )
 
-func OnBarrierOpenBoxRQ(logger fknet.TCPContext, shardingID uint64, rqMsg proto.Message, rsMsg proto.Message) (err error) {
+func (g *Game) OnBarrierOpenBoxRQ(s *session.Session, req *MazeGame.BarrierOpenBoxRQ) (err error) {
 	fkprometheus.InfoPMT("OnBarrierOpenBoxRQ")()
 
-	req := rqMsg.(*MazeGame.BarrierOpenBoxRQ)
-	res := rsMsg.(*MazeGame.BarrierOpenBoxRS)
+	logger := fklog.AppLogger().Clone("game")
+	res := &MazeGame.BarrierOpenBoxRS{}
 
 	logger.InfoWF("OnBarrierOpenBoxRQ start", zap.Any("req", req))
 	defer func() {
+		err = s.Response(res)
 		logger.InfoWF("OnBarrierOpenBoxRQ end", zap.Any("res", res))
 	}()
 
@@ -31,7 +32,7 @@ func OnBarrierOpenBoxRQ(logger fknet.TCPContext, shardingID uint64, rqMsg proto.
 	res.BarrierId = req.BarrierId
 	res.BoxId = req.BoxId
 
-	userId := shardingID
+	userId := uint64(s.UID())
 
 	boxCfg := GMazeBoxV8Cfg.Get(int32(req.GetBoxId()))
 	if boxCfg == nil {

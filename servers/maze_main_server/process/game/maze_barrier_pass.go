@@ -5,6 +5,7 @@ import (
 	"strings"
 	"time"
 
+	"github.com/lonng/nano/session"
 	"gitlab.ifreetalk.com/maze/maze_game_server/common/constdef"
 	"gitlab.ifreetalk.com/maze/maze_game_server/common/function/addequip"
 	"gitlab.ifreetalk.com/maze/maze_game_server/common/function/gentradeno"
@@ -21,7 +22,7 @@ import (
 	"gitlab.ifreetalk.com/plate/excel/auto/GMazeBarriesV8Cfg"
 	"gitlab.ifreetalk.com/plate/extra/protobuf/proto"
 	"gitlab.ifreetalk.com/plate/freetk/common/errors"
-	"gitlab.ifreetalk.com/plate/freetk/fkcore/fknet"
+	"gitlab.ifreetalk.com/plate/freetk/fkcore/fklog"
 	"gitlab.ifreetalk.com/plate/freetk/fkcore/fkprometheus"
 	"gitlab.ifreetalk.com/plate/protodef/MazeCommon"
 	"gitlab.ifreetalk.com/plate/protodef/MazeEquipSvr"
@@ -29,21 +30,22 @@ import (
 	"go.uber.org/zap"
 )
 
-func OnMazeBarrierPassRQ(logger fknet.TCPContext, shardingID uint64, rqMsg proto.Message, rsMsg proto.Message) (err error) {
+func (g *Game) OnMazeBarrierPassRQ(s *session.Session, req *MazeGame.MazeBarrierPassRQ) (err error) {
 	fkprometheus.InfoPMT("OnMazeBarrierPassRQ")()
 
-	req := rqMsg.(*MazeGame.MazeBarrierPassRQ)
-	res := rsMsg.(*MazeGame.MazeBarrierPassRS)
+	logger := fklog.AppLogger().Clone("game")
+	res := &MazeGame.MazeBarrierPassRS{}
 
 	logger.InfoWF("OnMazeBarrierPassRQ start", zap.Any("req", req))
 	defer func() {
+		err = s.Response(res)
 		logger.InfoWF("OnMazeBarrierPassRQ end", zap.Any("res", res))
 	}()
 
 	res.Header = req.Header
 	res.ErrInfo = errors.NO_ERROR
 
-	userId := shardingID
+	userId := uint64(s.UID())
 
 	if req.GetBarrierId() <= 0 {
 		logger.ErrorWF("OnMazeBarrierPassRQ req barrier invalid", zap.Any("req", req))

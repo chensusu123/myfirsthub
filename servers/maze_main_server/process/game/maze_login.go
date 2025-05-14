@@ -23,6 +23,7 @@ func (g *Game) OnMazeLoginRQ(s *session.Session, req *MazeGame.MazeLoginRQ) (err
 
 	logger.InfoWF("OnMazeLoginRQ start", zap.Any("req", req))
 	defer func() {
+		err = s.Response(res)
 		logger.InfoWF("OnMazeLoginRQ end", zap.Any("res", res))
 	}()
 
@@ -60,7 +61,7 @@ func (g *Game) OnMazeLoginRQ(s *session.Session, req *MazeGame.MazeLoginRQ) (err
 	levelCfg := GMazeLevelV8Cfg.Get(int32(level))
 	if levelCfg == nil {
 		res.ErrInfo = errors.CONFIG_NOT_FOUND.Wrap("等级表获取失败")
-		return s.Response(res)
+		return
 	}
 	expMax = levelCfg.Next_level_need_exp
 
@@ -68,7 +69,7 @@ func (g *Game) OnMazeLoginRQ(s *session.Session, req *MazeGame.MazeLoginRQ) (err
 	if err != nil {
 		logger.ErrorWF("OnMazeLoginRQ GetUserMoney fail", zap.Error(err))
 		res.ErrInfo = errors.MODULE_ERROR.ToInfo()
-		return s.Response(res)
+		return
 	}
 
 	if isInit || (userInfo.UserType != req.GetMazeVersion()) {
@@ -79,7 +80,7 @@ func (g *Game) OnMazeLoginRQ(s *session.Session, req *MazeGame.MazeLoginRQ) (err
 		if err != nil {
 			logger.ErrorWF("OnMazeLoginRQ SetUserInfo fail", zap.Error(err))
 			res.ErrInfo = errors.MODULE_ERROR.ToInfo()
-			return s.Response(res)
+			return
 		}
 	}
 
@@ -112,5 +113,5 @@ func (g *Game) OnMazeLoginRQ(s *session.Session, req *MazeGame.MazeLoginRQ) (err
 	// TODO 这个操作应该在验证成功后执行，待调整
 	s.Bind(userId)
 
-	return s.Response(res)
+	return
 }

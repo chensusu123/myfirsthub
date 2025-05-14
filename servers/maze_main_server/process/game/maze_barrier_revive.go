@@ -11,6 +11,7 @@ import (
 	"sort"
 	"time"
 
+	"github.com/lonng/nano/session"
 	"gitlab.ifreetalk.com/maze/maze_game_server/common/function/gentradeno"
 	"gitlab.ifreetalk.com/maze/maze_game_server/common/function/itemutil"
 	"gitlab.ifreetalk.com/maze/maze_game_server/common/function/uniqueid"
@@ -18,7 +19,7 @@ import (
 	"gitlab.ifreetalk.com/plate/excel/auto/GMazeRebornCostV8Cfg"
 	"gitlab.ifreetalk.com/plate/extra/protobuf/proto"
 	"gitlab.ifreetalk.com/plate/freetk/common/errors"
-	"gitlab.ifreetalk.com/plate/freetk/fkcore/fknet"
+	"gitlab.ifreetalk.com/plate/freetk/fkcore/fklog"
 	"gitlab.ifreetalk.com/plate/freetk/fkcore/fkprometheus"
 	"gitlab.ifreetalk.com/plate/protodef/MazeCommon"
 	"gitlab.ifreetalk.com/plate/protodef/MazeGame"
@@ -28,16 +29,19 @@ import (
 	"go.uber.org/zap"
 )
 
-func OnMazeBarrierRebornRQ(logger fknet.TCPContext, shardingID uint64, rqMsg proto.Message, rsMsg proto.Message) (err error) {
+func (g *Game) OnMazeBarrierRebornRQ(s *session.Session, req *MazeGame.MazeBarrierRebornRQ) (err error) {
 	fkprometheus.InfoPMT("OnMazeBarrierRebornRQ")()
 
-	req := rqMsg.(*MazeGame.MazeBarrierRebornRQ)
-	res := rsMsg.(*MazeGame.MazeBarrierRebornRS)
+	logger := fklog.AppLogger().Clone("game")
+	res := &MazeGame.MazeBarrierRebornRS{}
 
 	logger.InfoWF("OnMazeBarrierRebornRQ start", zap.Any("req", req))
 	defer func() {
+		err = s.Response(res)
 		logger.InfoWF("OnMazeBarrierRebornRQ end", zap.Any("res", res))
 	}()
+
+	userID := uint64(s.UID())
 
 	res.Header = req.Header
 	res.ErrInfo = errors.NO_ERROR
@@ -56,7 +60,7 @@ func OnMazeBarrierRebornRQ(logger fknet.TCPContext, shardingID uint64, rqMsg pro
 		return
 	}
 
-	barrierInfo, err := mazeuserbarrierredis.GetUserBarrierInfo(logger, shardingID, barrierId)
+	barrierInfo, err := mazeuserbarrierredis.GetUserBarrierInfo(logger, userID, barrierId)
 	if err != nil {
 		logger.ErrorWF("OnMazeBarrierRebornRQ GetUserBarrierInfo fail",
 			zap.Any("req", req), zap.Error(err))
@@ -129,7 +133,7 @@ func OnMazeBarrierRebornRQ(logger fknet.TCPContext, shardingID uint64, rqMsg pro
 		tid := uniqueid.GenUniqueIdUInt64()
 		if len(svrCost) > 0 {
 			// 通用	698	UN_CGK_COMMON_BILL_TYPE_698	迷宫挑战复活		否	马健	2025-03-25 13:48:10
-			errInfo := gentradeno.DeductItemsEx(logger, shardingID, 698, tid, svrCost...)
+			errInfo := gentradeno.DeductItemsEx(logger, userID, 698, tid, svrCost...)
 			if errInfo != nil {
 				logger.ErrorWF("OnMazeBarrierRebornRQ DeductItemsEx",
 					zap.Any("svrCost", svrCost),
@@ -146,7 +150,7 @@ func OnMazeBarrierRebornRQ(logger fknet.TCPContext, shardingID uint64, rqMsg pro
 
 		// 更新复活次数
 		barrierInfo.RebornCount = proto.Int32(barrierInfo.GetRebornCount() + 1)
-		err = mazeuserbarrierredis.SetUserBarrierInfo(logger, shardingID, barrierInfo.GetBarrierId(), barrierInfo)
+		err = mazeuserbarrierredis.SetUserBarrierInfo(logger, userID, barrierInfo.GetBarrierId(), barrierInfo)
 		if err != nil {
 			logger.ErrorWF("OnMazeBarrierRebornRQ SetUserBarrierInfo fail", zap.Error(err),
 				zap.Any("barrierInfo", barrierInfo))
@@ -157,7 +161,7 @@ func OnMazeBarrierRebornRQ(logger fknet.TCPContext, shardingID uint64, rqMsg pro
 		res.RebornCount = proto.Int32(barrierInfo.GetRebornCount())
 
 		record := &mazerebornkafka.MazeRebornRecord{
-			UserId:      shardingID,
+			UserId:      userID,
 			Barrier:     barrierInfo.GetBarrierId(),
 			RebornCount: int64(barrierInfo.GetRebornCount()),
 			RebornCost:  itemutil.CommonItemsToString(svrCost),
