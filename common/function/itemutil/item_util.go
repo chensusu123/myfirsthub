@@ -7,11 +7,10 @@ import (
 	"gitlab.ifreetalk.com/maze-plate/extra/protobuf/proto"
 	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fkconfig"
 	"gitlab.ifreetalk.com/maze-plate/freetk/fkutil/uniqueid"
-	"gitlab.ifreetalk.com/maze-plate/protodef/Common"
 	"gitlab.ifreetalk.com/maze-plate/protodef/MazeCommon"
 )
 
-func Common2Map(attrs []*Common.Attr) (m map[int32]int64) {
+func Common2Map(attrs []*MazeCommon.Attr) (m map[int32]int64) {
 	m = make(map[int32]int64)
 	for _, attr := range attrs {
 		if attr.GetAttrId() <= 0 {
