@@ -18,7 +18,6 @@ import (
 	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fkconfig"
 	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fklog"
 	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fkprometheus"
-	"gitlab.ifreetalk.com/maze-plate/io/redis_interface/common/commonmustarriveredis"
 	"gitlab.ifreetalk.com/maze-plate/protodef/MazeBuffData"
 	"gitlab.ifreetalk.com/maze-plate/protodef/MazeCard"
 	"go.uber.org/zap"
@@ -154,8 +153,8 @@ func SendMazeCardMsg(logger fklog.FKLogI, userId uint64, state int32, expiration
 		State:          proto.Int32(state),
 		ExpirationTime: proto.Int64(expirationTime),
 	}
-
-	_ = commonmustarriveredis.SendArrivePacketWithLogFix(logger, userId, 16200, msg)
+	_ = msg
+	//_ = commonmustarriveredis.SendArrivePacketWithLogFix(logger, userId, 16200, msg)
 }
 
 func PackMazeBuff(buffMap map[int32]int64) []*MazeBuffData.MazeBuffAttr {

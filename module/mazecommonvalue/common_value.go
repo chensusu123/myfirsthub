@@ -5,21 +5,20 @@ import (
 
 	"gitlab.ifreetalk.com/maze-plate/extra/protobuf/proto"
 	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fklog"
-	"gitlab.ifreetalk.com/maze-plate/io/redis_interface/common/commonmustarriveredis"
 	"gitlab.ifreetalk.com/maze-plate/protodef/MazeGame"
 	"go.uber.org/zap"
 )
 
 var commonMap = map[int32]struct{}{
-	int32(MazeGame.MAZE_DATA_TYPE_ENUM_MAZE_DATA_TYPE_LEVEL):       struct{}{},
-	int32(MazeGame.MAZE_DATA_TYPE_ENUM_MAZE_DATA_TYPE_EXP):         struct{}{},
-	int32(MazeGame.MAZE_DATA_TYPE_ENUM_MAZE_DATA_TYPE_EXP_MAX):     struct{}{},
-	int32(MazeGame.MAZE_DATA_TYPE_ENUM_MAZE_DATA_TYPE_FORCE):       struct{}{},
-	int32(MazeGame.MAZE_DATA_TYPE_ENUM_MAZE_DATA_TYPE_MONEY):       struct{}{},
-	int32(MazeGame.MAZE_DATA_TYPE_ENUM_MAZE_DATA_TYPE_INCOME):      struct{}{},
-	int32(MazeGame.MAZE_DATA_TYPE_ENUM_MAZE_DATA_TYPE_EXP_INCOME):  struct{}{},
-	int32(MazeGame.MAZE_DATA_TYPE_ENUM_MAZE_DATA_TYPE_EQUIP_POINT): struct{}{},
-	int32(MazeGame.MAZE_DATA_TYPE_ENUM_MAZE_DATA_TYPE_DIAMOND):     struct{}{},
+	int32(MazeGame.MAZE_DATA_TYPE_ENUM_MAZE_DATA_TYPE_LEVEL):       {},
+	int32(MazeGame.MAZE_DATA_TYPE_ENUM_MAZE_DATA_TYPE_EXP):         {},
+	int32(MazeGame.MAZE_DATA_TYPE_ENUM_MAZE_DATA_TYPE_EXP_MAX):     {},
+	int32(MazeGame.MAZE_DATA_TYPE_ENUM_MAZE_DATA_TYPE_FORCE):       {},
+	int32(MazeGame.MAZE_DATA_TYPE_ENUM_MAZE_DATA_TYPE_MONEY):       {},
+	int32(MazeGame.MAZE_DATA_TYPE_ENUM_MAZE_DATA_TYPE_INCOME):      {},
+	int32(MazeGame.MAZE_DATA_TYPE_ENUM_MAZE_DATA_TYPE_EXP_INCOME):  {},
+	int32(MazeGame.MAZE_DATA_TYPE_ENUM_MAZE_DATA_TYPE_EQUIP_POINT): {},
+	int32(MazeGame.MAZE_DATA_TYPE_ENUM_MAZE_DATA_TYPE_DIAMOND):     {},
 }
 
 type CommonValueStruct struct {
@@ -55,7 +54,8 @@ func SendCommonValueIdPack(logger fklog.FKLogI, userId uint64, commonList []*Com
 	}
 
 	logger.InfoWF("sendCommonValueIdPack send client with", zap.Any("commonList", commonList), zap.Any("commonValuePack", commonValuePack))
-	return commonmustarriveredis.SendArrivePacketWithLogFix(logger, userId, 16205, commonValuePack)
+	return nil
+	// return commonmustarriveredis.SendArrivePacketWithLogFix(logger, userId, 16205, commonValuePack)
 }
 
 func MakeCommonValueList(logger fklog.FKLogI, commonValue map[int32]int64, commonReason map[int32]int32, commonSession map[int32]string) (commonList []*CommonValueStruct) {
@@ -72,7 +72,6 @@ func MakeCommonValueList(logger fklog.FKLogI, commonValue map[int32]int64, commo
 }
 
 func MakeCommonValueExtra(logger fklog.FKLogI, userId uint64, level int64, force int64) (extra int64, err error) {
-
 	moneyAddEquip, err := GetMoneyExtraAdditionEquip(logger, userId)
 	if err != nil {
 		logger.ErrorWF("MakeCommonValueExtra GetExtraAdditionEquip fail", zap.Error(err))
@@ -91,7 +90,6 @@ func MakeCommonValueExtra(logger fklog.FKLogI, userId uint64, level int64, force
 }
 
 func MakeCommonValueExtraExp(logger fklog.FKLogI, userId uint64, level int64, force int64) (extra int64, err error) {
-
 	expAddEquip, err := GetExpExtraAdditionEquip(logger, userId)
 	if err != nil {
 		logger.ErrorWF("MakeCommonValueExtraExp GetExpExtraAdditionEquip fail", zap.Error(err))

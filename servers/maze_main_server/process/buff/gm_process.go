@@ -1,7 +1,6 @@
 package buff
 
 import (
-	"context"
 	"fmt"
 	"net/http"
 	"sort"
@@ -14,7 +13,6 @@ import (
 	"gitlab.ifreetalk.com/maze-plate/extra/protobuf/proto"
 	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fklog"
 	"gitlab.ifreetalk.com/maze-plate/freetk/fkutil"
-	"gitlab.ifreetalk.com/maze-plate/io/redis_interface/common/CheckGM"
 	"gitlab.ifreetalk.com/maze-plate/protodef/MazeCommon"
 	"gitlab.ifreetalk.com/maze-plate/protodef/MazeTempBuffSvr"
 	"go.uber.org/zap"
@@ -32,9 +30,9 @@ func SafeHttpRegister(logger fklog.FKLogI, pattern string, handler func(http.Res
 
 		logger.DebugWF("execute gm", zap.String("pattern", pattern), zap.Any("header", request.Header),
 			zap.Any("host", request.Host), zap.Any("remoteAddr", request.RemoteAddr))
-		if !CheckGM.CheckGMOnline(context.Background(), logger, 10000, pattern, request.RemoteAddr) {
-			return
-		}
+		// if !CheckGM.CheckGMOnline(context.Background(), logger, 10000, pattern, request.RemoteAddr) {
+		// 	return
+		// }
 		logger.WarnWF("execute gm", zap.String("pattern", pattern), zap.Any("header", request.Header),
 			zap.Any("host", request.Host), zap.Any("remoteAddr", request.RemoteAddr))
 

@@ -4,11 +4,10 @@ import (
 	"gitlab.ifreetalk.com/maze-plate/excel/auto/GMazeAttrSkillV8Cfg"
 	"gitlab.ifreetalk.com/maze-plate/excel/auto/GMazeAttributeV8Cfg"
 	"gitlab.ifreetalk.com/maze-plate/extra/protobuf/proto"
-	"gitlab.ifreetalk.com/maze/maze_game_server/common/errors"
 	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fklog"
-	"gitlab.ifreetalk.com/maze-plate/io/redis_interface/common/commonmustarriveredis"
 	"gitlab.ifreetalk.com/maze-plate/protodef/MazeAIBattle"
 	"gitlab.ifreetalk.com/maze/maze_game_server/common/constdef"
+	"gitlab.ifreetalk.com/maze/maze_game_server/common/errors"
 	"gitlab.ifreetalk.com/maze/maze_game_server/common/structsdef"
 	"gitlab.ifreetalk.com/maze/maze_game_server/io/redis/mazecalcattrredis"
 	"go.uber.org/zap"
@@ -35,6 +34,7 @@ func GetUserAttrMap(logger fklog.FKLogI, userId uint64) (map[int32]int64, error)
 	}
 	return attrMap, nil
 }
+
 func GetUserBattleAttr(logger fklog.FKLogI, userId uint64, userAttrMap map[int32]int64) (map[int32]*MazeAIBattle.MazeAIAttrInfo, error) {
 	attrTypeMap := GetAttrType()
 	attrMap := make(map[int32]*MazeAIBattle.MazeAIAttrInfo, 0)
@@ -206,7 +206,8 @@ func SendMazeBarrierChgPack(logger fklog.FKLogI, userId uint64, mazeBattleInfo *
 		MazeBarrierInfo: mazeBattleInfo,
 	}
 	logger.InfoWF("SendMazeBarrierChgPack send client with", zap.Uint64("userId", userId), zap.Any("moneyPack", moneyPack))
-	return commonmustarriveredis.SendArrivePacketFix(userId, 16172, moneyPack)
+	return nil
+	// return commonmustarriveredis.SendArrivePacketFix(userId, 16172, moneyPack)
 }
 
 func GetEffectAttrValue(attrValue int32, attrValueVariableId map[int32]int32, userAttrMap map[int32]int64) int64 {
