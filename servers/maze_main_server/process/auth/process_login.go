@@ -1,6 +1,8 @@
 package auth
 
 import (
+	"time"
+
 	"gitlab.ifreetalk.com/maze-plate/extra/protobuf/proto"
 	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fknet"
 	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fkprometheus"
@@ -34,5 +36,23 @@ func OnLoginRQ(ctx fknet.TCPContext, shardingID uint64, rqMsg proto.Message, rsM
 	// 认证成功设置用户ID, 底层会处理
 	userId := req.GetUserID()
 	ctx.SetTag("userID", userId)
+	res.ServerTime = proto.Int64(time.Now().UnixMilli())
+	return nil
+}
+
+func OnLiveRQ(ctx fknet.TCPContext, shardingID uint64, rqMsg proto.Message, rsMsg proto.Message) (err error) {
+	fkprometheus.InfoPMT("OnLiveRQ")()
+
+	req := rqMsg.(*UserLogin.UserLiveRq)
+	res := rsMsg.(*UserLogin.UserLiveRs)
+
+	logger := ctx
+	res.Session = req.Session
+	defer func() {
+		logger.InfoWF("OnLiveRQ end", zap.Any("req", req), zap.Any("res", res))
+	}()
+
+	res.Error = errors.NO_ERROR
+	res.ServerTime = proto.Int64(time.Now().UnixMilli())
 	return nil
 }
