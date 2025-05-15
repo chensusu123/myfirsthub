@@ -1,7 +1,6 @@
 package collect
 
 import (
-	"github.com/lonng/nano/component"
 	"gitlab.ifreetalk.com/maze/maze_game_server/io/kafka/mazebarrieruserkafka"
 	"gitlab.ifreetalk.com/maze/maze_game_server/io/kafka/mazeuserlevelkafka"
 	"gitlab.ifreetalk.com/maze/maze_game_server/lib/net/websocket_service"
@@ -9,21 +8,13 @@ import (
 	"gitlab.ifreetalk.com/maze-plate/protodef/MazeCollect"
 )
 
-type Collect struct {
-	component.Base
-}
-
-func NewCollect() *Collect {
-	return &Collect{}
-}
-
 func RegWsHandler() {
 	// 迷宫挂机查询
 	_ = websocket_service.RegProcSimple(16257, &MazeCollect.MazeCollectInfoQueryRQ{},
-		16258, &MazeCollect.MazeCollectInfoQueryRS{}, nil /* OnMazeCollectInfoQueryRQ */)
+		16258, &MazeCollect.MazeCollectInfoQueryRS{}, OnMazeCollectInfoQueryRQ)
 
 	_ = websocket_service.RegProcSimple(16259, &MazeCollect.MazeCollectItemReceiveRQ{},
-		16260, &MazeCollect.MazeCollectItemReceiveRS{}, nil /* OnMazeCollectItemReceiveRQ */)
+		16260, &MazeCollect.MazeCollectItemReceiveRS{}, OnMazeCollectItemReceiveRQ)
 }
 
 func RegTcpHandler() {

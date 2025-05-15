@@ -1,12 +1,12 @@
 package game
 
 import (
-	"github.com/lonng/nano/session"
-	"gitlab.ifreetalk.com/maze/maze_game_server/common/errors"
-	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fklog"
+	"gitlab.ifreetalk.com/maze-plate/extra/protobuf/proto"
+	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fknet"
 	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fkprometheus"
 	"gitlab.ifreetalk.com/maze-plate/protodef/MazeEquipSvr"
 	"gitlab.ifreetalk.com/maze-plate/protodef/MazeGame"
+	"gitlab.ifreetalk.com/maze/maze_game_server/common/errors"
 	"gitlab.ifreetalk.com/maze/maze_game_server/common/function/addequip"
 	"gitlab.ifreetalk.com/maze/maze_game_server/common/function/gentradeno"
 	"gitlab.ifreetalk.com/maze/maze_game_server/module/calequipsequence"
@@ -15,23 +15,21 @@ import (
 	"go.uber.org/zap"
 )
 
-func (g *Game) OnReportAwardFoeEquipRQ(s *session.Session, req *MazeGame.ReportAwardFoeEquipRQ) (err error) {
+func OnReportAwardFoeEquipRQ(logger fknet.TCPContext, shardingID uint64, rqMsg proto.Message, rsMsg proto.Message) (err error) {
 	fkprometheus.InfoPMT("OnReportAwardFoeEquipRQ")()
 
-	logger := fklog.AppLogger().Clone("game")
-
-	res := &MazeGame.ReportAwardFoeEquipRS{}
+	req := rqMsg.(*MazeGame.ReportAwardFoeEquipRQ)
+	res := rsMsg.(*MazeGame.ReportAwardFoeEquipRS)
 
 	logger.InfoWF("OnReportAwardFoeEquipRQ start", zap.Any("req", req))
 	defer func() {
-		err = s.Response(res)
 		logger.InfoWF("OnReportAwardFoeEquipRQ end", zap.Any("res", res))
 	}()
 
 	res.Header = req.Header
 	res.ErrInfo = errors.NO_ERROR
 
-	userId := uint64(s.UID())
+	userId := shardingID
 	equipNum := req.GetEquipNum()
 	if equipNum <= 0 {
 		logger.ErrorWF("OnReportAwardFoeEquipRQ equipNum fail", zap.Any("req", req))

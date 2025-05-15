@@ -4,16 +4,15 @@ import (
 	"sort"
 	"time"
 
-	"github.com/lonng/nano/session"
 	"gitlab.ifreetalk.com/maze-plate/excel/auto/GMazeActionCountV8Cfg"
 	"gitlab.ifreetalk.com/maze-plate/excel/auto/GMazeBarriesV8Cfg"
 	"gitlab.ifreetalk.com/maze-plate/excel/auto/GMazeConfigV8Cfg"
 	"gitlab.ifreetalk.com/maze-plate/extra/protobuf/proto"
-	"gitlab.ifreetalk.com/maze/maze_game_server/common/errors"
-	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fklog"
+	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fknet"
 	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fkprometheus"
 	"gitlab.ifreetalk.com/maze-plate/protodef/MazeCommon"
 	"gitlab.ifreetalk.com/maze-plate/protodef/MazeGame"
+	"gitlab.ifreetalk.com/maze/maze_game_server/common/errors"
 	"gitlab.ifreetalk.com/maze/maze_game_server/common/function/timeutil"
 	"gitlab.ifreetalk.com/maze/maze_game_server/io/redis/mazechallengenumredis"
 	"gitlab.ifreetalk.com/maze/maze_game_server/io/redis/mazeuserbarrierredis"
@@ -22,22 +21,21 @@ import (
 	"go.uber.org/zap"
 )
 
-func (g *Game) OnMazeBarrierListRQ(s *session.Session, req *MazeGame.MazeBarrierListRQ) (err error) {
+func OnMazeBarrierListRQ(logger fknet.TCPContext, shardingID uint64, rqMsg proto.Message, rsMsg proto.Message) (err error) {
 	fkprometheus.InfoPMT("OnMazeBarrierListRQ")()
-	logger := fklog.AppLogger().Clone("game")
 
-	res := &MazeGame.MazeBarrierListRS{}
+	req := rqMsg.(*MazeGame.MazeBarrierListRQ)
+	res := rsMsg.(*MazeGame.MazeBarrierListRS)
 
 	logger.InfoWF("OnMazeBarrierListRQ start", zap.Any("req", req))
 	defer func() {
-		err = s.Response(res)
 		logger.InfoWF("OnMazeBarrierListRQ end", zap.Any("res", res))
 	}()
 
 	res.Header = req.Header
 	res.ErrInfo = errors.NO_ERROR
 
-	userId := uint64(s.UID())
+	userId := shardingID
 
 	var maxNum, curNumToday int32
 	maxNumCfg := GMazeActionCountV8Cfg.Get(101)

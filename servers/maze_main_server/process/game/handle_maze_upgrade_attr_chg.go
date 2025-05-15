@@ -9,12 +9,12 @@ package game
 import (
 	"gitlab.ifreetalk.com/maze-plate/extra/protobuf/proto"
 	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fklog"
+	"gitlab.ifreetalk.com/maze-plate/io/redisio/commonmustarriveredis"
 	"gitlab.ifreetalk.com/maze-plate/protodef/Common"
 	"gitlab.ifreetalk.com/maze-plate/protodef/MazeGame"
 	"gitlab.ifreetalk.com/maze/maze_game_server/common/structsdef"
 	"gitlab.ifreetalk.com/maze/maze_game_server/excel/mazeconfigv8"
 	"gitlab.ifreetalk.com/maze/maze_game_server/io/redis/mazeuserlevelredis"
-	"gitlab.ifreetalk.com/maze/maze_game_server/usecase/mustarrive"
 
 	"go.uber.org/zap"
 )
@@ -54,8 +54,7 @@ func HandleMazeLvUpgradeAttrChgId(logger fklog.FKLogI, userId uint64, msg *struc
 
 	logger.InfoWF("HandleMazeLvUpgradeAttrChgId send client with",
 		zap.Any("mazeLvChgIDMsg", mazeLvChgIDMsg), zap.Uint64("userId", userId))
-
-	mustarrive.SendArrivePacket(logger, int64(userId), 16239, mazeLvChgIDMsg)
+	commonmustarriveredis.SendArrivePacketWithLog(logger, userId, 16239, mazeLvChgIDMsg)
 }
 
 // func IsMazeUpgradeCareAttr(attrId int32) bool {

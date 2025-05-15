@@ -9,12 +9,13 @@ package energy
 import (
 	"time"
 
-	"github.com/lonng/nano/session"
 	"gitlab.ifreetalk.com/maze-plate/extra/protobuf/proto"
-	"gitlab.ifreetalk.com/maze/maze_game_server/common/errors"
 	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fklog"
+	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fknet"
 	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fkprometheus"
+	"gitlab.ifreetalk.com/maze-plate/freetk/fkserver"
 	"gitlab.ifreetalk.com/maze-plate/protodef/MazeEnergy"
+	"gitlab.ifreetalk.com/maze/maze_game_server/common/errors"
 
 	"gitlab.ifreetalk.com/maze/maze_game_server/excel/mazeconfigv8"
 	"gitlab.ifreetalk.com/maze/maze_game_server/io/kafka/mazeenergyrecord"
@@ -23,26 +24,24 @@ import (
 	"go.uber.org/zap"
 )
 
-func (e *Energy) OnQueryMazeEnergyRQ(s *session.Session, req *MazeEnergy.QueryMazeEnergyRQ) (err error) {
+func OnQueryMazeEnergyRQ(ctx fknet.TCPContext, shardingID uint64, request proto.Message, response proto.Message) (err error) {
 	defer fkprometheus.DebugPMT("OnQueryMazeEnergyRQ")()
-
-	logger := fklog.AppLogger().Clone("energy")
-	res := &MazeEnergy.QueryMazeEnergyRS{}
+	req := request.(*MazeEnergy.QueryMazeEnergyRQ)
+	res := response.(*MazeEnergy.QueryMazeEnergyRS)
 
 	res.ErrInfo = errors.NO_ERROR
 	res.Header = req.Header
-
-	userID := uint64(s.UID())
+	userCtx := fkserver.NewUserContext(ctx.Context, shardingID, ctx.FKLogI)
 
 	defer func() {
-		logger.InfoWF("OnQueryMazeEnergyRQ end", zap.Any("res", res))
+		userCtx.InfoWF("OnQueryMazeEnergyRQ end", zap.Any("res", res))
 	}()
 
-	logger.InfoWF("OnQueryMazeEnergyRQ with", zap.Any("req", req))
+	userCtx.InfoWF("OnQueryMazeEnergyRQ with", zap.Any("req", req))
 
-	uInfo, err := mazeuserinfo.GetUserInfoV2(logger, userID)
+	uInfo, err := mazeuserinfo.GetUserInfoV2(userCtx, shardingID)
 	if err != nil {
-		logger.ErrorWF("OnQueryMazeEnergyRQ GetUserInfoV2 fail", zap.Error(err))
+		userCtx.ErrorWF("OnQueryMazeEnergyRQ GetUserInfoV2 fail", zap.Error(err))
 		res.ErrInfo = errors.MODULE_ERROR.ToInfo()
 		return
 	}
@@ -51,7 +50,7 @@ func (e *Energy) OnQueryMazeEnergyRQ(s *session.Session, req *MazeEnergy.QueryMa
 	maxVal := mazeconfigv8.GetEnergyMax()     // 体力最大值
 	cost, val := mazeconfigv8.GetEnergyRate() // 每n秒回复多少体力
 	var nextUpdateTime int64                  // 下次更新时间
-	record := BeginRecord(userID, mazeenergyrecord.TimerRecovery, uInfo)
+	record := BeginRecord(shardingID, mazeenergyrecord.TimerRecovery, uInfo)
 	var chgVal int32 // 变化值
 
 	if uInfo.EnergyLastTime == 0 { // 首次初始化
@@ -87,13 +86,13 @@ func (e *Energy) OnQueryMazeEnergyRQ(s *session.Session, req *MazeEnergy.QueryMa
 		}
 	}
 	if updateFlag > 0 {
-		err = mazeuserinfo.SetUserInfoV2(logger, userID, uInfo)
+		err = mazeuserinfo.SetUserInfoV2(userCtx, shardingID, uInfo)
 		if err != nil {
-			logger.ErrorWF("OnQueryMazeEnergyRQ SetUserInfoV2 fail", zap.Error(err))
+			userCtx.ErrorWF("OnQueryMazeEnergyRQ SetUserInfoV2 fail", zap.Error(err))
 			res.ErrInfo = errors.DB_SAVE_ERROR.ToInfo()
 			return
 		}
-		EndRecord(logger, record, chgVal, uInfo)
+		EndRecord(userCtx, record, chgVal, uInfo)
 	}
 	res.EnergyInfo = &MazeEnergy.EnergyInfo{
 		CurVal:           proto.Int32(uInfo.Energy),

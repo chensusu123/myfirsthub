@@ -5,10 +5,10 @@ import (
 	"sort"
 	"strings"
 
-	"gitlab.ifreetalk.com/maze/maze_game_server/io/kafka/mazecollectrecord"
 	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fklog"
 	"gitlab.ifreetalk.com/maze-plate/protodef/MazeCollectCache"
 	"gitlab.ifreetalk.com/maze-plate/protodef/MazeCommon"
+	"gitlab.ifreetalk.com/maze/maze_game_server/io/kafka/mazecollectrecord"
 	"go.uber.org/zap"
 )
 

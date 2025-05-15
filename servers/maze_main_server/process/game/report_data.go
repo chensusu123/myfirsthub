@@ -1,12 +1,12 @@
 package game
 
 import (
-	"github.com/lonng/nano/session"
-	"gitlab.ifreetalk.com/maze/maze_game_server/common/errors"
-	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fklog"
+	"gitlab.ifreetalk.com/maze-plate/extra/protobuf/proto"
+	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fknet"
 	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fkprometheus"
 	"gitlab.ifreetalk.com/maze-plate/protodef/MazeGame"
 	"gitlab.ifreetalk.com/maze/maze_game_server/common/constdef"
+	"gitlab.ifreetalk.com/maze/maze_game_server/common/errors"
 	"gitlab.ifreetalk.com/maze/maze_game_server/io/kafka/mazemoneykafka"
 	"gitlab.ifreetalk.com/maze/maze_game_server/io/kafka/mazeuserlevelkafka"
 	"gitlab.ifreetalk.com/maze/maze_game_server/io/redis/mazeshopseqredis"
@@ -18,15 +18,14 @@ import (
 	"go.uber.org/zap"
 )
 
-func (g *Game) OnReportDataRQ(s *session.Session, req *MazeGame.ReportDataRQ) (err error) {
+func OnReportDataRQ(logger fknet.TCPContext, shardingID uint64, rqMsg proto.Message, rsMsg proto.Message) (err error) {
 	fkprometheus.InfoPMT("ReportDataRQ")()
 
-	logger := fklog.AppLogger().Clone("game")
-	res := &MazeGame.ReportDataRS{}
+	req := rqMsg.(*MazeGame.ReportDataRQ)
+	res := rsMsg.(*MazeGame.ReportDataRS)
 
 	logger.InfoWF("ReportDataRQ start", zap.Any("req", req))
 	defer func() {
-		err = s.Response(res)
 		logger.InfoWF("ReportDataRQ end", zap.Any("res", res))
 	}()
 
@@ -34,7 +33,7 @@ func (g *Game) OnReportDataRQ(s *session.Session, req *MazeGame.ReportDataRQ) (e
 	res.ErrInfo = errors.NO_ERROR
 	res.UserInfo = req.UserInfo
 
-	userId := uint64(s.UID())
+	userId := shardingID
 	reportInfo := req.GetUserInfo()
 
 	if reportInfo.GetReportMask() <= 0 {

@@ -3,17 +3,17 @@
 package sweep
 
 import (
-	"github.com/lonng/nano/session"
 	"gitlab.ifreetalk.com/maze-plate/excel/auto/GMazeBarriesV8Cfg"
 	"gitlab.ifreetalk.com/maze-plate/extra/protobuf/proto"
-	"gitlab.ifreetalk.com/maze/maze_game_server/common/errors"
 	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fkconfig"
 	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fklog"
+	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fknet"
 	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fkprometheus"
 	"gitlab.ifreetalk.com/maze-plate/protodef/MazeEnergySvr"
 	"gitlab.ifreetalk.com/maze-plate/protodef/MazeGame"
 	"gitlab.ifreetalk.com/maze-plate/protodef/MessageType"
 	"gitlab.ifreetalk.com/maze/maze_game_server/common/constdef"
+	"gitlab.ifreetalk.com/maze/maze_game_server/common/errors"
 	"gitlab.ifreetalk.com/maze/maze_game_server/common/function/uniqueid"
 	"gitlab.ifreetalk.com/maze/maze_game_server/module/calsweepbarrier"
 	"gitlab.ifreetalk.com/maze/maze_game_server/module/mazeuserinfo"
@@ -22,58 +22,54 @@ import (
 )
 
 // OnStartMazeSweepRQ start sweep
-func (sw *Sweep) OnStartMazeSweepRQ(s *session.Session, req *MazeGame.StartMazeSweepRQ) (err error) {
+func OnStartMazeSweepRQ(ctx fknet.TCPContext, userID uint64, rqMsg, rsMsg proto.Message) (err error) {
 	defer fkprometheus.InfoPMT("OnStartMazeSweepRQ")()
 
-	logger := fklog.AppLogger().Clone("sweep")
-
-	res := &MazeGame.StartMazeSweepRS{}
+	req := rqMsg.(*MazeGame.StartMazeSweepRQ)
+	res := rsMsg.(*MazeGame.StartMazeSweepRS)
 
 	res.Header = req.Header
 	res.ErrInfo = errors.NO_ERROR
 
-	userID := uint64(s.UID())
-
-	logger.InfoWF("OnStartMazeSweepRQ start", zap.Any("req", req))
+	ctx.InfoWF("OnStartMazeSweepRQ start", zap.Any("req", req))
 	defer func() {
-		err = s.Response(res)
-		logger.InfoWF("OnStartMazeSweepRQ end", zap.Any("res", res), zap.Any("errMsg", string(res.GetErrInfo().GetErrMsg())))
+		ctx.InfoWF("OnStartMazeSweepRQ end", zap.Any("res", res), zap.Any("errMsg", string(res.GetErrInfo().GetErrMsg())))
 	}()
 	barrierId := req.GetBarrierId()
 	res.BarrierId = req.BarrierId
 	if userID <= 0 {
-		logger.ErrorWF("OnStartMazeSweepRQ userId invalid", zap.Any("req", req))
+		ctx.ErrorWF("OnStartMazeSweepRQ userId invalid", zap.Any("req", req))
 		res.ErrInfo = errors.COMMON_ERROR_TIPS.Wrap("无效的用户ID")
 		return
 	}
 	// check barrier
 	if req.GetBarrierId() <= 0 {
-		logger.ErrorWF("OnStartMazeSweepRQ req barrier invalid", zap.Any("req", req))
+		ctx.ErrorWF("OnStartMazeSweepRQ req barrier invalid", zap.Any("req", req))
 		res.ErrInfo = errors.COMMON_ERROR_TIPS.Wrap("未设置关卡id")
 		return
 	}
 
 	barrierCfg := GMazeBarriesV8Cfg.Get(req.GetBarrierId())
 	if barrierCfg == nil {
-		logger.ErrorWF("OnStartMazeSweepRQ get barrier cfg fail", zap.Int32("barrierId", barrierId))
+		ctx.ErrorWF("OnStartMazeSweepRQ get barrier cfg fail", zap.Int32("barrierId", barrierId))
 		res.ErrInfo = errors.COMMON_ERROR_TIPS.Wrap("找不到该关卡配置")
 		return
 	}
 
-	userInfo, err := mazeuserinfo.GetUserInfoV2(logger, userID)
+	userInfo, err := mazeuserinfo.GetUserInfoV2(ctx, userID)
 	if err != nil {
-		logger.ErrorWF("OnStartMazeSweepRQ GetUserInfoV2 fail", zap.Error(err))
+		ctx.ErrorWF("OnStartMazeSweepRQ GetUserInfoV2 fail", zap.Error(err))
 		res.ErrInfo = errors.MODULE_ERROR.ToInfo()
 		return
 	}
 
 	if barrierId > userInfo.PassBarrier {
-		logger.ErrorWF("OnStartMazeSweepRQ exceed maxUserBarrierID", zap.Any("req", req), zap.Int32("save", userInfo.Barrier))
+		ctx.ErrorWF("OnStartMazeSweepRQ exceed maxUserBarrierID", zap.Any("req", req), zap.Int32("save", userInfo.Barrier))
 		res.ErrInfo = errors.COMMON_ERROR_TIPS.Wrap("不能扫荡未通关的关卡")
 		return
 	}
 	// check and cost energy
-	remainVal, errInfo := SubSweepEnergy(logger, userID, barrierId, barrierCfg.Mop_cost)
+	remainVal, errInfo := SubSweepEnergy(ctx, userID, barrierId, barrierCfg.Mop_cost)
 	res.RemainEnergy = proto.Int32(remainVal)
 	if errInfo != nil && errInfo.GetErrCode() != errors.NO_ERROR_CODE {
 		res.ErrInfo = errInfo
@@ -85,9 +81,9 @@ func (sw *Sweep) OnStartMazeSweepRQ(s *session.Session, req *MazeGame.StartMazeS
 
 	// query sweep award
 	// res.Awards, err = GetSweepAward(ctx, userID, barrierId)
-	res.Awards, res.RareAward, err = calsweepbarrier.CalUserSweepBarrierAward(logger, userID, barrierId, req.GetHeader())
+	res.Awards, res.RareAward, err = calsweepbarrier.CalUserSweepBarrierAward(ctx, userID, barrierId, req.GetHeader())
 	if err != nil {
-		logger.ErrorWF("OnStartMazeSweepRQ CalUserSweepBarrierAward fail", zap.Int32("barrierId", barrierId), zap.Error(err))
+		ctx.ErrorWF("OnStartMazeSweepRQ CalUserSweepBarrierAward fail", zap.Int32("barrierId", barrierId), zap.Error(err))
 		res.ErrInfo = errors.COMMON_ERROR_TIPS.Wrap("获取扫荡奖励失败")
 		return
 	}

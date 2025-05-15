@@ -1,10 +1,10 @@
 package game
 
 import (
-	"gitlab.ifreetalk.com/maze-plate/extra/protobuf/proto"
 	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fklog"
 	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fknet"
 	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fkprometheus"
+	"gitlab.ifreetalk.com/maze-plate/extra/protobuf/proto"
 )
 
 func OnBarrierAreaHeartRQ(logger fknet.TCPContext, shardingID uint64, rqMsg proto.Message, rsMsg proto.Message) (err error) {

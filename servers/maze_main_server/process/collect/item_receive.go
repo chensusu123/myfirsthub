@@ -4,57 +4,51 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/lonng/nano/session"
-	"gitlab.ifreetalk.com/maze/maze_game_server/io/kafka/mazecollectrecord"
-
 	"gitlab.ifreetalk.com/maze-plate/excel/auto/GMazeBarriesOnHookV8Cfg"
+	"gitlab.ifreetalk.com/maze-plate/extra/protobuf/proto"
+	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fklog"
+	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fknet"
 	"gitlab.ifreetalk.com/maze-plate/protodef/MazeCollect"
 	"gitlab.ifreetalk.com/maze-plate/protodef/MazeCollectCache"
+	"gitlab.ifreetalk.com/maze/maze_game_server/common/errors"
 	"gitlab.ifreetalk.com/maze/maze_game_server/common/function/gentradeno"
+	"gitlab.ifreetalk.com/maze/maze_game_server/io/kafka/mazecollectrecord"
 	"gitlab.ifreetalk.com/maze/maze_game_server/io/redis/mazecollectredis"
 	"gitlab.ifreetalk.com/maze/maze_game_server/module/mazeuserinfo"
-
-	"gitlab.ifreetalk.com/maze-plate/extra/protobuf/proto"
-	"gitlab.ifreetalk.com/maze/maze_game_server/common/errors"
-	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fklog"
 	"go.uber.org/zap"
 )
 
 // 道具领取
-func (c *Collect) OnMazeCollectItemReceiveRQ(s *session.Session, req *MazeCollect.MazeCollectItemReceiveRQ) (err error) {
-
-	logger := fklog.AppLogger().Clone("collect")
-	res := &MazeCollect.MazeCollectItemReceiveRS{}
+func OnMazeCollectItemReceiveRQ(ctx fknet.TCPContext, userId uint64, rq proto.Message, rs proto.Message) (err error) {
+	req := rq.(*MazeCollect.MazeCollectItemReceiveRQ)
+	res := rs.(*MazeCollect.MazeCollectItemReceiveRS)
 	res.Header = req.Header
 	res.ErrInfo = errors.NO_ERROR
 
-	userId := uint64(s.UID())
-
-	logger.InfoWF("OnMazeCollectItemReceiveRQ start", zap.Any("req", req))
+	ctx.InfoWF("OnMazeCollectItemReceiveRQ start", zap.Any("req", req))
 	defer func() {
-		err = s.Response(res)
-		logger.InfoWF("OnMazeCollectItemReceiveRQ end", zap.Any("res", res))
+		ctx.InfoWF("OnMazeCollectItemReceiveRQ end", zap.Any("res", res))
 	}()
 
 	// 是否已经初始化
-	collectInfo, err := mazecollectredis.GetCollectInfo(logger, userId)
+	collectInfo, err := mazecollectredis.GetCollectInfo(ctx, userId)
 	if err != nil {
-		logger.ErrorWF("OnMazeCollectItemReceiveRQ GetCollectInfo error",
+		ctx.ErrorWF("OnMazeCollectItemReceiveRQ GetCollectInfo error",
 			zap.Any("userId", userId),
 			zap.Error(err))
 		return
 	}
 
-	userInfo, err := mazeuserinfo.GetUserInfoV2(logger, userId)
+	userInfo, err := mazeuserinfo.GetUserInfoV2(ctx, userId)
 	if err != nil {
-		logger.ErrorWF("OnMazeCollectItemReceiveRQ GetUserInfoV2", zap.Error(err))
+		ctx.ErrorWF("OnMazeCollectItemReceiveRQ GetUserInfoV2", zap.Error(err))
 		res.ErrInfo = errors.MODULE_ERROR.ToInfo()
 		return err
 	}
 
 	// 确保领取时道具产出是正确的
 	if !CheckReceiveItems(collectInfo) {
-		logger.ErrorWF("OnMazeCollectItemReceiveRQ CheckReceiveItems",
+		ctx.ErrorWF("OnMazeCollectItemReceiveRQ CheckReceiveItems",
 			zap.Int64("nowSecond", time.Now().Unix()), zap.Any("collectInfo", collectInfo))
 		res.ErrInfo = errors.MODULE_ERROR.ToInfo()
 		return
@@ -63,9 +57,9 @@ func (c *Collect) OnMazeCollectItemReceiveRQ(s *session.Session, req *MazeCollec
 	rqItems := req.GetItems()
 
 	// 已收集道具
-	collectItems, remainItems := GetUserItemsAndRemains(logger, collectInfo.GetItems())
+	collectItems, remainItems := GetUserItemsAndRemains(ctx, collectInfo.GetItems())
 	if err != nil {
-		logger.ErrorWF("OnMazeCollectItemReceiveRQ GetUserItemsAndRemains", zap.Error(err))
+		ctx.ErrorWF("OnMazeCollectItemReceiveRQ GetUserItemsAndRemains", zap.Error(err))
 		res.ErrInfo = errors.MODULE_ERROR.ToInfo()
 		return
 	}
@@ -77,7 +71,7 @@ func (c *Collect) OnMazeCollectItemReceiveRQ(s *session.Session, req *MazeCollec
 		addItems[item.GetItemId()] = item.GetCount()
 	}
 	if len(addItems) == 0 {
-		logger.WarnWF("OnMazeCollectItemReceiveRQ no items",
+		ctx.WarnWF("OnMazeCollectItemReceiveRQ no items",
 			zap.Any("rqItems", rqItems), zap.Any("collectInfo", collectInfo))
 		res.ErrInfo = errors.MODULE_ERROR.Wrap("没有可领取道具")
 		return
@@ -88,7 +82,7 @@ func (c *Collect) OnMazeCollectItemReceiveRQ(s *session.Session, req *MazeCollec
 		for _, rqItem := range rqItems {
 			rqItemId, rqItemCount := rqItem.GetItemId(), rqItem.GetCount()
 			if svrItemCount, ok := addItems[rqItemId]; !ok || svrItemCount < rqItemCount {
-				logger.ErrorWF("OnMazeCollectItemReceiveRQ rq items invalid", zap.Any("itemId", rqItemId),
+				ctx.ErrorWF("OnMazeCollectItemReceiveRQ rq items invalid", zap.Any("itemId", rqItemId),
 					zap.Any("reItemCount", rqItemCount), zap.Any("svrItemCount", svrItemCount), zap.Any("exist", ok))
 				res.ErrInfo = errors.MODULE_ERROR.Wrap("道具参数校验失败")
 				return
@@ -98,33 +92,33 @@ func (c *Collect) OnMazeCollectItemReceiveRQ(s *session.Session, req *MazeCollec
 
 	// 清理已收集道具
 	now := time.Now().Unix()
-	resetCollectInfo, err := ResetMazeCollect(logger, userId, now, collectInfo, remainItems)
+	resetCollectInfo, err := ResetMazeCollect(ctx, userId, now, collectInfo, remainItems)
 	if err != nil {
-		logger.ErrorWF("OnMazeCollectItemReceiveRQ ResetMazeCollect", zap.Error(err))
+		ctx.ErrorWF("OnMazeCollectItemReceiveRQ ResetMazeCollect", zap.Error(err))
 		res.ErrInfo = errors.DB_SAVE_ERROR.Wrap("服务器繁忙")
 		return
 	}
-	logger.InfoWF("OnMazeCollectItemReceiveRQ ResetMazeCollect",
+	ctx.InfoWF("OnMazeCollectItemReceiveRQ ResetMazeCollect",
 		zap.Any("old collect info", collectInfo), zap.Any("reset collect info", resetCollectInfo))
 
 	res.FreshTime = proto.Int64(GetFreshTime(resetCollectInfo))
 
 	tradeNo := gentradeno.GetTradeNum()
 	items := Map2Common(addItems)
-	errInfo := gentradeno.AddItemEx(logger, userId, 692, tradeNo, req.Header, items...)
+	errInfo := gentradeno.AddItemEx(ctx, userId, 692, tradeNo, req.Header, items...)
 	if errInfo != nil {
-		logger.ErrorWF("GetAllEquipDismantleAward AddItemEx fail", zap.Any("items", items))
+		ctx.ErrorWF("GetAllEquipDismantleAward AddItemEx fail", zap.Any("items", items))
 		//res.ErrInfo = errInfo
 		//return nil
 	}
 
-	mazeCollectInfoPb, err := MazeCollectToCliPB(logger, resetCollectInfo, userInfo.PassBarrier)
+	mazeCollectInfoPb, err := MazeCollectToCliPB(ctx, resetCollectInfo, userInfo.PassBarrier)
 	if err != nil {
-		logger.ErrorWF("ItemCollect MazeCollectToCliPB err", zap.Any("collectInfo", collectInfo), zap.Error(err))
+		ctx.ErrorWF("ItemCollect MazeCollectToCliPB err", zap.Any("collectInfo", collectInfo), zap.Error(err))
 		return
 	}
 	res.MazeCollectInfo = mazeCollectInfoPb
-	PushDollMazeCollectInfoLog(logger, userId, resetCollectInfo, collectInfo.GetLastTime(), 0, mazecollectrecord.MazeCollectReceive, tradeNo, items, 0)
+	PushDollMazeCollectInfoLog(ctx, userId, resetCollectInfo, collectInfo.GetLastTime(), 0, mazecollectrecord.MazeCollectReceive, tradeNo, items, 0)
 	return
 }
 

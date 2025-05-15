@@ -4,14 +4,14 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/lonng/nano/session"
 	"gitlab.ifreetalk.com/maze-plate/extra/protobuf/proto"
-	"gitlab.ifreetalk.com/maze/maze_game_server/common/errors"
 	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fklog"
+	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fknet"
 	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fkprometheus"
 	"gitlab.ifreetalk.com/maze-plate/protodef/MazeCommon"
 	"gitlab.ifreetalk.com/maze-plate/protodef/MazeGame"
 	"gitlab.ifreetalk.com/maze/maze_game_server/common/constdef"
+	"gitlab.ifreetalk.com/maze/maze_game_server/common/errors"
 	"gitlab.ifreetalk.com/maze/maze_game_server/io/kafka/mazebarrieruserkafka"
 	"gitlab.ifreetalk.com/maze/maze_game_server/io/kafka/mazeuserlevelkafka"
 	"gitlab.ifreetalk.com/maze/maze_game_server/io/redis/mazeuserbarrierredis"
@@ -21,16 +21,14 @@ import (
 	"go.uber.org/zap"
 )
 
-func (g *Game) OnMazeBarrierDeathRQ(s *session.Session, req *MazeGame.BarrierDeathRQ) (err error) {
+func OnMazeBarrierDeathRQ(logger fknet.TCPContext, shardingID uint64, rqMsg proto.Message, rsMsg proto.Message) (err error) {
 	fkprometheus.InfoPMT("OnMazeBarrierDeathRQ")()
 
-	logger := fklog.AppLogger().Clone("game")
-
-	res := &MazeGame.BarrierDeathRS{}
+	req := rqMsg.(*MazeGame.BarrierDeathRQ)
+	res := rsMsg.(*MazeGame.BarrierDeathRS)
 
 	logger.InfoWF("OnMazeBarrierDeathRQ start", zap.Any("req", req))
 	defer func() {
-		err = s.Response(res)
 		logger.InfoWF("OnMazeBarrierDeathRQ end", zap.Any("res", res))
 	}()
 
@@ -38,7 +36,7 @@ func (g *Game) OnMazeBarrierDeathRQ(s *session.Session, req *MazeGame.BarrierDea
 	res.ErrInfo = errors.NO_ERROR
 	res.BarrierId = req.BarrierId
 
-	userId := uint64(s.UID())
+	userId := shardingID
 
 	if req.GetBarrierId() <= 0 {
 		logger.ErrorWF("OnMazeBarrierDeathRQ req barrier invalid", zap.Any("req", req))

@@ -15,7 +15,6 @@ type Game struct {
 func NewGame() *Game {
 	return &Game{}
 }
-
 func RegTcpHandler() {
 	// 人偶版本新手引导关卡信息查询RQ
 	// websocket_service.RegProcSimple(
@@ -45,13 +44,13 @@ func RegTcpHandler() {
 	websocket_service.RegProcSimple(
 		16208, &MazeGame.BarrierOpenBoxRQ{},
 		16209, &MazeGame.BarrierOpenBoxRS{},
-		nil /* OnBarrierOpenBoxRQ */)
+		OnBarrierOpenBoxRQ)
 
 	// 人偶版本迷宫进出关卡RQ
 	websocket_service.RegProcSimple(
 		16210, &MazeGame.MazeBarrierEnterRQ{},
 		16211, &MazeGame.MazeBarrierEnterRS{},
-		nil /* OnMazeBarrierEnterRQ */)
+		OnMazeBarrierEnterRQ)
 
 	// 人偶版本迷宫进出关卡区域RQ
 	// websocket_service.RegProcSimple(
@@ -69,7 +68,7 @@ func RegTcpHandler() {
 	websocket_service.RegProcSimple(
 		16212, &MazeGame.BarrierDeathRQ{},
 		16213, &MazeGame.BarrierDeathRS{},
-		nil /* OnMazeBarrierDeathRQ */)
+		OnMazeBarrierDeathRQ)
 
 	// 人偶版本迷宫查询关卡区域RQ
 	// websocket_service.RegProcSimple(
@@ -83,7 +82,7 @@ func RegTcpHandler() {
 
 	// 处理装备命令
 	_ = websocket_service.RegProcSimple(16218, &MazeGame.SendDollMazeCmdRQ{},
-		16219, &MazeGame.SendDollMazeCmdRS{}, nil /* OnSendDollMazeCmdRQ */)
+		16219, &MazeGame.SendDollMazeCmdRS{}, OnSendDollMazeCmdRQ)
 
 	// 人偶版本迷宫上报闲置装备数量RQ
 	// websocket_service.RegProcSimple(
@@ -95,37 +94,37 @@ func RegTcpHandler() {
 	websocket_service.RegProcSimple(
 		16206, &MazeGame.MazeLoginRQ{},
 		16207, &MazeGame.MazeLoginRS{},
-		nil /* OnMazeLoginRQ */)
+		OnMazeLoginRQ)
 
 	// 上报人物等级和关卡
 	websocket_service.RegProcSimple(
 		16214, &MazeGame.ReportDataRQ{},
 		16215, &MazeGame.ReportDataRS{},
-		nil /* OnReportDataRQ */)
+		OnReportDataRQ)
 
 	// 打怪上报申请加装备
 	websocket_service.RegProcSimple(
 		16216, &MazeGame.ReportAwardFoeEquipRQ{},
 		16217, &MazeGame.ReportAwardFoeEquipRS{},
-		nil /* OnReportAwardFoeEquipRQ */)
+		OnReportAwardFoeEquipRQ)
 
 	// 关卡列表
 	websocket_service.RegProcSimple(
 		16251, &MazeGame.MazeBarrierListRQ{},
 		16252, &MazeGame.MazeBarrierListRS{},
-		nil /* OnMazeBarrierListRQ */)
+		OnMazeBarrierListRQ)
 
 	// 通关
 	websocket_service.RegProcSimple(
 		16253, &MazeGame.MazeBarrierPassRQ{},
 		16254, &MazeGame.MazeBarrierPassRS{},
-		nil /* OnMazeBarrierPassRQ */)
+		OnMazeBarrierPassRQ)
 
 	// 挑战复活
 	websocket_service.RegProcSimple(
 		16269, &MazeGame.MazeBarrierRebornRQ{},
 		16270, &MazeGame.MazeBarrierRebornRS{},
-		nil /* OnMazeBarrierRebornRQ */)
+		OnMazeBarrierRebornRQ)
 }
 
 func RegisterRpcPackProcessor() {

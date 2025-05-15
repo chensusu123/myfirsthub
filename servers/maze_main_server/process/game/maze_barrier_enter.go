@@ -3,19 +3,19 @@ package game
 import (
 	"time"
 
-	"github.com/lonng/nano/session"
 	"gitlab.ifreetalk.com/maze-plate/excel/auto/GMazeActionCountV8Cfg"
 	"gitlab.ifreetalk.com/maze-plate/excel/auto/GMazeBarriesV8Cfg"
 	"gitlab.ifreetalk.com/maze-plate/excel/auto/GMazeLevelV8Cfg"
 	"gitlab.ifreetalk.com/maze-plate/extra/protobuf/proto"
-	"gitlab.ifreetalk.com/maze/maze_game_server/common/errors"
 	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fklog"
+	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fknet"
 	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fkprometheus"
 	"gitlab.ifreetalk.com/maze-plate/protodef/MazeAIBattle"
 	"gitlab.ifreetalk.com/maze-plate/protodef/MazeCommon"
 	"gitlab.ifreetalk.com/maze-plate/protodef/MazeEnergySvr"
 	"gitlab.ifreetalk.com/maze-plate/protodef/MazeGame"
 	"gitlab.ifreetalk.com/maze/maze_game_server/common/constdef"
+	"gitlab.ifreetalk.com/maze/maze_game_server/common/errors"
 	"gitlab.ifreetalk.com/maze/maze_game_server/common/function/gentradeno"
 	"gitlab.ifreetalk.com/maze/maze_game_server/io/redis/mazebarriertempbuffredis"
 	"gitlab.ifreetalk.com/maze/maze_game_server/io/redis/mazechallengenumredis"
@@ -28,22 +28,21 @@ import (
 	"go.uber.org/zap"
 )
 
-func (g *Game) OnMazeBarrierEnterRQ(s *session.Session, req *MazeGame.MazeBarrierEnterRQ) (err error) {
+func OnMazeBarrierEnterRQ(logger fknet.TCPContext, shardingID uint64, rqMsg proto.Message, rsMsg proto.Message) (err error) {
 	fkprometheus.InfoPMT("OnMazeBarrierEnterRQ")()
 
-	logger := fklog.AppLogger().Clone("game")
-	res := &MazeGame.MazeBarrierEnterRS{}
+	req := rqMsg.(*MazeGame.MazeBarrierEnterRQ)
+	res := rsMsg.(*MazeGame.MazeBarrierEnterRS)
 
 	logger.InfoWF("OnMazeBarrierEnterRQ start", zap.Any("req", req))
 	defer func() {
-		err = s.Response(res)
 		logger.InfoWF("OnMazeBarrierEnterRQ end", zap.Any("res", res))
 	}()
 
 	res.Header = req.Header
 	res.ErrInfo = errors.NO_ERROR
 
-	userId := uint64(s.UID())
+	userId := shardingID
 
 	if req.GetBarrierId() <= 0 {
 		logger.ErrorWF("OnMazeBarrierEnterRQ req barrier invalid", zap.Any("req", req))
