@@ -17,12 +17,12 @@ import (
 func RegTcpHandler() {
 
 	// 迷宫掠夺列表
-	websocket_service.RegProcSimple(16275, &MazeRobGuaJi.MazeRobGuaJiListRQ{},
-		16276, &MazeRobGuaJi.MazeRobGuaJiListRS{}, OnMazeRobGuaJiListRQ)
+	websocket_service.RegProcSimple(10488, &MazeRobGuaJi.MazeRobGuaJiListRQ{},
+		10489, &MazeRobGuaJi.MazeRobGuaJiListRS{}, OnMazeRobGuaJiListRQ)
 
 	// 迷宫掠夺
-	websocket_service.RegProcSimple(16277, &MazeRobGuaJi.MazeRobGuaJiRQ{},
-		16278, &MazeRobGuaJi.MazeRobGuaJiRS{}, OnMazeRobGuaJiRQ)
+	websocket_service.RegProcSimple(10490, &MazeRobGuaJi.MazeRobGuaJiRQ{},
+		10491, &MazeRobGuaJi.MazeRobGuaJiRS{}, OnMazeRobGuaJiRQ)
 
 }
 

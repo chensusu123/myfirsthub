@@ -16,7 +16,7 @@ require (
 	gitlab.ifreetalk.com/maze-plate/extra v1.0.1-0.20250401060651-722653168d37
 	gitlab.ifreetalk.com/maze-plate/freetk v1.0.1-0.20250515074528-4334f63a4663
 	gitlab.ifreetalk.com/maze-plate/io v0.0.0-20250411054516-f3778c3f9a74
-	gitlab.ifreetalk.com/maze-plate/protodef v0.0.0-20250515072513-b2746e13cca6
+	gitlab.ifreetalk.com/maze-plate/protodef v0.0.0-20250515124213-ff177f2af85c
 	gitlab.ifreetalk.com/plate/extra v1.1.7
 	gitlab.ifreetalk.com/plate/protodef v1.0.105
 	go.uber.org/atomic v1.9.0
