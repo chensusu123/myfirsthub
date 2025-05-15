@@ -12,7 +12,7 @@ import (
 	"time"
 
 	"github.com/hertz-contrib/websocket"
-	"gitlab.ifreetalk.com/plate/freetk/fkcore/fknet"
+	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fknet"
 	"go.uber.org/zap"
 )
 

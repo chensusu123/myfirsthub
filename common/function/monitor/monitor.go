@@ -6,7 +6,7 @@ package monitor
 
 import (
 	"fmt"
-	"gitlab.ifreetalk.com/plate/freetk/fkcore/fkmonitor"
+	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fkmonitor"
 )
 
 type MyMonitor struct {

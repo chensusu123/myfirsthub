@@ -8,7 +8,7 @@ import (
 	"sync"
 	"time"
 
-	"gitlab.ifreetalk.com/plate/freetk/common/fkfmt"
+	"gitlab.ifreetalk.com/maze-plate/freetk/common/fkfmt"
 )
 
 type cacheData struct {

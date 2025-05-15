@@ -5,7 +5,7 @@
 package fileio
 
 import (
-	"gitlab.ifreetalk.com/plate/freetk/common/fkfmt"
+	"gitlab.ifreetalk.com/maze-plate/freetk/common/fkfmt"
 	"strconv"
 	"strings"
 )

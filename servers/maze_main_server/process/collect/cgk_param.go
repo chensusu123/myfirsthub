@@ -1,7 +1,7 @@
 package collect
 
 import (
-	"gitlab.ifreetalk.com/plate/freetk/fkcore/fkconfig/param"
+	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fkconfig/param"
 )
 
 var (

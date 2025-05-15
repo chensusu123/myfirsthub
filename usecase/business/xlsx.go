@@ -4,7 +4,7 @@ import (
 	"errors"
 	"strings"
 
-	"gitlab.ifreetalk.com/plate/freetk/fkcore/fklog"
+	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fklog"
 
 	"go.uber.org/zap"
 )

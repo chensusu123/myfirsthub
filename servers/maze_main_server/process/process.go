@@ -1,6 +1,8 @@
 package process
 
 import (
+	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fklog"
+	"gitlab.ifreetalk.com/maze-plate/freetk/fkserver/web_service"
 	"gitlab.ifreetalk.com/maze/maze_game_server/lib/net/websocket_service"
 	"gitlab.ifreetalk.com/maze/maze_game_server/servers/maze_main_server/process/attr_calc"
 	"gitlab.ifreetalk.com/maze/maze_game_server/servers/maze_main_server/process/auth"
@@ -15,8 +17,6 @@ import (
 	"gitlab.ifreetalk.com/maze/maze_game_server/servers/maze_main_server/process/gm"
 	"gitlab.ifreetalk.com/maze/maze_game_server/servers/maze_main_server/process/item"
 	"gitlab.ifreetalk.com/maze/maze_game_server/servers/maze_main_server/process/rob"
-	"gitlab.ifreetalk.com/plate/freetk/fkcore/fklog"
-	"gitlab.ifreetalk.com/plate/freetk/fkserver/web_service"
 )
 
 func RegisterHandler() {

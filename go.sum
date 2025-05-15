@@ -1906,9 +1906,9 @@ gitlab.ifreetalk.com/plate/definition v1.0.6 h1:jxAJiWFIGV5Nh4GNAySF4qNg+KzWMjg0
 gitlab.ifreetalk.com/plate/definition v1.0.6/go.mod h1:+g0fTC+E97RYCq+8g9ABuAmTxr6OVwXxo67qxTgymIs=
 gitlab.ifreetalk.com/maze-plate/io v1.4.102-0.20250326074707-ac26a4cb5dba h1:dNyVsy5Pqp0wPamYL6JdUPEEkBxq6tep54DhKJPoHuM=
 gitlab.ifreetalk.com/maze-plate/io v1.4.102-0.20250326074707-ac26a4cb5dba/go.mod h1:tYP77irKSOBPx0iMlsxGucMnSIumHH75qtyB2hFv4DM=
-gitlab.ifreetalk.com/plate/protodef v1.0.29/go.mod h1:PPI4xcnIz1/Vy4pJeKekYyMupq4U2yE5NNU+TnovEjg=
-gitlab.ifreetalk.com/plate/protodef v1.0.88-0.20250509114533-682a3cdb0fb7 h1:SM+p62kjxJIGCGiCHgYJtyTzIIC+4lCO+OC1/AZylR0=
-gitlab.ifreetalk.com/plate/protodef v1.0.88-0.20250509114533-682a3cdb0fb7/go.mod h1:PPI4xcnIz1/Vy4pJeKekYyMupq4U2yE5NNU+TnovEjg=
+gitlab.ifreetalk.com/maze-plate/protodef v1.0.29/go.mod h1:PPI4xcnIz1/Vy4pJeKekYyMupq4U2yE5NNU+TnovEjg=
+gitlab.ifreetalk.com/maze-plate/protodef v1.0.88-0.20250509114533-682a3cdb0fb7 h1:SM+p62kjxJIGCGiCHgYJtyTzIIC+4lCO+OC1/AZylR0=
+gitlab.ifreetalk.com/maze-plate/protodef v1.0.88-0.20250509114533-682a3cdb0fb7/go.mod h1:PPI4xcnIz1/Vy4pJeKekYyMupq4U2yE5NNU+TnovEjg=
 go.einride.tech/aip v0.66.0/go.mod h1:qAhMsfT7plxBX+Oy7Huol6YUvZ0ZzdUz26yZsQwfl1M=
 go.opencensus.io v0.21.0/go.mod h1:mSImk1erAIZhrmZN+AvHh14ztQfjbGwt4TtuofqLduU=
 go.opencensus.io v0.22.0/go.mod h1:+kGneAE2xo2IficOXnaByMWTGM9T73dGwxeWcUqIpI8=

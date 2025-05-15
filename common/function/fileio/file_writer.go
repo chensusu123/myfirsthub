@@ -6,7 +6,7 @@ package fileio
 
 import (
 	"fmt"
-	"gitlab.ifreetalk.com/plate/freetk/common/fkfmt"
+	"gitlab.ifreetalk.com/maze-plate/freetk/common/fkfmt"
 	"os"
 )
 

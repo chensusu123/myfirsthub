@@ -3,7 +3,7 @@ package dispatcher
 import (
 	"context"
 
-	"gitlab.ifreetalk.com/plate/freetk/fkcore/fklog"
+	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fklog"
 )
 
 type msgWrapper[T any] struct {

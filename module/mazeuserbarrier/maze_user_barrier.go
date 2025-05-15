@@ -1,7 +1,7 @@
 package mazeuserbarrier
 
 import (
-	"gitlab.ifreetalk.com/plate/freetk/fkcore/fklog"
+	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fklog"
 )
 
 type MazeUserBarrier struct {

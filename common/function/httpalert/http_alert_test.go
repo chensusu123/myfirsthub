@@ -11,7 +11,7 @@ import (
 	"fmt"
 	"testing"
 
-	"gitlab.ifreetalk.com/plate/freetk/fkcore/fklog"
+	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fklog"
 )
 
 func TestAlert(t *testing.T) {

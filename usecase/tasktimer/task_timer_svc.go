@@ -8,8 +8,8 @@ import (
 
 	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fkconfig"
 	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fklog"
+	"gitlab.ifreetalk.com/maze-plate/protodef/SeaTaskSvr"
 	"gitlab.ifreetalk.com/maze/maze_game_server/usecase/tasktimer/delay/redisdelay"
-	"gitlab.ifreetalk.com/plate/protodef/SeaTaskSvr"
 	"go.uber.org/zap"
 )
 
