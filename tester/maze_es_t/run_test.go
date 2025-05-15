@@ -13,6 +13,7 @@ import (
 	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fklog"
 	"gitlab.ifreetalk.com/maze-plate/protodef/MazeGame"
 	"gitlab.ifreetalk.com/maze-plate/protodef/SysPackDef"
+	"gitlab.ifreetalk.com/maze-plate/protodef/UserLogin"
 	"gitlab.ifreetalk.com/maze/maze_game_server/lib/net/raw_pkg"
 	"gitlab.ifreetalk.com/maze/maze_game_server/lib/net/websocket_service"
 	"gitlab.ifreetalk.com/maze/maze_game_server/servers/maze_es/process"
@@ -102,8 +103,8 @@ func client(logger fklog.FKLogI, addr string) {
 
 func initService() {
 	websocket_service.RegProcSimple(
-		5183, &SysPackDef.UserLoginRq{},
-		5184, &SysPackDef.UserLoginRs{},
+		5183, &UserLogin.UserLoginRq{},
+		5184, &UserLogin.UserLoginRs{},
 		process.OnLoginRQ)
 
 	websocket_service.RegProcSimple(

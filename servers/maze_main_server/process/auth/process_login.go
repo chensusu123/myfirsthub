@@ -2,10 +2,10 @@ package auth
 
 import (
 	"gitlab.ifreetalk.com/maze-plate/extra/protobuf/proto"
-	"gitlab.ifreetalk.com/maze/maze_game_server/common/errors"
 	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fknet"
 	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fkprometheus"
-	"gitlab.ifreetalk.com/maze-plate/protodef/SysPackDef"
+	"gitlab.ifreetalk.com/maze-plate/protodef/UserLogin"
+	"gitlab.ifreetalk.com/maze/maze_game_server/common/errors"
 
 	"go.uber.org/zap"
 )
@@ -13,8 +13,8 @@ import (
 func OnLoginRQ(ctx fknet.TCPContext, shardingID uint64, rqMsg proto.Message, rsMsg proto.Message) (err error) {
 	fkprometheus.InfoPMT("OnLoginRQ")()
 
-	req := rqMsg.(*SysPackDef.UserLoginRq)
-	res := rsMsg.(*SysPackDef.UserLoginRs)
+	req := rqMsg.(*UserLogin.UserLoginRq)
+	res := rsMsg.(*UserLogin.UserLoginRs)
 
 	logger := ctx
 	res.Session = req.Session
