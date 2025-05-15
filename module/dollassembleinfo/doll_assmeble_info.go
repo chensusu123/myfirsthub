@@ -1,18 +1,18 @@
 package dollassembleinfo
 
 import (
-	"gitlab.ifreetalk.com/plate/excel/auto/GMazeEquipPosRankV8Cfg"
-	"gitlab.ifreetalk.com/plate/extra/protobuf/proto"
-	"gitlab.ifreetalk.com/plate/freetk/common/errors"
-	"gitlab.ifreetalk.com/plate/freetk/fkcore/fklog"
+	"gitlab.ifreetalk.com/maze-plate/excel/auto/GMazeEquipPosRankV8Cfg"
+	"gitlab.ifreetalk.com/maze-plate/extra/protobuf/proto"
+	"gitlab.ifreetalk.com/maze-plate/freetk/common/errors"
+	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fklog"
 	"gitlab.ifreetalk.com/maze-plate/protodef/MazeEquipCache"
-	"go.uber.org/zap"
-	"gitlab.ifreetalk.com/maze/maze_game_server/io/redis/dollassembleredis"
-	"gitlab.ifreetalk.com/maze/maze_game_server/module/calcassembleattr"
 	"gitlab.ifreetalk.com/maze/maze_game_server/common/constdef"
-	"gitlab.ifreetalk.com/maze/maze_game_server/io/redis/dollassemblesuitredis"
 	"gitlab.ifreetalk.com/maze/maze_game_server/common/function/assemble"
+	"gitlab.ifreetalk.com/maze/maze_game_server/io/redis/dollassembleredis"
+	"gitlab.ifreetalk.com/maze/maze_game_server/io/redis/dollassemblesuitredis"
+	"gitlab.ifreetalk.com/maze/maze_game_server/module/calcassembleattr"
 	"gitlab.ifreetalk.com/maze/maze_game_server/module/effectequip"
+	"go.uber.org/zap"
 )
 
 // 打包装配信息

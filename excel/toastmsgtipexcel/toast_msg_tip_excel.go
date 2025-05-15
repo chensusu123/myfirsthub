@@ -6,7 +6,7 @@
  */
 package toastmsgtipexcel
 
-import "gitlab.ifreetalk.com/plate/excel/auto/GMazeToastMsgInfoCfg"
+import "gitlab.ifreetalk.com/maze-plate/excel/auto/GMazeToastMsgInfoCfg"
 
 // 从配表获取提示内容
 func GetToastMsgTip(toastId int32, def string) string {

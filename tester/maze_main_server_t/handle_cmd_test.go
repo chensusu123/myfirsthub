@@ -5,11 +5,11 @@ import (
 	"fmt"
 	"testing"
 
-	"gitlab.ifreetalk.com/maze/maze_game_server/servers/maze_main_server/process/game"
-	"gitlab.ifreetalk.com/plate/extra/protobuf/proto"
-	"gitlab.ifreetalk.com/plate/freetk/fkcore/fknet"
+	"gitlab.ifreetalk.com/maze-plate/extra/protobuf/proto"
+	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fknet"
 	"gitlab.ifreetalk.com/maze-plate/protodef/Common"
 	"gitlab.ifreetalk.com/maze-plate/protodef/MazeGame"
+	"gitlab.ifreetalk.com/maze/maze_game_server/servers/maze_main_server/process/game"
 )
 
 func TestOnMazeCmdRQ(t *testing.T) {

@@ -1,10 +1,11 @@
 package mazeequipaffixrandpoolv8
 
 import (
-	"gitlab.ifreetalk.com/plate/excel/auto/GMazeEquipAffixRandPoolV8Cfg"
 	"sync"
 	"sync/atomic"
 	"unsafe"
+
+	"gitlab.ifreetalk.com/maze-plate/excel/auto/GMazeEquipAffixRandPoolV8Cfg"
 )
 
 type MazeEquipAffixRandPoolV8CfgEx struct {

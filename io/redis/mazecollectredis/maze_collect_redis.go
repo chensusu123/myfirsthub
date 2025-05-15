@@ -6,11 +6,11 @@ import (
 
 	"gitlab.ifreetalk.com/maze-plate/protodef/MazeCollectCache"
 
-	"gitlab.ifreetalk.com/plate/extra/protobuf/proto"
-	"gitlab.ifreetalk.com/plate/freetk/fkcore/fkconfig"
-	"gitlab.ifreetalk.com/plate/freetk/fkcore/fklog"
-	"gitlab.ifreetalk.com/plate/freetk/fkcore/fkredis"
-	"gitlab.ifreetalk.com/plate/freetk/fkcore/fkredis/redis"
+	"gitlab.ifreetalk.com/maze-plate/extra/protobuf/proto"
+	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fkconfig"
+	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fklog"
+	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fkredis"
+	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fkredis/redis"
 	"go.uber.org/zap"
 )
 

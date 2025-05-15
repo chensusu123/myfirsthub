@@ -6,18 +6,18 @@ import (
 	"sync"
 	"time"
 
-	"gitlab.ifreetalk.com/plate/extra/protobuf/proto"
-	"gitlab.ifreetalk.com/plate/freetk/common/errors"
-	"gitlab.ifreetalk.com/plate/freetk/common/fkfmt"
-	"gitlab.ifreetalk.com/plate/freetk/fkcore/fkconfig"
-	"gitlab.ifreetalk.com/plate/freetk/fkcore/fkconfig/param"
-	"gitlab.ifreetalk.com/plate/freetk/fkcore/fklog"
-	"gitlab.ifreetalk.com/plate/freetk/fkcore/fknet"
-	"gitlab.ifreetalk.com/plate/freetk/fkcore/fktcpclient"
-	"gitlab.ifreetalk.com/plate/freetk/fkutil"
+	"gitlab.ifreetalk.com/maze-plate/extra/protobuf/proto"
+	"gitlab.ifreetalk.com/maze-plate/freetk/common/errors"
+	"gitlab.ifreetalk.com/maze-plate/freetk/common/fkfmt"
+	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fkconfig"
+	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fkconfig/param"
+	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fklog"
+	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fknet"
+	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fktcpclient"
+	"gitlab.ifreetalk.com/maze-plate/freetk/fkutil"
 	"gitlab.ifreetalk.com/maze-plate/protodef/KafkaMsgNotify"
-	"go.uber.org/zap"
 	"gitlab.ifreetalk.com/maze/maze_game_server/common/constdef"
+	"go.uber.org/zap"
 )
 
 var svrTypeToClient sync.Map     // svrType(int32):*fktcpclient.SyncClient

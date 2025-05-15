@@ -11,7 +11,7 @@ import (
 	"sync/atomic"
 	"unsafe"
 
-	"gitlab.ifreetalk.com/plate/excel/auto/GMazeAttrListOrderV8Cfg"
+	"gitlab.ifreetalk.com/maze-plate/excel/auto/GMazeAttrListOrderV8Cfg"
 )
 
 type MazeAttrListOrderV8ConfigEx struct {

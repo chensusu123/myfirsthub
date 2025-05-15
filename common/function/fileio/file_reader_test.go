@@ -5,12 +5,13 @@
 package fileio
 
 import (
-	"gitlab.ifreetalk.com/plate/freetk/common/fkfmt"
-	"gitlab.ifreetalk.com/plate/freetk/fkcore/fklog"
-	"go.uber.org/zap"
 	"io"
 	"testing"
 	"time"
+
+	"gitlab.ifreetalk.com/maze-plate/freetk/common/fkfmt"
+	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fklog"
+	"go.uber.org/zap"
 )
 
 func dumpLine(logger fklog.FKLogI, line []uint64) bool {
@@ -21,7 +22,7 @@ func dumpLine(logger fklog.FKLogI, line []uint64) bool {
 	return true
 }
 
-//测试用例1 使用range 遍历
+// 测试用例1 使用range 遍历
 func TestNewFReader1(t *testing.T) {
 	logger := fklog.InitStdoutLog("")
 	fr := NewDefFReader(logger)
@@ -35,7 +36,7 @@ func TestNewFReader1(t *testing.T) {
 	fr.Range(dumpLine)
 }
 
-//测试用例2 自己遍历
+// 测试用例2 自己遍历
 func TestNewFReader2(t *testing.T) {
 	logger := fklog.InitStdoutLog("")
 	fr := NewDefFReader(logger)

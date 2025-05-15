@@ -5,9 +5,9 @@ import (
 	"strings"
 	"time"
 
-	"gitlab.ifreetalk.com/plate/freetk/fkcore/fkconfig"
-	"gitlab.ifreetalk.com/plate/freetk/fkcore/fklog"
-	"gitlab.ifreetalk.com/plate/io_interface/common/alert"
+	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fkconfig"
+	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fklog"
+	"gitlab.ifreetalk.com/maze-plate/io/common/alert"
 )
 
 // 使用http方式上报告警，默认有告警都会报出来

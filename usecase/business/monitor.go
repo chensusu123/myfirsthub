@@ -8,9 +8,9 @@ import (
 	"strings"
 	"time"
 
-	"gitlab.ifreetalk.com/plate/freetk/fkcore/fkalert"
-	"gitlab.ifreetalk.com/plate/freetk/fkcore/fklog"
-	"gitlab.ifreetalk.com/plate/freetk/fkutil/filemonitor"
+	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fkalert"
+	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fklog"
+	"gitlab.ifreetalk.com/maze-plate/freetk/fkutil/filemonitor"
 
 	"github.com/xuri/excelize/v2"
 

@@ -1,9 +1,9 @@
 package business
 
 import (
-	"gitlab.ifreetalk.com/plate/freetk/fkcore/fkalert"
-	"gitlab.ifreetalk.com/plate/freetk/fkcore/fkconfig"
-	"gitlab.ifreetalk.com/plate/freetk/fkcore/fkmonitor"
+	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fkalert"
+	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fkconfig"
+	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fkmonitor"
 )
 
 const (

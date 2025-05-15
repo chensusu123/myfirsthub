@@ -8,12 +8,12 @@ import (
 	"sync"
 	"time"
 
-	"gitlab.ifreetalk.com/plate/freetk/fkcore/fkconfig"
-	"gitlab.ifreetalk.com/plate/freetk/fkcore/fkconfig/param"
-	"gitlab.ifreetalk.com/plate/freetk/fkcore/fklog"
-	"gitlab.ifreetalk.com/plate/freetk/fkserver"
-	"gitlab.ifreetalk.com/plate/freetk/fkserver/config_manager/loadconfigapi"
-	"gitlab.ifreetalk.com/plate/freetk/fkutil/filemonitor"
+	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fkconfig"
+	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fkconfig/param"
+	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fklog"
+	"gitlab.ifreetalk.com/maze-plate/freetk/fkserver"
+	"gitlab.ifreetalk.com/maze-plate/freetk/fkserver/config_manager/loadconfigapi"
+	"gitlab.ifreetalk.com/maze-plate/freetk/fkutil/filemonitor"
 	"go.uber.org/atomic"
 	"go.uber.org/zap"
 )

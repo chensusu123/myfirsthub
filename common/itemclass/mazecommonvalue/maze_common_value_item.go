@@ -7,20 +7,21 @@
 package mazecommonvalue
 
 import (
-	"gitlab.ifreetalk.com/plate/extra/protobuf/proto"
-	"gitlab.ifreetalk.com/plate/freetk/common/errors"
-	"gitlab.ifreetalk.com/plate/freetk/fkserver"
+	"fmt"
+
+	"gitlab.ifreetalk.com/maze-plate/extra/protobuf/proto"
+	"gitlab.ifreetalk.com/maze-plate/freetk/common/errors"
+	"gitlab.ifreetalk.com/maze-plate/freetk/fkserver"
 	"gitlab.ifreetalk.com/maze-plate/protodef/MazeCommon"
 	"gitlab.ifreetalk.com/maze-plate/protodef/MazeCommonValueSvr"
 	"gitlab.ifreetalk.com/maze-plate/protodef/MessageType"
-	"go.uber.org/zap"
 	"gitlab.ifreetalk.com/maze/maze_game_server/common/additemdefine"
 	"gitlab.ifreetalk.com/maze/maze_game_server/common/itemdefine/constdefine"
 	"gitlab.ifreetalk.com/maze/maze_game_server/common/itemdefine/errdefine"
 	"gitlab.ifreetalk.com/maze/maze_game_server/common/structdefine"
-	"gitlab.ifreetalk.com/maze/maze_game_server/servers/maze_main_server/process/game/common_value"
-	"fmt"
 	"gitlab.ifreetalk.com/maze/maze_game_server/io/redis/mazecommonvaluedb"
+	"gitlab.ifreetalk.com/maze/maze_game_server/servers/maze_main_server/process/game/common_value"
+	"go.uber.org/zap"
 )
 
 var GlobalMazeCommonValue = &class{}
@@ -122,8 +123,7 @@ func (s *class) DeductItemCheck(userCtx fkserver.UserContext, _ *additemdefine.A
 		bagCount = dbCountMap[item.GetItemId()]
 
 		if bagCount < item.GetCount() {
-			userCtx.WarnWF("MazeCommonValue DeductItemCheck item not enough", zap.Int64("bagCount", bagCount), zap.Any("item", item),
-			)
+			userCtx.WarnWF("MazeCommonValue DeductItemCheck item not enough", zap.Int64("bagCount", bagCount), zap.Any("item", item))
 			errInfo = errors.ITEM_CHECK_ITEM_NOT_ENOUGH.ToInfo()
 			continue
 		}

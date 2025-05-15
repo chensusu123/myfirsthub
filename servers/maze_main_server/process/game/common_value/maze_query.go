@@ -3,13 +3,13 @@ package common_value
 import (
 	"time"
 
-	"gitlab.ifreetalk.com/maze/maze_game_server/common/constdef"
-	"gitlab.ifreetalk.com/maze/maze_game_server/module/mazemoney"
-	"gitlab.ifreetalk.com/plate/extra/protobuf/proto"
-	"gitlab.ifreetalk.com/plate/freetk/common/errors"
-	"gitlab.ifreetalk.com/plate/freetk/fkcore/fklog"
+	"gitlab.ifreetalk.com/maze-plate/extra/protobuf/proto"
+	"gitlab.ifreetalk.com/maze-plate/freetk/common/errors"
+	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fklog"
 	"gitlab.ifreetalk.com/maze-plate/protodef/MazeCommon"
 	"gitlab.ifreetalk.com/maze-plate/protodef/MazeCommonValueSvr"
+	"gitlab.ifreetalk.com/maze/maze_game_server/common/constdef"
+	"gitlab.ifreetalk.com/maze/maze_game_server/module/mazemoney"
 	"go.uber.org/zap"
 )
 

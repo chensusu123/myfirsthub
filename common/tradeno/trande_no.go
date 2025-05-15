@@ -4,8 +4,8 @@
 package tradeno
 
 import (
-	"gitlab.ifreetalk.com/plate/freetk/fkcore/fkconfig"
-	"gitlab.ifreetalk.com/plate/freetk/fkutil/uniqueid"
+	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fkconfig"
+	"gitlab.ifreetalk.com/maze-plate/freetk/fkutil/uniqueid"
 )
 
 func GetTradeNum() (tradeNum uint64) {

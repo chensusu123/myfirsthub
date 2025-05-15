@@ -1,7 +1,7 @@
 package equipposexcel
 
 import (
-	"gitlab.ifreetalk.com/plate/excel/auto/GMazeEquipPosLvV8Cfg"
+	"gitlab.ifreetalk.com/maze-plate/excel/auto/GMazeEquipPosLvV8Cfg"
 	"gitlab.ifreetalk.com/maze/maze_game_server/common/function/excelutil"
 )
 

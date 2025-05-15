@@ -1,6 +1,6 @@
 package mazeenergylevelv8config
 
-import "gitlab.ifreetalk.com/plate/excel/auto/GMazeEnergyLevelV8Cfg"
+import "gitlab.ifreetalk.com/maze-plate/excel/auto/GMazeEnergyLevelV8Cfg"
 
 /**
  * @Author: liushuhang

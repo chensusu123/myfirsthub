@@ -13,11 +13,11 @@ import (
 	"net/http"
 	"time"
 
+	"gitlab.ifreetalk.com/maze-plate/excel/auto/GMazeAttributeV8Cfg"
+	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fklog"
+	"gitlab.ifreetalk.com/maze-plate/freetk/fkutil"
 	"gitlab.ifreetalk.com/maze/maze_game_server/common/function/gm"
 	"gitlab.ifreetalk.com/maze/maze_game_server/io/redis/mazebarriertempbuffredis"
-	"gitlab.ifreetalk.com/plate/excel/auto/GMazeAttributeV8Cfg"
-	"gitlab.ifreetalk.com/plate/freetk/fkcore/fklog"
-	"gitlab.ifreetalk.com/plate/freetk/fkutil"
 	"go.uber.org/zap"
 
 	"gitlab.ifreetalk.com/maze/maze_game_server/servers/maze_main_server/process/game"

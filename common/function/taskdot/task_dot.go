@@ -7,8 +7,8 @@
 package taskdot
 
 import (
-	"gitlab.ifreetalk.com/plate/freetk/fkcore/fklog"
-	"gitlab.ifreetalk.com/plate/io_interface/kafka_interface/common/TaskDataKafka"
+	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fklog"
+	"gitlab.ifreetalk.com/maze-plate/io/kafka_interface/common/TaskDataKafka"
 )
 
 // 精简不需要的字段

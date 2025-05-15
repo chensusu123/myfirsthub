@@ -9,13 +9,13 @@ package mazebuffchgrrecordapi
 import (
 	"strings"
 
-	"gitlab.ifreetalk.com/plate/freetk/fkcore/fkconfig/param"
-	"gitlab.ifreetalk.com/plate/freetk/fkcore/fklog"
-	"gitlab.ifreetalk.com/plate/freetk/fkutil"
+	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fkconfig/param"
+	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fklog"
+	"gitlab.ifreetalk.com/maze-plate/freetk/fkutil"
 	"gitlab.ifreetalk.com/maze-plate/protodef/MazeBuffData"
+	"gitlab.ifreetalk.com/maze/maze_game_server/common/function/maputil"
 	"gitlab.ifreetalk.com/maze/maze_game_server/common/structsdef"
 	"gitlab.ifreetalk.com/maze/maze_game_server/common/vardef"
-	"gitlab.ifreetalk.com/maze/maze_game_server/common/function/maputil"
 	"gitlab.ifreetalk.com/maze/maze_game_server/io/kafka/mazebuffchgrecord"
 )
 

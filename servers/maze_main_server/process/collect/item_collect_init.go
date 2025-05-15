@@ -5,14 +5,14 @@ import (
 
 	"gitlab.ifreetalk.com/maze/maze_game_server/io/kafka/mazecollectrecord"
 
-	"gitlab.ifreetalk.com/maze/maze_game_server/io/redis/mazecollectredis"
-	"gitlab.ifreetalk.com/plate/excel/auto/GMazeBarriesOnHookV8Cfg"
-	"gitlab.ifreetalk.com/plate/extra/protobuf/proto"
-	"gitlab.ifreetalk.com/plate/freetk/common/errors"
-	"gitlab.ifreetalk.com/plate/freetk/fkcore/fklog"
-	"gitlab.ifreetalk.com/plate/io_interface/redis_interface/common/MustArriveRedis"
+	"gitlab.ifreetalk.com/maze-plate/excel/auto/GMazeBarriesOnHookV8Cfg"
+	"gitlab.ifreetalk.com/maze-plate/extra/protobuf/proto"
+	"gitlab.ifreetalk.com/maze-plate/freetk/common/errors"
+	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fklog"
+	"gitlab.ifreetalk.com/maze-plate/io/redis_interface/common/MustArriveRedis"
 	"gitlab.ifreetalk.com/maze-plate/protodef/MazeCollect"
 	"gitlab.ifreetalk.com/maze-plate/protodef/MazeCollectCache"
+	"gitlab.ifreetalk.com/maze/maze_game_server/io/redis/mazecollectredis"
 	"go.uber.org/zap"
 )
 

@@ -1,10 +1,10 @@
 package gentradeno
 
 import (
-	"gitlab.ifreetalk.com/plate/freetk/fkcore/fkconfig"
-	"gitlab.ifreetalk.com/plate/freetk/fkserver"
-	"gitlab.ifreetalk.com/plate/freetk/fkutil/uniqueid"
-	"gitlab.ifreetalk.com/plate/io_interface/kafka_interface/item/error_record_kafka"
+	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fkconfig"
+	"gitlab.ifreetalk.com/maze-plate/freetk/fkserver"
+	"gitlab.ifreetalk.com/maze-plate/freetk/fkutil/uniqueid"
+	"gitlab.ifreetalk.com/maze-plate/io/kafka_interface/item/error_record_kafka"
 	"gitlab.ifreetalk.com/maze-plate/protodef/Common"
 )
 

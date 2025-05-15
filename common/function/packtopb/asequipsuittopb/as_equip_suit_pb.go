@@ -7,8 +7,8 @@
 package asequipsuittopb
 
 import (
-	"gitlab.ifreetalk.com/plate/excel/auto/GMazeEquipSuiteAttrV8Cfg"
-	"gitlab.ifreetalk.com/plate/extra/protobuf/proto"
+	"gitlab.ifreetalk.com/maze-plate/excel/auto/GMazeEquipSuiteAttrV8Cfg"
+	"gitlab.ifreetalk.com/maze-plate/extra/protobuf/proto"
 	"gitlab.ifreetalk.com/maze-plate/protodef/MazeGameEquip"
 )
 

@@ -2,15 +2,15 @@ package game
 
 import (
 	"github.com/lonng/nano/session"
-	"gitlab.ifreetalk.com/maze/maze_game_server/common/function/addequip"
-	"gitlab.ifreetalk.com/maze/maze_game_server/common/function/gentradeno"
-	"gitlab.ifreetalk.com/plate/excel/auto/GMazeBoxV8Cfg"
-	"gitlab.ifreetalk.com/plate/freetk/common/errors"
-	"gitlab.ifreetalk.com/plate/freetk/fkcore/fklog"
-	"gitlab.ifreetalk.com/plate/freetk/fkcore/fkprometheus"
-	"gitlab.ifreetalk.com/plate/freetk/fkutil"
+	"gitlab.ifreetalk.com/maze-plate/excel/auto/GMazeBoxV8Cfg"
+	"gitlab.ifreetalk.com/maze-plate/freetk/common/errors"
+	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fklog"
+	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fkprometheus"
+	"gitlab.ifreetalk.com/maze-plate/freetk/fkutil"
 	"gitlab.ifreetalk.com/maze-plate/protodef/MazeEquipSvr"
 	"gitlab.ifreetalk.com/maze-plate/protodef/MazeGame"
+	"gitlab.ifreetalk.com/maze/maze_game_server/common/function/addequip"
+	"gitlab.ifreetalk.com/maze/maze_game_server/common/function/gentradeno"
 
 	"go.uber.org/zap"
 )

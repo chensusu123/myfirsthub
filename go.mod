@@ -62,11 +62,11 @@ require (
 	github.com/twitchyliquid64/golang-asm v0.15.1 // indirect
 	github.com/xuri/efp v0.0.0-20240408161823-9ad904a10d6d // indirect
 	github.com/xuri/nfp v0.0.0-20240318013403-ab9948c2c4a7 // indirect
-	gitlab.ifreetalk.com/maze-plate/excel v0.0.0-20250418122811-e0c9dd3e2669 // indirect
-	gitlab.ifreetalk.com/maze-plate/freetk v1.0.1-0.20250422132154-b3c31d1f7ece // indirect
+	gitlab.ifreetalk.com/maze-plate/definition v1.0.1-0.20250409091534-0dfbef32430f // indirect
+	gitlab.ifreetalk.com/maze-plate/excel v0.0.0-20250410115802-b753fd37ecbe // indirect
+	gitlab.ifreetalk.com/maze-plate/freetk v1.0.1-0.20250515031954-48d10dc5f56a // indirect
 	gitlab.ifreetalk.com/maze-plate/io v0.0.0-20250411054516-f3778c3f9a74 // indirect
 	gitlab.ifreetalk.com/maze-plate/protodef v0.0.0-20250514120308-80f18114a335 // indirect
-	gitlab.ifreetalk.com/plate/definition v1.0.6 // indirect
 	go.uber.org/multierr v1.7.0 // indirect
 	golang.org/x/arch v0.0.0-20210923205945-b76863e36670 // indirect
 	golang.org/x/crypto v0.28.0 // indirect
@@ -83,8 +83,8 @@ require (
 	gopkg.in/yaml.v2 v2.4.0 // indirect
 )
 
-//replace gitlab.ifreetalk.com/plate/excel => gitlab.ifreetalk.com/plate/excel v1.0.83-0.20250506053436-ef2c9ea111c0
+//replace gitlab.ifreetalk.com/maze-plate/excel => gitlab.ifreetalk.com/maze-plate/excel v1.0.83-0.20250506053436-ef2c9ea111c0
 
-//replace gitlab.ifreetalk.com/plate/freetk v1.2.61 => /Users/majiange/data/dev/go_work/go_plate/src/gitlab.ifreetalk.com/plate/freetk
+//replace gitlab.ifreetalk.com/maze-plate/freetk v1.2.61 => /Users/majiange/data/dev/go_work/go_plate/src/gitlab.ifreetalk.com/maze-plate/freetk
 
 replace github.com/lonng/nano => github.com/zsai001/nano-ex v0.0.0-20250513093902-993404574160

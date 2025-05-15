@@ -8,14 +8,15 @@ import (
 	"bufio"
 	"errors"
 	"fmt"
-	"gitlab.ifreetalk.com/plate/freetk/common/fkfmt"
-	"gitlab.ifreetalk.com/plate/freetk/fkcore/fklog"
-	"gitlab.ifreetalk.com/plate/freetk/fkutil/workergroup"
 	"io"
 	"os"
 	"sync"
 	"sync/atomic"
 	"time"
+
+	"gitlab.ifreetalk.com/maze-plate/freetk/common/fkfmt"
+	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fklog"
+	"gitlab.ifreetalk.com/maze-plate/freetk/fkutil/workergroup"
 )
 
 type FReader struct {
@@ -191,7 +192,7 @@ func (fr *FReader) ReadLine() (s string, err error) {
 	return string(l), nil
 }
 
-//设置每隔n行输出一条统计信息
+// 设置每隔n行输出一条统计信息
 func (fr *FReader) SetDumpRow(dw int32) {
 	fr.dumpRows = dw
 }
@@ -200,7 +201,7 @@ func (fr *FReader) InitAsync(threadCnt int, cacheSize int) {
 	fr.wg = workergroup.NewFkWrokGroup(cacheSize, threadCnt, fr.logger)
 }
 
-//每隔waitLine 行 休眠 sleep 毫秒
+// 每隔waitLine 行 休眠 sleep 毫秒
 func (fr *FReader) SetSleep(waitLine int32, sleep int32) {
 	fr.SleepLine = waitLine
 	fr.SleepTime = sleep

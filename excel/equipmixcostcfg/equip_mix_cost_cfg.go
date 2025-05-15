@@ -4,11 +4,12 @@
 package equipmixcostcfg
 
 import (
-	"gitlab.ifreetalk.com/plate/excel/auto/GMazeEquipMixV8Cfg"
-	"gitlab.ifreetalk.com/plate/extra/protobuf/proto"
-	"gitlab.ifreetalk.com/maze-plate/protodef/MazeCommon"
 	"sort"
 	"sync"
+
+	"gitlab.ifreetalk.com/maze-plate/excel/auto/GMazeEquipMixV8Cfg"
+	"gitlab.ifreetalk.com/maze-plate/extra/protobuf/proto"
+	"gitlab.ifreetalk.com/maze-plate/protodef/MazeCommon"
 )
 
 var (

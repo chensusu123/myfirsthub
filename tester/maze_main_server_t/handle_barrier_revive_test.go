@@ -12,15 +12,15 @@ import (
 	"testing"
 	"time"
 
-	"gitlab.ifreetalk.com/maze/maze_game_server/io/redis/mazeuserbarrierredis"
-	"gitlab.ifreetalk.com/maze/maze_game_server/servers/maze_main_server/process/game"
-	"gitlab.ifreetalk.com/plate/extra/protobuf/proto"
-	"gitlab.ifreetalk.com/plate/freetk/fkcore/fklog"
-	"gitlab.ifreetalk.com/plate/freetk/fkcore/fknet"
+	"gitlab.ifreetalk.com/maze-plate/extra/protobuf/proto"
+	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fklog"
+	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fknet"
 	"gitlab.ifreetalk.com/maze-plate/protodef/Common"
 	"gitlab.ifreetalk.com/maze-plate/protodef/MazeBarrierCache"
 	"gitlab.ifreetalk.com/maze-plate/protodef/MazeCommon"
 	"gitlab.ifreetalk.com/maze-plate/protodef/MazeGame"
+	"gitlab.ifreetalk.com/maze/maze_game_server/io/redis/mazeuserbarrierredis"
+	"gitlab.ifreetalk.com/maze/maze_game_server/servers/maze_main_server/process/game"
 )
 
 func TestOnMazeBarrierRebornRQ(t *testing.T) {

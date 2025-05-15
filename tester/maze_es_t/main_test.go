@@ -5,9 +5,9 @@ import (
 	"testing"
 	"time"
 
-	"gitlab.ifreetalk.com/plate/freetk/fkcore/fklog"
-	//"gitlab.ifreetalk.com/plate/freetk/fktestutil/testio"
-	_ "gitlab.ifreetalk.com/plate/freetk/fktestutil/testlogger" // 初始化日志
+	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fklog"
+	//"gitlab.ifreetalk.com/maze-plate/freetk/fktestutil/testio"
+	_ "gitlab.ifreetalk.com/maze-plate/freetk/fktestutil/testlogger" // 初始化日志
 )
 
 var gTestLogger fklog.FKLogI

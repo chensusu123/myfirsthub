@@ -9,12 +9,12 @@ import (
 	"go.uber.org/zap"
 
 	jsoniter "github.com/json-iterator/go"
+	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fkalert"
+	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fklog"
+	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fknet"
+	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fknet/fkpkg"
+	"gitlab.ifreetalk.com/maze-plate/freetk/fkutil/workergroup"
 	"gitlab.ifreetalk.com/maze/maze_game_server/lib/net/raw_pkg"
-	"gitlab.ifreetalk.com/plate/freetk/fkcore/fkalert"
-	"gitlab.ifreetalk.com/plate/freetk/fkcore/fklog"
-	"gitlab.ifreetalk.com/plate/freetk/fkcore/fknet"
-	"gitlab.ifreetalk.com/plate/freetk/fkcore/fknet/fkpkg"
-	"gitlab.ifreetalk.com/plate/freetk/fkutil/workergroup"
 )
 
 var json = jsoniter.ConfigCompatibleWithStandardLibrary

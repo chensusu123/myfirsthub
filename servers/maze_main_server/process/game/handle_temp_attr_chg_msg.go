@@ -7,9 +7,9 @@
 package game
 
 import (
+	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fklog"
 	"gitlab.ifreetalk.com/maze/maze_game_server/io/kafka/mazetempbuffchgmsg"
 	"gitlab.ifreetalk.com/maze/maze_game_server/module/mazeuserinfo"
-	"gitlab.ifreetalk.com/plate/freetk/fkcore/fklog"
 	"go.uber.org/zap"
 )
 

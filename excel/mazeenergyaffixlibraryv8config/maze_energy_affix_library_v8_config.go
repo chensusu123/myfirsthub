@@ -1,7 +1,7 @@
 package mazeenergyaffixlibraryv8config
 
 import (
-	"gitlab.ifreetalk.com/plate/excel/auto/GMazeEnergyAffixLibraryV8Cfg"
+	"gitlab.ifreetalk.com/maze-plate/excel/auto/GMazeEnergyAffixLibraryV8Cfg"
 )
 
 /**

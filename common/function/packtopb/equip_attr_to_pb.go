@@ -1,14 +1,14 @@
 package packtopb
 
 import (
-	"gitlab.ifreetalk.com/plate/excel/auto/GMazeEquipAffixRandPoolV8Cfg"
-	"gitlab.ifreetalk.com/plate/extra/protobuf/proto"
-	"gitlab.ifreetalk.com/plate/freetk/fkcore/fklog"
+	"gitlab.ifreetalk.com/maze-plate/excel/auto/GMazeEquipAffixRandPoolV8Cfg"
+	"gitlab.ifreetalk.com/maze-plate/extra/protobuf/proto"
+	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fklog"
 	"gitlab.ifreetalk.com/maze-plate/protodef/MazeEquipCache"
 	"gitlab.ifreetalk.com/maze-plate/protodef/MazeGameEquip"
 
-	"go.uber.org/zap"
 	"gitlab.ifreetalk.com/maze/maze_game_server/excel/mazeequipconfigv8"
+	"go.uber.org/zap"
 )
 
 func EquipBaseAttrToCliPB(logger fklog.FKLogI, equipAttrs []*MazeEquipCache.BaseAttrInfo) (mainAttrs *MazeGameEquip.BaseAttrInfo, baseAttrs []*MazeGameEquip.BaseAttrInfo, attackScope, attackNumber, hurtType int32) {

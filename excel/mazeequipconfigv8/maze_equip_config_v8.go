@@ -7,7 +7,7 @@
 package mazeequipconfigv8
 
 import (
-	"gitlab.ifreetalk.com/plate/excel/auto/GMazeEquipConfigV8Cfg"
+	"gitlab.ifreetalk.com/maze-plate/excel/auto/GMazeEquipConfigV8Cfg"
 	"gitlab.ifreetalk.com/maze/maze_game_server/common/constdef"
 )
 

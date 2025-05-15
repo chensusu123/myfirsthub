@@ -9,11 +9,11 @@ package calcassembleattr
 import (
 	"errors"
 
-	"gitlab.ifreetalk.com/plate/excel/auto/GMazeEquipSuiteInfoV8Cfg"
-	"gitlab.ifreetalk.com/plate/freetk/fkcore/fklog"
+	"gitlab.ifreetalk.com/maze-plate/excel/auto/GMazeEquipSuiteInfoV8Cfg"
+	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fklog"
 	"gitlab.ifreetalk.com/maze-plate/protodef/MazeEquipCache"
-	"go.uber.org/zap"
 	"gitlab.ifreetalk.com/maze/maze_game_server/common/function/assemble"
+	"go.uber.org/zap"
 )
 
 func CalcEquipSuit(logger fklog.FKLogI, equips []*MazeEquipCache.MazeEquipPosInfo) (suitMgr *EquipSuitMgr, err error) {

@@ -10,8 +10,8 @@ import (
 	"testing"
 	"time"
 
-	"gitlab.ifreetalk.com/plate/freetk/fkcore/fklog"
-	"gitlab.ifreetalk.com/plate/freetk/fktestutil/testio"
+	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fklog"
+	"gitlab.ifreetalk.com/maze-plate/freetk/fktestutil/testio"
 )
 
 var gTestLogger fklog.FKLogI

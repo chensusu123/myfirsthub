@@ -10,9 +10,9 @@ import (
 	"context"
 	"fmt"
 
+	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fklog"
+	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fkredis/redis"
 	"gitlab.ifreetalk.com/maze/maze_game_server/common/constdef"
-	"gitlab.ifreetalk.com/plate/freetk/fkcore/fklog"
-	"gitlab.ifreetalk.com/plate/freetk/fkcore/fkredis/redis"
 	"go.uber.org/zap"
 )
 

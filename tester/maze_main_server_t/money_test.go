@@ -6,12 +6,12 @@ import (
 	"testing"
 	"time"
 
-	"gitlab.ifreetalk.com/maze/maze_game_server/io/rpc/mazeitemrpc"
-	"gitlab.ifreetalk.com/plate/extra/protobuf/proto"
-	"gitlab.ifreetalk.com/plate/freetk/common/errors"
-	"gitlab.ifreetalk.com/plate/freetk/fkcore/fknet"
+	"gitlab.ifreetalk.com/maze-plate/extra/protobuf/proto"
+	"gitlab.ifreetalk.com/maze-plate/freetk/common/errors"
+	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fknet"
 	"gitlab.ifreetalk.com/maze-plate/protodef/MazeCommon"
 	"gitlab.ifreetalk.com/maze-plate/protodef/MazeItemSvr"
+	"gitlab.ifreetalk.com/maze/maze_game_server/io/rpc/mazeitemrpc"
 )
 
 func TestQueryMoney(t *testing.T) {

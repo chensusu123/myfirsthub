@@ -4,9 +4,9 @@ import (
 	"errors"
 	"fmt"
 
-	"gitlab.ifreetalk.com/plate/excel/auto/GMazeEquipInfoV8Cfg"
-	"gitlab.ifreetalk.com/plate/excel/auto/GMazeEquipTypeResV8Cfg"
-	"gitlab.ifreetalk.com/plate/extra/protobuf/proto"
+	"gitlab.ifreetalk.com/maze-plate/excel/auto/GMazeEquipInfoV8Cfg"
+	"gitlab.ifreetalk.com/maze-plate/excel/auto/GMazeEquipTypeResV8Cfg"
+	"gitlab.ifreetalk.com/maze-plate/extra/protobuf/proto"
 	"gitlab.ifreetalk.com/maze-plate/protodef/MazeCommon"
 	"gitlab.ifreetalk.com/maze-plate/protodef/MazeEquipSvr"
 )

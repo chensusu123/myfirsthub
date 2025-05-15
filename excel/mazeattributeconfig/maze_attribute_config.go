@@ -1,7 +1,7 @@
 package mazeattributeconfig
 
 import (
-	"gitlab.ifreetalk.com/plate/excel/auto/GMazeAttributeV8Cfg"
+	"gitlab.ifreetalk.com/maze-plate/excel/auto/GMazeAttributeV8Cfg"
 )
 
 /**

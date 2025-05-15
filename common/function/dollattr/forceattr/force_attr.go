@@ -8,7 +8,7 @@
 package forceattr
 
 import (
-	"gitlab.ifreetalk.com/plate/excel/auto/GMazeAttributeFormulaV8Cfg"
+	"gitlab.ifreetalk.com/maze-plate/excel/auto/GMazeAttributeFormulaV8Cfg"
 )
 
 // 根据配表判断是否是展示武力值属性

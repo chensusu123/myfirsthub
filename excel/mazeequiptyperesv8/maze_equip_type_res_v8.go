@@ -1,15 +1,16 @@
 package mazeequiptyperesv8
 
 import (
-	"gitlab.ifreetalk.com/plate/excel/auto/GMazeEquipTypeResV8Cfg"
 	"sync"
 	"sync/atomic"
 	"unsafe"
+
+	"gitlab.ifreetalk.com/maze-plate/excel/auto/GMazeEquipTypeResV8Cfg"
 )
 
 type MazeEquipTypeResV8ConfigEx struct {
 	EquipTypeResCfgMap map[int32]map[int32][]*GMazeEquipTypeResV8Cfg.MazeEquipTypeResV8ConfigRow
-	lock       sync.RWMutex
+	lock               sync.RWMutex
 }
 
 func init() {
@@ -26,12 +27,12 @@ func loadMazeEquipTypeResV8ConfigEx(cfg *GMazeEquipTypeResV8Cfg.MazeEquipTypeRes
 		if g.EquipTypeResCfgMap[value.Equipment_id] == nil {
 			g.EquipTypeResCfgMap[value.Equipment_id] = make(map[int32][]*GMazeEquipTypeResV8Cfg.MazeEquipTypeResV8ConfigRow, 0)
 		}
-		g.EquipTypeResCfgMap[value.Equipment_id][value.Pos_sub_type] = append(g.EquipTypeResCfgMap[value.Equipment_id][value.Pos_sub_type],value)
+		g.EquipTypeResCfgMap[value.Equipment_id][value.Pos_sub_type] = append(g.EquipTypeResCfgMap[value.Equipment_id][value.Pos_sub_type], value)
 	}
 	atomic.StorePointer((*unsafe.Pointer)(unsafe.Pointer(&gConfigData)), unsafe.Pointer(g))
 }
 
-func GetEquipTypeResCfg(equipId,equipType,attrId int32) *GMazeEquipTypeResV8Cfg.MazeEquipTypeResV8ConfigRow {
+func GetEquipTypeResCfg(equipId, equipType, attrId int32) *GMazeEquipTypeResV8Cfg.MazeEquipTypeResV8ConfigRow {
 	posAttrCfgMap, ok := gConfigData.EquipTypeResCfgMap[equipId]
 	if !ok {
 		return nil
@@ -40,12 +41,10 @@ func GetEquipTypeResCfg(equipId,equipType,attrId int32) *GMazeEquipTypeResV8Cfg.
 	if !ok {
 		return nil
 	}
-	for _,cfg := range attrCfgList{
-		if cfg.Attr_id == attrId{
+	for _, cfg := range attrCfgList {
+		if cfg.Attr_id == attrId {
 			return cfg
 		}
 	}
 	return nil
 }
-
-

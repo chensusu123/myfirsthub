@@ -1,13 +1,13 @@
 package main
 
 import (
+	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fklog"
+	"gitlab.ifreetalk.com/maze-plate/freetk/fkserver"
+	"gitlab.ifreetalk.com/maze-plate/freetk/fkserver/tcp_service"
+	"gitlab.ifreetalk.com/maze-plate/freetk/fkserver/web_service"
 	"gitlab.ifreetalk.com/maze/maze_game_server/lib/net/websocket_service"
 	"gitlab.ifreetalk.com/maze/maze_game_server/servers/maze_es/process"
 	"gitlab.ifreetalk.com/maze/maze_game_server/usecase/business"
-	"gitlab.ifreetalk.com/plate/freetk/fkcore/fklog"
-	"gitlab.ifreetalk.com/plate/freetk/fkserver"
-	"gitlab.ifreetalk.com/plate/freetk/fkserver/tcp_service"
-	"gitlab.ifreetalk.com/plate/freetk/fkserver/web_service"
 )
 
 // 19987	UN_CGK_SVR_TYPE_MAZE_MAIN_SERVER 小程序版迷宫主服务

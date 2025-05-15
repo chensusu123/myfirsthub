@@ -10,21 +10,21 @@ import (
 	"fmt"
 	"time"
 
-	"gitlab.ifreetalk.com/plate/excel/auto/GMazeAttrSpDescV8Cfg"
-	"gitlab.ifreetalk.com/plate/excel/auto/GMazeAttributeV8Cfg"
-	"gitlab.ifreetalk.com/plate/extra/protobuf/proto"
-	"gitlab.ifreetalk.com/plate/freetk/fkcore/fklog"
+	"gitlab.ifreetalk.com/maze-plate/excel/auto/GMazeAttrSpDescV8Cfg"
+	"gitlab.ifreetalk.com/maze-plate/excel/auto/GMazeAttributeV8Cfg"
+	"gitlab.ifreetalk.com/maze-plate/extra/protobuf/proto"
+	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fklog"
 	"gitlab.ifreetalk.com/maze-plate/protodef/MazeBuffData"
 
-	"go.uber.org/zap"
-	"gitlab.ifreetalk.com/maze/maze_game_server/servers/maze_main_server/process/attr_calc/commonlogic"
 	"gitlab.ifreetalk.com/maze/maze_game_server/common/constdef"
-	"gitlab.ifreetalk.com/maze/maze_game_server/io/redis/mazebuffinforedis"
-	"gitlab.ifreetalk.com/maze/maze_game_server/io/redis/mazecalcattrredis"
 	"gitlab.ifreetalk.com/maze/maze_game_server/common/structsdef"
-	"gitlab.ifreetalk.com/maze/maze_game_server/module/mazeattrformula"
 	"gitlab.ifreetalk.com/maze/maze_game_server/io/kafka/mazeattrchgrecord"
 	"gitlab.ifreetalk.com/maze/maze_game_server/io/kafka/mazeattrmsg"
+	"gitlab.ifreetalk.com/maze/maze_game_server/io/redis/mazebuffinforedis"
+	"gitlab.ifreetalk.com/maze/maze_game_server/io/redis/mazecalcattrredis"
+	"gitlab.ifreetalk.com/maze/maze_game_server/module/mazeattrformula"
+	"gitlab.ifreetalk.com/maze/maze_game_server/servers/maze_main_server/process/attr_calc/commonlogic"
+	"go.uber.org/zap"
 )
 
 type DAC struct {

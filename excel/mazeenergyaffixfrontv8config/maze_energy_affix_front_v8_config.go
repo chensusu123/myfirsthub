@@ -1,6 +1,6 @@
 package mazeenergyaffixfrontv8config
 
-import "gitlab.ifreetalk.com/plate/excel/auto/GMazeEnergyAffixFrontV8Cfg"
+import "gitlab.ifreetalk.com/maze-plate/excel/auto/GMazeEnergyAffixFrontV8Cfg"
 
 /**
  * @Author: liushuhang

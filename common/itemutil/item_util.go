@@ -2,10 +2,11 @@ package itemutil
 
 import (
 	"context"
-	"gitlab.ifreetalk.com/plate/excel/auto/GMazeBagOrderV8Cfg"
-	"gitlab.ifreetalk.com/plate/extra/protobuf/proto"
-	"gitlab.ifreetalk.com/plate/freetk/fkcore/fklog"
-	"gitlab.ifreetalk.com/plate/freetk/fkserver"
+
+	"gitlab.ifreetalk.com/maze-plate/excel/auto/GMazeBagOrderV8Cfg"
+	"gitlab.ifreetalk.com/maze-plate/extra/protobuf/proto"
+	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fklog"
+	"gitlab.ifreetalk.com/maze-plate/freetk/fkserver"
 	"gitlab.ifreetalk.com/maze-plate/protodef/Common"
 	"gitlab.ifreetalk.com/maze-plate/protodef/MazeBag"
 	"gitlab.ifreetalk.com/maze-plate/protodef/MazeCommon"

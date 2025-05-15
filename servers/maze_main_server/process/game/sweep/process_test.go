@@ -7,10 +7,10 @@ import (
 	"fmt"
 	"testing"
 
-	"gitlab.ifreetalk.com/plate/freetk/fkcore/fklog"
-	"gitlab.ifreetalk.com/plate/freetk/fkcore/fknet"
-	"gitlab.ifreetalk.com/plate/freetk/fktestutil/testio"
-	_ "gitlab.ifreetalk.com/plate/freetk/fktestutil/testlogger"
+	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fklog"
+	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fknet"
+	"gitlab.ifreetalk.com/maze-plate/freetk/fktestutil/testio"
+	_ "gitlab.ifreetalk.com/maze-plate/freetk/fktestutil/testlogger"
 )
 
 var (

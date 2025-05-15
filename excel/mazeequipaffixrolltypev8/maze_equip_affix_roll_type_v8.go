@@ -6,7 +6,7 @@ import (
 	"sync/atomic"
 	"unsafe"
 
-	"gitlab.ifreetalk.com/plate/excel/auto/GMazeEquipAffixRollTypeV8Cfg"
+	"gitlab.ifreetalk.com/maze-plate/excel/auto/GMazeEquipAffixRollTypeV8Cfg"
 )
 
 type MazeEquipAffixModPoolV8CfgEx struct {
@@ -64,4 +64,3 @@ func GetMazeEquipRollCfgByRollTypeAndScore(rollType, score int32) map[int32]int3
 	}
 	return rollWeightMap
 }
-

@@ -5,6 +5,13 @@ import (
 	"time"
 
 	"github.com/lonng/nano/session"
+	"gitlab.ifreetalk.com/maze-plate/extra/protobuf/proto"
+	"gitlab.ifreetalk.com/maze-plate/freetk/common/errors"
+	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fklog"
+	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fkprometheus"
+	"gitlab.ifreetalk.com/maze-plate/freetk/fkutil"
+	"gitlab.ifreetalk.com/maze-plate/protodef/MazeEnergySvr"
+	"gitlab.ifreetalk.com/maze-plate/protodef/MazeGame"
 	"gitlab.ifreetalk.com/maze/maze_game_server/common/constdef"
 	"gitlab.ifreetalk.com/maze/maze_game_server/common/function/uniqueid"
 	"gitlab.ifreetalk.com/maze/maze_game_server/io/redis/mazebarriermoneyredis"
@@ -15,13 +22,6 @@ import (
 	"gitlab.ifreetalk.com/maze/maze_game_server/io/redis/mazeuserbarrierredis"
 	"gitlab.ifreetalk.com/maze/maze_game_server/io/redis/mazeuserlevelredis"
 	"gitlab.ifreetalk.com/maze/maze_game_server/servers/maze_main_server/process/game/energy"
-	"gitlab.ifreetalk.com/plate/extra/protobuf/proto"
-	"gitlab.ifreetalk.com/plate/freetk/common/errors"
-	"gitlab.ifreetalk.com/plate/freetk/fkcore/fklog"
-	"gitlab.ifreetalk.com/plate/freetk/fkcore/fkprometheus"
-	"gitlab.ifreetalk.com/plate/freetk/fkutil"
-	"gitlab.ifreetalk.com/maze-plate/protodef/MazeEnergySvr"
-	"gitlab.ifreetalk.com/maze-plate/protodef/MazeGame"
 
 	"go.uber.org/zap"
 )

@@ -7,21 +7,22 @@
 package mazebag
 
 import (
+	"time"
+
 	"github.com/gogo/protobuf/proto"
-	"gitlab.ifreetalk.com/plate/freetk/common/errors"
-	"gitlab.ifreetalk.com/plate/freetk/fkserver"
-	"gitlab.ifreetalk.com/plate/io_interface/redis_interface/common/MustArriveRedis2"
+	"gitlab.ifreetalk.com/maze-plate/freetk/common/errors"
+	"gitlab.ifreetalk.com/maze-plate/freetk/fkserver"
+	"gitlab.ifreetalk.com/maze-plate/io/redis_interface/common/MustArriveRedis2"
 	"gitlab.ifreetalk.com/maze-plate/protodef/MazeBag"
 	"gitlab.ifreetalk.com/maze-plate/protodef/MazeCommon"
 	"gitlab.ifreetalk.com/maze-plate/protodef/MessageType"
-	"go.uber.org/zap"
-	"time"
 	"gitlab.ifreetalk.com/maze/maze_game_server/common/additemdefine"
+	"gitlab.ifreetalk.com/maze/maze_game_server/common/itemdefine/constdefine"
+	"gitlab.ifreetalk.com/maze/maze_game_server/common/itemdefine/errdefine"
+	"gitlab.ifreetalk.com/maze/maze_game_server/common/itemutil"
 	"gitlab.ifreetalk.com/maze/maze_game_server/common/structdefine"
 	"gitlab.ifreetalk.com/maze/maze_game_server/io/redis/mazebagdb"
-	"gitlab.ifreetalk.com/maze/maze_game_server/common/itemutil"
-	"gitlab.ifreetalk.com/maze/maze_game_server/common/itemdefine/errdefine"
-	"gitlab.ifreetalk.com/maze/maze_game_server/common/itemdefine/constdefine"
+	"go.uber.org/zap"
 )
 
 var GlobalMazeBag = &class{}
@@ -147,8 +148,7 @@ func (s *class) DeductItemCheck(userCtx fkserver.UserContext, option *additemdef
 		bagCount = dbCountMap[item.GetItemId()]
 
 		if bagCount < item.GetCount() {
-			userCtx.WarnWF("MazeBag DeductItemCheck item not enough", zap.Int64("bagCount", bagCount), zap.Any("item", item),
-			)
+			userCtx.WarnWF("MazeBag DeductItemCheck item not enough", zap.Int64("bagCount", bagCount), zap.Any("item", item))
 			errInfo = errors.ITEM_CHECK_ITEM_NOT_ENOUGH.ToInfo()
 			continue
 		}

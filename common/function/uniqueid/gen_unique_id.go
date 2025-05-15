@@ -5,8 +5,8 @@
 package uniqueid
 
 import (
-	"gitlab.ifreetalk.com/plate/freetk/fkcore/fkconfig"
-	"gitlab.ifreetalk.com/plate/freetk/fkutil/uniqueid"
+	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fkconfig"
+	"gitlab.ifreetalk.com/maze-plate/freetk/fkutil/uniqueid"
 )
 
 // 生成有符号64位唯一ID

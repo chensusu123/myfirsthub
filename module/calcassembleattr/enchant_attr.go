@@ -7,7 +7,7 @@
 package calcassembleattr
 
 import (
-	"gitlab.ifreetalk.com/plate/extra/protobuf/proto"
+	"gitlab.ifreetalk.com/maze-plate/extra/protobuf/proto"
 	"gitlab.ifreetalk.com/maze-plate/protodef/MazeBuffData"
 	"gitlab.ifreetalk.com/maze-plate/protodef/MazeEquipCache"
 )

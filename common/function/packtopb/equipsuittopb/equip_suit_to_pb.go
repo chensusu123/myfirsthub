@@ -12,18 +12,18 @@ import (
 	"fmt"
 	"sort"
 
-	"gitlab.ifreetalk.com/plate/excel/auto/GMazeEquipInfoV8Cfg"
-	"gitlab.ifreetalk.com/plate/excel/auto/GMazeEquipSuiteAttrV8Cfg"
-	"gitlab.ifreetalk.com/plate/excel/auto/GMazeEquipSuiteInfoV8Cfg"
-	"gitlab.ifreetalk.com/plate/excel/auto/GMazeEquipSuiteNameV8Cfg"
-	"gitlab.ifreetalk.com/plate/extra/protobuf/proto"
-	"gitlab.ifreetalk.com/plate/freetk/fkcore/fklog"
+	"gitlab.ifreetalk.com/maze-plate/excel/auto/GMazeEquipInfoV8Cfg"
+	"gitlab.ifreetalk.com/maze-plate/excel/auto/GMazeEquipSuiteAttrV8Cfg"
+	"gitlab.ifreetalk.com/maze-plate/excel/auto/GMazeEquipSuiteInfoV8Cfg"
+	"gitlab.ifreetalk.com/maze-plate/excel/auto/GMazeEquipSuiteNameV8Cfg"
+	"gitlab.ifreetalk.com/maze-plate/extra/protobuf/proto"
+	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fklog"
 	"gitlab.ifreetalk.com/maze-plate/protodef/MazeEquipCache"
 	"gitlab.ifreetalk.com/maze-plate/protodef/MazeGameEquip"
-	"go.uber.org/zap"
-	"gitlab.ifreetalk.com/maze/maze_game_server/common/function/pbutil"
 	"gitlab.ifreetalk.com/maze/maze_game_server/common/constdef"
+	"gitlab.ifreetalk.com/maze/maze_game_server/common/function/pbutil"
 	"gitlab.ifreetalk.com/maze/maze_game_server/excel/mazeequipinfocfgex"
+	"go.uber.org/zap"
 )
 
 func PackEquipSuitCliPb(logger fklog.FKLogI, pos int32, equips []*MazeEquipCache.MazeEquipPosInfo, suitId int32, dollLv int32) (cliSuitInfo *MazeGameEquip.EquipSuitInfo, err error) {

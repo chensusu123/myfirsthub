@@ -1,8 +1,8 @@
 package funcopencheck
 
 import (
-	"gitlab.ifreetalk.com/plate/excel/auto/GMazeActionCountV8Cfg"
-	"gitlab.ifreetalk.com/plate/freetk/common/errors"
+	"gitlab.ifreetalk.com/maze-plate/excel/auto/GMazeActionCountV8Cfg"
+	"gitlab.ifreetalk.com/maze-plate/freetk/common/errors"
 )
 
 // 检查结果

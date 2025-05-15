@@ -3,7 +3,7 @@
 package sweep
 
 import (
-	"gitlab.ifreetalk.com/plate/extra/protobuf/proto"
+	"gitlab.ifreetalk.com/maze-plate/extra/protobuf/proto"
 	"gitlab.ifreetalk.com/maze-plate/protodef/Common"
 )
 

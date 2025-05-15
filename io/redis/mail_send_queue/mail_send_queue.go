@@ -3,10 +3,10 @@ package mail_send_queue
 //import (
 //	"context"
 //
-//	"gitlab.ifreetalk.com/plate/extra/protobuf/proto"
-//	"gitlab.ifreetalk.com/plate/freetk/fkcore/fkconfig"
-//	"gitlab.ifreetalk.com/plate/freetk/fkcore/fklog"
-//	"gitlab.ifreetalk.com/plate/freetk/fkcore/fkredis"
+//	"gitlab.ifreetalk.com/maze-plate/extra/protobuf/proto"
+//	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fkconfig"
+//	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fklog"
+//	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fkredis"
 //	"gitlab.ifreetalk.com/maze-plate/protodef/MailBoxSvr"
 //	"gitlab.ifreetalk.com/maze-plate/protodef/MazeMail"
 //	"go.uber.org/zap"

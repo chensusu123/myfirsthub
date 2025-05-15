@@ -7,16 +7,16 @@
 package assembleidpack
 
 import (
-	"gitlab.ifreetalk.com/plate/extra/protobuf/proto"
-	"gitlab.ifreetalk.com/plate/freetk/fkcore/fklog"
-	"gitlab.ifreetalk.com/plate/io_interface/redis_interface/common/MustArriveRedis"
+	"gitlab.ifreetalk.com/maze-plate/extra/protobuf/proto"
+	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fklog"
+	"gitlab.ifreetalk.com/maze-plate/io/redis_interface/common/MustArriveRedis"
 	"gitlab.ifreetalk.com/maze-plate/protodef/MazeEquipCache"
 	"gitlab.ifreetalk.com/maze-plate/protodef/MazeGameEquip"
 
-	"go.uber.org/zap"
+	"gitlab.ifreetalk.com/maze/maze_game_server/common/function/packtopb/asequipsuittopb"
 	"gitlab.ifreetalk.com/maze/maze_game_server/common/function/packtopb/packequipostopb"
 	"gitlab.ifreetalk.com/maze/maze_game_server/module/equippossuit"
-	"gitlab.ifreetalk.com/maze/maze_game_server/common/function/packtopb/asequipsuittopb"
+	"go.uber.org/zap"
 )
 
 func SendAssembleChgID(logger fklog.FKLogI, userId uint64, assembleInfo *MazeEquipCache.MazeAssembleDb, wantMask, posMask, reason int32) error {

@@ -1,6 +1,6 @@
 package mazeenergyresetcostv8config
 
-import "gitlab.ifreetalk.com/plate/excel/auto/GMazeEnergyResetCostV8Cfg"
+import "gitlab.ifreetalk.com/maze-plate/excel/auto/GMazeEnergyResetCostV8Cfg"
 
 /**
  * @Author: liushuhang

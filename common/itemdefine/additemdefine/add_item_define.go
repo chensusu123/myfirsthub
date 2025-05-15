@@ -10,12 +10,12 @@ import (
 	"fmt"
 	"reflect"
 
-	"gitlab.ifreetalk.com/maze/maze_game_server/common/structdefine"
-	"gitlab.ifreetalk.com/plate/excel/auto/GMazeItemsV8Cfg"
-	"gitlab.ifreetalk.com/plate/freetk/fkcore/fklog"
-	"gitlab.ifreetalk.com/plate/freetk/fkserver"
+	"gitlab.ifreetalk.com/maze-plate/excel/auto/GMazeItemsV8Cfg"
+	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fklog"
+	"gitlab.ifreetalk.com/maze-plate/freetk/fkserver"
 	"gitlab.ifreetalk.com/maze-plate/protodef/MazeCommon"
 	"gitlab.ifreetalk.com/maze-plate/protodef/MessageType"
+	"gitlab.ifreetalk.com/maze/maze_game_server/common/structdefine"
 	"go.uber.org/zap"
 )
 

@@ -7,11 +7,11 @@
 package mazeenergyrpc
 
 // import (
-// 	"gitlab.ifreetalk.com/plate/extra/protobuf/proto"
-// 	"gitlab.ifreetalk.com/plate/freetk/fkcore/fkconfig"
-// 	"gitlab.ifreetalk.com/plate/freetk/fkcore/fklog"
-// 	"gitlab.ifreetalk.com/plate/freetk/fkcore/fkprometheus"
-// 	"gitlab.ifreetalk.com/plate/freetk/fkcore/fkrpc/thrift_rpc"
+// 	"gitlab.ifreetalk.com/maze-plate/extra/protobuf/proto"
+// 	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fkconfig"
+// 	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fklog"
+// 	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fkprometheus"
+// 	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fkrpc/thrift_rpc"
 // 	"gitlab.ifreetalk.com/maze-plate/protodef/MazeEnergySvr"
 // 	"go.uber.org/zap"
 // )

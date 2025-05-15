@@ -1,10 +1,10 @@
 package mazebarrier
 
 import (
-	"gitlab.ifreetalk.com/plate/excel/auto/GMazeBarriesV8Cfg"
-	"gitlab.ifreetalk.com/plate/excel/auto/GMazeBoxV8Cfg"
-	"gitlab.ifreetalk.com/plate/freetk/common/errors"
-	"gitlab.ifreetalk.com/plate/freetk/fkcore/fklog"
+	"gitlab.ifreetalk.com/maze-plate/excel/auto/GMazeBarriesV8Cfg"
+	"gitlab.ifreetalk.com/maze-plate/excel/auto/GMazeBoxV8Cfg"
+	"gitlab.ifreetalk.com/maze-plate/freetk/common/errors"
+	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fklog"
 	"go.uber.org/zap"
 )
 

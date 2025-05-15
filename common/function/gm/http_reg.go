@@ -5,10 +5,11 @@
 package gm
 
 import (
-	"gitlab.ifreetalk.com/plate/freetk/fkcore/fklog"
-	"gitlab.ifreetalk.com/plate/freetk/fkutil"
-	"go.uber.org/zap"
 	"net/http"
+
+	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fklog"
+	"gitlab.ifreetalk.com/maze-plate/freetk/fkutil"
+	"go.uber.org/zap"
 )
 
 const USER_ID_FIELD = "userId"

@@ -1,6 +1,6 @@
 package mazebarriesv8config
 
-import "gitlab.ifreetalk.com/plate/excel/auto/GMazeBarriesV8Cfg"
+import "gitlab.ifreetalk.com/maze-plate/excel/auto/GMazeBarriesV8Cfg"
 
 /**
  * @Author: liushuhang

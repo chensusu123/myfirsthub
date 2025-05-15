@@ -3,7 +3,7 @@ package tasktimer
 import (
 	"errors"
 
-	"gitlab.ifreetalk.com/plate/freetk/fkcore/fklog"
+	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fklog"
 	"gitlab.ifreetalk.com/plate/protodef/SeaTaskSvr"
 )
 
