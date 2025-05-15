@@ -18,43 +18,43 @@ func MakeLimiterKey(uid uint64, packId int32) string {
 
 func RegTcpHandler() {
 	// 查询迷宫装配信息
-	_ = websocket_service.RegProcSimple(16179, &MazeGameEquip.GetMazeGameAssembleInfoRQ{},
-		16180, &MazeGameEquip.GetMazeGameAssembleInfoRS{}, OnGetMazeAssembleRQ)
+	_ = websocket_service.RegProcSimple(10414, &MazeGameEquip.GetMazeGameAssembleInfoRQ{},
+		10415, &MazeGameEquip.GetMazeGameAssembleInfoRS{}, OnGetMazeAssembleRQ)
 
 	// 更换装备预览
-	_ = websocket_service.RegProcSimple(16183, &MazeGameEquip.MazeDressEquipPreviewRQ{},
-		16184, &MazeGameEquip.MazeDressEquipPreviewRS{}, OnDressEquipPreviewRQ)
+	_ = websocket_service.RegProcSimple(10416, &MazeGameEquip.MazeDressEquipPreviewRQ{},
+		10417, &MazeGameEquip.MazeDressEquipPreviewRS{}, OnDressEquipPreviewRQ)
 
 	// 更换装备
-	_ = websocket_service.RegProcSimple(16181, &MazeGameEquip.MazeDressEquipRQ{},
-		16182, &MazeGameEquip.MazeDressEquipRS{}, OnDressMazeEquipRQ)
+	_ = websocket_service.RegProcSimple(10418, &MazeGameEquip.MazeDressEquipRQ{},
+		10419, &MazeGameEquip.MazeDressEquipRS{}, OnDressMazeEquipRQ)
 
 	// 多选一穿装备
-	_ = websocket_service.RegProcSimple(16222, &MazeGameEquip.SelectDressMazeEquipRQ{},
-		16223, &MazeGameEquip.SelectDressMazeEquipRS{}, OnSelectDressMazeEquipRQ)
+	_ = websocket_service.RegProcSimple(10420, &MazeGameEquip.SelectDressMazeEquipRQ{},
+		10421, &MazeGameEquip.SelectDressMazeEquipRS{}, OnSelectDressMazeEquipRQ)
 
 	// 处理kafkatcp消息
 	// _ = websocket_service.RegProcSimple(20989, &KafkaMsgNotify.KafkaMsgDistributeRQ{},
 	// 	20990, &KafkaMsgNotify.KafkaMsgDistributeRS{}, OnKafkaTcpMsgRQ)
 
 	// 拉取背包装备列表
-	_ = websocket_service.RegProcSimple(16190, &MazeGameEquip.GetMazeBagEquipListRQ{},
-		16191, &MazeGameEquip.GetMazeBagEquipListRS{}, OnGetMazeBagEquipListRQ)
+	_ = websocket_service.RegProcSimple(10405, &MazeGameEquip.GetMazeBagEquipListRQ{},
+		10406, &MazeGameEquip.GetMazeBagEquipListRS{}, OnGetMazeBagEquipListRQ)
 
-	_ = websocket_service.RegProcSimple(16192, &MazeGameEquip.QueryMazeEquipDetailRQ{},
-		16193, &MazeGameEquip.QueryMazeEquipDetailRS{}, OnQueryMazeEquipDetailRQ)
+	_ = websocket_service.RegProcSimple(10407, &MazeGameEquip.QueryMazeEquipDetailRQ{},
+		10408, &MazeGameEquip.QueryMazeEquipDetailRS{}, OnQueryMazeEquipDetailRQ)
 
 	// 装备分解
-	_ = websocket_service.RegProcSimple(16188, &MazeGameEquip.MazeEquipDismantleRQ{},
-		16189, &MazeGameEquip.MazeEquipDismantleRS{}, OnDollEquipDismantleRQ)
+	_ = websocket_service.RegProcSimple(10410, &MazeGameEquip.MazeEquipDismantleRQ{},
+		10411, &MazeGameEquip.MazeEquipDismantleRS{}, OnDollEquipDismantleRQ)
 
 	// 装备位强化预览
-	websocket_service.RegProcSimple(16201, &MazeEquipPos.MazeEquipPosLvUpPreviewRQ{},
-		16202, &MazeEquipPos.MazeEquipPosLvUpPreviewRS{}, OnEquipPosLvUpPreviewRQ)
+	websocket_service.RegProcSimple(10423, &MazeEquipPos.MazeEquipPosLvUpPreviewRQ{},
+		10424, &MazeEquipPos.MazeEquipPosLvUpPreviewRS{}, OnEquipPosLvUpPreviewRQ)
 
 	// 装备位强化
-	websocket_service.RegProcSimple(16203, &MazeEquipPos.MazeEquipPosLvUpRQ{},
-		16204, &MazeEquipPos.MazeEquipPosLvUpRS{}, OnEquipPosLvUpRQ)
+	websocket_service.RegProcSimple(10425, &MazeEquipPos.MazeEquipPosLvUpRQ{},
+		10426, &MazeEquipPos.MazeEquipPosLvUpRS{}, OnEquipPosLvUpRQ)
 }
 
 func RegRpcHandler() {

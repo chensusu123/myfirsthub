@@ -8,8 +8,8 @@ import (
 
 func RegTcpHandler() {
 	// 获取迷宫月卡
-	websocket_service.RegProcSimple(16198, &MazeCard.GetMazeCardRQ{},
-		16199, &MazeCard.GetMazeCardRS{}, GetMazeCardRQ)
+	websocket_service.RegProcSimple(10430, &MazeCard.GetMazeCardRQ{},
+		10431, &MazeCard.GetMazeCardRS{}, GetMazeCardRQ)
 }
 
 func InitKafkaConsumer() {

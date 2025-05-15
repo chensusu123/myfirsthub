@@ -13,8 +13,8 @@ import (
 
 func RegTcpHandler() {
 	// 迷宫体力查询
-	websocket_service.RegProcSimple(16240, &MazeEnergy.QueryMazeEnergyRQ{},
-		16241, &MazeEnergy.QueryMazeEnergyRS{}, OnQueryMazeEnergyRQ)
+	websocket_service.RegProcSimple(10469, &MazeEnergy.QueryMazeEnergyRQ{},
+		10470, &MazeEnergy.QueryMazeEnergyRS{}, OnQueryMazeEnergyRQ)
 
 }
 

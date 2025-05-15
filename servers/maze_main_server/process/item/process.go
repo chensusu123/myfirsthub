@@ -23,12 +23,12 @@ import (
 
 func RegTcpHandler() {
 	// 获取迷宫背包列表
-	_ = websocket_service.RegProcSimple(16248, &MazeBag.MazeBagListRQ{},
-		16249, &MazeBag.MazeBagListRS{}, OnMazeBagListRQ)
+	_ = websocket_service.RegProcSimple(10400, &MazeBag.MazeBagListRQ{},
+		10401, &MazeBag.MazeBagListRS{}, OnMazeBagListRQ)
 
 	// 重置迷宫背包列表
-	_ = websocket_service.RegProcSimple(16273, &MazeBag.ResetMazeBagRQ{},
-		16274, &MazeBag.ResetMazeBagRS{}, OnResetMazeBagRQ)
+	_ = websocket_service.RegProcSimple(10402, &MazeBag.ResetMazeBagRQ{},
+		10403, &MazeBag.ResetMazeBagRS{}, OnResetMazeBagRQ)
 }
 
 func OnMazeBagListRQ(ctx fknet.TCPContext, uid uint64, rqMsg proto.Message, rsMsg proto.Message) (err error) {

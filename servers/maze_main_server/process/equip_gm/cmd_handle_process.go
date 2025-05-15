@@ -15,8 +15,8 @@ import (
 
 func RegTcpHandler() {
 	// 处理装备命令
-	_ = websocket_service.RegProcSimple(16186, &MazeGameEquip.SendMazeEquipCmdRQ{},
-		16187, &MazeGameEquip.SendMazeEquipCmdRS{}, OnSendMazeEquipCmdRQ)
+	_ = websocket_service.RegProcSimple(10412, &MazeGameEquip.SendMazeEquipCmdRQ{},
+		10413, &MazeGameEquip.SendMazeEquipCmdRS{}, OnSendMazeEquipCmdRQ)
 }
 
 func OnSendMazeEquipCmdRQ(ctx fknet.TCPContext, shardingID uint64, request proto.Message, response proto.Message) (err error) {

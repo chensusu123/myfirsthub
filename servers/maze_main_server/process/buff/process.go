@@ -14,20 +14,20 @@ import (
 
 func RegTcpHandler() {
 	// 查询迷宫buff列表
-	websocket_service.RegProcSimple(16242, &MazeTempBuff.GetMazeTempBuffListRQ{},
-		16243, &MazeTempBuff.GetMazeTempBuffListRS{}, GetMazeTempBuffListRQ)
+	websocket_service.RegProcSimple(10433, &MazeTempBuff.GetMazeTempBuffListRQ{},
+		10434, &MazeTempBuff.GetMazeTempBuffListRS{}, GetMazeTempBuffListRQ)
 
 	// 查询迷宫可选buff列表
-	websocket_service.RegProcSimple(16244, &MazeTempBuff.GetOptionalMazeTempBuffListRQ{},
-		16245, &MazeTempBuff.GetOptionalMazeTempBuffListRS{}, GetOptionalMazeTempBuffListRQ)
+	websocket_service.RegProcSimple(10435, &MazeTempBuff.GetOptionalMazeTempBuffListRQ{},
+		10436, &MazeTempBuff.GetOptionalMazeTempBuffListRS{}, GetOptionalMazeTempBuffListRQ)
 
 	// 刷新迷宫可选buff列表
-	websocket_service.RegProcSimple(16263, &MazeTempBuff.RefreshOptionalMazeTempBuffListRQ{},
-		16264, &MazeTempBuff.RefreshOptionalMazeTempBuffListRS{}, RefreshOptionalMazeTempBuffListRQ)
+	websocket_service.RegProcSimple(10439, &MazeTempBuff.RefreshOptionalMazeTempBuffListRQ{},
+		10440, &MazeTempBuff.RefreshOptionalMazeTempBuffListRS{}, RefreshOptionalMazeTempBuffListRQ)
 
 	// 选择迷宫buff
-	websocket_service.RegProcSimple(16246, &MazeTempBuff.SelectMazeTempBuffRQ{},
-		16247, &MazeTempBuff.SelectMazeTempBuffRS{}, SelectMazeTempBuffRQ)
+	websocket_service.RegProcSimple(10437, &MazeTempBuff.SelectMazeTempBuffRQ{},
+		10438, &MazeTempBuff.SelectMazeTempBuffRS{}, SelectMazeTempBuffRQ)
 }
 
 func InitKafkaConsumer() {

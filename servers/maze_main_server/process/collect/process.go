@@ -10,11 +10,11 @@ import (
 
 func RegWsHandler() {
 	// 迷宫挂机查询
-	_ = websocket_service.RegProcSimple(16257, &MazeCollect.MazeCollectInfoQueryRQ{},
-		16258, &MazeCollect.MazeCollectInfoQueryRS{}, OnMazeCollectInfoQueryRQ)
+	_ = websocket_service.RegProcSimple(10465, &MazeCollect.MazeCollectInfoQueryRQ{},
+		10466, &MazeCollect.MazeCollectInfoQueryRS{}, OnMazeCollectInfoQueryRQ)
 
-	_ = websocket_service.RegProcSimple(16259, &MazeCollect.MazeCollectItemReceiveRQ{},
-		16260, &MazeCollect.MazeCollectItemReceiveRS{}, OnMazeCollectItemReceiveRQ)
+	_ = websocket_service.RegProcSimple(10467, &MazeCollect.MazeCollectItemReceiveRQ{},
+		10468, &MazeCollect.MazeCollectItemReceiveRS{}, OnMazeCollectItemReceiveRQ)
 }
 
 func RegTcpHandler() {

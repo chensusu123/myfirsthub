@@ -9,7 +9,7 @@ import (
 
 func RegTcpHandler() {
 	// start sweep
-	_ = websocket_service.RegProcSimple(16255, &MazeGame.StartMazeSweepRQ{},
-		16256, &MazeGame.StartMazeSweepRS{},
+	_ = websocket_service.RegProcSimple(10471, &MazeGame.StartMazeSweepRQ{},
+		10472, &MazeGame.StartMazeSweepRS{},
 		OnStartMazeSweepRQ)
 }

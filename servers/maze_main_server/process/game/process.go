@@ -42,14 +42,14 @@ func RegTcpHandler() {
 
 	// 人偶版本新手引导开宝箱RQ
 	websocket_service.RegProcSimple(
-		16208, &MazeGame.BarrierOpenBoxRQ{},
-		16209, &MazeGame.BarrierOpenBoxRS{},
+		10445, &MazeGame.BarrierOpenBoxRQ{},
+		10446, &MazeGame.BarrierOpenBoxRS{},
 		OnBarrierOpenBoxRQ)
 
 	// 人偶版本迷宫进出关卡RQ
 	websocket_service.RegProcSimple(
-		16210, &MazeGame.MazeBarrierEnterRQ{},
-		16211, &MazeGame.MazeBarrierEnterRS{},
+		10447, &MazeGame.MazeBarrierEnterRQ{},
+		10448, &MazeGame.MazeBarrierEnterRS{},
 		OnMazeBarrierEnterRQ)
 
 	// 人偶版本迷宫进出关卡区域RQ
@@ -66,8 +66,8 @@ func RegTcpHandler() {
 
 	// 人偶版本迷宫关卡死亡RQ
 	websocket_service.RegProcSimple(
-		16212, &MazeGame.BarrierDeathRQ{},
-		16213, &MazeGame.BarrierDeathRS{},
+		10449, &MazeGame.BarrierDeathRQ{},
+		10450, &MazeGame.BarrierDeathRS{},
 		OnMazeBarrierDeathRQ)
 
 	// 人偶版本迷宫查询关卡区域RQ
@@ -81,8 +81,8 @@ func RegTcpHandler() {
 	// 	20148, &SeaTaskSvr.TaskExpireNotifyRS{}, OnTimeOut)
 
 	// 处理装备命令
-	_ = websocket_service.RegProcSimple(16218, &MazeGame.SendDollMazeCmdRQ{},
-		16219, &MazeGame.SendDollMazeCmdRS{}, OnSendDollMazeCmdRQ)
+	_ = websocket_service.RegProcSimple(10463, &MazeGame.SendDollMazeCmdRQ{},
+		10464, &MazeGame.SendDollMazeCmdRS{}, OnSendDollMazeCmdRQ)
 
 	// 人偶版本迷宫上报闲置装备数量RQ
 	// websocket_service.RegProcSimple(
@@ -92,38 +92,38 @@ func RegTcpHandler() {
 
 	// 迷宫登陆RQ
 	websocket_service.RegProcSimple(
-		16206, &MazeGame.MazeLoginRQ{},
-		16207, &MazeGame.MazeLoginRS{},
+		10451, &MazeGame.MazeLoginRQ{},
+		10452, &MazeGame.MazeLoginRS{},
 		OnMazeLoginRQ)
 
 	// 上报人物等级和关卡
 	websocket_service.RegProcSimple(
-		16214, &MazeGame.ReportDataRQ{},
-		16215, &MazeGame.ReportDataRS{},
+		10453, &MazeGame.ReportDataRQ{},
+		10454, &MazeGame.ReportDataRS{},
 		OnReportDataRQ)
 
 	// 打怪上报申请加装备
 	websocket_service.RegProcSimple(
-		16216, &MazeGame.ReportAwardFoeEquipRQ{},
-		16217, &MazeGame.ReportAwardFoeEquipRS{},
+		10455, &MazeGame.ReportAwardFoeEquipRQ{},
+		10456, &MazeGame.ReportAwardFoeEquipRS{},
 		OnReportAwardFoeEquipRQ)
 
 	// 关卡列表
 	websocket_service.RegProcSimple(
-		16251, &MazeGame.MazeBarrierListRQ{},
-		16252, &MazeGame.MazeBarrierListRS{},
+		10457, &MazeGame.MazeBarrierListRQ{},
+		10458, &MazeGame.MazeBarrierListRS{},
 		OnMazeBarrierListRQ)
 
 	// 通关
 	websocket_service.RegProcSimple(
-		16253, &MazeGame.MazeBarrierPassRQ{},
-		16254, &MazeGame.MazeBarrierPassRS{},
+		10459, &MazeGame.MazeBarrierPassRQ{},
+		10460, &MazeGame.MazeBarrierPassRS{},
 		OnMazeBarrierPassRQ)
 
 	// 挑战复活
 	websocket_service.RegProcSimple(
-		16269, &MazeGame.MazeBarrierRebornRQ{},
-		16270, &MazeGame.MazeBarrierRebornRS{},
+		10461, &MazeGame.MazeBarrierRebornRQ{},
+		10462, &MazeGame.MazeBarrierRebornRS{},
 		OnMazeBarrierRebornRQ)
 }
 
