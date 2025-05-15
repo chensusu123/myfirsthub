@@ -7,7 +7,7 @@
 package equipaassemblegm
 
 import (
-	"gitlab.ifreetalk.com/plate/freetk/fkcore/fklog"
+	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fklog"
 	"gitlab.ifreetalk.com/maze-plate/protodef/MazeEquipCache"
 	"go.uber.org/zap"
 	"gitlab.ifreetalk.com/maze/maze_game_server/io/redis/dollassemblesuitredis"

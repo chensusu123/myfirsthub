@@ -9,10 +9,10 @@ package equipaassemblegm
 import (
 	"context"
 
-	"gitlab.ifreetalk.com/plate/excel/auto/GMazeEquipInfoV8Cfg"
-	"gitlab.ifreetalk.com/plate/extra/protobuf/proto"
-	"gitlab.ifreetalk.com/plate/freetk/fkcore/fklog"
-	"gitlab.ifreetalk.com/plate/freetk/fkcore/fknet"
+	"gitlab.ifreetalk.com/maze-plate/excel/auto/GMazeEquipInfoV8Cfg"
+	"gitlab.ifreetalk.com/maze-plate/extra/protobuf/proto"
+	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fklog"
+	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fknet"
 	"gitlab.ifreetalk.com/maze-plate/protodef/MazeEquipCache"
 	"gitlab.ifreetalk.com/maze-plate/protodef/MazeGameEquip"
 	"go.uber.org/zap"

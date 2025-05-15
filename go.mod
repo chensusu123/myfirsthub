@@ -12,11 +12,6 @@ require (
 	github.com/json-iterator/go v1.1.12
 	github.com/lonng/nano v0.5.1
 	github.com/xuri/excelize/v2 v2.9.0
-	gitlab.ifreetalk.com/plate/excel v1.0.83-0.20250512070910-97290fea265a
-	gitlab.ifreetalk.com/plate/extra v1.1.7
-	gitlab.ifreetalk.com/plate/freetk v1.2.63-0.20250513094402-4cf3a130ce35
-	gitlab.ifreetalk.com/plate/io_interface v1.4.102-0.20250326074707-ac26a4cb5dba
-	gitlab.ifreetalk.com/plate/protodef v1.0.88-0.20250509114533-682a3cdb0fb7
 	go.uber.org/atomic v1.9.0
 	go.uber.org/zap v1.24.0
 )
@@ -67,6 +62,9 @@ require (
 	github.com/twitchyliquid64/golang-asm v0.15.1 // indirect
 	github.com/xuri/efp v0.0.0-20240408161823-9ad904a10d6d // indirect
 	github.com/xuri/nfp v0.0.0-20240318013403-ab9948c2c4a7 // indirect
+	gitlab.ifreetalk.com/maze-plate/excel v0.0.0-20250418122811-e0c9dd3e2669 // indirect
+	gitlab.ifreetalk.com/maze-plate/freetk v1.0.1-0.20250422132154-b3c31d1f7ece // indirect
+	gitlab.ifreetalk.com/maze-plate/io v0.0.0-20250411054516-f3778c3f9a74 // indirect
 	gitlab.ifreetalk.com/maze-plate/protodef v0.0.0-20250514120308-80f18114a335 // indirect
 	gitlab.ifreetalk.com/plate/definition v1.0.6 // indirect
 	go.uber.org/multierr v1.7.0 // indirect

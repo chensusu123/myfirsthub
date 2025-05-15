@@ -9,7 +9,7 @@ package equipbaggm
 import (
 	"strings"
 
-	"gitlab.ifreetalk.com/plate/freetk/fkutil"
+	"gitlab.ifreetalk.com/maze-plate/freetk/fkutil"
 )
 
 // 解析规则Id

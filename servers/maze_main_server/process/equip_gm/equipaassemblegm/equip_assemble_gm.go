@@ -16,11 +16,8 @@ import (
 	"gitlab.ifreetalk.com/maze/maze_game_server/module/dollassembleinfo"
 	"gitlab.ifreetalk.com/maze/maze_game_server/servers/maze_main_server/process/equip"
 	"gitlab.ifreetalk.com/maze/maze_game_server/servers/maze_main_server/process/equip_gm/equipbaggm"
-	"gitlab.ifreetalk.com/plate/freetk/fkcore/fklog"
-	"gitlab.ifreetalk.com/plate/freetk/fkutil"
-	"gitlab.ifreetalk.com/plate/io_interface/redis_interface/common/new_map_db/FamilyAllocUserRedis"
-	"gitlab.ifreetalk.com/plate/io_interface/redis_interface/common/new_map_db/LeagueFamilyRedis"
-	"gitlab.ifreetalk.com/plate/io_interface/redis_interface/common/new_map_db/WorldLeagueRedis"
+	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fklog"
+	"gitlab.ifreetalk.com/maze-plate/freetk/fkutil"
 	"go.uber.org/zap"
 )
 
@@ -248,71 +245,71 @@ func RegGm(logger fklog.FKLogI) {
 			writer.Write(bs.Bytes())
 		}
 	})
-	// 重新初始化人偶装备
-	gm.SafeHttpRegister(logger, "/ReInitDollEquipByMap", func(writer http.ResponseWriter, request *http.Request) {
-		mapId := fkutil.ToUint64(request.Form.Get("mapId"))
-		clear := fkutil.ToBool(request.Form.Get("clear"))
-		leagueIDMap, err := WorldLeagueRedis.GetWorldLeagueInfo(logger, mapId)
-		if err != nil {
-			logger.ErrorWF("ReInitDollEquipByMap load world leagueInfo fail",
-				zap.Uint64("mapID", mapId),
-				zap.Error(err))
-			return
-		}
-		logger.InfoWF("ReInitDollEquipByMap map info",
-			zap.Uint64("map", mapId),
-			zap.Int("leagueLen", len(leagueIDMap)),
-		)
-
-		var familyID uint64
-		for leagueID := range leagueIDMap {
-			// 取联盟下的散人家族
-			familyIDs, err := LeagueFamilyRedis.GetAllLeagueFamilyIDs(logger, leagueID)
-			if err != nil {
-				logger.ErrorWF("ReInitDollEquipByMap get league familyIDs fail", zap.Any("leagueID", leagueID), zap.Error(err))
-				continue
-			}
-
-			for _, family := range familyIDs {
-				familyID = fkutil.ToUint64(family)
-				// 取家族下所有人
-				users, err := FamilyAllocUserRedis.GetAllFamilyUIDSliceFix(logger, familyID)
-				if err != nil {
-					logger.ErrorWF("ReInitDollEquipByMap get family users fail", zap.Error(err))
-					continue
-				}
-
-				if len(users) == 0 {
-					continue
-				}
-
-				for _, uid := range users {
-					if clear {
-						e := equipbaggm.ClearUserBag(logger, uid)
-						if e != nil {
-							continue
-						}
-					}
-					e := equip.ChkEquipPosUnlock(logger, uid, "gm", true)
-					if e != nil {
-						continue
-					}
-					// 初始装备套检查
-					e = equip.InitDollEquipSuitSeq(logger, uid)
-					if e != nil {
-						continue
-					}
-					// 处理初始化装备
-					e = equip.HandleDollEquipInit(logger, uid, true)
-					if e != nil {
-						continue
-					}
-				}
-			}
-		}
-
-		writer.Write([]byte("ok"))
-	})
+	// // 重新初始化人偶装备
+	// gm.SafeHttpRegister(logger, "/ReInitDollEquipByMap", func(writer http.ResponseWriter, request *http.Request) {
+	// 	mapId := fkutil.ToUint64(request.Form.Get("mapId"))
+	// 	clear := fkutil.ToBool(request.Form.Get("clear"))
+	// 	leagueIDMap, err := WorldLeagueRedis.GetWorldLeagueInfo(logger, mapId)
+	// 	if err != nil {
+	// 		logger.ErrorWF("ReInitDollEquipByMap load world leagueInfo fail",
+	// 			zap.Uint64("mapID", mapId),
+	// 			zap.Error(err))
+	// 		return
+	// 	}
+	// 	logger.InfoWF("ReInitDollEquipByMap map info",
+	// 		zap.Uint64("map", mapId),
+	// 		zap.Int("leagueLen", len(leagueIDMap)),
+	// 	)
+	//
+	// 	var familyID uint64
+	// 	for leagueID := range leagueIDMap {
+	// 		// 取联盟下的散人家族
+	// 		familyIDs, err := LeagueFamilyRedis.GetAllLeagueFamilyIDs(logger, leagueID)
+	// 		if err != nil {
+	// 			logger.ErrorWF("ReInitDollEquipByMap get league familyIDs fail", zap.Any("leagueID", leagueID), zap.Error(err))
+	// 			continue
+	// 		}
+	//
+	// 		for _, family := range familyIDs {
+	// 			familyID = fkutil.ToUint64(family)
+	// 			// 取家族下所有人
+	// 			users, err := FamilyAllocUserRedis.GetAllFamilyUIDSliceFix(logger, familyID)
+	// 			if err != nil {
+	// 				logger.ErrorWF("ReInitDollEquipByMap get family users fail", zap.Error(err))
+	// 				continue
+	// 			}
+	//
+	// 			if len(users) == 0 {
+	// 				continue
+	// 			}
+	//
+	// 			for _, uid := range users {
+	// 				if clear {
+	// 					e := equipbaggm.ClearUserBag(logger, uid)
+	// 					if e != nil {
+	// 						continue
+	// 					}
+	// 				}
+	// 				e := equip.ChkEquipPosUnlock(logger, uid, "gm", true)
+	// 				if e != nil {
+	// 					continue
+	// 				}
+	// 				// 初始装备套检查
+	// 				e = equip.InitDollEquipSuitSeq(logger, uid)
+	// 				if e != nil {
+	// 					continue
+	// 				}
+	// 				// 处理初始化装备
+	// 				e = equip.HandleDollEquipInit(logger, uid, true)
+	// 				if e != nil {
+	// 					continue
+	// 				}
+	// 			}
+	// 		}
+	// 	}
+	//
+	// 	writer.Write([]byte("ok"))
+	// })
 
 	gm.SafeHttpRegister(logger, "/ReInitDollEquipByFile", func(writer http.ResponseWriter, request *http.Request) {
 
@@ -391,113 +388,113 @@ func RegGm(logger fklog.FKLogI) {
 		writer.Write([]byte("初始化完成"))
 	})
 
-	gm.SafeHttpRegister(logger, "/FixDollAttrByMap", func(writer http.ResponseWriter, request *http.Request) {
-		mapId := fkutil.ToUint64(request.Form.Get("mapId"))
-		fixType := fkutil.ToInt32(request.Form.Get("fixType"))
-		leagueIDMap, err := WorldLeagueRedis.GetWorldLeagueInfo(logger, mapId)
-		if err != nil {
-			logger.ErrorWF("FixDollAttrByMap load world leagueInfo fail",
-				zap.Uint64("mapID", mapId),
-				zap.Error(err))
-			return
-		}
-		logger.InfoWF("FixDollAttrByMap map info",
-			zap.Uint64("map", mapId),
-			zap.Int32("fixType", fixType),
-			zap.Int("leagueLen", len(leagueIDMap)),
-		)
+	// gm.SafeHttpRegister(logger, "/FixDollAttrByMap", func(writer http.ResponseWriter, request *http.Request) {
+	// 	mapId := fkutil.ToUint64(request.Form.Get("mapId"))
+	// 	fixType := fkutil.ToInt32(request.Form.Get("fixType"))
+	// 	leagueIDMap, err := WorldLeagueRedis.GetWorldLeagueInfo(logger, mapId)
+	// 	if err != nil {
+	// 		logger.ErrorWF("FixDollAttrByMap load world leagueInfo fail",
+	// 			zap.Uint64("mapID", mapId),
+	// 			zap.Error(err))
+	// 		return
+	// 	}
+	// 	logger.InfoWF("FixDollAttrByMap map info",
+	// 		zap.Uint64("map", mapId),
+	// 		zap.Int32("fixType", fixType),
+	// 		zap.Int("leagueLen", len(leagueIDMap)),
+	// 	)
+	//
+	// 	var familyID uint64
+	// 	var succ, fail int64
+	// 	for leagueID := range leagueIDMap {
+	// 		// 取联盟下的散人家族
+	// 		familyIDs, err := LeagueFamilyRedis.GetAllLeagueFamilyIDs(logger, leagueID)
+	// 		if err != nil {
+	// 			logger.ErrorWF("FixDollAttrByMap get league familyIDs fail", zap.Any("leagueID", leagueID), zap.Error(err))
+	// 			continue
+	// 		}
+	//
+	// 		for _, family := range familyIDs {
+	// 			familyID = fkutil.ToUint64(family)
+	// 			// 取家族下所有人
+	// 			users, err := FamilyAllocUserRedis.GetAllFamilyUIDSliceFix(logger, familyID)
+	// 			if err != nil {
+	// 				logger.ErrorWF("FixDollAttrByMap get family users fail", zap.Error(err))
+	// 				continue
+	// 			}
+	//
+	// 			if len(users) == 0 {
+	// 				continue
+	// 			}
+	//
+	// 			for _, uid := range users {
+	// 				logger.SetUid(uid)
+	// 				logger.SetLogId(time.Now().UnixNano())
+	// 				e := ReCalcDollEquipAttr(logger, uid, fixType)
+	// 				if e == nil {
+	// 					atomic.AddInt64(&succ, 1)
+	// 				} else {
+	// 					atomic.AddInt64(&fail, 1)
+	// 				}
+	// 			}
+	// 		}
+	// 	}
+	//
+	// 	writer.Write([]byte(fmt.Sprintf("succ:%d fail:%d", succ, fail)))
+	// })
 
-		var familyID uint64
-		var succ, fail int64
-		for leagueID := range leagueIDMap {
-			// 取联盟下的散人家族
-			familyIDs, err := LeagueFamilyRedis.GetAllLeagueFamilyIDs(logger, leagueID)
-			if err != nil {
-				logger.ErrorWF("FixDollAttrByMap get league familyIDs fail", zap.Any("leagueID", leagueID), zap.Error(err))
-				continue
-			}
-
-			for _, family := range familyIDs {
-				familyID = fkutil.ToUint64(family)
-				// 取家族下所有人
-				users, err := FamilyAllocUserRedis.GetAllFamilyUIDSliceFix(logger, familyID)
-				if err != nil {
-					logger.ErrorWF("FixDollAttrByMap get family users fail", zap.Error(err))
-					continue
-				}
-
-				if len(users) == 0 {
-					continue
-				}
-
-				for _, uid := range users {
-					logger.SetUid(uid)
-					logger.SetLogId(time.Now().UnixNano())
-					e := ReCalcDollEquipAttr(logger, uid, fixType)
-					if e == nil {
-						atomic.AddInt64(&succ, 1)
-					} else {
-						atomic.AddInt64(&fail, 1)
-					}
-				}
-			}
-		}
-
-		writer.Write([]byte(fmt.Sprintf("succ:%d fail:%d", succ, fail)))
-	})
-
-	gm.SafeHttpRegister(logger, "/CalcDollAttr", func(writer http.ResponseWriter, request *http.Request) {
-		mapId := fkutil.ToUint64(request.Form.Get("mapId"))
-		leagueIDMap, err := WorldLeagueRedis.GetWorldLeagueInfo(logger, mapId)
-		if err != nil {
-			logger.ErrorWF("CalcDollAttr load world leagueInfo fail",
-				zap.Uint64("mapID", mapId),
-				zap.Error(err))
-			return
-		}
-		logger.InfoWF("CalcDollAttr map info",
-			zap.Uint64("map", mapId),
-			zap.Int("leagueLen", len(leagueIDMap)),
-		)
-
-		var familyID uint64
-		var succ, fail int64
-		for leagueID := range leagueIDMap {
-			// 取联盟下的散人家族
-			familyIDs, err := LeagueFamilyRedis.GetAllLeagueFamilyIDs(logger, leagueID)
-			if err != nil {
-				logger.ErrorWF("FixDollAttrByMap get league familyIDs fail", zap.Any("leagueID", leagueID), zap.Error(err))
-				continue
-			}
-
-			for _, family := range familyIDs {
-				familyID = fkutil.ToUint64(family)
-				// 取家族下所有人
-				users, err := FamilyAllocUserRedis.GetAllFamilyUIDSliceFix(logger, familyID)
-				if err != nil {
-					logger.ErrorWF("CalcDollAttr get family users fail", zap.Error(err))
-					continue
-				}
-
-				if len(users) == 0 {
-					continue
-				}
-
-				for _, uid := range users {
-					logger.SetUid(uid)
-					logger.SetLogId(time.Now().UnixNano())
-					e := CalcDollAttrCalc(logger, uid)
-					if e == nil {
-						atomic.AddInt64(&succ, 1)
-					} else {
-						atomic.AddInt64(&fail, 1)
-					}
-				}
-			}
-		}
-
-		writer.Write([]byte(fmt.Sprintf("succ:%d fail:%d", succ, fail)))
-	})
+	// gm.SafeHttpRegister(logger, "/CalcDollAttr", func(writer http.ResponseWriter, request *http.Request) {
+	// 	mapId := fkutil.ToUint64(request.Form.Get("mapId"))
+	// 	leagueIDMap, err := WorldLeagueRedis.GetWorldLeagueInfo(logger, mapId)
+	// 	if err != nil {
+	// 		logger.ErrorWF("CalcDollAttr load world leagueInfo fail",
+	// 			zap.Uint64("mapID", mapId),
+	// 			zap.Error(err))
+	// 		return
+	// 	}
+	// 	logger.InfoWF("CalcDollAttr map info",
+	// 		zap.Uint64("map", mapId),
+	// 		zap.Int("leagueLen", len(leagueIDMap)),
+	// 	)
+	//
+	// 	var familyID uint64
+	// 	var succ, fail int64
+	// 	for leagueID := range leagueIDMap {
+	// 		// 取联盟下的散人家族
+	// 		familyIDs, err := LeagueFamilyRedis.GetAllLeagueFamilyIDs(logger, leagueID)
+	// 		if err != nil {
+	// 			logger.ErrorWF("FixDollAttrByMap get league familyIDs fail", zap.Any("leagueID", leagueID), zap.Error(err))
+	// 			continue
+	// 		}
+	//
+	// 		for _, family := range familyIDs {
+	// 			familyID = fkutil.ToUint64(family)
+	// 			// 取家族下所有人
+	// 			users, err := FamilyAllocUserRedis.GetAllFamilyUIDSliceFix(logger, familyID)
+	// 			if err != nil {
+	// 				logger.ErrorWF("CalcDollAttr get family users fail", zap.Error(err))
+	// 				continue
+	// 			}
+	//
+	// 			if len(users) == 0 {
+	// 				continue
+	// 			}
+	//
+	// 			for _, uid := range users {
+	// 				logger.SetUid(uid)
+	// 				logger.SetLogId(time.Now().UnixNano())
+	// 				e := CalcDollAttrCalc(logger, uid)
+	// 				if e == nil {
+	// 					atomic.AddInt64(&succ, 1)
+	// 				} else {
+	// 					atomic.AddInt64(&fail, 1)
+	// 				}
+	// 			}
+	// 		}
+	// 	}
+	//
+	// 	writer.Write([]byte(fmt.Sprintf("succ:%d fail:%d", succ, fail)))
+	// })
 
 	gm.SafeHttpRegister(logger, "/FixDollAttr", func(writer http.ResponseWriter, request *http.Request) {
 		uid := fkutil.ToUint64(request.Form.Get("uid"))
@@ -612,58 +609,58 @@ func RegGm(logger fklog.FKLogI) {
 		}
 	})
 
-	gm.SafeHttpRegister(logger, "/FixEquipPosUnlockByMap", func(writer http.ResponseWriter, request *http.Request) {
-		mapId := fkutil.ToUint64(request.Form.Get("mapId"))
-		leagueIDMap, err := WorldLeagueRedis.GetWorldLeagueInfo(logger, mapId)
-		if err != nil {
-			logger.ErrorWF("FixEquipPosUnlockByMap load world leagueInfo fail",
-				zap.Uint64("mapID", mapId),
-				zap.Error(err))
-			return
-		}
-		logger.InfoWF("FixEquipPosUnlockByMap map info",
-			zap.Uint64("map", mapId),
-			zap.Int("leagueLen", len(leagueIDMap)),
-		)
-
-		var familyID uint64
-		var succ, fail int64
-		for leagueID := range leagueIDMap {
-			// 取联盟下的散人家族
-			familyIDs, err := LeagueFamilyRedis.GetAllLeagueFamilyIDs(logger, leagueID)
-			if err != nil {
-				logger.ErrorWF("FixEquipPosUnlockByMap get league familyIDs fail", zap.Any("leagueID", leagueID), zap.Error(err))
-				continue
-			}
-
-			for _, family := range familyIDs {
-				familyID = fkutil.ToUint64(family)
-				// 取家族下所有人
-				users, err := FamilyAllocUserRedis.GetAllFamilyUIDSliceFix(logger, familyID)
-				if err != nil {
-					logger.ErrorWF("FixEquipPosUnlockByMap get family users fail", zap.Error(err))
-					continue
-				}
-
-				if len(users) == 0 {
-					continue
-				}
-
-				for _, uid := range users {
-					logger.SetUid(uid)
-					logger.SetLogId(time.Now().UnixNano())
-					_, e := UnlockPosByEquip(logger, uid)
-					if e == nil {
-						atomic.AddInt64(&succ, 1)
-					} else {
-						atomic.AddInt64(&fail, 1)
-					}
-				}
-			}
-		}
-
-		writer.Write([]byte(fmt.Sprintf("succ:%d fail:%d", succ, fail)))
-	})
+	// gm.SafeHttpRegister(logger, "/FixEquipPosUnlockByMap", func(writer http.ResponseWriter, request *http.Request) {
+	// 	mapId := fkutil.ToUint64(request.Form.Get("mapId"))
+	// 	leagueIDMap, err := WorldLeagueRedis.GetWorldLeagueInfo(logger, mapId)
+	// 	if err != nil {
+	// 		logger.ErrorWF("FixEquipPosUnlockByMap load world leagueInfo fail",
+	// 			zap.Uint64("mapID", mapId),
+	// 			zap.Error(err))
+	// 		return
+	// 	}
+	// 	logger.InfoWF("FixEquipPosUnlockByMap map info",
+	// 		zap.Uint64("map", mapId),
+	// 		zap.Int("leagueLen", len(leagueIDMap)),
+	// 	)
+	//
+	// 	var familyID uint64
+	// 	var succ, fail int64
+	// 	for leagueID := range leagueIDMap {
+	// 		// 取联盟下的散人家族
+	// 		familyIDs, err := LeagueFamilyRedis.GetAllLeagueFamilyIDs(logger, leagueID)
+	// 		if err != nil {
+	// 			logger.ErrorWF("FixEquipPosUnlockByMap get league familyIDs fail", zap.Any("leagueID", leagueID), zap.Error(err))
+	// 			continue
+	// 		}
+	//
+	// 		for _, family := range familyIDs {
+	// 			familyID = fkutil.ToUint64(family)
+	// 			// 取家族下所有人
+	// 			users, err := FamilyAllocUserRedis.GetAllFamilyUIDSliceFix(logger, familyID)
+	// 			if err != nil {
+	// 				logger.ErrorWF("FixEquipPosUnlockByMap get family users fail", zap.Error(err))
+	// 				continue
+	// 			}
+	//
+	// 			if len(users) == 0 {
+	// 				continue
+	// 			}
+	//
+	// 			for _, uid := range users {
+	// 				logger.SetUid(uid)
+	// 				logger.SetLogId(time.Now().UnixNano())
+	// 				_, e := UnlockPosByEquip(logger, uid)
+	// 				if e == nil {
+	// 					atomic.AddInt64(&succ, 1)
+	// 				} else {
+	// 					atomic.AddInt64(&fail, 1)
+	// 				}
+	// 			}
+	// 		}
+	// 	}
+	//
+	// 	writer.Write([]byte(fmt.Sprintf("succ:%d fail:%d", succ, fail)))
+	// })
 
 	gm.SafeHttpRegister(logger, "/FixAssembleEquipInfo", func(writer http.ResponseWriter, request *http.Request) {
 		uid := fkutil.ToUint64(request.Form.Get("uid"))

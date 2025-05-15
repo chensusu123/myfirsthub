@@ -9,12 +9,12 @@ package equip
 import (
 	"time"
 
-	"gitlab.ifreetalk.com/plate/excel/auto/GMazeConfigV8Cfg"
-	"gitlab.ifreetalk.com/plate/excel/auto/GMazeEquipConfigV8Cfg"
-	"gitlab.ifreetalk.com/plate/excel/auto/GMazeEquipInfoV8Cfg"
-	"gitlab.ifreetalk.com/plate/extra/protobuf/proto"
-	"gitlab.ifreetalk.com/plate/freetk/common/errors"
-	"gitlab.ifreetalk.com/plate/freetk/fkcore/fklog"
+	"gitlab.ifreetalk.com/maze-plate/excel/auto/GMazeConfigV8Cfg"
+	"gitlab.ifreetalk.com/maze-plate/excel/auto/GMazeEquipConfigV8Cfg"
+	"gitlab.ifreetalk.com/maze-plate/excel/auto/GMazeEquipInfoV8Cfg"
+	"gitlab.ifreetalk.com/maze-plate/extra/protobuf/proto"
+	"gitlab.ifreetalk.com/maze-plate/protodef/errors"
+	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fklog"
 	"gitlab.ifreetalk.com/maze-plate/protodef/MazeEquipCache"
 	"gitlab.ifreetalk.com/maze-plate/protodef/MazeEquipSvr"
 	"gitlab.ifreetalk.com/maze-plate/protodef/MazeGameEquip"

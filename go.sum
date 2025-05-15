@@ -1881,6 +1881,14 @@ github.com/zeebo/assert v1.3.0/go.mod h1:Pq9JiuJQpG8JLJdtkwrJESF0Foym2/D9XMU5ciN
 github.com/zeebo/xxh3 v1.0.2/go.mod h1:5NWz9Sef7zIDm2JHfFlcQvNekmcEl9ekUZQQKCYaDcA=
 github.com/zsai001/nano-ex v0.0.0-20250513093902-993404574160 h1:/xRf4UQaos1Mm/UnalNsY3L5dxoxbsvexccCoZ7XcNg=
 github.com/zsai001/nano-ex v0.0.0-20250513093902-993404574160/go.mod h1:WeoYvyTRkP8ZnzbE+sqK/ZXB0enn97CJtqcBPufmI0Y=
+gitlab.ifreetalk.com/maze-plate/excel v0.0.0-20250410115802-b753fd37ecbe h1:WibsDFKr7ghlaF3oenW/w40lEh7BUUp0piqUExWjfn4=
+gitlab.ifreetalk.com/maze-plate/excel v0.0.0-20250410115802-b753fd37ecbe/go.mod h1:cFrHNe2xtN4iAltKEqunHV9D24qhctlKtF64xyZXJAE=
+gitlab.ifreetalk.com/maze-plate/excel v0.0.0-20250418122811-e0c9dd3e2669 h1:1eoSiROtS/rv6iSznVDwo2lxloJex8segyX3E61buhc=
+gitlab.ifreetalk.com/maze-plate/excel v0.0.0-20250418122811-e0c9dd3e2669/go.mod h1:cFrHNe2xtN4iAltKEqunHV9D24qhctlKtF64xyZXJAE=
+gitlab.ifreetalk.com/maze-plate/freetk v1.0.1-0.20250422132154-b3c31d1f7ece h1:k54Ygzq3jxqBTRGpLWZV+Jrgp5HvPZVzhGbtN3PAbt0=
+gitlab.ifreetalk.com/maze-plate/freetk v1.0.1-0.20250422132154-b3c31d1f7ece/go.mod h1:BsKRvBioRzBNxRihEuo0giUa+1y0278UaQi7kmI+Szo=
+gitlab.ifreetalk.com/maze-plate/io v0.0.0-20250411054516-f3778c3f9a74 h1:BXauIvymqWlu9IHFz1ABnosE7buCCtcj8nyTj6NopIA=
+gitlab.ifreetalk.com/maze-plate/io v0.0.0-20250411054516-f3778c3f9a74/go.mod h1:HBMeo7ex6aH1LdraJ35apTM4sTuNE2UWOZOQahudTps=
 gitlab.ifreetalk.com/maze-plate/protodef v0.0.0-20250514120308-80f18114a335 h1:I5WV1cOvIJWg4bg/7+FoloNxkgPbQdzJiXiz7AW6/Hc=
 gitlab.ifreetalk.com/maze-plate/protodef v0.0.0-20250514120308-80f18114a335/go.mod h1:xcrmInzqjTtBsqnftJRmoq0UY+82LRu9Gh+xm/EftcU=
 gitlab.ifreetalk.com/plate/definition v1.0.6 h1:jxAJiWFIGV5Nh4GNAySF4qNg+KzWMjg0Frv6eT1/Xzo=

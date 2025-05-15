@@ -10,8 +10,8 @@ import (
 	"context"
 	"time"
 
-	"gitlab.ifreetalk.com/plate/freetk/fkcore/fklog"
-	"gitlab.ifreetalk.com/plate/freetk/fkcore/fkprometheus"
+	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fklog"
+	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fkprometheus"
 
 	"go.uber.org/zap"
 	"gitlab.ifreetalk.com/maze/maze_game_server/common/structsdef"

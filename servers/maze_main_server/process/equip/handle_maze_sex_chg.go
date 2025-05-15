@@ -3,8 +3,8 @@ package equip
 import (
 	"encoding/json"
 
-	"gitlab.ifreetalk.com/plate/freetk/fkcore/fklog"
-	"gitlab.ifreetalk.com/plate/freetk/fkutil"
+	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fklog"
+	"gitlab.ifreetalk.com/maze-plate/freetk/fkutil"
 	"go.uber.org/zap"
 	"gitlab.ifreetalk.com/maze/maze_game_server/common/structsdef"
 	"context"

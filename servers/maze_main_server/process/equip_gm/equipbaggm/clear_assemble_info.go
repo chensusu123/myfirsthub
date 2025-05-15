@@ -1,7 +1,7 @@
 package equipbaggm
 
 import (
-	"gitlab.ifreetalk.com/plate/freetk/fkcore/fklog"
+	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fklog"
 	"go.uber.org/zap"
 	"gitlab.ifreetalk.com/maze/maze_game_server/io/redis/dollassemblesuitredis"
 	"gitlab.ifreetalk.com/maze/maze_game_server/common/constdef"

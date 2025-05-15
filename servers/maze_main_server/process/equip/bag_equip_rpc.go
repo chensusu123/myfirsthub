@@ -1,9 +1,9 @@
 package equip
 
 import (
-	"gitlab.ifreetalk.com/plate/extra/protobuf/proto"
-	"gitlab.ifreetalk.com/plate/freetk/common/errors"
-	"gitlab.ifreetalk.com/plate/freetk/fkserver"
+	"gitlab.ifreetalk.com/maze-plate/extra/protobuf/proto"
+	"gitlab.ifreetalk.com/maze-plate/protodef/errors"
+	"gitlab.ifreetalk.com/maze-plate/freetk/fkserver"
 	"gitlab.ifreetalk.com/maze-plate/protodef/MazeEquipCache"
 	"gitlab.ifreetalk.com/maze-plate/protodef/MazeEquipSvr"
 	"gitlab.ifreetalk.com/maze-plate/protodef/MazeGameEquip"
@@ -11,7 +11,7 @@ import (
 	"gitlab.ifreetalk.com/maze/maze_game_server/io/redis/mazebagequipredis"
 	"gitlab.ifreetalk.com/maze/maze_game_server/io/kafka/mazeequipbagrecord"
 	"gitlab.ifreetalk.com/maze/maze_game_server/common/function/packtopb"
-	"gitlab.ifreetalk.com/plate/freetk/fkcore/fklog"
+	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fklog"
 	"context"
 )
 

@@ -7,16 +7,16 @@
 package asynctask
 
 import (
-	"gitlab.ifreetalk.com/plate/freetk/common/fkfmt"
-	"gitlab.ifreetalk.com/plate/freetk/fkcore/fkconfig"
-	"gitlab.ifreetalk.com/plate/freetk/fkcore/fkconfig/param"
-	"gitlab.ifreetalk.com/plate/freetk/fkcore/fklog"
-	"gitlab.ifreetalk.com/plate/freetk/fkutil/workergroup"
+	"gitlab.ifreetalk.com/maze-plate/freetk/common/fkfmt"
+	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fkconfig"
+	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fkconfig/param"
+	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fklog"
+	"gitlab.ifreetalk.com/maze-plate/freetk/fkutil/workergroup"
 	"go.uber.org/zap"
 )
 
 var wgCacheSize, wgThreadCount uint32
-var OpenWq = 1 //开启异步队列
+var OpenWq = 1 // 开启异步队列
 
 func init() {
 	param.Uint32P(&wgCacheSize, "doll:gm:wg:cache:size", 5000, "channel缓冲大小")
@@ -58,7 +58,7 @@ func (tb *tWorkGroupBusiness) OnFinish(logger fklog.FKLogI) (err error) {
 }
 
 func (tb *tWorkGroupBusiness) SendTask(sharding uint64, fun func()) {
-	//fkfmt.Println("SendTask ", sharding)
+	// fkfmt.Println("SendTask ", sharding)
 	if fun == nil {
 		fkfmt.Println("tWorkGroupBusiness fun nil")
 		return

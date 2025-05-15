@@ -8,9 +8,9 @@ import (
 
 	"gitlab.ifreetalk.com/maze-plate/protodef/MazeEquipCache"
 
-	"gitlab.ifreetalk.com/plate/excel/auto/GMazeEquipAttrStageV8Cfg"
-	"gitlab.ifreetalk.com/plate/excel/auto/GMazeEquipInfoV8Cfg"
-	"gitlab.ifreetalk.com/plate/freetk/fkcore/fkprometheus"
+	"gitlab.ifreetalk.com/maze-plate/excel/auto/GMazeEquipAttrStageV8Cfg"
+	"gitlab.ifreetalk.com/maze-plate/excel/auto/GMazeEquipInfoV8Cfg"
+	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fkprometheus"
 	"gitlab.ifreetalk.com/maze-plate/protodef/MazeEquipSvr"
 
 	"gitlab.ifreetalk.com/maze/maze_game_server/common/function/packtopb"
@@ -21,12 +21,10 @@ import (
 	"gitlab.ifreetalk.com/maze/maze_game_server/io/redis/mazeequipgetnumredis"
 	"gitlab.ifreetalk.com/maze/maze_game_server/io/redis/mazeequipguidredis"
 	"gitlab.ifreetalk.com/maze/maze_game_server/module/bagmodule"
-	"gitlab.ifreetalk.com/plate/extra/protobuf/proto"
-	"gitlab.ifreetalk.com/plate/freetk/common/errors"
-	"gitlab.ifreetalk.com/plate/freetk/fkcore/fklog"
-	"gitlab.ifreetalk.com/plate/freetk/fkserver"
-	"gitlab.ifreetalk.com/plate/io_interface/frontcache/UserBlackDiamondFC"
-	"gitlab.ifreetalk.com/plate/io_interface/redis_interface/common/MonthlyCardRedis"
+	"gitlab.ifreetalk.com/maze-plate/extra/protobuf/proto"
+	"gitlab.ifreetalk.com/maze-plate/protodef/errors"
+	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fklog"
+	"gitlab.ifreetalk.com/maze-plate/freetk/fkserver"
 	"gitlab.ifreetalk.com/maze-plate/protodef/MazeGameEquip"
 	"go.uber.org/zap"
 	"context"
@@ -224,24 +222,25 @@ func OnSvrAddMazeEquipRQ(ctx fklog.FKLogI, shardingID int64, rqMsg proto.Message
 
 func GetUserEquipAddition(logger fkserver.UserContext, uid uint64) (int32, error) {
 	var stageAddition int32 = 1
-	ok, err := UserBlackDiamondFC.IsBlackDiamondUserFC(logger, uid, 50)
-	if err != nil {
-		logger.ErrorWF("GetUserEquipAddition get black diamond user fail", zap.Error(err))
-		return 0, err
-	}
-	if ok {
-		stageAddition = 3
-	} else {
-		e, monthCardEnabled := MonthlyCardRedis.CheckMonthlyCardEx(logger, uid, 800001)
-		if e != nil {
-			logger.ErrorWF("GetUserEquipAddition get month card fail", zap.Error(err))
-			return 0, e
-		}
-		if monthCardEnabled {
-			stageAddition = 2
-		}
-	}
-	return stageAddition, err
+	// ok, err := UserBlackDiamondFC.IsBlackDiamondUserFC(logger, uid, 50)
+	// if err != nil {
+	// 	logger.ErrorWF("GetUserEquipAddition get black diamond user fail", zap.Error(err))
+	// 	return 0, err
+	// }
+	// if ok {
+	// 	stageAddition = 3
+	// } else {
+	// 	e, monthCardEnabled := MonthlyCardRedis.CheckMonthlyCardEx(logger, uid, 800001)
+	// 	if e != nil {
+	// 		logger.ErrorWF("GetUserEquipAddition get month card fail", zap.Error(err))
+	// 		return 0, e
+	// 	}
+	// 	if monthCardEnabled {
+	// 		stageAddition = 2
+	// 	}
+	// }
+	// return stageAddition, err
+	return stageAddition, nil
 }
 
 func AddEquipAllotGuid(logger fklog.FKLogI, userId uint64, addCount int32) ([]int64, error) {

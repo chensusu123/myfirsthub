@@ -9,8 +9,8 @@ package copyequipgm
 import (
 	"net/http"
 
-	"gitlab.ifreetalk.com/plate/freetk/common/fkfmt"
-	"gitlab.ifreetalk.com/plate/freetk/fkcore/fklog"
+	"gitlab.ifreetalk.com/maze-plate/freetk/common/fkfmt"
+	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fklog"
 	"gitlab.ifreetalk.com/maze/maze_game_server/common/function/gm"
 	"gitlab.ifreetalk.com/maze/maze_game_server/servers/maze_main_server/process/equip_gm/copyequipgm/copyusers"
 )

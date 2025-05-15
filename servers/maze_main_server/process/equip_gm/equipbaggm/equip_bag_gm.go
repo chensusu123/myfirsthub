@@ -5,14 +5,11 @@ import (
 	"net/http"
 	"strings"
 
-	"gitlab.ifreetalk.com/plate/excel/auto/GMazeEquipInfoV8Cfg"
-	"gitlab.ifreetalk.com/plate/extra/protobuf/proto"
-	"gitlab.ifreetalk.com/plate/freetk/common/fkfmt"
-	"gitlab.ifreetalk.com/plate/freetk/fkcore/fklog"
-	"gitlab.ifreetalk.com/plate/freetk/fkutil"
-	"gitlab.ifreetalk.com/plate/io_interface/redis_interface/common/new_map_db/FamilyAllocUserRedis"
-	"gitlab.ifreetalk.com/plate/io_interface/redis_interface/common/new_map_db/LeagueFamilyRedis"
-	"gitlab.ifreetalk.com/plate/io_interface/redis_interface/common/new_map_db/WorldLeagueRedis"
+	"gitlab.ifreetalk.com/maze-plate/excel/auto/GMazeEquipInfoV8Cfg"
+	"gitlab.ifreetalk.com/maze-plate/extra/protobuf/proto"
+	"gitlab.ifreetalk.com/maze-plate/freetk/common/fkfmt"
+	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fklog"
+	"gitlab.ifreetalk.com/maze-plate/freetk/fkutil"
 	"gitlab.ifreetalk.com/maze-plate/protodef/MazeEquipSvr"
 	"go.uber.org/zap"
 	"gitlab.ifreetalk.com/maze/maze_game_server/common/function/gm"
@@ -144,60 +141,60 @@ func Reg(logger fklog.FKLogI) {
 		return
 	})
 
-	gm.SafeHttpRegister(logger, "/ClearBagByMap", func(writer http.ResponseWriter, request *http.Request) {
-		// 外网线上环境不允许使用GM
-		request.ParseForm()
-
-		mapId := fkutil.ToUint64(request.Form.Get("mapId"))
-
-		leagueIDMap, err := WorldLeagueRedis.GetWorldLeagueInfo(logger, mapId)
-		if err != nil {
-			logger.ErrorWF("ClearBagByMap load world leagueInfo fail",
-				zap.Uint64("mapID", mapId),
-				zap.Error(err))
-			return
-		}
-		logger.InfoWF("ClearBagByMap map info",
-			zap.Uint64("map", mapId),
-			zap.Int("leagueLen", len(leagueIDMap)),
-		)
-
-		var familyID uint64
-		for leagueID := range leagueIDMap {
-			// 取联盟下的散人家族
-			familyIDs, err := LeagueFamilyRedis.GetAllLeagueFamilyIDs(logger, leagueID)
-			if err != nil {
-				logger.ErrorWF("ClearBagByMap get league familyIDs fail", zap.Any("leagueID", leagueID), zap.Error(err))
-				continue
-			}
-
-			for _, family := range familyIDs {
-				familyID = fkutil.ToUint64(family)
-				// 取家族下所有人
-				users, err := FamilyAllocUserRedis.GetAllFamilyUIDSliceFix(logger, familyID)
-				if err != nil {
-					logger.ErrorWF("ClearBagByMap get family users fail", zap.Error(err))
-					continue
-				}
-
-				if len(users) == 0 {
-					continue
-				}
-
-				for _, uid := range users {
-					err := ClearUserBag(logger, uid)
-					if err != nil {
-						logger.ErrorWF("ClearBagByMap ClearUserBag fail", zap.Error(err), zap.Uint64("uid", uid))
-						continue
-					}
-				}
-			}
-		}
-
-		writer.Write([]byte("ok"))
-
-		return
-	})
+	// gm.SafeHttpRegister(logger, "/ClearBagByMap", func(writer http.ResponseWriter, request *http.Request) {
+	// 	// 外网线上环境不允许使用GM
+	// 	request.ParseForm()
+	//
+	// 	mapId := fkutil.ToUint64(request.Form.Get("mapId"))
+	//
+	// 	leagueIDMap, err := WorldLeagueRedis.GetWorldLeagueInfo(logger, mapId)
+	// 	if err != nil {
+	// 		logger.ErrorWF("ClearBagByMap load world leagueInfo fail",
+	// 			zap.Uint64("mapID", mapId),
+	// 			zap.Error(err))
+	// 		return
+	// 	}
+	// 	logger.InfoWF("ClearBagByMap map info",
+	// 		zap.Uint64("map", mapId),
+	// 		zap.Int("leagueLen", len(leagueIDMap)),
+	// 	)
+	//
+	// 	var familyID uint64
+	// 	for leagueID := range leagueIDMap {
+	// 		// 取联盟下的散人家族
+	// 		familyIDs, err := LeagueFamilyRedis.GetAllLeagueFamilyIDs(logger, leagueID)
+	// 		if err != nil {
+	// 			logger.ErrorWF("ClearBagByMap get league familyIDs fail", zap.Any("leagueID", leagueID), zap.Error(err))
+	// 			continue
+	// 		}
+	//
+	// 		for _, family := range familyIDs {
+	// 			familyID = fkutil.ToUint64(family)
+	// 			// 取家族下所有人
+	// 			users, err := FamilyAllocUserRedis.GetAllFamilyUIDSliceFix(logger, familyID)
+	// 			if err != nil {
+	// 				logger.ErrorWF("ClearBagByMap get family users fail", zap.Error(err))
+	// 				continue
+	// 			}
+	//
+	// 			if len(users) == 0 {
+	// 				continue
+	// 			}
+	//
+	// 			for _, uid := range users {
+	// 				err := ClearUserBag(logger, uid)
+	// 				if err != nil {
+	// 					logger.ErrorWF("ClearBagByMap ClearUserBag fail", zap.Error(err), zap.Uint64("uid", uid))
+	// 					continue
+	// 				}
+	// 			}
+	// 		}
+	// 	}
+	//
+	// 	writer.Write([]byte("ok"))
+	//
+	// 	return
+	// })
 
 	gm.SafeHttpRegister(logger, "/CheckDollEquipCfg", func(writer http.ResponseWriter, request *http.Request) {
 		// 外网线上环境不允许使用GM

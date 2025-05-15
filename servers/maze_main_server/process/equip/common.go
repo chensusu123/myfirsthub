@@ -3,11 +3,10 @@ package equip
 import (
 	"time"
 
-	"gitlab.ifreetalk.com/plate/excel/auto/GMazeEquipSuiteInfoV8Cfg"
-	"gitlab.ifreetalk.com/plate/extra/protobuf/proto"
-	"gitlab.ifreetalk.com/plate/freetk/common/errors"
-	"gitlab.ifreetalk.com/plate/freetk/fkcore/fklog"
-	"gitlab.ifreetalk.com/plate/io_interface/redis_interface/common/commonmustarriveredis"
+	"gitlab.ifreetalk.com/maze-plate/excel/auto/GMazeEquipSuiteInfoV8Cfg"
+	"gitlab.ifreetalk.com/maze-plate/extra/protobuf/proto"
+	"gitlab.ifreetalk.com/maze-plate/protodef/errors"
+	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fklog"
 	"gitlab.ifreetalk.com/maze-plate/protodef/MazeEquipSvr"
 	"gitlab.ifreetalk.com/maze-plate/protodef/MazeGameEquip"
 	"gitlab.ifreetalk.com/maze-plate/protodef/MessageType"
@@ -15,6 +14,7 @@ import (
 	"gitlab.ifreetalk.com/maze/maze_game_server/common/function/grouplock"
 	"gitlab.ifreetalk.com/maze/maze_game_server/common/constdef"
 	"gitlab.ifreetalk.com/maze/maze_game_server/excel/mazeequipaffixrandpoolv8"
+	"gitlab.ifreetalk.com/maze-plate/io/redisio/commonmustarriveredis"
 )
 
 var globalLock = grouplock.NewGroupLock(10240)

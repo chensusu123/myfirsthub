@@ -1,11 +1,11 @@
 package equip
 
 import (
-	"gitlab.ifreetalk.com/plate/extra/protobuf/proto"
-	"gitlab.ifreetalk.com/plate/freetk/common/errors"
-	"gitlab.ifreetalk.com/plate/freetk/fkcore/fknet"
-	"gitlab.ifreetalk.com/plate/freetk/fkcore/fkprometheus"
-	"gitlab.ifreetalk.com/plate/freetk/fkserver"
+	"gitlab.ifreetalk.com/maze-plate/extra/protobuf/proto"
+	"gitlab.ifreetalk.com/maze-plate/protodef/errors"
+	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fknet"
+	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fkprometheus"
+	"gitlab.ifreetalk.com/maze-plate/freetk/fkserver"
 	"gitlab.ifreetalk.com/maze-plate/protodef/MazeEquipCache"
 	"gitlab.ifreetalk.com/maze-plate/protodef/MazeGameEquip"
 	"go.uber.org/zap"

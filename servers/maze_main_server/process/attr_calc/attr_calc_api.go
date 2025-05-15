@@ -9,9 +9,9 @@ package attr_calc
 import (
 	"fmt"
 
-	"gitlab.ifreetalk.com/plate/excel/auto/GMazeAttributeV8Cfg"
-	"gitlab.ifreetalk.com/plate/excel/auto/GMazeEquipConfigV8Cfg"
-	"gitlab.ifreetalk.com/plate/freetk/fkcore/fklog"
+	"gitlab.ifreetalk.com/maze-plate/excel/auto/GMazeAttributeV8Cfg"
+	"gitlab.ifreetalk.com/maze-plate/excel/auto/GMazeEquipConfigV8Cfg"
+	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fklog"
 	"gitlab.ifreetalk.com/maze-plate/protodef/MazeBuffData"
 	"go.uber.org/zap"
 	"gitlab.ifreetalk.com/maze/maze_game_server/common/function/dollattr"
