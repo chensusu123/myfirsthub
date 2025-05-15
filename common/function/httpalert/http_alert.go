@@ -7,7 +7,7 @@ import (
 
 	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fkconfig"
 	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fklog"
-	"gitlab.ifreetalk.com/maze-plate/io/common/alert"
+	//"gitlab.ifreetalk.com/maze-plate/io/common/alert"
 )
 
 // 使用http方式上报告警，默认有告警都会报出来
@@ -25,5 +25,7 @@ func SendHttpAlert(logger fklog.FKLogI, typ int32, content, recevier string, onl
 	if online {
 		typInfo = fmt.Sprintf("online-%d", typ)
 	}
-	return alert.NewAlert(logger, fkconfig.EnvVal.AppName, typInfo, fkconfig.EnvVal.HostName, recevier, sb.String())
+	_ = typInfo
+	return nil
+	// return alert.NewAlert(logger, fkconfig.EnvVal.AppName, typInfo, fkconfig.EnvVal.HostName, recevier, sb.String())
 }
