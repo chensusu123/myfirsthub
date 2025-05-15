@@ -21,7 +21,7 @@ func TestMain(m *testing.M) {
 	initLog()
 	gTestLogger = fklog.AppLogger().Clone("maze_main_server_t")
 
-	testio.IOLoad(12) //加载N组的io配置
+	testio.IOLoad(12, "90032") //加载N组的io配置
 	rand.Seed(time.Now().UnixNano())
 	m.Run()
 	fmt.Println("end")
