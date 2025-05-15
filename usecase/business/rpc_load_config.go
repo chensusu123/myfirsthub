@@ -10,7 +10,7 @@ import (
 	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fkalert"
 	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fklog"
 	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fkprometheus"
-	"gitlab.ifreetalk.com/maze-plate/protodef/MysqlParam"
+	"gitlab.ifreetalk.com/maze-plate/freetk/protodef/MysqlParam"
 
 	"go.uber.org/zap"
 )
