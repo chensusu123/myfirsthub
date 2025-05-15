@@ -3,13 +3,13 @@ package calequipsequence
 import (
 	"gitlab.ifreetalk.com/maze-plate/excel/auto/GMazeBarriesV8Cfg"
 	"gitlab.ifreetalk.com/maze-plate/excel/auto/GMazeShopEquipListV8Cfg"
-	"gitlab.ifreetalk.com/maze-plate/excel/auto/GMazeShopV8Cfg"
 	"gitlab.ifreetalk.com/maze/maze_game_server/common/errors"
 	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fklog"
 	"gitlab.ifreetalk.com/maze/maze_game_server/common/function/randfuncs"
 	"gitlab.ifreetalk.com/maze/maze_game_server/io/redis/mazeshopseqredis"
 	"gitlab.ifreetalk.com/maze/maze_game_server/module/mazeuserinfo"
 	"go.uber.org/zap"
+	"gitlab.ifreetalk.com/maze-plate/excel/auto/GMazeShopV8Cfg"
 )
 
 func GetNewEquip(logger fklog.FKLogI, userId uint64, barrierId int32, level int32, equipNum int32) (newEquip map[int32]int32, err error) {

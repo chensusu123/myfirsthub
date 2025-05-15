@@ -16,7 +16,6 @@ import (
 	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fknet"
 	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fkprometheus"
 	"gitlab.ifreetalk.com/maze-plate/freetk/fkserver"
-	"gitlab.ifreetalk.com/maze-plate/protodef/DollEquip"
 	"gitlab.ifreetalk.com/maze-plate/protodef/MazeEquipCache"
 	"gitlab.ifreetalk.com/maze-plate/protodef/MazeGameEquip"
 	"go.uber.org/zap"
@@ -142,14 +141,14 @@ func OnGetMazeAssembleRQ(ctx fknet.TCPContext, shardingID uint64, request proto.
 // 	return 0
 // }
 
-var NeedFuncCondMap = map[int32]int32{
-	int32(DollEquip.ENUM_FUNC_OPEN_ID_DollMount):                constdef.FuncOpenMount,
-	int32(DollEquip.ENUM_FUNC_OPEN_ID_PosStrengthen):            constdef.FuncOpenEquipPosStrengthen,
-	int32(DollEquip.ENUM_FUNC_OPEN_ID_Knife):                    constdef.FuncOpenKnife,
-	int32(DollEquip.ENUM_FUNC_OPEN_ID_EquipMagicOpen):           constdef.FuncOpenFaBao,
-	int32(DollEquip.ENUM_FUNC_OPEN_ID_EquipMagicStrengthenOpen): constdef.FuncOpenFaBaoStrenth,
-	// int32(DollEquip.ENUM_FUNC_OPEN_ID_EquipMagicStageOpen):      constdef.FuncOpenFaBaoStage,
-}
+// var NeedFuncCondMap = map[int32]int32{
+// 	int32(DollEquip.ENUM_FUNC_OPEN_ID_DollMount):                constdef.FuncOpenMount,
+// 	int32(DollEquip.ENUM_FUNC_OPEN_ID_PosStrengthen):            constdef.FuncOpenEquipPosStrengthen,
+// 	int32(DollEquip.ENUM_FUNC_OPEN_ID_Knife):                    constdef.FuncOpenKnife,
+// 	int32(DollEquip.ENUM_FUNC_OPEN_ID_EquipMagicOpen):           constdef.FuncOpenFaBao,
+// 	int32(DollEquip.ENUM_FUNC_OPEN_ID_EquipMagicStrengthenOpen): constdef.FuncOpenFaBaoStrenth,
+// int32(DollEquip.ENUM_FUNC_OPEN_ID_EquipMagicStageOpen):      constdef.FuncOpenFaBaoStage,
+// }
 
 // func getFuncOpenCond() (conds []*DollEquip.DollFuncOpenCond) {
 // 	for k, v := range NeedFuncCondMap {

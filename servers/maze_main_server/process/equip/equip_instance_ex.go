@@ -21,7 +21,6 @@ import (
 	"gitlab.ifreetalk.com/maze-plate/protodef/errors"
 	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fklog"
 	"gitlab.ifreetalk.com/maze-plate/freetk/fkutil"
-	"gitlab.ifreetalk.com/maze-plate/protodef/DollEquip"
 	"gitlab.ifreetalk.com/maze-plate/protodef/MazeEquipCache"
 	"gitlab.ifreetalk.com/maze-plate/protodef/MazeEquipSvr"
 	"go.uber.org/zap"
@@ -29,6 +28,7 @@ import (
 	"gitlab.ifreetalk.com/maze/maze_game_server/io/kafka/mazeequipinstancerecord"
 	"gitlab.ifreetalk.com/maze/maze_game_server/excel/mazeequipaffixrandpoolv8"
 	"gitlab.ifreetalk.com/maze/maze_game_server/excel/mazeequipaffixrolltypev8"
+	"gitlab.ifreetalk.com/maze-plate/protodef/MazeGameEquip"
 )
 
 // 用户参数外部
@@ -396,9 +396,9 @@ func (dei *DEInstance) GenBaseAttr() error {
 		}
 		var attrType int32
 		if index == 1 {
-			attrType = int32(DollEquip.ENUM_EQUIP_ATTR_TYPE_ATTR_MAIN)
+			attrType = int32(MazeGameEquip.ENUM_EQUIP_ATTR_TYPE_ATTR_MAIN)
 		} else {
-			attrType = int32(DollEquip.ENUM_EQUIP_ATTR_TYPE_ATTR_BASE)
+			attrType = int32(MazeGameEquip.ENUM_EQUIP_ATTR_TYPE_ATTR_BASE)
 		}
 		baseAttr.ShowAttrList = showAttrList
 		baseAttr.RealAttrList = realAttrList
@@ -514,7 +514,7 @@ func (dei *DEInstance) GenRandAttr() error {
 		randAttr.ShowAttrList = showAttrList
 		randAttr.RealAttrList = realAttrList
 		randAttr.RandWeight = proto.Int32(int32(randWeight))
-		randAttr.AttrType = proto.Int32(int32(DollEquip.ENUM_EQUIP_ATTR_TYPE_ATTR_RAND))
+		randAttr.AttrType = proto.Int32(int32(MazeGameEquip.ENUM_EQUIP_ATTR_TYPE_ATTR_RAND))
 		randAttr.Index = proto.Int32(index + int32(len(dei.EquipInfo.BaseAttrs)))
 		randAttrs = append(randAttrs, randAttr)
 		dei.UParam.BaseRandoms = append(dei.UParam.BaseRandoms, randWeight)

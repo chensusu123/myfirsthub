@@ -16,12 +16,12 @@ import (
 	"gitlab.ifreetalk.com/maze-plate/excel/auto/GMazeEquipPosRankV8Cfg"
 	"gitlab.ifreetalk.com/maze-plate/extra/protobuf/proto"
 	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fklog"
-	"gitlab.ifreetalk.com/maze-plate/protodef/DollEquip"
 	"gitlab.ifreetalk.com/maze-plate/protodef/MazeEquipCache"
 	"gitlab.ifreetalk.com/maze/maze_game_server/io/redis/dollassembleredis"
 	"gitlab.ifreetalk.com/maze/maze_game_server/module/mazelevel"
 	"gitlab.ifreetalk.com/maze/maze_game_server/module/assembleidpack"
 	"gitlab.ifreetalk.com/maze/maze_game_server/common/constdef"
+	"gitlab.ifreetalk.com/maze-plate/protodef/MazeGameEquip"
 )
 
 const (
@@ -126,7 +126,7 @@ func ChkEquipPosUnlock(logger fklog.FKLogI, userId uint64, src string, needNotif
 	}
 	if needNotify {
 		assembleidpack.SendAssembleChgID(logger, userId, assembleInfo,
-			int32(DollEquip.ENUM_ASSEMBLE_CHG_TYPE_MASK_ENUM_DOLL_EQUIP_POS_MASK), int32(-1), constdef.DollAssembleChgTypeEquipPosUnlock)
+			int32(MazeGameEquip.ENUM_MAZE_ASSEMBLE_CHG_TYPE_MASK_EQUIP_POS_MASK), int32(-1), constdef.DollAssembleChgTypeEquipPosUnlock)
 	}
 
 	return err

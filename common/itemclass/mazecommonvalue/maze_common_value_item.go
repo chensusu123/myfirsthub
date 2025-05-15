@@ -43,7 +43,7 @@ func (s *class) GatherItem(userCtx fkserver.UserContext, option *additemdefine.A
 		AddItems:    items,
 		OpType:      proto.Int32(option.OpType),
 		TradeNumber: proto.Uint64(option.TradeNumber),
-		Header:      userCtx.Header,
+		// Header:      userCtx.Header,
 	}
 	rpcRs := &MazeCommonValueSvr.MazeCommonValueAddRS{}
 	// err = mazecommonvaluerpc.MazeCommonValueAddRQ(userCtx, rpcRq, rpcRs)
@@ -80,7 +80,7 @@ func (s *class) DeductItem(userCtx fkserver.UserContext, option *additemdefine.A
 		SubItems:    items,
 		OpType:      proto.Int32(option.OpType),
 		TradeNumber: proto.Uint64(option.TradeNumber),
-		Header:      userCtx.Header,
+		// Header:      userCtx.Header,
 	}
 	rpcRs := &MazeCommonValueSvr.MazeCommonValueSubRS{}
 

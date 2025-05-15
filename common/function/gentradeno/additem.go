@@ -4,7 +4,6 @@ import (
 	"fmt"
 	"strings"
 
-	"gitlab.ifreetalk.com/maze-plate/extra/protobuf/proto"
 	"gitlab.ifreetalk.com/maze/maze_game_server/common/errors"
 	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fkconfig"
 	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fklog"
@@ -15,6 +14,7 @@ import (
 	"gitlab.ifreetalk.com/maze/maze_game_server/common/function/monitor"
 	"gitlab.ifreetalk.com/maze/maze_game_server/servers/maze_main_server/process/item"
 	"go.uber.org/zap"
+	"gitlab.ifreetalk.com/maze-plate/extra/protobuf/proto"
 )
 
 var (

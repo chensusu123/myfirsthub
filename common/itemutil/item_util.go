@@ -20,7 +20,7 @@ func WrapUserContext(ctx context.Context, uid uint64, logger fklog.FKLogI, heade
 	}
 
 	userCtx := fkserver.NewUserContext(ctx, uid, logger)
-	userCtx.Header = header
+	// userCtx.Header = header
 	return userCtx
 }
 

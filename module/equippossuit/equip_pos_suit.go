@@ -7,12 +7,12 @@ import (
 	"gitlab.ifreetalk.com/maze-plate/excel/auto/GMazeEquipPosLvSuiteV8Cfg"
 	"gitlab.ifreetalk.com/maze-plate/extra/protobuf/proto"
 	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fklog"
-	"gitlab.ifreetalk.com/maze-plate/protodef/Common"
 	"gitlab.ifreetalk.com/maze-plate/protodef/MazeEquipCache"
 	"gitlab.ifreetalk.com/maze-plate/protodef/MazeGameEquip"
 
 	"gitlab.ifreetalk.com/maze/maze_game_server/common/constdef"
 	"go.uber.org/zap"
+	"gitlab.ifreetalk.com/maze-plate/protodef/MazeCommon"
 )
 
 // 当前套装和下级套装
@@ -51,7 +51,7 @@ func GetCurAndNextSuit(logger fklog.FKLogI, curSuitId int32) (cur, next *MazeGam
 		if id <= 0 {
 			continue
 		}
-		cur.Attrs = append(cur.Attrs, &Common.Attr{AttrId: proto.Int32(id), AttrValue: proto.Int32(int32(cfg.Show_attr[id]))})
+		cur.Attrs = append(cur.Attrs, &MazeCommon.Attr{AttrId: proto.Int32(id), AttrValue: proto.Int32(int32(cfg.Show_attr[id]))})
 	}
 
 	if curSuitId == 0 { // 无激活套装
@@ -81,7 +81,7 @@ func GetCurAndNextSuit(logger fklog.FKLogI, curSuitId int32) (cur, next *MazeGam
 		if id <= 0 {
 			continue
 		}
-		next.Attrs = append(next.Attrs, &Common.Attr{AttrId: proto.Int32(id), AttrValue: proto.Int32(int32(nextCfg.Show_attr[id]))})
+		next.Attrs = append(next.Attrs, &MazeCommon.Attr{AttrId: proto.Int32(id), AttrValue: proto.Int32(int32(nextCfg.Show_attr[id]))})
 	}
 
 	return

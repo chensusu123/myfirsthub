@@ -14,7 +14,6 @@ import (
 	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fknet"
 	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fkprometheus"
 	"gitlab.ifreetalk.com/maze-plate/freetk/fkserver"
-	"gitlab.ifreetalk.com/maze-plate/protodef/DollEquip"
 	"gitlab.ifreetalk.com/maze-plate/protodef/MazeEquipCache"
 	"gitlab.ifreetalk.com/maze-plate/protodef/MazeEquipSvr"
 	"gitlab.ifreetalk.com/maze-plate/protodef/MazeGameEquip"
@@ -269,13 +268,13 @@ func OnSelectDressMazeEquipRQ(ctx fknet.TCPContext, shardingID uint64, request p
 	chgAssembleInfo := &MazeEquipCache.MazeAssembleDb{}
 	if assembleInfo.GetEpSuitId() != effectInfo.SuitId {
 		chgAssembleInfo.EpSuitId = proto.Int32(effectInfo.SuitId)
-		chgMask |= int32(DollEquip.ENUM_ASSEMBLE_CHG_TYPE_MASK_ENUM_DOLL_EQUIP_SUIT_MASK)
+		chgMask |= int32(MazeGameEquip.ENUM_MAZE_ASSEMBLE_CHG_TYPE_MASK_EQUIP_SUIT_MASK)
 	}
 
 	chgAssembleInfo.MazeEquips = chgEquipPosList
-	chgMask |= int32(DollEquip.ENUM_ASSEMBLE_CHG_TYPE_MASK_ENUM_DOLL_EQUIP_POS_MASK)
+	chgMask |= int32(MazeGameEquip.ENUM_MAZE_ASSEMBLE_CHG_TYPE_MASK_EQUIP_POS_MASK)
 	assembleidpack.SendAssembleChgID(userCtx, shardingID, chgAssembleInfo,
-		chgMask, int32(int32(DollEquip.ENUM_EQUIP_POS_MASK_LOAD_EQUIP_INFO)),
+		chgMask, int32(int32(MazeGameEquip.ENUM_MAZE_EQUIP_POS_MASK_LOAD_EQUIP_INFO)),
 		constdef.DollAssembleChgTypeReplaceEquip)
 
 	return nil
