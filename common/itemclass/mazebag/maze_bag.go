@@ -12,7 +12,6 @@ import (
 	"github.com/gogo/protobuf/proto"
 	"gitlab.ifreetalk.com/maze-plate/freetk/common/errors"
 	"gitlab.ifreetalk.com/maze-plate/freetk/fkserver"
-	"gitlab.ifreetalk.com/maze-plate/io/redis_interface/common/MustArriveRedis2"
 	"gitlab.ifreetalk.com/maze-plate/protodef/MazeBag"
 	"gitlab.ifreetalk.com/maze-plate/protodef/MazeCommon"
 	"gitlab.ifreetalk.com/maze-plate/protodef/MessageType"
@@ -22,6 +21,7 @@ import (
 	"gitlab.ifreetalk.com/maze/maze_game_server/common/itemutil"
 	"gitlab.ifreetalk.com/maze/maze_game_server/common/structdefine"
 	"gitlab.ifreetalk.com/maze/maze_game_server/io/redis/mazebagdb"
+	"gitlab.ifreetalk.com/maze/maze_game_server/usecase/mustarrive"
 	"go.uber.org/zap"
 )
 
@@ -31,8 +31,7 @@ func Register(reg *additemdefine.RegisterInfo) {
 	reg.RegisterByBagType(constdefine.EnterTypeMazeBag, GlobalMazeBag)
 }
 
-type class struct {
-}
+type class struct{}
 
 // GatherItem 加道具
 func (s *class) GatherItem(userCtx fkserver.UserContext, option *additemdefine.AddItemOption, items ...*MazeCommon.MazeItem) (addRes *structdefine.AddItemRes, err error) {
@@ -189,5 +188,5 @@ func SendBagItemChgID(userCtx fkserver.UserContext, items []*MazeCommon.MazeItem
 		idPack.Items = append(idPack.Items, itemutil.BuildMazeBagItem(userCtx, item.GetItemId(), item.GetCount()))
 	}
 
-	_ = MustArriveRedis2.SendArrivePacketWithLog(userCtx, userCtx.UserID, 16250, idPack)
+	_ = mustarrive.SendArrivePacket(userCtx, int64(userCtx.UserID), 16250, idPack)
 }

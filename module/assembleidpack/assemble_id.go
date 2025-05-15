@@ -9,13 +9,13 @@ package assembleidpack
 import (
 	"gitlab.ifreetalk.com/maze-plate/extra/protobuf/proto"
 	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fklog"
-	"gitlab.ifreetalk.com/maze-plate/io/redis_interface/common/MustArriveRedis"
 	"gitlab.ifreetalk.com/maze-plate/protodef/MazeEquipCache"
 	"gitlab.ifreetalk.com/maze-plate/protodef/MazeGameEquip"
 
 	"gitlab.ifreetalk.com/maze/maze_game_server/common/function/packtopb/asequipsuittopb"
 	"gitlab.ifreetalk.com/maze/maze_game_server/common/function/packtopb/packequipostopb"
 	"gitlab.ifreetalk.com/maze/maze_game_server/module/equippossuit"
+	"gitlab.ifreetalk.com/maze/maze_game_server/usecase/mustarrive"
 	"go.uber.org/zap"
 )
 
@@ -75,7 +75,7 @@ func SendAssembleChgID(logger fklog.FKLogI, userId uint64, assembleInfo *MazeEqu
 	}
 	idp.Mask = proto.Int32(mask)
 	idp.Token = proto.Int64(GetAssembleToken())
-	err := MustArriveRedis.SendArrivePacket(uint64(userId), 16185, idp)
+	err := mustarrive.SendArrivePacket(logger, int64(userId), 16185, idp)
 	if err != nil {
 		logger.ErrorWF("SendAssembleChgID SendArrivePacket err", zap.Error(err))
 		return err

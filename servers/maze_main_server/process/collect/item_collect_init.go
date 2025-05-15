@@ -4,12 +4,12 @@ import (
 	"time"
 
 	"gitlab.ifreetalk.com/maze/maze_game_server/io/kafka/mazecollectrecord"
+	"gitlab.ifreetalk.com/maze/maze_game_server/usecase/mustarrive"
 
 	"gitlab.ifreetalk.com/maze-plate/excel/auto/GMazeBarriesOnHookV8Cfg"
 	"gitlab.ifreetalk.com/maze-plate/extra/protobuf/proto"
 	"gitlab.ifreetalk.com/maze-plate/freetk/common/errors"
 	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fklog"
-	"gitlab.ifreetalk.com/maze-plate/io/redis_interface/common/MustArriveRedis"
 	"gitlab.ifreetalk.com/maze-plate/protodef/MazeCollect"
 	"gitlab.ifreetalk.com/maze-plate/protodef/MazeCollectCache"
 	"gitlab.ifreetalk.com/maze/maze_game_server/io/redis/mazecollectredis"
@@ -67,7 +67,7 @@ func InitMazeCollectLand(logger fklog.FKLogI, userId uint64, barrierId int32) (e
 		return
 	}
 	pack.MazeCollectInfo = mazeCollectInfoPb
-	err = MustArriveRedis.SendArrivePacket(userId, 16261, pack)
+	err = mustarrive.SendArrivePacket(logger, int64(userId), 16261, pack)
 	if err != nil {
 		logger.ErrorWF("InitMazeCollectLand SendArrivePacket", zap.Any("pack", pack), zap.Error(err))
 		return
