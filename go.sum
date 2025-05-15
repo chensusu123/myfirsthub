@@ -1841,6 +1841,12 @@ gitlab.ifreetalk.com/maze-plate/extra v1.0.1-0.20250401060651-722653168d37 h1:ly
 gitlab.ifreetalk.com/maze-plate/extra v1.0.1-0.20250401060651-722653168d37/go.mod h1:ZHwfNF+727RvJctXbXHW/8kdkKBMIyUNHgUdwjqZ9E0=
 gitlab.ifreetalk.com/maze-plate/freetk v1.0.1-0.20250515054715-f735db2d24e2 h1:pE7fDDHcK9Dvz6uRolOTn9LMgjCw5DY7X07tp1K8eyM=
 gitlab.ifreetalk.com/maze-plate/freetk v1.0.1-0.20250515054715-f735db2d24e2/go.mod h1:BsKRvBioRzBNxRihEuo0giUa+1y0278UaQi7kmI+Szo=
+gitlab.ifreetalk.com/maze-plate/freetk v1.0.1-0.20250515073814-c4a7bb440f71 h1:NLejgAvqfY/ERByVRgLFHFUP1+wEQmn6U/SKCTrR6HA=
+gitlab.ifreetalk.com/maze-plate/freetk v1.0.1-0.20250515073814-c4a7bb440f71/go.mod h1:BsKRvBioRzBNxRihEuo0giUa+1y0278UaQi7kmI+Szo=
+gitlab.ifreetalk.com/maze-plate/freetk v1.0.1-0.20250515074134-524f31f4c124 h1:z84GLw9wLxQ/tA/hzoVJjAv3gFhXgWndTyYt50XdSVg=
+gitlab.ifreetalk.com/maze-plate/freetk v1.0.1-0.20250515074134-524f31f4c124/go.mod h1:BsKRvBioRzBNxRihEuo0giUa+1y0278UaQi7kmI+Szo=
+gitlab.ifreetalk.com/maze-plate/freetk v1.0.1-0.20250515074528-4334f63a4663 h1:KDfmG4ux/8fXg9qotiEY7jtSOYZpnrRBYUA11QIKRjs=
+gitlab.ifreetalk.com/maze-plate/freetk v1.0.1-0.20250515074528-4334f63a4663/go.mod h1:BsKRvBioRzBNxRihEuo0giUa+1y0278UaQi7kmI+Szo=
 gitlab.ifreetalk.com/maze-plate/io v0.0.0-20250411054516-f3778c3f9a74 h1:BXauIvymqWlu9IHFz1ABnosE7buCCtcj8nyTj6NopIA=
 gitlab.ifreetalk.com/maze-plate/io v0.0.0-20250411054516-f3778c3f9a74/go.mod h1:HBMeo7ex6aH1LdraJ35apTM4sTuNE2UWOZOQahudTps=
 gitlab.ifreetalk.com/maze-plate/protodef v0.0.0-20250515072513-b2746e13cca6 h1:/fSvc6jMDvsVqjsf0DGn3wcdZjutFclMwFLBcZ5ydto=
