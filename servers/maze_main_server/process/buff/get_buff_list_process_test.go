@@ -26,11 +26,11 @@ var gTestLogger fklog.FKLogI
 
 func TestMain(m *testing.M) {
 	fmt.Println("begin")
-	//initLog()
+	// initLog()
 	rand.Seed(time.Now().UnixNano())
 	gTestLogger = fklog.AppLogger().Clone("test_maze_temp_buff")
 
-	testio.IOLoad(12) //加载N组的io配置
+	testio.IOLoad(12, "90038") // 加载N组的io配置
 	frontcache_service.PlugFCService()
 	fkconfig.EnvVal.AppName = "maze-temp-buff-server"
 	fkconfig.EnvVal.GroupID = 12
