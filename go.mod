@@ -65,7 +65,7 @@ require (
 	gitlab.ifreetalk.com/maze-plate/definition v1.0.1-0.20250409091534-0dfbef32430f // indirect
 	gitlab.ifreetalk.com/maze-plate/excel v0.0.0-20250410115802-b753fd37ecbe // indirect
 	gitlab.ifreetalk.com/maze-plate/extra v1.0.1-0.20250401060651-722653168d37 // indirect
-	gitlab.ifreetalk.com/maze-plate/freetk v1.0.1-0.20250515040216-f5c85680d001 // indirect
+	gitlab.ifreetalk.com/maze-plate/freetk v1.0.1-0.20250515054715-f735db2d24e2 // indirect
 	gitlab.ifreetalk.com/maze-plate/io v0.0.0-20250411054516-f3778c3f9a74 // indirect
 	gitlab.ifreetalk.com/maze-plate/protodef v0.0.0-20250514120308-80f18114a335 // indirect
 	go.uber.org/multierr v1.7.0 // indirect
