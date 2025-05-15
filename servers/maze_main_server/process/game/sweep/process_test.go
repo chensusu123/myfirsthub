@@ -20,7 +20,7 @@ var (
 
 func TestMain(m *testing.M) {
 	fmt.Println("begin")
-	_ = testio.IOLoad(9)
+	_ = testio.IOLoad(9, "90032")
 	m.Run()
 	fmt.Println("end")
 }
