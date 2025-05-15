@@ -17,7 +17,6 @@ import (
 	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fkconfig"
 	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fkconfig/param"
 	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fklog"
-	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fkmonitor"
 	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fknet"
 	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fknet/pkg_ctl"
 	"gitlab.ifreetalk.com/maze-plate/freetk/fkserver"
@@ -249,7 +248,7 @@ func RegProcSimple(rqID uint16, rqMsg proto.Message, rsID uint16, rsMsg proto.Me
 	// 函数名
 	funcName := fkutil.FunName(deal)
 	// 监控
-	dealMonitor := fkmonitor.DefaultTimeCheckMonitor(funcName+"Success", funcName+"Failed")
+	// dealMonitor := fkmonitor.DefaultTimeCheckMonitor(funcName+"Success", funcName+"Failed")
 	// dealMonitor := fkmonitor.DefaultFrequencyMonitor(funcName)
 	// 告警提示信息
 	alertTip := fmt.Sprintf("rq:%d %s", rqID, rqTypeString)
@@ -257,9 +256,9 @@ func RegProcSimple(rqID uint16, rqMsg proto.Message, rsID uint16, rsMsg proto.Me
 	// 封包函数
 	handler := func(ctx fknet.TCPContext, es *raw_pkg.StruSvrEsRawBaseHead, data []byte) (err error) {
 		// 监控
-		defer dealMonitor.Start(func() bool {
-			return err == nil
-		})()
+		// defer dealMonitor.Start(func() bool {
+		// 	return err == nil
+		// })()
 		// defer dealMonitor.Incr()
 
 		// 新建请求包
@@ -399,9 +398,9 @@ func RegProcSimple(rqID uint16, rqMsg proto.Message, rsID uint16, rsMsg proto.Me
 	// 封包函数
 	jsonHandler := func(ctx fknet.TCPContext, es *raw_pkg.StruSvrEsRawBaseHead, data []byte) (err error) {
 		// 监控
-		defer dealMonitor.Start(func() bool {
-			return err == nil
-		})()
+		// defer dealMonitor.Start(func() bool {
+		// 	return err == nil
+		// })()
 
 		// 新建请求包
 		rq := reflect.New(rqMsgType).Elem().Addr().Interface().(proto.Message)
