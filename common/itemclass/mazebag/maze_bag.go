@@ -10,7 +10,7 @@ import (
 	"time"
 
 	"github.com/gogo/protobuf/proto"
-	"gitlab.ifreetalk.com/maze-plate/freetk/common/errors"
+	"gitlab.ifreetalk.com/maze/maze_game_server/common/errors"
 	"gitlab.ifreetalk.com/maze-plate/freetk/fkserver"
 	"gitlab.ifreetalk.com/maze-plate/protodef/MazeBag"
 	"gitlab.ifreetalk.com/maze-plate/protodef/MazeCommon"

@@ -1,0 +1,1520 @@
+package errors
+
+// $_FILEHEADER_BEGIN ****************************
+// 版权声明: 北京畅聊天下科技公司版权所有
+//                    Copyright=  (C) 2012-  Beijing ChangLiaoTianXia Tech Ltd.,co All Rights Reserved
+// 文件名称：ErrorcodeDef.h
+// 创建日期：20120520 18:28
+// 创建人： 王耿
+// 文件说明：错误定义文件
+
+// 0.01 王耿 20120520 18:28
+// 原因:创建文件
+// $_FILEHEADER_END ******************************
+
+// ID描述：系统错误偏移
+const RET_ERRSYSTEM_BASE = 0x10000000
+
+// ID描述：服务器错误偏移
+const RET_ERRLOGIC_BASE = 0x30000000
+
+// ID描述：条件错误偏移
+const RET_ERRCONDITION_BASE = 0x30000000
+
+// ID描述：系统逻辑错误
+const RET_SYSTEM_ERROR_BASE = 0x100000c8
+
+// ID描述：数据库错误
+const RET_DB_ERROR_BASE = 0x10000190
+
+// ID描述：odbc错误
+const RET_ODBC_ERROR_BASE = 0x10000258
+
+// ID描述：网络错误
+const RET_NET_ERROR_BASE = 0x10000320
+
+// ID描述：通话错误
+const RET_PHONE_BASE = 0x11000000
+
+// ID描述  聊天室错误
+const RET_CHATROOM_BASE = 0x1200000
+
+// ID描述  个人信息错
+const RET_USER_INFO_BASE = 0x1300000
+
+// ID描述   新人墙
+const RET_NEW_WALL_BASE = 0x1310000
+
+// ID描述   跟班游戏错误码
+const RET_VALET_GAME_BASE = 0x1320000
+
+// ID描述   好友相关错误码
+const RET_ERR_FRIEND_BASE = 0x1330000
+
+// ID描述       直播语音相关错误码
+const RET_ERR_LIVE_VOICE_BASE = 0x1340000
+
+const RET_ERR_PAI_PAI_WORLD = 0x1350000
+
+// ID描述 0x30001000  ~ 0x30001100 派派世界组队，队员推荐服务使用
+const RET_ERR_PPW_TEAM_MEMBER_RECOMMENDATION_BASE = (0x30000000 + 0x1000)
+
+// ID描述：服务器处理超时
+const RET_ERR_SERVER_PROCESS_TIMEOUT = 0x100000d9
+
+// ID描述：服务器人数满
+const RET_ERR_SYS_PLAYER_FULL = 0x100000da
+
+// ID描述：禁止登陆
+const RET_ERR_SYS_DISABLE_LOGIN = 0x100000db
+
+// ID描述：禁止GM操作
+const RET_ERR_SYS_DISABLE_GM_PROCESS = 0x100000dc
+
+// ID描述：DBAS关闭
+const RET_ERR_DBAS_CLOSED = 0x10000191
+
+// ID描述：数据库无此用户
+const RET_ERR_NOFOUND_PLAYER_INFO = 0x10000192
+
+// ID描述：数据库事务处理失败
+const RET_ERR_DBSESSION_ADD_FAULT = 0x10000193
+
+// ID描述：ODBC错误
+const RET_ODBC_EXCEPTION = 0x10000259
+
+// ID描述：odbc资源不够
+const RET_ODBC_RESOURCE_LEAK = 0x1000025a
+
+// ID描述：ODBC找不到
+const RET_ODBC_NOT_FOUND = 0x1000025b
+
+// ID描述：RET_ODBC_STMT_ERROR
+const RET_ODBC_STMT_ERROR = 0x1000025c
+
+// ID描述：SQL错误
+const RET_ODBC_SQL_ERROR = 0x1000025d
+
+// ID描述：SQL错误
+const RET_ODBC_SQL_FETCH_ERROR = 0x1000025e
+
+// ID描述：SQL错误
+const RET_ODBC_SQL_EXTFETCH_ERROR = 0x1000025f
+
+// ID描述：序列化错误
+const RET_ODBC_SQL_SERIAL_ERROR = 0x10000260
+
+// ID描述：网络错误
+const RET_ERR_NET_ERROR = 0x10000321
+
+// ID描述：包内容错
+const RET_ERR_NET_PACK_CON_ERROR = 0x10000322
+
+// ID描述：没有下载服务器
+const RET_ERR_NET_NO_DS = 0x10000323
+
+// ID描述：超时错误
+const RET_ERR_NET_TIMEOUT = 0x10000324
+
+// ID描述：打包错误
+const RET_ERR_NET_PACKET = 0x10000325
+
+// ID描述：网络select错误
+const RET_ERR_NET_SELECT_ERROR = 0x10000326
+
+// ID描述：网络Recv错误
+const RET_ERR_NET_RECV_FAILED = 0x10000327
+
+// ID描述：获取数据库索引失败
+const RET_DB_ERROR_GET_INDEX = 0x10000328
+
+// ID描述：获取数据库连接失败
+const RET_DB_ERROR_GET_CONNECT = 0x10000329
+
+// ID描述：执行sql语句失败
+const RET_DB_ERROR_SQL_EXCUTE = 0x1000032a
+
+// ID描述：获取结果集失败
+const RET_DB_ERROR_GET_RECORD = 0x1000032b
+
+// ID描述：redis结果获取失败
+const RET_REDIS_DB_RESULT_ERROR = 0x1000032c
+
+// ID描述：redis打开失败
+const RET_REDIS_DB_OPEN_ERROR = 0x1000032e
+
+// ID描述：redis set nx 数据已存在
+const RET_REDIS_DB_SETNX_DATA_EXISTS = 0x1000032f
+
+//ID描述：版本老
+const RET_ERR_VERSION_TOO_OLD = 0x10000328
+
+//ID描述：用户异地登录
+const RET_ERR_PLAYER_OTHER_LOGIN = 0x10000329
+
+//ID描述：服务器忙
+const RET_ERR_SERVER_BUSY = 0x10000330
+
+// ID描述：无效的输入参数
+const RET_ERR_INVALID_PARAM = 0x30000331
+
+// ID描述：系统内存不足
+const RET_ERR_SYSTEM_MEM_OUT = 0x30000332
+
+// ID描述：系统中不存在该用户需要重注册
+const RET_ERR_USER_NOT_FOUND_IN_SYSTME = 0x30000333
+
+// ID描述：用户TOKEN错误
+const RET_ERR_USER_TOKEN_INVALID = 0x10000334
+
+// ID描述：电话已被绑定过
+const RET_ERR_USER_PHONE_HAS_BIND = 0x10000335
+
+// ID描述：注册电话失败
+const RET_ERR_USER_REGISTER_PHONE = 0x10000336
+
+// ID描述：账号密码错误
+const RET_ERR_USER_PASSPORT_PASSWORD = 0x10000337
+
+// ID描述：账号已被绑定过
+const RET_ERR_USER_PASSPORT_HAS_BIND = 0x10000338
+
+// ID描述：注册账号失败
+const RET_ERR_USER_REGISTER_PASSPORT = 0x10000339
+
+//ID描述：其他用户正在注册
+const RET_ERR_OTHER_USER_REGISTER = 0x1000033a
+
+//不能发送短信
+const RET_ERR_NOT_SEND_SMS = 0x1000033b
+
+// ID描述：不存在的用户
+const RET_ERR_USER_NOT_FOUND = 0x3000033c
+
+// ID描述：用户sms验证id
+const RET_ERR_USER_SMS_AUTH_ID_INVALID = 0x3000033d
+
+// ID描述：用户忙
+const RET_ERR_CALL_USER_BUSY = 0x3000033e
+
+// ID描述：您没有关联相应账号,不能进行此操作
+const RET_ERR_USER_NOT_RELEVANCY_ACCOUNT = 0x3000033f
+
+// ID描述：对方不在线
+const RET_ERR_CALL_RECEIVER_NOT_ONLINE = 0x30000340
+
+// ID描述：创建频道失败
+const RET_ERR_CALL_CREATE_CHANNEL_FAILED = 0x30000341
+
+// ID描述：对方拒绝
+const RET_ERR_CALL_RECEIVER_REFUSE = 0x30000342
+
+// ID描述：创建MCU失败
+const RET_ERR_CALL_CREATE_MCU_FAILED = 0x30000343
+
+// ID描述：用户加入MCU失败
+const RET_ERR_CALL_ADD_USER_TO_MCU_FAILED = 0x30000344
+
+// ID描述：客户端版本过低
+const RET_ERR_CLIENT_VERSION_ERROR = 0x30000345
+
+// ID描述：短信对方ID无效
+const RET_ERR_MSG_PEER_ID_INVALID = 0x30000346
+
+// ID描述：UserID不匹配
+const RET_ERR_USER_ID_INVALID = 0x30000347
+
+// ID描述：注册验证码不匹配
+const RET_ERR_MSG_AUTH_TOKEN_INVALID = 0x30000348
+
+// ID描述：获取短信验证码的时间间隔过短
+const RET_ERR_SMS_AUTH_CODE_INTERVAL_INVALID = 0x30000349
+
+// ID描述：当天短信验证码条数用完
+const RET_ERR_SMS_AUTH_CODE_TO_EXHAUST = 0x3000034a
+
+// ID描述：短信验证码过期
+const RET_ERR_SMS_AUTH_CODE_TIMEOUT = 0x3000034b
+
+// ID描述：设备码不匹配
+const RET_ERR_DEVICE_CODE_NOT_MACTH = 0x3000034c
+
+// ID描述：
+const RET_ERR_ACCOUNT_WAS_BINDED = 0x3000034d
+
+// ID描述：
+const RET_ERR_BIND_PHONE_INVALID = 0x3000034e
+
+// ID描述：
+const RET_ERR_BIND_WEIBO_INVALID = 0x3000034f
+
+// ID描述：
+const RET_ERR_SEND_MSG_ACCOUNT_INVALID = 0x30000350
+
+// ID描述：
+const RET_ERR_UP_SMS_AUTH_TIMMEOUT = 0x30000351
+
+// ID描述：
+const RET_ERR_UP_SMS_AUTH_NOT_VERIFY = 0x30000352
+
+// ID描述：unpack error
+const RET_ERR_UNPACK_ERROR = 0x30000353
+
+// ID描述： 用户未登录成功
+const RET_ERR_USER_NOT_LOGIN = 0x30000354
+
+// ID描述： 匿名好友申请不存在
+const RET_ERR_ANONYMOUS_FRIEND_APPLY_NOT_FOUND = 0x30000355
+
+// ID描述： 匿名好友申请操作类型不存在
+const RET_ERR_ANONYMOUS_FRIEND_OP_NOT_FOUND = 0x30000356
+
+// ID描述： 公告创建满
+const RET_ERR_ANNOUNCE_FULL = 0x30000357
+
+// 重复的响应
+const RET_ERR_ALREADY_APPLIED = 0x30000358
+
+// 发布已过期
+const RET_ERR_ANNOUNCE_EXPIRED = 0x30000359
+
+// 被接受的响应者已满
+const RET_ERR_ACCEPTGUEST_FULL = 0x30000360
+
+// 不满足发布者条件
+const RET_ERR_OWNERFILTER_CHECK_FAIL = 0x30000361
+
+// 不满足响应者条件
+const RET_ERR_GUETSFILTER_CHECK_FAIL = 0x30000362
+
+// 发布消息未找到
+const RET_ERR_ANNOUNCE_NOT_FOUND = 0x30000363
+
+// 发布者消息未找到
+const RET_ERR_OWNERINFO_NOT_FOUND = 0x30000364
+
+// 响应信息未找到
+const RET_ERR_APPLY_NOT_FOUND = 0x30000365
+
+// 发布未结束，暂时不能评分
+const RET_ERR_ANNOUNCE_NOT_COMPLETE = 0x30000366
+
+// 消息条数达到上限
+const RET_ERR_MESSAGE_COUNT_EXCEED = 0x30000367
+
+// 响应被发布者拒绝
+const RET_ERR_ANNOUNCE_GUEST_REFUSED = 0x30000368
+
+// 响应被响应者取消
+const RET_ERR_ANNOUNCE_GUEST_CANCEL = 0x30000369
+
+// 性别信息与已存在的的信息不匹配
+const RET_ERR_SEX_NOT_EQU = 0x3000036a
+
+// 对方不是好友
+const RET_ERR_TARGET_NOT_IS_FRIEND = 0x3000036b
+
+// 你请我应功能被锁定
+const RET_ERR_BANNED_ANNOUNCE = 0x3000036c
+
+// 发布报名已满
+const RET_ERR_ANNOUNCE_GUEST_FULL = 0x3000036d
+
+//数据未就绪
+const RET_ERR_DATA_NOT_READY = 0x3000036e
+
+//金钱不够
+const RET_ERR_NOT_ENOUGH_CASH = 0x3000036f
+
+//点数不够
+const RET_ERR_NOT_ENOUGH_POINT = 0x30000370
+
+//魅力不足
+const RET_ERR_NOT_ENOUGH_CHARM = 0x30000371
+
+//不是苹果用户
+const RET_ERR_NOT_APPLE_USER = 0x30000372
+
+// ID描述：不存在的用户
+const RET_ERR_USER_NOT_ROOM = 0x30000373
+
+// ID描述：不存在的目标用户
+const RET_ERR_USER_NOT_TARGET_USER = 0x30000374
+
+// ID描述： 不是同一个房间
+const RET_ERR_ROOM_NOT_EQU = 0x30000375
+
+// ID描述： 帐号被禁止
+const RET_ERR_ACCOUNT_WAS_DISABLED = 0x30000376
+
+// ID描述： 设备被禁止
+const RET_ERR_DEVICE_WAS_DISABLED = 0x30000377
+
+// ID描述： 找不到礼物信息
+const RET_ERR_MSG_NOT_FOUND_GIFT_INFO = 0x30000378
+
+// ID描述： 没有权限发送聊天室语音消息
+const RET_ERR_NOT_SEND_CHAT_ROOM_VOICE_MSG = 0x30000379
+
+// ID描述： 找不到轿车信息
+const RET_ERR_MSG_NOT_FOUND_CAR_INFO = 0x3000037a
+
+// ID描述： 车辆过期
+const RET_ERR_CAR_EXPIRE = 0x3000037b
+
+// ID描述： 周奖励已经处理
+const RET_ERR_RANK_AWARD_PROCESSED = 0x3000037c
+
+// ID描述： 找不到消耗物品信息
+const RET_ERR_MSG_NOT_FOUND_CONSUMABLE_INFO = 0x3000037d
+
+// ID描述： 交易已经处理过了
+const RET_ERR_MSG_TRADE_WAS_PROCESSED = 0x3000037e
+
+//福利金钱不够
+const RET_ERR_NOT_ENOUGH_PRIZE_CASH = 0x3000037f
+
+const RET_ERR_CAN_NOT_USE_CASH = 0x30000380
+const RET_ERR_CAN_NOT_USE_PRIZE_CASH = 0x30000381
+
+// ID描述： 因为发布广告被禁止24小时
+const RET_ERR_DISABLED_BY_AD_LIMIT_24 = 0x30000382
+
+// ID描述： 因为发布广告被永远禁止
+const RET_ERR_DISABLED_BY_AD_LIMIT_FOREVER = 0x30000383
+
+// ID描述： 因为发布色情被禁止24小时
+const RET_ERR_DISABLED_BY_SEX_LIMIT_24 = 0x30000384
+
+// ID描述： 因为发布色情被永远禁止
+const RET_ERR_DISABLED_BY_SEX_LIMIT_FOREVER = 0x30000385
+
+// ID描述：执行redis失败
+const RET_REDIS_DB_ERROR_EXCUTE = 0x30000386
+
+// ID描述：重新注册匿名信息
+const RET_ERR_RE_CREATE_ANONYMOUS_INFO = 0x30000387
+
+// ID描述：福利元宝购买的东西不能送自己
+const RET_ERR_PRIZE_CASH_NOT_GIVE_SELF = 0x30000388
+
+// ID描述：找不到该用户信息
+const RET_ERR_NOT_FOUND_USER_INFO = 0x30000389
+
+// ID描述：自己当天发送好友申请次数达到上限
+const RET_ERR_FRIEND_APPLY_SEND_MAX = 0x3000038a
+
+// ID描述：对方当天接收好友申请次数达到上限
+const RET_ERR_FRIEND_APPLY_RECV_MAX = 0x3000038b
+
+const RET_ERR_WAIT_TRADE_RESULT = 0x3000038c
+
+//需要更说更多的话
+const RET_ERR_NEED_MORE_CHAT = 0x3000038d
+
+//物品过期
+const RET_ERR_GOODS_EXPIRE = 0x3000038e
+
+//城市投票受到限制
+const RET_ERR_CITY_VOTE_LIMITED = 0x3000038f
+
+//源百度id不支持修改
+const RET_ERR_CITY_SRC_BAIDU_ID_INVALID = 0x30000390
+
+//修改次数达到上限
+const RET_ERR_CITY_USER_CHANGE_LIMIT = 0x30000391
+
+//目标百度id无效
+const RET_ERR_CITY_DES_BAIDU_ID_INVALID = 0x30000392
+
+//pub金钱不够
+const RET_ERR_NOT_ENOUGH_PUB_CASH = 0x30000393
+
+// ID描述： 找不到pub礼物信息
+const RET_ERR_MSG_NOT_FOUND_PUB_GOODS_INFO = 0x30000394
+
+// ID描述： 重复打招呼
+const RET_ERR_MSG_SAY_HI_AGAIN = 0x30000395
+
+//使用该技能的道具不足
+const RET_ERR_USE_SKILL_ENOUGH_ITEM = 0x30000396
+
+//使用该技能MISS
+const RET_ERR_USE_SKILL_MISS = 0x30000397
+
+//不存在该技能
+const RET_ERR_USE_SKILL_NOT_FOUND = 0x30000398
+
+//没学会该技能
+const RET_ERR_USE_SKILL_NOT_LEARN = 0x30000399
+
+//已转换为邀请
+const RET_ERR_TRANSFORM_TO_INVITE = 0x3000039a
+
+//连接到mongo失败
+const RET_ERR_CONNECT_MONGO_FAILED = 0x3000039b
+
+//查找ip属于哪个范围未查询到
+const RET_ERR_NOT_EXISTS_IP = 0x3000039c
+
+//钻石不够
+const RET_ERR_NOT_ENOUGH_DIAMOND = 0x3000039d
+
+//不能使用钻石
+const RET_ERR_CAN_NOT_USE_DIAMOND = 0x3000039e
+const RET_ERR_OPRATE_FAILED = 0x3000039f
+
+// ID描述： 找不到服装信息
+const RET_ERR_DRESS_NOT_FOUND = 0x3000039f
+
+// ID描述： 车辆过期
+const RET_ERR_DRESS_EXPIRE = 0x300003a0
+
+// ID描述： 用户正在切服
+const RET_ERR_USER_IN_MIGRATION = 0x300003a1
+
+const RET_ERR_MIGRATE_NEW_SECTION = 0x300003a2
+
+const RET_SERVER_STOPPING = 0x300003a3 //服务正在关闭 或重启动
+
+// ID描述：业务包数据非法
+const RET_ERR_ILLEGAL_DATA = 0x300003a4
+
+// ID描述：无新消息
+const RET_ERR_NO_UPDATE = 0x300003a5
+
+// ID描述：无业务数据
+const RET_ERR_NO_BUSI_DATA = 0x300003a6
+
+// ID描述：卡牌不够无法升级
+const RET_ERR_LIB_NOT_ENOUGH = 0x300003a7
+
+// ID描述： 提现账号已经绑定其他派派号
+const RET_ERR_WITHDRAW_BIND_ACCOUNT_BOUND = 0x300003a8
+
+// ID描述： 派派号已经绑定其他提现账号
+const RET_ERR_WITHDRAW_BIND_PAIPAI_BOUND = 0x300003a9
+
+// ID描述： 无可用角色  npc昵称排重用
+const RET_ERR_NO_USEABLE_ROLE = 0x300003aa
+
+// ID描述： 用户无图鉴信息
+const RET_USER_HAS_NO_LIB_INFO = 0x300003ab
+
+// ID描述： 用户无该图鉴信息
+const RET_USER_HAS_NO_SPE_LIB_INFO = 0x300003ac
+
+// ID描述： 服务尚未就绪
+const RET_SVR_IS_NOT_READY = 0x300003ad
+
+// ID描述：该用户无图鉴
+const RET_ERR_NO_NPC_LIB_DATA = 0x300003ae
+
+// ID描述：需等级达到N级之后才能升级
+const RET_ERR_UNLOCK_NO_ENOUGH_LEVEL = 0x300003af
+
+// ID描述：用户没有已翻NPC
+const RET_ERR_USER_HAS_NO_EXPIRED_NPC = 0x300003b0
+
+// 对方是好友
+const RET_ERR_TARGET_IS_FRIEND = 0x300003b1
+
+// 对方是好友
+const RET_ERR_USER_IS_MIGRATING = 0x300003b2
+
+// npc实例化失败
+const RET_ERR_NPC_INSTANCE_FAILED = 0x300003bc
+
+// 自己好友数达到上限
+const RET_ERR_FRIENDS_LIMIT_SELF = 0x300003bd
+
+// 对方好友数达到上限
+const RET_ERR_FRIENDS_LIMIT_PEER = 0x300003be
+
+// 好友黑名单
+const RET_ERR_FRIENDS_BLACKLIST = 0x300003bf
+
+// 拒绝添加好友
+const RET_ERR_FORBID_FRIEND_ADD_ME = 0x300003c1
+
+// 不能向自己发送添加好友申请
+const RET_ERR_FRIEND_APPLY_SELF = 0x300003c2
+
+// 小跟班手机关联达到上限
+const RET_ERR_FRIEND_VALETE_PHONE_RELEFACNY_LIMIT = 0x300003c3
+
+// 添加星卡失败，星卡已满
+const RET_ERR_ADD_STAR_CARD_FAILED_OVERCOUNT = 0x300003c4
+
+// 用户处于cd状态，不能抓抢跟班
+const RET_ERR_USER_IN_CD = 0x300003c5
+
+// ID描述：星卡已合成
+const RET_ERR_STARCARD_COMPOSED = 0x300003c6
+const RET_ERR_COMBAT_TURN_FINISHED = 0x300003b1
+
+// 购买失败,今日购买次数已达上限
+const RET_ERR_NPC_BUYTIMES_LIMIT = 0x300003c7
+
+// 用户不存在该车辆
+const RET_ERR_USER_HAS_NO_CAR = 0x300003c8
+
+// 用户燃料不足
+const RET_ERR_USER_HAS_NOENOUGH_FUEL = 0x300003c9
+
+// ID描述：该车辆已装备
+const RET_ERR_CAR_ON_DRIVE = 0x300003ca
+
+// ID描述：服务尚未准备就绪
+const RET_ERR_SERVER_NOT_READY = 0x300003cb
+
+// ID描述：用户已有该车辆
+const RET_ERR_USER_HAS_CAR = 0x300003cc
+
+// ID描述：reader过多，请另开分片
+const RET_ERR_READER_TOO_MANY = 0x300003cd
+
+// ID描述：非法readerid
+const RET_ERR_READER_ILLEGAL = 0x300003ce
+
+// ID描述：级别不够
+const RET_ERR_BUY_NPC_LEVEL_NOT_ENOUGH = 0x300003cf
+
+// ID描述：对方还在新手期,不能抢ta
+const RET_ERR_NEWBIE_CANNOT_GRAP = 0x300003d0
+
+// ID描述：先合成前面星卡才能合成我哦~
+const RET_ERR_FORMER_NPCROLE_NOT_COMPOSED = 0x300003d1
+
+// ID描述：该星卡已满，无法购买。
+const RET_ERR_STAR_CARD_ENOUGH = 0x300003d2
+
+// ID描述：非法货币类型。
+const RET_ERR_ILLEGAL_CURRENCY_TYPE = 0x300003d3
+
+// 未知车辆配置
+const RET_ERR_UNKNOWN_CAR_CONF = 0x300003d4
+
+// 余额查询失败
+const RET_ERR_BALANCE_QUERY_FAILED = 0x300003d5
+
+// 手续费不足，请充值
+const RET_ERR_POUNDAGE_NOT_ENOUGH = 0x300003d6
+
+// 该星卡无法购买
+const RET_ERR_CANNT_BUY_NPC = 0x300003d7
+const RET_ERR_SLICE_MISMATCH = 0x300003d8     // 用户不该被打到某个分片上
+const RET_ERR_CLUSTERS_TYPE = 0x300003d9      // 错误的集群类型(老集群的请求转到新集群上了)
+const RET_ERR_MONEY_EXCEED_LIMIT = 0x300003da // 用户金钱超出上限
+const RET_ERR_VALUE_NOT_ENOUGH = 0x300003db   // 用户数值余额不足
+const RET_ERR_FORBIT_BUY_NPC = 0x300003dc     // 通过引导获得，不可购买。
+
+// 0x30001000 ~ 0x30001100 派派世界组队，队员推荐服务使用
+// 0x30001200 ~ 0x300012FF 均富卡推荐服务使用
+const RET_ERR_RICHMAN_RECOMMENDATION_BASE = 0x30001200
+
+// 0x30001300 ~ 0x300013FF 派派海洋世界仇敌缓存服务
+const RET_ERR_PPSW_ENEMY_CACHE_BASE = 0x30001300
+
+// 0x30001400 ~ 0x300014FF 派派海洋世界地图服务广播 - 客户端使用
+const RET_ERR_PPSW_MAP_BROADCAST = 0x30001400
+
+// 0x30001500 ~ 0x300015FF 派派海洋世界用户地图信息查询 - 客户端使用
+const RET_ERR_PPSW_USER_MAP_INFO_QUERY = 0x30001500
+
+// 0x30001600 ~ 0x300016FF 派派海洋世界盟运错误码定义 - 客户端使用
+const RET_ERR_PPSW_USER_LEAGUE_TRADE = 0x30001600
+
+// 0x30001700 ~ 0x300017FF 转盘错误码定义 - 客户端使用
+const RET_ERR_LUCK_CARD_BASE = 0x30001700
+
+// 0x30001800 ~ 0x300018FF 派派航海阻拦打怪服务 - 客户端使用
+const RET_ERR_PPSW_OBSTRUCT_ATTACK_MONSTER_BASE = 0x30001800
+
+// 0x30001900 ~ 0x300019FF 派派航海访客服务 - 客户端使用
+const RET_ERR_PPSW_VISIT_BASE = 0x30001900
+
+// 0x30002000 ~ 0x300020FF 派派航海堡垒服务 - 客户端使用
+const RET_ERR_PPSW_FORTRESS_BASE = 0x30002000
+
+const RET_ERR_PPSW_LEADER_DEFNESE_BASE = 0x30002100
+
+//0x30002100 ~ 0x300021FF 传送基地使用
+const RET_ERR_PPSW_LEAGUE_WAR_TRANSPORT_BASE = 0x30002200
+
+//0x30002200 ~ 0x300022FF 盟战打打小怪使用
+const RET_ERR_PPSW_LEAGUE_WAR_ATTACK_MONSTER = 0x30002300
+
+//0x30002400 ~ 0x300024FF 换家使用
+const RET_ERR_PPSW_SWITCH_USER_POS_BASE = 0x30002400
+
+//0x30002500 ~ 0x300025FF 地图分配相关
+const RET_ERR_PPSW_MAP_ALLOC_BASE = 0x30002500
+
+//0x30002600 ~ 0x300026FF 搬砖奖励相关
+const RET_ERR_PPSW_MOVING_BRICKS_REWARD = 0x30002600
+
+/////////////////////////////////////////////////////////////////////////////////////////////////////////
+//voip功能
+const RET_ERR_TARGET_BUSY = (RET_PHONE_BASE + 1)                  // 对方正在通话中
+const RET_ERR_TARGET_APPLE_DONOT_OPEN_PUSH = (RET_PHONE_BASE + 2) // 对方是苹果用户，但是没有开推送
+const RET_ERR_TARGET_ANDROID_DISCONNECT = (RET_PHONE_BASE + 3)    // 对方是Android用户,但是连接已断
+const RET_ERR_TARGET_REFUSE_CALL = (RET_PHONE_BASE + 4)           // 拒绝通话
+const RET_ERR_CALL_TIMEOUT = (RET_PHONE_BASE + 5)                 // 超时
+const RET_ERR_TARGET_NOTARRIVE = (RET_PHONE_BASE + 6)             // 对方不可达
+const RET_ERR_TARGET_OFFLINE = (RET_PHONE_BASE + 7)               // 对方已下线
+const RET_ERR_CALL_CHANNEL_TIMEOUT = (RET_PHONE_BASE + 8)         // 频道连接超时
+const RET_ERR_CALL_NOTCHANNEL = (RET_PHONE_BASE + 9)              // 没有可用频道
+const RET_ERR_SELF_BUSY = (RET_PHONE_BASE + 10)                   // 自己正在通话中
+const RET_ERR_CALL_OP = (RET_PHONE_BASE + 11)                     // 呼叫操作错误
+const RET_ERR_TARGET_HANG_UP = (RET_PHONE_BASE + 12)              // 对方挂机
+const RET_ERR_TARGET_IGNORE = (RET_PHONE_BASE + 13)               // 对方无应答
+const RET_ERR_TARGET_LEAVE = (RET_PHONE_BASE + 14)                // 对方掉线
+const RET_ERR_TARGET_APP_CRASH = (RET_PHONE_BASE + 15)            // 对方程序崩溃重新上线
+
+/////////////////////////////////////////////////////////////////////////////////////////////////////////
+//聊天室
+const RET_ERR_CHATROOM_ENTER_FAIL = (RET_CHATROOM_BASE + 0)         //进入房间失败
+const RET_ERR_CHATROOM_ROOM_FULL = (RET_CHATROOM_BASE + 1)          //房间满
+const RET_ERR_CHATROOM_IN_BACK_LIST = (RET_CHATROOM_BASE + 2)       //房间黑名单
+const RET_ERR_CHATROOM_NEED_PASSWORD = (RET_CHATROOM_BASE + 3)      //房间需要密码
+const RET_ERR_CHATROOM_USER_NOT_FOUND = (RET_CHATROOM_BASE + 4)     //找不到用户
+const RET_ERR_CHATROOM_USER_REJECT = (RET_CHATROOM_BASE + 10)       //对方拒绝
+const RET_ERR_CHATROOM_USER_DISABLE_TALK = (RET_CHATROOM_BASE + 11) //禁止发言
+const RET_ERR_CHATROOM_ROOM_NOT_FOUND = (RET_CHATROOM_BASE + 12)    //未找到房间
+const RET_ERR_CHATROOM_ROOM_NOT_LOGIN = (RET_CHATROOM_BASE + 13)    //未登录到房间
+const RET_ERR_CHATROOM_ROOM_WAS_CLOSED = (RET_CHATROOM_BASE + 14)   //房间已经关闭
+const RET_ERR_CHATROOM_MAGIC_SLIENT = (RET_CHATROOM_BASE + 15)      //
+const RET_ERR_CHATROOM_FIGHT_ACTIVE_OUT = (RET_CHATROOM_BASE + 16)  //fight active special err code
+
+const RET_ERR_CHATROOM_OP_UNKOWN = (RET_CHATROOM_BASE + 20)        //操作错误
+const RET_ERR_CHATROOM_OP_NO_PERM = (RET_CHATROOM_BASE + 21)       //操作者没有此权限（操作者压根没有此权限）
+const RET_ERR_CHATROOM_OP_LOWER_PERM = (RET_CHATROOM_BASE + 22)    //操作者权限不足（操作对方比操作者牛，搞不懂）
+const RET_ERR_CHATROOM_OP_INVALID_PARAM = (RET_CHATROOM_BASE + 23) //某个操作参数不正确
+const RET_ERR_CHATROOM_OP_IS_OP = (RET_CHATROOM_BASE + 24)         //不能进行此操作对方是管理员
+
+const RET_ERR_CHATBAR_BAR_NOT_FOUND = (RET_CHATROOM_BASE + 25)             //聊吧未找到
+const RET_ERR_CHATBAR_SELF_ALREADY_IN_CHATBAR = (RET_CHATROOM_BASE + 26)   //用户已经加入聊吧
+const RET_ERR_CHATBAR_TARGET_ALREADY_IN_CHATBAR = (RET_CHATROOM_BASE + 27) //目标用户已经加入聊吧
+const RET_ERR_CHATBAR_APPLY_NOT_FOUND = (RET_CHATROOM_BASE + 28)           //申请未找到
+const RET_ERR_CHATBAR_INVITE_NOT_FOUND = (RET_CHATROOM_BASE + 29)          //邀请未找到
+const RET_ERR_CHATBAR_APPLY_EXIST = (RET_CHATROOM_BASE + 30)               //已经申请过了
+const RET_ERR_CHATBAR_INVITE_EXIST = (RET_CHATROOM_BASE + 31)              //已经邀请过了
+const RET_ERR_CHATBAR_NAME_EXIST = (RET_CHATROOM_BASE + 32)                //聊吧名称重复
+const RET_ERR_CHATBAR_TITLE_EXIST = (RET_CHATROOM_BASE + 33)               //聊吧称号重复
+const RET_ERR_CHATBAR_ADMIN_EXCEED = (RET_CHATROOM_BASE + 34)              //聊吧管理员超出上限
+const RET_ERR_CHATBAR_MEMBER_EXCEED = (RET_CHATROOM_BASE + 35)             //聊吧成员超出上限
+const RET_ERR_CHATBAR_CANNOT_INVITE_ADMIN = (RET_CHATROOM_BASE + 36)       //不能邀请管理员加入聊吧
+
+const RET_ERR_CHATBAR_BOUNS_EXHAUST = (RET_CHATROOM_BASE + 37)    //双倍次数耗尽
+const RET_ERR_CHATBAR_CASH_NOT_ENOUGN = (RET_CHATROOM_BASE + 38)  //
+const RET_ERR_CHATROOM_TALK_CONTROL = (RET_CHATROOM_BASE + 39)    //聊吧场控,未获得发言权限
+const RET_ERR_CHATROOM_RE_TALK_CONTROL = (RET_CHATROOM_BASE + 40) //聊吧场控已经开启状态,重复开启
+
+const RET_ERR_INVALID_CHANNEL_ID = (RET_CHATROOM_BASE + 41)             //无效的频道ID
+const RET_ERR_USER_ALREADY_CREATE_CHARBAR = (RET_CHATROOM_BASE + 42)    //用户本周已经创建过聊吧了
+const RET_ERR_DEVICE_ALREADY_CREATE_CHARBAR = (RET_CHATROOM_BASE + 43)  //设备本周已经创建过聊吧了
+const RET_ERR_IP_ALREADY_CREATE_TOOMUCH = (RET_CHATROOM_BASE + 44)      //ip本周创建过多聊吧
+const RET_ERR_CREATE_BAR_BY_REG_TIME_LIMIT_1 = (RET_CHATROOM_BASE + 45) //加入派派的时间不足1天，不允许创建聊吧
+const RET_ERR_CREATE_BAR_BY_REG_TIME_LIMIT_2 = (RET_CHATROOM_BASE + 46) //加入派派的时间不足2天，不允许创建聊吧
+const RET_ERR_CREATE_BAR_BY_REG_TIME_LIMIT_3 = (RET_CHATROOM_BASE + 47) //加入派派的时间不足3天，不允许创建聊吧
+const RET_ERR_CREATE_BAR_BY_REG_TIME_LIMIT_4 = (RET_CHATROOM_BASE + 48) //加入派派的时间不足4天，不允许创建聊吧
+const RET_ERR_CREATE_BAR_BY_REG_TIME_LIMIT = (RET_CHATROOM_BASE + 49)   //加入派派的时间太短，不允许创建聊吧
+const RET_ERR_DAILY_SOMMON_COUNT_EXCEED = (RET_CHATROOM_BASE + 50)      //今日召唤数已用完
+const RET_ERR_CHATBAR_CREATE_FAILED_BY_LEVEL = (RET_CHATROOM_BASE + 51) //等级过低无法创建聊吧
+const RET_ERR_NOT_IN_CHATBAR_SECTION = (RET_CHATROOM_BASE + 52)         //不在聊天室所在服
+const RET_ERR_WAIT_AUTO_MIGRATION = (RET_CHATROOM_BASE + 53)            //等待自动切服
+const RET_ERR_FAMILIY_ADMIN_EXCEED = (RET_CHATROOM_BASE + 54)           //家族副族长超出上限
+const RET_ERR_TARGET_NOT_IN_CHATBAR_SECTION = (RET_CHATROOM_BASE + 55)  //目标用户不在聊天室所在服
+
+/////////////////////////////////////////////////////////////////////////////////////////////////////////
+//个人信息
+const RET_ERR_USER_INFO_NICKNAME = (RET_USER_INFO_BASE + 0)       //名字错误
+const RET_ERR_USER_INFO_EMOTION = (RET_USER_INFO_BASE + 1)        //心情错误
+const RET_ERR_USER_INFO_COMPANY = (RET_USER_INFO_BASE + 2)        //公司错误
+const RET_ERR_USER_INFO_SCHOOL = (RET_USER_INFO_BASE + 3)         //学校错误
+const RET_ERR_USER_INFO_INTERESTS = (RET_USER_INFO_BASE + 4)      //兴趣错误
+const RET_ERR_USER_INFO_APPEAR = (RET_USER_INFO_BASE + 5)         //出没地错误
+const RET_ERR_USER_INFO_DECLARE = (RET_USER_INFO_BASE + 6)        //
+const RET_ERR_USER_CIPHER_NOT_FOUND = (RET_USER_INFO_BASE + 7)    //邀请码未找到
+const RET_ERR_USER_CIPHER_EXIST = (RET_USER_INFO_BASE + 8)        //邀请码已存在
+const RET_ERR_USER_CIPHER_USED = (RET_USER_INFO_BASE + 9)         //已使用邀请码
+const RET_ERR_USER_GET_BAIDUID_FAILED = (RET_USER_INFO_BASE + 10) //根据ip获取baiduid错误
+
+const RET_ERR_USER_REG_BLACKLIST = (RET_USER_INFO_BASE + 11)     //在注册黑名单中
+const RET_ERR_USER_REG_FORBID_BIND = (RET_USER_INFO_BASE + 12)   //系统不提供绑定功能
+const RET_ERR_PASSPORT_GUESS_LIMIT = (RET_USER_INFO_BASE + 13)   //邮箱注册错误次数太多
+const RET_ERR_USER_IN_NICK_BLACKLIST = (RET_USER_INFO_BASE + 14) // 用户在昵称黑名单中
+const RET_ERR_SAVE_USER_INFO_FAILED = (RET_USER_INFO_BASE + 15)  // 保存个人资料失败
+
+//新人墙
+const RET_ERR_NEW_WALL_WAS_LIKED = (RET_NEW_WALL_BASE + 0)            //已经赞过该用户
+const RET_ERR_NEW_WALL_LIKE_DORMANT = (RET_NEW_WALL_BASE + 1)         //没有到下次点赞的时间
+const RET_ERR_NEW_WALL_PEER_NOT_NEW_USER = (RET_NEW_WALL_BASE + 2)    //对方已经不是新人了
+const RET_ERR_NEW_WALL_NOT_NEW_USER = (RET_NEW_WALL_BASE + 3)         //已经不是新人了
+const RET_ERR_NEW_WALL_DEVICE_WAS_LIKED = (RET_NEW_WALL_BASE + 4)     //已经赞过该用户
+const RET_ERR_NEW_WALL_DAY_LIKE_EXCEED = (RET_NEW_WALL_BASE + 5)      //
+const RET_ERR_NEW_WALL_LIKE_REQUEST_DORMANT = (RET_NEW_WALL_BASE + 6) //
+
+// ID描述   跟班游戏错误码
+const RET_ERR_VALET_GAME_OPERATE_FAILED = (RET_VALET_GAME_BASE + 0)                           // 跟班游戏操作失败
+const RET_REC_AWARD_COMPLETE = (RET_VALET_GAME_BASE + 1)                                      // 当前宝箱领取结束
+const RET_ERR_VALET_GAME_USER_IMPRISON = (RET_VALET_GAME_BASE + 2)                            // 跟班游戏用户被囚禁
+const RET_ERR_VALET_GAME_OWNER_ALERT = (RET_VALET_GAME_BASE + 3)                              // 跟班游戏奖励拥有者警惕
+const RET_ERR_VALET_GAME_HAVE_SKILL_EFFECT = (RET_VALET_GAME_BASE + 4)                        // 跟班游戏还受技能效果影响
+const RET_ERR_VALET_GAME_AWARD_NOT_FOUND = (RET_VALET_GAME_BASE + 5)                          // 未找到奖励信息
+const RET_ERR_VALET_GAME_AWARD_NOT_MATCH = (RET_VALET_GAME_BASE + 6)                          // 奖励信息不匹配
+const RET_ERR_VALET_GAME_NOT_AWARD_TO_LOOT = (RET_VALET_GAME_BASE + 7)                        // 没有奖励可以顺
+const RET_ERR_VALET_GAME_LOOT_AWARD_BE_FOUND = (RET_VALET_GAME_BASE + 8)                      // 顺奖励被发现了
+const RET_ERR_VALET_GAME_LOOT_AWARD_FAILED = (RET_VALET_GAME_BASE + 9)                        // 顺奖励失败了
+const RET_ERR_VALET_GAME_EXIST_UNDONE_OPERATE = (RET_VALET_GAME_BASE + 10)                    // 存在未完成的操作
+const RET_ERR_VALET_GAME_AWARD_STATUS_NOT_MATCH = (RET_VALET_GAME_BASE + 11)                  // 奖励状态不匹配
+const RET_ERR_VALET_GAME_GIVE_AWARD_FAILED = (RET_VALET_GAME_BASE + 12)                       // 发放奖励失败
+const RET_ERR_VALET_GAME_CONSUME_EP_FAILED = (RET_VALET_GAME_BASE + 13)                       // 扣体力值失败
+const RET_ERR_VALET_GAME_AWARD_ITEM_NOT_FOUND = (RET_VALET_GAME_BASE + 14)                    // 未找到对应的奖励项
+const RET_ERR_VALET_GAME_USER_IN_COMBAT = (RET_VALET_GAME_BASE + 15)                          // 用户正在PK中
+const RET_ERR_VALET_GAME_ALREADY_LOOT_AWARD = (RET_VALET_GAME_BASE + 16)                      // 已经顺过奖励了
+const RET_ERR_VALET_GAME_PEER_IN_RANK = (RET_VALET_GAME_BASE + 17)                            // 对方在榜单中
+const RET_ERR_VALET_GAME_LOOT_AWARD_COUNT_LIMIT = (RET_VALET_GAME_BASE + 18)                  // 超过顺奖励次数限制
+const RET_ERR_VALET_GAME_BE_LOOT_AWARD_COUNT_LIMIT = (RET_VALET_GAME_BASE + 19)               // 超过被顺奖励次数限制
+const RET_ERR_VALET_GAME_USER_BAG_FULL = (RET_VALET_GAME_BASE + 20)                           // 用户背包已满
+const RET_ERR_VALET_GAME_HOUSE_KEEPER_IS_WORKING = (RET_VALET_GAME_BASE + 21)                 // 管家正在工作中
+const RET_ERR_VALET_GAME_USER_NO_VIP = (RET_VALET_GAME_BASE + 22)                             // 你尚未开通VIP
+const RET_ERR_VALET_GAME_USER_VIP_OVERDUE = (RET_VALET_GAME_BASE + 23)                        // 你的VIP已经过期
+const RET_ERR_VALET_GAME_HK_NO_ENOUGH_TIME_START_WORK = (RET_VALET_GAME_BASE + 24)            // 你的VIP剩余时间已经不足以开工
+const RET_ERR_VALET_GAME_HK_DAY_WORK_FIN = (RET_VALET_GAME_BASE + 25)                         // 您的管家今天已经开工过
+const RET_ERR_VALET_GAME_USER_BAG_ITEM_LIMIT = (RET_VALET_GAME_BASE + 26)                     // 用户背包已满
+const RET_ERR_VALET_GAME_HK_GOODS_NO_RECV = (RET_VALET_GAME_BASE + 27)                        // 上次管家产出物品尚未领取，不能开工
+const RET_ERR_VALET_GAME_STRANGER_RECOMMEND_REDUCE_STRENGTH_FAIL = (RET_VALET_GAME_BASE + 28) // 陌生人推荐扣除体力失败
+const RET_ERR_VALET_GAME_USER_WAIT_FOR_IMPRISON = (RET_VALET_GAME_BASE + 29)                  // 用户等待被囚禁
+const RET_ERR_VALET_GAME_HOUSE_KEEPER_ALREADY_EXIST = (RET_VALET_GAME_BASE + 30)              //当前已经存在管家，不能重复购买
+const RET_ERR_VALET_GAME_NO_BUY_HOUSE_KEEPER = (RET_VALET_GAME_BASE + 31)                     // 用户尚未购买管家
+const RET_ERR_VALET_GAME_HOUSE_KEEPER_OVERDUE = (RET_VALET_GAME_BASE + 32)                    // 管家服务已经过期
+const RET_ERR_VALET_GAME_HOUSE_KEEPER_TIME_INSUFFICIENT = (RET_VALET_GAME_BASE + 33)          // 管家服务剩余时间不足
+const RET_ERR_VALET_GAME_HOUSE_KEEPER_DIAMOND_INSUFFICIENT = (RET_VALET_GAME_BASE + 34)       // 剩余钻石不足，无法购买管家
+const RET_ERR_VALET_GAME_HOUSE_KEEPER_UPGRADE_LIMIT = (RET_VALET_GAME_BASE + 35)              // 管家已经最高等级，不能继续升级
+const RET_ERR_QUERY_USER_NUM_EXCEED_MAX_LIMIT = (RET_VALET_GAME_BASE + 36)                    // 查询用户列表数量超过上限
+const RET_ERR_VALET_GAME_PEER_IN_COMBAT = (RET_VALET_GAME_BASE + 37)                          // 对方正在PK中
+const RET_ERR_VALET_GAME_AWARD_IN_LOOT_STATUS = (RET_VALET_GAME_BASE + 38)                    // 奖励在被抢夺状态
+const RET_ERR_VALET_GAME_AWARD_NOT_LOOT_STATUS = (RET_VALET_GAME_BASE + 39)                   // 没有符合的抢夺状态
+const RET_ERR_VALET_GAME_AWARD_TIMEOUT = (RET_VALET_GAME_BASE + 40)                           // 请求超时
+const RET_ERR_VALET_GAME_AWARD_COUNT_LIMIT = (RET_VALET_GAME_BASE + 41)                       // 数量超时
+const RET_ERR_VALET_GAME_UPGRADE_SUCCEED = (RET_VALET_GAME_BASE + 42)                         // 成功
+const RET_ERR_VALET_GAME_UPGRADE_SKILL_ID_ILEGAL = (RET_VALET_GAME_BASE + 43)                 // 技能ID 非法
+const RET_ERR_VALET_GAME_UPGRADE_SKILL_UPDATE_FAILED = (RET_VALET_GAME_BASE + 44)             // 升级失败，可能是数据库连接无法使用
+const RET_ERR_VALET_GAME_UPGRADE_GET_ADVANCED_TIMES_FAILED = (RET_VALET_GAME_BASE + 45)       // 获取进阶次数失败
+const RET_ERR_VALET_GAME_UPGRADE_SKILL_IS_MAX_LEVEL = (RET_VALET_GAME_BASE + 46)              // 已经是最大等级
+const RET_ERR_VALET_GAME_UPGRADE_SKILL_UPGRADE_CONFIG_NOT_FOUND = (RET_VALET_GAME_BASE + 47)  // 技能升级配置没找到
+const RET_ERR_VALET_GAME_UPGRADE_NEED_USER_LEVEL = (RET_VALET_GAME_BASE + 48)                 // 需要个人等级XX级
+const RET_ERR_VALET_GAME_UPGRADE_QIANNENG_NOT_ENOUGH = (RET_VALET_GAME_BASE + 49)             // 潜能数量不足-
+const RET_ERR_VALET_GAME_UPGRADE_DEDUCT_DIAMOND_FAILED = (RET_VALET_GAME_BASE + 50)           // 扣除钻石失败（请确认数量）
+const RET_ERR_VALET_GAME_UPGRADE_DEDUCT_YUANBAO_FAILED = (RET_VALET_GAME_BASE + 51)           // 扣除元宝失败（请确认数量）
+const RET_ERR_VALET_GAME_UPGRADE_DEDUCT_BAG_ITEM_FAILED = (RET_VALET_GAME_BASE + 52)          // 扣除背包物品失败
+const RET_ERR_VALET_GAME_UPGRADE_CALL_SKILL_EXISTED = (RET_VALET_GAME_BASE + 53)              // 该技能已存在，可能是数据库连接无法使用，对应错误码 1006
+const RET_ERR_VALET_GAME_UPGRADE_CALL_SKILL_CANNOT_UPDATE = (RET_VALET_GAME_BASE + 54)        // 不能从高等级更新到低等级，可能是数据库连接无法使用，对应错误码 1006
+const RET_ERR_VALET_GAME_UPGRADE_CALL_DATABASE_FAILED = (RET_VALET_GAME_BASE + 55)            // 操作数据失败，可能是数据库连接无法使用，对应错误码 1001
+const RET_ERR_VALET_GAME_UPGRADE_RETURN_QIANNENG_ERROR = (RET_VALET_GAME_BASE + 56)           // 返还潜能失败
+const RET_ERR_VALET_GAME_UPGRADE_RETURN_ITEM_ERROR = (RET_VALET_GAME_BASE + 57)               // 返还物品失败
+const RET_ERR_VALET_GAME_UPGRADE_SKILL_DB_NOT_CONNECT = (RET_VALET_GAME_BASE + 58)            // 技能数据库没有连接
+const RET_ERR_VALET_GAME_UPGRADE_TIGER_LEVEL_NOT_ENOUGH = (RET_VALET_GAME_BASE + 59)          // 需要老虎XX级，请提升老虎等级
+const RET_ERR_VALET_GAME_UPGRADE_MOUSE_LEVEL_NOT_ENOUGH = (RET_VALET_GAME_BASE + 60)          // 需要老鼠XX级，请提升老鼠等级
+const RET_ERR_VALET_GAME_UPGRADE_ELEPHANT_LEVEL_NOT_ENOUGH = (RET_VALET_GAME_BASE + 61)       // 需要大象XX级，请提升大象等级
+const RET_ERR_VALET_GAME_UPGRADE_MIGRATING = (RET_VALET_GAME_BASE + 62)                       // 正在移民,无法升级
+const RET_ERR_VALET_GAME_COOL_TIME = (RET_VALET_GAME_BASE + 63)                               // 冷却时间
+const RET_ERR_VALET_GAME_UPGRADE_CAN_NOT_LEAPFROG = (RET_VALET_GAME_BASE + 64)                // 不能越级升级
+const RET_ERR_SUBSCRIBE_CHEST_CHG_FAIL = (RET_VALET_GAME_BASE + 65)                           // 订阅宝箱变化失败
+const RET_ERR_VALET_GAME_CONSUME_DIAMOND_FAILED = (RET_VALET_GAME_BASE + 66)                  // 扣除钻石失败
+const RET_ERR_DIAMOND_OPEN_BOX_VOID = (RET_VALET_GAME_BASE + 67)                              // 钻石开箱子没任何物品
+//const     RET_ERR_VALET_GAME_UPGRADE_SKILL_UPDATE_FAILED            =  (RET_VALET_GAME_BASE + 68)   // 升级失败，
+const RET_ERR_VALET_GAME_UPGRADE_SKILL_FEED_FAILED = (RET_VALET_GAME_BASE + 69) // 喂养失败，
+const RET_ERR_VALET_REDUCT_BARITE_FAILED = (RET_VALET_GAME_BASE + 70)           // 扣晶石失败,余额不足
+const RET_ERR_VALET_REDUCT_POTENTIAL_FAILED = (RET_VALET_GAME_BASE + 71)        // 扣潜能失败,余额不足
+
+const RET_ERR_VALET_GAME_USER_VALET_LEVEL_BIG_LIMIT = (RET_VALET_GAME_BASE + 72)  // 用户等级太大限制
+const RET_ERR_VALET_GAME_USER_VALET_LEVEL_TINY_LIMIT = (RET_VALET_GAME_BASE + 73) // 用户等级太小限制
+const RET_ERR_VALET_GAME_USER_NOT_FRIEND = (RET_VALET_GAME_BASE + 74)             // 用户双方不是好友
+const RET_ERR_VALET_GAME_FRIEND_NOT_LOGIN = (RET_VALET_GAME_BASE + 75)            // 邀请的好友还没有使用app登录
+const RET_ERR_VALET_GAME_FRIEND_STEAL_REDPACKET_LATE = (RET_VALET_GAME_BASE + 76) // 你来晚了，红包已经被别人领取
+
+const RET_ERR_VALET_LUCK_CARD_NEWBIE_FREE_OUT = (RET_VALET_GAME_BASE + 77) // 新手引导免费抽卡次数已完
+const RET_ERR_VALET_LUCK_CARD_VIP_FREE_OUT = (RET_VALET_GAME_BASE + 78)    // vip免费抽卡次数已完
+
+const RET_ERR_GOODS_COUNT_OUT_OF_RANGE = (RET_VALET_GAME_BASE + 79)        // 物品数量超限
+const RET_ERR_VALET_GAME_CAN_NOT_STEAL_RMB = (RET_VALET_GAME_BASE + 80)    // 不可以偷红包
+const RET_ERR_VALET_SLOT_TIMER_INFO_NOT_FOUND = (RET_VALET_GAME_BASE + 81) // 槽位计时信息未找到
+const RET_ERR_VALET_SLOT_HAVE_AWARD_INFO = (RET_VALET_GAME_BASE + 82)      // 槽位奖励信息存在
+const RET_ERR_VALET_SLOT_TIMER_NOT_MATCH = (RET_VALET_GAME_BASE + 83)      // 槽位计时信息不匹配
+
+const RET_ERR_NEW_LUCKY_ROULETTE_OVER_MAX_COUNT = (RET_VALET_GAME_BASE + 84) // 用体力已达最大次数
+const RET_ERR_NEW_LUCKY_ROULETTE_DAYLIMIT = (RET_VALET_GAME_BASE + 85)       // 用体力次数已用完
+
+const RET_ERR_OPEN_VIRTUAL_ISSUE_GOODS_FAILED = (RET_VALET_GAME_BASE + 86)       // 开虚拟宝箱 发放物品失败
+const RET_ERR_OPEN_VIRTUAL_ISSUE_REDPACK_FAILED = (RET_VALET_GAME_BASE + 87)     // 开虚拟宝箱 发放明星红包失败
+const RET_ERR_OPEN_VIRTUAL_GET_STAR_CONNPOOL_FAILED = (RET_VALET_GAME_BASE + 88) // 开虚拟宝箱 获取明星红包连接池失败
+const RET_ERR_OPEN_VIRTUAL_SUB_STAR_REDPACK_FAILED = (RET_VALET_GAME_BASE + 89)  // 开虚拟宝箱 从明星连接池扣红包失败
+const RET_ERR_VALET_GAME_DAY_LIMIT = (RET_VALET_GAME_BASE + 90)                  // 达到每日上限
+const RET_ERR_NOT_AWARD_TO_RESTORE = (RET_VALET_GAME_BASE + 91)                  // 没有奖励可以恢复
+
+const RET_ERR_INVALID_REQUEST_PACKET = (RET_VALET_GAME_BASE + 92)          // 用户跟班最后一次丢失请求包数据错误
+const RET_ERR_GET_DATA_FROM_CACHE = (RET_VALET_GAME_BASE + 93)             // 用户跟班最后一次丢失从缓存获取数据失败
+const RET_ERR_INVALID_UNIXSOCK_REUEST_PACKET = (RET_VALET_GAME_BASE + 94)  // 用户跟班最后一次丢失数据UnixSock请求的数据回包解包错误
+const RET_ERR_UNIXSOCK_REUEST = (RET_VALET_GAME_BASE + 95)                 // 用户跟班最后一次丢失数据UnixSock请求错误
+const RET_ERR_INVALID_SERIALIZE_REUEST_PACKET = (RET_VALET_GAME_BASE + 96) // 用户跟班最后一次丢失数据序列化数据包错误
+
+const RET_ERR_LOOT_RMB_SELECT_WRONG = (RET_VALET_GAME_BASE + 100) // 抢劫RMB 选错了
+const RET_ERR_LOOT_RMB_HK_PROTECT = (RET_VALET_GAME_BASE + 101)   // 抢劫RMB 管家保护
+const RET_ERR_LOOT_RMB_MISS = (RET_VALET_GAME_BASE + 102)         // 抢劫RMB 错过了
+const RET_ERR_LOOT_RMB_FAILED = (RET_VALET_GAME_BASE + 103)       // 抢劫RMB 操作失败
+
+const RET_ERR_LOOT_RMB_NOT_MATCH = (RET_VALET_GAME_BASE + 104)       // 抢劫RMB 信息不匹配
+const RET_ERR_LOOT_RMB_PEER_NO_MONEY = (RET_VALET_GAME_BASE + 105)   // 抢劫RMB 对方没钱了
+const RET_ERR_LOOT_RMB_ENERGY_LOW = (RET_VALET_GAME_BASE + 106)      // 抢劫RMB 体力不足
+const RET_ERR_LOOT_RMB_GET_BACK_EXPIRE = (RET_VALET_GAME_BASE + 107) // 抢劫RMB 找回过期
+const RET_ERR_LOOT_RMB_NOT_CHANCE = (RET_VALET_GAME_BASE + 108)      // 抢劫RMB 未命中
+const RET_ERR_HATE_HAS_BEEN_LOOT = (RET_VALET_GAME_BASE + 109)       // 抢劫RMB 今天已经抢过Ta啦，换个人试试吧！
+const RET_ERR_HATE_LOOT_OVER_LIMIT = (RET_VALET_GAME_BASE + 110)     // 抢劫RMB Ta今天已经被抢过很多次了，换个人试试吧！
+const RET_ERR_HATE_LOOT_PROTECT_CD = (RET_VALET_GAME_BASE + 111)     // 抢劫RMB Ta刚刚被人抢过，等会再来抢吧！
+
+// TODO 工坊重新分配段
+const RET_ERR_TECHNOLOGY_TREE_FAILED = (RET_VALET_GAME_BASE + 112)              // 科技树 操作失败
+const RET_ERR_TECHNOLOGY_TREE_UNLOCKED = (RET_VALET_GAME_BASE + 113)            // 科技树 该节点已解锁
+const RET_ERR_TECHNOLOGY_TREE_UNLOCK_NOT_MATCH = (RET_VALET_GAME_BASE + 114)    // 科技树 解锁条件不满足
+const RET_ERR_TECHNOLOGY_TREE_NOT_UNLOCK = (RET_VALET_GAME_BASE + 115)          // 科技树 该节点尚未解锁
+const RET_ERR_TECHNOLOGY_TREE_ALREADY_MAX_LEVEL = (RET_VALET_GAME_BASE + 116)   // 科技树 该节点已到最大等级
+const RET_ERR_TECHNOLOGY_WHITE_CAPSULE_NOT_ENOUGH = (RET_VALET_GAME_BASE + 117) // 科技树 白胶囊数量不足
+
+const RET_GAME_AWARD_LOOT_SELECT_LIMIT_ITEM = (RET_VALET_GAME_BASE + 118)      // 打劫槽位奖励选择物品个数限制
+const RET_GAME_AWARD_LOOT_SELECT_ITEM_ENERGY_LOW = (RET_VALET_GAME_BASE + 119) // 打劫槽位奖励选择物品体力不足
+
+const RET_ERR_VALET_AWARD_RECV_TIME_UP = (RET_VALET_GAME_BASE + 120)                  // 宝箱领取服务，宝箱时间未到
+const RET_ERR_VALET_AWARD_RECV_TIME_UPDATE = (RET_VALET_GAME_BASE + 121)              // 宝箱领取服务，宝箱时间需要更新
+const RET_ERR_VALET_AWARD_RECV_INVALID_STATUS = (RET_VALET_GAME_BASE + 122)           // 宝箱领取服务，无效的宝箱状态
+const RET_ERR_VALET_AWARD_RECV_INVALID_VALET = (RET_VALET_GAME_BASE + 123)            // 宝箱领取服务，无效的跟班ID
+const RET_ERR_VALET_AWARD_RECV_SEND_BAG_INSTANCE_FAILED = (RET_VALET_GAME_BASE + 124) // 宝箱领取服务，发送装备实例化请求失败
+const RET_ERR_VALET_AWARD_RECV_BAG_INSTANCE_FAILED = (RET_VALET_GAME_BASE + 125)      // 宝箱领取服务，装备实例化失败
+const RET_ERR_VALET_AWARD_RECV_SEND_BAG_RECV_FAILED = (RET_VALET_GAME_BASE + 126)     // 宝箱领取服务，发送背包领取请求失败
+const RET_ERR_VALET_AWARD_RECV_BAG_RECV_FAILED = (RET_VALET_GAME_BASE + 127)          // 宝箱领取服务，背包领取失败
+const RET_ERR_VALET_AWARD_RECV_HAVE_OTHER_TASK = (RET_VALET_GAME_BASE + 128)          // 宝箱领取服务，有其它正在处理的任务
+
+const RET_ERR_RISK_CONTROL_GET_RISK_INFO_FAILED = (RET_VALET_GAME_BASE + 129)    // 风险控制服务，查询风险信息失败
+const RET_ERR_RISK_CONTROL_GET_RISK_INFO_NOT_FOUND = (RET_VALET_GAME_BASE + 130) // 风险控制服务，查询结果中找不到指定用户风险信息
+const RET_ERR_LOOT_RMB_PEER_NO_GOLD = (RET_VALET_GAME_BASE + 131)                // 抢劫RMB 对方没金币了
+const RET_ERR_LOOT_RMB_PEER_LITTLE_GOLD = (RET_VALET_GAME_BASE + 132)            // 抢劫RMB 抢到小额金币
+
+const RET_ERR_VALET_AWARD_RECV_SEND_QUERY_TIMER_FAILED = (RET_VALET_GAME_BASE + 133) // 装备领取服务，发送查询下一个倒计时信息失败
+const RET_ERR_VALET_AWARD_RECV_QUERY_NEXT_TIMER_FAILED = (RET_VALET_GAME_BASE + 134) // 装备领取服务，查询下一个倒计时信息失败
+const RET_ERR_VALET_AWARD_RECV_NEED_INIT_BEFOR_RECV = (RET_VALET_GAME_BASE + 135)    // 装备领取服务，领取前必须初始化
+
+const RET_ERR_LOOT_RMB_CHECK_COMBAT_ERROR = (RET_VALET_GAME_BASE + 136)                   // 抢回RMB 校验失败.
+const RET_ERR_VALET_AWARD_RECV_SEND_STORE_HOUSE_RECV_FAILED = (RET_VALET_GAME_BASE + 137) // 发送领取仓库请求失败
+const RET_ERR_VALET_AWARD_RECV_STORE_HOUSE_RECV_FAILED = (RET_VALET_GAME_BASE + 138)      // 领取仓库失败
+const RET_ERR_VALET_GAME_USER_STORE_HOUSE_FULL = (RET_VALET_GAME_BASE + 139)              // 仓库已满
+const RET_ERR_VALET_GAME_USER_STORE_HOUSE_ITEM_LIMIT = (RET_VALET_GAME_BASE + 140)        // 仓库单个物品超出限制
+
+const RET_ERR_TREE_RECV_SEND_RESET_TIMER_FAILED = (RET_VALET_GAME_BASE + 141)  // 发送重置倒计时请求失败
+const RET_ERR_TREE_RECV_RESET_TIMER_FAILED = (RET_VALET_GAME_BASE + 142)       // 重置倒计时失败
+const RET_ERR_TREE_RECV_SELL_EQUIPMENT_FAILED = (RET_VALET_GAME_BASE + 143)    // 出售装备失败
+const RET_ERR_USER_EQUIPMENT_RECV_HAVE_WAIT_RECV = (RET_VALET_GAME_BASE + 145) // 还有待领取的装备
+
+const DEF_ERR_IMMEDIATELY_AWARD_GET_CONFIG_FAILED = (RET_VALET_GAME_BASE + 146)           // 立即开宝箱 获取配置信息失败
+const DEF_ERR_IMMEDIATELY_AWARD_EMPTY_CONFIG = (RET_VALET_GAME_BASE + 147)                // 立即开宝箱 空配置信息
+const DEF_ERR_IMMEDIATELY_AWARD_NOT_MATCH_CONFIG = (RET_VALET_GAME_BASE + 148)            // 立即开宝箱 没有符合条件的配置
+const DEF_ERR_IMMEDIATELY_AWARD_NOT_ENOUGH_FREE_TIMES = (RET_VALET_GAME_BASE + 149)       // 立即开宝箱 没有足够的免费次数
+const DEF_ERR_IMMEDIATELY_AWARD_NOT_ENOUGH_DIAMOND = (RET_VALET_GAME_BASE + 150)          // 立即开宝箱 没有足够的钻石
+const DEF_ERR_IMMEDIATELY_AWARD_SAVE_FAILED = (RET_VALET_GAME_BASE + 151)                 // 立即开宝箱 保存失败
+const DEF_ERR_IMMEDIATELY_AWARD_DROP_FAILED = (RET_VALET_GAME_BASE + 152)                 // 立即开宝箱 掉落失败
+const DEF_ERR_IMMEDIATELY_AWARD_NPC_UNLOCK = (RET_VALET_GAME_BASE + 153)                  // 立即开宝箱 星卡未解锁
+const DEF_ERR_IMMEDIATELY_AWARD_NPC_NOT_USE = (RET_VALET_GAME_BASE + 154)                 // 立即开宝箱 星卡不可立即开启
+const DEF_ERR_IMMEDIATELY_AWARD_NOT_DROP_AWARD = (RET_VALET_GAME_BASE + 155)              // 立即开宝箱 未掉落奖励
+const RET_ERR_IMMEDIATELY_AWARD_RECV_SEND_DROP_AWARD_FAILED = (RET_VALET_GAME_BASE + 156) // 立即开宝箱领取 发送掉落请求失败
+const RET_ERR_IMMEDIATELY_AWARD_RECV_RECV_DROP_AWARD_FAILED = (RET_VALET_GAME_BASE + 157) // 立即开宝箱领取 掉落失败
+const RET_ERR_PP_WORLD_HOUSE_FULL = (RET_VALET_GAME_BASE + 158)                           // 派派世界仓库已满
+const RET_ERR_GET_PP_WORLD_HOUSE_STATUS_FAIL = (RET_VALET_GAME_BASE + 159)                // 获取派派世界仓库状态失败
+
+const RET_ERR_NUTRIENT_GET_NUTRIENT_INFO_FAILED = (RET_VALET_GAME_BASE + 160)   // 营养剂产出 读营养剂信息失败
+const RET_ERR_NUTRIENT_GET_NUTRIENT_SEQ_FAILED = (RET_VALET_GAME_BASE + 161)    // 营养剂产出 读营养剂序列失败
+const RET_ERR_NUTRIENT_GET_SEED_LIST_FAILED = (RET_VALET_GAME_BASE + 162)       // 营养剂产出 查询种子列表失败
+const RET_ERR_NUTRIENT_GEN_ENV_NO_CHG = (RET_VALET_GAME_BASE + 163)             // 营养剂产出 营养剂产出环境无变化
+const RET_ERR_NUTRIENT_GET_LIMIT_CONFIG = (RET_VALET_GAME_BASE + 164)           // 营养剂产出 查询限制配置失败
+const RET_ERR_NUTRIENT_GET_NUTRIENT_AMOUNT_FAILED = (RET_VALET_GAME_BASE + 165) // 营养剂产出 查询营养剂数量失败
+const RET_ERR_NUTRIENT_SET_NUTRIENT_SEQ_FAILED = (RET_VALET_GAME_BASE + 166)    // 营养剂产出 写营养剂序列失败
+const RET_ERR_NUTRIENT_DEL_NUTRIENT_SEQ_FAILED = (RET_VALET_GAME_BASE + 167)    // 营养剂产出 删营养剂序列失败
+const RET_ERR_NUTRIENT_NO_NUTRIENT_SEQ_FAILED = (RET_VALET_GAME_BASE + 168)     // 营养剂产出 没有营养剂序列
+const RET_ERR_NUTRIENT_ADD_NUTRIENT_LIST_FAILED = (RET_VALET_GAME_BASE + 169)   // 营养剂产出 添加营养剂失败
+
+const RET_ERR_IMMEDIATELY_AWARD_GET_BAG_CELL_FAILED = (RET_VALET_GAME_BASE + 170) // 立即开宝箱 查询背包格子失败
+const RET_ERR_IMMEDIATELY_AWARD_ADD_BAG_ITEM_FAILED = (RET_VALET_GAME_BASE + 171) // 立即开宝箱 添加背包物品失败
+const RET_ERR_IMMEDIATELY_AWARD_SUB_DIAMOND_FAILED = (RET_VALET_GAME_BASE + 100)  // 立即开宝箱 扣除钻石失败 - 老SVN上定义与新SVN定义冲突，客户端识别了该错误码
+
+//大红包服务使用 RET_VALET_GAME_BASE + 200 到 RET_VALET_GAME_BASE + 300
+const RET_ERR_BIG_RED_PACKET = (RET_VALET_GAME_BASE + 200)
+const RET_ERR_BRP_PROTOCOL_NOT_MATCH = (RET_ERR_BIG_RED_PACKET + 0)              //用户版本号太低            delete
+const RET_ERR_BRP_QUERY_BRP_INFO_FAILED = (RET_ERR_BIG_RED_PACKET + 1)           //服务器查询大红包信息失败
+const RET_ERR_BRP_QUERY_STOLEN_INFO_FAILED = (RET_ERR_BIG_RED_PACKET + 2)        //服务器查询大红包被偷信息失败  delete
+const RET_ERR_BRP_CREATE_FAILED = (RET_ERR_BIG_RED_PACKET + 3)                   //创建新大红包失败
+const RET_ERR_BRP_CLIENT_BRP_ID_NOT_MATCH = (RET_ERR_BIG_RED_PACKET + 5)         //客户端大红包id和服务器不一样
+const RET_ERR_BRP_GET_BRP_ITEM_FAILED = (RET_ERR_BIG_RED_PACKET + 6)             //查询大红包条目失败
+const RET_ERR_BRP_BASIC_INFO_NOT_MATCH = (RET_ERR_BIG_RED_PACKET + 7)            //大红包基础信息不一致
+const RET_ERR_BIG_RED_PACKET_SYNC_LIGHT_ERROR = (RET_ERR_BIG_RED_PACKET + 8)     //微小误差，用服务器下发的红包信息直接覆盖客户端本地数据
+const RET_ERR_BIG_RED_PACKET_SYNC_BiG_ERROR = (RET_ERR_BIG_RED_PACKET + 9)       //大误差，除了要用服务器下发的红包信息直接覆盖客户端本地数据，还需要重新拉取祈雨列表和种子列表
+const RET_ERR_BIG_RED_PACKET_QUERY_RAIN = (RET_ERR_BIG_RED_PACKET + 10)          //查询祈雨信息失败
+const RET_ERR_BIG_RED_PACKET_QUERY_CUR_RAIN_RATE = (RET_ERR_BIG_RED_PACKET + 11) //查询当前祈雨新的总速率失败
+const RET_ERR_BRP_NOT_OVER = (RET_ERR_BIG_RED_PACKET + 13)                       //大红包还没结束
+const RET_ERR_BRP_GET_BRP_STATE_FAILED = (RET_ERR_BIG_RED_PACKET + 14)           //查询大红包状态失败
+const RET_ERR_BRP_SAVE_SHARE_RECEIVE_INFO_FAILED = (RET_ERR_BIG_RED_PACKET + 16) //保存分享后领取奖励信息失败
+const RET_ERR_BRP_STOLEN_COUNT_REACH_MAX = (RET_ERR_BIG_RED_PACKET + 20)         //大红包被偷次数达到上限
+const RET_ERR_BRP_HAS_STEAL = (RET_ERR_BIG_RED_PACKET + 21)                      //大红包已经偷过
+const RET_ERR_BRP_RESERVE_LOWER_1_FEN = (RET_ERR_BIG_RED_PACKET + 22)            //保留部分不足1分不可偷
+const RET_ERR_BRP_SAVE_STOLEN_INFO_FAIL = (RET_ERR_BIG_RED_PACKET + 23)          //保存被偷信息失败
+const RET_ERR_BRP_STOLEN_CHANGE_ITEM_FAILED = (RET_ERR_BIG_RED_PACKET + 24)      //被偷后，保存相关改变项失败
+const RET_ERR_BRP_QUERY_SHARE_INFO_FAILED = (RET_ERR_BIG_RED_PACKET + 27)        //查询分享领取奖励信息失败
+const RET_ERR_BRP_PARSE_SHARE_INFO_FAILED = (RET_ERR_BIG_RED_PACKET + 28)        //解析分享领取奖励信息失败
+const RET_ERR_BRP_SHARE_INFO_BASIC_NOT_MATCH = (RET_ERR_BIG_RED_PACKET + 29)     //分享领取奖励信息校验失败
+const RET_ERR_BRP_SHARE_INFO_COUNT_NOT_MATCH = (RET_ERR_BIG_RED_PACKET + 30)     //分享领取奖励信息数量不对
+const RET_ERR_BRP_SHARE_GET_TRADE_NUM_FAILED = (RET_ERR_BIG_RED_PACKET + 31)     //分享领取奖励信息获取交易号失败
+const RET_ERR_BRP_PUSH_SHARE_INFO_FAILED = (RET_ERR_BIG_RED_PACKET + 32)         //分享领取rmb打队列失败
+const RET_ERR_BRP_SHARE_INFO_DEL_FAILED = (RET_ERR_BIG_RED_PACKET + 33)          //删除分享奖励信息失败
+const RET_ERR_BRP_GET_RAIN_INFO_FAILED = (RET_ERR_BIG_RED_PACKET + 35)           //获取下雨信息失败
+const RET_ERR_BRP_CALC_SILVER_COIN_FAILED = (RET_ERR_BIG_RED_PACKET + 36)        //计算飘银币失败
+const RET_ERR_BRP_INCRBY_ITEM_FAILED = (RET_ERR_BIG_RED_PACKET + 37)             //结算种子后修改上下限和种子量失败
+const RET_ERR_BRP_QUERY_BRP_STATE_FAILED = (RET_ERR_BIG_RED_PACKET + 40)         //查询大红包状态失败
+const RET_ERR_BRP_ADD_TIME_LOWER_BEGIN = (RET_ERR_BIG_RED_PACKET + 41)           //加银币时间小于大红包开始时间
+
+const RET_ERR_BRP_REDIS_ADD_SILVER_COIN_FAILED = (RET_ERR_BIG_RED_PACKET + 42) //修改大红包增加银币项失败
+const RET_ERR_BRP_BRP_ENT_TIEM_NOT_MATCH = (RET_ERR_BIG_RED_PACKET + 46)       //大红包结束时间和服务器不一样
+const RET_ERR_BRP_GET_TOMORROW_TIME_FAILED = (RET_ERR_BIG_RED_PACKET + 48)     //获取防沉迷结束时间失败
+
+const RET_ERR_BRP_STATUS_NOT_COUNT_DOWN = (RET_ERR_BIG_RED_PACKET + 49)        //大红包状态不是 倒计时状态,无法结束
+const RET_ERR_BRP_RQ_PARAM_ILLEGAL_FAILED = (RET_ERR_BIG_RED_PACKET + 50)      //客户端请求参数非法
+const RET_ERR_BRP_GET_TASK_LIST_FAILED = (RET_ERR_BIG_RED_PACKET + 51)         //获取跟班任务列表失败
+const RET_ERR_BRP_CALC_PRODURE_SUN_FAILED = (RET_ERR_BIG_RED_PACKET + 52)      //计算倒计时状态种子产出的金币个数失败
+const RET_ERR_BRP_INCR_PRODURE_SUN_FAILED = (RET_ERR_BIG_RED_PACKET + 53)      //增加大红包收取金币数操作失败
+const RET_ERR_BRP_CALC_START_LEVEL_FAILED = (RET_ERR_BIG_RED_PACKET + 54)      //计算大红包星级失败
+const RET_ERR_BRP_OPEN_BRP_FAILED = (RET_ERR_BIG_RED_PACKET + 60)              //开大红包失败
+const RET_ERR_BRP_RECEIVE_SHARE_INFO_NOT_MATCH = (RET_ERR_BIG_RED_PACKET + 61) //分享领取时客户端基础信息不一致
+const RET_ERR_BRP_QUERY_BRP_INFO_EMPTY = (RET_ERR_BIG_RED_PACKET + 62)         //大红包信息为空
+const RET_ERR_BRP_SET_STOLEN_COUNT_FAILED = (RET_ERR_BIG_RED_PACKET + 63)      //设置大红包被偷次数失败
+const RET_ERR_BRP_SHARE_RECEICE_INFO_EMPTY = (RET_ERR_BIG_RED_PACKET + 64)     //分享后领取奖励为空
+const RET_ERR_BRP_INCY_RECV_GOLD_COIN_FAILED = (RET_ERR_BIG_RED_PACKET + 65)   //增加客户端领取的金币失败
+const RET_ERR_BRP_RMB_IO_FAILED = (RET_ERR_BIG_RED_PACKET + 66)                // 大红包现金 IO错误
+const RET_ERR_BRP_RMB_DATA_INVALID = (RET_ERR_BIG_RED_PACKET + 67)             // 大红包现金 数据错误
+const RET_ERR_BRP_RMB_BRP_ID_NOT_MATCH = (RET_ERR_BIG_RED_PACKET + 68)         // 大红包现金 大红包ID不匹配
+const RET_ERR_BRP_RMB_BRP_STATUS_NOT_MATCH = (RET_ERR_BIG_RED_PACKET + 69)     // 大红包现金 大红包状态不匹配
+const RET_ERR_BRP_RMB_NOT_SEQ_WAIT_RECV = (RET_ERR_BIG_RED_PACKET + 70)        // 大红包现金 没有待领取的现金序列
+const RET_ERR_BRP_RMB_SEQ_NOT_MATCH = (RET_ERR_BIG_RED_PACKET + 71)            // 大红包现金 待领取的现金序列不匹配
+const RET_ERR_BRP_GET_GOLD_BACK_PUSH_LIST = (RET_ERR_BIG_RED_PACKET + 72)      // 大红包找回金币 给其他服务打找回金币信息失败
+const RET_ERR_BRP_GET_GOLD_BACK_REPEAT = (RET_ERR_BIG_RED_PACKET + 73)         // 大红包找回金币 多次请求，无效
+const RET_ERR_BRP_RMB_NOT_RMB_INFO = (RET_ERR_BIG_RED_PACKET + 74)             // 大红包现金 没有大红包现金信息
+const RET_ERR_BRP_STEAL_NOT_ENOUGH_ENERGY = (RET_ERR_BIG_RED_PACKET + 75)      // 领别人大红包体力不够
+const RET_ERR_BRP_SHARE_GETE_BACK_RMB_EXPIRE = (RET_ERR_BIG_RED_PACKET + 76)   // 已经过期
+const RET_ERR_BRP_GETE_BACK_RMB_HAS_SHARE = (RET_ERR_BIG_RED_PACKET + 77)      // 已经分享过
+const RET_ERR_FREE_GIFT_FAMILY_ERROR = (RET_ERR_BIG_RED_PACKET + 78)           // 家族免费送礼 所属家族有误
+const RET_ERR_FREE_GIFT_SEX_ERROR = (RET_ERR_BIG_RED_PACKET + 79)              // 家族免非送礼 性别有误
+const RET_ERR_FREE_GIFT_DELETE_GIFT = (RET_ERR_BIG_RED_PACKET + 80)            // 家族免费送礼 删除礼物
+const RET_ERR_FREE_GIFT_ALREADY_RECEIVE = (RET_ERR_BIG_RED_PACKET + 81)        // 家族免费送礼 礼包已领取
+const RET_ERR_FREE_GIFT_EXPIRED = (RET_ERR_BIG_RED_PACKET + 82)                // 家族免费送礼 礼包已过期
+const RET_ERR_FREE_GIFT_UPLIMIT = (RET_ERR_BIG_RED_PACKET + 83)                // 家族免费送礼 领取上限
+
+// 小夺宝错误 RET_VALET_GAME_BASE + 300 到 RET_VALET_GAME_BASE + 400
+const RET_ERR_XDB_PACKET = (RET_VALET_GAME_BASE + 300)
+const RET_ERR_XDB_REDIS_OP_ERROR = (RET_ERR_XDB_PACKET + 0)        // Redis操作错误(存取数据)
+const RET_ERR_XDB_DIAMOND_CMP_ERROR = (RET_ERR_XDB_PACKET + 1)     // 客户端请求的钻石与服务器不匹配.
+const RET_ERR_XDB_DIAMOND_CUSTOM_ERROR = (RET_ERR_XDB_PACKET + 2)  // 钻石扣除失败.
+const RET_ERR_XDB_FREE_CMP_ERROR = (RET_ERR_XDB_PACKET + 3)        // 客户端和服务器的剩余空闲次数不一致.
+const RET_ERR_XDB_FREE_NOT_EMPTY = (RET_ERR_XDB_PACKET + 4)        // 剩余空闲次数未用完,不能使用钻石刷新
+const RET_ERR_XDB_NEED_REFRESH = (RET_ERR_XDB_PACKET + 5)          // 列表时间已经到了,不能使用钻石/免费次数刷新
+const RET_ERR_XDB_IN_CD_TIME = (RET_ERR_XDB_PACKET + 6)            // 免费刷新时间未到.不能免费刷新
+const RET_ERR_XDB_FREE_TIMES_NOT_ENOUGH = (RET_ERR_XDB_PACKET + 7) // 剩余免费次数不足,不能刷新列表
+const RET_ERR_XDB_NOMORE_PLAYER = (RET_ERR_XDB_PACKET + 8)         // 没有更多的玩家了,稍后再刷新吧!
+const RET_ERR_XDB_DIAMOND_BALANCE_ERROR = (RET_ERR_XDB_PACKET + 9) // 钻石余额不足.
+
+// db模板程序错误码
+const RET_ERR_DB_TPL_PACKET = (RET_VALET_GAME_BASE + 350)
+const RET_ERR_DB_TPL_PARA_ERROR = (RET_ERR_DB_TPL_PACKET + 0)      // 服务参数指定错误
+const RET_ERR_DB_TPL_GET_CFG_NO_DB = (RET_ERR_DB_TPL_PACKET + 1)   // 服务没有指定的数据库连接
+const RET_ERR_DB_TPL_GET_CFG_COL_ERR = (RET_ERR_DB_TPL_PACKET + 2) // 列数量不一致
+const RET_ERR_DB_TPL_GET_CFG_NO_DATA = (RET_ERR_DB_TPL_PACKET + 3) // 没有数据
+const RET_ERR_DB_TPL_CFG_TOO_BIG = (RET_ERR_DB_TPL_PACKET + 4)     // 数据超出限制
+
+// 派派世界 - 管理员 -=  (建筑)
+const RET_ERR_GARDENER_PACKET = (RET_VALET_GAME_BASE + 380)                         // 管理员错误
+const RET_ERR_GARDENER_INTIMACY_CFG_ERR = (RET_ERR_GARDENER_PACKET + 0)             // 计算亲密度. 配置错误
+const RET_ERR_GARDENER_INTIMACY_TIME_ERR = (RET_ERR_GARDENER_PACKET + 1)            // 计算亲密度. 时间无效
+const RET_ERR_GARDENER_INFO_NOT_MATCH = (RET_ERR_GARDENER_PACKET + 2)               // 管理员信息不匹配
+const RET_ERR_GARDENER_NOT_FRIEND = (RET_ERR_GARDENER_PACKET + 3)                   // 还不是好友，不能做管理员
+const RET_ERR_GARDENER_GET_GARDENER_FAILED = (RET_ERR_GARDENER_PACKET + 4)          // 查询管理员信息失败
+const RET_ERR_GARDENER_SET_GARDENER_FAILED = (RET_ERR_GARDENER_PACKET + 5)          // 设置管理员信息失败
+const RET_ERR_GARDENER_DEL_GARDENER_FAILED = (RET_ERR_GARDENER_PACKET + 6)          // 删除管理员信息失败
+const RET_ERR_GARDENER_NOT_FOUND_GARDENER = (RET_ERR_GARDENER_PACKET + 7)           // 未找到管理员信息
+const RET_ERR_GARDENER_UNPACK_GARDENER_FAILED = (RET_ERR_GARDENER_PACKET + 8)       // 解包管理员信息失败
+const RET_ERR_GARDENER_ALREADY_IS_GARDENER = (RET_ERR_GARDENER_PACKET + 9)          // 已经是Ta的管理员了
+const RET_ERR_GARDENER_ALREADY_HAVE_GARDENER = (RET_ERR_GARDENER_PACKET + 10)       // 已经有管理员了
+const RET_ERR_GARDENER_GET_EMPLOYER_FAILED = (RET_ERR_GARDENER_PACKET + 11)         // 查询雇主信息失败
+const RET_ERR_GARDENER_SET_EMPLOYER_FAILED = (RET_ERR_GARDENER_PACKET + 12)         // 设置雇主信息失败
+const RET_ERR_GARDENER_DEL_EMPLOYER_FAILED = (RET_ERR_GARDENER_PACKET + 13)         // 删除雇主信息失败
+const RET_ERR_GARDENER_CHECK_EMPLOYER_FAILED = (RET_ERR_GARDENER_PACKET + 14)       // 检查雇主信息失败
+const RET_ERR_GARDENER_CHECK_EMPLOYER_COUNT_FAILED = (RET_ERR_GARDENER_PACKET + 15) // 检查雇主数量失败
+const RET_ERR_GARDENER_EMPLOYER_COUNT_LIMIT = (RET_ERR_GARDENER_PACKET + 16)        // 已经是很多人的管理员了
+const RET_ERR_GARDENER_GET_HISTORY_FAILED = (RET_ERR_GARDENER_PACKET + 17)          // 查询雇佣历史失败
+const RET_ERR_GARDENER_UNPACK_HISTORY_FAILED = (RET_ERR_GARDENER_PACKET + 18)       // 解包雇佣历史失败
+const RET_ERR_GARDENER_FIRE_CUR_GARDENER_FAILED = (RET_ERR_GARDENER_PACKET + 19)    // 解雇当前管理员失败
+const RET_ERR_GARDENER_QUERY_SILVER_FAILED = (RET_ERR_GARDENER_PACKET + 20)         // 查询银币失败
+const RET_ERR_GARDENER_NO_ENOUGH_SILVER = (RET_ERR_GARDENER_PACKET + 21)            // 银币不足
+const RET_ERR_GARDENER_WEAK_STATUS_NOT_MATCH = (RET_ERR_GARDENER_PACKET + 22)       // 管理员虚弱状态不匹配
+const RET_ERR_GARDENER_CALCULATE_INTIMACY_FAILED = (RET_ERR_GARDENER_PACKET + 23)   // 计算亲密度失败
+const RET_ERR_GARDENER_QUERY_GOLD_COIN_FAILED = (RET_ERR_GARDENER_PACKET + 24)      // 查询金币失败
+const RET_ERR_GARDENER_NO_ENOUGH_GOLD_COIN = (RET_ERR_GARDENER_PACKET + 25)         // 金币不足失败
+
+// 跟班关系服务使用 RET_VALET_GAME_BASE + 500 到 RET_VALET_GAME_BASE + 600
+const RET_ERR_VALET_RELATION_BASE = (RET_VALET_GAME_BASE + 500)
+const RET_ERR_VALET_RELATION_FAILED = (RET_ERR_VALET_RELATION_BASE + 0)                // 跟班关系操作失败
+const RET_ERR_VALET_RELATION_INVALID_SLOT_INDEX = (RET_ERR_VALET_RELATION_BASE + 1)    // 无效的槽位索引
+const RET_ERR_VALET_RELATION_REPEAT_SLOT_INDEX = (RET_ERR_VALET_RELATION_BASE + 2)     // 重复的槽位索引
+const RET_ERR_VALET_RELATION_HOST_NOT_MATCH = (RET_ERR_VALET_RELATION_BASE + 3)        // 主人不匹配
+const RET_ERR_VALET_RELATION_ALREADY_IS_VALET = (RET_ERR_VALET_RELATION_BASE + 4)      // 已经是跟班了
+const RET_ERR_VALET_RELATION_ALREADY_HAVE_HOST = (RET_ERR_VALET_RELATION_BASE + 5)     // 已经是有主人了
+const RET_ERR_VALET_RELATION_VALET_LEVEL_NOT_MATCH = (RET_ERR_VALET_RELATION_BASE + 6) // 用户等级不匹配
+const RET_ERR_VALET_RELATION_USER_VIP_NOT_MATCH = (RET_ERR_VALET_RELATION_BASE + 7)    // 用户VIP等级不匹配
+const RET_ERR_VALET_RELATION_NOT_USABLE_SLOT = (RET_ERR_VALET_RELATION_BASE + 8)       // 没有可用的槽位
+const RET_ERR_VALET_RELATION_CAN_NOT_RELIEVE_10000 = (RET_ERR_VALET_RELATION_BASE + 9) // 不能释放小秘书
+const RET_ERR_VALET_RELATION_NOT_USER_VALET = (RET_ERR_VALET_RELATION_BASE + 10)       // 不是用户的跟班
+const RET_ERR_VALET_RELATION_CONSUME_GOLD_FAILED = (RET_ERR_VALET_RELATION_BASE + 11)  // 金币不足
+const RET_ERR_VALET_LITTLE_LOOT_QUERY_NONE_GOODS = (RET_ERR_VALET_RELATION_BASE + 12)  // 内存中没有此物品信息
+const RET_ERR_SlOT_DROP_INFO_EMPTY = (RET_ERR_VALET_RELATION_BASE + 13)                // 槽位提前掉落物品为空
+const RET_ERR_QUERY_SlOT_DROP_INFO_FAIL = (RET_ERR_VALET_RELATION_BASE + 14)           // 服务器查询槽位掉落信息失败
+
+const RET_ERR_VALET_RANSOM_QUERY_RANSOM_INFO_FAILED = (RET_ERR_VALET_RELATION_BASE + 20)    // 跟班赎身，查询赎身信息失败
+const RET_ERR_VALET_RANSOM_USER_IN_RANSOM_COOL_TIME = (RET_ERR_VALET_RELATION_BASE + 21)    // 跟班赎身，用户在赎身CD中
+const RET_ERR_VALET_RANSOM_QUERY_USER_HOST_FAILED = (RET_ERR_VALET_RELATION_BASE + 22)      // 跟班赎身，查询用户主人失败
+const RET_ERR_VALET_RANSOM_USER_HOST_NOT_MATCH = (RET_ERR_VALET_RELATION_BASE + 23)         // 跟班赎身，用户主人信息不匹配
+const RET_ERR_VALET_RANSOM_COST_INFO_NOT_MATCH = (RET_ERR_VALET_RELATION_BASE + 24)         // 跟班赎身，消耗信息不匹配
+const RET_ERR_VALET_RANSOM_COST_COUNT_NOT_MATCH = (RET_ERR_VALET_RELATION_BASE + 25)        // 跟班赎身，消耗数量不匹配
+const RET_ERR_VALET_RANSOM_QUERY_DIAMOND_FAILED = (RET_ERR_VALET_RELATION_BASE + 26)        // 跟班赎身，查询钻石余额失败
+const RET_ERR_VALET_RANSOM_NOT_ENOUGH_DIAMOND = (RET_ERR_VALET_RELATION_BASE + 27)          // 跟班赎身，没有足够的钻石
+const RET_ERR_VALET_RANSOM_RELIEVE_RELATION_FAILED = (RET_ERR_VALET_RELATION_BASE + 28)     // 跟班赎身，解除跟班关系失败
+const RET_ERR_VALET_RANSOM_SAVE_RANSOM_INFO_FAILED = (RET_ERR_VALET_RELATION_BASE + 29)     // 跟班赎身，保存赎身信息失败
+const RET_ERR_VALET_RANSOM_CONSUME_DIAMOND_NOT_ENOUGH = (RET_ERR_VALET_RELATION_BASE + 30)  // 跟班赎身，扣除钻石余额不足
+const RET_ERR_VALET_RANSOM_CONSUME_DIAMOND_FAILED = (RET_ERR_VALET_RELATION_BASE + 31)      // 跟班赎身，扣除钻石失败
+const RET_ERR_VALET_RANSOM_USER_NO_RANSOM_COOL_TIME = (RET_ERR_VALET_RELATION_BASE + 32)    // 跟班赎身，用户不在赎身CD中
+const RET_ERR_VALET_RANSOM_SEND_TOO_MANY_IN_HOUR = (RET_ERR_VALET_RELATION_BASE + 33)       // 跟班赎身，一小时内发送申请太多
+const RET_ERR_VALET_RANSOM_USER_SEND_TOO_MANY = (RET_ERR_VALET_RELATION_BASE + 34)          // 跟班赎身，用户发送申请太多
+const RET_ERR_VALET_RANSOM_USER_HAVE_HOST = (RET_ERR_VALET_RELATION_BASE + 35)              // 跟班赎身，用户已经有主人了
+const RET_ERR_VALET_RANSOM_INCR_USER_SEND_TIMES_FAILED = (RET_ERR_VALET_RELATION_BASE + 36) // 跟班赎身，增加用户发送消息计数失败
+const RET_ERR_VALET_RANSOM_SEND_PRIVATE_MSG_FAILED = (RET_ERR_VALET_RELATION_BASE + 37)     // 跟班赎身，发送私聊消息失败
+const RET_ERR_VALET_RANSOM_USER_HOT_SEND_APPLY = (RET_ERR_VALET_RELATION_BASE + 38)         // 跟班赎身，用户未发送邀请
+const RET_ERR_VALET_RANSOM_CREATE_RELATION_FAILED = (RET_ERR_VALET_RELATION_BASE + 39)      // 跟班赎身，创建跟班关系失败
+
+//指派跟班服务错误码  RET_VALET_ASSIGN_BASE    +700 到 RET_VALET_ASSIGN_BASE + 900
+const RET_ERR_ASSIGN_VALET = (RET_VALET_GAME_BASE + 700)
+const RET_ERR_VALET_ASSIGN_INVALID_PARAM = (RET_ERR_ASSIGN_VALET + 0)          //无效的参数
+const RET_ERR_VALET_ASSIGN_VALET_ID_LDENTIFI = (RET_ERR_ASSIGN_VALET + 1)      //跟班ID无法识别
+const RET_ERR_VALET_ASSIGN_VALET_ID_NON_EXISTENT = (RET_ERR_ASSIGN_VALET + 2)  //跟班ID不存在
+const RET_ERR_VALET_ASSIGN_REDPACKET_NOT_COMPOSED = (RET_ERR_ASSIGN_VALET + 3) //红包卡没有合成,不能指派跟班
+const RET_ERR_VALET_ASSIGN_USER_COVER_ARREST = (RET_ERR_ASSIGN_VALET + 4)      //被逮捕了,无法开始
+const RET_ERR_VALET_ASSIGN_TARGET_IS_VALET = (RET_ERR_ASSIGN_VALET + 5)        //目标已是跟班，不能重复指派
+const RET_ERR_VALET_ASSIGN_CREATE_VALET_FAILED = (RET_ERR_ASSIGN_VALET + 6)    //创建跟班关系失败
+const RET_ERR_VALET_ASSIGN_CREATE_VALET_SUCCESS = (RET_ERR_ASSIGN_VALET + 7)   //包红包成功
+
+//种植服务
+const RET_ERR_FARM_SEED_PLANT = (RET_VALET_GAME_BASE + 800)
+const RET_ERR_VALET_PLANT_PARAM_ERROR = (RET_ERR_FARM_SEED_PLANT + 0)                    //参数错误
+const RET_ERR_VALET_PLANT_SEED_ID_DIFFER = (RET_ERR_FARM_SEED_PLANT + 1)                 //种子id不同
+const RET_ERR_VALET_PLANT_SEED_NOT_COMPOSED = (RET_ERR_FARM_SEED_PLANT + 2)              //种子未被合成，无法种植
+const RET_ERR_VALET_PLANT_UNKNOWN_COUNMES_TYPE = (RET_ERR_FARM_SEED_PLANT + 3)           //消耗品类型不识别
+const RET_ERR_VALET_PLANT_FAILED = (RET_ERR_FARM_SEED_PLANT + 4)                         //种植失败
+const RET_ERR_VALET_PLANT_USER_COVER_ARREST = (RET_ERR_FARM_SEED_PLANT + 5)              //你被囚禁了，无法种植
+const RET_ERR_VALET_PLANT_GOLD_COIN_ENOUG = (RET_ERR_FARM_SEED_PLANT + 6)                //金币不足
+const RET_ERR_VALET_PLANT_QUERY_GOLD_CION_FAILED = (RET_ERR_FARM_SEED_PLANT + 7)         //查询金币失败
+const RET_ERR_VALET_PLANT_SEED_SUCCESS = (RET_ERR_FARM_SEED_PLANT + 8)                   //种植成功
+const RET_ERR_VALET_PLANT_GET_NPCUSERID_FAILED = (RET_ERR_FARM_SEED_PLANT + 9)           //获取ID失败
+const RET_ERR_VALET_PLANT_CALL_SERVICE_FAILED = (RET_ERR_FARM_SEED_PLANT + 10)           //跟班关系服务调用失败
+const RET_ERR_VALET_PLANT_SEED_ID_NON_EXISTENT = (RET_ERR_FARM_SEED_PLANT + 11)          //种子ID不存在
+const RET_ERR_VALET_PLANT_SEED_SLOT_INVALID_PARAM = (RET_ERR_FARM_SEED_PLANT + 12)       //槽位参数错误
+const RET_ERR_VALET_PLANT_SEED_SLOT_CALLBACK_FAIL = (RET_ERR_FARM_SEED_PLANT + 13)       //内层提示错误，用于和外层分开  调用跟班服务创建跟班失败
+const RET_ERR_VALET_PLANT_GET_COUNMES_CONFIG_FAIL = (RET_ERR_FARM_SEED_PLANT + 14)       //获取消耗配置失败
+const RET_ERR_VALET_PLANT_SEED_ID_ERROR = (RET_ERR_FARM_SEED_PLANT + 15)                 //内层提示 种子id不同 提示
+const RET_ERR_VALET_PLANT_SEED_NOT_COMPOSED_LNNER = (RET_ERR_FARM_SEED_PLANT + 16)       //内层提示 种子未被合成,无法种植
+const RET_ERR_VALET_PLANT_GET_COUNMES_CONFIG_FAIL_LNNER = (RET_ERR_FARM_SEED_PLANT + 17) //内层提示 获取消耗配置失败
+const RET_ERR_VALET_PLANT_UNKNOWN_COUNMES_TYPE_LNNER = (RET_ERR_FARM_SEED_PLANT + 18)    //内层提示 消耗品类型不识别
+const RET_ERR_VALET_PLANT_QUERY_GOLD_CION_FAILED_LNNER = (RET_ERR_FARM_SEED_PLANT + 19)  //内层提示 获取用户金币失败
+const RET_ERR_VALET_PLANT_TIME_OUT = (RET_ERR_FARM_SEED_PLANT + 20)                      //外层错误码：种植超时
+
+// 用户礼券服务错误码定义
+const RET_ERR_USER_TICKET_BASE = (RET_VALET_GAME_BASE + 900)
+const RET_ERR_USER_TICKET_REDIS_FAILED = (RET_ERR_USER_TICKET_BASE + 0)
+const RET_ERR_USER_TICKET_MYSQL_FAILED = (RET_ERR_USER_TICKET_BASE + 1)
+const RET_ERR_USER_TICKET_NOT_ENOUGH_BALANCE = (RET_ERR_USER_TICKET_BASE + 2)
+const RET_ERR_USER_TICKET_REPEAT_TRADE_NO = (RET_ERR_USER_TICKET_BASE + 3)
+const RET_ERR_USER_TICKET_USER_IN_BLOCK = (RET_ERR_USER_TICKET_BASE + 4)
+
+const RET_ERR_TEAM_INVITE_BASE = (RET_VALET_GAME_BASE + 1000)
+const RET_ERR_INVITE_FAILED = (RET_ERR_TEAM_INVITE_BASE + 0)          //邀请组队服务：邀请好友组队失败
+const RET_ERR_TEAM_NON_EXISTENT = (RET_ERR_TEAM_INVITE_BASE + 1)      //邀请组队服务：队伍不存在
+const RET_ERR_INVITE_LIMIT = (RET_ERR_TEAM_INVITE_BASE + 2)           //邀请组队服务：用户组队探索已上限
+const RET_ERR_NO_FRIEND_RELATION = (RET_ERR_TEAM_INVITE_BASE + 3)     //邀请组队服务：非好友关系
+const RET_ERR_NOT_TEAM_LEADER = (RET_ERR_TEAM_INVITE_BASE + 4)        //邀请组队服务：非好友关系
+const RET_ERR_FAMILY_NOT_MATCH = (RET_ERR_TEAM_INVITE_BASE + 5)       //邀请组队服务：家族ID不匹配
+const RET_ERR_NOT_DATA = (RET_ERR_TEAM_INVITE_BASE + 6)               //邀请组队服务：没有找到邀请好友列表
+const RET_ERR_INVITE_FAMILY_FAIL = (RET_ERR_TEAM_INVITE_BASE + 7)     //邀请组队服务：邀请家族组队失败
+const RET_ERR_TEAM_STAGE_NOT_WANTING = (RET_ERR_TEAM_INVITE_BASE + 8) //邀请组队服务：队伍已经开始探索
+const RET_ERR_TEAM_FULL_MEMBER = (RET_ERR_TEAM_INVITE_BASE + 9)       //邀请组队服务：队伍已经满员
+
+//派派世界：
+const RET_ERR_FIRST_DROP_BASE = (RET_VALET_GAME_BASE + 1100)                 //首次产出现金：
+const RET_ERR_FIRST_DROP_NOT_READY = (RET_ERR_FIRST_DROP_BASE + 0)           //首次产出现金：服务尚未就绪
+const RET_ERR_FIRST_DROP_BASE_INFO_NOT_MATCH = (RET_ERR_FIRST_DROP_BASE + 1) //首次产出现金：信息不匹配
+const RET_ERR_FIRST_DROP_NOT_FIRST = (RET_ERR_FIRST_DROP_BASE + 2)           //首次产出现金：不上首次掉落
+const RET_ERR_FIRST_DROP_FAILED = (RET_ERR_FIRST_DROP_BASE + 3)              //首次产出现金：首次掉落失败
+const RET_ERR_NOT_DROP_RMB = (RET_ERR_FIRST_DROP_BASE + 4)                   //首次产出现金：没有配置掉落人民币
+const RET_ERR_QUERY_DROP_FAILER = (RET_ERR_FIRST_DROP_BASE + 5)              //首次产出现金：查询首次掉落失败
+const RET_ERR_NOT_NEW_PROTOCOL = (RET_ERR_FIRST_DROP_BASE + 6)               //首次产出现金：不是新版本派派
+
+//农场版本：首次掉落rpc版本
+const RET_ERR_FIRST_DROP_RMB_BASE = (RET_VALET_GAME_BASE + 1150)         //首次掉落rmb：
+const RET_ERR_QUERY_COMPOSETIME_FAIL = (RET_ERR_FIRST_DROP_RMB_BASE + 1) //首次掉落rmb： 查询用户种子合成时间失败
+const RET_ERR_COMPOSETIME_INVAID = (RET_ERR_FIRST_DROP_RMB_BASE + 2)     //首次掉落rmb： 种子合成时间不符合
+const RET_ERR_STATUS_FAIL = (RET_ERR_FIRST_DROP_RMB_BASE + 3)            //首次掉落rmb： 查询种子掉落状态失败
+const RET_ERR_NOT_FIRST_DROP = (RET_ERR_FIRST_DROP_RMB_BASE + 4)         //首次掉落rmb： 用户种子不是首次掉落
+const RET_ERR_RISK_USER_LIMIT = (RET_ERR_FIRST_DROP_RMB_BASE + 5)        //首次掉落rmb： 风险用户掉落受限
+const RET_ERR_SUB_MONEY_FAIL = (RET_ERR_FIRST_DROP_RMB_BASE + 6)         //首次掉落rmb： 扣钱失败
+const RET_ERR_CLEAR_FAIL = (RET_ERR_FIRST_DROP_RMB_BASE + 7)             //首次掉落rmb： 清理失败
+
+//宝箱掉落模块：首次掉落模块 1170
+const RET_ERR_FIRTS_DROP_HANDER_FAILED = (RET_ERR_FIRST_DROP_RMB_BASE + 20)  //首次掉落处理失败
+const RET_ERR_FIRTS_DROP_HANDER_SUCCESS = (RET_ERR_FIRST_DROP_RMB_BASE + 21) //首次掉落处理成功
+const RET_ERR_CHEST_INVALID_PARAM = (RET_ERR_FIRST_DROP_RMB_BASE + 22)       //无效的请求参数
+const RET_ERR_FIRST_DROP_SUCCESS = (RET_ERR_FIRST_DROP_RMB_BASE + 23)        //首次掉落成功
+const RET_ERR_DROP_NOTIFY_FAILED = (RET_ERR_FIRST_DROP_RMB_BASE + 24)        //首次掉落成功
+
+//用户账户限制类型查询
+const RET_ERR_USER_ACCOUNT_BLACK = (RET_VALET_GAME_BASE + 1200)            //用户账户限制类型查询服务:
+const RET_ERR_USER_ACCOUNT_BLACK_INVAID = (RET_ERR_USER_ACCOUNT_BLACK + 0) //无效的请求参数
+
+// 宝箱掉落重构 - RMB掉落模块
+const RET_ERR_VALET_AWARD_DROP_MODULE_SAVE_BASE = (RET_VALET_GAME_BASE + 1300)
+const RET_ERR_VADM_DROP_SIZE_ZERO = (RET_ERR_VALET_AWARD_DROP_MODULE_SAVE_BASE + 0) // 没有宝箱要掉落.drop_info的size是0
+const RET_ERR_VADM_KEEPER_WORKING = (RET_ERR_VALET_AWARD_DROP_MODULE_SAVE_BASE + 1) // 管家开工
+const RET_ERR_VADM_DROP_LIMIT = (RET_ERR_VALET_AWARD_DROP_MODULE_SAVE_BASE + 2)     // 禁止掉落现金
+
+// 营养液相关错误码
+const RET_NUTRIENT_BASE = (RET_VALET_GAME_BASE + 1400)
+const RET_ERR_NUTRIENT_QUERY_FAILED = (RET_NUTRIENT_BASE + 0) // 查询失败.请稍后重试(redis操作失败)
+
+//  好友相关错误码
+//  自己匿名好友数达到上限
+const RET_ERR_NORMAL_FRIENDS_LIMIT_SELF = (RET_ERR_FRIEND_BASE + 1)
+
+//  自己QQ好友数达到上限
+const RET_ERR_QQ_FRIENDS_LIMIT_SELF = (RET_ERR_FRIEND_BASE + 2)
+
+//  自己WEIXIN好友数达到上限
+const RET_ERR_WEIXIN_FRIENDS_LIMIT_SELF = (RET_ERR_FRIEND_BASE + 3)
+
+//  自己匿名好友数达到上限
+const RET_ERR_NORMAL_FRIENDS_LIMIT_PEER = (RET_ERR_FRIEND_BASE + 4)
+
+//  对方QQ好友数达到上限
+const RET_ERR_QQ_FRIENDS_LIMIT_PEER = (RET_ERR_FRIEND_BASE + 5)
+
+//  对方WEIXIN好友数达到上限
+const RET_ERR_WEIXIN_FRIENDS_LIMIT_PEER = (RET_ERR_FRIEND_BASE + 6)
+
+//  好友数超过了vip最大上限
+const RET_ERR_FRIENDS_COUNT_VIP_MAX_LIMIT = (RET_ERR_FRIEND_BASE + 7)
+
+//  反外挂图片验证失败
+const RET_ERR_IMAGE_VERIFY_CODE_INVALID = (RET_ERR_FRIEND_BASE + 8)
+
+//  派派航海打劫 好友家族求助次数达到最大上限
+const RET_ERR_SEEK_HELP_CURRENT_MAX_LIMIT = (RET_ERR_FRIEND_BASE + 9)
+
+// 直播语音相关错误码
+// const     RET_ERR_LIVE_VOICE_BASE=  0x1340000
+const ENUM_ERROR_CODE_GET_MIC_INFO_ERROR = (RET_ERR_LIVE_VOICE_BASE + 1)   // 获取麦信息失败
+const ENUM_ERROR_CODE_INVALID_MIC_INDEX = (RET_ERR_LIVE_VOICE_BASE + 2)    // 麦位置不合理
+const ENUM_ERROR_CODE_PERMISSION_DENIED = (RET_ERR_LIVE_VOICE_BASE + 3)    // 权限不够
+const ENUM_ERROR_CODE_EMPTY_MIC = (RET_ERR_LIVE_VOICE_BASE + 4)            // 麦上无人
+const ENUM_ERROR_CODE_GET_ORDER_INFO_ERROR = (RET_ERR_LIVE_VOICE_BASE + 5) // 获取麦序信息失败
+const ENUM_ERROR_CODE_JOIN_ORDER_FAILED = (RET_ERR_LIVE_VOICE_BASE + 6)    // 加入麦序失败
+const ENUM_ERROR_CODE_REPEATED_ON_MIC = (RET_ERR_LIVE_VOICE_BASE + 7)      // 已经在麦上,重复上麦
+const ENUM_ERROR_CODE_MIC_USER_NOT_MATCH = (RET_ERR_LIVE_VOICE_BASE + 8)   // 麦用户不匹配
+const ENUM_ERROR_CODE_JUMP_MIC_FREQUENTLY = (RET_ERR_LIVE_VOICE_BASE + 9)  // 跳麦太频繁
+
+// const    RET_ERR_PAI_PAI_WORLD =  0x1350000
+// 派派世界 建筑中邀请管理员
+const RET_ERR_NOT_FRIEND = (RET_ERR_PAI_PAI_WORLD + 1)                  //非好友关系
+const RET_ERR_NOT_MATCH_GARDENER_CONDITON = (RET_ERR_PAI_PAI_WORLD + 2) //不满足该建筑管理员的条件
+const RET_ERR_BE_GARDENER_REACH_MAX_COUNT = (RET_ERR_PAI_PAI_WORLD + 3) //作为管理员数量达到上限
+const RET_ERR_HAS_BEEN_GARDENER = (RET_ERR_PAI_PAI_WORLD + 4)           //已经是雇主的管理员
+const RET_ERR_SYSTEM_ERR = (RET_ERR_PAI_PAI_WORLD + 5)                  //系统操作失败
+const RET_ERR_OUTTIME = (RET_ERR_PAI_PAI_WORLD + 6)                     //邀请已经过期
+const RET_ERR_HAS_OTHER_GARDENER = (RET_ERR_PAI_PAI_WORLD + 7)          //已经有其他人为管理员
+
+// 派派世界 炼金服务
+const RET_ERR_MATERIAL_NOT_FIND = (RET_ERR_PAI_PAI_WORLD + 11)          //没有找到该材料,参数有误
+const RET_ERR_ALCHEMY_FUNC_OFF = (RET_ERR_PAI_PAI_WORLD + 12)           //关闭炼金功能,功能升级中...
+const RET_ERR_SYS_ERROR = (RET_ERR_PAI_PAI_WORLD + 13)                  //系统操作有误
+const RET_ERR_BUILDING_TYPE_NOT_MATCH = (RET_ERR_PAI_PAI_WORLD + 14)    //建筑类型不匹配
+const RET_ERR_BUILDING_NOT_FINISH = (RET_ERR_PAI_PAI_WORLD + 15)        //建筑未解锁
+const RET_ERR_COST_NOT_MATCH = (RET_ERR_PAI_PAI_WORLD + 16)             //客户端和服务器消耗不一致
+const RET_ERR_SILVER_NOT_ENOUGH = (RET_ERR_PAI_PAI_WORLD + 17)          //用户金币不够
+const RET_ERR_ALCHEMY_PRODUCE_EMPTY = (RET_ERR_PAI_PAI_WORLD + 18)      //没有炼金产物,为空
+const RET_ERR_RECV_SPAR_NOT_MATCH_SERVER = (RET_ERR_PAI_PAI_WORLD + 19) //领取物品参数有误,和服务器不一致
+const RET_ERR_MATERIAL_COUNT_INVALID = (RET_ERR_PAI_PAI_WORLD + 20)     //消耗材料数量不对
+const RET_ERR_HAS_NOT_RECV = (RET_ERR_PAI_PAI_WORLD + 21)               //产物还没有领取
+
+// 派派世界 金钱树掉落
+const RET_ERR_QUERY_TREE_POS_INFO_FAIL = (RET_ERR_PAI_PAI_WORLD + 31) //rpc查询树部位信息失败
+const RET_ERR_TREE_POS_INFO_EMPTY = (RET_ERR_PAI_PAI_WORLD + 32)      //金币掉落服务 用户部位信息为空
+const RET_ERR_FIND_GOLD_CFG_FAIL = (RET_ERR_PAI_PAI_WORLD + 33)       //金币掉落服务 获取掉落金币配置失败
+const RET_ERR_NOT_MATCH_DROP_CONFITION = (RET_ERR_PAI_PAI_WORLD + 34) //金币掉落服务 不满足掉落金币条件
+const RET_ERR_FIND_EXP_CFG_FAIL = (RET_ERR_PAI_PAI_WORLD + 35)        //经验掉落服务 获取掉落经验配置失败
+
+// 派派世界 红包掉落订单生成服务 51 - 70
+const RET_ERR_RMB_AWARD_CREATE_TRADE_NUM = (RET_ERR_PAI_PAI_WORLD + 51)         //红包掉落订单生成服务 生成订单号失败
+const RET_ERR_RMB_AWARD_NOT_MATCH_DROP_CONFITION = (RET_ERR_PAI_PAI_WORLD + 52) //红包掉落订单生成服务 不满足条件
+const RET_ERR_RMB_AWARD_SUB_REDPACK_POOL = (RET_ERR_PAI_PAI_WORLD + 53)         //红包掉落订单生成服务 扣除红包池失败
+const RET_ERR_RMB_AWARD_SYS_ERROR = (RET_ERR_PAI_PAI_WORLD + 54)                //红包掉落订单生成服务 内部错误
+
+//派派航海 用户行动队列查询服务71 - 80
+const RET_ERR_QUERY_USER_ACTION_LIST_FAIL = (RET_ERR_PAI_PAI_WORLD + 71) //用户行动队列查询服务 获取行动队列失败
+const RET_ERR_QUERY_USER_ACTION_LIST_NULL = (RET_ERR_PAI_PAI_WORLD + 72) //用户行动队列查询服务 获取行动队列信息为空
+
+//派派航海 任务倒计时通知服务81 - 90
+const RET_ERR_SEA_TASK_NOTIFY_STATUS_ERROR = (RET_ERR_PAI_PAI_WORLD + 81) //任务倒计时通知服务   用户当前任务状态错误
+
+//派派航海 航线保存服务91 - 110
+const RET_ERR_ROUTE_SAVE_FAIL = (RET_ERR_PAI_PAI_WORLD + 91)            //派派航海:航线保存服务 保存航线失败  20250624 + 91 = 20250715
+const RET_ERR_ROUTE_MAP_INSTANCE_ID_DIFF = (RET_ERR_PAI_PAI_WORLD + 92) //派派航海:航线保存服务 地图实例ID不一致  20250716
+const RET_ERR_ROUTE_PARAM_INVALID = (RET_ERR_PAI_PAI_WORLD + 93)        //派派航海:航线保存服务 请求参数无效   20250717
+const RET_ERR_ROUTE_NOT_HAVE_ROUTE = (RET_ERR_PAI_PAI_WORLD + 94)       //派派航海:航线保存服务 当前资源没有航线  20250718
+const RET_ERR_ROUTE_OP_ID_ERROR = (RET_ERR_PAI_PAI_WORLD + 95)          //派派航海:航线保存服务 操作ID错误  //20250719
+const RET_ERR_ROUTE_REMOVE_FAILED = (RET_ERR_PAI_PAI_WORLD + 96)        //派派航海:航线保存服务 移除航线资源失败 20250720
+const RET_ERR_ROUTE_GET_ROUTE_FAILED = (RET_ERR_PAI_PAI_WORLD + 97)     //派派航海:航线保存服务 获取航线资源失败 20250721
+const RET_ERR_ROUTE_TOKEN_ERROR = (RET_ERR_PAI_PAI_WORLD + 98)          //派派航海:航线保存服务 token错误  20250722
+const RET_ERR_ROUTE_UPDATE_FAIL = (RET_ERR_PAI_PAI_WORLD + 99)          //派派航海:航线保存服务 更新航线失败  20250723
+
+//派派世界 家族和用户位置分配 111 - 130
+const RET_ERR_HAS_ALLOC = (RET_ERR_PAI_PAI_WORLD + 111) //家族分配 已经分配过
+
+//派派航海  创建出海 131-140
+const RET_ERR_CREATE_BUSINESS_TASK_FAILED = (RET_ERR_PAI_PAI_WORLD + 131) //创建出海 创建船出海任务失败
+const RET_ERR_CLEAR_BUSINESS_TASK_FAILED = (RET_ERR_PAI_PAI_WORLD + 132)  //清理船状态 清理船状态失败
+const RET_ERR_CAN_NOT_FOUND_BACK_SERVER = (RET_ERR_PAI_PAI_WORLD + 133)   //找不到后端服务
+const RET_ERR_CALL_SERVER_TIME_OUT = (RET_ERR_PAI_PAI_WORLD + 134)        //请求后端服务超时
+
+//派派世界 战船加速服务 141 - 160
+const RET_ERR_SHIP_SPEED_SPEED_FAILED = (RET_ERR_PAI_PAI_WORLD + 141)            //加速失败
+const RET_ERR_SHIP_SPEED_NOT_USE_GOLD = (RET_ERR_PAI_PAI_WORLD + 142)            //无法使用金币加速航线
+const RET_ERR_SHIP_SPEED_ITEM_COUNT_ERROR = (RET_ERR_PAI_PAI_WORLD + 143)        //航线加速道具数量错误
+const RET_ERR_SHIP_SPEED_ITEM_UNABLE_SPEED_ROUTE = (RET_ERR_PAI_PAI_WORLD + 144) //道具无法加速航线
+const RET_ERR_SHIP_SPEED_REQUEST_TYPE_FAILED = (RET_ERR_PAI_PAI_WORLD + 145)     //请求加速类型错误
+const RET_ERR_SHIP_SPEED_NOT_AllOCATE_FAMILY = (RET_ERR_PAI_PAI_WORLD + 146)     //尚未分配家族
+const RET_ERR_SHIP_SPEED_NOT_FIND_ROUTE = (RET_ERR_PAI_PAI_WORLD + 147)          //没有找到航线
+const RET_ERR_SHIP_SPEED_ROUTE_STATUS_ERROR = (RET_ERR_PAI_PAI_WORLD + 148)      //航线状态错误
+const RET_ERR_SHIP_SPEED_QUERY_ITEM_FAILED = (RET_ERR_PAI_PAI_WORLD + 149)       //查询加速道具失败
+const RET_ERR_SHIP_SPEED_NOT_SPEED_ITEM = (RET_ERR_PAI_PAI_WORLD + 150)          //您没有加速道具,不可加速
+const RET_ERR_SHIP_SPEED_ROUTE_COPPUTE_FAILED = (RET_ERR_PAI_PAI_WORLD + 151)    //航线加速计算失败
+const RET_ERR_SHIP_SPEED_DIAMOND_QUERY = (RET_ERR_PAI_PAI_WORLD + 152)           //查询用户钻石失败
+const RET_ERR_SHIP_SPEED_DIAMOND_ENOUGH = (RET_ERR_PAI_PAI_WORLD + 153)          //钻石不足
+const RET_ERR_SHIP_SPEED_PARAM_INVALID = (RET_ERR_PAI_PAI_WORLD + 154)           //无效参数
+const RET_ERR_SHIP_SPEED_DIAMOND_NOT_MATCH = (RET_ERR_PAI_PAI_WORLD + 155)       //服务器与客户端钻石数量不匹配
+const RET_ERR_SHIP_SPEED_LEFT_TIME_LITTLE = (RET_ERR_PAI_PAI_WORLD + 156)        //剩余时间太短.不让加速
+const RET_ERR_SHIP_SPEED_ITEM_NOT_MATCH = (RET_ERR_PAI_PAI_WORLD + 157)          //加速物品不匹配.不让加速
+const RET_ERR_SHIP_SPEED_DIAMOND_DISABLED = (RET_ERR_PAI_PAI_WORLD + 158)        //已禁用钻石加速.请使用加速道具加速
+
+// RET_ERR_PPW_TEAM_MEMBER_RECOMMENDATION_BASE=  0x30001000  ~ 0x30001100 派派世界组队，队员推荐服务使用
+//************************************************************************************
+const RET_ERR_PPW_TER_SGATE_NOT_FOUND = (RET_ERR_PPW_TEAM_MEMBER_RECOMMENDATION_BASE + 1) //关卡未找到
+
+//************************************************************************************
+
+//**********  均富卡错误定义 ****************
+const RET_ERR_RMR_USER_CANNOT_USE_RICHMAN = (RET_ERR_RICHMAN_RECOMMENDATION_BASE + 1) //用户不能使用均富卡
+const RET_ERR_RMR_NO_MATCHING_USER = (RET_ERR_RICHMAN_RECOMMENDATION_BASE + 2)        //没有找到匹配的用户
+const RET_ERR_RMR_INTERNAL_ERROR = (RET_ERR_RICHMAN_RECOMMENDATION_BASE + 3)          //内部错误
+
+//**********  派派海洋世界仇敌列表错误定义 ****************
+const RET_ERR_PPSW_ENEMY_CACHE_ILLEGAL_USER_ID = (RET_ERR_PPSW_ENEMY_CACHE_BASE + 1)  //非法用户ID
+const RET_ERR_PPSW_ENEMY_CACHE_GET_USER_CLUSTER = (RET_ERR_PPSW_ENEMY_CACHE_BASE + 2) //取用户所在集群错误
+const RET_ERR_PPSW_ENEMY_CACHE_GET_USER_MAP = (RET_ERR_PPSW_ENEMY_CACHE_BASE + 3)     //取用户所在地图错误
+
+//**********  派派海洋世界地图广播错误定义 ****************
+const RET_ERR_PPSW_MAP_BROADCAST_INSTANCE_NOT_READY = (RET_ERR_PPSW_MAP_BROADCAST + 1)      //实例未准备就绪。同步时反回此错误表示，实例还在初始化中。
+const RET_ERR_PPSW_MAP_BROADCAST_INSTANCE_NOT_EXIST = (RET_ERR_PPSW_MAP_BROADCAST + 2)      //实例不存在
+const RET_ERR_PPSW_MAP_BROADCAST_INVALID_PARAMETER = (RET_ERR_PPSW_MAP_BROADCAST + 3)       //非法参数
+const RET_ERR_PPSW_MAP_BROADCAST_INSTANCE_NOT_AVAILABLE = (RET_ERR_PPSW_MAP_BROADCAST + 4)  //实例不可用
+const RET_ERR_PPSW_MAP_BROADCAST_CONNECTION_NOT_REGISTER = (RET_ERR_PPSW_MAP_BROADCAST + 5) //连接未注册
+const RET_ERR_PPSW_MAP_BROADCAST_VIEWER_NOT_EXIST = (RET_ERR_PPSW_MAP_BROADCAST + 6)        //观察者不存在
+const RET_ERR_PPSW_MAP_BROADCAST_VIEWPORT_NOT_EXIST = (RET_ERR_PPSW_MAP_BROADCAST + 7)      //视口不存在
+const RET_ERR_PPSW_MAP_BROADCAST_OPERATION_EXPIRED = (RET_ERR_PPSW_MAP_BROADCAST + 8)       //操作是过期的
+const RET_ERR_PPSW_MAP_BROADCAST_RESOURCE_NOT_EXIST = (RET_ERR_PPSW_MAP_BROADCAST + 9)      //资源不存在
+
+//**********  派派海洋世界用户地图信息误定义 ****************
+const RET_ERR_PPSW_UMI_QUERY_NOT_EXIST = (RET_ERR_PPSW_USER_MAP_INFO_QUERY + 1) //不在地图上
+
+//**********  派派海洋世界盟运相关错误定义 ****************
+const RET_ERR_PPSW_USER_LEAGUE_TRADE_ATTACK_PORT_CLOSE = (RET_ERR_PPSW_USER_LEAGUE_TRADE + 1) //盟运活动攻击方传送门尚未开启
+
+/********************** 转盘相关错误码定义 *********************/
+//const RET_ERR_LUCK_CARD_BASE                =  0x30001700
+const RET_ERR_LUCK_CARD_SAILOR_FULL = (RET_ERR_LUCK_CARD_BASE + 1) // 海员之家已满
+
+/********************** 派派航海阻拦打怪服务 *******************/
+// const RET_ERR_PPSW_OBSTRUCT_ATTACK_MONSTER_BASE 0x30001800
+const RET_ERR_PPSW_OBSTRUCT_ATTACK_MONSTER_SHIP_COUNT_LIMIT = (RET_ERR_PPSW_OBSTRUCT_ATTACK_MONSTER_BASE + 1)            // 出船数量限制
+const RET_ERR_PPSW_OBSTRUCT_ATTACK_MONSTER_NO_SELF_BELONG = (RET_ERR_PPSW_OBSTRUCT_ATTACK_MONSTER_BASE + 2)              // 未找到用户岛屿信息
+const RET_ERR_PPSW_OBSTRUCT_ATTACK_MONSTER_GET_SELF_BELONG_FAILED = (RET_ERR_PPSW_OBSTRUCT_ATTACK_MONSTER_BASE + 3)      // 获取用户岛屿信息失败
+const RET_ERR_PPSW_OBSTRUCT_ATTACK_MONSTER_SET_FOLLOWER_FAILED = (RET_ERR_PPSW_OBSTRUCT_ATTACK_MONSTER_BASE + 4)         // 设置追击信息失败
+const RET_ERR_PPSW_OBSTRUCT_ATTACK_MONSTER_NO_TARGET_INFO = (RET_ERR_PPSW_OBSTRUCT_ATTACK_MONSTER_BASE + 5)              // 未找到目标信息
+const RET_ERR_PPSW_OBSTRUCT_ATTACK_MONSTER_GET_TARGET_INFO_FAILED = (RET_ERR_PPSW_OBSTRUCT_ATTACK_MONSTER_BASE + 6)      // 查询目标信息失败
+const RET_ERR_PPSW_OBSTRUCT_ATTACK_MONSTER_NO_SELECT_SHIP_INFO = (RET_ERR_PPSW_OBSTRUCT_ATTACK_MONSTER_BASE + 7)         // 未找到选船信息
+const RET_ERR_PPSW_OBSTRUCT_ATTACK_MONSTER_GET_SELECT_SHIP_INFO_FAILED = (RET_ERR_PPSW_OBSTRUCT_ATTACK_MONSTER_BASE + 8) // 获取选船信息失败
+const RET_ERR_PPSW_OBSTRUCT_ATTACK_MONSTER_UPDATE_SHIP_SPEED_FAILED = (RET_ERR_PPSW_OBSTRUCT_ATTACK_MONSTER_BASE + 9)    // 更新船速度失败
+const RET_ERR_PPSW_OBSTRUCT_ATTACK_MONSTER_INVALID_SHIP_SPEED = (RET_ERR_PPSW_OBSTRUCT_ATTACK_MONSTER_BASE + 10)         // 无效的船速度
+const RET_ERR_PPSW_OBSTRUCT_ATTACK_MONSTER_GET_TARGET_ROUTE_FAILED = (RET_ERR_PPSW_OBSTRUCT_ATTACK_MONSTER_BASE + 11)    // 查询目标航线失败
+const RET_ERR_PPSW_OBSTRUCT_ATTACK_MONSTER_CALC_CHASE_ROUTE_FAILED = (RET_ERR_PPSW_OBSTRUCT_ATTACK_MONSTER_BASE + 12)    // 计算追击航线失败
+const RET_ERR_PPSW_OBSTRUCT_ATTACK_MONSTER_CALC_ROUTE_FAILED = (RET_ERR_PPSW_OBSTRUCT_ATTACK_MONSTER_BASE + 13)          // 计算航线失败
+const RET_ERR_PPSW_OBSTRUCT_ATTACK_MONSTER_INVALID_TARGET_STATE = (RET_ERR_PPSW_OBSTRUCT_ATTACK_MONSTER_BASE + 14)       // 目标状态无效
+const RET_ERR_PPSW_OBSTRUCT_ATTACK_MONSTER_SET_RESOURCE_FAILED = (RET_ERR_PPSW_OBSTRUCT_ATTACK_MONSTER_BASE + 15)        // 设置资源信息失败
+const RET_ERR_PPSW_OBSTRUCT_ATTACK_MONSTER_SET_SHIP_STATE_FAILED = (RET_ERR_PPSW_OBSTRUCT_ATTACK_MONSTER_BASE + 16)      // 设置状态信息失败
+const RET_ERR_PPSW_OBSTRUCT_ATTACK_MONSTER_ADD_TASK_FAILED = (RET_ERR_PPSW_OBSTRUCT_ATTACK_MONSTER_BASE + 17)            // 添加任务失败
+const RET_ERR_PPSW_OBSTRUCT_ATTACK_MONSTER_SET_TARGET_FAILED = (RET_ERR_PPSW_OBSTRUCT_ATTACK_MONSTER_BASE + 18)          // 设置目标信息失败
+const RET_ERR_PPSW_OBSTRUCT_ATTACK_MONSTER_SET_SAIL_SUCCESS_FAILED = (RET_ERR_PPSW_OBSTRUCT_ATTACK_MONSTER_BASE + 19)    // 设置成功标记失败
+
+/********************** 派派航海阻拦打怪服务 *******************/
+// const RET_ERR_PPSW_VISIT_BASE 0x30001900
+const RET_ERR_PPSW_ADD_CURRENT_VISIT_FAILED = (RET_ERR_PPSW_VISIT_BASE + 1)             // 访问家园失败
+const RET_ERR_PPSW_GET_CURRENT_VISIT_FAILED = (RET_ERR_PPSW_VISIT_BASE + 2)             // 获取当前访客数据失败
+const RET_ERR_PPSW_GET_HISTORY_VISIT_FAILED = (RET_ERR_PPSW_VISIT_BASE + 3)             // 获取历史访客数据失败
+const RET_ERR_PPSW_FRIEND_LAND_LIKE_FAILED = (RET_ERR_PPSW_VISIT_BASE + 4)              // 好友家园点赞失败
+const RET_ERR_PPSW_PUBLISH_LEAVE_MSG_FAILED = (RET_ERR_PPSW_VISIT_BASE + 5)             // 好友家园发布留言失败
+const RET_ERR_PPSW_GET_LEAVE_MSG_LIST_FAILED = (RET_ERR_PPSW_VISIT_BASE + 6)            // 好友家园拉取留言列表失败
+const RET_ERR_PPSW_GET_LIKE_AWARD_LIST_FAILED = (RET_ERR_PPSW_VISIT_BASE + 7)           // 好友家园获取点赞奖励列表失败
+const RET_ERR_PPSW_RECEIVE_LIKE_AWARD_FAILED = (RET_ERR_PPSW_VISIT_BASE + 8)            // 好友家园领取点赞奖励失败
+const RET_ERR_PPSW_DEL_LEAVE_MSG_FAILED = (RET_ERR_PPSW_VISIT_BASE + 9)                 // 好友家园删除留言失败
+const RET_ERR_PPSW_SET_LEAVE_MSG_READ_FAILED = (RET_ERR_PPSW_VISIT_BASE + 10)           // 好友家园设置留言已读失败
+const RET_ERR_PPSW_FRIEND_LAND_ALREADY_LIKE_FAILED = (RET_ERR_PPSW_VISIT_BASE + 11)     // 好友家园已经点过赞
+const RET_ERR_PPSW_PUBLISH_LEAVE_MSG_TOO_LONG_FAILED = (RET_ERR_PPSW_VISIT_BASE + 12)   // 好友家园留言过长
+const RET_ERR_PPSW_ALREADY_RECEIVE_LIKE_AWARD_FAILED = (RET_ERR_PPSW_VISIT_BASE + 13)   // 好友家园点赞奖励已经领取
+const RET_ERR_PPSW_RECEIVE_LIKE_AWARD_UNUSUAL_FAILED = (RET_ERR_PPSW_VISIT_BASE + 14)   // 好友家园点赞领奖异常
+const RET_ERR_PPSW_RECEIVE_AWARD_NO_ENOUGH_LIKE_FAILED = (RET_ERR_PPSW_VISIT_BASE + 15) // 好友家园点赞领奖赞数不足
+const RET_ERR_PPSW_PUBLISH_LEAVE_MSG_TOO_QUICK_FAILED = (RET_ERR_PPSW_VISIT_BASE + 16)  // 好友家园留言过快
+
+/********************** 派派航海堡垒服务 *******************/
+// 0x30002000 ~ 0x300020FF 派派航海堡垒服务 - 客户端使用
+// const RET_ERR_PPSW_FORTRESS_BASE     =  0x30002000
+const RET_ERR_PPSW_FORTRESS_ARGS_IS_INVALID = (RET_ERR_PPSW_FORTRESS_BASE + 1)                      // 参数错误
+const RET_ERR_PPSW_FORTRESS_UNKNOWN_SHIP_SAIL_TYPE = (RET_ERR_PPSW_FORTRESS_BASE + 2)               // 未知出船业务类型
+const RET_ERR_PPSW_FORTRESS_NOT_FOUND_USERBELONG_INFO = (RET_ERR_PPSW_FORTRESS_BASE + 3)            // 未找到用户所属信息
+const RET_ERR_PPSW_FORTRESS_GET_USER_BELONG_INFO_FAILED = (RET_ERR_PPSW_FORTRESS_BASE + 4)          // 获取用户属性信息失败
+const RET_ERR_PPSW_FORTRESS_USERBELONG_INFO_NOT_RIGHT = (RET_ERR_PPSW_FORTRESS_BASE + 5)            // 用户属于家族信息不正确
+const RET_ERR_PPSW_FORTRESS_NOT_FOUND_LEAGUE_INDEX = (RET_ERR_PPSW_FORTRESS_BASE + 6)               // 未找到联盟索引
+const RET_ERR_PPSW_FORTRESS_DEFENSE_GET_LEADUE_INDEX_FAILED = (RET_ERR_PPSW_FORTRESS_BASE + 7)      // 获取联盟索引失败
+const RET_ERR_PPSW_FORTRESS_GET_BEGIN_POS_FAILED = (RET_ERR_PPSW_FORTRESS_BASE + 8)                 // 获取位置信息失败
+const RET_ERR_PPSW_FORTRESS_CALC_SEA_ROUTE_INFO_FAILED = (RET_ERR_PPSW_FORTRESS_BASE + 9)           // 计算航线失败
+const RET_ERR_PPSW_FORTRESS_SAVE_SEA_ROUTE_FAILED = (RET_ERR_PPSW_FORTRESS_BASE + 10)               // 保存航线失败
+const RET_ERR_PPSW_FORTRESS_SEND_SEA_ROUTE_CHG_KAFKA_FAILED = (RET_ERR_PPSW_FORTRESS_BASE + 11)     // 下发航线变化kafka失败
+const RET_ERR_PPSW_FORTRESS_SAVE_WAR_SHIP_STATUS = (RET_ERR_PPSW_FORTRESS_BASE + 12)                // 保存行动队列失败
+const RET_ERR_PPSW_FORTRESS_PUT_SHIP_STATUS_MUST_ARRIVE_FAILED = (RET_ERR_PPSW_FORTRESS_BASE + 13)  // 推行动队列必达包失败
+const RET_ERR_PPSW_FORTRESS_ADD_SHIP_TO_MAP = (RET_ERR_PPSW_FORTRESS_BASE + 14)                     // 设置资源信息失败
+const RET_ERR_PPSW_FORTRESS_SET_TASK_EXPIRE_FAILED = (RET_ERR_PPSW_FORTRESS_BASE + 15)              // 设置任务倒计时失败
+const RET_ERR_PPSW_FORTRESS_SET_ACTIVETY_RETURN_SHIP_KEY_FAILED = (RET_ERR_PPSW_FORTRESS_BASE + 16) // 保存相关信息失败
+const RET_ERR_PPSW_FORTRESS_SAVE_SAIL_SUCCESS_MARK_FAILED = (RET_ERR_PPSW_FORTRESS_BASE + 17)       // 保存出航成功标记失败
+const RET_ERR_PPSW_FORTRESS_SAVE_CACHE_INFO_FAILED = (RET_ERR_PPSW_FORTRESS_BASE + 18)              // 保存缓存信息失败
+const RET_ERR_PPSW_FORTRESS_WRONG_DEFEND_TYPE = (RET_ERR_PPSW_FORTRESS_BASE + 19)                   // 不支持业务
+const RET_ERR_PPSW_FORTRESS_GET_SHIP_INFO_FAILED = (RET_ERR_PPSW_FORTRESS_BASE + 20)                // 获取船只属性失败
+//驻守撤回 RET_ERR_PPSW_FORTRESS_BASE + 20
+const RET_ERR_PPSW_FORTRESS_NOT_FOUND_CACHE_INFO = (RET_ERR_PPSW_FORTRESS_BASE + 21)                 // 未找到缓存信息
+const RET_ERR_PPSW_FORTRESS_GET_CACHE_INFO_FAILED = (RET_ERR_PPSW_FORTRESS_BASE + 22)                // 获取缓存信息失败
+const RET_ERR_PPSW_FORTRESS_UN_DEFENDING_STATUS = (RET_ERR_PPSW_FORTRESS_BASE + 23)                  // 非驻防状态不能撤回
+const RET_ERR_PPSW_FORTRESS_GET_SPEED_FAILED = (RET_ERR_PPSW_FORTRESS_BASE + 24)                     // 获取船属性信息失败
+const RET_ERR_PPSW_FORTRESS_ACTIVE_GET_LEAGUE_INDEX = (RET_ERR_PPSW_FORTRESS_BASE + 25)              // 未找到联盟索引
+const RET_ERR_PPSW_FORTRESS_ACTIVE_GET_LEAGUE_INDEX_FAILED = (RET_ERR_PPSW_FORTRESS_BASE + 26)       // 获取联盟索引失败
+const RET_ERR_PPSW_FORTRESS_ACTIVE_NOT_FOUND_USER_BELONG_INFO = (RET_ERR_PPSW_FORTRESS_BASE + 27)    // 未找到用户所属信息
+const RET_ERR_PPSW_FORTRESS_ACTIVE_GET_USER_BELONG_INFO_FAILED = (RET_ERR_PPSW_FORTRESS_BASE + 28)   // 获取用户所属信息失败
+const RET_ERR_PPSW_FORTRESS_ACTIVE_SUB_SHIP_FORM_FORRRESS_FAILED = (RET_ERR_PPSW_FORTRESS_BASE + 36) // 扣除堡垒失败
+const RET_ERR_PPSW_FORTRESS_ACTIVE_UPDATA_DEFENSE_STATUS_FAILED = (RET_ERR_PPSW_FORTRESS_BASE + 37)  // 更新驻守状态失败
+const RET_ERR_PPSW_FORTRESS_SERVER_IS_IN_BUSY = (RET_ERR_PPSW_FORTRESS_BASE + 38)                    // 服务器忙
+const RET_ERR_PPSW_FORTRESS_NO_BATTLE_LOGIC = (RET_ERR_PPSW_FORTRESS_BASE + 50)                      // 搬砖同伙联盟 或相同联盟成员不战斗
+const RET_ERR_PPSW_FORTRESS_BATTLE_DISTANCE_TOO_FAR = (RET_ERR_PPSW_FORTRESS_BASE + 51)              // 距离过远不战斗
+
+/********************** 派派航海争盟主驻守服务 *******************/
+// 0x30002100 ~ 0x300021FF 派派航海争盟主驻守服务 - 客户端使用
+// const RET_ERR_PPSW_LEADER_DEFNESE_BASE     =  0x30002100
+const RET_ERR_PPSW_LEADER_DEFENSE_ARGS_IS_INVALID = (RET_ERR_PPSW_LEADER_DEFNESE_BASE + 1)                // 参数错误
+const RET_ERR_PPSW_LEADER_DEFENSE_GET_SPEED_INFO_FAILED = (RET_ERR_PPSW_LEADER_DEFNESE_BASE + 2)          //获取速度信息失败
+const RET_ERR_PPSW_LEADER_DEFENSE_NOT_FOUND_USERBELONG_INFO = (RET_ERR_PPSW_LEADER_DEFNESE_BASE + 3)      //未找到用户所属信息
+const RET_ERR_PPSW_LEADER_DEFNESE_GET_BGLONG_INFO_FAILED = (RET_ERR_PPSW_LEADER_DEFNESE_BASE + 4)         //获取用户属性信息失败
+const RET_ERR_PPSW_LEADER_DEFNESE_USERBELONG_INFO_NOT_RIGHT = (RET_ERR_PPSW_LEADER_DEFNESE_BASE + 5)      // 用户属于家族信息不正确
+const RET_ERR_PPSW_LEADER_DEFENSE_UN_SLEF_LEAGUE_NOT_DEFENSE = (RET_ERR_PPSW_LEADER_DEFNESE_BASE + 6)     // 非本联盟不能驻防
+const RET_ERR_PPSW_LEADER_DEFNESE_GET_BEGIN_POS_FAILED = (RET_ERR_PPSW_LEADER_DEFNESE_BASE + 7)           // 获取出发点失败
+const RET_ERR_PPSW_LEADER_DEFENSE_CALC_SEA_ROUTE_FAILD = (RET_ERR_PPSW_LEADER_DEFNESE_BASE + 10)          // 计算航线失败
+const RET_ERR_PPSW_LEADER_DEFENSE_SAVE_CACHE_INFO_FAILED = (RET_ERR_PPSW_LEADER_DEFNESE_BASE + 11)        // 保存相关信息失败
+const RET_ERR_PPSW_LEADER_DEFENSE_SAVE_SEA_ROUTE_FAILED = (RET_ERR_PPSW_LEADER_DEFNESE_BASE + 12)         // 保存航线失败
+const RET_ERR_PPSW_LEADER_DEFENSE_SAVE_WAR_SHIP_STATUS_FAILED = (RET_ERR_PPSW_LEADER_DEFNESE_BASE + 13)   //保存行动队列失败
+const RET_ERR_PPSW_LEADER_DEFENSE_SET_TASK_EXPIRE_FAILED = (RET_ERR_PPSW_LEADER_DEFNESE_BASE + 14)        // 设置任务倒计时失败
+const RET_ERR_PPSW_LEADER_DEFENSE_SAVE_SAIL_SUCCESS_MARK_FAILED = (RET_ERR_PPSW_LEADER_DEFNESE_BASE + 15) // 保存出航成功标记失败
+const RET_ERR_PPSW_LEADER_DEFENSE_SAVE_ACTIVETY_KEY_FAILED = (RET_ERR_PPSW_LEADER_DEFNESE_BASE + 16)      // 保存活动结束返航key失败
+//       =  0x30002130 - 2150  返航用
+const RET_ERR_PPSW_LEADER_DEFENSE_ACTIVE_RETURN = (RET_ERR_PPSW_LEADER_DEFNESE_BASE + 30)                             // 中间预留字段
+const RET_ERR_PPSW_LEADER_DEFENSE_ACTIVE_RETURN_NOT_FOUND_CACHE_INFO = (RET_ERR_PPSW_LEADER_DEFNESE_BASE + 31)        // 未找到缓存信息
+const RET_ERR_PPSW_LEADER_DEFNESE_ACTIVE_RETURN_GET_BGLONG_INFO_FAILED = (RET_ERR_PPSW_LEADER_DEFNESE_BASE + 32)      // 获取用户属性信息失败
+const RET_ERR_PPSW_LEADER_DEFENSE_ACTIVE_RETURN_GET_SPEED_INFO_FAILED = (RET_ERR_PPSW_LEADER_DEFNESE_BASE + 33)       // 获取速度信息失败
+const RET_ERR_PPSW_LEADER_DEFENSE_ACTIVE_RETURN_CALC_SEA_ROUTE_FAILD = (RET_ERR_PPSW_LEADER_DEFNESE_BASE + 34)        // 计算航线失败
+const RET_ERR_PPSW_LEADER_DEFENSE_ACTIVE_RETURN_SAVE_SEA_ROUTE_FAILED = (RET_ERR_PPSW_LEADER_DEFNESE_BASE + 35)       // 保存航线失败
+const RET_ERR_PPSW_LEADER_DEFENSE_ACTIVE_RETURN_SAVE_WAR_SHIP_STATUS_FAILED = (RET_ERR_PPSW_LEADER_DEFNESE_BASE + 36) //保存行动队列失败
+const RET_ERR_PPSW_LEADER_DEFENSE_ACTIVE_RETURN_SET_TASK_EXPIRE_FAILED = (RET_ERR_PPSW_LEADER_DEFNESE_BASE + 37)      // 设置任务倒计时失败
+const RET_ERR_PPSW_LEADER_DEFENSE_ACTIVE_RETURN_SAVE_CACHE_INFO_FAILED = (RET_ERR_PPSW_LEADER_DEFNESE_BASE + 38)      // 更新驻守状态失败
+
+/********************** 派派航海传送基地服务 *******************/
+// const RET_ERR_PPSW_LEAGUE_WAR_TRANSPORT_BASE
+//出航
+const RET_ERR_PPSW_LEAGUE_WAR_TRANSPORT_STATUS_EXCEPTION = (RET_ERR_PPSW_LEAGUE_WAR_TRANSPORT_BASE + 1)             // 传送基地异常
+const RET_ERR_PPSW_LEAGUE_WAR_TRANSPORT_GET_USER_BELONG_INFO_FAILED = (RET_ERR_PPSW_LEAGUE_WAR_TRANSPORT_BASE + 2)  // 获取用户所属信息失败
+const RET_ERR_PPSW_LEAGUE_WAR_TRANSPORT_GET_BEGIN_AND_END_POS_FAILED = (RET_ERR_PPSW_LEAGUE_WAR_TRANSPORT_BASE + 3) // 获取航线起始点失败
+const RET_ERR_PPSW_LEAGUE_WAR_TRANSPORT_CALC_ROUTE_FAILED = (RET_ERR_PPSW_LEAGUE_WAR_TRANSPORT_BASE + 4)            // 计算航线失败
+const RET_ERR_PPSW_LEAGUE_WAR_TRANSPORT_SAIL_FAILED = (RET_ERR_PPSW_LEAGUE_WAR_TRANSPORT_BASE + 5)                  // 出航失败
+//撤回
+const RET_ERR_PPSW_LEAGUE_WAR_TRANSPORT_ACTIVE_RETURN_FAILED = (RET_ERR_PPSW_LEAGUE_WAR_TRANSPORT_BASE + 6) // 撤回失败
+
+/********************** 派派航海打打小怪服务 *******************/
+// const RET_ERR_PPSW_LEAGUE_WAR_ATTACK_MONSTER
+//出航
+const RET_ERR_PPSW_LEAGUE_WAR_ATTACK_MONSTER_GET_POS_EXCEPTION = (RET_ERR_PPSW_LEAGUE_WAR_ATTACK_MONSTER + 1)            // 获取位置失败
+const RET_ERR_PPSW_LEAGUE_WAR_ATTACK_MONSTER_CALC_ROUTE_FAILED = (RET_ERR_PPSW_LEAGUE_WAR_ATTACK_MONSTER + 2)            // 航线计算失败
+const RET_ERR_PPSW_LEAGUE_WAR_ATTACK_MONSTER_SERVER_EXCEPTION_SAIL_FAILED = (RET_ERR_PPSW_LEAGUE_WAR_ATTACK_MONSTER + 3) // 服务异常，出航失败
+//返航
+const RET_ERR_PPSW_LEAGUE_WAR_ATTACK_MONSTER_SERVER_EXCEPTION_GO_BACK_FAILED = (RET_ERR_PPSW_LEAGUE_WAR_ATTACK_MONSTER + 4) // 服务异常，撤回失败
+
+/********************** 派派航海换家服务 *******************/
+// 0x30002400 ~ 0x300024FF 换家服务 - 客户端使用
+const RET_ERR_PPSW_SWITCH_USER_POS_NO_FAMILY_PRIVILEGE = (RET_ERR_PPSW_SWITCH_USER_POS_BASE + 1)    // 没有家族权限
+const RET_ERR_PPSW_SWITCH_USER_POS_NOT_SAME_FAMILY = (RET_ERR_PPSW_SWITCH_USER_POS_BASE + 2)        // 不是同一个家族
+const RET_ERR_PPSW_SWITCH_USER_POS_SAME_POS = (RET_ERR_PPSW_SWITCH_USER_POS_BASE + 3)               // 同一个位置不能换家
+const RET_ERR_PPSW_SWITCH_USER_POS_NO_OPERATION_ID = (RET_ERR_PPSW_SWITCH_USER_POS_BASE + 4)        // 没有唯一id
+const RET_ERR_PPSW_SWITCH_USER_POS_NOT_FOUND_OPERATION_ID = (RET_ERR_PPSW_SWITCH_USER_POS_BASE + 5) // 找不到唯一id
+const RET_ERR_PPSW_SWITCH_USER_POS_NOT_WAIT_REPLY = (RET_ERR_PPSW_SWITCH_USER_POS_BASE + 6)         // 等待应答中
+const RET_ERR_PPSW_SWITCH_USER_POS_MUST_FORCED = (RET_ERR_PPSW_SWITCH_USER_POS_BASE + 7)            // 必须强制
+const RET_ERR_PPSW_SWITCH_USER_POS_ALREADY_REPLY = (RET_ERR_PPSW_SWITCH_USER_POS_BASE + 8)          // 已经回复过了
+const RET_ERR_PPSW_SWITCH_USER_POS_OPERATION_ID_WRONG = (RET_ERR_PPSW_SWITCH_USER_POS_BASE + 9)     // 唯一id不匹配
+const RET_ERR_PPSW_SWITCH_USER_POS_INDEX_NOT_MATCH_USER = (RET_ERR_PPSW_SWITCH_USER_POS_BASE + 10)  // 唯一id不匹配
+
+/********************** 地图分配相关 *******************/
+//0x30002500 ~ 0x300025FF 地图分配相关
+const RET_ERR_PPSW_MAP_CLEAN_FAMILY_USER_NOT_EMPTY = (RET_ERR_PPSW_MAP_ALLOC_BASE + 1) // 不能清理锅盖,家族里面还有玩家
+const RET_ERR_PPSW_MAP_ALREADY_ALLOC = (RET_ERR_PPSW_MAP_ALLOC_BASE + 2)               // 已经分配过
+const RET_ERR_PPSW_MAP_IS_FULL = (RET_ERR_PPSW_MAP_ALLOC_BASE + 3)                     // 地图人数已经分配满
+const RET_ERR_PPSW_MAP_NOT_IN_THIS_FAMILY = (RET_ERR_PPSW_MAP_ALLOC_BASE + 4)          // 用户不在这个家族里
+const RET_ERR_PPSW_MAP_LEAGUE_IS_FULL = (RET_ERR_PPSW_MAP_ALLOC_BASE + 5)              // 地图联盟人数已经分配满
+const RET_ERR_PPSW_MAP_ALL_LEAGUE_IS_FULL = (RET_ERR_PPSW_MAP_ALLOC_BASE + 6)          // 地图所有联盟人数已经分配满
+const RET_ERR_PPSW_MAP_FAMILY_NOT_ALLOC = (RET_ERR_PPSW_MAP_ALLOC_BASE + 7)            // 没有该家族
+const RET_ERR_PPSW_MAP_FAMILY_IS_FULL = (RET_ERR_PPSW_MAP_ALLOC_BASE + 8)              // 地图家族人数已经分配满
+const RET_ERR_PPSW_MAP_USER_NOT_ON_MAP = (RET_ERR_PPSW_MAP_ALLOC_BASE + 9)             // 用户不在地图上
+const RET_ERR_PPSW_MAP_LEAGUE_ALLOC_FAMILY_FULL = (RET_ERR_PPSW_MAP_ALLOC_BASE + 10)   // 联盟中家族已经分配满
+const RET_ERR_PPSW_MAP_INVALID_PARAMETER = (RET_ERR_PPSW_MAP_ALLOC_BASE + 11)          // 参数无效
+
+/********************** 搬砖奖励相关 *******************/
+//0x30002600 ~ 0x300026FF 搬砖奖励相关
+const RET_ERR_PPSW_MOVING_BRICKS_REWARD_NO_DATA = (RET_ERR_PPSW_MOVING_BRICKS_REWARD + 1)          // 不存在奖励数据
+const RET_ERR_PPSW_MOVING_BRICKS_REWARD_TIMES_NOT_ENOUGH = (RET_ERR_PPSW_MOVING_BRICKS_REWARD + 2) // 搬砖次数不足

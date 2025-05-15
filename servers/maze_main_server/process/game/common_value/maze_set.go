@@ -3,7 +3,7 @@ package common_value
 import (
 	"time"
 
-	"gitlab.ifreetalk.com/maze-plate/freetk/common/errors"
+	"gitlab.ifreetalk.com/maze/maze_game_server/common/errors"
 	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fklog"
 	"gitlab.ifreetalk.com/maze-plate/protodef/MazeCommonValueSvr"
 	"gitlab.ifreetalk.com/maze/maze_game_server/common/constdef"

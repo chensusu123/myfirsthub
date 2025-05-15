@@ -2,7 +2,7 @@ package auth
 
 import (
 	"gitlab.ifreetalk.com/maze-plate/extra/protobuf/proto"
-	"gitlab.ifreetalk.com/maze-plate/freetk/common/errors"
+	"gitlab.ifreetalk.com/maze/maze_game_server/common/errors"
 	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fknet"
 	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fkprometheus"
 	"gitlab.ifreetalk.com/maze-plate/protodef/SysPackDef"

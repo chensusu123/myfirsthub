@@ -3,7 +3,7 @@ package mazebarrier
 import (
 	"gitlab.ifreetalk.com/maze-plate/excel/auto/GMazeBarriesV8Cfg"
 	"gitlab.ifreetalk.com/maze-plate/excel/auto/GMazeBoxV8Cfg"
-	"gitlab.ifreetalk.com/maze-plate/freetk/common/errors"
+	"gitlab.ifreetalk.com/maze/maze_game_server/common/errors"
 	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fklog"
 	"go.uber.org/zap"
 )

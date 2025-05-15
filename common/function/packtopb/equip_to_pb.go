@@ -9,7 +9,7 @@ import (
 	"gitlab.ifreetalk.com/maze-plate/excel/auto/GMazeAttributeV8Cfg"
 	"gitlab.ifreetalk.com/maze-plate/excel/auto/GMazeEquipConfigV8Cfg"
 
-	"gitlab.ifreetalk.com/maze-plate/freetk/common/errors"
+	"gitlab.ifreetalk.com/maze/maze_game_server/common/errors"
 	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fklog"
 	"go.uber.org/zap"
 
