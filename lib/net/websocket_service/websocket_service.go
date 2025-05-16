@@ -235,6 +235,12 @@ type Marshaller interface {
 	Marshal() ([]byte, error)
 }
 
+const (
+	// 最大包大小
+	LOGIN_PACKET_RQ_TYPE = 10492
+	LOGIN_PACKET_RS_TYPE = 10493
+)
+
 // RegProcSimple 注册tcp接口
 func RegProcSimple(rqID uint16, rqMsg proto.Message, rsID uint16, rsMsg proto.Message,
 	deal func(ctx fknet.TCPContext, shardingID uint64, rqMsg proto.Message, rsMsg proto.Message) error,
@@ -334,7 +340,7 @@ func RegProcSimple(rqID uint16, rqMsg proto.Message, rsID uint16, rsMsg proto.Me
 
 		foundUserID := uint64(0)
 		var hasUserID bool
-		if es.PackType != 5183 {
+		if es.PackType != LOGIN_PACKET_RQ_TYPE {
 			// 非登录包
 			tmpUserID := ctx.GetTag("userID")
 			switch v := tmpUserID.(type) {
@@ -372,7 +378,7 @@ func RegProcSimple(rqID uint16, rqMsg proto.Message, rsID uint16, rsMsg proto.Me
 				zap.Uint64("sessionID", uint64(es.SessionID)),
 				zap.Error(err))
 		}
-		if es.PackType == 5183 {
+		if es.PackType == LOGIN_PACKET_RQ_TYPE {
 			// 登录包
 			tmpUserID := ctx.GetTag("userID")
 			switch v := tmpUserID.(type) {
@@ -458,7 +464,7 @@ func RegProcSimple(rqID uint16, rqMsg proto.Message, rsID uint16, rsMsg proto.Me
 
 		foundUserID := uint64(0)
 		var hasUserID bool
-		if es.PackType != 5183 {
+		if es.PackType != LOGIN_PACKET_RQ_TYPE {
 			// 非登录包
 			tmpUserID := ctx.GetTag("userID")
 			switch v := tmpUserID.(type) {
@@ -496,7 +502,7 @@ func RegProcSimple(rqID uint16, rqMsg proto.Message, rsID uint16, rsMsg proto.Me
 				zap.Uint64("sessionID", uint64(es.SessionID)),
 				zap.Error(err))
 		}
-		if es.PackType == 5183 {
+		if es.PackType == LOGIN_PACKET_RQ_TYPE {
 			// 登录包
 			tmpUserID := ctx.GetTag("userID")
 			switch v := tmpUserID.(type) {

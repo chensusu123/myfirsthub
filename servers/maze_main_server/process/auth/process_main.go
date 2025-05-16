@@ -7,11 +7,11 @@ import (
 
 func RegisterHandler() {
 	websocket_service.RegProcSimple(
-		5183, &UserLogin.UserLoginRq{},
-		5184, &UserLogin.UserLoginRs{},
+		10492, &UserLogin.UserLoginRq{},
+		10493, &UserLogin.UserLoginRs{},
 		OnLoginRQ)
 	websocket_service.RegProcSimple(
-		5149, &UserLogin.UserLiveRq{},
-		5150, &UserLogin.UserLiveRs{},
+		10494, &UserLogin.UserLiveRq{},
+		10495, &UserLogin.UserLiveRs{},
 		OnLiveRQ)
 }

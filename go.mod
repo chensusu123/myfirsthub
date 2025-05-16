@@ -72,4 +72,6 @@ require (
 
 //replace gitlab.ifreetalk.com/maze-plate/freetk v1.2.61 => /Users/majiange/data/dev/go_work/go_plate/src/gitlab.ifreetalk.com/maze-plate/freetk
 
-replace github.com/lonng/nano => github.com/zsai001/nano-ex v0.0.0-20250513093902-993404574160
+replace github.com/lonng/nano => gitlab.ifreetalk.com/maze-plate/nano-ex v0.5.1
+
+//replace github.com/lonng/nano => /Users/majiange/data/dev/github_dev/nano-ex
