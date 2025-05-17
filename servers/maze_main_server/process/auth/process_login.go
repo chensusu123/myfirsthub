@@ -26,7 +26,7 @@ func OnLoginRQ(ctx fknet.TCPContext, shardingID uint64, rqMsg proto.Message, rsM
 
 	// 认证
 	// 失败直接返回
-	if req.GetUserID() == 0 {
+	if req.GetAuthId() == 0 {
 		res.Error = errors.COMMON_ERROR_TIPS.Wrap("id is 0")
 		return nil
 	}
@@ -34,7 +34,7 @@ func OnLoginRQ(ctx fknet.TCPContext, shardingID uint64, rqMsg proto.Message, rsM
 	res.Error = errors.NO_ERROR
 
 	// 认证成功设置用户ID, 底层会处理
-	userId := req.GetUserID()
+	userId := req.GetAuthId()
 	ctx.SetTag("userID", userId)
 	res.ServerTime = proto.Int64(time.Now().UnixMilli())
 	return nil
