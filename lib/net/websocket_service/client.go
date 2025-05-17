@@ -18,6 +18,7 @@ import (
 	"time"
 
 	"github.com/cloudwego/hertz/pkg/app"
+	"github.com/dgrijalva/jwt-go"
 	"github.com/hertz-contrib/websocket"
 	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fklog"
 	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fknet"
@@ -268,8 +269,46 @@ var upgrader = websocket.HertzUpgrader{
 	ReadBufferSize:  maxMessageSize,
 	WriteBufferSize: maxMessageSize,
 	CheckOrigin: func(ctx *app.RequestContext) bool {
-		return true
+		token := ctx.Query("jwt")
+
+		if token == "" {
+			return false
+		}
+
+		// 实现JWT验证逻辑
+		return validateToken(token)
 	},
+}
+
+type MyCustomClaims struct {
+	jwt.StandardClaims
+}
+
+var secretKey = []byte("zU6W/(Y%,KX?-@q4m~tLy1_uhcekTNQg")
+
+func VerifyWithCustomClaims(tokenString string) (*MyCustomClaims, error) {
+	token, err := jwt.ParseWithClaims(
+		tokenString,
+		&MyCustomClaims{},
+		func(token *jwt.Token) (interface{}, error) {
+			return secretKey, nil
+		},
+	)
+	if err != nil {
+		fmt.Println("Error parsing token:", tokenString, err)
+		return nil, err
+	}
+	if claims, ok := token.Claims.(*MyCustomClaims); ok && token.Valid {
+		fmt.Println("Token is valid", tokenString, claims)
+		return claims, nil
+	}
+	fmt.Println("Token is invalid", tokenString)
+	return nil, err
+}
+
+func validateToken(tokenIn string) bool {
+	_, err := VerifyWithCustomClaims(tokenIn)
+	return err == nil
 }
 
 // serveWs handles websocket requests from the peer.
