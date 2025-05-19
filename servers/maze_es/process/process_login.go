@@ -1,13 +1,14 @@
 package process
 
 import (
+	"gitlab.ifreetalk.com/maze-plate/excel/auto/GMazeBarriesV8Cfg"
 	_ "gitlab.ifreetalk.com/maze-plate/excel/auto/GMazeEquipPosLvV8Cfg"
 	"gitlab.ifreetalk.com/maze-plate/extra/protobuf/proto"
-	"gitlab.ifreetalk.com/maze/maze_game_server/common/errors"
 	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fknet"
 	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fkprometheus"
 	"gitlab.ifreetalk.com/maze-plate/protodef/MazeGame"
 	"gitlab.ifreetalk.com/maze-plate/protodef/SysPackDef"
+	"gitlab.ifreetalk.com/maze/maze_game_server/common/errors"
 
 	_ "gitlab.ifreetalk.com/maze/maze_game_server/io/redis/mazeequipgetnumredis"
 
@@ -25,7 +26,19 @@ func OnLoginRQ(ctx fknet.TCPContext, shardingID uint64, rqMsg proto.Message, rsM
 	defer func() {
 		logger.InfoWF("OnLoginRQ end", zap.Any("req", req), zap.Any("res", res))
 	}()
-
+	// var index int32 = 3
+	barrierCfg := GMazeBarriesV8Cfg.GetAll()
+	// if barrierCfg == nil {
+	// 	logger.ErrorWF("OnMazeBarrierListRQ get barrier cfg fail", zap.Any("barrier", index))
+	// 	return
+	// }
+	if barrierCfg != nil {
+		for _, v := range barrierCfg {
+			logger.InfoWF("OnMazeBarrierListRQ get barrier cfg fail", zap.Any("barrierCfg", v.Order))
+		}
+	}
+	// logger.InfoWF("OnMazeBarrierListRQ get barrier cfg fail", zap.Any("barrierCfg", barrierCfg))
+	return
 	// 认证
 	// 失败直接返回
 

@@ -168,29 +168,29 @@ func (tb *tCustomBusiness) LoadCacheConfig(logger fklog.FKLogI, req *MysqlParam.
 		row.Fields = configCache.Data[i]
 		res.Results = append(res.Results, row)
 		// pbSize += configCache.Size[i]
-		pbSize = proto.Size(res)
-		// 包大小限制
-		if req.GetSizeLimit() != 0 && pbSize >= int(req.GetSizeLimit()) {
-			// 一条数据大小就超出了包大小限制.
-			if len(res.Results) == 1 {
-				fkalert.Alert(alertDataTooBig, alertName)
-				setError(7, "too large config. one row data size out of limit.")
-				return nil
-			}
-			res.ReadAll = proto.Bool(false)
-			res.Results = res.Results[:len(res.Results)-1]
-			// pbSize -= configCache.Size[i]
-			pbSize = proto.Size(res)
-			break
-		}
-		// 条数限制
-		if req.GetPageSize() != 0 && i-int(req.GetStartIndex())+1 >= int(req.GetPageSize()) {
-			// 不是最后一条,就设置不是全部
-			if i+1 != len(configCache.Data) {
-				res.ReadAll = proto.Bool(false)
-			}
-			break
-		}
+		// pbSize = proto.Size(res)
+		// // 包大小限制
+		// if req.GetSizeLimit() != 0 && pbSize >= int(req.GetSizeLimit()) {
+		// 	// 一条数据大小就超出了包大小限制.
+		// 	if len(res.Results) == 1 {
+		// 		fkalert.Alert(alertDataTooBig, alertName)
+		// 		setError(7, "too large config. one row data size out of limit.")
+		// 		return nil
+		// 	}
+		// 	res.ReadAll = proto.Bool(false)
+		// 	res.Results = res.Results[:len(res.Results)-1]
+		// 	// pbSize -= configCache.Size[i]
+		// 	pbSize = proto.Size(res)
+		// 	break
+		// }
+		// // 条数限制
+		// if req.GetPageSize() != 0 && i-int(req.GetStartIndex())+1 >= int(req.GetPageSize()) {
+		// 	// 不是最后一条,就设置不是全部
+		// 	if i+1 != len(configCache.Data) {
+		// 		res.ReadAll = proto.Bool(false)
+		// 	}
+		// 	break
+		// }
 	}
 	res.RowCount = proto.Int32(int32(len(res.GetResults())))
 

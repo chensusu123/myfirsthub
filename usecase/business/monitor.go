@@ -243,7 +243,7 @@ func (tb *tCustomBusiness) OnChange(logger fklog.FKLogI, file string, data []byt
 		logger.DebugWF("OnChange update config.", zap.String("file", file),
 			zap.String("src_sheet", sheetSrcName), zap.String("sheet", sheetName),
 			zap.String("fileMd5", full.FileMd5), zap.String("sheetDataMd5", full.SheetDataMd5), zap.Any("desc", full.Desc),
-			zap.Strings("fields", full.Fields), zap.String("git_version", cfgVersion))
+			zap.Strings("fields", full.Fields), zap.String("git_version", cfgVersion), zap.Any("rows", len(rows)))
 	}
 	// 加载记录
 	res := &excelReadResult{}

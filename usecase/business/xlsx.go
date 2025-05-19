@@ -123,6 +123,10 @@ func parseExcellSheet(logger fklog.FKLogI, file, sheetName string, rows [][]stri
 			zap.String("sheet", sheetName))
 		return
 	}
+	defer func() {
+		logger.WarnWF("read show sheet.", zap.String("file", file),
+			zap.String("sheet", sheetName), zap.Any("fields", cache.Fields), zap.Any("data", len(cache.Data)))
+	}()
 	firstRow := rows[0]
 	// 检测是否golang组的配置
 	if firstRow[0] == "paipaiworld_config" {
