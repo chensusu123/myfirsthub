@@ -16,10 +16,7 @@ require (
 	gitlab.ifreetalk.com/maze-plate/excel v0.0.0-20250515065852-efc0a876269a
 	gitlab.ifreetalk.com/maze-plate/extra v1.0.1-0.20250401060651-722653168d37
 	gitlab.ifreetalk.com/maze-plate/freetk v1.0.1-0.20250515074528-4334f63a4663
-	gitlab.ifreetalk.com/maze-plate/io v0.0.0-20250411054516-f3778c3f9a74
 	gitlab.ifreetalk.com/maze-plate/protodef v0.0.0-20250517085109-62317a962240
-	gitlab.ifreetalk.com/plate/extra v1.1.7
-	gitlab.ifreetalk.com/plate/protodef v1.0.105
 	go.uber.org/atomic v1.9.0
 	go.uber.org/zap v1.24.0
 )
@@ -35,6 +32,7 @@ require (
 	github.com/cloudwego/netpoll v0.6.4 // indirect
 	github.com/fsnotify/fsnotify v1.5.4 // indirect
 	github.com/golang/protobuf v1.5.4 // indirect
+	github.com/hpcloud/tail v1.0.0 // indirect
 	github.com/klauspost/cpuid/v2 v2.2.5 // indirect
 	github.com/lestrrat-go/strftime v1.0.1 // indirect
 	github.com/matttproud/golang_protobuf_extensions v1.0.1 // indirect
@@ -66,6 +64,8 @@ require (
 	google.golang.org/genproto/googleapis/rpc v0.0.0-20240318140521-94a12d6c2237 // indirect
 	google.golang.org/grpc v1.64.0 // indirect
 	google.golang.org/protobuf v1.33.0 // indirect
+	gopkg.in/fsnotify.v1 v1.4.7 // indirect
+	gopkg.in/tomb.v1 v1.0.0-20141024135613-dd632973f1e7 // indirect
 	gopkg.in/yaml.v2 v2.4.0 // indirect
 )
 
