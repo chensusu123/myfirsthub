@@ -26,7 +26,7 @@ func init() {
 }
 
 func getKey(userId uint64, stateId int32) string {
-	return fmt.Sprintf("maze:shop:seq:%d", userId, stateId)
+	return fmt.Sprintf("u:%d:stage:%d:temp:buff", userId, stateId)
 }
 
 func SetMazeTempBuff(logger fklog.FKLogI, userId uint64, stateId int32, buffInfo *MazeTempBuffSvr.TempBuffInfo) error {
