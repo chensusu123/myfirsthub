@@ -154,6 +154,7 @@ func SendMazeCardMsg(logger fklog.FKLogI, userId uint64, state int32, expiration
 		ExpirationTime: proto.Int64(expirationTime),
 	}
 	_ = msg
+	// TODO 为什么注释掉？？
 	//_ = commonmustarriveredis.SendArrivePacketWithLogFix(logger, userId, 16200, msg)
 }
 

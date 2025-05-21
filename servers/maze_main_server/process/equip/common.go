@@ -5,16 +5,16 @@ import (
 
 	"gitlab.ifreetalk.com/maze-plate/excel/auto/GMazeEquipSuiteInfoV8Cfg"
 	"gitlab.ifreetalk.com/maze-plate/extra/protobuf/proto"
-	"gitlab.ifreetalk.com/maze-plate/protodef/errors"
 	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fklog"
 	"gitlab.ifreetalk.com/maze-plate/protodef/MazeEquipSvr"
 	"gitlab.ifreetalk.com/maze-plate/protodef/MazeGameEquip"
 	"gitlab.ifreetalk.com/maze-plate/protodef/MessageType"
-	"go.uber.org/zap"
-	"gitlab.ifreetalk.com/maze/maze_game_server/common/function/grouplock"
+	"gitlab.ifreetalk.com/maze-plate/protodef/errors"
 	"gitlab.ifreetalk.com/maze/maze_game_server/common/constdef"
+	"gitlab.ifreetalk.com/maze/maze_game_server/common/function/grouplock"
 	"gitlab.ifreetalk.com/maze/maze_game_server/excel/mazeequipaffixrandpoolv8"
-	"gitlab.ifreetalk.com/maze-plate/io/redisio/commonmustarriveredis"
+	"gitlab.ifreetalk.com/maze/maze_game_server/usecase/mustarrive"
+	"go.uber.org/zap"
 )
 
 var globalLock = grouplock.NewGroupLock(10240)
@@ -77,5 +77,5 @@ func SendMazeBagEquipChgIDEx(logger fklog.FKLogI, userId uint64, addList, delLis
 		req.NeedRefreshForce = proto.Int32(0)
 	}
 	logger.InfoWF("SendMazeBagEquipChgIDEx send client with", zap.Any("res", req))
-	commonmustarriveredis.SendArrivePacket(userId, 16194, req)
+	mustarrive.SendArrivePacket(logger, int64(userId), 16194, req)
 }

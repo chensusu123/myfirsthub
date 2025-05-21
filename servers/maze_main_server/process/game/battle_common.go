@@ -5,12 +5,12 @@ import (
 	"gitlab.ifreetalk.com/maze-plate/excel/auto/GMazeAttributeV8Cfg"
 	"gitlab.ifreetalk.com/maze-plate/extra/protobuf/proto"
 	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fklog"
-	"gitlab.ifreetalk.com/maze-plate/io/redisio/commonmustarriveredis"
 	"gitlab.ifreetalk.com/maze-plate/protodef/MazeAIBattle"
 	"gitlab.ifreetalk.com/maze/maze_game_server/common/constdef"
 	"gitlab.ifreetalk.com/maze/maze_game_server/common/errors"
 	"gitlab.ifreetalk.com/maze/maze_game_server/common/structsdef"
 	"gitlab.ifreetalk.com/maze/maze_game_server/io/redis/mazecalcattrredis"
+	"gitlab.ifreetalk.com/maze/maze_game_server/usecase/mustarrive"
 	"go.uber.org/zap"
 )
 
@@ -206,7 +206,7 @@ func SendMazeBarrierChgPack(logger fklog.FKLogI, userId uint64, mazeBattleInfo *
 		MazeBarrierInfo: mazeBattleInfo,
 	}
 	logger.InfoWF("SendMazeBarrierChgPack send client with", zap.Uint64("userId", userId), zap.Any("moneyPack", moneyPack))
-	return commonmustarriveredis.SendArrivePacket(userId, 16172, moneyPack)
+	return mustarrive.SendArrivePacket(logger, int64(userId), 16172, moneyPack)
 }
 
 func GetEffectAttrValue(attrValue int32, attrValueVariableId map[int32]int32, userAttrMap map[int32]int64) int64 {

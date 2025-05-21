@@ -11,11 +11,11 @@ import (
 	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fklog"
 	"gitlab.ifreetalk.com/maze-plate/protodef/Common"
 	"gitlab.ifreetalk.com/maze-plate/protodef/MazePropertyPanel"
-	"go.uber.org/zap"
-	"gitlab.ifreetalk.com/maze/maze_game_server/common/structsdef"
 	"gitlab.ifreetalk.com/maze/maze_game_server/common/constdef"
+	"gitlab.ifreetalk.com/maze/maze_game_server/common/structsdef"
 	"gitlab.ifreetalk.com/maze/maze_game_server/excel/mazeconfigv8"
-	"gitlab.ifreetalk.com/maze-plate/io/redisio/commonmustarriveredis"
+	"gitlab.ifreetalk.com/maze/maze_game_server/usecase/mustarrive"
+	"go.uber.org/zap"
 )
 
 func NotifyClientAttrChg(logger fklog.FKLogI, userId uint64, msg *structsdef.DollAttrChgNotify) {
@@ -40,7 +40,7 @@ func NotifyClientAttrChg(logger fklog.FKLogI, userId uint64, msg *structsdef.Dol
 	}
 	if len(mazePanelChgIDMsg.ChgAttrs) > 0 {
 		logger.InfoWF("NotifyClientAttrChg send client with", zap.Any("mazePanelChgIDMsg", mazePanelChgIDMsg))
-		commonmustarriveredis.SendArrivePacketWithLog(logger, userId, 16262, mazePanelChgIDMsg)
+		mustarrive.SendArrivePacket(logger, int64(userId), 16262, mazePanelChgIDMsg)
 	} else {
 		logger.InfoWF("NotifyClientAttrChg no care attrs", zap.Any("mazePanelChgIDMsg", mazePanelChgIDMsg))
 	}

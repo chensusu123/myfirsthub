@@ -6,6 +6,7 @@ import (
 	"gitlab.ifreetalk.com/maze-plate/extra/protobuf/proto"
 	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fklog"
 	"gitlab.ifreetalk.com/maze-plate/protodef/MazeGame"
+	"gitlab.ifreetalk.com/maze/maze_game_server/usecase/mustarrive"
 	"go.uber.org/zap"
 )
 
@@ -54,8 +55,7 @@ func SendCommonValueIdPack(logger fklog.FKLogI, userId uint64, commonList []*Com
 	}
 
 	logger.InfoWF("sendCommonValueIdPack send client with", zap.Any("commonList", commonList), zap.Any("commonValuePack", commonValuePack))
-	return nil
-	// return commonmustarriveredis.SendArrivePacketWithLogFix(logger, userId, 16205, commonValuePack)
+	return mustarrive.SendArrivePacket(logger, int64(userId), 16205, commonValuePack)
 }
 
 func MakeCommonValueList(logger fklog.FKLogI, commonValue map[int32]int64, commonReason map[int32]int32, commonSession map[int32]string) (commonList []*CommonValueStruct) {
