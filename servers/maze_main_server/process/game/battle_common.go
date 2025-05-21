@@ -206,7 +206,7 @@ func SendMazeBarrierChgPack(logger fklog.FKLogI, userId uint64, mazeBattleInfo *
 		MazeBarrierInfo: mazeBattleInfo,
 	}
 	logger.InfoWF("SendMazeBarrierChgPack send client with", zap.Uint64("userId", userId), zap.Any("moneyPack", moneyPack))
-	return mustarrive.SendArrivePacket(logger, int64(userId), 16172, moneyPack)
+	return mustarrive.SendArrivePacket(logger, int64(userId), 10485, moneyPack)
 }
 
 func GetEffectAttrValue(attrValue int32, attrValueVariableId map[int32]int32, userAttrMap map[int32]int64) int64 {

@@ -55,7 +55,7 @@ func SendCommonValueIdPack(logger fklog.FKLogI, userId uint64, commonList []*Com
 	}
 
 	logger.InfoWF("sendCommonValueIdPack send client with", zap.Any("commonList", commonList), zap.Any("commonValuePack", commonValuePack))
-	return mustarrive.SendArrivePacket(logger, int64(userId), 16205, commonValuePack)
+	return mustarrive.SendArrivePacket(logger, int64(userId), 10478, commonValuePack)
 }
 
 func MakeCommonValueList(logger fklog.FKLogI, commonValue map[int32]int64, commonReason map[int32]int32, commonSession map[int32]string) (commonList []*CommonValueStruct) {

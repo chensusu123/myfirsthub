@@ -77,7 +77,7 @@ func SendMazeBagEquipChgIDEx(logger fklog.FKLogI, userId uint64, addList, delLis
 		req.NeedRefreshForce = proto.Int32(0)
 	}
 	logger.InfoWF("SendMazeBagEquipChgIDEx send client with", zap.Any("res", req))
-	err := mustarrive.SendArrivePacket(logger, int64(userId), 16194, req)
+	err := mustarrive.SendArrivePacket(logger, int64(userId), 10409, req)
 	if err != nil {
 		logger.ErrorWF("SendMazeBagEquipChgIDEx SendArrivePacket error", zap.Error(err))
 	} else {

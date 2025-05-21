@@ -67,7 +67,7 @@ func InitMazeCollectLand(logger fklog.FKLogI, userId uint64, barrierId int32) (e
 		return
 	}
 	pack.MazeCollectInfo = mazeCollectInfoPb
-	err = mustarrive.SendArrivePacket(logger, int64(userId), 16261, pack)
+	err = mustarrive.SendArrivePacket(logger, int64(userId), 10480, pack)
 	if err != nil {
 		logger.ErrorWF("InitMazeCollectLand SendArrivePacket", zap.Any("pack", pack), zap.Error(err))
 		return

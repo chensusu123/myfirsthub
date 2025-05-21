@@ -75,7 +75,7 @@ func SendAssembleChgID(logger fklog.FKLogI, userId uint64, assembleInfo *MazeEqu
 	}
 	idp.Mask = proto.Int32(mask)
 	idp.Token = proto.Int64(GetAssembleToken())
-	err := mustarrive.SendArrivePacket(logger, int64(userId), 16185, idp)
+	err := mustarrive.SendArrivePacket(logger, int64(userId), 10422, idp)
 	if err != nil {
 		logger.ErrorWF("SendAssembleChgID SendArrivePacket err", zap.Error(err))
 		return err

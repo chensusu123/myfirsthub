@@ -54,7 +54,7 @@ func HandleMazeLvUpgradeAttrChgId(logger fklog.FKLogI, userId uint64, msg *struc
 
 	logger.InfoWF("HandleMazeLvUpgradeAttrChgId send client with",
 		zap.Any("mazeLvChgIDMsg", mazeLvChgIDMsg), zap.Uint64("userId", userId))
-	mustarrive.SendArrivePacket(logger, int64(userId), 16239, mazeLvChgIDMsg)
+	mustarrive.SendArrivePacket(logger, int64(userId), 10479, mazeLvChgIDMsg)
 }
 
 // func IsMazeUpgradeCareAttr(attrId int32) bool {

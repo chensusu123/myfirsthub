@@ -10,12 +10,12 @@ import (
 	"time"
 
 	"github.com/gogo/protobuf/proto"
-	"gitlab.ifreetalk.com/maze/maze_game_server/common/errors"
 	"gitlab.ifreetalk.com/maze-plate/freetk/fkserver"
 	"gitlab.ifreetalk.com/maze-plate/protodef/MazeBag"
 	"gitlab.ifreetalk.com/maze-plate/protodef/MazeCommon"
 	"gitlab.ifreetalk.com/maze-plate/protodef/MessageType"
 	"gitlab.ifreetalk.com/maze/maze_game_server/common/additemdefine"
+	"gitlab.ifreetalk.com/maze/maze_game_server/common/errors"
 	"gitlab.ifreetalk.com/maze/maze_game_server/common/itemdefine/constdefine"
 	"gitlab.ifreetalk.com/maze/maze_game_server/common/itemdefine/errdefine"
 	"gitlab.ifreetalk.com/maze/maze_game_server/common/itemutil"
@@ -188,5 +188,5 @@ func SendBagItemChgID(userCtx fkserver.UserContext, items []*MazeCommon.MazeItem
 		idPack.Items = append(idPack.Items, itemutil.BuildMazeBagItem(userCtx, item.GetItemId(), item.GetCount()))
 	}
 
-	_ = mustarrive.SendArrivePacket(userCtx, int64(userCtx.UserID), 16250, idPack)
+	_ = mustarrive.SendArrivePacket(userCtx, int64(userCtx.UserID), 10404, idPack)
 }
