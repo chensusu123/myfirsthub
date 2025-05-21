@@ -148,6 +148,8 @@ github.com/lestrrat-go/envload v0.0.0-20180220234015-a3eb8ddeffcc h1:RKf14vYWi2t
 github.com/lestrrat-go/envload v0.0.0-20180220234015-a3eb8ddeffcc/go.mod h1:kopuH9ugFRkIXf3YoqHKyrJ9YfUFsckUU9S7B+XP+is=
 github.com/lestrrat-go/strftime v1.0.1 h1:o7qz5pmLzPDLyGW4lG6JvTKPUfTFXwe+vOamIYWtnVU=
 github.com/lestrrat-go/strftime v1.0.1/go.mod h1:E1nN3pCbtMSu1yjSVeyuRFVm/U0xoR76fd03sz+Qz4g=
+github.com/lonng/nano v0.5.1 h1:uQcVP31jz/zgeWN7OsdjoY68OiJ5HzBoaRYLK/J+VPg=
+github.com/lonng/nano v0.5.1/go.mod h1:FTVfyY/m7nhwU5HUW7eIwHyqZPHrOh0miSW7L121rF0=
 github.com/matttproud/golang_protobuf_extensions v1.0.1 h1:4hp9jkHxhMHkqkrB3Ix0jegS5sx/RkqARlsWZ6pIwiU=
 github.com/matttproud/golang_protobuf_extensions v1.0.1/go.mod h1:D8He9yQNgCq6Z5Ld7szi9bcBfOoFv/3dc6xSMkL2PC0=
 github.com/modern-go/concurrent v0.0.0-20180228061459-e0a39a4cb421/go.mod h1:6dJC0mAP4ikYIbvyc7fijjWJddQyLn8Ig3JB5CqoB9Q=
@@ -261,12 +263,6 @@ gitlab.ifreetalk.com/maze-plate/freetk v1.0.1-0.20250515074528-4334f63a4663 h1:K
 gitlab.ifreetalk.com/maze-plate/freetk v1.0.1-0.20250515074528-4334f63a4663/go.mod h1:BsKRvBioRzBNxRihEuo0giUa+1y0278UaQi7kmI+Szo=
 gitlab.ifreetalk.com/maze-plate/io v0.0.0-20250411054516-f3778c3f9a74 h1:BXauIvymqWlu9IHFz1ABnosE7buCCtcj8nyTj6NopIA=
 gitlab.ifreetalk.com/maze-plate/io v0.0.0-20250411054516-f3778c3f9a74/go.mod h1:HBMeo7ex6aH1LdraJ35apTM4sTuNE2UWOZOQahudTps=
-gitlab.ifreetalk.com/maze-plate/nano-ex v0.5.2-0.20250516034851-a99be3b634b7 h1:1F9Y1KJAADwVjy3JRcW5lpFMnnVvEgRQqGtPwH3xzbQ=
-gitlab.ifreetalk.com/maze-plate/nano-ex v0.5.2-0.20250516034851-a99be3b634b7/go.mod h1:FTVfyY/m7nhwU5HUW7eIwHyqZPHrOh0miSW7L121rF0=
-gitlab.ifreetalk.com/maze-plate/protodef v0.0.0-20250515124213-ff177f2af85c h1:0rwjkbg0XwXVuv9IJcROWPhWaugJPvEeLeQZBGRaRmc=
-gitlab.ifreetalk.com/maze-plate/protodef v0.0.0-20250515124213-ff177f2af85c/go.mod h1:xcrmInzqjTtBsqnftJRmoq0UY+82LRu9Gh+xm/EftcU=
-gitlab.ifreetalk.com/maze-plate/protodef v0.0.0-20250517080954-71c96034fc32 h1:0QMlXUPpS1WeVUMqjrgCWdSQOG3TxFhWQcvZbivzRGU=
-gitlab.ifreetalk.com/maze-plate/protodef v0.0.0-20250517080954-71c96034fc32/go.mod h1:xcrmInzqjTtBsqnftJRmoq0UY+82LRu9Gh+xm/EftcU=
 gitlab.ifreetalk.com/maze-plate/protodef v0.0.0-20250517085109-62317a962240 h1:b77F8Roj4c95Z1PGK8v7GBz+Kui8nx/BuKH7Ra843ug=
 gitlab.ifreetalk.com/maze-plate/protodef v0.0.0-20250517085109-62317a962240/go.mod h1:xcrmInzqjTtBsqnftJRmoq0UY+82LRu9Gh+xm/EftcU=
 gitlab.ifreetalk.com/plate/extra v1.1.7 h1:LW0uI92Zao8padw+i6582ExxY3PvbuFTQYxT2g/6RO0=

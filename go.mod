@@ -4,6 +4,7 @@ go 1.18
 
 require (
 	github.com/cloudwego/hertz v0.9.7
+	github.com/dgrijalva/jwt-go v3.2.0+incompatible
 	github.com/go-redis/redis v6.15.9+incompatible
 	github.com/gogo/protobuf v1.1.1
 	github.com/gomodule/redigo v1.8.9
@@ -32,7 +33,6 @@ require (
 	github.com/cespare/xxhash/v2 v2.2.0 // indirect
 	github.com/cloudwego/base64x v0.1.5 // indirect
 	github.com/cloudwego/netpoll v0.6.4 // indirect
-	github.com/dgrijalva/jwt-go v3.2.0+incompatible // indirect
 	github.com/fsnotify/fsnotify v1.5.4 // indirect
 	github.com/golang/protobuf v1.5.4 // indirect
 	github.com/klauspost/cpuid/v2 v2.2.5 // indirect
@@ -72,7 +72,3 @@ require (
 //replace gitlab.ifreetalk.com/maze-plate/excel => gitlab.ifreetalk.com/maze-plate/excel v1.0.83-0.20250506053436-ef2c9ea111c0
 
 //replace gitlab.ifreetalk.com/maze-plate/freetk v1.2.61 => /Users/majiange/data/dev/go_work/go_plate/src/gitlab.ifreetalk.com/maze-plate/freetk
-
-replace github.com/lonng/nano => gitlab.ifreetalk.com/maze-plate/nano-ex v0.5.2-0.20250516034851-a99be3b634b7
-
-//replace github.com/lonng/nano => /Users/majiange/data/dev/github_dev/nano-ex
