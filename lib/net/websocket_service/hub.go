@@ -154,14 +154,24 @@ func (h *Hub) OnLogin(userID uint64, ctx fknet.TCPContext) {
 }
 
 func (h *Hub) SendData(info *SendDataMsg) {
-	h.DebugWF("SendData entry", zap.Any("userID", info.UserId))
+	h.InfoWF("SendData entry", zap.Any("userID", info.UserId))
 	h.clientsLock.RLock()
 	if client, ok := h.clientMaps[info.UserId]; ok {
 		h.clientsLock.RUnlock()
 		h.InfoWF("SendData", zap.Any("userID", info.UserId),
 			zap.Any("sessionId", client.sessionId),
 		)
-		client.SendData(info.Data)
+		err := client.SendData(info.Data)
+		if err != nil {
+			h.InfoWF("SendData error", zap.Any("userID", info.UserId),
+				zap.Any("sessionId", client.sessionId),
+				zap.Error(err),
+			)
+		} else {
+			h.InfoWF("SendData success", zap.Any("userID", info.UserId),
+				zap.Any("sessionId", client.sessionId),
+			)
+		}
 		return
 	} else {
 		h.InfoWF("SendData client not found", zap.Any("userID", info.UserId))
