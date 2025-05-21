@@ -15,6 +15,6 @@ func SendArrivePacket(logger fklog.FKLogI, userID int64, packetType uint16, pack
 			zap.Any("packetType", packetType), zap.Error(err))
 		return err
 	}
-	logger.DebugWF("SendArrivePacket", zap.Any("userID", userID), zap.Uint16("packetType", packetType))
+	logger.InfoWF("SendArrivePacket", zap.Any("userID", userID), zap.Uint16("packetType", packetType))
 	return websocket_service.SendBytes(logger, uint64(userID), packetType, data)
 }

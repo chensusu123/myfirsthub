@@ -158,13 +158,13 @@ func (h *Hub) SendData(info *SendDataMsg) {
 	h.clientsLock.RLock()
 	if client, ok := h.clientMaps[info.UserId]; ok {
 		h.clientsLock.RUnlock()
-		h.DebugWF("SendData", zap.Any("userID", info.UserId),
+		h.InfoWF("SendData", zap.Any("userID", info.UserId),
 			zap.Any("sessionId", client.sessionId),
 		)
 		client.SendData(info.Data)
 		return
 	} else {
-		h.DebugWF("SendData client not found", zap.Any("userID", info.UserId))
+		h.InfoWF("SendData client not found", zap.Any("userID", info.UserId))
 	}
 	h.clientsLock.RUnlock()
 }
