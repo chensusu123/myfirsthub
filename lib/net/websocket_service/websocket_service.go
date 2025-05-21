@@ -600,6 +600,7 @@ func (ts *tTCPRawService) SendData(logger fklog.FKLogI, userID int64, sessionID 
 	if ts == nil {
 		return errors.New("tTCPService == nil")
 	}
+	logger.DebugWF("SendData entry", zap.Any("userID", userID))
 	hub.SendDataByUserID(logger, uint64(userID), data)
 	return nil
 }

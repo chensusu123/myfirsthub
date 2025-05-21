@@ -163,6 +163,8 @@ func (h *Hub) SendData(info *SendDataMsg) {
 		)
 		client.SendData(info.Data)
 		return
+	} else {
+		h.DebugWF("SendData client not found", zap.Any("userID", info.UserId))
 	}
 	h.clientsLock.RUnlock()
 }
