@@ -18,11 +18,10 @@ type DollEquipInfoV8ConfigRow struct {
 	Score_group              int32           `json:"score_group"`              // 记录装备分数的组id
 	Quality                  int32           `json:"quality"`                  // 品质
 	Pos                      int32           `json:"pos"`                      // 部位
-	Skill_pos_num            map[int32]int32 `json:"skill_pos_num"`            // 随机技能孔数量:权重
+	Pos_sub_type             int32           `json:"pos_sub_type"`             // 部位子类型
 	Sub_type_random          map[int32]int32 `json:"sub_type_random"`          // 装备子类型随机权重
 	Level                    int32           `json:"level"`                    // 穿戴等级
 	Level_show               int32           `json:"level_show"`               // 显示等级
-	Need_dungeon             map[int32]int32 `json:"need_dungeon"`             // 允许穿戴需要通关的副本
 	Sell                     map[int32]int64 `json:"sell"`                     // 出售价格
 	Split_num                map[int32]int32 `json:"split_num"`                // 分解后获得材料次数：权重
 	Split_random_id          int32           `json:"split_random_id"`          // 分解随机库id
@@ -37,12 +36,13 @@ type DollEquipInfoV8ConfigRow struct {
 	Unknow_view_equipment_id int32           `json:"unknow_view_equipment_id"` // 未鉴定的装备id（0-表示不需要鉴定
 	View_cost                map[int32]int64 `json:"view_cost"`                // 鉴定消耗
 	View_need_dungeon        map[int32]int32 `json:"view_need_dungeon"`        // 允许鉴定需要通关的副本
-	Pos_sub_type             int32           `json:"pos_sub_type"`             // 部位子类型
 	Weapon_model             int32           `json:"weapon_model"`             // 武器模型（废弃）
 	Id                       int32           `json:"id"`                       // 记录装备分数的组id
 	Preview_attr             map[int32]int64 `json:"preview_attr"`             // 预览属性
 	Attack_type              int32           `json:"attack_type"`              // 攻击方式
 	Damage_type              int32           `json:"damage_type"`              // 伤害类型
+	Need_dungeon             map[int32]int32 `json:"need_dungeon"`             // 允许穿戴需要通关的副本
+	Skill_pos_num            map[int32]int32 `json:"skill_pos_num"`            // 随机技能孔数量:权重
 	Font_soul                map[int32]int32 `json:"font_soul"`                // 升华头属性：随机权重
 	Tail_soul                map[int32]int32 `json:"tail_soul"`                // 升华尾属性：随机权重
 	Recast_cost              map[int32]int64 `json:"recast_cost"`              // 升华属性重铸消耗
@@ -356,41 +356,18 @@ func (*gDollEquipInfoV8Parser) Parse(logger fklog.FKLogI, data []string, row int
 		config.Pos = int32(tmp)
 	}
 
-	// parse column 4 skill_pos_num : 随机技能孔数量:权重
+	// parse column 4 pos_sub_type : 部位子类型
 	if data[4] != "" {
-
-		config.Skill_pos_num = make(map[int32]int32)
-		var key int32
-		var value int32
-		vals := strings.Split(data[4], "_")
-		for k, val := range vals {
-			items := strings.Split(val, ":")
-			tmp, err = strconv.ParseInt(items[0], 10, 64)
-			if err != nil {
-				err = errors.New("parse map field skill_pos_num 随机技能孔数量:权重 to key int32 failed")
-				logger.ErrorWF("parse map field skill_pos_num 随机技能孔数量:权重 to key int32 failed.",
-					zap.String("xlsx", "doll_equip_info_v8【人偶-装备-信息】.xlsx"), zap.String("sheet", "doll_equip_info_v8"),
-					// zap.String("field_data",data[4]),
-					zap.String("item_data", val), zap.Int("index", k),
-					zap.String("parse_data", items[0]),
-					zap.Error(err))
-				return
-			}
-			key = int32(tmp)
-			tmp, err = strconv.ParseInt(items[1], 10, 64)
-			if err != nil {
-				err = errors.New("parse map field skill_pos_num 随机技能孔数量:权重 to value int32 failed")
-				logger.ErrorWF("parse map field skill_pos_num 随机技能孔数量:权重 to value int32 failed.",
-					zap.String("xlsx", "doll_equip_info_v8【人偶-装备-信息】.xlsx"), zap.String("sheet", "doll_equip_info_v8"),
-					// zap.String("field_data",data[4]),
-					zap.String("item_data", val), zap.Int("index", k),
-					zap.String("parse_data", items[1]),
-					zap.Error(err))
-				return
-			}
-			value = int32(tmp)
-			config.Skill_pos_num[key] = value
+		tmp, err = strconv.ParseInt(data[4], 10, 64)
+		if err != nil {
+			err = errors.New("parse field pos_sub_type 部位子类型 to int32 failed")
+			logger.ErrorWF("parse field pos_sub_type 部位子类型 to int32 failed.",
+				zap.String("xlsx", "doll_equip_info_v8【人偶-装备-信息】.xlsx"), zap.String("sheet", "doll_equip_info_v8"),
+				zap.String("parse_data", data[4]),
+				zap.Error(err))
+			return
 		}
+		config.Pos_sub_type = int32(tmp)
 	}
 
 	// parse column 5 sub_type_random : 装备子类型随机权重
@@ -458,50 +435,13 @@ func (*gDollEquipInfoV8Parser) Parse(logger fklog.FKLogI, data []string, row int
 		config.Level_show = int32(tmp)
 	}
 
-	// parse column 8 need_dungeon : 允许穿戴需要通关的副本
+	// parse column 8 sell : 出售价格
 	if data[8] != "" {
-
-		config.Need_dungeon = make(map[int32]int32)
-		var key int32
-		var value int32
-		vals := strings.Split(data[8], "_")
-		for k, val := range vals {
-			items := strings.Split(val, ":")
-			tmp, err = strconv.ParseInt(items[0], 10, 64)
-			if err != nil {
-				err = errors.New("parse map field need_dungeon 允许穿戴需要通关的副本 to key int32 failed")
-				logger.ErrorWF("parse map field need_dungeon 允许穿戴需要通关的副本 to key int32 failed.",
-					zap.String("xlsx", "doll_equip_info_v8【人偶-装备-信息】.xlsx"), zap.String("sheet", "doll_equip_info_v8"),
-					// zap.String("field_data",data[8]),
-					zap.String("item_data", val), zap.Int("index", k),
-					zap.String("parse_data", items[0]),
-					zap.Error(err))
-				return
-			}
-			key = int32(tmp)
-			tmp, err = strconv.ParseInt(items[1], 10, 64)
-			if err != nil {
-				err = errors.New("parse map field need_dungeon 允许穿戴需要通关的副本 to value int32 failed")
-				logger.ErrorWF("parse map field need_dungeon 允许穿戴需要通关的副本 to value int32 failed.",
-					zap.String("xlsx", "doll_equip_info_v8【人偶-装备-信息】.xlsx"), zap.String("sheet", "doll_equip_info_v8"),
-					// zap.String("field_data",data[8]),
-					zap.String("item_data", val), zap.Int("index", k),
-					zap.String("parse_data", items[1]),
-					zap.Error(err))
-				return
-			}
-			value = int32(tmp)
-			config.Need_dungeon[key] = value
-		}
-	}
-
-	// parse column 9 sell : 出售价格
-	if data[9] != "" {
 
 		config.Sell = make(map[int32]int64)
 		var key int32
 		var value int64
-		vals := strings.Split(data[9], "_")
+		vals := strings.Split(data[8], "_")
 		for k, val := range vals {
 			items := strings.Split(val, ":")
 			tmp, err = strconv.ParseInt(items[0], 10, 64)
@@ -509,7 +449,7 @@ func (*gDollEquipInfoV8Parser) Parse(logger fklog.FKLogI, data []string, row int
 				err = errors.New("parse map field sell 出售价格 to key int32 failed")
 				logger.ErrorWF("parse map field sell 出售价格 to key int32 failed.",
 					zap.String("xlsx", "doll_equip_info_v8【人偶-装备-信息】.xlsx"), zap.String("sheet", "doll_equip_info_v8"),
-					// zap.String("field_data",data[9]),
+					// zap.String("field_data",data[8]),
 					zap.String("item_data", val), zap.Int("index", k),
 					zap.String("parse_data", items[0]),
 					zap.Error(err))
@@ -521,7 +461,7 @@ func (*gDollEquipInfoV8Parser) Parse(logger fklog.FKLogI, data []string, row int
 				err = errors.New("parse map field sell 出售价格 to value int64 failed")
 				logger.ErrorWF("parse map field sell 出售价格 to value int64 failed.",
 					zap.String("xlsx", "doll_equip_info_v8【人偶-装备-信息】.xlsx"), zap.String("sheet", "doll_equip_info_v8"),
-					// zap.String("field_data",data[9]),
+					// zap.String("field_data",data[8]),
 					zap.String("item_data", val), zap.Int("index", k),
 					zap.String("parse_data", items[1]),
 					zap.Error(err))
@@ -532,13 +472,13 @@ func (*gDollEquipInfoV8Parser) Parse(logger fklog.FKLogI, data []string, row int
 		}
 	}
 
-	// parse column 10 split_num : 分解后获得材料次数：权重
-	if data[10] != "" {
+	// parse column 9 split_num : 分解后获得材料次数：权重
+	if data[9] != "" {
 
 		config.Split_num = make(map[int32]int32)
 		var key int32
 		var value int32
-		vals := strings.Split(data[10], "_")
+		vals := strings.Split(data[9], "_")
 		for k, val := range vals {
 			items := strings.Split(val, ":")
 			tmp, err = strconv.ParseInt(items[0], 10, 64)
@@ -546,7 +486,7 @@ func (*gDollEquipInfoV8Parser) Parse(logger fklog.FKLogI, data []string, row int
 				err = errors.New("parse map field split_num 分解后获得材料次数：权重 to key int32 failed")
 				logger.ErrorWF("parse map field split_num 分解后获得材料次数：权重 to key int32 failed.",
 					zap.String("xlsx", "doll_equip_info_v8【人偶-装备-信息】.xlsx"), zap.String("sheet", "doll_equip_info_v8"),
-					// zap.String("field_data",data[10]),
+					// zap.String("field_data",data[9]),
 					zap.String("item_data", val), zap.Int("index", k),
 					zap.String("parse_data", items[0]),
 					zap.Error(err))
@@ -558,7 +498,7 @@ func (*gDollEquipInfoV8Parser) Parse(logger fklog.FKLogI, data []string, row int
 				err = errors.New("parse map field split_num 分解后获得材料次数：权重 to value int32 failed")
 				logger.ErrorWF("parse map field split_num 分解后获得材料次数：权重 to value int32 failed.",
 					zap.String("xlsx", "doll_equip_info_v8【人偶-装备-信息】.xlsx"), zap.String("sheet", "doll_equip_info_v8"),
-					// zap.String("field_data",data[10]),
+					// zap.String("field_data",data[9]),
 					zap.String("item_data", val), zap.Int("index", k),
 					zap.String("parse_data", items[1]),
 					zap.Error(err))
@@ -569,27 +509,27 @@ func (*gDollEquipInfoV8Parser) Parse(logger fklog.FKLogI, data []string, row int
 		}
 	}
 
-	// parse column 11 split_random_id : 分解随机库id
-	if data[11] != "" {
-		tmp, err = strconv.ParseInt(data[11], 10, 64)
+	// parse column 10 split_random_id : 分解随机库id
+	if data[10] != "" {
+		tmp, err = strconv.ParseInt(data[10], 10, 64)
 		if err != nil {
 			err = errors.New("parse field split_random_id 分解随机库id to int32 failed")
 			logger.ErrorWF("parse field split_random_id 分解随机库id to int32 failed.",
 				zap.String("xlsx", "doll_equip_info_v8【人偶-装备-信息】.xlsx"), zap.String("sheet", "doll_equip_info_v8"),
-				zap.String("parse_data", data[11]),
+				zap.String("parse_data", data[10]),
 				zap.Error(err))
 			return
 		}
 		config.Split_random_id = int32(tmp)
 	}
 
-	// parse column 12 affix_base_num : 初始基础词条数量
-	if data[12] != "" {
+	// parse column 11 affix_base_num : 初始基础词条数量
+	if data[11] != "" {
 
 		config.Affix_base_num = make(map[int32]int32)
 		var key int32
 		var value int32
-		vals := strings.Split(data[12], "_")
+		vals := strings.Split(data[11], "_")
 		for k, val := range vals {
 			items := strings.Split(val, ":")
 			tmp, err = strconv.ParseInt(items[0], 10, 64)
@@ -597,7 +537,7 @@ func (*gDollEquipInfoV8Parser) Parse(logger fklog.FKLogI, data []string, row int
 				err = errors.New("parse map field affix_base_num 初始基础词条数量 to key int32 failed")
 				logger.ErrorWF("parse map field affix_base_num 初始基础词条数量 to key int32 failed.",
 					zap.String("xlsx", "doll_equip_info_v8【人偶-装备-信息】.xlsx"), zap.String("sheet", "doll_equip_info_v8"),
-					// zap.String("field_data",data[12]),
+					// zap.String("field_data",data[11]),
 					zap.String("item_data", val), zap.Int("index", k),
 					zap.String("parse_data", items[0]),
 					zap.Error(err))
@@ -609,7 +549,7 @@ func (*gDollEquipInfoV8Parser) Parse(logger fklog.FKLogI, data []string, row int
 				err = errors.New("parse map field affix_base_num 初始基础词条数量 to value int32 failed")
 				logger.ErrorWF("parse map field affix_base_num 初始基础词条数量 to value int32 failed.",
 					zap.String("xlsx", "doll_equip_info_v8【人偶-装备-信息】.xlsx"), zap.String("sheet", "doll_equip_info_v8"),
-					// zap.String("field_data",data[12]),
+					// zap.String("field_data",data[11]),
 					zap.String("item_data", val), zap.Int("index", k),
 					zap.String("parse_data", items[1]),
 					zap.Error(err))
@@ -620,13 +560,13 @@ func (*gDollEquipInfoV8Parser) Parse(logger fklog.FKLogI, data []string, row int
 		}
 	}
 
-	// parse column 13 affix_base_pool : 基础词条池子id:词条位置(affix_pool
-	if data[13] != "" {
+	// parse column 12 affix_base_pool : 基础词条池子id:词条位置(affix_pool
+	if data[12] != "" {
 
 		config.Affix_base_pool = make(map[int32]int32)
 		var key int32
 		var value int32
-		vals := strings.Split(data[13], "_")
+		vals := strings.Split(data[12], "_")
 		for k, val := range vals {
 			items := strings.Split(val, ":")
 			tmp, err = strconv.ParseInt(items[0], 10, 64)
@@ -634,7 +574,7 @@ func (*gDollEquipInfoV8Parser) Parse(logger fklog.FKLogI, data []string, row int
 				err = errors.New("parse map field affix_base_pool 基础词条池子id:词条位置(affix_pool to key int32 failed")
 				logger.ErrorWF("parse map field affix_base_pool 基础词条池子id:词条位置(affix_pool to key int32 failed.",
 					zap.String("xlsx", "doll_equip_info_v8【人偶-装备-信息】.xlsx"), zap.String("sheet", "doll_equip_info_v8"),
-					// zap.String("field_data",data[13]),
+					// zap.String("field_data",data[12]),
 					zap.String("item_data", val), zap.Int("index", k),
 					zap.String("parse_data", items[0]),
 					zap.Error(err))
@@ -646,7 +586,7 @@ func (*gDollEquipInfoV8Parser) Parse(logger fklog.FKLogI, data []string, row int
 				err = errors.New("parse map field affix_base_pool 基础词条池子id:词条位置(affix_pool to value int32 failed")
 				logger.ErrorWF("parse map field affix_base_pool 基础词条池子id:词条位置(affix_pool to value int32 failed.",
 					zap.String("xlsx", "doll_equip_info_v8【人偶-装备-信息】.xlsx"), zap.String("sheet", "doll_equip_info_v8"),
-					// zap.String("field_data",data[13]),
+					// zap.String("field_data",data[12]),
 					zap.String("item_data", val), zap.Int("index", k),
 					zap.String("parse_data", items[1]),
 					zap.Error(err))
@@ -657,13 +597,13 @@ func (*gDollEquipInfoV8Parser) Parse(logger fklog.FKLogI, data []string, row int
 		}
 	}
 
-	// parse column 14 affix_rand_num : 初始随机词条数量
-	if data[14] != "" {
+	// parse column 13 affix_rand_num : 初始随机词条数量
+	if data[13] != "" {
 
 		config.Affix_rand_num = make(map[int32]int32)
 		var key int32
 		var value int32
-		vals := strings.Split(data[14], "_")
+		vals := strings.Split(data[13], "_")
 		for k, val := range vals {
 			items := strings.Split(val, ":")
 			tmp, err = strconv.ParseInt(items[0], 10, 64)
@@ -671,7 +611,7 @@ func (*gDollEquipInfoV8Parser) Parse(logger fklog.FKLogI, data []string, row int
 				err = errors.New("parse map field affix_rand_num 初始随机词条数量 to key int32 failed")
 				logger.ErrorWF("parse map field affix_rand_num 初始随机词条数量 to key int32 failed.",
 					zap.String("xlsx", "doll_equip_info_v8【人偶-装备-信息】.xlsx"), zap.String("sheet", "doll_equip_info_v8"),
-					// zap.String("field_data",data[14]),
+					// zap.String("field_data",data[13]),
 					zap.String("item_data", val), zap.Int("index", k),
 					zap.String("parse_data", items[0]),
 					zap.Error(err))
@@ -683,7 +623,7 @@ func (*gDollEquipInfoV8Parser) Parse(logger fklog.FKLogI, data []string, row int
 				err = errors.New("parse map field affix_rand_num 初始随机词条数量 to value int32 failed")
 				logger.ErrorWF("parse map field affix_rand_num 初始随机词条数量 to value int32 failed.",
 					zap.String("xlsx", "doll_equip_info_v8【人偶-装备-信息】.xlsx"), zap.String("sheet", "doll_equip_info_v8"),
-					// zap.String("field_data",data[14]),
+					// zap.String("field_data",data[13]),
 					zap.String("item_data", val), zap.Int("index", k),
 					zap.String("parse_data", items[1]),
 					zap.Error(err))
@@ -694,13 +634,13 @@ func (*gDollEquipInfoV8Parser) Parse(logger fklog.FKLogI, data []string, row int
 		}
 	}
 
-	// parse column 15 affix_rand_pool : 随机词条池子id:权重(affix_pool
-	if data[15] != "" {
+	// parse column 14 affix_rand_pool : 随机词条池子id:权重(affix_pool
+	if data[14] != "" {
 
 		config.Affix_rand_pool = make(map[int32]int32)
 		var key int32
 		var value int32
-		vals := strings.Split(data[15], "_")
+		vals := strings.Split(data[14], "_")
 		for k, val := range vals {
 			items := strings.Split(val, ":")
 			tmp, err = strconv.ParseInt(items[0], 10, 64)
@@ -708,7 +648,7 @@ func (*gDollEquipInfoV8Parser) Parse(logger fklog.FKLogI, data []string, row int
 				err = errors.New("parse map field affix_rand_pool 随机词条池子id:权重(affix_pool to key int32 failed")
 				logger.ErrorWF("parse map field affix_rand_pool 随机词条池子id:权重(affix_pool to key int32 failed.",
 					zap.String("xlsx", "doll_equip_info_v8【人偶-装备-信息】.xlsx"), zap.String("sheet", "doll_equip_info_v8"),
-					// zap.String("field_data",data[15]),
+					// zap.String("field_data",data[14]),
 					zap.String("item_data", val), zap.Int("index", k),
 					zap.String("parse_data", items[0]),
 					zap.Error(err))
@@ -720,7 +660,7 @@ func (*gDollEquipInfoV8Parser) Parse(logger fklog.FKLogI, data []string, row int
 				err = errors.New("parse map field affix_rand_pool 随机词条池子id:权重(affix_pool to value int32 failed")
 				logger.ErrorWF("parse map field affix_rand_pool 随机词条池子id:权重(affix_pool to value int32 failed.",
 					zap.String("xlsx", "doll_equip_info_v8【人偶-装备-信息】.xlsx"), zap.String("sheet", "doll_equip_info_v8"),
-					// zap.String("field_data",data[15]),
+					// zap.String("field_data",data[14]),
 					zap.String("item_data", val), zap.Int("index", k),
 					zap.String("parse_data", items[1]),
 					zap.Error(err))
@@ -731,13 +671,13 @@ func (*gDollEquipInfoV8Parser) Parse(logger fklog.FKLogI, data []string, row int
 		}
 	}
 
-	// parse column 16 affix_mod_num : 初始传奇词条数量
-	if data[16] != "" {
+	// parse column 15 affix_mod_num : 初始传奇词条数量
+	if data[15] != "" {
 
 		config.Affix_mod_num = make(map[int32]int32)
 		var key int32
 		var value int32
-		vals := strings.Split(data[16], "_")
+		vals := strings.Split(data[15], "_")
 		for k, val := range vals {
 			items := strings.Split(val, ":")
 			tmp, err = strconv.ParseInt(items[0], 10, 64)
@@ -745,7 +685,7 @@ func (*gDollEquipInfoV8Parser) Parse(logger fklog.FKLogI, data []string, row int
 				err = errors.New("parse map field affix_mod_num 初始传奇词条数量 to key int32 failed")
 				logger.ErrorWF("parse map field affix_mod_num 初始传奇词条数量 to key int32 failed.",
 					zap.String("xlsx", "doll_equip_info_v8【人偶-装备-信息】.xlsx"), zap.String("sheet", "doll_equip_info_v8"),
-					// zap.String("field_data",data[16]),
+					// zap.String("field_data",data[15]),
 					zap.String("item_data", val), zap.Int("index", k),
 					zap.String("parse_data", items[0]),
 					zap.Error(err))
@@ -757,7 +697,7 @@ func (*gDollEquipInfoV8Parser) Parse(logger fklog.FKLogI, data []string, row int
 				err = errors.New("parse map field affix_mod_num 初始传奇词条数量 to value int32 failed")
 				logger.ErrorWF("parse map field affix_mod_num 初始传奇词条数量 to value int32 failed.",
 					zap.String("xlsx", "doll_equip_info_v8【人偶-装备-信息】.xlsx"), zap.String("sheet", "doll_equip_info_v8"),
-					// zap.String("field_data",data[16]),
+					// zap.String("field_data",data[15]),
 					zap.String("item_data", val), zap.Int("index", k),
 					zap.String("parse_data", items[1]),
 					zap.Error(err))
@@ -768,13 +708,13 @@ func (*gDollEquipInfoV8Parser) Parse(logger fklog.FKLogI, data []string, row int
 		}
 	}
 
-	// parse column 17 affix_mod_pool : 传奇词条池子id:权重（mod_pool
-	if data[17] != "" {
+	// parse column 16 affix_mod_pool : 传奇词条池子id:权重（mod_pool
+	if data[16] != "" {
 
 		config.Affix_mod_pool = make(map[int32]int32)
 		var key int32
 		var value int32
-		vals := strings.Split(data[17], "_")
+		vals := strings.Split(data[16], "_")
 		for k, val := range vals {
 			items := strings.Split(val, ":")
 			tmp, err = strconv.ParseInt(items[0], 10, 64)
@@ -782,7 +722,7 @@ func (*gDollEquipInfoV8Parser) Parse(logger fklog.FKLogI, data []string, row int
 				err = errors.New("parse map field affix_mod_pool 传奇词条池子id:权重（mod_pool to key int32 failed")
 				logger.ErrorWF("parse map field affix_mod_pool 传奇词条池子id:权重（mod_pool to key int32 failed.",
 					zap.String("xlsx", "doll_equip_info_v8【人偶-装备-信息】.xlsx"), zap.String("sheet", "doll_equip_info_v8"),
-					// zap.String("field_data",data[17]),
+					// zap.String("field_data",data[16]),
 					zap.String("item_data", val), zap.Int("index", k),
 					zap.String("parse_data", items[0]),
 					zap.Error(err))
@@ -794,7 +734,7 @@ func (*gDollEquipInfoV8Parser) Parse(logger fklog.FKLogI, data []string, row int
 				err = errors.New("parse map field affix_mod_pool 传奇词条池子id:权重（mod_pool to value int32 failed")
 				logger.ErrorWF("parse map field affix_mod_pool 传奇词条池子id:权重（mod_pool to value int32 failed.",
 					zap.String("xlsx", "doll_equip_info_v8【人偶-装备-信息】.xlsx"), zap.String("sheet", "doll_equip_info_v8"),
-					// zap.String("field_data",data[17]),
+					// zap.String("field_data",data[16]),
 					zap.String("item_data", val), zap.Int("index", k),
 					zap.String("parse_data", items[1]),
 					zap.Error(err))
@@ -805,13 +745,13 @@ func (*gDollEquipInfoV8Parser) Parse(logger fklog.FKLogI, data []string, row int
 		}
 	}
 
-	// parse column 18 affix_extra_pool : 额外词条池子id:权重（sp_pool
-	if data[18] != "" {
+	// parse column 17 affix_extra_pool : 额外词条池子id:权重（sp_pool
+	if data[17] != "" {
 
 		config.Affix_extra_pool = make(map[int32]int32)
 		var key int32
 		var value int32
-		vals := strings.Split(data[18], "_")
+		vals := strings.Split(data[17], "_")
 		for k, val := range vals {
 			items := strings.Split(val, ":")
 			tmp, err = strconv.ParseInt(items[0], 10, 64)
@@ -819,7 +759,7 @@ func (*gDollEquipInfoV8Parser) Parse(logger fklog.FKLogI, data []string, row int
 				err = errors.New("parse map field affix_extra_pool 额外词条池子id:权重（sp_pool to key int32 failed")
 				logger.ErrorWF("parse map field affix_extra_pool 额外词条池子id:权重（sp_pool to key int32 failed.",
 					zap.String("xlsx", "doll_equip_info_v8【人偶-装备-信息】.xlsx"), zap.String("sheet", "doll_equip_info_v8"),
-					// zap.String("field_data",data[18]),
+					// zap.String("field_data",data[17]),
 					zap.String("item_data", val), zap.Int("index", k),
 					zap.String("parse_data", items[0]),
 					zap.Error(err))
@@ -831,7 +771,7 @@ func (*gDollEquipInfoV8Parser) Parse(logger fklog.FKLogI, data []string, row int
 				err = errors.New("parse map field affix_extra_pool 额外词条池子id:权重（sp_pool to value int32 failed")
 				logger.ErrorWF("parse map field affix_extra_pool 额外词条池子id:权重（sp_pool to value int32 failed.",
 					zap.String("xlsx", "doll_equip_info_v8【人偶-装备-信息】.xlsx"), zap.String("sheet", "doll_equip_info_v8"),
-					// zap.String("field_data",data[18]),
+					// zap.String("field_data",data[17]),
 					zap.String("item_data", val), zap.Int("index", k),
 					zap.String("parse_data", items[1]),
 					zap.Error(err))
@@ -842,13 +782,13 @@ func (*gDollEquipInfoV8Parser) Parse(logger fklog.FKLogI, data []string, row int
 		}
 	}
 
-	// parse column 19 suite_id : 装备套装id:随机权重
-	if data[19] != "" {
+	// parse column 18 suite_id : 装备套装id:随机权重
+	if data[18] != "" {
 
 		config.Suite_id = make(map[int32]int32)
 		var key int32
 		var value int32
-		vals := strings.Split(data[19], "_")
+		vals := strings.Split(data[18], "_")
 		for k, val := range vals {
 			items := strings.Split(val, ":")
 			tmp, err = strconv.ParseInt(items[0], 10, 64)
@@ -856,7 +796,7 @@ func (*gDollEquipInfoV8Parser) Parse(logger fklog.FKLogI, data []string, row int
 				err = errors.New("parse map field suite_id 装备套装id:随机权重 to key int32 failed")
 				logger.ErrorWF("parse map field suite_id 装备套装id:随机权重 to key int32 failed.",
 					zap.String("xlsx", "doll_equip_info_v8【人偶-装备-信息】.xlsx"), zap.String("sheet", "doll_equip_info_v8"),
-					// zap.String("field_data",data[19]),
+					// zap.String("field_data",data[18]),
 					zap.String("item_data", val), zap.Int("index", k),
 					zap.String("parse_data", items[0]),
 					zap.Error(err))
@@ -868,7 +808,7 @@ func (*gDollEquipInfoV8Parser) Parse(logger fklog.FKLogI, data []string, row int
 				err = errors.New("parse map field suite_id 装备套装id:随机权重 to value int32 failed")
 				logger.ErrorWF("parse map field suite_id 装备套装id:随机权重 to value int32 failed.",
 					zap.String("xlsx", "doll_equip_info_v8【人偶-装备-信息】.xlsx"), zap.String("sheet", "doll_equip_info_v8"),
-					// zap.String("field_data",data[19]),
+					// zap.String("field_data",data[18]),
 					zap.String("item_data", val), zap.Int("index", k),
 					zap.String("parse_data", items[1]),
 					zap.Error(err))
@@ -879,27 +819,27 @@ func (*gDollEquipInfoV8Parser) Parse(logger fklog.FKLogI, data []string, row int
 		}
 	}
 
-	// parse column 20 unknow_view_equipment_id : 未鉴定的装备id（0-表示不需要鉴定
-	if data[20] != "" {
-		tmp, err = strconv.ParseInt(data[20], 10, 64)
+	// parse column 19 unknow_view_equipment_id : 未鉴定的装备id（0-表示不需要鉴定
+	if data[19] != "" {
+		tmp, err = strconv.ParseInt(data[19], 10, 64)
 		if err != nil {
 			err = errors.New("parse field unknow_view_equipment_id 未鉴定的装备id（0-表示不需要鉴定 to int32 failed")
 			logger.ErrorWF("parse field unknow_view_equipment_id 未鉴定的装备id（0-表示不需要鉴定 to int32 failed.",
 				zap.String("xlsx", "doll_equip_info_v8【人偶-装备-信息】.xlsx"), zap.String("sheet", "doll_equip_info_v8"),
-				zap.String("parse_data", data[20]),
+				zap.String("parse_data", data[19]),
 				zap.Error(err))
 			return
 		}
 		config.Unknow_view_equipment_id = int32(tmp)
 	}
 
-	// parse column 21 view_cost : 鉴定消耗
-	if data[21] != "" {
+	// parse column 20 view_cost : 鉴定消耗
+	if data[20] != "" {
 
 		config.View_cost = make(map[int32]int64)
 		var key int32
 		var value int64
-		vals := strings.Split(data[21], "_")
+		vals := strings.Split(data[20], "_")
 		for k, val := range vals {
 			items := strings.Split(val, ":")
 			tmp, err = strconv.ParseInt(items[0], 10, 64)
@@ -907,7 +847,7 @@ func (*gDollEquipInfoV8Parser) Parse(logger fklog.FKLogI, data []string, row int
 				err = errors.New("parse map field view_cost 鉴定消耗 to key int32 failed")
 				logger.ErrorWF("parse map field view_cost 鉴定消耗 to key int32 failed.",
 					zap.String("xlsx", "doll_equip_info_v8【人偶-装备-信息】.xlsx"), zap.String("sheet", "doll_equip_info_v8"),
-					// zap.String("field_data",data[21]),
+					// zap.String("field_data",data[20]),
 					zap.String("item_data", val), zap.Int("index", k),
 					zap.String("parse_data", items[0]),
 					zap.Error(err))
@@ -919,7 +859,7 @@ func (*gDollEquipInfoV8Parser) Parse(logger fklog.FKLogI, data []string, row int
 				err = errors.New("parse map field view_cost 鉴定消耗 to value int64 failed")
 				logger.ErrorWF("parse map field view_cost 鉴定消耗 to value int64 failed.",
 					zap.String("xlsx", "doll_equip_info_v8【人偶-装备-信息】.xlsx"), zap.String("sheet", "doll_equip_info_v8"),
-					// zap.String("field_data",data[21]),
+					// zap.String("field_data",data[20]),
 					zap.String("item_data", val), zap.Int("index", k),
 					zap.String("parse_data", items[1]),
 					zap.Error(err))
@@ -930,13 +870,13 @@ func (*gDollEquipInfoV8Parser) Parse(logger fklog.FKLogI, data []string, row int
 		}
 	}
 
-	// parse column 22 view_need_dungeon : 允许鉴定需要通关的副本
-	if data[22] != "" {
+	// parse column 21 view_need_dungeon : 允许鉴定需要通关的副本
+	if data[21] != "" {
 
 		config.View_need_dungeon = make(map[int32]int32)
 		var key int32
 		var value int32
-		vals := strings.Split(data[22], "_")
+		vals := strings.Split(data[21], "_")
 		for k, val := range vals {
 			items := strings.Split(val, ":")
 			tmp, err = strconv.ParseInt(items[0], 10, 64)
@@ -944,7 +884,7 @@ func (*gDollEquipInfoV8Parser) Parse(logger fklog.FKLogI, data []string, row int
 				err = errors.New("parse map field view_need_dungeon 允许鉴定需要通关的副本 to key int32 failed")
 				logger.ErrorWF("parse map field view_need_dungeon 允许鉴定需要通关的副本 to key int32 failed.",
 					zap.String("xlsx", "doll_equip_info_v8【人偶-装备-信息】.xlsx"), zap.String("sheet", "doll_equip_info_v8"),
-					// zap.String("field_data",data[22]),
+					// zap.String("field_data",data[21]),
 					zap.String("item_data", val), zap.Int("index", k),
 					zap.String("parse_data", items[0]),
 					zap.Error(err))
@@ -956,7 +896,7 @@ func (*gDollEquipInfoV8Parser) Parse(logger fklog.FKLogI, data []string, row int
 				err = errors.New("parse map field view_need_dungeon 允许鉴定需要通关的副本 to value int32 failed")
 				logger.ErrorWF("parse map field view_need_dungeon 允许鉴定需要通关的副本 to value int32 failed.",
 					zap.String("xlsx", "doll_equip_info_v8【人偶-装备-信息】.xlsx"), zap.String("sheet", "doll_equip_info_v8"),
-					// zap.String("field_data",data[22]),
+					// zap.String("field_data",data[21]),
 					zap.String("item_data", val), zap.Int("index", k),
 					zap.String("parse_data", items[1]),
 					zap.Error(err))
@@ -967,55 +907,41 @@ func (*gDollEquipInfoV8Parser) Parse(logger fklog.FKLogI, data []string, row int
 		}
 	}
 
-	// parse column 23 pos_sub_type : 部位子类型
-	if data[23] != "" {
-		tmp, err = strconv.ParseInt(data[23], 10, 64)
-		if err != nil {
-			err = errors.New("parse field pos_sub_type 部位子类型 to int32 failed")
-			logger.ErrorWF("parse field pos_sub_type 部位子类型 to int32 failed.",
-				zap.String("xlsx", "doll_equip_info_v8【人偶-装备-信息】.xlsx"), zap.String("sheet", "doll_equip_info_v8"),
-				zap.String("parse_data", data[23]),
-				zap.Error(err))
-			return
-		}
-		config.Pos_sub_type = int32(tmp)
-	}
-
-	// parse column 24 weapon_model : 武器模型（废弃）
-	if data[24] != "" {
-		tmp, err = strconv.ParseInt(data[24], 10, 64)
+	// parse column 22 weapon_model : 武器模型（废弃）
+	if data[22] != "" {
+		tmp, err = strconv.ParseInt(data[22], 10, 64)
 		if err != nil {
 			err = errors.New("parse field weapon_model 武器模型（废弃） to int32 failed")
 			logger.ErrorWF("parse field weapon_model 武器模型（废弃） to int32 failed.",
 				zap.String("xlsx", "doll_equip_info_v8【人偶-装备-信息】.xlsx"), zap.String("sheet", "doll_equip_info_v8"),
-				zap.String("parse_data", data[24]),
+				zap.String("parse_data", data[22]),
 				zap.Error(err))
 			return
 		}
 		config.Weapon_model = int32(tmp)
 	}
 
-	// parse column 25 id : 记录装备分数的组id
-	if data[25] != "" {
-		tmp, err = strconv.ParseInt(data[25], 10, 64)
+	// parse column 23 id : 记录装备分数的组id
+	if data[23] != "" {
+		tmp, err = strconv.ParseInt(data[23], 10, 64)
 		if err != nil {
 			err = errors.New("parse field id 记录装备分数的组id to int32 failed")
 			logger.ErrorWF("parse field id 记录装备分数的组id to int32 failed.",
 				zap.String("xlsx", "doll_equip_info_v8【人偶-装备-信息】.xlsx"), zap.String("sheet", "doll_equip_info_v8"),
-				zap.String("parse_data", data[25]),
+				zap.String("parse_data", data[23]),
 				zap.Error(err))
 			return
 		}
 		config.Id = int32(tmp)
 	}
 
-	// parse column 26 preview_attr : 预览属性
-	if data[26] != "" {
+	// parse column 24 preview_attr : 预览属性
+	if data[24] != "" {
 
 		config.Preview_attr = make(map[int32]int64)
 		var key int32
 		var value int64
-		vals := strings.Split(data[26], "_")
+		vals := strings.Split(data[24], "_")
 		for k, val := range vals {
 			items := strings.Split(val, ":")
 			tmp, err = strconv.ParseInt(items[0], 10, 64)
@@ -1023,7 +949,7 @@ func (*gDollEquipInfoV8Parser) Parse(logger fklog.FKLogI, data []string, row int
 				err = errors.New("parse map field preview_attr 预览属性 to key int32 failed")
 				logger.ErrorWF("parse map field preview_attr 预览属性 to key int32 failed.",
 					zap.String("xlsx", "doll_equip_info_v8【人偶-装备-信息】.xlsx"), zap.String("sheet", "doll_equip_info_v8"),
-					// zap.String("field_data",data[26]),
+					// zap.String("field_data",data[24]),
 					zap.String("item_data", val), zap.Int("index", k),
 					zap.String("parse_data", items[0]),
 					zap.Error(err))
@@ -1035,7 +961,7 @@ func (*gDollEquipInfoV8Parser) Parse(logger fklog.FKLogI, data []string, row int
 				err = errors.New("parse map field preview_attr 预览属性 to value int64 failed")
 				logger.ErrorWF("parse map field preview_attr 预览属性 to value int64 failed.",
 					zap.String("xlsx", "doll_equip_info_v8【人偶-装备-信息】.xlsx"), zap.String("sheet", "doll_equip_info_v8"),
-					// zap.String("field_data",data[26]),
+					// zap.String("field_data",data[24]),
 					zap.String("item_data", val), zap.Int("index", k),
 					zap.String("parse_data", items[1]),
 					zap.Error(err))
@@ -1046,32 +972,106 @@ func (*gDollEquipInfoV8Parser) Parse(logger fklog.FKLogI, data []string, row int
 		}
 	}
 
-	// parse column 27 attack_type : 攻击方式
-	if data[27] != "" {
-		tmp, err = strconv.ParseInt(data[27], 10, 64)
+	// parse column 25 attack_type : 攻击方式
+	if data[25] != "" {
+		tmp, err = strconv.ParseInt(data[25], 10, 64)
 		if err != nil {
 			err = errors.New("parse field attack_type 攻击方式 to int32 failed")
 			logger.ErrorWF("parse field attack_type 攻击方式 to int32 failed.",
 				zap.String("xlsx", "doll_equip_info_v8【人偶-装备-信息】.xlsx"), zap.String("sheet", "doll_equip_info_v8"),
-				zap.String("parse_data", data[27]),
+				zap.String("parse_data", data[25]),
 				zap.Error(err))
 			return
 		}
 		config.Attack_type = int32(tmp)
 	}
 
-	// parse column 28 damage_type : 伤害类型
-	if data[28] != "" {
-		tmp, err = strconv.ParseInt(data[28], 10, 64)
+	// parse column 26 damage_type : 伤害类型
+	if data[26] != "" {
+		tmp, err = strconv.ParseInt(data[26], 10, 64)
 		if err != nil {
 			err = errors.New("parse field damage_type 伤害类型 to int32 failed")
 			logger.ErrorWF("parse field damage_type 伤害类型 to int32 failed.",
 				zap.String("xlsx", "doll_equip_info_v8【人偶-装备-信息】.xlsx"), zap.String("sheet", "doll_equip_info_v8"),
-				zap.String("parse_data", data[28]),
+				zap.String("parse_data", data[26]),
 				zap.Error(err))
 			return
 		}
 		config.Damage_type = int32(tmp)
+	}
+
+	// parse column 27 need_dungeon : 允许穿戴需要通关的副本
+	if data[27] != "" {
+
+		config.Need_dungeon = make(map[int32]int32)
+		var key int32
+		var value int32
+		vals := strings.Split(data[27], "_")
+		for k, val := range vals {
+			items := strings.Split(val, ":")
+			tmp, err = strconv.ParseInt(items[0], 10, 64)
+			if err != nil {
+				err = errors.New("parse map field need_dungeon 允许穿戴需要通关的副本 to key int32 failed")
+				logger.ErrorWF("parse map field need_dungeon 允许穿戴需要通关的副本 to key int32 failed.",
+					zap.String("xlsx", "doll_equip_info_v8【人偶-装备-信息】.xlsx"), zap.String("sheet", "doll_equip_info_v8"),
+					// zap.String("field_data",data[27]),
+					zap.String("item_data", val), zap.Int("index", k),
+					zap.String("parse_data", items[0]),
+					zap.Error(err))
+				return
+			}
+			key = int32(tmp)
+			tmp, err = strconv.ParseInt(items[1], 10, 64)
+			if err != nil {
+				err = errors.New("parse map field need_dungeon 允许穿戴需要通关的副本 to value int32 failed")
+				logger.ErrorWF("parse map field need_dungeon 允许穿戴需要通关的副本 to value int32 failed.",
+					zap.String("xlsx", "doll_equip_info_v8【人偶-装备-信息】.xlsx"), zap.String("sheet", "doll_equip_info_v8"),
+					// zap.String("field_data",data[27]),
+					zap.String("item_data", val), zap.Int("index", k),
+					zap.String("parse_data", items[1]),
+					zap.Error(err))
+				return
+			}
+			value = int32(tmp)
+			config.Need_dungeon[key] = value
+		}
+	}
+
+	// parse column 28 skill_pos_num : 随机技能孔数量:权重
+	if data[28] != "" {
+
+		config.Skill_pos_num = make(map[int32]int32)
+		var key int32
+		var value int32
+		vals := strings.Split(data[28], "_")
+		for k, val := range vals {
+			items := strings.Split(val, ":")
+			tmp, err = strconv.ParseInt(items[0], 10, 64)
+			if err != nil {
+				err = errors.New("parse map field skill_pos_num 随机技能孔数量:权重 to key int32 failed")
+				logger.ErrorWF("parse map field skill_pos_num 随机技能孔数量:权重 to key int32 failed.",
+					zap.String("xlsx", "doll_equip_info_v8【人偶-装备-信息】.xlsx"), zap.String("sheet", "doll_equip_info_v8"),
+					// zap.String("field_data",data[28]),
+					zap.String("item_data", val), zap.Int("index", k),
+					zap.String("parse_data", items[0]),
+					zap.Error(err))
+				return
+			}
+			key = int32(tmp)
+			tmp, err = strconv.ParseInt(items[1], 10, 64)
+			if err != nil {
+				err = errors.New("parse map field skill_pos_num 随机技能孔数量:权重 to value int32 failed")
+				logger.ErrorWF("parse map field skill_pos_num 随机技能孔数量:权重 to value int32 failed.",
+					zap.String("xlsx", "doll_equip_info_v8【人偶-装备-信息】.xlsx"), zap.String("sheet", "doll_equip_info_v8"),
+					// zap.String("field_data",data[28]),
+					zap.String("item_data", val), zap.Int("index", k),
+					zap.String("parse_data", items[1]),
+					zap.Error(err))
+				return
+			}
+			value = int32(tmp)
+			config.Skill_pos_num[key] = value
+		}
 	}
 
 	// parse column 29 font_soul : 升华头属性：随机权重
@@ -1229,11 +1229,10 @@ var gDollEquipInfoV8Fields = []string{
 	"score_group",
 	"quality",
 	"pos",
-	"skill_pos_num",
+	"pos_sub_type",
 	"sub_type_random",
 	"level",
 	"level_show",
-	"need_dungeon",
 	"sell",
 	"split_num",
 	"split_random_id",
@@ -1248,12 +1247,13 @@ var gDollEquipInfoV8Fields = []string{
 	"unknow_view_equipment_id",
 	"view_cost",
 	"view_need_dungeon",
-	"pos_sub_type",
 	"weapon_model",
 	"id",
 	"preview_attr",
 	"attack_type",
 	"damage_type",
+	"need_dungeon",
+	"skill_pos_num",
 	"font_soul",
 	"tail_soul",
 	"recast_cost",

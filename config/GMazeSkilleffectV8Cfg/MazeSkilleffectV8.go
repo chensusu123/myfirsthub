@@ -38,7 +38,7 @@ type MazeSkilleffectV8ConfigRow struct {
 	Attr_value_7             int32           `json:"attr_value_7"`             // 参数7
 	Attr_value_8_variable_id map[int32]int32 `json:"attr_value_8_variable_id"` // 参数8关联的变量id
 	Attr_value_8_type        int32           `json:"attr_value_8_type"`        // 参数8数值类型
-	Attr_value_8             int32           `json:"attr_value_8"`             // 参数8
+	Attr_value_8             int32           `json:"attr_value_8"`             // 参数8结算间隔时间
 }
 
 // MazeSkilleffectV8Config from maze_skill_effect_v8【迷宫-技能-技能效果】.xlsx maze_skilleffect_v8
@@ -794,12 +794,12 @@ func (*gMazeSkilleffectV8Parser) Parse(logger fklog.FKLogI, data []string, row i
 		config.Attr_value_8_type = int32(tmp)
 	}
 
-	// parse column 24 attr_value_8 : 参数8
+	// parse column 24 attr_value_8 : 参数8结算间隔时间
 	if data[24] != "" {
 		tmp, err = strconv.ParseInt(data[24], 10, 64)
 		if err != nil {
-			err = errors.New("parse field attr_value_8 参数8 to int32 failed")
-			logger.ErrorWF("parse field attr_value_8 参数8 to int32 failed.",
+			err = errors.New("parse field attr_value_8 参数8结算间隔时间 to int32 failed")
+			logger.ErrorWF("parse field attr_value_8 参数8结算间隔时间 to int32 failed.",
 				zap.String("xlsx", "maze_skill_effect_v8【迷宫-技能-技能效果】.xlsx"), zap.String("sheet", "maze_skilleffect_v8"),
 				zap.String("parse_data", data[24]),
 				zap.Error(err))
