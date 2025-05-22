@@ -8,6 +8,8 @@ import (
 	"sync/atomic"
 	"time"
 
+	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fklog"
+	"gitlab.ifreetalk.com/maze-plate/freetk/fkutil"
 	"gitlab.ifreetalk.com/maze/maze_game_server/common/function/fileio"
 	"gitlab.ifreetalk.com/maze/maze_game_server/common/function/gm"
 	"gitlab.ifreetalk.com/maze/maze_game_server/io/redis/mazebuffinforedis"
@@ -16,8 +18,6 @@ import (
 	"gitlab.ifreetalk.com/maze/maze_game_server/module/dollassembleinfo"
 	"gitlab.ifreetalk.com/maze/maze_game_server/servers/maze_main_server/process/equip"
 	"gitlab.ifreetalk.com/maze/maze_game_server/servers/maze_main_server/process/equip_gm/equipbaggm"
-	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fklog"
-	"gitlab.ifreetalk.com/maze-plate/freetk/fkutil"
 	"go.uber.org/zap"
 )
 
@@ -689,7 +689,7 @@ func RegGm(logger fklog.FKLogI) {
 	gm.SafeHttpRegister(logger, "/GmEquipPosLvUp", func(writer http.ResponseWriter, request *http.Request) {
 		uid := fkutil.ToUint64(request.Form.Get("uid"))
 		logger.SetUid(uid)
-		targetLv := fkutil.ToInt32(request.Form.Get("pos"))
+		targetLv := fkutil.ToInt32(request.Form.Get("lv"))
 		e := equip.OnGmEquipPosLvUp(logger, uid, targetLv)
 		if e == nil {
 			writer.Write([]byte(string("ok")))
