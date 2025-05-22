@@ -1,25 +1,23 @@
 package GMazeEquipAffixLimitV8Cfg
 
-
 import (
+	"errors"
+	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fklog"
+	"gitlab.ifreetalk.com/maze-plate/freetk/fkserver/config_manager"
+	"go.uber.org/zap"
+	"strconv"
 	"sync"
 	"sync/atomic"
 	"unsafe"
-	"strconv"
-	"errors"
-	"gitlab.ifreetalk.com/maze-plate/freetk/fkserver/config_manager"
-	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fklog"
-	"go.uber.org/zap"
 )
-
 
 // MazeEquipAffixLimitV8ConfigRow from maze_equip_affix_limit_v8【迷宫-装备-受数量限制的词条id】.xlsx maze_equip_affix_limit_v8
 type MazeEquipAffixLimitV8ConfigRow struct {
-    Order       int32  `json:"order"` // 序号
-    Quality       int32  `json:"quality"` // 品质
-    Pos       int32  `json:"pos"` // 部位
-    Limit_num       int32  `json:"limit_num"` // 初始化和洗练时，受限制的抗性词条数量
-    Limit_base2_num       int32  `json:"limit_base2_num"` // 初始化时，受到数量限制的垃圾词条id数量
+	Order           int32 `json:"order"`           // 序号
+	Quality         int32 `json:"quality"`         // 品质
+	Pos             int32 `json:"pos"`             // 部位
+	Limit_num       int32 `json:"limit_num"`       // 初始化和洗练时，受限制的抗性词条数量
+	Limit_base2_num int32 `json:"limit_base2_num"` // 初始化时，受到数量限制的垃圾词条id数量
 }
 
 // MazeEquipAffixLimitV8Config from maze_equip_affix_limit_v8【迷宫-装备-受数量限制的词条id】.xlsx maze_equip_affix_limit_v8
@@ -55,7 +53,7 @@ func (c *MazeEquipAffixLimitV8Config) Get(configId int32) *MazeEquipAffixLimitV8
 }
 
 // GetAllMazeEquipAffixLimitV8Config get all config slice
-func (c *MazeEquipAffixLimitV8Config)  GetAllMazeEquipAffixLimitV8Config () (res []*MazeEquipAffixLimitV8ConfigRow) {
+func (c *MazeEquipAffixLimitV8Config) GetAllMazeEquipAffixLimitV8Config() (res []*MazeEquipAffixLimitV8ConfigRow) {
 	// c.lock.RLock()
 	// defer c.lock.RUnlock()
 	for _, val := range c.ConfigRows {
@@ -65,7 +63,7 @@ func (c *MazeEquipAffixLimitV8Config)  GetAllMazeEquipAffixLimitV8Config () (res
 }
 
 // GetAll get all config slice
-func (c *MazeEquipAffixLimitV8Config)  GetAll() (res []*MazeEquipAffixLimitV8ConfigRow) {
+func (c *MazeEquipAffixLimitV8Config) GetAll() (res []*MazeEquipAffixLimitV8ConfigRow) {
 	// c.lock.RLock()
 	// defer c.lock.RUnlock()
 	for _, val := range c.ConfigRows {
@@ -74,9 +72,8 @@ func (c *MazeEquipAffixLimitV8Config)  GetAll() (res []*MazeEquipAffixLimitV8Con
 	return
 }
 
-
-// global config pointer 
-var gConfigData *MazeEquipAffixLimitV8Config 
+// global config pointer
+var gConfigData *MazeEquipAffixLimitV8Config
 
 // GetMazeEquipAffixLimitV8Config pkg func. get one config by configId
 func GetMazeEquipAffixLimitV8Config(configId int32) *MazeEquipAffixLimitV8ConfigRow {
@@ -89,8 +86,8 @@ func Get(configId int32) *MazeEquipAffixLimitV8ConfigRow {
 }
 
 // GetAllMazeEquipAffixLimitV8Config pkg func. get all config slice
-func GetAllMazeEquipAffixLimitV8Config () []*MazeEquipAffixLimitV8ConfigRow {
-	return gConfigData.GetAllMazeEquipAffixLimitV8Config ()
+func GetAllMazeEquipAffixLimitV8Config() []*MazeEquipAffixLimitV8ConfigRow {
+	return gConfigData.GetAllMazeEquipAffixLimitV8Config()
 }
 
 // GetAll pkg func. get all config slice
@@ -99,17 +96,17 @@ func GetAll() []*MazeEquipAffixLimitV8ConfigRow {
 }
 
 // ConfigRows get raw map data
-func ConfigRows() map[int32]*MazeEquipAffixLimitV8ConfigRow{
+func ConfigRows() map[int32]*MazeEquipAffixLimitV8ConfigRow {
 	return gConfigData.ConfigRows
 }
 
 // GetConfigDesc get config desc for lod,debug etc.
-func GetConfigDesc() string{
+func GetConfigDesc() string {
 	return "MazeEquipAffixLimitV8ConfigRow from maze_equip_affix_limit_v8【迷宫-装备-受数量限制的词条id】.xlsx maze_equip_affix_limit_v8"
 }
 
 // GetRawValue get raw data
-func GetRawValue() *MazeEquipAffixLimitV8Config{
+func GetRawValue() *MazeEquipAffixLimitV8Config {
 	return gConfigData
 }
 
@@ -119,10 +116,10 @@ func SheetName() string {
 }
 
 func init() {
-	// reg config auto load 
-	config_manager.RegAutoConfig("maze_equip_affix_limit_v8.json", 
+	// reg config auto load
+	config_manager.RegAutoConfig("maze_equip_affix_limit_v8.json",
 		"maze_equip_affix_limit_v8【迷宫-装备-受数量限制的词条id】.xlsx", "maze_equip_affix_limit_v8",
-	 	&gMazeEquipAffixLimitV8Parser{}, &gMazeEquipAffixLimitV8Loader{})
+		&gMazeEquipAffixLimitV8Parser{}, &gMazeEquipAffixLimitV8Loader{})
 }
 
 // data update call back
@@ -150,32 +147,35 @@ var cfgCheckCallBack sync.Map //map[string]func(*MazeEquipAffixLimitV8Config)err
 // doConfigCheckCallback do config check callback
 func doConfigCheckCallback(c *MazeEquipAffixLimitV8Config) (err error) {
 	cfgCheckCallBack.Range(func(key, value interface{}) bool {
-		err := value.(func(*MazeEquipAffixLimitV8Config)error)(c)
+		err := value.(func(*MazeEquipAffixLimitV8Config) error)(c)
 		return err == nil
 	})
-	return 
+	return
 }
 
 // RegisterLoadedCallBack reg config update func.
-func RegisterConfigCheck(key string, f func(*MazeEquipAffixLimitV8Config)error) {
+func RegisterConfigCheck(key string, f func(*MazeEquipAffixLimitV8Config) error) {
 	cfgCheckCallBack.Store(key, f)
 }
 
 // implete ConfigLoader interface
 type gMazeEquipAffixLimitV8Loader struct {
 }
+
 // NewContainer new data container pointer
-func (*gMazeEquipAffixLimitV8Loader) NewContainer() interface{}{
+func (*gMazeEquipAffixLimitV8Loader) NewContainer() interface{} {
 	return newConfig()
 }
+
 // Check check new config data ptr
-func (*gMazeEquipAffixLimitV8Loader) Check(newPtr interface{})error{
+func (*gMazeEquipAffixLimitV8Loader) Check(newPtr interface{}) error {
 	// set global ptr
 	cfgData := newPtr.(*MazeEquipAffixLimitV8Config)
 	return doConfigCheckCallback(cfgData)
 }
+
 // Swap swap global config data ptr
-func (*gMazeEquipAffixLimitV8Loader) Swap(newPtr interface{}){
+func (*gMazeEquipAffixLimitV8Loader) Swap(newPtr interface{}) {
 	// convert pointer
 	cache := newPtr.(*MazeEquipAffixLimitV8Config)
 	// update second edit
@@ -183,45 +183,48 @@ func (*gMazeEquipAffixLimitV8Loader) Swap(newPtr interface{}){
 	// set global ptr
 	atomic.StorePointer((*unsafe.Pointer)(unsafe.Pointer(&gConfigData)), unsafe.Pointer(cache))
 }
+
 // Add append config item to map,save result
-func (*gMazeEquipAffixLimitV8Loader) Add(logger fklog.FKLogI,container interface{}, ri interface{})(err error) {
-	row,ok := ri.(*MazeEquipAffixLimitV8ConfigRow)
+func (*gMazeEquipAffixLimitV8Loader) Add(logger fklog.FKLogI, container interface{}, ri interface{}) (err error) {
+	row, ok := ri.(*MazeEquipAffixLimitV8ConfigRow)
 	if !ok {
 		err = errors.New("invalid type. not *MazeEquipAffixLimitV8ConfigRow")
 		logger.ErrorWF("invalid type. not *MazeEquipAffixLimitV8ConfigRow", zap.String("xlsx", "maze_equip_affix_limit_v8【迷宫-装备-受数量限制的词条id】.xlsx"),
 			zap.String("sheet", "maze_equip_affix_limit_v8"))
-		return 
+		return
 	}
-	config,ok := container.(*MazeEquipAffixLimitV8Config)
+	config, ok := container.(*MazeEquipAffixLimitV8Config)
 	if !ok {
 		err = errors.New("invalid type. not *MazeEquipAffixLimitV8Config")
 		logger.ErrorWF("invalid type. not *MazeEquipAffixLimitV8Config", zap.String("xlsx", "maze_equip_affix_limit_v8【迷宫-装备-受数量限制的词条id】.xlsx"),
 			zap.String("sheet", "maze_equip_affix_limit_v8"))
-		return 
+		return
 	}
 	config.ConfigRows[row.Order] = row
 	return
 }
+
 // GetValue get real map value for json parse
-func (*gMazeEquipAffixLimitV8Loader) GetValue(logger fklog.FKLogI,container interface{})(real interface{},err error) {
-	config,ok := container.(*MazeEquipAffixLimitV8Config)
+func (*gMazeEquipAffixLimitV8Loader) GetValue(logger fklog.FKLogI, container interface{}) (real interface{}, err error) {
+	config, ok := container.(*MazeEquipAffixLimitV8Config)
 	if !ok {
 		err = errors.New("invalid type. not *MazeEquipAffixLimitV8Config")
 		logger.ErrorWF("invalid type. not *MazeEquipAffixLimitV8Config", zap.String("xlsx", "maze_equip_affix_limit_v8【迷宫-装备-受数量限制的词条id】.xlsx"),
 			zap.String("sheet", "maze_equip_affix_limit_v8"))
-		return 
+		return
 	}
 	real = &config.ConfigRows
 	return
 }
+
 // Range range all data for json append data parse.
-func (*gMazeEquipAffixLimitV8Loader) Range(logger fklog.FKLogI, container interface{}, rf func(row interface{}) error) (err error){
-	config,ok := container.(*MazeEquipAffixLimitV8Config)
+func (*gMazeEquipAffixLimitV8Loader) Range(logger fklog.FKLogI, container interface{}, rf func(row interface{}) error) (err error) {
+	config, ok := container.(*MazeEquipAffixLimitV8Config)
 	if !ok {
 		err = errors.New("invalid type. not *MazeEquipAffixLimitV8Config")
 		logger.ErrorWF("invalid type. not *MazeEquipAffixLimitV8Config", zap.String("xlsx", "maze_equip_affix_limit_v8【迷宫-装备-受数量限制的词条id】.xlsx"),
 			zap.String("sheet", "maze_equip_affix_limit_v8"))
-		return 
+		return
 	}
 	for _, row := range config.ConfigRows {
 		err = rf(row)
@@ -232,10 +235,10 @@ func (*gMazeEquipAffixLimitV8Loader) Range(logger fklog.FKLogI, container interf
 	return
 }
 
-
 // implete ConfigParser interface
 type gMazeEquipAffixLimitV8Parser struct {
 }
+
 // New new config row data
 func (*gMazeEquipAffixLimitV8Parser) New() interface{} {
 	return &MazeEquipAffixLimitV8ConfigRow{}
@@ -245,92 +248,93 @@ func (*gMazeEquipAffixLimitV8Parser) New() interface{} {
 func (*gMazeEquipAffixLimitV8Parser) Fields() []string {
 	return gMazeEquipAffixLimitV8Fields
 }
+
 // Parse parse raw data to row data
-func (*gMazeEquipAffixLimitV8Parser) Parse(logger fklog.FKLogI,data []string, row interface{}) (err error) {
+func (*gMazeEquipAffixLimitV8Parser) Parse(logger fklog.FKLogI, data []string, row interface{}) (err error) {
 	// convert row type
-	config,ok := row.(*MazeEquipAffixLimitV8ConfigRow)
+	config, ok := row.(*MazeEquipAffixLimitV8ConfigRow)
 	if !ok {
 		err = errors.New("invalid type. not *MazeEquipAffixLimitV8ConfigRow")
 		logger.ErrorWF("invalid type. not *MazeEquipAffixLimitV8ConfigRow", zap.String("xlsx", "maze_equip_affix_limit_v8【迷宫-装备-受数量限制的词条id】.xlsx"),
 			zap.String("sheet", "maze_equip_affix_limit_v8"))
-		return 
+		return
 	}
 	// compare length
 	if len(data) != len(gMazeEquipAffixLimitV8Fields) {
 		err = errors.New("fields count not match.")
-		logger.ErrorWF("invalid type. not *map[int32]*MazeEquipAffixLimitV8ConfigRow", 
+		logger.ErrorWF("invalid type. not *map[int32]*MazeEquipAffixLimitV8ConfigRow",
 			zap.String("xlsx", "maze_equip_affix_limit_v8【迷宫-装备-受数量限制的词条id】.xlsx"),
-			zap.String("sheet", "maze_equip_affix_limit_v8"), zap.Int("need_count",len(gMazeEquipAffixLimitV8Fields)), 
-			zap.Int("had_count",len(data)))
+			zap.String("sheet", "maze_equip_affix_limit_v8"), zap.Int("need_count", len(gMazeEquipAffixLimitV8Fields)),
+			zap.Int("had_count", len(data)))
 		return
 	}
 
 	var tmp int64
 
-	// parse column 0 order : 序号 
+	// parse column 0 order : 序号
 	if data[0] != "" {
-		tmp,err = strconv.ParseInt(data[0],10,64)
+		tmp, err = strconv.ParseInt(data[0], 10, 64)
 		if err != nil {
 			err = errors.New("parse field order 序号 to int32 failed")
-			logger.ErrorWF("parse field order 序号 to int32 failed.", 
-				zap.String("xlsx", "maze_equip_affix_limit_v8【迷宫-装备-受数量限制的词条id】.xlsx"), zap.String("sheet", "maze_equip_affix_limit_v8"), 
-				zap.String("parse_data",data[0]), 
+			logger.ErrorWF("parse field order 序号 to int32 failed.",
+				zap.String("xlsx", "maze_equip_affix_limit_v8【迷宫-装备-受数量限制的词条id】.xlsx"), zap.String("sheet", "maze_equip_affix_limit_v8"),
+				zap.String("parse_data", data[0]),
 				zap.Error(err))
 			return
 		}
 		config.Order = int32(tmp)
 	}
 
-	// parse column 1 quality : 品质 
+	// parse column 1 quality : 品质
 	if data[1] != "" {
-		tmp,err = strconv.ParseInt(data[1],10,64)
+		tmp, err = strconv.ParseInt(data[1], 10, 64)
 		if err != nil {
 			err = errors.New("parse field quality 品质 to int32 failed")
-			logger.ErrorWF("parse field quality 品质 to int32 failed.", 
-				zap.String("xlsx", "maze_equip_affix_limit_v8【迷宫-装备-受数量限制的词条id】.xlsx"), zap.String("sheet", "maze_equip_affix_limit_v8"), 
-				zap.String("parse_data",data[1]), 
+			logger.ErrorWF("parse field quality 品质 to int32 failed.",
+				zap.String("xlsx", "maze_equip_affix_limit_v8【迷宫-装备-受数量限制的词条id】.xlsx"), zap.String("sheet", "maze_equip_affix_limit_v8"),
+				zap.String("parse_data", data[1]),
 				zap.Error(err))
 			return
 		}
 		config.Quality = int32(tmp)
 	}
 
-	// parse column 2 pos : 部位 
+	// parse column 2 pos : 部位
 	if data[2] != "" {
-		tmp,err = strconv.ParseInt(data[2],10,64)
+		tmp, err = strconv.ParseInt(data[2], 10, 64)
 		if err != nil {
 			err = errors.New("parse field pos 部位 to int32 failed")
-			logger.ErrorWF("parse field pos 部位 to int32 failed.", 
-				zap.String("xlsx", "maze_equip_affix_limit_v8【迷宫-装备-受数量限制的词条id】.xlsx"), zap.String("sheet", "maze_equip_affix_limit_v8"), 
-				zap.String("parse_data",data[2]), 
+			logger.ErrorWF("parse field pos 部位 to int32 failed.",
+				zap.String("xlsx", "maze_equip_affix_limit_v8【迷宫-装备-受数量限制的词条id】.xlsx"), zap.String("sheet", "maze_equip_affix_limit_v8"),
+				zap.String("parse_data", data[2]),
 				zap.Error(err))
 			return
 		}
 		config.Pos = int32(tmp)
 	}
 
-	// parse column 3 limit_num : 初始化和洗练时，受限制的抗性词条数量 
+	// parse column 3 limit_num : 初始化和洗练时，受限制的抗性词条数量
 	if data[3] != "" {
-		tmp,err = strconv.ParseInt(data[3],10,64)
+		tmp, err = strconv.ParseInt(data[3], 10, 64)
 		if err != nil {
 			err = errors.New("parse field limit_num 初始化和洗练时，受限制的抗性词条数量 to int32 failed")
-			logger.ErrorWF("parse field limit_num 初始化和洗练时，受限制的抗性词条数量 to int32 failed.", 
-				zap.String("xlsx", "maze_equip_affix_limit_v8【迷宫-装备-受数量限制的词条id】.xlsx"), zap.String("sheet", "maze_equip_affix_limit_v8"), 
-				zap.String("parse_data",data[3]), 
+			logger.ErrorWF("parse field limit_num 初始化和洗练时，受限制的抗性词条数量 to int32 failed.",
+				zap.String("xlsx", "maze_equip_affix_limit_v8【迷宫-装备-受数量限制的词条id】.xlsx"), zap.String("sheet", "maze_equip_affix_limit_v8"),
+				zap.String("parse_data", data[3]),
 				zap.Error(err))
 			return
 		}
 		config.Limit_num = int32(tmp)
 	}
 
-	// parse column 4 limit_base2_num : 初始化时，受到数量限制的垃圾词条id数量 
+	// parse column 4 limit_base2_num : 初始化时，受到数量限制的垃圾词条id数量
 	if data[4] != "" {
-		tmp,err = strconv.ParseInt(data[4],10,64)
+		tmp, err = strconv.ParseInt(data[4], 10, 64)
 		if err != nil {
 			err = errors.New("parse field limit_base2_num 初始化时，受到数量限制的垃圾词条id数量 to int32 failed")
-			logger.ErrorWF("parse field limit_base2_num 初始化时，受到数量限制的垃圾词条id数量 to int32 failed.", 
-				zap.String("xlsx", "maze_equip_affix_limit_v8【迷宫-装备-受数量限制的词条id】.xlsx"), zap.String("sheet", "maze_equip_affix_limit_v8"), 
-				zap.String("parse_data",data[4]), 
+			logger.ErrorWF("parse field limit_base2_num 初始化时，受到数量限制的垃圾词条id数量 to int32 failed.",
+				zap.String("xlsx", "maze_equip_affix_limit_v8【迷宫-装备-受数量限制的词条id】.xlsx"), zap.String("sheet", "maze_equip_affix_limit_v8"),
+				zap.String("parse_data", data[4]),
 				zap.Error(err))
 			return
 		}
@@ -340,19 +344,19 @@ func (*gMazeEquipAffixLimitV8Parser) Parse(logger fklog.FKLogI,data []string, ro
 }
 
 var gMazeEquipAffixLimitV8Fields = []string{
-    "order",
-    "quality",
-    "pos",
-    "limit_num",
-    "limit_base2_num",
+	"order",
+	"quality",
+	"pos",
+	"limit_num",
+	"limit_base2_num",
 }
 
 // LoadDataManual load data for test
-func LoadDataManual(logger fklog.FKLogI, load func(file, sheet string, fields []string) ([][]string,error)) (err error) {
+func LoadDataManual(logger fklog.FKLogI, load func(file, sheet string, fields []string) ([][]string, error)) (err error) {
 	parser := &gMazeEquipAffixLimitV8Parser{}
 	loader := &gMazeEquipAffixLimitV8Loader{}
 	var data [][]string
-	data,err = load("maze_equip_affix_limit_v8【迷宫-装备-受数量限制的词条id】.xlsx", "maze_equip_affix_limit_v8", gMazeEquipAffixLimitV8Fields)
+	data, err = load("maze_equip_affix_limit_v8【迷宫-装备-受数量限制的词条id】.xlsx", "maze_equip_affix_limit_v8", gMazeEquipAffixLimitV8Fields)
 	if err != nil {
 		logger.ErrorWF("load maze_equip_affix_limit_v8【迷宫-装备-受数量限制的词条id】.xlsx maze_equip_affix_limit_v8 data failed.", zap.Error(err))
 		return
