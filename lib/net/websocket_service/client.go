@@ -290,6 +290,7 @@ type MyCustomClaims struct {
 var secretKey = []byte("zU6W/(Y%,KX?-@q4m~tLy1_uhcekTNQg")
 
 func VerifyWithCustomClaims(tokenString string) (*MyCustomClaims, error) {
+	logger := fklog.AppLogger().Clone("VerifyWithCustomClaims")
 	token, err := jwt.ParseWithClaims(
 		tokenString,
 		&MyCustomClaims{},
@@ -298,14 +299,15 @@ func VerifyWithCustomClaims(tokenString string) (*MyCustomClaims, error) {
 		},
 	)
 	if err != nil {
-		fmt.Println("Error parsing token:", tokenString, err)
+		logger.WarnWF("VerifyWithCustomClaims Error parsing token", zap.String("token", tokenString), zap.Error(err))
 		return nil, err
 	}
 	if claims, ok := token.Claims.(*MyCustomClaims); ok && token.Valid {
-		fmt.Println("Token is valid", tokenString, claims)
+		logger.WarnWF("VerifyWithCustomClaims Token is valid", zap.String("token", tokenString), zap.Error(err))
 		return claims, nil
 	}
-	fmt.Println("Token is invalid", tokenString)
+
+	logger.InfoWF("VerifyWithCustomClaims Token is invalid", zap.String("token", tokenString), zap.Error(err))
 	return nil, err
 }
 
