@@ -85,5 +85,7 @@ func RegisterHandler() {
 		gm.RegGm(logger)
 		// 装备gm
 		equip_gm.RegGm(logger)
+		// Buff
+		buff.InitGM(logger)
 	})
 }
