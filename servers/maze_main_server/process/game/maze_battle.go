@@ -162,6 +162,18 @@ func GetMazeAIMonsterConfig(logger fklog.FKLogI, userId uint64, force int64, foe
 		UserValue:     proto.Int32(foeCfg.Def_max),
 		UserValueType: proto.Int32(1),
 	})
+	// 怪物攻击速度提高万分比
+	monsterConfigInfo.AttrInfo = append(monsterConfigInfo.AttrInfo, &MazeAIBattle.MazeAIAttrInfo{
+		Type:          proto.Int32(int32(MazeAIBattle.MAZE_AI_ATTR_TYPE_ATK_SPEED)),
+		UserValue:     proto.Int32(foeCfg.Attack_speed_pro),
+		UserValueType: proto.Int32(2),
+	})
+	// 怪物受击回复速度提高万分比
+	monsterConfigInfo.AttrInfo = append(monsterConfigInfo.AttrInfo, &MazeAIBattle.MazeAIAttrInfo{
+		Type:          proto.Int32(int32(MazeAIBattle.MAZE_AI_ATTR_TYPE_RECOVERY_SPEED)),
+		UserValue:     proto.Int32(foeCfg.Be_attack_recovery_speed_pro),
+		UserValueType: proto.Int32(2),
+	})
 	// 怪物韧性上限
 	monsterConfigInfo.AttrInfo = append(monsterConfigInfo.AttrInfo, &MazeAIBattle.MazeAIAttrInfo{
 		Type:          proto.Int32(int32(MazeAIBattle.MAZE_AI_ATTR_TYPE_TOUGH_MAX)),

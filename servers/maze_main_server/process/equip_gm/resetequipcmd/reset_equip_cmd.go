@@ -8,8 +8,11 @@ package resetequipcmd
 
 import (
 	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fklog"
-	"gitlab.ifreetalk.com/maze/maze_game_server/servers/maze_main_server/process/equip_gm/equipbaggm"
+	"gitlab.ifreetalk.com/maze/maze_game_server/common/constdef"
+	"gitlab.ifreetalk.com/maze/maze_game_server/io/redis/mazebuffinforedis"
 	"gitlab.ifreetalk.com/maze/maze_game_server/servers/maze_main_server/process/equip"
+	"gitlab.ifreetalk.com/maze/maze_game_server/servers/maze_main_server/process/equip_gm/equipbaggm"
+	"go.uber.org/zap"
 )
 
 func RunCmd1001(logger fklog.FKLogI, userID uint64, session string, param string) error {
@@ -30,6 +33,12 @@ func RunCmd1001(logger fklog.FKLogI, userID uint64, session string, param string
 	e = equip.HandleDollEquipInit(logger, userID, true)
 	if e != nil {
 		return e
+	}
+	// 删除临时buff武力属性
+	err := mazebuffinforedis.DelMazeBuffBySrc(logger, userID, constdef.MazeBuffSrcSelectBuffForce)
+	if err != nil {
+		logger.ErrorWF("MazeBarrierNotifyProcess DelMazeBuffBySrc failed", zap.Uint64("userId", userID), zap.Error(err))
+		return err
 	}
 	return nil
 }

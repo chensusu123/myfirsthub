@@ -1,8 +1,13 @@
 package buff
 
 import (
+	"gitlab.ifreetalk.com/maze/maze_game_server/common/constdef"
+	"gitlab.ifreetalk.com/maze/maze_game_server/common/structsdef"
 	"gitlab.ifreetalk.com/maze/maze_game_server/io/kafka/mazebarrieruserkafka"
+	"gitlab.ifreetalk.com/maze/maze_game_server/io/redis/mazeattrcalcnotifyqueue"
+	"gitlab.ifreetalk.com/maze/maze_game_server/io/redis/mazebuffinforedis"
 	"gitlab.ifreetalk.com/maze/maze_game_server/io/redis/mazetempbuffredis"
+	"go.uber.org/zap"
 
 	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fklog"
 )
@@ -27,6 +32,22 @@ func MazeBarrierNotifyProcess(logger fklog.FKLogI, msg *MazeBarrierUserGameRecor
 	if msg.GameRet != 1 && msg.GameRet != 2 {
 		return
 	}
+	// 删除临时buff武力属性
+	err := mazebuffinforedis.DelMazeBuffBySrc(logger, msg.UserId, constdef.MazeBuffSrcSelectBuffForce)
+	if err != nil {
+		logger.ErrorWF("MazeBarrierNotifyProcess DelMazeBuffBySrc failed", zap.Uint64("userId", msg.UserId), zap.Error(err))
+		return
+	}
+
+	// 推送属性计算消息
+	calcAttrNotify := &structsdef.MazeCalcAttrNotifyMsg{
+		UserId: msg.UserId,
+		// FromServer: fmt.Sprintf("%d %s", fkconfig.EnvVal.ServerType, fkconfig.EnvVal.AppName),
+		ChgType: constdef.MazeBuffChgForceValue,
+		Session: "buff",
+		BuffSrc: constdef.MazeBuffSrcSelectBuffForce,
+	}
+	mazeattrcalcnotifyqueue.SendMazeAttrCalcNotify(logger, calcAttrNotify)
 	_ = mazetempbuffredis.DelMazeTempBuff(logger, msg.UserId, msg.Barrier)
 	return
 }

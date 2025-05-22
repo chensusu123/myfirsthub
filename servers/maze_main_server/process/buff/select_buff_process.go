@@ -1,19 +1,27 @@
 package buff
 
 import (
+	"fmt"
 	"time"
 
+	"gitlab.ifreetalk.com/maze/maze_game_server/config/GMazeAttributeV8Cfg"
 	"gitlab.ifreetalk.com/maze/maze_game_server/excel/mazeenergyaffixlvv8config"
 	"gitlab.ifreetalk.com/maze/maze_game_server/io/kafka/mazetempbuffchgmsg"
+	"gitlab.ifreetalk.com/maze/maze_game_server/io/redis/mazeattrcalcnotifyqueue"
+	"gitlab.ifreetalk.com/maze/maze_game_server/io/redis/mazebuffinforedis"
 	"gitlab.ifreetalk.com/maze/maze_game_server/io/redis/mazetempbuffredis"
 
 	"gitlab.ifreetalk.com/maze-plate/extra/protobuf/proto"
-	"gitlab.ifreetalk.com/maze/maze_game_server/common/errors"
 	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fklog"
 	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fknet"
 	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fkprometheus"
+	"gitlab.ifreetalk.com/maze-plate/protodef/MazeBuffData"
 	"gitlab.ifreetalk.com/maze-plate/protodef/MazeTempBuff"
 	"gitlab.ifreetalk.com/maze-plate/protodef/MazeTempBuffSvr"
+	"gitlab.ifreetalk.com/maze/maze_game_server/common/constdef"
+	"gitlab.ifreetalk.com/maze/maze_game_server/common/errors"
+
+	"gitlab.ifreetalk.com/maze/maze_game_server/common/structsdef"
 	"go.uber.org/zap"
 )
 
@@ -138,6 +146,34 @@ func updateBuffInfo(logger fklog.FKLogI, userId uint64, stageId, level, buffId i
 	}
 
 	_ = mazetempbuffchgmsg.PushTempBuffChangeMsg(logger, msg)
+
+	// buff中心
+	forceAttr, err := GetSelectBuffForceAttr(buffInfo.TotalBuff)
+	if err != nil {
+		logger.ErrorWF("updateBuffInfo GetSelectBuffForceAttr failed", zap.Error(err))
+		return err
+	}
+	attrDb := &MazeBuffData.MazeBuffDb{
+		MazeRealBuffs: PackMazeBuff(forceAttr),
+		// MazeShowBuffs: PackMazeBuff(showBuff),
+	}
+
+	err = mazebuffinforedis.SaveMazeBuffInfo(logger, userId, constdef.MazeBuffSrcSelectBuffForce, attrDb)
+	if err != nil {
+		logger.ErrorWF("AddMazeCard SaveMazeBuffInfo failed", zap.Uint64("userId", userId), zap.Error(err))
+		return err
+	}
+
+	// 推送属性计算消息
+	calcAttrNotify := &structsdef.MazeCalcAttrNotifyMsg{
+		UserId: userId,
+		// FromServer: fmt.Sprintf("%d %s", fkconfig.EnvVal.ServerType, fkconfig.EnvVal.AppName),
+		ChgType: constdef.MazeBuffChgForceValue,
+		Session: "buff",
+		BuffSrc: constdef.MazeBuffSrcSelectBuffForce,
+	}
+	mazeattrcalcnotifyqueue.SendMazeAttrCalcNotify(logger, calcAttrNotify)
+
 	return nil
 }
 
@@ -164,3 +200,40 @@ func getTotalBuff(logger fklog.FKLogI, buffList []*MazeTempBuffSvr.SelectedBuffI
 
 	return totalMap, totalList
 }
+
+func GetSelectBuffForceAttr(buffInfo []*MazeTempBuffSvr.TotalBuffInfo) (forceAttr map[int32]int64, err error) {
+	if buffInfo == nil {
+		return
+	}
+	forceAttr = make(map[int32]int64)
+	for _, v := range buffInfo {
+		// 读属性表
+		cfg := GMazeAttributeV8Cfg.Get(v.GetBuffId())
+		if cfg == nil {
+			err = fmt.Errorf("GetSelectBuffForceAttr GetMazeAttributeFormulaV8Cfg nil, attrID: %d", v.GetBuffId())
+			return
+		}
+		if cfg.Type == forceAttrType {
+			forceAttr[cfg.Id] += v.GetBuffValue()
+		}
+	}
+	return
+}
+
+func PackMazeBuff(buffMap map[int32]int64) []*MazeBuffData.MazeBuffAttr {
+	if len(buffMap) == 0 {
+		return nil
+	}
+
+	buffList := make([]*MazeBuffData.MazeBuffAttr, 0, len(buffMap))
+	for id, value := range buffMap {
+		buffList = append(buffList, &MazeBuffData.MazeBuffAttr{
+			AttrId:  proto.Int32(id),
+			AttrVal: proto.Int64(value),
+		})
+	}
+
+	return buffList
+}
+
+const forceAttrType = 5

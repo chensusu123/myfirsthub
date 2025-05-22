@@ -8,12 +8,13 @@ package constdef
 
 // 迷宫buff来源
 const (
-	MazeBuffSrcEquip     int32 = 1 // 迷宫装备  马健
-	MazeBuffSrcLv        int32 = 2 // 迷宫等级  马健
-	MazeBuffSrcMonthCard int32 = 3 // 迷宫月卡  王永亮
-	MazeBuffSrcOldBC     int32 = 4 // 旧buff中心 王振虎
-	MazeBuffSrcInit      int32 = 5 // 初始化属性 马健
-	MazeBuffSrcEquipPos  int32 = 6 // 装备位强化 马健
+	MazeBuffSrcEquip           int32 = 1 // 迷宫装备  马健
+	MazeBuffSrcLv              int32 = 2 // 迷宫等级  马健
+	MazeBuffSrcMonthCard       int32 = 3 // 迷宫月卡  王永亮
+	MazeBuffSrcOldBC           int32 = 4 // 旧buff中心 王振虎
+	MazeBuffSrcInit            int32 = 5 // 初始化属性 马健
+	MazeBuffSrcEquipPos        int32 = 6 // 装备位强化 马健
+	MazeBuffSrcSelectBuffForce int32 = 7 // 选buff加武力
 )
 
 // 迷宫计算组成
@@ -34,6 +35,7 @@ const (
 	MazeBuffChgTypeGm         = 401 // gm计算
 	MazeBuffCenter            = 501 // buff中心
 	MazeBuffChgMonthCard      = 601 // 月卡
+	MazeBuffChgForceValue     = 701 // 三选一加武力值
 )
 
 const (
