@@ -14,7 +14,7 @@ import (
 )
 
 
-// MazeToastMsgInfoConfigRow from maze_toast_msg_info【迷宫-全局消息通知】.xlsx maze_toast_msg_info
+// MazeToastMsgInfoConfigRow from test11.xlsx maze_toast_msg_info
 type MazeToastMsgInfoConfigRow struct {
     Msg_id       int32  `json:"msg_id"` // 消息id
     Msg_text       string  `json:"msg_text"` // 消息内容（没有格式化内容）
@@ -23,7 +23,7 @@ type MazeToastMsgInfoConfigRow struct {
     Text_wildcard       []int32  `json:"text_wildcard"` // 内容通配符id（废字段）
 }
 
-// MazeToastMsgInfoConfig from maze_toast_msg_info【迷宫-全局消息通知】.xlsx maze_toast_msg_info
+// MazeToastMsgInfoConfig from test11.xlsx maze_toast_msg_info
 type MazeToastMsgInfoConfig struct {
 	ConfigRows map[int32]*MazeToastMsgInfoConfigRow
 	// lock       sync.RWMutex
@@ -106,7 +106,7 @@ func ConfigRows() map[int32]*MazeToastMsgInfoConfigRow{
 
 // GetConfigDesc get config desc for lod,debug etc.
 func GetConfigDesc() string{
-	return "MazeToastMsgInfoConfigRow from maze_toast_msg_info【迷宫-全局消息通知】.xlsx maze_toast_msg_info"
+	return "MazeToastMsgInfoConfigRow from test11.xlsx maze_toast_msg_info"
 }
 
 // GetRawValue get raw data
@@ -122,7 +122,7 @@ func SheetName() string {
 func init() {
 	// reg config auto load 
 	config_manager.RegAutoConfig("maze_toast_msg_info.json", 
-		"maze_toast_msg_info【迷宫-全局消息通知】.xlsx", "maze_toast_msg_info",
+		"test11.xlsx", "maze_toast_msg_info",
 	 	&gMazeToastMsgInfoParser{}, &gMazeToastMsgInfoLoader{})
 }
 
@@ -189,14 +189,14 @@ func (*gMazeToastMsgInfoLoader) Add(logger fklog.FKLogI,container interface{}, r
 	row,ok := ri.(*MazeToastMsgInfoConfigRow)
 	if !ok {
 		err = errors.New("invalid type. not *MazeToastMsgInfoConfigRow")
-		logger.ErrorWF("invalid type. not *MazeToastMsgInfoConfigRow", zap.String("xlsx", "maze_toast_msg_info【迷宫-全局消息通知】.xlsx"),
+		logger.ErrorWF("invalid type. not *MazeToastMsgInfoConfigRow", zap.String("xlsx", "test11.xlsx"),
 			zap.String("sheet", "maze_toast_msg_info"))
 		return 
 	}
 	config,ok := container.(*MazeToastMsgInfoConfig)
 	if !ok {
 		err = errors.New("invalid type. not *MazeToastMsgInfoConfig")
-		logger.ErrorWF("invalid type. not *MazeToastMsgInfoConfig", zap.String("xlsx", "maze_toast_msg_info【迷宫-全局消息通知】.xlsx"),
+		logger.ErrorWF("invalid type. not *MazeToastMsgInfoConfig", zap.String("xlsx", "test11.xlsx"),
 			zap.String("sheet", "maze_toast_msg_info"))
 		return 
 	}
@@ -208,7 +208,7 @@ func (*gMazeToastMsgInfoLoader) GetValue(logger fklog.FKLogI,container interface
 	config,ok := container.(*MazeToastMsgInfoConfig)
 	if !ok {
 		err = errors.New("invalid type. not *MazeToastMsgInfoConfig")
-		logger.ErrorWF("invalid type. not *MazeToastMsgInfoConfig", zap.String("xlsx", "maze_toast_msg_info【迷宫-全局消息通知】.xlsx"),
+		logger.ErrorWF("invalid type. not *MazeToastMsgInfoConfig", zap.String("xlsx", "test11.xlsx"),
 			zap.String("sheet", "maze_toast_msg_info"))
 		return 
 	}
@@ -220,7 +220,7 @@ func (*gMazeToastMsgInfoLoader) Range(logger fklog.FKLogI, container interface{}
 	config,ok := container.(*MazeToastMsgInfoConfig)
 	if !ok {
 		err = errors.New("invalid type. not *MazeToastMsgInfoConfig")
-		logger.ErrorWF("invalid type. not *MazeToastMsgInfoConfig", zap.String("xlsx", "maze_toast_msg_info【迷宫-全局消息通知】.xlsx"),
+		logger.ErrorWF("invalid type. not *MazeToastMsgInfoConfig", zap.String("xlsx", "test11.xlsx"),
 			zap.String("sheet", "maze_toast_msg_info"))
 		return 
 	}
@@ -252,7 +252,7 @@ func (*gMazeToastMsgInfoParser) Parse(logger fklog.FKLogI,data []string, row int
 	config,ok := row.(*MazeToastMsgInfoConfigRow)
 	if !ok {
 		err = errors.New("invalid type. not *MazeToastMsgInfoConfigRow")
-		logger.ErrorWF("invalid type. not *MazeToastMsgInfoConfigRow", zap.String("xlsx", "maze_toast_msg_info【迷宫-全局消息通知】.xlsx"),
+		logger.ErrorWF("invalid type. not *MazeToastMsgInfoConfigRow", zap.String("xlsx", "test11.xlsx"),
 			zap.String("sheet", "maze_toast_msg_info"))
 		return 
 	}
@@ -260,7 +260,7 @@ func (*gMazeToastMsgInfoParser) Parse(logger fklog.FKLogI,data []string, row int
 	if len(data) != len(gMazeToastMsgInfoFields) {
 		err = errors.New("fields count not match.")
 		logger.ErrorWF("invalid type. not *map[int32]*MazeToastMsgInfoConfigRow", 
-			zap.String("xlsx", "maze_toast_msg_info【迷宫-全局消息通知】.xlsx"),
+			zap.String("xlsx", "test11.xlsx"),
 			zap.String("sheet", "maze_toast_msg_info"), zap.Int("need_count",len(gMazeToastMsgInfoFields)), 
 			zap.Int("had_count",len(data)))
 		return
@@ -274,7 +274,7 @@ func (*gMazeToastMsgInfoParser) Parse(logger fklog.FKLogI,data []string, row int
 		if err != nil {
 			err = errors.New("parse field msg_id 消息id to int32 failed")
 			logger.ErrorWF("parse field msg_id 消息id to int32 failed.", 
-				zap.String("xlsx", "maze_toast_msg_info【迷宫-全局消息通知】.xlsx"), zap.String("sheet", "maze_toast_msg_info"), 
+				zap.String("xlsx", "test11.xlsx"), zap.String("sheet", "maze_toast_msg_info"), 
 				zap.String("parse_data",data[0]), 
 				zap.Error(err))
 			return
@@ -293,7 +293,7 @@ func (*gMazeToastMsgInfoParser) Parse(logger fklog.FKLogI,data []string, row int
 		if err != nil {
 			err = errors.New("parse field display_time 展示时长（秒）时间=0表示不会展示信息 to int32 failed")
 			logger.ErrorWF("parse field display_time 展示时长（秒）时间=0表示不会展示信息 to int32 failed.", 
-				zap.String("xlsx", "maze_toast_msg_info【迷宫-全局消息通知】.xlsx"), zap.String("sheet", "maze_toast_msg_info"), 
+				zap.String("xlsx", "test11.xlsx"), zap.String("sheet", "maze_toast_msg_info"), 
 				zap.String("parse_data",data[2]), 
 				zap.Error(err))
 			return
@@ -307,7 +307,7 @@ func (*gMazeToastMsgInfoParser) Parse(logger fklog.FKLogI,data []string, row int
 		if err != nil {
 			err = errors.New("parse field msg_order 展示优先级 to int32 failed")
 			logger.ErrorWF("parse field msg_order 展示优先级 to int32 failed.", 
-				zap.String("xlsx", "maze_toast_msg_info【迷宫-全局消息通知】.xlsx"), zap.String("sheet", "maze_toast_msg_info"), 
+				zap.String("xlsx", "test11.xlsx"), zap.String("sheet", "maze_toast_msg_info"), 
 				zap.String("parse_data",data[3]), 
 				zap.Error(err))
 			return
@@ -324,7 +324,7 @@ func (*gMazeToastMsgInfoParser) Parse(logger fklog.FKLogI,data []string, row int
 			if err != nil {
 				err = errors.New("parse array field text_wildcard 内容通配符id（废字段） to []int32 failed")
 				logger.ErrorWF("parse array field text_wildcard 内容通配符id（废字段） to []int32 failed.", 
-					zap.String("xlsx", "maze_toast_msg_info【迷宫-全局消息通知】.xlsx"), zap.String("sheet", "maze_toast_msg_info"), 
+					zap.String("xlsx", "test11.xlsx"), zap.String("sheet", "maze_toast_msg_info"), 
 					// zap.String("field_data",data[4]), 
 					zap.String("parse_data", v),zap.Int("index", k),
 					zap.Error(err))
@@ -349,13 +349,13 @@ func LoadDataManual(logger fklog.FKLogI, load func(file, sheet string, fields []
 	parser := &gMazeToastMsgInfoParser{}
 	loader := &gMazeToastMsgInfoLoader{}
 	var data [][]string
-	data,err = load("maze_toast_msg_info【迷宫-全局消息通知】.xlsx", "maze_toast_msg_info", gMazeToastMsgInfoFields)
+	data,err = load("test11.xlsx", "maze_toast_msg_info", gMazeToastMsgInfoFields)
 	if err != nil {
-		logger.ErrorWF("load maze_toast_msg_info【迷宫-全局消息通知】.xlsx maze_toast_msg_info data failed.", zap.Error(err))
+		logger.ErrorWF("load test11.xlsx maze_toast_msg_info data failed.", zap.Error(err))
 		return
 	}
 	if len(data) < 1 {
-		logger.WarnWF("load maze_toast_msg_info【迷宫-全局消息通知】.xlsx maze_toast_msg_info data empty.")
+		logger.WarnWF("load test11.xlsx maze_toast_msg_info data empty.")
 		return
 	}
 	container := loader.NewContainer()
@@ -363,26 +363,26 @@ func LoadDataManual(logger fklog.FKLogI, load func(file, sheet string, fields []
 		item := parser.New()
 		if len(parser.Fields()) != len(gMazeToastMsgInfoFields) {
 			err = errors.New("invalid request.fileds not match")
-			logger.ErrorWF("parse maze_toast_msg_info【迷宫-全局消息通知】.xlsx maze_toast_msg_info failed.", zap.Int("row", k), zap.Strings("need", gMazeToastMsgInfoFields), zap.Strings("has", row))
+			logger.ErrorWF("parse test11.xlsx maze_toast_msg_info failed.", zap.Int("row", k), zap.Strings("need", gMazeToastMsgInfoFields), zap.Strings("has", row))
 			return
 		}
 		err = parser.Parse(logger, row, item)
 		if err != nil {
-			logger.ErrorWF("parse maze_toast_msg_info【迷宫-全局消息通知】.xlsx maze_toast_msg_info row data failed.", zap.Error(err))
+			logger.ErrorWF("parse test11.xlsx maze_toast_msg_info row data failed.", zap.Error(err))
 			return
 		}
 		err = loader.Add(logger, container, item)
 		if err != nil {
-			logger.ErrorWF("add maze_toast_msg_info【迷宫-全局消息通知】.xlsx maze_toast_msg_info row data failed.", zap.Error(err))
+			logger.ErrorWF("add test11.xlsx maze_toast_msg_info row data failed.", zap.Error(err))
 			return
 		}
 	}
 	err = loader.Check(container)
 	if err != nil {
-		logger.ErrorWF("check maze_toast_msg_info【迷宫-全局消息通知】.xlsx maze_toast_msg_info data failed.", zap.Error(err))
+		logger.ErrorWF("check test11.xlsx maze_toast_msg_info data failed.", zap.Error(err))
 		return
 	}
 	loader.Swap(container)
-	logger.InfoWF("load maze_toast_msg_info【迷宫-全局消息通知】.xlsx maze_toast_msg_info data success.")
+	logger.InfoWF("load test11.xlsx maze_toast_msg_info data success.")
 	return
 }
