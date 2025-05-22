@@ -199,14 +199,14 @@ func GetMazeAIMonsterConfig(logger fklog.FKLogI, userId uint64, force int64, foe
 		//attackValue.ActDamageConfig = append(attackValue.ActDamageConfig, actDamageConfigs...)
 	}
 	// 韧性被打空时释放技能
-	// if foeCfg.Tough_deplete > 0 {
-	// 	skillInfo, err := GetFoeBattleSkillInfo(logger, foeCfg.Tough_deplete, attrMap)
-	// 	if err != nil {
-	// 		logger.WarnWF("GetUserBattleAttr BattleSkillTopPb nil", zap.Uint64("userId", userId), zap.Any("Tough_deplete", foeCfg.Tough_deplete))
-	// 		return nil, err
-	// 	}
-	// 	skillTotalInfo.SkillInfoList = append(skillTotalInfo.SkillInfoList, skillInfo)
-	// }
+	if foeCfg.Tough_deplete > 0 {
+		skillInfo, err := GetFoeBattleSkillInfo(logger, foeCfg.Tough_deplete, attrMap)
+		if err != nil {
+			logger.WarnWF("GetUserBattleAttr BattleSkillTopPb nil", zap.Uint64("userId", userId), zap.Any("Tough_deplete", foeCfg.Tough_deplete))
+			return nil, err
+		}
+		skillTotalInfo.SkillInfoList = append(skillTotalInfo.SkillInfoList, skillInfo)
+	}
 
 	monsterConfigInfo.MonsterSpeed = proto.Int32(foeCfg.Speed)
 	monsterConfigInfo.SkillTotalInfo = skillTotalInfo
