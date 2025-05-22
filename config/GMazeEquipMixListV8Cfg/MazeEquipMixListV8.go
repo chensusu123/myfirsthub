@@ -1,21 +1,23 @@
 package GMazeEquipMixListV8Cfg
 
+
 import (
-	"errors"
-	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fklog"
-	"gitlab.ifreetalk.com/maze-plate/freetk/fkserver/config_manager"
-	"go.uber.org/zap"
-	"strconv"
-	"strings"
 	"sync"
 	"sync/atomic"
 	"unsafe"
+	"strconv"
+	"errors"
+	"strings"
+	"gitlab.ifreetalk.com/maze-plate/freetk/fkserver/config_manager"
+	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fklog"
+	"go.uber.org/zap"
 )
+
 
 // MazeEquipMixListV8ConfigRow from maze_equip_mix_list_v8【迷宫-装备-合成结果队列】.xlsx maze_equip_mix_list_v8
 type MazeEquipMixListV8ConfigRow struct {
-	Order    int32   `json:"order"`    // 队列id
-	Equip_id []int32 `json:"equip_id"` // 装备id
+    Order       int32  `json:"order"` // 队列id
+    Equip_id       []int32  `json:"equip_id"` // 装备id
 }
 
 // MazeEquipMixListV8Config from maze_equip_mix_list_v8【迷宫-装备-合成结果队列】.xlsx maze_equip_mix_list_v8
@@ -51,7 +53,7 @@ func (c *MazeEquipMixListV8Config) Get(configId int32) *MazeEquipMixListV8Config
 }
 
 // GetAllMazeEquipMixListV8Config get all config slice
-func (c *MazeEquipMixListV8Config) GetAllMazeEquipMixListV8Config() (res []*MazeEquipMixListV8ConfigRow) {
+func (c *MazeEquipMixListV8Config)  GetAllMazeEquipMixListV8Config () (res []*MazeEquipMixListV8ConfigRow) {
 	// c.lock.RLock()
 	// defer c.lock.RUnlock()
 	for _, val := range c.ConfigRows {
@@ -61,7 +63,7 @@ func (c *MazeEquipMixListV8Config) GetAllMazeEquipMixListV8Config() (res []*Maze
 }
 
 // GetAll get all config slice
-func (c *MazeEquipMixListV8Config) GetAll() (res []*MazeEquipMixListV8ConfigRow) {
+func (c *MazeEquipMixListV8Config)  GetAll() (res []*MazeEquipMixListV8ConfigRow) {
 	// c.lock.RLock()
 	// defer c.lock.RUnlock()
 	for _, val := range c.ConfigRows {
@@ -70,8 +72,9 @@ func (c *MazeEquipMixListV8Config) GetAll() (res []*MazeEquipMixListV8ConfigRow)
 	return
 }
 
-// global config pointer
-var gConfigData *MazeEquipMixListV8Config
+
+// global config pointer 
+var gConfigData *MazeEquipMixListV8Config 
 
 // GetMazeEquipMixListV8Config pkg func. get one config by configId
 func GetMazeEquipMixListV8Config(configId int32) *MazeEquipMixListV8ConfigRow {
@@ -84,8 +87,8 @@ func Get(configId int32) *MazeEquipMixListV8ConfigRow {
 }
 
 // GetAllMazeEquipMixListV8Config pkg func. get all config slice
-func GetAllMazeEquipMixListV8Config() []*MazeEquipMixListV8ConfigRow {
-	return gConfigData.GetAllMazeEquipMixListV8Config()
+func GetAllMazeEquipMixListV8Config () []*MazeEquipMixListV8ConfigRow {
+	return gConfigData.GetAllMazeEquipMixListV8Config ()
 }
 
 // GetAll pkg func. get all config slice
@@ -94,17 +97,17 @@ func GetAll() []*MazeEquipMixListV8ConfigRow {
 }
 
 // ConfigRows get raw map data
-func ConfigRows() map[int32]*MazeEquipMixListV8ConfigRow {
+func ConfigRows() map[int32]*MazeEquipMixListV8ConfigRow{
 	return gConfigData.ConfigRows
 }
 
 // GetConfigDesc get config desc for lod,debug etc.
-func GetConfigDesc() string {
+func GetConfigDesc() string{
 	return "MazeEquipMixListV8ConfigRow from maze_equip_mix_list_v8【迷宫-装备-合成结果队列】.xlsx maze_equip_mix_list_v8"
 }
 
 // GetRawValue get raw data
-func GetRawValue() *MazeEquipMixListV8Config {
+func GetRawValue() *MazeEquipMixListV8Config{
 	return gConfigData
 }
 
@@ -114,10 +117,10 @@ func SheetName() string {
 }
 
 func init() {
-	// reg config auto load
-	config_manager.RegAutoConfig("maze_equip_mix_list_v8.json",
+	// reg config auto load 
+	config_manager.RegAutoConfig("maze_equip_mix_list_v8.json", 
 		"maze_equip_mix_list_v8【迷宫-装备-合成结果队列】.xlsx", "maze_equip_mix_list_v8",
-		&gMazeEquipMixListV8Parser{}, &gMazeEquipMixListV8Loader{})
+	 	&gMazeEquipMixListV8Parser{}, &gMazeEquipMixListV8Loader{})
 }
 
 // data update call back
@@ -145,35 +148,32 @@ var cfgCheckCallBack sync.Map //map[string]func(*MazeEquipMixListV8Config)error
 // doConfigCheckCallback do config check callback
 func doConfigCheckCallback(c *MazeEquipMixListV8Config) (err error) {
 	cfgCheckCallBack.Range(func(key, value interface{}) bool {
-		err := value.(func(*MazeEquipMixListV8Config) error)(c)
+		err := value.(func(*MazeEquipMixListV8Config)error)(c)
 		return err == nil
 	})
-	return
+	return 
 }
 
 // RegisterLoadedCallBack reg config update func.
-func RegisterConfigCheck(key string, f func(*MazeEquipMixListV8Config) error) {
+func RegisterConfigCheck(key string, f func(*MazeEquipMixListV8Config)error) {
 	cfgCheckCallBack.Store(key, f)
 }
 
 // implete ConfigLoader interface
 type gMazeEquipMixListV8Loader struct {
 }
-
 // NewContainer new data container pointer
-func (*gMazeEquipMixListV8Loader) NewContainer() interface{} {
+func (*gMazeEquipMixListV8Loader) NewContainer() interface{}{
 	return newConfig()
 }
-
 // Check check new config data ptr
-func (*gMazeEquipMixListV8Loader) Check(newPtr interface{}) error {
+func (*gMazeEquipMixListV8Loader) Check(newPtr interface{})error{
 	// set global ptr
 	cfgData := newPtr.(*MazeEquipMixListV8Config)
 	return doConfigCheckCallback(cfgData)
 }
-
 // Swap swap global config data ptr
-func (*gMazeEquipMixListV8Loader) Swap(newPtr interface{}) {
+func (*gMazeEquipMixListV8Loader) Swap(newPtr interface{}){
 	// convert pointer
 	cache := newPtr.(*MazeEquipMixListV8Config)
 	// update second edit
@@ -181,48 +181,45 @@ func (*gMazeEquipMixListV8Loader) Swap(newPtr interface{}) {
 	// set global ptr
 	atomic.StorePointer((*unsafe.Pointer)(unsafe.Pointer(&gConfigData)), unsafe.Pointer(cache))
 }
-
 // Add append config item to map,save result
-func (*gMazeEquipMixListV8Loader) Add(logger fklog.FKLogI, container interface{}, ri interface{}) (err error) {
-	row, ok := ri.(*MazeEquipMixListV8ConfigRow)
+func (*gMazeEquipMixListV8Loader) Add(logger fklog.FKLogI,container interface{}, ri interface{})(err error) {
+	row,ok := ri.(*MazeEquipMixListV8ConfigRow)
 	if !ok {
 		err = errors.New("invalid type. not *MazeEquipMixListV8ConfigRow")
 		logger.ErrorWF("invalid type. not *MazeEquipMixListV8ConfigRow", zap.String("xlsx", "maze_equip_mix_list_v8【迷宫-装备-合成结果队列】.xlsx"),
 			zap.String("sheet", "maze_equip_mix_list_v8"))
-		return
+		return 
 	}
-	config, ok := container.(*MazeEquipMixListV8Config)
+	config,ok := container.(*MazeEquipMixListV8Config)
 	if !ok {
 		err = errors.New("invalid type. not *MazeEquipMixListV8Config")
 		logger.ErrorWF("invalid type. not *MazeEquipMixListV8Config", zap.String("xlsx", "maze_equip_mix_list_v8【迷宫-装备-合成结果队列】.xlsx"),
 			zap.String("sheet", "maze_equip_mix_list_v8"))
-		return
+		return 
 	}
 	config.ConfigRows[row.Order] = row
 	return
 }
-
 // GetValue get real map value for json parse
-func (*gMazeEquipMixListV8Loader) GetValue(logger fklog.FKLogI, container interface{}) (real interface{}, err error) {
-	config, ok := container.(*MazeEquipMixListV8Config)
+func (*gMazeEquipMixListV8Loader) GetValue(logger fklog.FKLogI,container interface{})(real interface{},err error) {
+	config,ok := container.(*MazeEquipMixListV8Config)
 	if !ok {
 		err = errors.New("invalid type. not *MazeEquipMixListV8Config")
 		logger.ErrorWF("invalid type. not *MazeEquipMixListV8Config", zap.String("xlsx", "maze_equip_mix_list_v8【迷宫-装备-合成结果队列】.xlsx"),
 			zap.String("sheet", "maze_equip_mix_list_v8"))
-		return
+		return 
 	}
 	real = &config.ConfigRows
 	return
 }
-
 // Range range all data for json append data parse.
-func (*gMazeEquipMixListV8Loader) Range(logger fklog.FKLogI, container interface{}, rf func(row interface{}) error) (err error) {
-	config, ok := container.(*MazeEquipMixListV8Config)
+func (*gMazeEquipMixListV8Loader) Range(logger fklog.FKLogI, container interface{}, rf func(row interface{}) error) (err error){
+	config,ok := container.(*MazeEquipMixListV8Config)
 	if !ok {
 		err = errors.New("invalid type. not *MazeEquipMixListV8Config")
 		logger.ErrorWF("invalid type. not *MazeEquipMixListV8Config", zap.String("xlsx", "maze_equip_mix_list_v8【迷宫-装备-合成结果队列】.xlsx"),
 			zap.String("sheet", "maze_equip_mix_list_v8"))
-		return
+		return 
 	}
 	for _, row := range config.ConfigRows {
 		err = rf(row)
@@ -233,10 +230,10 @@ func (*gMazeEquipMixListV8Loader) Range(logger fklog.FKLogI, container interface
 	return
 }
 
+
 // implete ConfigParser interface
 type gMazeEquipMixListV8Parser struct {
 }
-
 // New new config row data
 func (*gMazeEquipMixListV8Parser) New() interface{} {
 	return &MazeEquipMixListV8ConfigRow{}
@@ -246,55 +243,54 @@ func (*gMazeEquipMixListV8Parser) New() interface{} {
 func (*gMazeEquipMixListV8Parser) Fields() []string {
 	return gMazeEquipMixListV8Fields
 }
-
 // Parse parse raw data to row data
-func (*gMazeEquipMixListV8Parser) Parse(logger fklog.FKLogI, data []string, row interface{}) (err error) {
+func (*gMazeEquipMixListV8Parser) Parse(logger fklog.FKLogI,data []string, row interface{}) (err error) {
 	// convert row type
-	config, ok := row.(*MazeEquipMixListV8ConfigRow)
+	config,ok := row.(*MazeEquipMixListV8ConfigRow)
 	if !ok {
 		err = errors.New("invalid type. not *MazeEquipMixListV8ConfigRow")
 		logger.ErrorWF("invalid type. not *MazeEquipMixListV8ConfigRow", zap.String("xlsx", "maze_equip_mix_list_v8【迷宫-装备-合成结果队列】.xlsx"),
 			zap.String("sheet", "maze_equip_mix_list_v8"))
-		return
+		return 
 	}
 	// compare length
 	if len(data) != len(gMazeEquipMixListV8Fields) {
 		err = errors.New("fields count not match.")
-		logger.ErrorWF("invalid type. not *map[int32]*MazeEquipMixListV8ConfigRow",
+		logger.ErrorWF("invalid type. not *map[int32]*MazeEquipMixListV8ConfigRow", 
 			zap.String("xlsx", "maze_equip_mix_list_v8【迷宫-装备-合成结果队列】.xlsx"),
-			zap.String("sheet", "maze_equip_mix_list_v8"), zap.Int("need_count", len(gMazeEquipMixListV8Fields)),
-			zap.Int("had_count", len(data)))
+			zap.String("sheet", "maze_equip_mix_list_v8"), zap.Int("need_count",len(gMazeEquipMixListV8Fields)), 
+			zap.Int("had_count",len(data)))
 		return
 	}
 
 	var tmp int64
 
-	// parse column 0 order : 队列id
+	// parse column 0 order : 队列id 
 	if data[0] != "" {
-		tmp, err = strconv.ParseInt(data[0], 10, 64)
+		tmp,err = strconv.ParseInt(data[0],10,64)
 		if err != nil {
 			err = errors.New("parse field order 队列id to int32 failed")
-			logger.ErrorWF("parse field order 队列id to int32 failed.",
-				zap.String("xlsx", "maze_equip_mix_list_v8【迷宫-装备-合成结果队列】.xlsx"), zap.String("sheet", "maze_equip_mix_list_v8"),
-				zap.String("parse_data", data[0]),
+			logger.ErrorWF("parse field order 队列id to int32 failed.", 
+				zap.String("xlsx", "maze_equip_mix_list_v8【迷宫-装备-合成结果队列】.xlsx"), zap.String("sheet", "maze_equip_mix_list_v8"), 
+				zap.String("parse_data",data[0]), 
 				zap.Error(err))
 			return
 		}
 		config.Order = int32(tmp)
 	}
 
-	// parse column 1 equip_id : 装备id
+	// parse column 1 equip_id : 装备id 
 	if data[1] != "" {
-
-		vals := strings.Split(data[1], ",")
-		for k, v := range vals {
-			tmp, err = strconv.ParseInt(v, 10, 64)
+    
+		vals := strings.Split(data[1],",")
+		for k,v := range vals {
+			tmp,err = strconv.ParseInt(v,10,64)
 			if err != nil {
 				err = errors.New("parse array field equip_id 装备id to []int32 failed")
-				logger.ErrorWF("parse array field equip_id 装备id to []int32 failed.",
-					zap.String("xlsx", "maze_equip_mix_list_v8【迷宫-装备-合成结果队列】.xlsx"), zap.String("sheet", "maze_equip_mix_list_v8"),
-					// zap.String("field_data",data[1]),
-					zap.String("parse_data", v), zap.Int("index", k),
+				logger.ErrorWF("parse array field equip_id 装备id to []int32 failed.", 
+					zap.String("xlsx", "maze_equip_mix_list_v8【迷宫-装备-合成结果队列】.xlsx"), zap.String("sheet", "maze_equip_mix_list_v8"), 
+					// zap.String("field_data",data[1]), 
+					zap.String("parse_data", v),zap.Int("index", k),
 					zap.Error(err))
 				return
 			}
@@ -305,16 +301,16 @@ func (*gMazeEquipMixListV8Parser) Parse(logger fklog.FKLogI, data []string, row 
 }
 
 var gMazeEquipMixListV8Fields = []string{
-	"order",
-	"equip_id",
+    "order",
+    "equip_id",
 }
 
 // LoadDataManual load data for test
-func LoadDataManual(logger fklog.FKLogI, load func(file, sheet string, fields []string) ([][]string, error)) (err error) {
+func LoadDataManual(logger fklog.FKLogI, load func(file, sheet string, fields []string) ([][]string,error)) (err error) {
 	parser := &gMazeEquipMixListV8Parser{}
 	loader := &gMazeEquipMixListV8Loader{}
 	var data [][]string
-	data, err = load("maze_equip_mix_list_v8【迷宫-装备-合成结果队列】.xlsx", "maze_equip_mix_list_v8", gMazeEquipMixListV8Fields)
+	data,err = load("maze_equip_mix_list_v8【迷宫-装备-合成结果队列】.xlsx", "maze_equip_mix_list_v8", gMazeEquipMixListV8Fields)
 	if err != nil {
 		logger.ErrorWF("load maze_equip_mix_list_v8【迷宫-装备-合成结果队列】.xlsx maze_equip_mix_list_v8 data failed.", zap.Error(err))
 		return

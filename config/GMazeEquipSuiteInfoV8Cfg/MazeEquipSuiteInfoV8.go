@@ -1,28 +1,30 @@
 package GMazeEquipSuiteInfoV8Cfg
 
+
 import (
-	"errors"
-	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fklog"
-	"gitlab.ifreetalk.com/maze-plate/freetk/fkserver/config_manager"
-	"go.uber.org/zap"
-	"strconv"
-	"strings"
 	"sync"
 	"sync/atomic"
 	"unsafe"
+	"strconv"
+	"errors"
+	"strings"
+	"gitlab.ifreetalk.com/maze-plate/freetk/fkserver/config_manager"
+	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fklog"
+	"go.uber.org/zap"
 )
+
 
 // MazeEquipSuiteInfoV8ConfigRow from maze_equip_suite_info_v8【迷宫-装备-套装信息】.xlsx maze_equip_suite_info_v8
 type MazeEquipSuiteInfoV8ConfigRow struct {
-	Suite_id                    int32   `json:"suite_id"`                    // 套装id
-	Suite_name                  string  `json:"suite_name"`                  // 套装名称
-	Max_num                     int32   `json:"max_num"`                     // 套装数量
-	Pos_list                    []int32 `json:"pos_list"`                    // 套装部位
-	Exclude_attr                []int32 `json:"exclude_attr"`                // 套装的排除
-	Counter_weapons_damage_attr int32   `json:"counter_weapons_damage_attr"` // 套装对应的武器属性id
-	Counter_weapons_damage_type int32   `json:"counter_weapons_damage_type"` // 套装对应的武器伤害类型
-	Exclude_sub_type            []int32 `json:"exclude_sub_type"`            // 套装排除的武器子类型
-	Prefix                      string  `json:"prefix"`                      // 装备名前缀
+    Suite_id       int32  `json:"suite_id"` // 套装id
+    Suite_name       string  `json:"suite_name"` // 套装名称
+    Max_num       int32  `json:"max_num"` // 套装数量
+    Pos_list       []int32  `json:"pos_list"` // 套装部位
+    Exclude_attr       []int32  `json:"exclude_attr"` // 套装的排除
+    Counter_weapons_damage_attr       int32  `json:"counter_weapons_damage_attr"` // 套装对应的武器属性id
+    Counter_weapons_damage_type       int32  `json:"counter_weapons_damage_type"` // 套装对应的武器伤害类型
+    Exclude_sub_type       []int32  `json:"exclude_sub_type"` // 套装排除的武器子类型
+    Prefix       string  `json:"prefix"` // 装备名前缀
 }
 
 // MazeEquipSuiteInfoV8Config from maze_equip_suite_info_v8【迷宫-装备-套装信息】.xlsx maze_equip_suite_info_v8
@@ -58,7 +60,7 @@ func (c *MazeEquipSuiteInfoV8Config) Get(configId int32) *MazeEquipSuiteInfoV8Co
 }
 
 // GetAllMazeEquipSuiteInfoV8Config get all config slice
-func (c *MazeEquipSuiteInfoV8Config) GetAllMazeEquipSuiteInfoV8Config() (res []*MazeEquipSuiteInfoV8ConfigRow) {
+func (c *MazeEquipSuiteInfoV8Config)  GetAllMazeEquipSuiteInfoV8Config () (res []*MazeEquipSuiteInfoV8ConfigRow) {
 	// c.lock.RLock()
 	// defer c.lock.RUnlock()
 	for _, val := range c.ConfigRows {
@@ -68,7 +70,7 @@ func (c *MazeEquipSuiteInfoV8Config) GetAllMazeEquipSuiteInfoV8Config() (res []*
 }
 
 // GetAll get all config slice
-func (c *MazeEquipSuiteInfoV8Config) GetAll() (res []*MazeEquipSuiteInfoV8ConfigRow) {
+func (c *MazeEquipSuiteInfoV8Config)  GetAll() (res []*MazeEquipSuiteInfoV8ConfigRow) {
 	// c.lock.RLock()
 	// defer c.lock.RUnlock()
 	for _, val := range c.ConfigRows {
@@ -77,8 +79,9 @@ func (c *MazeEquipSuiteInfoV8Config) GetAll() (res []*MazeEquipSuiteInfoV8Config
 	return
 }
 
-// global config pointer
-var gConfigData *MazeEquipSuiteInfoV8Config
+
+// global config pointer 
+var gConfigData *MazeEquipSuiteInfoV8Config 
 
 // GetMazeEquipSuiteInfoV8Config pkg func. get one config by configId
 func GetMazeEquipSuiteInfoV8Config(configId int32) *MazeEquipSuiteInfoV8ConfigRow {
@@ -91,8 +94,8 @@ func Get(configId int32) *MazeEquipSuiteInfoV8ConfigRow {
 }
 
 // GetAllMazeEquipSuiteInfoV8Config pkg func. get all config slice
-func GetAllMazeEquipSuiteInfoV8Config() []*MazeEquipSuiteInfoV8ConfigRow {
-	return gConfigData.GetAllMazeEquipSuiteInfoV8Config()
+func GetAllMazeEquipSuiteInfoV8Config () []*MazeEquipSuiteInfoV8ConfigRow {
+	return gConfigData.GetAllMazeEquipSuiteInfoV8Config ()
 }
 
 // GetAll pkg func. get all config slice
@@ -101,17 +104,17 @@ func GetAll() []*MazeEquipSuiteInfoV8ConfigRow {
 }
 
 // ConfigRows get raw map data
-func ConfigRows() map[int32]*MazeEquipSuiteInfoV8ConfigRow {
+func ConfigRows() map[int32]*MazeEquipSuiteInfoV8ConfigRow{
 	return gConfigData.ConfigRows
 }
 
 // GetConfigDesc get config desc for lod,debug etc.
-func GetConfigDesc() string {
+func GetConfigDesc() string{
 	return "MazeEquipSuiteInfoV8ConfigRow from maze_equip_suite_info_v8【迷宫-装备-套装信息】.xlsx maze_equip_suite_info_v8"
 }
 
 // GetRawValue get raw data
-func GetRawValue() *MazeEquipSuiteInfoV8Config {
+func GetRawValue() *MazeEquipSuiteInfoV8Config{
 	return gConfigData
 }
 
@@ -121,10 +124,10 @@ func SheetName() string {
 }
 
 func init() {
-	// reg config auto load
-	config_manager.RegAutoConfig("maze_equip_suite_info_v8.json",
+	// reg config auto load 
+	config_manager.RegAutoConfig("maze_equip_suite_info_v8.json", 
 		"maze_equip_suite_info_v8【迷宫-装备-套装信息】.xlsx", "maze_equip_suite_info_v8",
-		&gMazeEquipSuiteInfoV8Parser{}, &gMazeEquipSuiteInfoV8Loader{})
+	 	&gMazeEquipSuiteInfoV8Parser{}, &gMazeEquipSuiteInfoV8Loader{})
 }
 
 // data update call back
@@ -152,35 +155,32 @@ var cfgCheckCallBack sync.Map //map[string]func(*MazeEquipSuiteInfoV8Config)erro
 // doConfigCheckCallback do config check callback
 func doConfigCheckCallback(c *MazeEquipSuiteInfoV8Config) (err error) {
 	cfgCheckCallBack.Range(func(key, value interface{}) bool {
-		err := value.(func(*MazeEquipSuiteInfoV8Config) error)(c)
+		err := value.(func(*MazeEquipSuiteInfoV8Config)error)(c)
 		return err == nil
 	})
-	return
+	return 
 }
 
 // RegisterLoadedCallBack reg config update func.
-func RegisterConfigCheck(key string, f func(*MazeEquipSuiteInfoV8Config) error) {
+func RegisterConfigCheck(key string, f func(*MazeEquipSuiteInfoV8Config)error) {
 	cfgCheckCallBack.Store(key, f)
 }
 
 // implete ConfigLoader interface
 type gMazeEquipSuiteInfoV8Loader struct {
 }
-
 // NewContainer new data container pointer
-func (*gMazeEquipSuiteInfoV8Loader) NewContainer() interface{} {
+func (*gMazeEquipSuiteInfoV8Loader) NewContainer() interface{}{
 	return newConfig()
 }
-
 // Check check new config data ptr
-func (*gMazeEquipSuiteInfoV8Loader) Check(newPtr interface{}) error {
+func (*gMazeEquipSuiteInfoV8Loader) Check(newPtr interface{})error{
 	// set global ptr
 	cfgData := newPtr.(*MazeEquipSuiteInfoV8Config)
 	return doConfigCheckCallback(cfgData)
 }
-
 // Swap swap global config data ptr
-func (*gMazeEquipSuiteInfoV8Loader) Swap(newPtr interface{}) {
+func (*gMazeEquipSuiteInfoV8Loader) Swap(newPtr interface{}){
 	// convert pointer
 	cache := newPtr.(*MazeEquipSuiteInfoV8Config)
 	// update second edit
@@ -188,48 +188,45 @@ func (*gMazeEquipSuiteInfoV8Loader) Swap(newPtr interface{}) {
 	// set global ptr
 	atomic.StorePointer((*unsafe.Pointer)(unsafe.Pointer(&gConfigData)), unsafe.Pointer(cache))
 }
-
 // Add append config item to map,save result
-func (*gMazeEquipSuiteInfoV8Loader) Add(logger fklog.FKLogI, container interface{}, ri interface{}) (err error) {
-	row, ok := ri.(*MazeEquipSuiteInfoV8ConfigRow)
+func (*gMazeEquipSuiteInfoV8Loader) Add(logger fklog.FKLogI,container interface{}, ri interface{})(err error) {
+	row,ok := ri.(*MazeEquipSuiteInfoV8ConfigRow)
 	if !ok {
 		err = errors.New("invalid type. not *MazeEquipSuiteInfoV8ConfigRow")
 		logger.ErrorWF("invalid type. not *MazeEquipSuiteInfoV8ConfigRow", zap.String("xlsx", "maze_equip_suite_info_v8【迷宫-装备-套装信息】.xlsx"),
 			zap.String("sheet", "maze_equip_suite_info_v8"))
-		return
+		return 
 	}
-	config, ok := container.(*MazeEquipSuiteInfoV8Config)
+	config,ok := container.(*MazeEquipSuiteInfoV8Config)
 	if !ok {
 		err = errors.New("invalid type. not *MazeEquipSuiteInfoV8Config")
 		logger.ErrorWF("invalid type. not *MazeEquipSuiteInfoV8Config", zap.String("xlsx", "maze_equip_suite_info_v8【迷宫-装备-套装信息】.xlsx"),
 			zap.String("sheet", "maze_equip_suite_info_v8"))
-		return
+		return 
 	}
 	config.ConfigRows[row.Suite_id] = row
 	return
 }
-
 // GetValue get real map value for json parse
-func (*gMazeEquipSuiteInfoV8Loader) GetValue(logger fklog.FKLogI, container interface{}) (real interface{}, err error) {
-	config, ok := container.(*MazeEquipSuiteInfoV8Config)
+func (*gMazeEquipSuiteInfoV8Loader) GetValue(logger fklog.FKLogI,container interface{})(real interface{},err error) {
+	config,ok := container.(*MazeEquipSuiteInfoV8Config)
 	if !ok {
 		err = errors.New("invalid type. not *MazeEquipSuiteInfoV8Config")
 		logger.ErrorWF("invalid type. not *MazeEquipSuiteInfoV8Config", zap.String("xlsx", "maze_equip_suite_info_v8【迷宫-装备-套装信息】.xlsx"),
 			zap.String("sheet", "maze_equip_suite_info_v8"))
-		return
+		return 
 	}
 	real = &config.ConfigRows
 	return
 }
-
 // Range range all data for json append data parse.
-func (*gMazeEquipSuiteInfoV8Loader) Range(logger fklog.FKLogI, container interface{}, rf func(row interface{}) error) (err error) {
-	config, ok := container.(*MazeEquipSuiteInfoV8Config)
+func (*gMazeEquipSuiteInfoV8Loader) Range(logger fklog.FKLogI, container interface{}, rf func(row interface{}) error) (err error){
+	config,ok := container.(*MazeEquipSuiteInfoV8Config)
 	if !ok {
 		err = errors.New("invalid type. not *MazeEquipSuiteInfoV8Config")
 		logger.ErrorWF("invalid type. not *MazeEquipSuiteInfoV8Config", zap.String("xlsx", "maze_equip_suite_info_v8【迷宫-装备-套装信息】.xlsx"),
 			zap.String("sheet", "maze_equip_suite_info_v8"))
-		return
+		return 
 	}
 	for _, row := range config.ConfigRows {
 		err = rf(row)
@@ -240,10 +237,10 @@ func (*gMazeEquipSuiteInfoV8Loader) Range(logger fklog.FKLogI, container interfa
 	return
 }
 
+
 // implete ConfigParser interface
 type gMazeEquipSuiteInfoV8Parser struct {
 }
-
 // New new config row data
 func (*gMazeEquipSuiteInfoV8Parser) New() interface{} {
 	return &MazeEquipSuiteInfoV8ConfigRow{}
@@ -253,74 +250,73 @@ func (*gMazeEquipSuiteInfoV8Parser) New() interface{} {
 func (*gMazeEquipSuiteInfoV8Parser) Fields() []string {
 	return gMazeEquipSuiteInfoV8Fields
 }
-
 // Parse parse raw data to row data
-func (*gMazeEquipSuiteInfoV8Parser) Parse(logger fklog.FKLogI, data []string, row interface{}) (err error) {
+func (*gMazeEquipSuiteInfoV8Parser) Parse(logger fklog.FKLogI,data []string, row interface{}) (err error) {
 	// convert row type
-	config, ok := row.(*MazeEquipSuiteInfoV8ConfigRow)
+	config,ok := row.(*MazeEquipSuiteInfoV8ConfigRow)
 	if !ok {
 		err = errors.New("invalid type. not *MazeEquipSuiteInfoV8ConfigRow")
 		logger.ErrorWF("invalid type. not *MazeEquipSuiteInfoV8ConfigRow", zap.String("xlsx", "maze_equip_suite_info_v8【迷宫-装备-套装信息】.xlsx"),
 			zap.String("sheet", "maze_equip_suite_info_v8"))
-		return
+		return 
 	}
 	// compare length
 	if len(data) != len(gMazeEquipSuiteInfoV8Fields) {
 		err = errors.New("fields count not match.")
-		logger.ErrorWF("invalid type. not *map[int32]*MazeEquipSuiteInfoV8ConfigRow",
+		logger.ErrorWF("invalid type. not *map[int32]*MazeEquipSuiteInfoV8ConfigRow", 
 			zap.String("xlsx", "maze_equip_suite_info_v8【迷宫-装备-套装信息】.xlsx"),
-			zap.String("sheet", "maze_equip_suite_info_v8"), zap.Int("need_count", len(gMazeEquipSuiteInfoV8Fields)),
-			zap.Int("had_count", len(data)))
+			zap.String("sheet", "maze_equip_suite_info_v8"), zap.Int("need_count",len(gMazeEquipSuiteInfoV8Fields)), 
+			zap.Int("had_count",len(data)))
 		return
 	}
 
 	var tmp int64
 
-	// parse column 0 suite_id : 套装id
+	// parse column 0 suite_id : 套装id 
 	if data[0] != "" {
-		tmp, err = strconv.ParseInt(data[0], 10, 64)
+		tmp,err = strconv.ParseInt(data[0],10,64)
 		if err != nil {
 			err = errors.New("parse field suite_id 套装id to int32 failed")
-			logger.ErrorWF("parse field suite_id 套装id to int32 failed.",
-				zap.String("xlsx", "maze_equip_suite_info_v8【迷宫-装备-套装信息】.xlsx"), zap.String("sheet", "maze_equip_suite_info_v8"),
-				zap.String("parse_data", data[0]),
+			logger.ErrorWF("parse field suite_id 套装id to int32 failed.", 
+				zap.String("xlsx", "maze_equip_suite_info_v8【迷宫-装备-套装信息】.xlsx"), zap.String("sheet", "maze_equip_suite_info_v8"), 
+				zap.String("parse_data",data[0]), 
 				zap.Error(err))
 			return
 		}
 		config.Suite_id = int32(tmp)
 	}
 
-	// parse column 1 suite_name : 套装名称
+	// parse column 1 suite_name : 套装名称 
 	if data[1] != "" {
 		config.Suite_name = data[1]
 	}
 
-	// parse column 2 max_num : 套装数量
+	// parse column 2 max_num : 套装数量 
 	if data[2] != "" {
-		tmp, err = strconv.ParseInt(data[2], 10, 64)
+		tmp,err = strconv.ParseInt(data[2],10,64)
 		if err != nil {
 			err = errors.New("parse field max_num 套装数量 to int32 failed")
-			logger.ErrorWF("parse field max_num 套装数量 to int32 failed.",
-				zap.String("xlsx", "maze_equip_suite_info_v8【迷宫-装备-套装信息】.xlsx"), zap.String("sheet", "maze_equip_suite_info_v8"),
-				zap.String("parse_data", data[2]),
+			logger.ErrorWF("parse field max_num 套装数量 to int32 failed.", 
+				zap.String("xlsx", "maze_equip_suite_info_v8【迷宫-装备-套装信息】.xlsx"), zap.String("sheet", "maze_equip_suite_info_v8"), 
+				zap.String("parse_data",data[2]), 
 				zap.Error(err))
 			return
 		}
 		config.Max_num = int32(tmp)
 	}
 
-	// parse column 3 pos_list : 套装部位
+	// parse column 3 pos_list : 套装部位 
 	if data[3] != "" {
-
-		vals := strings.Split(data[3], ",")
-		for k, v := range vals {
-			tmp, err = strconv.ParseInt(v, 10, 64)
+    
+		vals := strings.Split(data[3],",")
+		for k,v := range vals {
+			tmp,err = strconv.ParseInt(v,10,64)
 			if err != nil {
 				err = errors.New("parse array field pos_list 套装部位 to []int32 failed")
-				logger.ErrorWF("parse array field pos_list 套装部位 to []int32 failed.",
-					zap.String("xlsx", "maze_equip_suite_info_v8【迷宫-装备-套装信息】.xlsx"), zap.String("sheet", "maze_equip_suite_info_v8"),
-					// zap.String("field_data",data[3]),
-					zap.String("parse_data", v), zap.Int("index", k),
+				logger.ErrorWF("parse array field pos_list 套装部位 to []int32 failed.", 
+					zap.String("xlsx", "maze_equip_suite_info_v8【迷宫-装备-套装信息】.xlsx"), zap.String("sheet", "maze_equip_suite_info_v8"), 
+					// zap.String("field_data",data[3]), 
+					zap.String("parse_data", v),zap.Int("index", k),
 					zap.Error(err))
 				return
 			}
@@ -328,18 +324,18 @@ func (*gMazeEquipSuiteInfoV8Parser) Parse(logger fklog.FKLogI, data []string, ro
 		}
 	}
 
-	// parse column 4 exclude_attr : 套装的排除
+	// parse column 4 exclude_attr : 套装的排除 
 	if data[4] != "" {
-
-		vals := strings.Split(data[4], ",")
-		for k, v := range vals {
-			tmp, err = strconv.ParseInt(v, 10, 64)
+    
+		vals := strings.Split(data[4],",")
+		for k,v := range vals {
+			tmp,err = strconv.ParseInt(v,10,64)
 			if err != nil {
 				err = errors.New("parse array field exclude_attr 套装的排除 to []int32 failed")
-				logger.ErrorWF("parse array field exclude_attr 套装的排除 to []int32 failed.",
-					zap.String("xlsx", "maze_equip_suite_info_v8【迷宫-装备-套装信息】.xlsx"), zap.String("sheet", "maze_equip_suite_info_v8"),
-					// zap.String("field_data",data[4]),
-					zap.String("parse_data", v), zap.Int("index", k),
+				logger.ErrorWF("parse array field exclude_attr 套装的排除 to []int32 failed.", 
+					zap.String("xlsx", "maze_equip_suite_info_v8【迷宫-装备-套装信息】.xlsx"), zap.String("sheet", "maze_equip_suite_info_v8"), 
+					// zap.String("field_data",data[4]), 
+					zap.String("parse_data", v),zap.Int("index", k),
 					zap.Error(err))
 				return
 			}
@@ -347,46 +343,46 @@ func (*gMazeEquipSuiteInfoV8Parser) Parse(logger fklog.FKLogI, data []string, ro
 		}
 	}
 
-	// parse column 5 counter_weapons_damage_attr : 套装对应的武器属性id
+	// parse column 5 counter_weapons_damage_attr : 套装对应的武器属性id 
 	if data[5] != "" {
-		tmp, err = strconv.ParseInt(data[5], 10, 64)
+		tmp,err = strconv.ParseInt(data[5],10,64)
 		if err != nil {
 			err = errors.New("parse field counter_weapons_damage_attr 套装对应的武器属性id to int32 failed")
-			logger.ErrorWF("parse field counter_weapons_damage_attr 套装对应的武器属性id to int32 failed.",
-				zap.String("xlsx", "maze_equip_suite_info_v8【迷宫-装备-套装信息】.xlsx"), zap.String("sheet", "maze_equip_suite_info_v8"),
-				zap.String("parse_data", data[5]),
+			logger.ErrorWF("parse field counter_weapons_damage_attr 套装对应的武器属性id to int32 failed.", 
+				zap.String("xlsx", "maze_equip_suite_info_v8【迷宫-装备-套装信息】.xlsx"), zap.String("sheet", "maze_equip_suite_info_v8"), 
+				zap.String("parse_data",data[5]), 
 				zap.Error(err))
 			return
 		}
 		config.Counter_weapons_damage_attr = int32(tmp)
 	}
 
-	// parse column 6 counter_weapons_damage_type : 套装对应的武器伤害类型
+	// parse column 6 counter_weapons_damage_type : 套装对应的武器伤害类型 
 	if data[6] != "" {
-		tmp, err = strconv.ParseInt(data[6], 10, 64)
+		tmp,err = strconv.ParseInt(data[6],10,64)
 		if err != nil {
 			err = errors.New("parse field counter_weapons_damage_type 套装对应的武器伤害类型 to int32 failed")
-			logger.ErrorWF("parse field counter_weapons_damage_type 套装对应的武器伤害类型 to int32 failed.",
-				zap.String("xlsx", "maze_equip_suite_info_v8【迷宫-装备-套装信息】.xlsx"), zap.String("sheet", "maze_equip_suite_info_v8"),
-				zap.String("parse_data", data[6]),
+			logger.ErrorWF("parse field counter_weapons_damage_type 套装对应的武器伤害类型 to int32 failed.", 
+				zap.String("xlsx", "maze_equip_suite_info_v8【迷宫-装备-套装信息】.xlsx"), zap.String("sheet", "maze_equip_suite_info_v8"), 
+				zap.String("parse_data",data[6]), 
 				zap.Error(err))
 			return
 		}
 		config.Counter_weapons_damage_type = int32(tmp)
 	}
 
-	// parse column 7 exclude_sub_type : 套装排除的武器子类型
+	// parse column 7 exclude_sub_type : 套装排除的武器子类型 
 	if data[7] != "" {
-
-		vals := strings.Split(data[7], ",")
-		for k, v := range vals {
-			tmp, err = strconv.ParseInt(v, 10, 64)
+    
+		vals := strings.Split(data[7],",")
+		for k,v := range vals {
+			tmp,err = strconv.ParseInt(v,10,64)
 			if err != nil {
 				err = errors.New("parse array field exclude_sub_type 套装排除的武器子类型 to []int32 failed")
-				logger.ErrorWF("parse array field exclude_sub_type 套装排除的武器子类型 to []int32 failed.",
-					zap.String("xlsx", "maze_equip_suite_info_v8【迷宫-装备-套装信息】.xlsx"), zap.String("sheet", "maze_equip_suite_info_v8"),
-					// zap.String("field_data",data[7]),
-					zap.String("parse_data", v), zap.Int("index", k),
+				logger.ErrorWF("parse array field exclude_sub_type 套装排除的武器子类型 to []int32 failed.", 
+					zap.String("xlsx", "maze_equip_suite_info_v8【迷宫-装备-套装信息】.xlsx"), zap.String("sheet", "maze_equip_suite_info_v8"), 
+					// zap.String("field_data",data[7]), 
+					zap.String("parse_data", v),zap.Int("index", k),
 					zap.Error(err))
 				return
 			}
@@ -394,7 +390,7 @@ func (*gMazeEquipSuiteInfoV8Parser) Parse(logger fklog.FKLogI, data []string, ro
 		}
 	}
 
-	// parse column 8 prefix : 装备名前缀
+	// parse column 8 prefix : 装备名前缀 
 	if data[8] != "" {
 		config.Prefix = data[8]
 	}
@@ -402,23 +398,23 @@ func (*gMazeEquipSuiteInfoV8Parser) Parse(logger fklog.FKLogI, data []string, ro
 }
 
 var gMazeEquipSuiteInfoV8Fields = []string{
-	"suite_id",
-	"suite_name",
-	"max_num",
-	"pos_list",
-	"exclude_attr",
-	"counter_weapons_damage_attr",
-	"counter_weapons_damage_type",
-	"exclude_sub_type",
-	"prefix",
+    "suite_id",
+    "suite_name",
+    "max_num",
+    "pos_list",
+    "exclude_attr",
+    "counter_weapons_damage_attr",
+    "counter_weapons_damage_type",
+    "exclude_sub_type",
+    "prefix",
 }
 
 // LoadDataManual load data for test
-func LoadDataManual(logger fklog.FKLogI, load func(file, sheet string, fields []string) ([][]string, error)) (err error) {
+func LoadDataManual(logger fklog.FKLogI, load func(file, sheet string, fields []string) ([][]string,error)) (err error) {
 	parser := &gMazeEquipSuiteInfoV8Parser{}
 	loader := &gMazeEquipSuiteInfoV8Loader{}
 	var data [][]string
-	data, err = load("maze_equip_suite_info_v8【迷宫-装备-套装信息】.xlsx", "maze_equip_suite_info_v8", gMazeEquipSuiteInfoV8Fields)
+	data,err = load("maze_equip_suite_info_v8【迷宫-装备-套装信息】.xlsx", "maze_equip_suite_info_v8", gMazeEquipSuiteInfoV8Fields)
 	if err != nil {
 		logger.ErrorWF("load maze_equip_suite_info_v8【迷宫-装备-套装信息】.xlsx maze_equip_suite_info_v8 data failed.", zap.Error(err))
 		return
