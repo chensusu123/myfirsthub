@@ -529,81 +529,81 @@ func RegProcSimple(rqID uint16, rqMsg proto.Message, rsID uint16, rsMsg proto.Me
 	return nil
 }
 
-func SendPb(logger fklog.FKLogI, shardingID uint64, packType uint16, pack proto.Message) error {
-	var sessionID int64
-	pb, err := proto.Marshal(pack)
-	if err != nil {
-		logger.ErrorWF("SendPb Marshal failed",
-			zap.Any("err", err),
-			zap.Any("shardingID", shardingID), zap.Any("sessionID", sessionID),
-			zap.Any("packType", packType), zap.Any("pack", pack))
-		return err
-	}
+// func SendPb(logger fklog.FKLogI, shardingID uint64, packType uint16, pack proto.Message) error {
+// 	var sessionID int64
+// 	pb, err := proto.Marshal(pack)
+// 	if err != nil {
+// 		logger.ErrorWF("SendPb Marshal failed",
+// 			zap.Any("err", err),
+// 			zap.Any("shardingID", shardingID), zap.Any("sessionID", sessionID),
+// 			zap.Any("packType", packType), zap.Any("pack", pack))
+// 		return err
+// 	}
 
-	pkg := &raw_pkg.StruSvrEsRawBaseHead{}
-	pkg.SessionID = uint32(sessionID)
-	pkg.PackType = packType
-	pkg.EsRsTime = uint64(time.Now().Unix())
-	pkg.Data = pb
-	pkg.SetTeaflag()
+// 	pkg := &raw_pkg.StruSvrEsRawBaseHead{}
+// 	pkg.SessionID = uint32(sessionID)
+// 	pkg.PackType = packType
+// 	pkg.EsRsTime = uint64(time.Now().Unix())
+// 	pkg.Data = pb
+// 	pkg.SetTeaflag()
 
-	data, err := pkg.Pack()
-	if err != nil {
-		logger.ErrorWF("SendPb Pack failed",
-			zap.Any("err", err),
-			zap.Any("shardingID", shardingID), zap.Any("sessionID", sessionID),
-			zap.Any("packType", packType), zap.Any("pack", pack))
-		return err
-	}
+// 	data, err := pkg.Pack()
+// 	if err != nil {
+// 		logger.ErrorWF("SendPb Pack failed",
+// 			zap.Any("err", err),
+// 			zap.Any("shardingID", shardingID), zap.Any("sessionID", sessionID),
+// 			zap.Any("packType", packType), zap.Any("pack", pack))
+// 		return err
+// 	}
 
-	err = gGlobalTCPRawServer.SendData(logger, int64(shardingID), sessionID, data)
-	if err != nil {
-		logger.ErrorWF("SendPb SendData failed",
-			zap.Any("err", err),
-			zap.Any("shardingID", shardingID), zap.Any("sessionID", sessionID),
-			zap.Any("packType", packType), zap.Any("pack", pack))
-		return err
-	}
-	return err
-}
+// 	err = gGlobalTCPRawServer.SendData(logger, int64(shardingID), sessionID, data)
+// 	if err != nil {
+// 		logger.ErrorWF("SendPb SendData failed",
+// 			zap.Any("err", err),
+// 			zap.Any("shardingID", shardingID), zap.Any("sessionID", sessionID),
+// 			zap.Any("packType", packType), zap.Any("pack", pack))
+// 		return err
+// 	}
+// 	return err
+// }
 
-func SendBytes(logger fklog.FKLogI, shardingID uint64, packType uint16, pack []byte) error {
-	var sessionID int64
-	pkg := &raw_pkg.StruSvrEsRawBaseHead{}
-	pkg.SessionID = uint32(sessionID)
-	pkg.PackType = packType
-	pkg.Data = pack
-	pkg.EsRsTime = uint64(time.Now().Unix())
-	pkg.SetTeaflag()
+// func SendBytes(logger fklog.FKLogI, shardingID uint64, packType uint16, pack []byte) error {
+// 	var sessionID int64
+// 	pkg := &raw_pkg.StruSvrEsRawBaseHead{}
+// 	pkg.SessionID = uint32(sessionID)
+// 	pkg.PackType = packType
+// 	pkg.Data = pack
+// 	pkg.EsRsTime = uint64(time.Now().Unix())
+// 	pkg.SetTeaflag()
 
-	data, err := pkg.Pack()
-	if err != nil {
-		logger.ErrorWF("SendData Pack failed",
-			zap.Any("err", err),
-			zap.Any("shardingID", shardingID), zap.Any("sessionID", sessionID),
-			zap.Any("packType", packType), zap.Any("pack", pack))
-		return err
-	}
+// 	data, err := pkg.Pack()
+// 	if err != nil {
+// 		logger.ErrorWF("SendData Pack failed",
+// 			zap.Any("err", err),
+// 			zap.Any("shardingID", shardingID), zap.Any("sessionID", sessionID),
+// 			zap.Any("packType", packType), zap.Any("pack", pack))
+// 		return err
+// 	}
 
-	err = gGlobalTCPRawServer.SendData(logger, int64(shardingID), sessionID, data)
-	if err != nil {
-		logger.ErrorWF("SendData SendData failed",
-			zap.Any("err", err),
-			zap.Any("shardingID", shardingID), zap.Any("sessionID", sessionID),
-			zap.Any("packType", packType), zap.Any("pack", pack))
-		return err
-	}
-	return err
-}
+// 	err = gGlobalTCPRawServer.SendData(logger, int64(shardingID), sessionID, data)
+// 	if err != nil {
+// 		logger.ErrorWF("SendData SendData failed",
+// 			zap.Any("err", err),
+// 			zap.Any("shardingID", shardingID), zap.Any("sessionID", sessionID),
+// 			zap.Any("packType", packType), zap.Any("pack", pack))
+// 		return err
+// 	}
+// 	return err
+// }
 
-func (ts *tTCPRawService) SendData(logger fklog.FKLogI, userID int64, sessionID int64, data []byte) error {
-	if ts == nil {
-		return errors.New("tTCPService == nil")
-	}
-	logger.InfoWF("SendData entry", zap.Any("userID", userID))
-	hub.SendDataByUserID(logger, uint64(userID), data)
-	return nil
-}
+// func (ts *tTCPRawService) SendData(logger fklog.FKLogI, userID int64, sessionID int64, data []byte) error {
+// 	if ts == nil {
+// 		return errors.New("tTCPService == nil")
+// 	}
+// 	logger.InfoWF("SendData entry", zap.Any("userID", userID))
+// 	hub.SendDataByUserID(logger, uint64(userID), data)
+// 	return nil
+// }
 
 func MockOnInit(logger fklog.FKLogI, addr string) (err error) {
 	// 读取tcp配置
@@ -638,4 +638,23 @@ func MockOnStart(logger fklog.FKLogI) (err error) {
 	}
 	logger.InfoWF("websocket-service start success.")
 	return
+}
+
+func SendPacket(logger fklog.FKLogI, shardingID uint64, packType uint16, pack interface{}) error {
+	var sessionID int64
+
+	err := gGlobalTCPRawServer.SendPacket(logger, int64(shardingID), sessionID, packType, pack)
+
+	return err
+}
+
+func (ts *tTCPRawService) SendPacket(logger fklog.FKLogI, userID int64, sessionID int64, packType uint16, pack interface{}) error {
+	if ts == nil {
+		return errors.New("tTCPService == nil")
+	}
+	logger.InfoWF("SendPacket entry", zap.Any("userID", userID),
+		zap.Any("sessionID", sessionID),
+		zap.Any("packType", packType))
+	hub.SendDataPacketUserID(logger, uint64(userID), packType, pack)
+	return nil
 }

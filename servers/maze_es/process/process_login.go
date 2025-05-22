@@ -47,6 +47,7 @@ func OnLoginRQ(ctx fknet.TCPContext, shardingID uint64, rqMsg proto.Message, rsM
 	// 认证成功设置用户ID, 底层会处理
 	userId := req.GetUserID()
 	ctx.SetTag("userID", userId)
+
 	return nil
 }
 

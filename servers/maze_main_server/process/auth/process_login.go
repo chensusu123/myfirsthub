@@ -66,6 +66,12 @@ func OnLoginRQ(ctx fknet.TCPContext, shardingID uint64, rqMsg proto.Message, rsM
 
 	ctx.SetTag("userID", userID)
 	res.ServerTime = proto.Int64(time.Now().UnixMilli())
+
+	time.AfterFunc(time.Second*2, func() {
+		SendArrivePacket(logger, int64(userID), 111, &UserLogin.UserLiveRs{
+			ClientTime: proto.Int64(time.Now().UnixMilli()),
+		})
+	})
 	return nil
 }
 

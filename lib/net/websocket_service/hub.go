@@ -10,9 +10,12 @@ package websocket_service
 import (
 	"sync"
 	"sync/atomic"
+	"time"
 
+	"gitlab.ifreetalk.com/maze-plate/extra/protobuf/proto"
 	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fklog"
 	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fknet"
+	"gitlab.ifreetalk.com/maze/maze_game_server/lib/net/raw_pkg"
 	"go.uber.org/zap"
 )
 
@@ -47,7 +50,8 @@ type ClientLogin struct {
 
 type SendDataMsg struct {
 	UserId uint64
-	Data   []byte
+	Type   uint16
+	DataV2 interface{}
 }
 
 var hub = newHub()
@@ -154,34 +158,78 @@ func (h *Hub) OnLogin(userID uint64, ctx fknet.TCPContext) {
 }
 
 func (h *Hub) SendData(info *SendDataMsg) {
-	h.InfoWF("SendData entry", zap.Any("userID", info.UserId))
+	h.InfoWF("SendData entry", zap.Any("userID", info.UserId), zap.Any("packetType", info.Type))
 	h.clientsLock.RLock()
+	var data []byte
+	var err error
 	if client, ok := h.clientMaps[info.UserId]; ok {
 		h.clientsLock.RUnlock()
+		if client.isJosn {
+			sendPacket := &NoramlJsonMsg{
+				MsgType: int(info.Type),
+				Data:    info.DataV2,
+			}
+			data, err = json.Marshal(sendPacket)
+			if err != nil {
+				h.ErrorWF("SendData Marshal json failed",
+					zap.Any("err", err),
+					zap.Any("userID", info.UserId),
+					zap.Any("packetType", info.Type))
+				return
+			}
+		} else {
+			dataPB, err := proto.Marshal(info.DataV2.(proto.Message))
+			pkg := &raw_pkg.StruSvrEsRawBaseHead{}
+			pkg.SessionID = uint32(0)
+			pkg.PackType = info.Type
+			pkg.Data = dataPB
+			pkg.EsRsTime = uint64(time.Now().Unix())
+			pkg.SetTeaflag()
+			data, err = pkg.Pack()
+			if err != nil {
+				h.ErrorWF("SendData Marshal pb failed",
+					zap.Any("err", err),
+					zap.Any("userID", info.UserId),
+					zap.Any("packetType", info.Type))
+				return
+			}
+		}
+
 		h.InfoWF("SendData", zap.Any("userID", info.UserId),
 			zap.Any("sessionId", client.sessionId),
+			zap.Any("packetType", info.Type),
 		)
-		err := client.SendData(info.Data)
+		err := client.SendData(data)
 		if err != nil {
 			h.InfoWF("SendData error", zap.Any("userID", info.UserId),
 				zap.Any("sessionId", client.sessionId),
+				zap.Any("packetType", info.Type),
 				zap.Error(err),
 			)
 		} else {
 			h.InfoWF("SendData success", zap.Any("userID", info.UserId),
 				zap.Any("sessionId", client.sessionId),
+				zap.Any("packetType", info.Type),
 			)
 		}
 		return
 	} else {
-		h.InfoWF("SendData client not found", zap.Any("userID", info.UserId))
+		h.InfoWF("SendData client not found", zap.Any("userID", info.UserId), zap.Any("packetType", info.Type))
 	}
 	h.clientsLock.RUnlock()
 }
 
-func (h *Hub) SendDataByUserID(logger fklog.FKLogI, userID uint64, data []byte) {
+// func (h *Hub) SendDataByUserID(logger fklog.FKLogI, userID uint64, data []byte) {
+// 	h.sendDataQueue <- &SendDataMsg{
+// 		UserId: userID,
+// 		Data:   data,
+// 	}
+// }
+
+func (h *Hub) SendDataPacketUserID(logger fklog.FKLogI, userID uint64, packType uint16, pack interface{}) {
 	h.sendDataQueue <- &SendDataMsg{
 		UserId: userID,
-		Data:   data,
+		DataV2: pack,
+		Type:   packType,
 	}
 }

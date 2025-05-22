@@ -59,6 +59,7 @@ type Client struct {
 	readPacketLen int
 	packetLen     int
 	isClose       atomic.Bool
+	isJosn        bool
 	*fknet.FkTags
 }
 
@@ -343,6 +344,7 @@ func serveJsonWs(ctx *app.RequestContext, logger fklog.FKLogI) {
 		client.SetTag("mySelf", client)
 		client.SetTag("mySelfSession", client.sessionId)
 		client.FKLogI = clientLogger
+		client.isJosn = true
 		hub.register <- client
 
 		go client.writeJsonPump()
