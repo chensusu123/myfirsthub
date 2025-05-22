@@ -1,24 +1,26 @@
 package GMazeBoxV8Cfg
 
+
 import (
-	"errors"
-	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fklog"
-	"gitlab.ifreetalk.com/maze-plate/freetk/fkserver/config_manager"
-	"go.uber.org/zap"
-	"strconv"
-	"strings"
 	"sync"
 	"sync/atomic"
 	"unsafe"
+	"strconv"
+	"errors"
+	"strings"
+	"gitlab.ifreetalk.com/maze-plate/freetk/fkserver/config_manager"
+	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fklog"
+	"go.uber.org/zap"
 )
+
 
 // MazeBoxV8ConfigRow from maze_box_v8【迷宫-宝箱】.xlsx maze_box_v8
 type MazeBoxV8ConfigRow struct {
-	Id           int32           `json:"id"`           // 宝箱id
-	Level_id     string          `json:"level_id"`     // 关卡id
-	Award_equip  []int32         `json:"award_equip"`  // 装备奖励
-	Drop_exp_num map[int32]int64 `json:"drop_exp_num"` // 冒险等级:掉落经验数量
-	Drop_item    map[int32]int64 `json:"drop_item"`    // 宝箱掉落物品id：数量
+    Id       int32  `json:"id"` // 宝箱id
+    Level_id       string  `json:"level_id"` // 关卡id
+    Award_equip       []int32  `json:"award_equip"` // 装备奖励
+    Drop_exp_num       map[int32]int64  `json:"drop_exp_num"` // 冒险等级:掉落经验数量
+    Drop_item       map[int32]int64  `json:"drop_item"` // 宝箱掉落物品id：数量
 }
 
 // MazeBoxV8Config from maze_box_v8【迷宫-宝箱】.xlsx maze_box_v8
@@ -54,7 +56,7 @@ func (c *MazeBoxV8Config) Get(configId int32) *MazeBoxV8ConfigRow {
 }
 
 // GetAllMazeBoxV8Config get all config slice
-func (c *MazeBoxV8Config) GetAllMazeBoxV8Config() (res []*MazeBoxV8ConfigRow) {
+func (c *MazeBoxV8Config)  GetAllMazeBoxV8Config () (res []*MazeBoxV8ConfigRow) {
 	// c.lock.RLock()
 	// defer c.lock.RUnlock()
 	for _, val := range c.ConfigRows {
@@ -64,7 +66,7 @@ func (c *MazeBoxV8Config) GetAllMazeBoxV8Config() (res []*MazeBoxV8ConfigRow) {
 }
 
 // GetAll get all config slice
-func (c *MazeBoxV8Config) GetAll() (res []*MazeBoxV8ConfigRow) {
+func (c *MazeBoxV8Config)  GetAll() (res []*MazeBoxV8ConfigRow) {
 	// c.lock.RLock()
 	// defer c.lock.RUnlock()
 	for _, val := range c.ConfigRows {
@@ -73,8 +75,9 @@ func (c *MazeBoxV8Config) GetAll() (res []*MazeBoxV8ConfigRow) {
 	return
 }
 
-// global config pointer
-var gConfigData *MazeBoxV8Config
+
+// global config pointer 
+var gConfigData *MazeBoxV8Config 
 
 // GetMazeBoxV8Config pkg func. get one config by configId
 func GetMazeBoxV8Config(configId int32) *MazeBoxV8ConfigRow {
@@ -87,8 +90,8 @@ func Get(configId int32) *MazeBoxV8ConfigRow {
 }
 
 // GetAllMazeBoxV8Config pkg func. get all config slice
-func GetAllMazeBoxV8Config() []*MazeBoxV8ConfigRow {
-	return gConfigData.GetAllMazeBoxV8Config()
+func GetAllMazeBoxV8Config () []*MazeBoxV8ConfigRow {
+	return gConfigData.GetAllMazeBoxV8Config ()
 }
 
 // GetAll pkg func. get all config slice
@@ -97,17 +100,17 @@ func GetAll() []*MazeBoxV8ConfigRow {
 }
 
 // ConfigRows get raw map data
-func ConfigRows() map[int32]*MazeBoxV8ConfigRow {
+func ConfigRows() map[int32]*MazeBoxV8ConfigRow{
 	return gConfigData.ConfigRows
 }
 
 // GetConfigDesc get config desc for lod,debug etc.
-func GetConfigDesc() string {
+func GetConfigDesc() string{
 	return "MazeBoxV8ConfigRow from maze_box_v8【迷宫-宝箱】.xlsx maze_box_v8"
 }
 
 // GetRawValue get raw data
-func GetRawValue() *MazeBoxV8Config {
+func GetRawValue() *MazeBoxV8Config{
 	return gConfigData
 }
 
@@ -117,10 +120,10 @@ func SheetName() string {
 }
 
 func init() {
-	// reg config auto load
-	config_manager.RegAutoConfig("maze_box_v8.json",
+	// reg config auto load 
+	config_manager.RegAutoConfig("maze_box_v8.json", 
 		"maze_box_v8【迷宫-宝箱】.xlsx", "maze_box_v8",
-		&gMazeBoxV8Parser{}, &gMazeBoxV8Loader{})
+	 	&gMazeBoxV8Parser{}, &gMazeBoxV8Loader{})
 }
 
 // data update call back
@@ -148,35 +151,32 @@ var cfgCheckCallBack sync.Map //map[string]func(*MazeBoxV8Config)error
 // doConfigCheckCallback do config check callback
 func doConfigCheckCallback(c *MazeBoxV8Config) (err error) {
 	cfgCheckCallBack.Range(func(key, value interface{}) bool {
-		err := value.(func(*MazeBoxV8Config) error)(c)
+		err := value.(func(*MazeBoxV8Config)error)(c)
 		return err == nil
 	})
-	return
+	return 
 }
 
 // RegisterLoadedCallBack reg config update func.
-func RegisterConfigCheck(key string, f func(*MazeBoxV8Config) error) {
+func RegisterConfigCheck(key string, f func(*MazeBoxV8Config)error) {
 	cfgCheckCallBack.Store(key, f)
 }
 
 // implete ConfigLoader interface
 type gMazeBoxV8Loader struct {
 }
-
 // NewContainer new data container pointer
-func (*gMazeBoxV8Loader) NewContainer() interface{} {
+func (*gMazeBoxV8Loader) NewContainer() interface{}{
 	return newConfig()
 }
-
 // Check check new config data ptr
-func (*gMazeBoxV8Loader) Check(newPtr interface{}) error {
+func (*gMazeBoxV8Loader) Check(newPtr interface{})error{
 	// set global ptr
 	cfgData := newPtr.(*MazeBoxV8Config)
 	return doConfigCheckCallback(cfgData)
 }
-
 // Swap swap global config data ptr
-func (*gMazeBoxV8Loader) Swap(newPtr interface{}) {
+func (*gMazeBoxV8Loader) Swap(newPtr interface{}){
 	// convert pointer
 	cache := newPtr.(*MazeBoxV8Config)
 	// update second edit
@@ -184,48 +184,45 @@ func (*gMazeBoxV8Loader) Swap(newPtr interface{}) {
 	// set global ptr
 	atomic.StorePointer((*unsafe.Pointer)(unsafe.Pointer(&gConfigData)), unsafe.Pointer(cache))
 }
-
 // Add append config item to map,save result
-func (*gMazeBoxV8Loader) Add(logger fklog.FKLogI, container interface{}, ri interface{}) (err error) {
-	row, ok := ri.(*MazeBoxV8ConfigRow)
+func (*gMazeBoxV8Loader) Add(logger fklog.FKLogI,container interface{}, ri interface{})(err error) {
+	row,ok := ri.(*MazeBoxV8ConfigRow)
 	if !ok {
 		err = errors.New("invalid type. not *MazeBoxV8ConfigRow")
 		logger.ErrorWF("invalid type. not *MazeBoxV8ConfigRow", zap.String("xlsx", "maze_box_v8【迷宫-宝箱】.xlsx"),
 			zap.String("sheet", "maze_box_v8"))
-		return
+		return 
 	}
-	config, ok := container.(*MazeBoxV8Config)
+	config,ok := container.(*MazeBoxV8Config)
 	if !ok {
 		err = errors.New("invalid type. not *MazeBoxV8Config")
 		logger.ErrorWF("invalid type. not *MazeBoxV8Config", zap.String("xlsx", "maze_box_v8【迷宫-宝箱】.xlsx"),
 			zap.String("sheet", "maze_box_v8"))
-		return
+		return 
 	}
 	config.ConfigRows[row.Id] = row
 	return
 }
-
 // GetValue get real map value for json parse
-func (*gMazeBoxV8Loader) GetValue(logger fklog.FKLogI, container interface{}) (real interface{}, err error) {
-	config, ok := container.(*MazeBoxV8Config)
+func (*gMazeBoxV8Loader) GetValue(logger fklog.FKLogI,container interface{})(real interface{},err error) {
+	config,ok := container.(*MazeBoxV8Config)
 	if !ok {
 		err = errors.New("invalid type. not *MazeBoxV8Config")
 		logger.ErrorWF("invalid type. not *MazeBoxV8Config", zap.String("xlsx", "maze_box_v8【迷宫-宝箱】.xlsx"),
 			zap.String("sheet", "maze_box_v8"))
-		return
+		return 
 	}
 	real = &config.ConfigRows
 	return
 }
-
 // Range range all data for json append data parse.
-func (*gMazeBoxV8Loader) Range(logger fklog.FKLogI, container interface{}, rf func(row interface{}) error) (err error) {
-	config, ok := container.(*MazeBoxV8Config)
+func (*gMazeBoxV8Loader) Range(logger fklog.FKLogI, container interface{}, rf func(row interface{}) error) (err error){
+	config,ok := container.(*MazeBoxV8Config)
 	if !ok {
 		err = errors.New("invalid type. not *MazeBoxV8Config")
 		logger.ErrorWF("invalid type. not *MazeBoxV8Config", zap.String("xlsx", "maze_box_v8【迷宫-宝箱】.xlsx"),
 			zap.String("sheet", "maze_box_v8"))
-		return
+		return 
 	}
 	for _, row := range config.ConfigRows {
 		err = rf(row)
@@ -236,10 +233,10 @@ func (*gMazeBoxV8Loader) Range(logger fklog.FKLogI, container interface{}, rf fu
 	return
 }
 
+
 // implete ConfigParser interface
 type gMazeBoxV8Parser struct {
 }
-
 // New new config row data
 func (*gMazeBoxV8Parser) New() interface{} {
 	return &MazeBoxV8ConfigRow{}
@@ -249,60 +246,59 @@ func (*gMazeBoxV8Parser) New() interface{} {
 func (*gMazeBoxV8Parser) Fields() []string {
 	return gMazeBoxV8Fields
 }
-
 // Parse parse raw data to row data
-func (*gMazeBoxV8Parser) Parse(logger fklog.FKLogI, data []string, row interface{}) (err error) {
+func (*gMazeBoxV8Parser) Parse(logger fklog.FKLogI,data []string, row interface{}) (err error) {
 	// convert row type
-	config, ok := row.(*MazeBoxV8ConfigRow)
+	config,ok := row.(*MazeBoxV8ConfigRow)
 	if !ok {
 		err = errors.New("invalid type. not *MazeBoxV8ConfigRow")
 		logger.ErrorWF("invalid type. not *MazeBoxV8ConfigRow", zap.String("xlsx", "maze_box_v8【迷宫-宝箱】.xlsx"),
 			zap.String("sheet", "maze_box_v8"))
-		return
+		return 
 	}
 	// compare length
 	if len(data) != len(gMazeBoxV8Fields) {
 		err = errors.New("fields count not match.")
-		logger.ErrorWF("invalid type. not *map[int32]*MazeBoxV8ConfigRow",
+		logger.ErrorWF("invalid type. not *map[int32]*MazeBoxV8ConfigRow", 
 			zap.String("xlsx", "maze_box_v8【迷宫-宝箱】.xlsx"),
-			zap.String("sheet", "maze_box_v8"), zap.Int("need_count", len(gMazeBoxV8Fields)),
-			zap.Int("had_count", len(data)))
+			zap.String("sheet", "maze_box_v8"), zap.Int("need_count",len(gMazeBoxV8Fields)), 
+			zap.Int("had_count",len(data)))
 		return
 	}
 
 	var tmp int64
 
-	// parse column 0 id : 宝箱id
+	// parse column 0 id : 宝箱id 
 	if data[0] != "" {
-		tmp, err = strconv.ParseInt(data[0], 10, 64)
+		tmp,err = strconv.ParseInt(data[0],10,64)
 		if err != nil {
 			err = errors.New("parse field id 宝箱id to int32 failed")
-			logger.ErrorWF("parse field id 宝箱id to int32 failed.",
-				zap.String("xlsx", "maze_box_v8【迷宫-宝箱】.xlsx"), zap.String("sheet", "maze_box_v8"),
-				zap.String("parse_data", data[0]),
+			logger.ErrorWF("parse field id 宝箱id to int32 failed.", 
+				zap.String("xlsx", "maze_box_v8【迷宫-宝箱】.xlsx"), zap.String("sheet", "maze_box_v8"), 
+				zap.String("parse_data",data[0]), 
 				zap.Error(err))
 			return
 		}
 		config.Id = int32(tmp)
 	}
 
-	// parse column 1 level_id : 关卡id
+	// parse column 1 level_id : 关卡id 
 	if data[1] != "" {
 		config.Level_id = data[1]
 	}
 
-	// parse column 2 award_equip : 装备奖励
+	// parse column 2 award_equip : 装备奖励 
 	if data[2] != "" {
-
-		vals := strings.Split(data[2], ",")
-		for k, v := range vals {
-			tmp, err = strconv.ParseInt(v, 10, 64)
+    
+		vals := strings.Split(data[2],",")
+		for k,v := range vals {
+			tmp,err = strconv.ParseInt(v,10,64)
 			if err != nil {
 				err = errors.New("parse array field award_equip 装备奖励 to []int32 failed")
-				logger.ErrorWF("parse array field award_equip 装备奖励 to []int32 failed.",
-					zap.String("xlsx", "maze_box_v8【迷宫-宝箱】.xlsx"), zap.String("sheet", "maze_box_v8"),
-					// zap.String("field_data",data[2]),
-					zap.String("parse_data", v), zap.Int("index", k),
+				logger.ErrorWF("parse array field award_equip 装备奖励 to []int32 failed.", 
+					zap.String("xlsx", "maze_box_v8【迷宫-宝箱】.xlsx"), zap.String("sheet", "maze_box_v8"), 
+					// zap.String("field_data",data[2]), 
+					zap.String("parse_data", v),zap.Int("index", k),
 					zap.Error(err))
 				return
 			}
@@ -310,34 +306,34 @@ func (*gMazeBoxV8Parser) Parse(logger fklog.FKLogI, data []string, row interface
 		}
 	}
 
-	// parse column 3 drop_exp_num : 冒险等级:掉落经验数量
+	// parse column 3 drop_exp_num : 冒险等级:掉落经验数量 
 	if data[3] != "" {
 
 		config.Drop_exp_num = make(map[int32]int64)
 		var key int32
 		var value int64
-		vals := strings.Split(data[3], "_")
-		for k, val := range vals {
-			items := strings.Split(val, ":")
-			tmp, err = strconv.ParseInt(items[0], 10, 64)
+		vals := strings.Split(data[3],"_")
+		for k,val := range vals {
+			items := strings.Split(val,":")
+			tmp,err = strconv.ParseInt(items[0],10,64)
 			if err != nil {
 				err = errors.New("parse map field drop_exp_num 冒险等级:掉落经验数量 to key int32 failed")
-				logger.ErrorWF("parse map field drop_exp_num 冒险等级:掉落经验数量 to key int32 failed.",
-					zap.String("xlsx", "maze_box_v8【迷宫-宝箱】.xlsx"), zap.String("sheet", "maze_box_v8"),
-					// zap.String("field_data",data[3]),
-					zap.String("item_data", val), zap.Int("index", k),
+				logger.ErrorWF("parse map field drop_exp_num 冒险等级:掉落经验数量 to key int32 failed.", 
+					zap.String("xlsx", "maze_box_v8【迷宫-宝箱】.xlsx"), zap.String("sheet", "maze_box_v8"), 
+					// zap.String("field_data",data[3]), 
+					zap.String("item_data",val), zap.Int("index", k),
 					zap.String("parse_data", items[0]),
 					zap.Error(err))
 				return
 			}
 			key = int32(tmp)
-			tmp, err = strconv.ParseInt(items[1], 10, 64)
+			tmp,err = strconv.ParseInt(items[1],10,64)
 			if err != nil {
 				err = errors.New("parse map field drop_exp_num 冒险等级:掉落经验数量 to value int64 failed")
-				logger.ErrorWF("parse map field drop_exp_num 冒险等级:掉落经验数量 to value int64 failed.",
-					zap.String("xlsx", "maze_box_v8【迷宫-宝箱】.xlsx"), zap.String("sheet", "maze_box_v8"),
-					// zap.String("field_data",data[3]),
-					zap.String("item_data", val), zap.Int("index", k),
+				logger.ErrorWF("parse map field drop_exp_num 冒险等级:掉落经验数量 to value int64 failed.", 
+					zap.String("xlsx", "maze_box_v8【迷宫-宝箱】.xlsx"), zap.String("sheet", "maze_box_v8"), 
+					// zap.String("field_data",data[3]), 
+					zap.String("item_data",val), zap.Int("index", k),
 					zap.String("parse_data", items[1]),
 					zap.Error(err))
 				return
@@ -347,34 +343,34 @@ func (*gMazeBoxV8Parser) Parse(logger fklog.FKLogI, data []string, row interface
 		}
 	}
 
-	// parse column 4 drop_item : 宝箱掉落物品id：数量
+	// parse column 4 drop_item : 宝箱掉落物品id：数量 
 	if data[4] != "" {
 
 		config.Drop_item = make(map[int32]int64)
 		var key int32
 		var value int64
-		vals := strings.Split(data[4], "_")
-		for k, val := range vals {
-			items := strings.Split(val, ":")
-			tmp, err = strconv.ParseInt(items[0], 10, 64)
+		vals := strings.Split(data[4],"_")
+		for k,val := range vals {
+			items := strings.Split(val,":")
+			tmp,err = strconv.ParseInt(items[0],10,64)
 			if err != nil {
 				err = errors.New("parse map field drop_item 宝箱掉落物品id：数量 to key int32 failed")
-				logger.ErrorWF("parse map field drop_item 宝箱掉落物品id：数量 to key int32 failed.",
-					zap.String("xlsx", "maze_box_v8【迷宫-宝箱】.xlsx"), zap.String("sheet", "maze_box_v8"),
-					// zap.String("field_data",data[4]),
-					zap.String("item_data", val), zap.Int("index", k),
+				logger.ErrorWF("parse map field drop_item 宝箱掉落物品id：数量 to key int32 failed.", 
+					zap.String("xlsx", "maze_box_v8【迷宫-宝箱】.xlsx"), zap.String("sheet", "maze_box_v8"), 
+					// zap.String("field_data",data[4]), 
+					zap.String("item_data",val), zap.Int("index", k),
 					zap.String("parse_data", items[0]),
 					zap.Error(err))
 				return
 			}
 			key = int32(tmp)
-			tmp, err = strconv.ParseInt(items[1], 10, 64)
+			tmp,err = strconv.ParseInt(items[1],10,64)
 			if err != nil {
 				err = errors.New("parse map field drop_item 宝箱掉落物品id：数量 to value int64 failed")
-				logger.ErrorWF("parse map field drop_item 宝箱掉落物品id：数量 to value int64 failed.",
-					zap.String("xlsx", "maze_box_v8【迷宫-宝箱】.xlsx"), zap.String("sheet", "maze_box_v8"),
-					// zap.String("field_data",data[4]),
-					zap.String("item_data", val), zap.Int("index", k),
+				logger.ErrorWF("parse map field drop_item 宝箱掉落物品id：数量 to value int64 failed.", 
+					zap.String("xlsx", "maze_box_v8【迷宫-宝箱】.xlsx"), zap.String("sheet", "maze_box_v8"), 
+					// zap.String("field_data",data[4]), 
+					zap.String("item_data",val), zap.Int("index", k),
 					zap.String("parse_data", items[1]),
 					zap.Error(err))
 				return
@@ -387,19 +383,19 @@ func (*gMazeBoxV8Parser) Parse(logger fklog.FKLogI, data []string, row interface
 }
 
 var gMazeBoxV8Fields = []string{
-	"id",
-	"level_id",
-	"award_equip",
-	"drop_exp_num",
-	"drop_item",
+    "id",
+    "level_id",
+    "award_equip",
+    "drop_exp_num",
+    "drop_item",
 }
 
 // LoadDataManual load data for test
-func LoadDataManual(logger fklog.FKLogI, load func(file, sheet string, fields []string) ([][]string, error)) (err error) {
+func LoadDataManual(logger fklog.FKLogI, load func(file, sheet string, fields []string) ([][]string,error)) (err error) {
 	parser := &gMazeBoxV8Parser{}
 	loader := &gMazeBoxV8Loader{}
 	var data [][]string
-	data, err = load("maze_box_v8【迷宫-宝箱】.xlsx", "maze_box_v8", gMazeBoxV8Fields)
+	data,err = load("maze_box_v8【迷宫-宝箱】.xlsx", "maze_box_v8", gMazeBoxV8Fields)
 	if err != nil {
 		logger.ErrorWF("load maze_box_v8【迷宫-宝箱】.xlsx maze_box_v8 data failed.", zap.Error(err))
 		return
