@@ -1,6 +1,7 @@
 package gm
 
 import (
+	"encoding/json"
 	"errors"
 	"fmt"
 	"net/http"
@@ -11,6 +12,8 @@ import (
 	"gitlab.ifreetalk.com/maze/maze_game_server/common/function/gm"
 	"gitlab.ifreetalk.com/maze/maze_game_server/config/GMazeBarriesV8Cfg"
 	"gitlab.ifreetalk.com/maze/maze_game_server/io/kafka/mazeuserlevelkafka"
+	"gitlab.ifreetalk.com/maze/maze_game_server/io/redis/UnionIDBindRedis"
+	"gitlab.ifreetalk.com/maze/maze_game_server/io/redis/useridredis"
 	"gitlab.ifreetalk.com/maze/maze_game_server/module/mazecommonvalue"
 	"gitlab.ifreetalk.com/maze/maze_game_server/module/mazeuserinfo"
 	"gitlab.ifreetalk.com/maze/maze_game_server/servers/maze_main_server/process/gm/cmdbattledata"
@@ -35,7 +38,7 @@ func RegGm(logger fklog.FKLogI) {
 		oldLevel := userInfo.Level
 		oldExp := userInfo.TotalExp
 
-		//更新等级经验
+		// 更新等级经验
 		err = userInfo.AddExp(exp)
 		if err != nil {
 			logger.ErrorWF("AddExp CalExp fail", zap.Error(err))
@@ -91,9 +94,7 @@ func RegGm(logger fklog.FKLogI) {
 			return
 		}
 
-		var (
-			oldBarrier = userInfo.Barrier
-		)
+		oldBarrier := userInfo.Barrier
 
 		if barrierID <= oldBarrier {
 			fmt.Fprintf(writer, "仅支持跳过关卡，当前第%d关", oldBarrier)
@@ -103,7 +104,7 @@ func RegGm(logger fklog.FKLogI) {
 		userInfo.SetBarrier(barrierID)
 		userInfo.SetPassBarrier(barrierID - 1)
 
-		//更新设置关卡
+		// 更新设置关卡
 		err = mazeuserinfo.SetUserInfoV2(logger, userId, userInfo)
 		if err != nil {
 			logger.ErrorWF("SetBarrier SetUserInfoV2 fail", zap.Error(err))
@@ -114,4 +115,66 @@ func RegGm(logger fklog.FKLogI) {
 		writer.Write([]byte("设置成功，注意尽量不要在迷宫杀怪时使用本gm"))
 	})
 
+	gm.SafeHttpRegister(logger, "/generateUser", func(writer http.ResponseWriter, request *http.Request) {
+		logger.SetLogId(time.Now().UnixNano())
+		AuthId := fkutil.ToUint64(request.Form.Get("AuthId"))
+
+		userID := uint64(0)
+
+		generateUser := &GenerateUser{}
+		defer func() {
+			generateUser.UserId = userID
+			jsonData, err := json.Marshal(generateUser)
+			if err != nil {
+				writer.Write([]byte(err.Error()))
+				return
+			}
+			writer.Write(jsonData)
+		}()
+
+		if AuthId == 0 {
+			generateUser.ErrorCode = 1
+			generateUser.ErrorMsg = "AuthId is 0"
+			return
+		}
+
+		users, err := UnionIDBindRedis.GetUsersWithUnionID(logger, uint64(AuthId))
+		if err != nil {
+			generateUser.ErrorCode = 1
+			generateUser.ErrorMsg = err.Error()
+			return
+		}
+
+		if len(users) == 0 {
+			newUserID := useridredis.Generate(logger)
+			if newUserID == 0 {
+				generateUser.ErrorCode = 1
+				generateUser.ErrorMsg = "Generate error"
+				return
+			}
+			err = UnionIDBindRedis.AddUnionID2UserID(logger, uint64(AuthId), newUserID)
+			if err != nil {
+				generateUser.ErrorCode = 1
+				generateUser.ErrorMsg = err.Error()
+				return
+			}
+			err = UnionIDBindRedis.AddUserID2UnionID(logger, newUserID, uint64(AuthId))
+			if err != nil {
+				generateUser.ErrorCode = 1
+				generateUser.ErrorMsg = err.Error()
+				return
+			}
+			userID = newUserID
+		} else {
+			userID = users[0]
+		}
+		generateUser.ErrorCode = 0
+		generateUser.ErrorMsg = "success"
+	})
+}
+
+type GenerateUser struct {
+	ErrorCode uint64 `json:"errorCode"`
+	ErrorMsg  string `json:"errorMsg"`
+	UserId    uint64 `json:"userId"`
 }
