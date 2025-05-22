@@ -1,25 +1,23 @@
 package GMazeAttrListOrderV8Cfg
 
-
 import (
+	"errors"
+	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fklog"
+	"gitlab.ifreetalk.com/maze-plate/freetk/fkserver/config_manager"
+	"go.uber.org/zap"
+	"strconv"
 	"sync"
 	"sync/atomic"
 	"unsafe"
-	"strconv"
-	"errors"
-	"gitlab.ifreetalk.com/maze-plate/freetk/fkserver/config_manager"
-	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fklog"
-	"go.uber.org/zap"
 )
-
 
 // MazeAttrListOrderV8ConfigRow from maze_attr_list_order_v8【迷宫-属性列表-排序】.xlsx maze_attr_list_order_v8
 type MazeAttrListOrderV8ConfigRow struct {
-    Order       int32  `json:"order"` // 排序
-    Type       int32  `json:"type"` // 分类
-    In_type_order       int32  `json:"in_type_order"` // 排序
-    Attr_id       int32  `json:"attr_id"` // 属性id
-    Attr_desc       string  `json:"attr_desc"` // 注释描述
+	Order         int32  `json:"order"`         // 排序
+	Type          int32  `json:"type"`          // 分类
+	In_type_order int32  `json:"in_type_order"` // 排序
+	Attr_id       int32  `json:"attr_id"`       // 属性id
+	Attr_desc     string `json:"attr_desc"`     // 注释描述
 }
 
 // MazeAttrListOrderV8Config from maze_attr_list_order_v8【迷宫-属性列表-排序】.xlsx maze_attr_list_order_v8
@@ -55,7 +53,7 @@ func (c *MazeAttrListOrderV8Config) Get(configId int32) *MazeAttrListOrderV8Conf
 }
 
 // GetAllMazeAttrListOrderV8Config get all config slice
-func (c *MazeAttrListOrderV8Config)  GetAllMazeAttrListOrderV8Config () (res []*MazeAttrListOrderV8ConfigRow) {
+func (c *MazeAttrListOrderV8Config) GetAllMazeAttrListOrderV8Config() (res []*MazeAttrListOrderV8ConfigRow) {
 	// c.lock.RLock()
 	// defer c.lock.RUnlock()
 	for _, val := range c.ConfigRows {
@@ -65,7 +63,7 @@ func (c *MazeAttrListOrderV8Config)  GetAllMazeAttrListOrderV8Config () (res []*
 }
 
 // GetAll get all config slice
-func (c *MazeAttrListOrderV8Config)  GetAll() (res []*MazeAttrListOrderV8ConfigRow) {
+func (c *MazeAttrListOrderV8Config) GetAll() (res []*MazeAttrListOrderV8ConfigRow) {
 	// c.lock.RLock()
 	// defer c.lock.RUnlock()
 	for _, val := range c.ConfigRows {
@@ -74,9 +72,8 @@ func (c *MazeAttrListOrderV8Config)  GetAll() (res []*MazeAttrListOrderV8ConfigR
 	return
 }
 
-
-// global config pointer 
-var gConfigData *MazeAttrListOrderV8Config 
+// global config pointer
+var gConfigData *MazeAttrListOrderV8Config
 
 // GetMazeAttrListOrderV8Config pkg func. get one config by configId
 func GetMazeAttrListOrderV8Config(configId int32) *MazeAttrListOrderV8ConfigRow {
@@ -89,8 +86,8 @@ func Get(configId int32) *MazeAttrListOrderV8ConfigRow {
 }
 
 // GetAllMazeAttrListOrderV8Config pkg func. get all config slice
-func GetAllMazeAttrListOrderV8Config () []*MazeAttrListOrderV8ConfigRow {
-	return gConfigData.GetAllMazeAttrListOrderV8Config ()
+func GetAllMazeAttrListOrderV8Config() []*MazeAttrListOrderV8ConfigRow {
+	return gConfigData.GetAllMazeAttrListOrderV8Config()
 }
 
 // GetAll pkg func. get all config slice
@@ -99,17 +96,17 @@ func GetAll() []*MazeAttrListOrderV8ConfigRow {
 }
 
 // ConfigRows get raw map data
-func ConfigRows() map[int32]*MazeAttrListOrderV8ConfigRow{
+func ConfigRows() map[int32]*MazeAttrListOrderV8ConfigRow {
 	return gConfigData.ConfigRows
 }
 
 // GetConfigDesc get config desc for lod,debug etc.
-func GetConfigDesc() string{
+func GetConfigDesc() string {
 	return "MazeAttrListOrderV8ConfigRow from maze_attr_list_order_v8【迷宫-属性列表-排序】.xlsx maze_attr_list_order_v8"
 }
 
 // GetRawValue get raw data
-func GetRawValue() *MazeAttrListOrderV8Config{
+func GetRawValue() *MazeAttrListOrderV8Config {
 	return gConfigData
 }
 
@@ -119,10 +116,10 @@ func SheetName() string {
 }
 
 func init() {
-	// reg config auto load 
-	config_manager.RegAutoConfig("maze_attr_list_order_v8.json", 
+	// reg config auto load
+	config_manager.RegAutoConfig("maze_attr_list_order_v8.json",
 		"maze_attr_list_order_v8【迷宫-属性列表-排序】.xlsx", "maze_attr_list_order_v8",
-	 	&gMazeAttrListOrderV8Parser{}, &gMazeAttrListOrderV8Loader{})
+		&gMazeAttrListOrderV8Parser{}, &gMazeAttrListOrderV8Loader{})
 }
 
 // data update call back
@@ -150,32 +147,35 @@ var cfgCheckCallBack sync.Map //map[string]func(*MazeAttrListOrderV8Config)error
 // doConfigCheckCallback do config check callback
 func doConfigCheckCallback(c *MazeAttrListOrderV8Config) (err error) {
 	cfgCheckCallBack.Range(func(key, value interface{}) bool {
-		err := value.(func(*MazeAttrListOrderV8Config)error)(c)
+		err := value.(func(*MazeAttrListOrderV8Config) error)(c)
 		return err == nil
 	})
-	return 
+	return
 }
 
 // RegisterLoadedCallBack reg config update func.
-func RegisterConfigCheck(key string, f func(*MazeAttrListOrderV8Config)error) {
+func RegisterConfigCheck(key string, f func(*MazeAttrListOrderV8Config) error) {
 	cfgCheckCallBack.Store(key, f)
 }
 
 // implete ConfigLoader interface
 type gMazeAttrListOrderV8Loader struct {
 }
+
 // NewContainer new data container pointer
-func (*gMazeAttrListOrderV8Loader) NewContainer() interface{}{
+func (*gMazeAttrListOrderV8Loader) NewContainer() interface{} {
 	return newConfig()
 }
+
 // Check check new config data ptr
-func (*gMazeAttrListOrderV8Loader) Check(newPtr interface{})error{
+func (*gMazeAttrListOrderV8Loader) Check(newPtr interface{}) error {
 	// set global ptr
 	cfgData := newPtr.(*MazeAttrListOrderV8Config)
 	return doConfigCheckCallback(cfgData)
 }
+
 // Swap swap global config data ptr
-func (*gMazeAttrListOrderV8Loader) Swap(newPtr interface{}){
+func (*gMazeAttrListOrderV8Loader) Swap(newPtr interface{}) {
 	// convert pointer
 	cache := newPtr.(*MazeAttrListOrderV8Config)
 	// update second edit
@@ -183,45 +183,48 @@ func (*gMazeAttrListOrderV8Loader) Swap(newPtr interface{}){
 	// set global ptr
 	atomic.StorePointer((*unsafe.Pointer)(unsafe.Pointer(&gConfigData)), unsafe.Pointer(cache))
 }
+
 // Add append config item to map,save result
-func (*gMazeAttrListOrderV8Loader) Add(logger fklog.FKLogI,container interface{}, ri interface{})(err error) {
-	row,ok := ri.(*MazeAttrListOrderV8ConfigRow)
+func (*gMazeAttrListOrderV8Loader) Add(logger fklog.FKLogI, container interface{}, ri interface{}) (err error) {
+	row, ok := ri.(*MazeAttrListOrderV8ConfigRow)
 	if !ok {
 		err = errors.New("invalid type. not *MazeAttrListOrderV8ConfigRow")
 		logger.ErrorWF("invalid type. not *MazeAttrListOrderV8ConfigRow", zap.String("xlsx", "maze_attr_list_order_v8【迷宫-属性列表-排序】.xlsx"),
 			zap.String("sheet", "maze_attr_list_order_v8"))
-		return 
+		return
 	}
-	config,ok := container.(*MazeAttrListOrderV8Config)
+	config, ok := container.(*MazeAttrListOrderV8Config)
 	if !ok {
 		err = errors.New("invalid type. not *MazeAttrListOrderV8Config")
 		logger.ErrorWF("invalid type. not *MazeAttrListOrderV8Config", zap.String("xlsx", "maze_attr_list_order_v8【迷宫-属性列表-排序】.xlsx"),
 			zap.String("sheet", "maze_attr_list_order_v8"))
-		return 
+		return
 	}
 	config.ConfigRows[row.Order] = row
 	return
 }
+
 // GetValue get real map value for json parse
-func (*gMazeAttrListOrderV8Loader) GetValue(logger fklog.FKLogI,container interface{})(real interface{},err error) {
-	config,ok := container.(*MazeAttrListOrderV8Config)
+func (*gMazeAttrListOrderV8Loader) GetValue(logger fklog.FKLogI, container interface{}) (real interface{}, err error) {
+	config, ok := container.(*MazeAttrListOrderV8Config)
 	if !ok {
 		err = errors.New("invalid type. not *MazeAttrListOrderV8Config")
 		logger.ErrorWF("invalid type. not *MazeAttrListOrderV8Config", zap.String("xlsx", "maze_attr_list_order_v8【迷宫-属性列表-排序】.xlsx"),
 			zap.String("sheet", "maze_attr_list_order_v8"))
-		return 
+		return
 	}
 	real = &config.ConfigRows
 	return
 }
+
 // Range range all data for json append data parse.
-func (*gMazeAttrListOrderV8Loader) Range(logger fklog.FKLogI, container interface{}, rf func(row interface{}) error) (err error){
-	config,ok := container.(*MazeAttrListOrderV8Config)
+func (*gMazeAttrListOrderV8Loader) Range(logger fklog.FKLogI, container interface{}, rf func(row interface{}) error) (err error) {
+	config, ok := container.(*MazeAttrListOrderV8Config)
 	if !ok {
 		err = errors.New("invalid type. not *MazeAttrListOrderV8Config")
 		logger.ErrorWF("invalid type. not *MazeAttrListOrderV8Config", zap.String("xlsx", "maze_attr_list_order_v8【迷宫-属性列表-排序】.xlsx"),
 			zap.String("sheet", "maze_attr_list_order_v8"))
-		return 
+		return
 	}
 	for _, row := range config.ConfigRows {
 		err = rf(row)
@@ -232,10 +235,10 @@ func (*gMazeAttrListOrderV8Loader) Range(logger fklog.FKLogI, container interfac
 	return
 }
 
-
 // implete ConfigParser interface
 type gMazeAttrListOrderV8Parser struct {
 }
+
 // New new config row data
 func (*gMazeAttrListOrderV8Parser) New() interface{} {
 	return &MazeAttrListOrderV8ConfigRow{}
@@ -245,85 +248,86 @@ func (*gMazeAttrListOrderV8Parser) New() interface{} {
 func (*gMazeAttrListOrderV8Parser) Fields() []string {
 	return gMazeAttrListOrderV8Fields
 }
+
 // Parse parse raw data to row data
-func (*gMazeAttrListOrderV8Parser) Parse(logger fklog.FKLogI,data []string, row interface{}) (err error) {
+func (*gMazeAttrListOrderV8Parser) Parse(logger fklog.FKLogI, data []string, row interface{}) (err error) {
 	// convert row type
-	config,ok := row.(*MazeAttrListOrderV8ConfigRow)
+	config, ok := row.(*MazeAttrListOrderV8ConfigRow)
 	if !ok {
 		err = errors.New("invalid type. not *MazeAttrListOrderV8ConfigRow")
 		logger.ErrorWF("invalid type. not *MazeAttrListOrderV8ConfigRow", zap.String("xlsx", "maze_attr_list_order_v8【迷宫-属性列表-排序】.xlsx"),
 			zap.String("sheet", "maze_attr_list_order_v8"))
-		return 
+		return
 	}
 	// compare length
 	if len(data) != len(gMazeAttrListOrderV8Fields) {
 		err = errors.New("fields count not match.")
-		logger.ErrorWF("invalid type. not *map[int32]*MazeAttrListOrderV8ConfigRow", 
+		logger.ErrorWF("invalid type. not *map[int32]*MazeAttrListOrderV8ConfigRow",
 			zap.String("xlsx", "maze_attr_list_order_v8【迷宫-属性列表-排序】.xlsx"),
-			zap.String("sheet", "maze_attr_list_order_v8"), zap.Int("need_count",len(gMazeAttrListOrderV8Fields)), 
-			zap.Int("had_count",len(data)))
+			zap.String("sheet", "maze_attr_list_order_v8"), zap.Int("need_count", len(gMazeAttrListOrderV8Fields)),
+			zap.Int("had_count", len(data)))
 		return
 	}
 
 	var tmp int64
 
-	// parse column 0 order : 排序 
+	// parse column 0 order : 排序
 	if data[0] != "" {
-		tmp,err = strconv.ParseInt(data[0],10,64)
+		tmp, err = strconv.ParseInt(data[0], 10, 64)
 		if err != nil {
 			err = errors.New("parse field order 排序 to int32 failed")
-			logger.ErrorWF("parse field order 排序 to int32 failed.", 
-				zap.String("xlsx", "maze_attr_list_order_v8【迷宫-属性列表-排序】.xlsx"), zap.String("sheet", "maze_attr_list_order_v8"), 
-				zap.String("parse_data",data[0]), 
+			logger.ErrorWF("parse field order 排序 to int32 failed.",
+				zap.String("xlsx", "maze_attr_list_order_v8【迷宫-属性列表-排序】.xlsx"), zap.String("sheet", "maze_attr_list_order_v8"),
+				zap.String("parse_data", data[0]),
 				zap.Error(err))
 			return
 		}
 		config.Order = int32(tmp)
 	}
 
-	// parse column 1 type : 分类 
+	// parse column 1 type : 分类
 	if data[1] != "" {
-		tmp,err = strconv.ParseInt(data[1],10,64)
+		tmp, err = strconv.ParseInt(data[1], 10, 64)
 		if err != nil {
 			err = errors.New("parse field type 分类 to int32 failed")
-			logger.ErrorWF("parse field type 分类 to int32 failed.", 
-				zap.String("xlsx", "maze_attr_list_order_v8【迷宫-属性列表-排序】.xlsx"), zap.String("sheet", "maze_attr_list_order_v8"), 
-				zap.String("parse_data",data[1]), 
+			logger.ErrorWF("parse field type 分类 to int32 failed.",
+				zap.String("xlsx", "maze_attr_list_order_v8【迷宫-属性列表-排序】.xlsx"), zap.String("sheet", "maze_attr_list_order_v8"),
+				zap.String("parse_data", data[1]),
 				zap.Error(err))
 			return
 		}
 		config.Type = int32(tmp)
 	}
 
-	// parse column 2 in_type_order : 排序 
+	// parse column 2 in_type_order : 排序
 	if data[2] != "" {
-		tmp,err = strconv.ParseInt(data[2],10,64)
+		tmp, err = strconv.ParseInt(data[2], 10, 64)
 		if err != nil {
 			err = errors.New("parse field in_type_order 排序 to int32 failed")
-			logger.ErrorWF("parse field in_type_order 排序 to int32 failed.", 
-				zap.String("xlsx", "maze_attr_list_order_v8【迷宫-属性列表-排序】.xlsx"), zap.String("sheet", "maze_attr_list_order_v8"), 
-				zap.String("parse_data",data[2]), 
+			logger.ErrorWF("parse field in_type_order 排序 to int32 failed.",
+				zap.String("xlsx", "maze_attr_list_order_v8【迷宫-属性列表-排序】.xlsx"), zap.String("sheet", "maze_attr_list_order_v8"),
+				zap.String("parse_data", data[2]),
 				zap.Error(err))
 			return
 		}
 		config.In_type_order = int32(tmp)
 	}
 
-	// parse column 3 attr_id : 属性id 
+	// parse column 3 attr_id : 属性id
 	if data[3] != "" {
-		tmp,err = strconv.ParseInt(data[3],10,64)
+		tmp, err = strconv.ParseInt(data[3], 10, 64)
 		if err != nil {
 			err = errors.New("parse field attr_id 属性id to int32 failed")
-			logger.ErrorWF("parse field attr_id 属性id to int32 failed.", 
-				zap.String("xlsx", "maze_attr_list_order_v8【迷宫-属性列表-排序】.xlsx"), zap.String("sheet", "maze_attr_list_order_v8"), 
-				zap.String("parse_data",data[3]), 
+			logger.ErrorWF("parse field attr_id 属性id to int32 failed.",
+				zap.String("xlsx", "maze_attr_list_order_v8【迷宫-属性列表-排序】.xlsx"), zap.String("sheet", "maze_attr_list_order_v8"),
+				zap.String("parse_data", data[3]),
 				zap.Error(err))
 			return
 		}
 		config.Attr_id = int32(tmp)
 	}
 
-	// parse column 4 attr_desc : 注释描述 
+	// parse column 4 attr_desc : 注释描述
 	if data[4] != "" {
 		config.Attr_desc = data[4]
 	}
@@ -331,19 +335,19 @@ func (*gMazeAttrListOrderV8Parser) Parse(logger fklog.FKLogI,data []string, row 
 }
 
 var gMazeAttrListOrderV8Fields = []string{
-    "order",
-    "type",
-    "in_type_order",
-    "attr_id",
-    "attr_desc",
+	"order",
+	"type",
+	"in_type_order",
+	"attr_id",
+	"attr_desc",
 }
 
 // LoadDataManual load data for test
-func LoadDataManual(logger fklog.FKLogI, load func(file, sheet string, fields []string) ([][]string,error)) (err error) {
+func LoadDataManual(logger fklog.FKLogI, load func(file, sheet string, fields []string) ([][]string, error)) (err error) {
 	parser := &gMazeAttrListOrderV8Parser{}
 	loader := &gMazeAttrListOrderV8Loader{}
 	var data [][]string
-	data,err = load("maze_attr_list_order_v8【迷宫-属性列表-排序】.xlsx", "maze_attr_list_order_v8", gMazeAttrListOrderV8Fields)
+	data, err = load("maze_attr_list_order_v8【迷宫-属性列表-排序】.xlsx", "maze_attr_list_order_v8", gMazeAttrListOrderV8Fields)
 	if err != nil {
 		logger.ErrorWF("load maze_attr_list_order_v8【迷宫-属性列表-排序】.xlsx maze_attr_list_order_v8 data failed.", zap.Error(err))
 		return
