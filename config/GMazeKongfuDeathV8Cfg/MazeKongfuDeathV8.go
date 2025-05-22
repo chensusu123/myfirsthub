@@ -1,26 +1,24 @@
 package GMazeKongfuDeathV8Cfg
 
-
 import (
+	"errors"
+	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fklog"
+	"gitlab.ifreetalk.com/maze-plate/freetk/fkserver/config_manager"
+	"go.uber.org/zap"
+	"strconv"
 	"sync"
 	"sync/atomic"
 	"unsafe"
-	"strconv"
-	"errors"
-	"gitlab.ifreetalk.com/maze-plate/freetk/fkserver/config_manager"
-	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fklog"
-	"go.uber.org/zap"
 )
-
 
 // MazeKongfuDeathV8ConfigRow from maze_kongfu_death_v8【迷宫-武力值对应死亡扣除】.xlsx maze_kongfu_death_v8
 type MazeKongfuDeathV8ConfigRow struct {
-    Order       int32  `json:"order"` // 序号
-    Kongfu_min       int64  `json:"kongfu_min"` // 武力值区间，下限
-    Kongfu_max       int64  `json:"kongfu_max"` // 武力值区间，上限
-    Death_less_pro       int32  `json:"death_less_pro"` // 死亡扣除金币万分比
-    Death_less_min       int64  `json:"death_less_min"` // 死亡扣除金币最小数
-    Death_less_max       int64  `json:"death_less_max"` // 死亡扣除金币最大数
+	Order          int32 `json:"order"`          // 序号
+	Kongfu_min     int64 `json:"kongfu_min"`     // 武力值区间，下限
+	Kongfu_max     int64 `json:"kongfu_max"`     // 武力值区间，上限
+	Death_less_pro int32 `json:"death_less_pro"` // 死亡扣除金币万分比
+	Death_less_min int64 `json:"death_less_min"` // 死亡扣除金币最小数
+	Death_less_max int64 `json:"death_less_max"` // 死亡扣除金币最大数
 }
 
 // MazeKongfuDeathV8Config from maze_kongfu_death_v8【迷宫-武力值对应死亡扣除】.xlsx maze_kongfu_death_v8
@@ -56,7 +54,7 @@ func (c *MazeKongfuDeathV8Config) Get(configId int32) *MazeKongfuDeathV8ConfigRo
 }
 
 // GetAllMazeKongfuDeathV8Config get all config slice
-func (c *MazeKongfuDeathV8Config)  GetAllMazeKongfuDeathV8Config () (res []*MazeKongfuDeathV8ConfigRow) {
+func (c *MazeKongfuDeathV8Config) GetAllMazeKongfuDeathV8Config() (res []*MazeKongfuDeathV8ConfigRow) {
 	// c.lock.RLock()
 	// defer c.lock.RUnlock()
 	for _, val := range c.ConfigRows {
@@ -66,7 +64,7 @@ func (c *MazeKongfuDeathV8Config)  GetAllMazeKongfuDeathV8Config () (res []*Maze
 }
 
 // GetAll get all config slice
-func (c *MazeKongfuDeathV8Config)  GetAll() (res []*MazeKongfuDeathV8ConfigRow) {
+func (c *MazeKongfuDeathV8Config) GetAll() (res []*MazeKongfuDeathV8ConfigRow) {
 	// c.lock.RLock()
 	// defer c.lock.RUnlock()
 	for _, val := range c.ConfigRows {
@@ -75,9 +73,8 @@ func (c *MazeKongfuDeathV8Config)  GetAll() (res []*MazeKongfuDeathV8ConfigRow) 
 	return
 }
 
-
-// global config pointer 
-var gConfigData *MazeKongfuDeathV8Config 
+// global config pointer
+var gConfigData *MazeKongfuDeathV8Config
 
 // GetMazeKongfuDeathV8Config pkg func. get one config by configId
 func GetMazeKongfuDeathV8Config(configId int32) *MazeKongfuDeathV8ConfigRow {
@@ -90,8 +87,8 @@ func Get(configId int32) *MazeKongfuDeathV8ConfigRow {
 }
 
 // GetAllMazeKongfuDeathV8Config pkg func. get all config slice
-func GetAllMazeKongfuDeathV8Config () []*MazeKongfuDeathV8ConfigRow {
-	return gConfigData.GetAllMazeKongfuDeathV8Config ()
+func GetAllMazeKongfuDeathV8Config() []*MazeKongfuDeathV8ConfigRow {
+	return gConfigData.GetAllMazeKongfuDeathV8Config()
 }
 
 // GetAll pkg func. get all config slice
@@ -100,17 +97,17 @@ func GetAll() []*MazeKongfuDeathV8ConfigRow {
 }
 
 // ConfigRows get raw map data
-func ConfigRows() map[int32]*MazeKongfuDeathV8ConfigRow{
+func ConfigRows() map[int32]*MazeKongfuDeathV8ConfigRow {
 	return gConfigData.ConfigRows
 }
 
 // GetConfigDesc get config desc for lod,debug etc.
-func GetConfigDesc() string{
+func GetConfigDesc() string {
 	return "MazeKongfuDeathV8ConfigRow from maze_kongfu_death_v8【迷宫-武力值对应死亡扣除】.xlsx maze_kongfu_death_v8"
 }
 
 // GetRawValue get raw data
-func GetRawValue() *MazeKongfuDeathV8Config{
+func GetRawValue() *MazeKongfuDeathV8Config {
 	return gConfigData
 }
 
@@ -120,10 +117,10 @@ func SheetName() string {
 }
 
 func init() {
-	// reg config auto load 
-	config_manager.RegAutoConfig("maze_kongfu_death_v8.json", 
+	// reg config auto load
+	config_manager.RegAutoConfig("maze_kongfu_death_v8.json",
 		"maze_kongfu_death_v8【迷宫-武力值对应死亡扣除】.xlsx", "maze_kongfu_death_v8",
-	 	&gMazeKongfuDeathV8Parser{}, &gMazeKongfuDeathV8Loader{})
+		&gMazeKongfuDeathV8Parser{}, &gMazeKongfuDeathV8Loader{})
 }
 
 // data update call back
@@ -151,32 +148,35 @@ var cfgCheckCallBack sync.Map //map[string]func(*MazeKongfuDeathV8Config)error
 // doConfigCheckCallback do config check callback
 func doConfigCheckCallback(c *MazeKongfuDeathV8Config) (err error) {
 	cfgCheckCallBack.Range(func(key, value interface{}) bool {
-		err := value.(func(*MazeKongfuDeathV8Config)error)(c)
+		err := value.(func(*MazeKongfuDeathV8Config) error)(c)
 		return err == nil
 	})
-	return 
+	return
 }
 
 // RegisterLoadedCallBack reg config update func.
-func RegisterConfigCheck(key string, f func(*MazeKongfuDeathV8Config)error) {
+func RegisterConfigCheck(key string, f func(*MazeKongfuDeathV8Config) error) {
 	cfgCheckCallBack.Store(key, f)
 }
 
 // implete ConfigLoader interface
 type gMazeKongfuDeathV8Loader struct {
 }
+
 // NewContainer new data container pointer
-func (*gMazeKongfuDeathV8Loader) NewContainer() interface{}{
+func (*gMazeKongfuDeathV8Loader) NewContainer() interface{} {
 	return newConfig()
 }
+
 // Check check new config data ptr
-func (*gMazeKongfuDeathV8Loader) Check(newPtr interface{})error{
+func (*gMazeKongfuDeathV8Loader) Check(newPtr interface{}) error {
 	// set global ptr
 	cfgData := newPtr.(*MazeKongfuDeathV8Config)
 	return doConfigCheckCallback(cfgData)
 }
+
 // Swap swap global config data ptr
-func (*gMazeKongfuDeathV8Loader) Swap(newPtr interface{}){
+func (*gMazeKongfuDeathV8Loader) Swap(newPtr interface{}) {
 	// convert pointer
 	cache := newPtr.(*MazeKongfuDeathV8Config)
 	// update second edit
@@ -184,45 +184,48 @@ func (*gMazeKongfuDeathV8Loader) Swap(newPtr interface{}){
 	// set global ptr
 	atomic.StorePointer((*unsafe.Pointer)(unsafe.Pointer(&gConfigData)), unsafe.Pointer(cache))
 }
+
 // Add append config item to map,save result
-func (*gMazeKongfuDeathV8Loader) Add(logger fklog.FKLogI,container interface{}, ri interface{})(err error) {
-	row,ok := ri.(*MazeKongfuDeathV8ConfigRow)
+func (*gMazeKongfuDeathV8Loader) Add(logger fklog.FKLogI, container interface{}, ri interface{}) (err error) {
+	row, ok := ri.(*MazeKongfuDeathV8ConfigRow)
 	if !ok {
 		err = errors.New("invalid type. not *MazeKongfuDeathV8ConfigRow")
 		logger.ErrorWF("invalid type. not *MazeKongfuDeathV8ConfigRow", zap.String("xlsx", "maze_kongfu_death_v8【迷宫-武力值对应死亡扣除】.xlsx"),
 			zap.String("sheet", "maze_kongfu_death_v8"))
-		return 
+		return
 	}
-	config,ok := container.(*MazeKongfuDeathV8Config)
+	config, ok := container.(*MazeKongfuDeathV8Config)
 	if !ok {
 		err = errors.New("invalid type. not *MazeKongfuDeathV8Config")
 		logger.ErrorWF("invalid type. not *MazeKongfuDeathV8Config", zap.String("xlsx", "maze_kongfu_death_v8【迷宫-武力值对应死亡扣除】.xlsx"),
 			zap.String("sheet", "maze_kongfu_death_v8"))
-		return 
+		return
 	}
 	config.ConfigRows[row.Order] = row
 	return
 }
+
 // GetValue get real map value for json parse
-func (*gMazeKongfuDeathV8Loader) GetValue(logger fklog.FKLogI,container interface{})(real interface{},err error) {
-	config,ok := container.(*MazeKongfuDeathV8Config)
+func (*gMazeKongfuDeathV8Loader) GetValue(logger fklog.FKLogI, container interface{}) (real interface{}, err error) {
+	config, ok := container.(*MazeKongfuDeathV8Config)
 	if !ok {
 		err = errors.New("invalid type. not *MazeKongfuDeathV8Config")
 		logger.ErrorWF("invalid type. not *MazeKongfuDeathV8Config", zap.String("xlsx", "maze_kongfu_death_v8【迷宫-武力值对应死亡扣除】.xlsx"),
 			zap.String("sheet", "maze_kongfu_death_v8"))
-		return 
+		return
 	}
 	real = &config.ConfigRows
 	return
 }
+
 // Range range all data for json append data parse.
-func (*gMazeKongfuDeathV8Loader) Range(logger fklog.FKLogI, container interface{}, rf func(row interface{}) error) (err error){
-	config,ok := container.(*MazeKongfuDeathV8Config)
+func (*gMazeKongfuDeathV8Loader) Range(logger fklog.FKLogI, container interface{}, rf func(row interface{}) error) (err error) {
+	config, ok := container.(*MazeKongfuDeathV8Config)
 	if !ok {
 		err = errors.New("invalid type. not *MazeKongfuDeathV8Config")
 		logger.ErrorWF("invalid type. not *MazeKongfuDeathV8Config", zap.String("xlsx", "maze_kongfu_death_v8【迷宫-武力值对应死亡扣除】.xlsx"),
 			zap.String("sheet", "maze_kongfu_death_v8"))
-		return 
+		return
 	}
 	for _, row := range config.ConfigRows {
 		err = rf(row)
@@ -233,10 +236,10 @@ func (*gMazeKongfuDeathV8Loader) Range(logger fklog.FKLogI, container interface{
 	return
 }
 
-
 // implete ConfigParser interface
 type gMazeKongfuDeathV8Parser struct {
 }
+
 // New new config row data
 func (*gMazeKongfuDeathV8Parser) New() interface{} {
 	return &MazeKongfuDeathV8ConfigRow{}
@@ -246,106 +249,107 @@ func (*gMazeKongfuDeathV8Parser) New() interface{} {
 func (*gMazeKongfuDeathV8Parser) Fields() []string {
 	return gMazeKongfuDeathV8Fields
 }
+
 // Parse parse raw data to row data
-func (*gMazeKongfuDeathV8Parser) Parse(logger fklog.FKLogI,data []string, row interface{}) (err error) {
+func (*gMazeKongfuDeathV8Parser) Parse(logger fklog.FKLogI, data []string, row interface{}) (err error) {
 	// convert row type
-	config,ok := row.(*MazeKongfuDeathV8ConfigRow)
+	config, ok := row.(*MazeKongfuDeathV8ConfigRow)
 	if !ok {
 		err = errors.New("invalid type. not *MazeKongfuDeathV8ConfigRow")
 		logger.ErrorWF("invalid type. not *MazeKongfuDeathV8ConfigRow", zap.String("xlsx", "maze_kongfu_death_v8【迷宫-武力值对应死亡扣除】.xlsx"),
 			zap.String("sheet", "maze_kongfu_death_v8"))
-		return 
+		return
 	}
 	// compare length
 	if len(data) != len(gMazeKongfuDeathV8Fields) {
 		err = errors.New("fields count not match.")
-		logger.ErrorWF("invalid type. not *map[int32]*MazeKongfuDeathV8ConfigRow", 
+		logger.ErrorWF("invalid type. not *map[int32]*MazeKongfuDeathV8ConfigRow",
 			zap.String("xlsx", "maze_kongfu_death_v8【迷宫-武力值对应死亡扣除】.xlsx"),
-			zap.String("sheet", "maze_kongfu_death_v8"), zap.Int("need_count",len(gMazeKongfuDeathV8Fields)), 
-			zap.Int("had_count",len(data)))
+			zap.String("sheet", "maze_kongfu_death_v8"), zap.Int("need_count", len(gMazeKongfuDeathV8Fields)),
+			zap.Int("had_count", len(data)))
 		return
 	}
 
 	var tmp int64
 
-	// parse column 0 order : 序号 
+	// parse column 0 order : 序号
 	if data[0] != "" {
-		tmp,err = strconv.ParseInt(data[0],10,64)
+		tmp, err = strconv.ParseInt(data[0], 10, 64)
 		if err != nil {
 			err = errors.New("parse field order 序号 to int32 failed")
-			logger.ErrorWF("parse field order 序号 to int32 failed.", 
-				zap.String("xlsx", "maze_kongfu_death_v8【迷宫-武力值对应死亡扣除】.xlsx"), zap.String("sheet", "maze_kongfu_death_v8"), 
-				zap.String("parse_data",data[0]), 
+			logger.ErrorWF("parse field order 序号 to int32 failed.",
+				zap.String("xlsx", "maze_kongfu_death_v8【迷宫-武力值对应死亡扣除】.xlsx"), zap.String("sheet", "maze_kongfu_death_v8"),
+				zap.String("parse_data", data[0]),
 				zap.Error(err))
 			return
 		}
 		config.Order = int32(tmp)
 	}
 
-	// parse column 1 kongfu_min : 武力值区间，下限 
+	// parse column 1 kongfu_min : 武力值区间，下限
 	if data[1] != "" {
-		tmp,err = strconv.ParseInt(data[1],10,64)
+		tmp, err = strconv.ParseInt(data[1], 10, 64)
 		if err != nil {
 			err = errors.New("parse field kongfu_min 武力值区间，下限 to int64 failed")
-			logger.ErrorWF("parse field kongfu_min 武力值区间，下限 to int64 failed.", 
-				zap.String("xlsx", "maze_kongfu_death_v8【迷宫-武力值对应死亡扣除】.xlsx"), zap.String("sheet", "maze_kongfu_death_v8"), 
-				zap.String("parse_data",data[1]), 
+			logger.ErrorWF("parse field kongfu_min 武力值区间，下限 to int64 failed.",
+				zap.String("xlsx", "maze_kongfu_death_v8【迷宫-武力值对应死亡扣除】.xlsx"), zap.String("sheet", "maze_kongfu_death_v8"),
+				zap.String("parse_data", data[1]),
 				zap.Error(err))
 			return
 		}
 		config.Kongfu_min = int64(tmp)
 	}
 
-	// parse column 2 kongfu_max : 武力值区间，上限 
+	// parse column 2 kongfu_max : 武力值区间，上限
 	if data[2] != "" {
-		tmp,err = strconv.ParseInt(data[2],10,64)
+		tmp, err = strconv.ParseInt(data[2], 10, 64)
 		if err != nil {
 			err = errors.New("parse field kongfu_max 武力值区间，上限 to int64 failed")
-			logger.ErrorWF("parse field kongfu_max 武力值区间，上限 to int64 failed.", 
-				zap.String("xlsx", "maze_kongfu_death_v8【迷宫-武力值对应死亡扣除】.xlsx"), zap.String("sheet", "maze_kongfu_death_v8"), 
-				zap.String("parse_data",data[2]), 
+			logger.ErrorWF("parse field kongfu_max 武力值区间，上限 to int64 failed.",
+				zap.String("xlsx", "maze_kongfu_death_v8【迷宫-武力值对应死亡扣除】.xlsx"), zap.String("sheet", "maze_kongfu_death_v8"),
+				zap.String("parse_data", data[2]),
 				zap.Error(err))
 			return
 		}
 		config.Kongfu_max = int64(tmp)
 	}
 
-	// parse column 3 death_less_pro : 死亡扣除金币万分比 
+	// parse column 3 death_less_pro : 死亡扣除金币万分比
 	if data[3] != "" {
-		tmp,err = strconv.ParseInt(data[3],10,64)
+		tmp, err = strconv.ParseInt(data[3], 10, 64)
 		if err != nil {
 			err = errors.New("parse field death_less_pro 死亡扣除金币万分比 to int32 failed")
-			logger.ErrorWF("parse field death_less_pro 死亡扣除金币万分比 to int32 failed.", 
-				zap.String("xlsx", "maze_kongfu_death_v8【迷宫-武力值对应死亡扣除】.xlsx"), zap.String("sheet", "maze_kongfu_death_v8"), 
-				zap.String("parse_data",data[3]), 
+			logger.ErrorWF("parse field death_less_pro 死亡扣除金币万分比 to int32 failed.",
+				zap.String("xlsx", "maze_kongfu_death_v8【迷宫-武力值对应死亡扣除】.xlsx"), zap.String("sheet", "maze_kongfu_death_v8"),
+				zap.String("parse_data", data[3]),
 				zap.Error(err))
 			return
 		}
 		config.Death_less_pro = int32(tmp)
 	}
 
-	// parse column 4 death_less_min : 死亡扣除金币最小数 
+	// parse column 4 death_less_min : 死亡扣除金币最小数
 	if data[4] != "" {
-		tmp,err = strconv.ParseInt(data[4],10,64)
+		tmp, err = strconv.ParseInt(data[4], 10, 64)
 		if err != nil {
 			err = errors.New("parse field death_less_min 死亡扣除金币最小数 to int64 failed")
-			logger.ErrorWF("parse field death_less_min 死亡扣除金币最小数 to int64 failed.", 
-				zap.String("xlsx", "maze_kongfu_death_v8【迷宫-武力值对应死亡扣除】.xlsx"), zap.String("sheet", "maze_kongfu_death_v8"), 
-				zap.String("parse_data",data[4]), 
+			logger.ErrorWF("parse field death_less_min 死亡扣除金币最小数 to int64 failed.",
+				zap.String("xlsx", "maze_kongfu_death_v8【迷宫-武力值对应死亡扣除】.xlsx"), zap.String("sheet", "maze_kongfu_death_v8"),
+				zap.String("parse_data", data[4]),
 				zap.Error(err))
 			return
 		}
 		config.Death_less_min = int64(tmp)
 	}
 
-	// parse column 5 death_less_max : 死亡扣除金币最大数 
+	// parse column 5 death_less_max : 死亡扣除金币最大数
 	if data[5] != "" {
-		tmp,err = strconv.ParseInt(data[5],10,64)
+		tmp, err = strconv.ParseInt(data[5], 10, 64)
 		if err != nil {
 			err = errors.New("parse field death_less_max 死亡扣除金币最大数 to int64 failed")
-			logger.ErrorWF("parse field death_less_max 死亡扣除金币最大数 to int64 failed.", 
-				zap.String("xlsx", "maze_kongfu_death_v8【迷宫-武力值对应死亡扣除】.xlsx"), zap.String("sheet", "maze_kongfu_death_v8"), 
-				zap.String("parse_data",data[5]), 
+			logger.ErrorWF("parse field death_less_max 死亡扣除金币最大数 to int64 failed.",
+				zap.String("xlsx", "maze_kongfu_death_v8【迷宫-武力值对应死亡扣除】.xlsx"), zap.String("sheet", "maze_kongfu_death_v8"),
+				zap.String("parse_data", data[5]),
 				zap.Error(err))
 			return
 		}
@@ -355,20 +359,20 @@ func (*gMazeKongfuDeathV8Parser) Parse(logger fklog.FKLogI,data []string, row in
 }
 
 var gMazeKongfuDeathV8Fields = []string{
-    "order",
-    "kongfu_min",
-    "kongfu_max",
-    "death_less_pro",
-    "death_less_min",
-    "death_less_max",
+	"order",
+	"kongfu_min",
+	"kongfu_max",
+	"death_less_pro",
+	"death_less_min",
+	"death_less_max",
 }
 
 // LoadDataManual load data for test
-func LoadDataManual(logger fklog.FKLogI, load func(file, sheet string, fields []string) ([][]string,error)) (err error) {
+func LoadDataManual(logger fklog.FKLogI, load func(file, sheet string, fields []string) ([][]string, error)) (err error) {
 	parser := &gMazeKongfuDeathV8Parser{}
 	loader := &gMazeKongfuDeathV8Loader{}
 	var data [][]string
-	data,err = load("maze_kongfu_death_v8【迷宫-武力值对应死亡扣除】.xlsx", "maze_kongfu_death_v8", gMazeKongfuDeathV8Fields)
+	data, err = load("maze_kongfu_death_v8【迷宫-武力值对应死亡扣除】.xlsx", "maze_kongfu_death_v8", gMazeKongfuDeathV8Fields)
 	if err != nil {
 		logger.ErrorWF("load maze_kongfu_death_v8【迷宫-武力值对应死亡扣除】.xlsx maze_kongfu_death_v8 data failed.", zap.Error(err))
 		return
