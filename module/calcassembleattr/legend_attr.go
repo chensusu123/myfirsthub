@@ -8,8 +8,8 @@
 package calcassembleattr
 
 import (
-	"gitlab.ifreetalk.com/maze-plate/excel/auto/GMazeEquipSuiteAttrV8Cfg"
 	"gitlab.ifreetalk.com/maze/maze_game_server/common/function/maputil"
+	"gitlab.ifreetalk.com/maze/maze_game_server/config/GMazeEquipSuiteAttrV8Cfg"
 )
 
 func LegendSuitKey(suitId, cnt int32) int32 {

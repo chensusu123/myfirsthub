@@ -9,15 +9,15 @@ package attr_calc
 import (
 	"fmt"
 
-	"gitlab.ifreetalk.com/maze-plate/excel/auto/GMazeAttributeV8Cfg"
-	"gitlab.ifreetalk.com/maze-plate/excel/auto/GMazeEquipConfigV8Cfg"
 	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fklog"
 	"gitlab.ifreetalk.com/maze-plate/protodef/MazeBuffData"
-	"go.uber.org/zap"
-	"gitlab.ifreetalk.com/maze/maze_game_server/common/function/dollattr"
 	"gitlab.ifreetalk.com/maze/maze_game_server/common/constdef"
+	"gitlab.ifreetalk.com/maze/maze_game_server/common/function/dollattr"
 	"gitlab.ifreetalk.com/maze/maze_game_server/common/vardef"
+	"gitlab.ifreetalk.com/maze/maze_game_server/config/GMazeAttributeV8Cfg"
+	"gitlab.ifreetalk.com/maze/maze_game_server/config/GMazeEquipConfigV8Cfg"
 	"gitlab.ifreetalk.com/maze/maze_game_server/servers/maze_main_server/process/attr_calc/commonlogic"
+	"go.uber.org/zap"
 )
 
 func AddtionMazeAttr(in map[int32]int64, attr *MazeBuffData.MazeBuffAttr) {

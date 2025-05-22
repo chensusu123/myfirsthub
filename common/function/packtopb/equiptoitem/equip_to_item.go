@@ -4,11 +4,11 @@ import (
 	"errors"
 	"fmt"
 
-	"gitlab.ifreetalk.com/maze-plate/excel/auto/GMazeEquipInfoV8Cfg"
-	"gitlab.ifreetalk.com/maze-plate/excel/auto/GMazeEquipTypeResV8Cfg"
 	"gitlab.ifreetalk.com/maze-plate/extra/protobuf/proto"
 	"gitlab.ifreetalk.com/maze-plate/protodef/MazeCommon"
 	"gitlab.ifreetalk.com/maze-plate/protodef/MazeEquipSvr"
+	"gitlab.ifreetalk.com/maze/maze_game_server/config/GMazeEquipInfoV8Cfg"
+	"gitlab.ifreetalk.com/maze/maze_game_server/config/GMazeEquipTypeResV8Cfg"
 )
 
 func PackEquipToItem(equip *MazeEquipSvr.MazeEquipInfoSvr) (item *MazeCommon.MazeItem, err error) {

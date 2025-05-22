@@ -10,8 +10,8 @@ package mazehurtcalc
 import (
 	"errors"
 
-	"gitlab.ifreetalk.com/maze-plate/excel/auto/GFightKongfuMazeV8Cfg"
 	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fklog"
+	"gitlab.ifreetalk.com/maze/maze_game_server/config/GFightKongfuMazeV8Cfg"
 	"go.uber.org/zap"
 )
 

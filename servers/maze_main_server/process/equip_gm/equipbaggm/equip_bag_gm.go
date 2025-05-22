@@ -5,20 +5,20 @@ import (
 	"net/http"
 	"strings"
 
-	"gitlab.ifreetalk.com/maze-plate/excel/auto/GMazeEquipInfoV8Cfg"
 	"gitlab.ifreetalk.com/maze-plate/extra/protobuf/proto"
 	"gitlab.ifreetalk.com/maze-plate/freetk/common/fkfmt"
 	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fklog"
 	"gitlab.ifreetalk.com/maze-plate/freetk/fkutil"
 	"gitlab.ifreetalk.com/maze-plate/protodef/MazeEquipSvr"
-	"go.uber.org/zap"
+	"gitlab.ifreetalk.com/maze/maze_game_server/common/function/fileio"
 	"gitlab.ifreetalk.com/maze/maze_game_server/common/function/gm"
 	"gitlab.ifreetalk.com/maze/maze_game_server/common/function/uniqueid"
-	"gitlab.ifreetalk.com/maze/maze_game_server/io/rpc/dollequipbagrpc"
-	"gitlab.ifreetalk.com/maze/maze_game_server/common/function/fileio"
-	"gitlab.ifreetalk.com/maze/maze_game_server/io/redis/mazeequipgetnumredis"
+	"gitlab.ifreetalk.com/maze/maze_game_server/config/GMazeEquipInfoV8Cfg"
 	"gitlab.ifreetalk.com/maze/maze_game_server/io/redis/dollassemblesuitredis"
 	"gitlab.ifreetalk.com/maze/maze_game_server/io/redis/mazebagequipredis"
+	"gitlab.ifreetalk.com/maze/maze_game_server/io/redis/mazeequipgetnumredis"
+	"gitlab.ifreetalk.com/maze/maze_game_server/io/rpc/dollequipbagrpc"
+	"go.uber.org/zap"
 )
 
 func Reg(logger fklog.FKLogI) {

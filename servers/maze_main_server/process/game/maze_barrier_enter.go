@@ -3,9 +3,6 @@ package game
 import (
 	"time"
 
-	"gitlab.ifreetalk.com/maze-plate/excel/auto/GMazeActionCountV8Cfg"
-	"gitlab.ifreetalk.com/maze-plate/excel/auto/GMazeBarriesV8Cfg"
-	"gitlab.ifreetalk.com/maze-plate/excel/auto/GMazeLevelV8Cfg"
 	"gitlab.ifreetalk.com/maze-plate/extra/protobuf/proto"
 	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fklog"
 	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fknet"
@@ -17,6 +14,9 @@ import (
 	"gitlab.ifreetalk.com/maze/maze_game_server/common/constdef"
 	"gitlab.ifreetalk.com/maze/maze_game_server/common/errors"
 	"gitlab.ifreetalk.com/maze/maze_game_server/common/function/gentradeno"
+	"gitlab.ifreetalk.com/maze/maze_game_server/config/GMazeActionCountV8Cfg"
+	"gitlab.ifreetalk.com/maze/maze_game_server/config/GMazeBarriesV8Cfg"
+	"gitlab.ifreetalk.com/maze/maze_game_server/config/GMazeLevelV8Cfg"
 	"gitlab.ifreetalk.com/maze/maze_game_server/io/redis/mazebarriertempbuffredis"
 	"gitlab.ifreetalk.com/maze/maze_game_server/io/redis/mazechallengenumredis"
 	"gitlab.ifreetalk.com/maze/maze_game_server/io/redis/mazeuserbarrierredis"

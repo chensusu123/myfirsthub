@@ -7,11 +7,11 @@
 package commonlogic
 
 import (
-	"gitlab.ifreetalk.com/maze-plate/excel/auto/GMazeAttributeV8Cfg"
 	"gitlab.ifreetalk.com/maze-plate/protodef/MazeBuffData"
+	"gitlab.ifreetalk.com/maze/maze_game_server/common/function/dollattr"
 	"gitlab.ifreetalk.com/maze/maze_game_server/common/function/simpleset"
 	"gitlab.ifreetalk.com/maze/maze_game_server/common/vardef"
-	"gitlab.ifreetalk.com/maze/maze_game_server/common/function/dollattr"
+	"gitlab.ifreetalk.com/maze/maze_game_server/config/GMazeAttributeV8Cfg"
 )
 
 func GetSrcName(src int) string {

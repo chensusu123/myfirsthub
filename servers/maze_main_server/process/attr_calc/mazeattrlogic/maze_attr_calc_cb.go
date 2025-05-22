@@ -7,8 +7,8 @@
 package mazeattrlogic
 
 import (
-	"gitlab.ifreetalk.com/maze-plate/excel/auto/GMazeInitialAttrV8Cfg"
 	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fklog"
+	"gitlab.ifreetalk.com/maze/maze_game_server/config/GMazeInitialAttrV8Cfg"
 
 	"gitlab.ifreetalk.com/maze/maze_game_server/common/constdef"
 	"gitlab.ifreetalk.com/maze/maze_game_server/servers/maze_main_server/process/attr_calc/commonlogic"

@@ -3,9 +3,9 @@ package mazecommonvalue
 import (
 	"errors"
 
-	"gitlab.ifreetalk.com/maze-plate/excel/auto/GMazeAttributeFormulaV8Cfg"
 	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fklog"
 	"gitlab.ifreetalk.com/maze/maze_game_server/common/constdef"
+	"gitlab.ifreetalk.com/maze/maze_game_server/config/GMazeAttributeFormulaV8Cfg"
 	"gitlab.ifreetalk.com/maze/maze_game_server/io/redis/mazecalcattrredis"
 	"go.uber.org/zap"
 )

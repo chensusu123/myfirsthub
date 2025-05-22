@@ -3,21 +3,21 @@ package equip
 import (
 	"fmt"
 
+	"gitlab.ifreetalk.com/maze-plate/extra/protobuf/proto"
+	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fklog"
+	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fkprometheus"
+	"gitlab.ifreetalk.com/maze-plate/protodef/MazeEquipCache"
+	"gitlab.ifreetalk.com/maze-plate/protodef/MazeGameEquip"
 	"gitlab.ifreetalk.com/maze/maze_game_server/common/constdef"
 	"gitlab.ifreetalk.com/maze/maze_game_server/common/function/assemble"
 	"gitlab.ifreetalk.com/maze/maze_game_server/common/function/excelutil"
+	"gitlab.ifreetalk.com/maze/maze_game_server/config/GMazeEquipPosLvV8Cfg"
 	"gitlab.ifreetalk.com/maze/maze_game_server/excel/equipposexcel"
 	"gitlab.ifreetalk.com/maze/maze_game_server/io/kafka/equipposstrengrecordkafka"
 	"gitlab.ifreetalk.com/maze/maze_game_server/io/redis/dollassembleredis"
 	"gitlab.ifreetalk.com/maze/maze_game_server/io/redis/mazeuserlevelredis"
 	"gitlab.ifreetalk.com/maze/maze_game_server/module/assembleidpack"
 	"gitlab.ifreetalk.com/maze/maze_game_server/module/equippossuit"
-	"gitlab.ifreetalk.com/maze-plate/excel/auto/GMazeEquipPosLvV8Cfg"
-	"gitlab.ifreetalk.com/maze-plate/extra/protobuf/proto"
-	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fklog"
-	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fkprometheus"
-	"gitlab.ifreetalk.com/maze-plate/protodef/MazeEquipCache"
-	"gitlab.ifreetalk.com/maze-plate/protodef/MazeGameEquip"
 	"go.uber.org/zap"
 )
 

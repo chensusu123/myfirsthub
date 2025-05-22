@@ -6,7 +6,7 @@ import (
 	"sync/atomic"
 	"unsafe"
 
-	"gitlab.ifreetalk.com/maze-plate/excel/auto/GMazeEquipAffixRollTypeV8Cfg"
+	"gitlab.ifreetalk.com/maze/maze_game_server/config/GMazeEquipAffixRollTypeV8Cfg"
 )
 
 type MazeEquipAffixModPoolV8CfgEx struct {

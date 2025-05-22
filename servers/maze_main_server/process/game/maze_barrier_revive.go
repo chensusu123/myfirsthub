@@ -11,7 +11,6 @@ import (
 	"sort"
 	"time"
 
-	"gitlab.ifreetalk.com/maze-plate/excel/auto/GMazeRebornCostV8Cfg"
 	"gitlab.ifreetalk.com/maze-plate/extra/protobuf/proto"
 	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fknet"
 	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fkprometheus"
@@ -21,6 +20,7 @@ import (
 	"gitlab.ifreetalk.com/maze/maze_game_server/common/function/gentradeno"
 	"gitlab.ifreetalk.com/maze/maze_game_server/common/function/itemutil"
 	"gitlab.ifreetalk.com/maze/maze_game_server/common/function/uniqueid"
+	"gitlab.ifreetalk.com/maze/maze_game_server/config/GMazeRebornCostV8Cfg"
 	"gitlab.ifreetalk.com/maze/maze_game_server/excel/mazeconfigv8"
 
 	"gitlab.ifreetalk.com/maze/maze_game_server/io/kafka/mazerebornkafka"

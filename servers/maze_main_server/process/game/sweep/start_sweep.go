@@ -3,7 +3,6 @@
 package sweep
 
 import (
-	"gitlab.ifreetalk.com/maze-plate/excel/auto/GMazeBarriesV8Cfg"
 	"gitlab.ifreetalk.com/maze-plate/extra/protobuf/proto"
 	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fkconfig"
 	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fklog"
@@ -15,6 +14,7 @@ import (
 	"gitlab.ifreetalk.com/maze/maze_game_server/common/constdef"
 	"gitlab.ifreetalk.com/maze/maze_game_server/common/errors"
 	"gitlab.ifreetalk.com/maze/maze_game_server/common/function/uniqueid"
+	"gitlab.ifreetalk.com/maze/maze_game_server/config/GMazeBarriesV8Cfg"
 	"gitlab.ifreetalk.com/maze/maze_game_server/module/calsweepbarrier"
 	"gitlab.ifreetalk.com/maze/maze_game_server/module/mazeuserinfo"
 	"gitlab.ifreetalk.com/maze/maze_game_server/servers/maze_main_server/process/game/energy"

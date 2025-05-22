@@ -9,10 +9,10 @@ package calcassembleattr
 import (
 	"errors"
 
-	"gitlab.ifreetalk.com/maze-plate/excel/auto/GMazeEquipSuiteInfoV8Cfg"
 	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fklog"
 	"gitlab.ifreetalk.com/maze-plate/protodef/MazeEquipCache"
 	"gitlab.ifreetalk.com/maze/maze_game_server/common/function/assemble"
+	"gitlab.ifreetalk.com/maze/maze_game_server/config/GMazeEquipSuiteInfoV8Cfg"
 	"go.uber.org/zap"
 )
 

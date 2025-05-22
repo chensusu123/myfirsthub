@@ -4,7 +4,6 @@ import (
 	"fmt"
 	"time"
 
-	"gitlab.ifreetalk.com/maze-plate/excel/auto/GMazeBarriesOnHookV8Cfg"
 	"gitlab.ifreetalk.com/maze-plate/extra/protobuf/proto"
 	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fklog"
 	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fknet"
@@ -12,6 +11,7 @@ import (
 	"gitlab.ifreetalk.com/maze-plate/protodef/MazeCollectCache"
 	"gitlab.ifreetalk.com/maze/maze_game_server/common/errors"
 	"gitlab.ifreetalk.com/maze/maze_game_server/common/function/gentradeno"
+	"gitlab.ifreetalk.com/maze/maze_game_server/config/GMazeBarriesOnHookV8Cfg"
 	"gitlab.ifreetalk.com/maze/maze_game_server/io/kafka/mazecollectrecord"
 	"gitlab.ifreetalk.com/maze/maze_game_server/io/redis/mazecollectredis"
 	"gitlab.ifreetalk.com/maze/maze_game_server/module/mazeuserinfo"

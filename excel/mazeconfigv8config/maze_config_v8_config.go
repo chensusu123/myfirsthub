@@ -1,6 +1,6 @@
 package mazeconfigv8config
 
-import "gitlab.ifreetalk.com/maze-plate/excel/auto/GMazeConfigV8Cfg"
+import "gitlab.ifreetalk.com/maze/maze_game_server/config/GMazeConfigV8Cfg"
 
 /**
  * @Author: liushuhang

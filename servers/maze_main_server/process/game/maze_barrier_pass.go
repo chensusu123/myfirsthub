@@ -5,8 +5,6 @@ import (
 	"strings"
 	"time"
 
-	"gitlab.ifreetalk.com/maze-plate/excel/auto/GMazeActionCountV8Cfg"
-	"gitlab.ifreetalk.com/maze-plate/excel/auto/GMazeBarriesV8Cfg"
 	"gitlab.ifreetalk.com/maze-plate/extra/protobuf/proto"
 	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fknet"
 	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fkprometheus"
@@ -19,6 +17,8 @@ import (
 	"gitlab.ifreetalk.com/maze/maze_game_server/common/function/gentradeno"
 	"gitlab.ifreetalk.com/maze/maze_game_server/common/function/itemutil"
 	"gitlab.ifreetalk.com/maze/maze_game_server/common/function/packtopb/equiptoitem"
+	"gitlab.ifreetalk.com/maze/maze_game_server/config/GMazeActionCountV8Cfg"
+	"gitlab.ifreetalk.com/maze/maze_game_server/config/GMazeBarriesV8Cfg"
 	"gitlab.ifreetalk.com/maze/maze_game_server/io/kafka/mazebarrieruserkafka"
 	"gitlab.ifreetalk.com/maze/maze_game_server/io/kafka/mazeuserlevelkafka"
 	"gitlab.ifreetalk.com/maze/maze_game_server/io/redis/mazechallengenumredis"

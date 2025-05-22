@@ -1,14 +1,14 @@
 package game
 
 import (
-	"gitlab.ifreetalk.com/maze-plate/excel/auto/GMazeAttrSkillV8Cfg"
-	"gitlab.ifreetalk.com/maze-plate/excel/auto/GMazeAttributeV8Cfg"
 	"gitlab.ifreetalk.com/maze-plate/extra/protobuf/proto"
 	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fklog"
 	"gitlab.ifreetalk.com/maze-plate/protodef/MazeAIBattle"
 	"gitlab.ifreetalk.com/maze/maze_game_server/common/constdef"
 	"gitlab.ifreetalk.com/maze/maze_game_server/common/errors"
 	"gitlab.ifreetalk.com/maze/maze_game_server/common/structsdef"
+	"gitlab.ifreetalk.com/maze/maze_game_server/config/GMazeAttrSkillV8Cfg"
+	"gitlab.ifreetalk.com/maze/maze_game_server/config/GMazeAttributeV8Cfg"
 	"gitlab.ifreetalk.com/maze/maze_game_server/io/redis/mazecalcattrredis"
 	"gitlab.ifreetalk.com/maze/maze_game_server/usecase/mustarrive"
 	"go.uber.org/zap"

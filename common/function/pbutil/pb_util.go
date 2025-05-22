@@ -1,10 +1,10 @@
 package pbutil
 
 import (
-	"gitlab.ifreetalk.com/maze-plate/excel/auto/GMazeEquipSuiteNameV8Cfg"
-	"gitlab.ifreetalk.com/maze-plate/excel/auto/GMazeItemsV8Cfg"
 	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fklog"
 	"gitlab.ifreetalk.com/maze-plate/protodef/MazeEquipCache"
+	"gitlab.ifreetalk.com/maze/maze_game_server/config/GMazeEquipSuiteNameV8Cfg"
+	"gitlab.ifreetalk.com/maze/maze_game_server/config/GMazeItemsV8Cfg"
 	"gitlab.ifreetalk.com/maze/maze_game_server/excel/mazeequipconfigv8"
 	"gitlab.ifreetalk.com/maze/maze_game_server/excel/mazeequiptyperesv8"
 	"go.uber.org/zap"

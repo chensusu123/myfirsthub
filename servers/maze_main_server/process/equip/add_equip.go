@@ -8,11 +8,18 @@ import (
 
 	"gitlab.ifreetalk.com/maze-plate/protodef/MazeEquipCache"
 
-	"gitlab.ifreetalk.com/maze-plate/excel/auto/GMazeEquipAttrStageV8Cfg"
-	"gitlab.ifreetalk.com/maze-plate/excel/auto/GMazeEquipInfoV8Cfg"
 	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fkprometheus"
 	"gitlab.ifreetalk.com/maze-plate/protodef/MazeEquipSvr"
+	"gitlab.ifreetalk.com/maze/maze_game_server/config/GMazeEquipAttrStageV8Cfg"
+	"gitlab.ifreetalk.com/maze/maze_game_server/config/GMazeEquipInfoV8Cfg"
 
+	"context"
+
+	"gitlab.ifreetalk.com/maze-plate/extra/protobuf/proto"
+	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fklog"
+	"gitlab.ifreetalk.com/maze-plate/freetk/fkserver"
+	"gitlab.ifreetalk.com/maze-plate/protodef/MazeGameEquip"
+	"gitlab.ifreetalk.com/maze-plate/protodef/errors"
 	"gitlab.ifreetalk.com/maze/maze_game_server/common/function/packtopb"
 	"gitlab.ifreetalk.com/maze/maze_game_server/excel/mazeequipaffixrandpoolv8"
 	"gitlab.ifreetalk.com/maze/maze_game_server/excel/mazeequipconfigv8"
@@ -21,13 +28,7 @@ import (
 	"gitlab.ifreetalk.com/maze/maze_game_server/io/redis/mazeequipgetnumredis"
 	"gitlab.ifreetalk.com/maze/maze_game_server/io/redis/mazeequipguidredis"
 	"gitlab.ifreetalk.com/maze/maze_game_server/module/bagmodule"
-	"gitlab.ifreetalk.com/maze-plate/extra/protobuf/proto"
-	"gitlab.ifreetalk.com/maze-plate/protodef/errors"
-	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fklog"
-	"gitlab.ifreetalk.com/maze-plate/freetk/fkserver"
-	"gitlab.ifreetalk.com/maze-plate/protodef/MazeGameEquip"
 	"go.uber.org/zap"
-	"context"
 )
 
 func OnSvrAddMazeEquipRQ(ctx fklog.FKLogI, shardingID int64, rqMsg proto.Message, rsMsg proto.Message) (err error) {

@@ -10,8 +10,8 @@ import (
 	"errors"
 	"fmt"
 
-	"gitlab.ifreetalk.com/maze-plate/excel/auto/GMazeAttributeFormulaV8Cfg"
 	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fklog"
+	"gitlab.ifreetalk.com/maze/maze_game_server/config/GMazeAttributeFormulaV8Cfg"
 	"go.uber.org/zap"
 )
 

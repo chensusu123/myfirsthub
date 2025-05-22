@@ -1,22 +1,22 @@
 package equip
 
 import (
-	"gitlab.ifreetalk.com/maze-plate/excel/auto/GMazeEquipPosLvV8Cfg"
 	"gitlab.ifreetalk.com/maze-plate/extra/protobuf/proto"
-	"gitlab.ifreetalk.com/maze-plate/protodef/errors"
 	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fknet"
 	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fkprometheus"
 	"gitlab.ifreetalk.com/maze-plate/protodef/Common"
 	"gitlab.ifreetalk.com/maze-plate/protodef/MazeEquipCache"
 	"gitlab.ifreetalk.com/maze-plate/protodef/MazeEquipPos"
 	"gitlab.ifreetalk.com/maze-plate/protodef/MazeGameEquip"
+	"gitlab.ifreetalk.com/maze-plate/protodef/errors"
+	"gitlab.ifreetalk.com/maze/maze_game_server/config/GMazeEquipPosLvV8Cfg"
 
-	"go.uber.org/zap"
+	"gitlab.ifreetalk.com/maze/maze_game_server/common/constdef"
+	"gitlab.ifreetalk.com/maze/maze_game_server/common/function/itemutil"
+	"gitlab.ifreetalk.com/maze/maze_game_server/excel/equipposexcel"
 	"gitlab.ifreetalk.com/maze/maze_game_server/io/redis/dollassembleredis"
 	"gitlab.ifreetalk.com/maze/maze_game_server/module/equippossuit"
-	"gitlab.ifreetalk.com/maze/maze_game_server/excel/equipposexcel"
-	"gitlab.ifreetalk.com/maze/maze_game_server/common/function/itemutil"
-	"gitlab.ifreetalk.com/maze/maze_game_server/common/constdef"
+	"go.uber.org/zap"
 )
 
 // 装备位强化预览

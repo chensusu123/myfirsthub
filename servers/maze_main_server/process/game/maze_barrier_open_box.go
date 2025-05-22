@@ -1,7 +1,6 @@
 package game
 
 import (
-	"gitlab.ifreetalk.com/maze-plate/excel/auto/GMazeBoxV8Cfg"
 	"gitlab.ifreetalk.com/maze-plate/extra/protobuf/proto"
 	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fknet"
 	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fkprometheus"
@@ -11,6 +10,7 @@ import (
 	"gitlab.ifreetalk.com/maze/maze_game_server/common/errors"
 	"gitlab.ifreetalk.com/maze/maze_game_server/common/function/addequip"
 	"gitlab.ifreetalk.com/maze/maze_game_server/common/function/gentradeno"
+	"gitlab.ifreetalk.com/maze/maze_game_server/config/GMazeBoxV8Cfg"
 
 	"go.uber.org/zap"
 )

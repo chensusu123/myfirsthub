@@ -4,7 +4,7 @@ import (
 	"testing"
 	"time"
 
-	"gitlab.ifreetalk.com/maze-plate/excel/auto/GMazeBarriesV8Cfg"
+	"gitlab.ifreetalk.com/maze/maze_game_server/config/GMazeBarriesV8Cfg"
 	"gitlab.ifreetalk.com/maze/maze_game_server/usecase/business"
 	"go.uber.org/zap"
 )

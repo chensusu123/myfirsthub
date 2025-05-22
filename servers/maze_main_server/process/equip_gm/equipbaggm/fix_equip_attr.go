@@ -1,15 +1,15 @@
 package equipbaggm
 
 import (
-	"gitlab.ifreetalk.com/maze-plate/excel/auto/GMazeEquipAffixRandPoolV8Cfg"
-	"gitlab.ifreetalk.com/maze-plate/excel/auto/GMazeEquipAffixRollTypeV8Cfg"
 	"gitlab.ifreetalk.com/maze-plate/extra/protobuf/proto"
-	"gitlab.ifreetalk.com/maze-plate/protodef/errors"
 	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fklog"
 	"gitlab.ifreetalk.com/maze-plate/protodef/MazeEquipCache"
-	"go.uber.org/zap"
+	"gitlab.ifreetalk.com/maze-plate/protodef/errors"
+	"gitlab.ifreetalk.com/maze/maze_game_server/config/GMazeEquipAffixRandPoolV8Cfg"
+	"gitlab.ifreetalk.com/maze/maze_game_server/config/GMazeEquipAffixRollTypeV8Cfg"
 	"gitlab.ifreetalk.com/maze/maze_game_server/io/redis/mazebagequipredis"
 	"gitlab.ifreetalk.com/maze/maze_game_server/servers/maze_main_server/process/equip"
+	"go.uber.org/zap"
 )
 
 func fixAllEquipAttrLimit(logger fklog.FKLogI, userId uint64) error {

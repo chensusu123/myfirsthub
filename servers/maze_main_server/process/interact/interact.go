@@ -11,11 +11,11 @@ import (
 	"gitlab.ifreetalk.com/maze/maze_game_server/io/redis/mazeequipmixdb"
 	itemrpc "gitlab.ifreetalk.com/maze/maze_game_server/servers/maze_main_server/process/item"
 
-	"gitlab.ifreetalk.com/maze-plate/excel/auto/GMazeEquipMixListV8Cfg"
 	"gitlab.ifreetalk.com/maze-plate/extra/protobuf/proto"
-	"gitlab.ifreetalk.com/maze/maze_game_server/common/errors"
 	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fklog"
 	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fknet"
+	"gitlab.ifreetalk.com/maze/maze_game_server/common/errors"
+	"gitlab.ifreetalk.com/maze/maze_game_server/config/GMazeEquipMixListV8Cfg"
 	"gitlab.ifreetalk.com/maze/maze_game_server/excel/equipmixcostcfg"
 	"gitlab.ifreetalk.com/maze/maze_game_server/io/redis/mazeuserlevelredis"
 	equiprpc "gitlab.ifreetalk.com/maze/maze_game_server/servers/maze_main_server/process/equip"

@@ -7,9 +7,9 @@ import (
 	"sort"
 	"sync"
 
-	"gitlab.ifreetalk.com/maze-plate/excel/auto/GMazeEquipMixV8Cfg"
 	"gitlab.ifreetalk.com/maze-plate/extra/protobuf/proto"
 	"gitlab.ifreetalk.com/maze-plate/protodef/MazeCommon"
+	"gitlab.ifreetalk.com/maze/maze_game_server/config/GMazeEquipMixV8Cfg"
 )
 
 var (

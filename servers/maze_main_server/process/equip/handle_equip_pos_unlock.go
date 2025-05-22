@@ -13,15 +13,15 @@ import (
 
 	"go.uber.org/zap"
 
-	"gitlab.ifreetalk.com/maze-plate/excel/auto/GMazeEquipPosRankV8Cfg"
 	"gitlab.ifreetalk.com/maze-plate/extra/protobuf/proto"
 	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fklog"
 	"gitlab.ifreetalk.com/maze-plate/protodef/MazeEquipCache"
-	"gitlab.ifreetalk.com/maze/maze_game_server/io/redis/dollassembleredis"
-	"gitlab.ifreetalk.com/maze/maze_game_server/module/mazelevel"
-	"gitlab.ifreetalk.com/maze/maze_game_server/module/assembleidpack"
-	"gitlab.ifreetalk.com/maze/maze_game_server/common/constdef"
 	"gitlab.ifreetalk.com/maze-plate/protodef/MazeGameEquip"
+	"gitlab.ifreetalk.com/maze/maze_game_server/common/constdef"
+	"gitlab.ifreetalk.com/maze/maze_game_server/config/GMazeEquipPosRankV8Cfg"
+	"gitlab.ifreetalk.com/maze/maze_game_server/io/redis/dollassembleredis"
+	"gitlab.ifreetalk.com/maze/maze_game_server/module/assembleidpack"
+	"gitlab.ifreetalk.com/maze/maze_game_server/module/mazelevel"
 )
 
 const (

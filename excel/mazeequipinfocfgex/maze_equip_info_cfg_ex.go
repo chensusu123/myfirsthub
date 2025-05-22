@@ -10,7 +10,7 @@ import (
 	"sync/atomic"
 	"unsafe"
 
-	"gitlab.ifreetalk.com/maze-plate/excel/auto/GMazeEquipInfoV8Cfg"
+	"gitlab.ifreetalk.com/maze/maze_game_server/config/GMazeEquipInfoV8Cfg"
 )
 
 type MazeEquipExInfo struct {

@@ -1,12 +1,12 @@
 package game
 
 import (
-	"gitlab.ifreetalk.com/maze-plate/excel/auto/GMazeLevelV8Cfg"
 	"gitlab.ifreetalk.com/maze-plate/extra/protobuf/proto"
 	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fknet"
 	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fkprometheus"
 	"gitlab.ifreetalk.com/maze-plate/protodef/MazeGame"
 	"gitlab.ifreetalk.com/maze/maze_game_server/common/errors"
+	"gitlab.ifreetalk.com/maze/maze_game_server/config/GMazeLevelV8Cfg"
 	"gitlab.ifreetalk.com/maze/maze_game_server/io/kafka/mazeuserlevelkafka"
 	"gitlab.ifreetalk.com/maze/maze_game_server/io/redis/mazecalcattrredis"
 	"gitlab.ifreetalk.com/maze/maze_game_server/module/mazecommonvalue"

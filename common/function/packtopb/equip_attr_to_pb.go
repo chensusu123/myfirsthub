@@ -1,11 +1,11 @@
 package packtopb
 
 import (
-	"gitlab.ifreetalk.com/maze-plate/excel/auto/GMazeEquipAffixRandPoolV8Cfg"
 	"gitlab.ifreetalk.com/maze-plate/extra/protobuf/proto"
 	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fklog"
 	"gitlab.ifreetalk.com/maze-plate/protodef/MazeEquipCache"
 	"gitlab.ifreetalk.com/maze-plate/protodef/MazeGameEquip"
+	"gitlab.ifreetalk.com/maze/maze_game_server/config/GMazeEquipAffixRandPoolV8Cfg"
 
 	"gitlab.ifreetalk.com/maze/maze_game_server/excel/mazeequipconfigv8"
 	"go.uber.org/zap"

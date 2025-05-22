@@ -13,7 +13,6 @@ require (
 	github.com/json-iterator/go v1.1.12
 	github.com/lonng/nano v0.5.1
 	github.com/xuri/excelize/v2 v2.9.0
-	gitlab.ifreetalk.com/maze-plate/excel v0.0.0-20250515065852-efc0a876269a
 	gitlab.ifreetalk.com/maze-plate/extra v1.0.1-0.20250401060651-722653168d37
 	gitlab.ifreetalk.com/maze-plate/freetk v1.0.1-0.20250515074528-4334f63a4663
 	gitlab.ifreetalk.com/maze-plate/protodef v0.0.0-20250517085109-62317a962240

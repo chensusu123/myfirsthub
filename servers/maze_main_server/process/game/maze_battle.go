@@ -3,20 +3,20 @@ package game
 import (
 	"sort"
 
-	"gitlab.ifreetalk.com/maze-plate/excel/auto/GMazeActInfoV8Cfg"
-	"gitlab.ifreetalk.com/maze-plate/excel/auto/GMazeAttrSkillV8Cfg"
-	"gitlab.ifreetalk.com/maze-plate/excel/auto/GMazeBrushFoeV8Cfg"
-	"gitlab.ifreetalk.com/maze-plate/excel/auto/GMazeFoeV8Cfg"
-	"gitlab.ifreetalk.com/maze-plate/excel/auto/GMazeSkillActV8Cfg"
-	"gitlab.ifreetalk.com/maze-plate/excel/auto/GMazeSkillAutoReleaseV8Cfg"
-	"gitlab.ifreetalk.com/maze-plate/excel/auto/GMazeSkillInfoV8Cfg"
-	"gitlab.ifreetalk.com/maze-plate/excel/auto/GMazeSkilleffectV8Cfg"
 	"gitlab.ifreetalk.com/maze-plate/extra/protobuf/proto"
 	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fklog"
 	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fkprometheus"
 	"gitlab.ifreetalk.com/maze-plate/protodef/MazeAIBattle"
 	"gitlab.ifreetalk.com/maze/maze_game_server/common/constdef"
 	"gitlab.ifreetalk.com/maze/maze_game_server/common/errors"
+	"gitlab.ifreetalk.com/maze/maze_game_server/config/GMazeActInfoV8Cfg"
+	"gitlab.ifreetalk.com/maze/maze_game_server/config/GMazeAttrSkillV8Cfg"
+	"gitlab.ifreetalk.com/maze/maze_game_server/config/GMazeBrushFoeV8Cfg"
+	"gitlab.ifreetalk.com/maze/maze_game_server/config/GMazeFoeV8Cfg"
+	"gitlab.ifreetalk.com/maze/maze_game_server/config/GMazeSkillActV8Cfg"
+	"gitlab.ifreetalk.com/maze/maze_game_server/config/GMazeSkillAutoReleaseV8Cfg"
+	"gitlab.ifreetalk.com/maze/maze_game_server/config/GMazeSkillInfoV8Cfg"
+	"gitlab.ifreetalk.com/maze/maze_game_server/config/GMazeSkilleffectV8Cfg"
 	"gitlab.ifreetalk.com/maze/maze_game_server/io/redis/mazebarriertempbuffredis"
 	"gitlab.ifreetalk.com/maze/maze_game_server/io/redis/mazecalcattrredis"
 	"go.uber.org/zap"
@@ -198,6 +198,16 @@ func GetMazeAIMonsterConfig(logger fklog.FKLogI, userId uint64, force int64, foe
 		skillTotalInfo.SkillInfoList = append(skillTotalInfo.SkillInfoList, skillInfo)
 		//attackValue.ActDamageConfig = append(attackValue.ActDamageConfig, actDamageConfigs...)
 	}
+	// 韧性被打空时释放技能
+	if foeCfg.Tough_deplete > 0 {
+		skillInfo, err := GetFoeBattleSkillInfo(logger, foeCfg.Tough_deplete, attrMap)
+		if err != nil {
+			logger.WarnWF("GetUserBattleAttr BattleSkillTopPb nil", zap.Uint64("userId", userId), zap.Any("Tough_deplete", foeCfg.Tough_deplete))
+			return nil, err
+		}
+		skillTotalInfo.SkillInfoList = append(skillTotalInfo.SkillInfoList, skillInfo)
+	}
+
 	monsterConfigInfo.MonsterSpeed = proto.Int32(foeCfg.Speed)
 	monsterConfigInfo.SkillTotalInfo = skillTotalInfo
 	return monsterConfigInfo, nil

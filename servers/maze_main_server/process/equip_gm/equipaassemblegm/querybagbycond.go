@@ -9,13 +9,13 @@ package equipaassemblegm
 import (
 	"bytes"
 
-	"gitlab.ifreetalk.com/maze-plate/excel/auto/GMazeEquipInfoV8Cfg"
 	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fklog"
 	"gitlab.ifreetalk.com/maze-plate/protodef/MazeEquipCache"
-	"go.uber.org/zap"
+	"gitlab.ifreetalk.com/maze/maze_game_server/config/GMazeEquipInfoV8Cfg"
+	"gitlab.ifreetalk.com/maze/maze_game_server/io/redis/dollassemblesuitredis"
 	"gitlab.ifreetalk.com/maze/maze_game_server/io/redis/mazebagequipredis"
 	"gitlab.ifreetalk.com/maze/maze_game_server/module/effectequip"
-	"gitlab.ifreetalk.com/maze/maze_game_server/io/redis/dollassemblesuitredis"
+	"go.uber.org/zap"
 )
 
 type BagCond struct {
