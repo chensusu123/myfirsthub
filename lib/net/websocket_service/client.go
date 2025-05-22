@@ -20,6 +20,7 @@ import (
 	"github.com/cloudwego/hertz/pkg/app"
 	"github.com/dgrijalva/jwt-go"
 	"github.com/hertz-contrib/websocket"
+	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fkalert"
 	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fklog"
 	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fknet"
 	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fknet/fkpkg"
@@ -159,6 +160,7 @@ func (c *Client) ProcsssBytes(data []byte) (int, error) {
 // ensures that there is at most one reader on a connection by executing all
 // reads from this goroutine.
 func (c *Client) readPump() {
+	defer fkalert.RecoverAlertException()
 	defer func() {
 		hub.unregister <- c
 		c.conn.Close()
@@ -219,6 +221,7 @@ func (c *Client) processPacket(data []byte) {
 // application ensures that there is at most one writer to a connection by
 // executing all writes from this goroutine.
 func (c *Client) writePump() {
+	defer fkalert.RecoverAlertException()
 	ticker := time.NewTicker(pingPeriod)
 	defer func() {
 		ticker.Stop()
