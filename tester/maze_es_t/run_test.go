@@ -116,8 +116,10 @@ func initService() {
 func sendMsgToUser() {
 	logger := gTestLogger.Clone("sendMsgToUser")
 	for i := 0; i < 10; i++ {
-		data := makeOtherData()
-		websocket_service.SendBytes(logger, 999, 1, data)
+		// data := makeOtherData()
+		websocket_service.SendPacket(logger, 999, 1, &MazeGame.BarrierDeathRQ{
+			BarrierId: proto.Int32(222),
+		})
 		time.Sleep(time.Second * 1)
 	}
 }
