@@ -1,4 +1,4 @@
-package websocket_service
+package websocket_service_actor
 
 import (
 	"context"
@@ -10,6 +10,7 @@ import (
 	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fknet"
 	"go.uber.org/zap"
 
+	"github.com/asynkron/protoactor-go/actor"
 	"github.com/cloudwego/hertz/pkg/app"
 	"github.com/cloudwego/hertz/pkg/app/server"
 )
@@ -20,12 +21,23 @@ type WebsocketServer struct {
 	pf     fknet.FkProtocolFactory
 	wg     sync.WaitGroup
 	fklog.FKLogI
-	h     server.Hertz
-	isRun bool
+	h           server.Hertz
+	isRun       bool
+	actorSystem *actor.ActorSystem
+	connsMgrPID *actor.PID
+}
+
+func (t *WebsocketServer) GetActorSystem() *actor.ActorSystem {
+	return t.actorSystem
 }
 
 func NewWebsocketServer() *WebsocketServer {
-	return &WebsocketServer{server: false}
+	actorSystem := actor.NewActorSystem(actor.WithLoggerFactory(zapAdapterLogging))
+	props := actor.PropsFromProducer(func() actor.Actor {
+		return NewConnActorMgr(actorSystem)
+	})
+	connsMgrPID := actorSystem.Root.Spawn(props)
+	return &WebsocketServer{server: false, actorSystem: actorSystem, connsMgrPID: connsMgrPID}
 }
 
 func (t *WebsocketServer) StopServer() {
@@ -71,15 +83,25 @@ func (t *WebsocketServer) Init(addr string, pf fknet.FkProtocolFactory) error {
 
 	t.addr = addr
 	t.FKLogI = fklog.AppLogger().Clone(fmt.Sprintf("server-addr:%s", addr))
+	// system := actor.NewActorSystem(actor.WithLoggerFactory(zapAdapterLogging))
+	// t.actorSystem = system
+
+	actorSystem := actor.NewActorSystem(actor.WithLoggerFactory(zapAdapterLogging))
+	props := actor.PropsFromProducer(func() actor.Actor {
+		return NewConnActorMgr(actorSystem)
+	})
+	connsMgrPID := actorSystem.Root.Spawn(props)
+	t.actorSystem = actorSystem
+	t.connsMgrPID = connsMgrPID
 
 	h := server.Default(server.WithHostPorts(addr))
 
 	h.GET("/pb", func(c context.Context, ctx *app.RequestContext) {
-		serveWs(ctx, t.FKLogI)
+		serveActorWs(ctx, t.FKLogI, t.actorSystem, t.connsMgrPID, false)
 	})
 
 	h.GET("/json", func(c context.Context, ctx *app.RequestContext) {
-		serveJsonWs(ctx, t.FKLogI)
+		serveActorWs(ctx, t.FKLogI, t.actorSystem, t.connsMgrPID, true)
 	})
 
 	t.server = true
@@ -90,7 +112,14 @@ func (t *WebsocketServer) Init(addr string, pf fknet.FkProtocolFactory) error {
 
 func (t *WebsocketServer) Start() error {
 	t.InfoWF("WebsocketServer Start begin server", zap.String("addr", t.addr))
-	go hub.run(t.FKLogI)
 	go t.beginServer()
 	return nil
+}
+
+func GetActorSystem() *actor.ActorSystem {
+	return gGlobalTCPRawServer.actorSystem
+}
+
+func GetConnsMgrPID() *actor.PID {
+	return gGlobalTCPRawServer.connsMgrPID
 }

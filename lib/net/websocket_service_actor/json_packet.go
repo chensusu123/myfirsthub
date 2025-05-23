@@ -1,4 +1,4 @@
-package websocket_service
+package websocket_service_actor
 
 type NoramlJsonMsg struct {
 	MsgType int         `json:"msg_type"`

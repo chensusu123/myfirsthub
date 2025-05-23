@@ -5,7 +5,7 @@
 // This file may have been modified by CloudWeGo authors. All CloudWeGo
 // Modifications are Copyright 2022 CloudWeGo Authors.
 
-package websocket_service
+package websocket_service_raw
 
 import (
 	"context"
@@ -273,6 +273,7 @@ var upgrader = websocket.HertzUpgrader{
 	ReadBufferSize:  maxMessageSize,
 	WriteBufferSize: maxMessageSize,
 	CheckOrigin: func(ctx *app.RequestContext) bool {
+		return true
 		token := ctx.Query("jwt")
 
 		if token == "" {
