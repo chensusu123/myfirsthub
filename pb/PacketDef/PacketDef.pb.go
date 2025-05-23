@@ -6,11 +6,9 @@
 Package PacketDef is a generated protocol buffer package.
 
 It is generated from these files:
-
 	PacketDef.proto
 
 It has these top-level messages:
-
 	UserBaseInfoRq
 	UserBaseInfoRs
 	UserFullInfoRq
@@ -28,10 +26,10 @@ It has these top-level messages:
 */
 package PacketDef
 
-import proto "gitlab.ifreetalk.com/maze-plate/extra/protobuf/proto"
+import proto "gitlab.ifreetalk.com/plate/extra/protobuf/proto"
 import fmt "fmt"
 import math "math"
-import BaseStruct "gitlab.ifreetalk.com/maze-plate/protodef/BaseStruct"
+import BaseStruct "gitlab.ifreetalk.com/plate/protodef/BaseStruct"
 
 // Reference imports to suppress errors if they are not otherwise used.
 var _ = proto.Marshal

@@ -6,11 +6,9 @@
 Package MysqlParam is a generated protocol buffer package.
 
 It is generated from these files:
-
 	MySqlParam.proto
 
 It has these top-level messages:
-
 	MySQL_RQ
 	ROW_INFO
 	MySQL_RS
@@ -22,7 +20,7 @@ It has these top-level messages:
 */
 package MysqlParam
 
-import proto "gitlab.ifreetalk.com/maze-plate/extra/protobuf/proto"
+import proto "gitlab.ifreetalk.com/plate/extra/protobuf/proto"
 import fmt "fmt"
 import math "math"
 

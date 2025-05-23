@@ -6,16 +6,14 @@
 Package MonitorSystem is a generated protocol buffer package.
 
 It is generated from these files:
-
 	MonitorSystem.proto
 
 It has these top-level messages:
-
 	ReportData
 */
 package MonitorSystem
 
-import proto "gitlab.ifreetalk.com/maze-plate/extra/protobuf/proto"
+import proto "gitlab.ifreetalk.com/plate/extra/protobuf/proto"
 import fmt "fmt"
 import math "math"
 

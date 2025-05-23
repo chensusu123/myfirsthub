@@ -6,11 +6,9 @@
 Package MazeUserLoginSvr is a generated protocol buffer package.
 
 It is generated from these files:
-
 	paipai_world/common/UserLoginSvr.proto
 
 It has these top-level messages:
-
 	MazeSvrUserLoginRQ
 	MazeSvrUserLoginRS
 	MazeSvrKickUserRQ
@@ -18,11 +16,11 @@ It has these top-level messages:
 */
 package MazeUserLoginSvr
 
-import proto "gitlab.ifreetalk.com/maze-plate/extra/protobuf/proto"
+import proto "gitlab.ifreetalk.com/plate/extra/protobuf/proto"
 import fmt "fmt"
 import math "math"
-import MessageType "gitlab.ifreetalk.com/maze-plate/protodef/MessageType"
-import SysPackDef "gitlab.ifreetalk.com/maze-plate/protodef/SysPackDef"
+import MessageType "gitlab.ifreetalk.com/plate/protodef/MessageType"
+import SysPackDef "gitlab.ifreetalk.com/plate/protodef/SysPackDef"
 
 // Reference imports to suppress errors if they are not otherwise used.
 var _ = proto.Marshal

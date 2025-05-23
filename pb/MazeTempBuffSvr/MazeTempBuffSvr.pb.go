@@ -6,11 +6,9 @@
 Package MazeTempBuffSvr is a generated protocol buffer package.
 
 It is generated from these files:
-
 	paipai_world/server/MazeTempBuffSvr.proto
 
 It has these top-level messages:
-
 	BuffSequence
 	TotalBuffInfo
 	SelectedBuffInfo
@@ -18,7 +16,7 @@ It has these top-level messages:
 */
 package MazeTempBuffSvr
 
-import proto "gitlab.ifreetalk.com/maze-plate/extra/protobuf/proto"
+import proto "gitlab.ifreetalk.com/plate/extra/protobuf/proto"
 import fmt "fmt"
 import math "math"
 

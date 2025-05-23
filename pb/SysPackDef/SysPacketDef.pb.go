@@ -6,11 +6,9 @@
 Package SysPackDef is a generated protocol buffer package.
 
 It is generated from these files:
-
 	SysPacketDef.proto
 
 It has these top-level messages:
-
 	UserLiveRq
 	UserLiveRs
 	UserChangeSilenceModeRq
@@ -56,11 +54,11 @@ It has these top-level messages:
 */
 package SysPackDef
 
-import proto "gitlab.ifreetalk.com/maze-plate/extra/protobuf/proto"
+import proto "gitlab.ifreetalk.com/plate/extra/protobuf/proto"
 import fmt "fmt"
 import math "math"
-import BaseStruct "gitlab.ifreetalk.com/maze-plate/protodef/BaseStruct"
-import MessageType "gitlab.ifreetalk.com/maze-plate/protodef/MessageType"
+import BaseStruct "gitlab.ifreetalk.com/plate/protodef/BaseStruct"
+import MessageType "gitlab.ifreetalk.com/plate/protodef/MessageType"
 
 // Reference imports to suppress errors if they are not otherwise used.
 var _ = proto.Marshal

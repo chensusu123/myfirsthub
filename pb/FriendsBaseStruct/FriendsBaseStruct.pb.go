@@ -6,11 +6,9 @@
 Package FriendsBaseStruct is a generated protocol buffer package.
 
 It is generated from these files:
-
 	FriendsBaseStruct.proto
 
 It has these top-level messages:
-
 	RelevancyAccountInfo
 	FriendInfo
 	ApplyInfo
@@ -19,7 +17,7 @@ It has these top-level messages:
 */
 package FriendsBaseStruct
 
-import proto "gitlab.ifreetalk.com/maze-plate/extra/protobuf/proto"
+import proto "gitlab.ifreetalk.com/plate/extra/protobuf/proto"
 import fmt "fmt"
 import math "math"
 

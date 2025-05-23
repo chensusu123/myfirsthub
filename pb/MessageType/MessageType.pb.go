@@ -6,11 +6,9 @@
 Package MessageType is a generated protocol buffer package.
 
 It is generated from these files:
-
 	MessageType.proto
 
 It has these top-level messages:
-
 	ErrorInfo
 	IdInfo
 	RichInfo
@@ -18,10 +16,10 @@ It has these top-level messages:
 */
 package MessageType
 
-import proto "gitlab.ifreetalk.com/maze-plate/extra/protobuf/proto"
+import proto "gitlab.ifreetalk.com/plate/extra/protobuf/proto"
 import fmt "fmt"
 import math "math"
-import RichTextDef "gitlab.ifreetalk.com/maze-plate/protodef/RichTextDef"
+import RichTextDef "gitlab.ifreetalk.com/plate/protodef/RichTextDef"
 
 // Reference imports to suppress errors if they are not otherwise used.
 var _ = proto.Marshal

@@ -6,18 +6,16 @@
 Package MazeCommon is a generated protocol buffer package.
 
 It is generated from these files:
-
 	paipai_world/common/MazeCommon.proto
 
 It has these top-level messages:
-
 	MazeItem
 	MazeCount
 	Attr
 */
 package MazeCommon
 
-import proto "gitlab.ifreetalk.com/maze-plate/extra/protobuf/proto"
+import proto "gitlab.ifreetalk.com/plate/extra/protobuf/proto"
 import fmt "fmt"
 import math "math"
 

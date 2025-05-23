@@ -6,11 +6,9 @@
 Package MazeGame is a generated protocol buffer package.
 
 It is generated from these files:
-
 	paipai_world/common/MazeGame.proto
 
 It has these top-level messages:
-
 	MazeCommonValue
 	MazeCommonValueChg
 	MazeCommonValueChgID
@@ -43,13 +41,13 @@ It has these top-level messages:
 */
 package MazeGame
 
-import proto "gitlab.ifreetalk.com/maze-plate/extra/protobuf/proto"
+import proto "gitlab.ifreetalk.com/plate/extra/protobuf/proto"
 import fmt "fmt"
 import math "math"
-import MessageType "gitlab.ifreetalk.com/maze-plate/protodef/MessageType"
-import Common "gitlab.ifreetalk.com/maze-plate/protodef/Common"
-import MazeCommon "gitlab.ifreetalk.com/maze-plate/protodef/MazeCommon"
-import MazeAIBattle "gitlab.ifreetalk.com/maze-plate/protodef/MazeAIBattle"
+import MessageType "gitlab.ifreetalk.com/plate/protodef/MessageType"
+import Common "gitlab.ifreetalk.com/plate/protodef/Common"
+import MazeCommon "gitlab.ifreetalk.com/plate/protodef/MazeCommon"
+import MazeAIBattle "gitlab.ifreetalk.com/plate/protodef/MazeAIBattle"
 
 // Reference imports to suppress errors if they are not otherwise used.
 var _ = proto.Marshal

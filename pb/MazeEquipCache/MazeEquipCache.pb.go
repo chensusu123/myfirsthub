@@ -6,11 +6,9 @@
 Package MazeEquipCache is a generated protocol buffer package.
 
 It is generated from these files:
-
 	paipai_world/server/MazeEquipCache.proto
 
 It has these top-level messages:
-
 	MazeEquipInfoDb
 	BaseAttrInfo
 	EquipAttrInfo
@@ -21,7 +19,7 @@ It has these top-level messages:
 */
 package MazeEquipCache
 
-import proto "gitlab.ifreetalk.com/maze-plate/extra/protobuf/proto"
+import proto "gitlab.ifreetalk.com/plate/extra/protobuf/proto"
 import fmt "fmt"
 import math "math"
 

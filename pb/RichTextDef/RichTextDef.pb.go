@@ -6,18 +6,16 @@
 Package RichTextDef is a generated protocol buffer package.
 
 It is generated from these files:
-
 	RichTextDef.proto
 
 It has these top-level messages:
-
 	RichTextElement
 	RichTextBlock
 	RichTextMessage
 */
 package RichTextDef
 
-import proto "gitlab.ifreetalk.com/maze-plate/extra/protobuf/proto"
+import proto "gitlab.ifreetalk.com/plate/extra/protobuf/proto"
 import fmt "fmt"
 import math "math"
 

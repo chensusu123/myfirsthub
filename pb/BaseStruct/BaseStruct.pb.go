@@ -6,11 +6,9 @@
 Package BaseStruct is a generated protocol buffer package.
 
 It is generated from these files:
-
 	BaseStruct.proto
 
 It has these top-level messages:
-
 	Ranking
 	Title
 	DynamicTitle
@@ -97,10 +95,10 @@ It has these top-level messages:
 */
 package BaseStruct
 
-import proto "gitlab.ifreetalk.com/maze-plate/extra/protobuf/proto"
+import proto "gitlab.ifreetalk.com/plate/extra/protobuf/proto"
 import fmt "fmt"
 import math "math"
-import Pendant "gitlab.ifreetalk.com/maze-plate/protodef/Pendant"
+import Pendant "gitlab.ifreetalk.com/plate/protodef/Pendant"
 
 // Reference imports to suppress errors if they are not otherwise used.
 var _ = proto.Marshal
