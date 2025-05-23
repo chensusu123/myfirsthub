@@ -206,9 +206,8 @@ func (c *Client) GetUserID() uint64 {
 func (c *Client) Receive(ctx actor.Context) {
 	switch msg := ctx.Message().(type) {
 	case []byte:
-		ctx.Logger().Info("Received message", slog.Int("messageLen", len(msg)))
-		// a.conn.SetWriteDeadline(time.Now().Add(writeWait))
-		// a.conn.WriteMessage(websocket.TextMessage, msg)
+		ctx.Logger().Info("Received message", slog.Int("messageLen", len(msg)), slog.Int64("userID", int64(c.userId)),
+			slog.Uint64("sessionId", c.sessionId))
 		if c.isJson {
 			c.actorProcessJsonPacket(ctx, msg)
 		} else {
