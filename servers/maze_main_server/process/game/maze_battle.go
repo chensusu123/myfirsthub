@@ -10,6 +10,7 @@ import (
 	"gitlab.ifreetalk.com/maze/maze_game_server/common/constdef"
 	"gitlab.ifreetalk.com/maze/maze_game_server/common/errors"
 	"gitlab.ifreetalk.com/maze/maze_game_server/config/GMazeActInfoV8Cfg"
+	"gitlab.ifreetalk.com/maze/maze_game_server/config/GMazeAttrItemAttrV8Cfg"
 	"gitlab.ifreetalk.com/maze/maze_game_server/config/GMazeAttrSkillV8Cfg"
 	"gitlab.ifreetalk.com/maze/maze_game_server/config/GMazeBrushFoeV8Cfg"
 	"gitlab.ifreetalk.com/maze/maze_game_server/config/GMazeFoeV8Cfg"
@@ -98,6 +99,26 @@ func GetMazeBattleData(logger fklog.FKLogI, userId uint64, barrierId int32) (maz
 		}
 		mazeBattleInfo.SkillConfigInfos = append(mazeBattleInfo.SkillConfigInfos, skillConfigInfo)
 	}
+
+	// 道具使用配置
+	for _, row := range GMazeAttrItemAttrV8Cfg.GetAll() {
+		if row.Add_attr <= 0 {
+			continue
+		}
+		attrSkill := GMazeAttrSkillV8Cfg.Get(row.Add_attr)
+		if attrSkill == nil {
+			continue
+		}
+		if attrSkill.Skill_id <= 0 {
+			continue
+		}
+		itemUseInfo := &MazeAIBattle.MazeItemUseInfo{
+			ItemId: proto.Int32(row.Order),
+		}
+		itemUseInfo.SkillIds = append(itemUseInfo.SkillIds, attrSkill.Skill_id)
+		mazeBattleInfo.ItemUseInfos = append(mazeBattleInfo.ItemUseInfos, itemUseInfo)
+	}
+
 	return mazeBattleInfo, nil
 }
 
@@ -291,12 +312,33 @@ func GetUserAttrInfo(logger fklog.FKLogI, userId uint64, userAttrMap map[int32]i
 		}
 		skillInfo, actDamageConfigs, err := GetUserBattleSkillInfo(logger, skillId, userAttrMap)
 		if err != nil {
-			logger.WarnWF("GetUserBattleAttr BattleSkillTopPb nil", zap.Uint64("userId", userId), zap.Any("skillId", skillId))
+			logger.WarnWF("GetUserBattleAttr GetUserBattleSkillInfo nil", zap.Uint64("userId", userId), zap.Any("skillId", skillId))
 			return nil, err
 		}
 		userSkillInfo.SkillInfoList = append(userSkillInfo.SkillInfoList, skillInfo)
 		actDamageConfigList = append(actDamageConfigList, actDamageConfigs...)
 	}
+	// 使用道具后可使用属性技能
+	for _, row := range GMazeAttrItemAttrV8Cfg.GetAll() {
+		if row.Add_attr <= 0 {
+			continue
+		}
+		attrSkill := GMazeAttrSkillV8Cfg.Get(row.Add_attr)
+		if attrSkill == nil {
+			continue
+		}
+		if attrSkill.Skill_id <= 0 {
+			continue
+		}
+		skillInfo, actDamageConfigs, err := GetUserBattleSkillInfo(logger, attrSkill.Skill_id, userAttrMap)
+		if err != nil {
+			logger.WarnWF("GetUserBattleAttr GetUserBattleSkillInfo nil", zap.Uint64("userId", userId), zap.Any("attrSkillId", attrSkill.Skill_id))
+			return nil, err
+		}
+		userSkillInfo.SkillInfoList = append(userSkillInfo.SkillInfoList, skillInfo)
+		actDamageConfigList = append(actDamageConfigList, actDamageConfigs...)
+	}
+
 	roleConfigInfo.UserSkillInfo = userSkillInfo
 	roleConfigInfo.ActDamageConfig = actDamageConfigList
 	return roleConfigInfo, nil
