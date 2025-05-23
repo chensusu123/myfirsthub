@@ -16,7 +16,6 @@ import (
 type ClientLogin struct {
 	UserId    uint64
 	SessionId uint64
-	Client    *Client
 
 	wPID *actor.PID
 	rPID *actor.PID
