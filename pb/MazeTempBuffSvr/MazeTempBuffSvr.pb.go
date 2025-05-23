@@ -16,7 +16,7 @@ It has these top-level messages:
 */
 package MazeTempBuffSvr
 
-import proto "gitlab.ifreetalk.com/plate/extra/protobuf/proto"
+import proto "gitlab.ifreetalk.com/maze-plate/extra/protobuf/proto"
 import fmt "fmt"
 import math "math"
 

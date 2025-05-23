@@ -24,12 +24,12 @@ It has these top-level messages:
 */
 package UserBaseInfoCli
 
-import proto "gitlab.ifreetalk.com/plate/extra/protobuf/proto"
+import proto "gitlab.ifreetalk.com/maze-plate/extra/protobuf/proto"
 import fmt "fmt"
 import math "math"
-import MessageType "gitlab.ifreetalk.com/plate/protodef/MessageType"
-import Pendant "gitlab.ifreetalk.com/plate/protodef/Pendant"
-import BaseStruct "gitlab.ifreetalk.com/plate/protodef/BaseStruct"
+import MessageType "gitlab.ifreetalk.com/maze-plate/protodef/MessageType"
+import Pendant "gitlab.ifreetalk.com/maze-plate/protodef/Pendant"
+import BaseStruct "gitlab.ifreetalk.com/maze-plate/protodef/BaseStruct"
 
 // Reference imports to suppress errors if they are not otherwise used.
 var _ = proto.Marshal

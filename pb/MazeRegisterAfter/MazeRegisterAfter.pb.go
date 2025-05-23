@@ -14,10 +14,10 @@ It has these top-level messages:
 */
 package MazeRegisterAfter
 
-import proto "gitlab.ifreetalk.com/plate/extra/protobuf/proto"
+import proto "gitlab.ifreetalk.com/maze-plate/extra/protobuf/proto"
 import fmt "fmt"
 import math "math"
-import MazeRegister "gitlab.ifreetalk.com/plate/protodef/MazeRegister"
+import MazeRegister "gitlab.ifreetalk.com/maze-plate/protodef/MazeRegister"
 
 // Reference imports to suppress errors if they are not otherwise used.
 var _ = proto.Marshal
