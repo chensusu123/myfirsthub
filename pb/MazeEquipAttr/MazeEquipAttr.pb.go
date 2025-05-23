@@ -6,17 +6,15 @@
 Package MazeEquipAttr is a generated protocol buffer package.
 
 It is generated from these files:
-
 	paipai_world/server/MazeEquipAttr.proto
 
 It has these top-level messages:
-
 	MazeEquipAttr
 	MazeEquipAttrsDb
 */
 package MazeEquipAttr
 
-import proto "gitlab.ifreetalk.com/maze-plate/extra/protobuf/proto"
+import proto "gitlab.ifreetalk.com/plate/extra/protobuf/proto"
 import fmt "fmt"
 import math "math"
 

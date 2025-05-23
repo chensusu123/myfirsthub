@@ -6,11 +6,9 @@
 Package MazeAIBattle is a generated protocol buffer package.
 
 It is generated from these files:
-
 	paipai_world/common/MazeAIBattle.proto
 
 It has these top-level messages:
-
 	MazeAIAreaInfo
 	MazeAIBrushAreaConfigInfo
 	BrushFoePoolInfo
@@ -40,12 +38,12 @@ It has these top-level messages:
 */
 package MazeAIBattle
 
-import proto "gitlab.ifreetalk.com/maze-plate/extra/protobuf/proto"
+import proto "gitlab.ifreetalk.com/plate/extra/protobuf/proto"
 import fmt "fmt"
 import math "math"
-import MessageType "gitlab.ifreetalk.com/maze-plate/protodef/MessageType"
-import Common "gitlab.ifreetalk.com/maze-plate/protodef/Common"
-import MazeCommon "gitlab.ifreetalk.com/maze-plate/protodef/MazeCommon"
+import MessageType "gitlab.ifreetalk.com/plate/protodef/MessageType"
+import Common "gitlab.ifreetalk.com/plate/protodef/Common"
+import MazeCommon "gitlab.ifreetalk.com/plate/protodef/MazeCommon"
 
 // Reference imports to suppress errors if they are not otherwise used.
 var _ = proto.Marshal

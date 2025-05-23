@@ -6,17 +6,15 @@
 Package UserAttributeChg is a generated protocol buffer package.
 
 It is generated from these files:
-
 	paipai_world/common/UserAttributeChg.proto
 
 It has these top-level messages:
-
 	AttributeChgInfo
 	UserAttributeChgID
 */
 package UserAttributeChg
 
-import proto "gitlab.ifreetalk.com/maze-plate/extra/protobuf/proto"
+import proto "gitlab.ifreetalk.com/plate/extra/protobuf/proto"
 import fmt "fmt"
 import math "math"
 
