@@ -84,9 +84,7 @@ var upgrader = websocket.HertzUpgrader{
 	ReadBufferSize:  maxMessageSize,
 	WriteBufferSize: maxMessageSize,
 	CheckOrigin: func(ctx *app.RequestContext) bool {
-		return true
 		token := ctx.Query("jwt")
-
 		if token == "" {
 			return false
 		}
@@ -203,8 +201,18 @@ func (c *Client) GetUserID() uint64 {
 	return c.userId
 }
 
+const (
+	LiveTimeOut = 180 * time.Second
+)
+
 func (c *Client) Receive(ctx actor.Context) {
 	switch msg := ctx.Message().(type) {
+	case *ClientConnected:
+		ctx.Logger().Info("client ClientConnected", slog.Uint64("userID", c.userId), slog.Uint64("sessionId", c.sessionId))
+		ctx.SetReceiveTimeout(LiveTimeOut)
+	case *actor.ReceiveTimeout:
+		ctx.Logger().Warn("client ReceiveTimeout", slog.Uint64("userID", c.userId), slog.Uint64("sessionId", c.sessionId))
+		c.Close()
 	case []byte:
 		ctx.Logger().Info("Received message", slog.Int("messageLen", len(msg)), slog.Int64("userID", int64(c.userId)),
 			slog.Uint64("sessionId", c.sessionId))
@@ -222,7 +230,7 @@ func (c *Client) Receive(ctx actor.Context) {
 				processLen += n
 			}
 		}
-
+		ctx.SetReceiveTimeout(LiveTimeOut)
 	case *ClientLogin:
 		ctx.Send(GetConnsMgrPID(), &ClientKick{UserId: msg.UserId, SessionId: msg.SessionId, wPID: msg.wPID})
 		ctx.Logger().Info("client ClientLogin  message", slog.Uint64("UserId", msg.UserId), slog.Uint64("SessionId", msg.SessionId))

@@ -53,3 +53,8 @@ var hub = newHub()
 func newHub() *Hub {
 	return &Hub{}
 }
+
+type ClientConnected struct {
+	wPID *actor.PID
+	rPID *actor.PID
+}

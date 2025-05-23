@@ -114,6 +114,10 @@ func serveActorWs(ctx *app.RequestContext, logger fklog.FKLogI, actorSystem *act
 			actorSystem.Root.Stop(clientPID)
 		}()
 
+		actorSystem.Root.Send(clientPID, &ClientConnected{
+			wPID: pid,
+			rPID: clientPID,
+		})
 		// 消息循环
 		for {
 			_, msgBytes, err := conn.ReadMessage()
