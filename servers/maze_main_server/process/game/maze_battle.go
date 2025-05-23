@@ -190,11 +190,11 @@ func GetMazeAIMonsterConfig(logger fklog.FKLogI, userId uint64, force int64, foe
 		UserValueType: proto.Int32(2),
 	})
 	// 怪物受击回复速度提高万分比
-	// monsterConfigInfo.AttrInfo = append(monsterConfigInfo.AttrInfo, &MazeAIBattle.MazeAIAttrInfo{
-	// 	Type:          proto.Int32(int32(MazeAIBattle.MAZE_AI_ATTR_TYPE_RECOVERY_SPEED)),
-	// 	UserValue:     proto.Int32(foeCfg.Be_attack_recovery_speed_pro),
-	// 	UserValueType: proto.Int32(2),
-	// })
+	monsterConfigInfo.AttrInfo = append(monsterConfigInfo.AttrInfo, &MazeAIBattle.MazeAIAttrInfo{
+		Type:          proto.Int32(int32(MazeAIBattle.MAZE_AI_ATTR_TYPE_RECOVERY_SPEED)),
+		UserValue:     proto.Int32(foeCfg.Be_attack_recovery_speed_pro),
+		UserValueType: proto.Int32(2),
+	})
 	// 怪物韧性上限
 	monsterConfigInfo.AttrInfo = append(monsterConfigInfo.AttrInfo, &MazeAIBattle.MazeAIAttrInfo{
 		Type:          proto.Int32(int32(MazeAIBattle.MAZE_AI_ATTR_TYPE_TOUGH_MAX)),
@@ -229,7 +229,7 @@ func GetMazeAIMonsterConfig(logger fklog.FKLogI, userId uint64, force int64, foe
 			return nil, err
 		}
 		skillTotalInfo.SkillInfoList = append(skillTotalInfo.SkillInfoList, skillInfo)
-		//attackValue.ActDamageConfig = append(attackValue.ActDamageConfig, actDamageConfigs...)
+		// attackValue.ActDamageConfig = append(attackValue.ActDamageConfig, actDamageConfigs...)
 	}
 	// 韧性被打空时释放技能
 	if foeCfg.Tough_deplete > 0 {
@@ -253,9 +253,9 @@ func GetUserAttrInfo(logger fklog.FKLogI, userId uint64, userAttrMap map[int32]i
 		if cfg.Type != 1 {
 			continue
 		}
-		//if cfg.Level != displayLevel {
+		// if cfg.Level != displayLevel {
 		//	continue
-		//}
+		// }
 		skillIds = append(skillIds, cfg.Id)
 	}
 
@@ -275,7 +275,7 @@ func GetUserAttrInfo(logger fklog.FKLogI, userId uint64, userAttrMap map[int32]i
 		return nil, err
 	}
 	if attrMap[constdef.DollFormulaBlood] != nil {
-		//userAttrInfo.UserHp = proto.Int64(int64(attrMap[constdef.DollFormulaBlood].GetUserValue()))
+		// userAttrInfo.UserHp = proto.Int64(int64(attrMap[constdef.DollFormulaBlood].GetUserValue()))
 		userAttrInfo.UserTotal = proto.Int64(int64(attrMap[constdef.DollFormulaBlood].GetUserValue()))
 	}
 	for _, attrInfo := range attrMap {
@@ -387,7 +387,7 @@ func GetUserBattleSkillInfo(logger fklog.FKLogI, skillId int32, attrMap map[int3
 
 		}
 	}
-	//todo 缺少触发cd
+	// todo 缺少触发cd
 	skillInfo := &MazeAIBattle.MazeAISkillInfo{
 		SkillId:                      proto.Int32(skillCfg.Id),
 		SkillGroup:                   proto.Int32(skillCfg.Group),
@@ -507,7 +507,7 @@ func GetFoeBattleSkillInfo(logger fklog.FKLogI, skillId int32, attrMap map[int32
 		logger.ErrorWF("GetMazeAIMonsterConfig GMazeSkillActV8Cfg err", zap.Any("skillId", skillId))
 		return nil, errors.New("配置不存在")
 	}
-	//todo 缺少触发cd
+	// todo 缺少触发cd
 	skillInfo := &MazeAIBattle.MazeAISkillInfo{
 		SkillId:                      proto.Int32(skillCfg.Id),
 		SkillGroup:                   proto.Int32(skillCfg.Group),
