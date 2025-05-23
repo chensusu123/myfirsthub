@@ -6,9 +6,11 @@
 Package DataCacheSystem is a generated protocol buffer package.
 
 It is generated from these files:
+
 	paipai_world/server/DataCacheSystem.proto
 
 It has these top-level messages:
+
 	SequenceID
 	KVData
 	HashData
@@ -45,7 +47,7 @@ It has these top-level messages:
 */
 package DataCacheSystem
 
-import proto "gitlab.ifreetalk.com/plate/extra/protobuf/proto"
+import proto "gitlab.ifreetalk.com/maze-plate/extra/protobuf/proto"
 import fmt "fmt"
 import math "math"
 

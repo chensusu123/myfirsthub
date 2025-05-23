@@ -6,9 +6,11 @@
 Package UserInfo is a generated protocol buffer package.
 
 It is generated from these files:
+
 	paipai_world/common/UserInfo.proto
 
 It has these top-level messages:
+
 	UserInfo
 	QueryUserInfoRQ
 	QueryUserInfoRS
@@ -17,11 +19,11 @@ It has these top-level messages:
 */
 package UserInfo
 
-import proto "gitlab.ifreetalk.com/plate/extra/protobuf/proto"
+import proto "gitlab.ifreetalk.com/maze-plate/extra/protobuf/proto"
 import fmt "fmt"
 import math "math"
-import MessageType "gitlab.ifreetalk.com/plate/protodef/MessageType"
-import Common "gitlab.ifreetalk.com/plate/protodef/Common"
+import MessageType "gitlab.ifreetalk.com/maze-plate/protodef/MessageType"
+import Common "gitlab.ifreetalk.com/maze-plate/protodef/Common"
 
 // Reference imports to suppress errors if they are not otherwise used.
 var _ = proto.Marshal

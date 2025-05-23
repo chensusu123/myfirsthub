@@ -6,15 +6,17 @@
 Package MazeBuffData is a generated protocol buffer package.
 
 It is generated from these files:
+
 	paipai_world/server/MazeBuffData.proto
 
 It has these top-level messages:
+
 	MazeBuffAttr
 	MazeBuffDb
 */
 package MazeBuffData
 
-import proto "gitlab.ifreetalk.com/plate/extra/protobuf/proto"
+import proto "gitlab.ifreetalk.com/maze-plate/extra/protobuf/proto"
 import fmt "fmt"
 import math "math"
 

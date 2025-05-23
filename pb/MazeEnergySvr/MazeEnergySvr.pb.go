@@ -6,9 +6,11 @@
 Package MazeEnergySvr is a generated protocol buffer package.
 
 It is generated from these files:
+
 	paipai_world/server/MazeEnergySvr.proto
 
 It has these top-level messages:
+
 	SubMazeEnergyRQ
 	SubMazeEnergyRS
 	AddMazeEnergyRQ
@@ -16,10 +18,10 @@ It has these top-level messages:
 */
 package MazeEnergySvr
 
-import proto "gitlab.ifreetalk.com/plate/extra/protobuf/proto"
+import proto "gitlab.ifreetalk.com/maze-plate/extra/protobuf/proto"
 import fmt "fmt"
 import math "math"
-import MessageType "gitlab.ifreetalk.com/plate/protodef/MessageType"
+import MessageType "gitlab.ifreetalk.com/maze-plate/protodef/MessageType"
 
 // Reference imports to suppress errors if they are not otherwise used.
 var _ = proto.Marshal

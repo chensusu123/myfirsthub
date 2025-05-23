@@ -6,9 +6,11 @@
 Package MazeEquipSvr is a generated protocol buffer package.
 
 It is generated from these files:
+
 	paipai_world/server/MazeEquipSvr.proto
 
 It has these top-level messages:
+
 	SvrEquipInfo
 	EquipInstanceSvr
 	ConditionInfo
@@ -24,10 +26,10 @@ It has these top-level messages:
 */
 package MazeEquipSvr
 
-import proto "gitlab.ifreetalk.com/plate/extra/protobuf/proto"
+import proto "gitlab.ifreetalk.com/maze-plate/extra/protobuf/proto"
 import fmt "fmt"
 import math "math"
-import MessageType "gitlab.ifreetalk.com/plate/protodef/MessageType"
+import MessageType "gitlab.ifreetalk.com/maze-plate/protodef/MessageType"
 
 // Reference imports to suppress errors if they are not otherwise used.
 var _ = proto.Marshal
