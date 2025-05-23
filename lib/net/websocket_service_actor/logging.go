@@ -14,7 +14,8 @@ func zapAdapterLogging(system *actor.ActorSystem) *slog.Logger {
 	if zapLogger == nil {
 		zapLogger, _ = zap.NewProduction()
 	}
-	logger := slog.New(slogzap.Option{Level: slog.LevelDebug, Logger: zapLogger}.NewZapHandler())
+
+	logger := slog.New(slogzap.Option{Level: slog.LevelDebug, Logger: zapLogger, AddSource: true}.NewZapHandler())
 	return logger.
 		With("lib", "Proto.Actor").
 		With("system", system.ID)
