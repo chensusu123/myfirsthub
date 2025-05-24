@@ -15,7 +15,7 @@ import (
 var gRedis = &fkredis.FkRedis{}
 
 func init() {
-	fkconfig.RegisterNameNode("mazefixedbarrierredis", 0, gRedis)
+	fkconfig.RegisterNameNode("mazefixedbarrierredis", 21689, gRedis)
 }
 
 func GetUserFixedBarrierID(logger fklog.FKLogI, userId uint64) (barrierId int32, err error) {
