@@ -20,6 +20,7 @@ type MazeEnergyLevelV8ConfigRow struct {
     Energy_level       int32  `json:"energy_level"` // 等级
     Max_energy       int32  `json:"max_energy"` // 升到下一级需要的能量点数
     Energy_select       int32  `json:"energy_select"` // 提升到当前等级时可以选择能力的次数
+    Energy_item_select       int32  `json:"energy_item_select"` // 提升到当前等级时，可以使用道具触发的选择能力次数
 }
 
 // MazeEnergyLevelV8Config from maze_energy_level_v8【迷宫-能力等级】.xlsx maze_energy_level_v8
@@ -336,6 +337,20 @@ func (*gMazeEnergyLevelV8Parser) Parse(logger fklog.FKLogI,data []string, row in
 		}
 		config.Energy_select = int32(tmp)
 	}
+
+	// parse column 5 energy_item_select : 提升到当前等级时，可以使用道具触发的选择能力次数 
+	if data[5] != "" {
+		tmp,err = strconv.ParseInt(data[5],10,64)
+		if err != nil {
+			err = errors.New("parse field energy_item_select 提升到当前等级时，可以使用道具触发的选择能力次数 to int32 failed")
+			logger.ErrorWF("parse field energy_item_select 提升到当前等级时，可以使用道具触发的选择能力次数 to int32 failed.", 
+				zap.String("xlsx", "maze_energy_level_v8【迷宫-能力等级】.xlsx"), zap.String("sheet", "maze_energy_level_v8"), 
+				zap.String("parse_data",data[5]), 
+				zap.Error(err))
+			return
+		}
+		config.Energy_item_select = int32(tmp)
+	}
 	return
 }
 
@@ -345,6 +360,7 @@ var gMazeEnergyLevelV8Fields = []string{
     "energy_level",
     "max_energy",
     "energy_select",
+    "energy_item_select",
 }
 
 // LoadDataManual load data for test
