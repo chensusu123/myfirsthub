@@ -1,25 +1,23 @@
 package GMazePatrolV8Cfg
 
-
 import (
+	"errors"
+	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fklog"
+	"gitlab.ifreetalk.com/maze-plate/freetk/fkserver/config_manager"
+	"go.uber.org/zap"
+	"strconv"
+	"strings"
 	"sync"
 	"sync/atomic"
 	"unsafe"
-	"strconv"
-	"errors"
-	"strings"
-	"gitlab.ifreetalk.com/maze-plate/freetk/fkserver/config_manager"
-	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fklog"
-	"go.uber.org/zap"
 )
-
 
 // MazePatrolV8ConfigRow from maze_patrol_v8【迷宫-巡逻守卫】.xlsx maze_patrol_v8
 type MazePatrolV8ConfigRow struct {
-    Order       int32  `json:"order"` // 序号
-    Level_id       int32  `json:"level_id"` // 关卡id
-    Monster_id       []int32  `json:"monster_id"` // 怪物id
-    Brush_time       int32  `json:"brush_time"` // 刷新cd
+	Order      int32   `json:"order"`      // 序号
+	Level_id   int32   `json:"level_id"`   // 关卡id
+	Monster_id []int32 `json:"monster_id"` // 怪物id
+	Brush_time int32   `json:"brush_time"` // 刷新cd
 }
 
 // MazePatrolV8Config from maze_patrol_v8【迷宫-巡逻守卫】.xlsx maze_patrol_v8
@@ -55,7 +53,7 @@ func (c *MazePatrolV8Config) Get(configId int32) *MazePatrolV8ConfigRow {
 }
 
 // GetAllMazePatrolV8Config get all config slice
-func (c *MazePatrolV8Config)  GetAllMazePatrolV8Config () (res []*MazePatrolV8ConfigRow) {
+func (c *MazePatrolV8Config) GetAllMazePatrolV8Config() (res []*MazePatrolV8ConfigRow) {
 	// c.lock.RLock()
 	// defer c.lock.RUnlock()
 	for _, val := range c.ConfigRows {
@@ -65,7 +63,7 @@ func (c *MazePatrolV8Config)  GetAllMazePatrolV8Config () (res []*MazePatrolV8Co
 }
 
 // GetAll get all config slice
-func (c *MazePatrolV8Config)  GetAll() (res []*MazePatrolV8ConfigRow) {
+func (c *MazePatrolV8Config) GetAll() (res []*MazePatrolV8ConfigRow) {
 	// c.lock.RLock()
 	// defer c.lock.RUnlock()
 	for _, val := range c.ConfigRows {
@@ -74,9 +72,8 @@ func (c *MazePatrolV8Config)  GetAll() (res []*MazePatrolV8ConfigRow) {
 	return
 }
 
-
-// global config pointer 
-var gConfigData *MazePatrolV8Config 
+// global config pointer
+var gConfigData *MazePatrolV8Config
 
 // GetMazePatrolV8Config pkg func. get one config by configId
 func GetMazePatrolV8Config(configId int32) *MazePatrolV8ConfigRow {
@@ -89,8 +86,8 @@ func Get(configId int32) *MazePatrolV8ConfigRow {
 }
 
 // GetAllMazePatrolV8Config pkg func. get all config slice
-func GetAllMazePatrolV8Config () []*MazePatrolV8ConfigRow {
-	return gConfigData.GetAllMazePatrolV8Config ()
+func GetAllMazePatrolV8Config() []*MazePatrolV8ConfigRow {
+	return gConfigData.GetAllMazePatrolV8Config()
 }
 
 // GetAll pkg func. get all config slice
@@ -99,17 +96,17 @@ func GetAll() []*MazePatrolV8ConfigRow {
 }
 
 // ConfigRows get raw map data
-func ConfigRows() map[int32]*MazePatrolV8ConfigRow{
+func ConfigRows() map[int32]*MazePatrolV8ConfigRow {
 	return gConfigData.ConfigRows
 }
 
 // GetConfigDesc get config desc for lod,debug etc.
-func GetConfigDesc() string{
+func GetConfigDesc() string {
 	return "MazePatrolV8ConfigRow from maze_patrol_v8【迷宫-巡逻守卫】.xlsx maze_patrol_v8"
 }
 
 // GetRawValue get raw data
-func GetRawValue() *MazePatrolV8Config{
+func GetRawValue() *MazePatrolV8Config {
 	return gConfigData
 }
 
@@ -119,10 +116,10 @@ func SheetName() string {
 }
 
 func init() {
-	// reg config auto load 
-	config_manager.RegAutoConfig("maze_patrol_v8.json", 
+	// reg config auto load
+	config_manager.RegAutoConfig("maze_patrol_v8.json",
 		"maze_patrol_v8【迷宫-巡逻守卫】.xlsx", "maze_patrol_v8",
-	 	&gMazePatrolV8Parser{}, &gMazePatrolV8Loader{})
+		&gMazePatrolV8Parser{}, &gMazePatrolV8Loader{})
 }
 
 // data update call back
@@ -150,32 +147,35 @@ var cfgCheckCallBack sync.Map //map[string]func(*MazePatrolV8Config)error
 // doConfigCheckCallback do config check callback
 func doConfigCheckCallback(c *MazePatrolV8Config) (err error) {
 	cfgCheckCallBack.Range(func(key, value interface{}) bool {
-		err := value.(func(*MazePatrolV8Config)error)(c)
+		err := value.(func(*MazePatrolV8Config) error)(c)
 		return err == nil
 	})
-	return 
+	return
 }
 
 // RegisterLoadedCallBack reg config update func.
-func RegisterConfigCheck(key string, f func(*MazePatrolV8Config)error) {
+func RegisterConfigCheck(key string, f func(*MazePatrolV8Config) error) {
 	cfgCheckCallBack.Store(key, f)
 }
 
 // implete ConfigLoader interface
 type gMazePatrolV8Loader struct {
 }
+
 // NewContainer new data container pointer
-func (*gMazePatrolV8Loader) NewContainer() interface{}{
+func (*gMazePatrolV8Loader) NewContainer() interface{} {
 	return newConfig()
 }
+
 // Check check new config data ptr
-func (*gMazePatrolV8Loader) Check(newPtr interface{})error{
+func (*gMazePatrolV8Loader) Check(newPtr interface{}) error {
 	// set global ptr
 	cfgData := newPtr.(*MazePatrolV8Config)
 	return doConfigCheckCallback(cfgData)
 }
+
 // Swap swap global config data ptr
-func (*gMazePatrolV8Loader) Swap(newPtr interface{}){
+func (*gMazePatrolV8Loader) Swap(newPtr interface{}) {
 	// convert pointer
 	cache := newPtr.(*MazePatrolV8Config)
 	// update second edit
@@ -183,45 +183,48 @@ func (*gMazePatrolV8Loader) Swap(newPtr interface{}){
 	// set global ptr
 	atomic.StorePointer((*unsafe.Pointer)(unsafe.Pointer(&gConfigData)), unsafe.Pointer(cache))
 }
+
 // Add append config item to map,save result
-func (*gMazePatrolV8Loader) Add(logger fklog.FKLogI,container interface{}, ri interface{})(err error) {
-	row,ok := ri.(*MazePatrolV8ConfigRow)
+func (*gMazePatrolV8Loader) Add(logger fklog.FKLogI, container interface{}, ri interface{}) (err error) {
+	row, ok := ri.(*MazePatrolV8ConfigRow)
 	if !ok {
 		err = errors.New("invalid type. not *MazePatrolV8ConfigRow")
 		logger.ErrorWF("invalid type. not *MazePatrolV8ConfigRow", zap.String("xlsx", "maze_patrol_v8【迷宫-巡逻守卫】.xlsx"),
 			zap.String("sheet", "maze_patrol_v8"))
-		return 
+		return
 	}
-	config,ok := container.(*MazePatrolV8Config)
+	config, ok := container.(*MazePatrolV8Config)
 	if !ok {
 		err = errors.New("invalid type. not *MazePatrolV8Config")
 		logger.ErrorWF("invalid type. not *MazePatrolV8Config", zap.String("xlsx", "maze_patrol_v8【迷宫-巡逻守卫】.xlsx"),
 			zap.String("sheet", "maze_patrol_v8"))
-		return 
+		return
 	}
 	config.ConfigRows[row.Order] = row
 	return
 }
+
 // GetValue get real map value for json parse
-func (*gMazePatrolV8Loader) GetValue(logger fklog.FKLogI,container interface{})(real interface{},err error) {
-	config,ok := container.(*MazePatrolV8Config)
+func (*gMazePatrolV8Loader) GetValue(logger fklog.FKLogI, container interface{}) (real interface{}, err error) {
+	config, ok := container.(*MazePatrolV8Config)
 	if !ok {
 		err = errors.New("invalid type. not *MazePatrolV8Config")
 		logger.ErrorWF("invalid type. not *MazePatrolV8Config", zap.String("xlsx", "maze_patrol_v8【迷宫-巡逻守卫】.xlsx"),
 			zap.String("sheet", "maze_patrol_v8"))
-		return 
+		return
 	}
 	real = &config.ConfigRows
 	return
 }
+
 // Range range all data for json append data parse.
-func (*gMazePatrolV8Loader) Range(logger fklog.FKLogI, container interface{}, rf func(row interface{}) error) (err error){
-	config,ok := container.(*MazePatrolV8Config)
+func (*gMazePatrolV8Loader) Range(logger fklog.FKLogI, container interface{}, rf func(row interface{}) error) (err error) {
+	config, ok := container.(*MazePatrolV8Config)
 	if !ok {
 		err = errors.New("invalid type. not *MazePatrolV8Config")
 		logger.ErrorWF("invalid type. not *MazePatrolV8Config", zap.String("xlsx", "maze_patrol_v8【迷宫-巡逻守卫】.xlsx"),
 			zap.String("sheet", "maze_patrol_v8"))
-		return 
+		return
 	}
 	for _, row := range config.ConfigRows {
 		err = rf(row)
@@ -232,10 +235,10 @@ func (*gMazePatrolV8Loader) Range(logger fklog.FKLogI, container interface{}, rf
 	return
 }
 
-
 // implete ConfigParser interface
 type gMazePatrolV8Parser struct {
 }
+
 // New new config row data
 func (*gMazePatrolV8Parser) New() interface{} {
 	return &MazePatrolV8ConfigRow{}
@@ -245,68 +248,69 @@ func (*gMazePatrolV8Parser) New() interface{} {
 func (*gMazePatrolV8Parser) Fields() []string {
 	return gMazePatrolV8Fields
 }
+
 // Parse parse raw data to row data
-func (*gMazePatrolV8Parser) Parse(logger fklog.FKLogI,data []string, row interface{}) (err error) {
+func (*gMazePatrolV8Parser) Parse(logger fklog.FKLogI, data []string, row interface{}) (err error) {
 	// convert row type
-	config,ok := row.(*MazePatrolV8ConfigRow)
+	config, ok := row.(*MazePatrolV8ConfigRow)
 	if !ok {
 		err = errors.New("invalid type. not *MazePatrolV8ConfigRow")
 		logger.ErrorWF("invalid type. not *MazePatrolV8ConfigRow", zap.String("xlsx", "maze_patrol_v8【迷宫-巡逻守卫】.xlsx"),
 			zap.String("sheet", "maze_patrol_v8"))
-		return 
+		return
 	}
 	// compare length
 	if len(data) != len(gMazePatrolV8Fields) {
 		err = errors.New("fields count not match.")
-		logger.ErrorWF("invalid type. not *map[int32]*MazePatrolV8ConfigRow", 
+		logger.ErrorWF("invalid type. not *map[int32]*MazePatrolV8ConfigRow",
 			zap.String("xlsx", "maze_patrol_v8【迷宫-巡逻守卫】.xlsx"),
-			zap.String("sheet", "maze_patrol_v8"), zap.Int("need_count",len(gMazePatrolV8Fields)), 
-			zap.Int("had_count",len(data)))
+			zap.String("sheet", "maze_patrol_v8"), zap.Int("need_count", len(gMazePatrolV8Fields)),
+			zap.Int("had_count", len(data)))
 		return
 	}
 
 	var tmp int64
 
-	// parse column 0 order : 序号 
+	// parse column 0 order : 序号
 	if data[0] != "" {
-		tmp,err = strconv.ParseInt(data[0],10,64)
+		tmp, err = strconv.ParseInt(data[0], 10, 64)
 		if err != nil {
 			err = errors.New("parse field order 序号 to int32 failed")
-			logger.ErrorWF("parse field order 序号 to int32 failed.", 
-				zap.String("xlsx", "maze_patrol_v8【迷宫-巡逻守卫】.xlsx"), zap.String("sheet", "maze_patrol_v8"), 
-				zap.String("parse_data",data[0]), 
+			logger.ErrorWF("parse field order 序号 to int32 failed.",
+				zap.String("xlsx", "maze_patrol_v8【迷宫-巡逻守卫】.xlsx"), zap.String("sheet", "maze_patrol_v8"),
+				zap.String("parse_data", data[0]),
 				zap.Error(err))
 			return
 		}
 		config.Order = int32(tmp)
 	}
 
-	// parse column 1 level_id : 关卡id 
+	// parse column 1 level_id : 关卡id
 	if data[1] != "" {
-		tmp,err = strconv.ParseInt(data[1],10,64)
+		tmp, err = strconv.ParseInt(data[1], 10, 64)
 		if err != nil {
 			err = errors.New("parse field level_id 关卡id to int32 failed")
-			logger.ErrorWF("parse field level_id 关卡id to int32 failed.", 
-				zap.String("xlsx", "maze_patrol_v8【迷宫-巡逻守卫】.xlsx"), zap.String("sheet", "maze_patrol_v8"), 
-				zap.String("parse_data",data[1]), 
+			logger.ErrorWF("parse field level_id 关卡id to int32 failed.",
+				zap.String("xlsx", "maze_patrol_v8【迷宫-巡逻守卫】.xlsx"), zap.String("sheet", "maze_patrol_v8"),
+				zap.String("parse_data", data[1]),
 				zap.Error(err))
 			return
 		}
 		config.Level_id = int32(tmp)
 	}
 
-	// parse column 2 monster_id : 怪物id 
+	// parse column 2 monster_id : 怪物id
 	if data[2] != "" {
-    
-		vals := strings.Split(data[2],",")
-		for k,v := range vals {
-			tmp,err = strconv.ParseInt(v,10,64)
+
+		vals := strings.Split(data[2], ",")
+		for k, v := range vals {
+			tmp, err = strconv.ParseInt(v, 10, 64)
 			if err != nil {
 				err = errors.New("parse array field monster_id 怪物id to []int32 failed")
-				logger.ErrorWF("parse array field monster_id 怪物id to []int32 failed.", 
-					zap.String("xlsx", "maze_patrol_v8【迷宫-巡逻守卫】.xlsx"), zap.String("sheet", "maze_patrol_v8"), 
-					// zap.String("field_data",data[2]), 
-					zap.String("parse_data", v),zap.Int("index", k),
+				logger.ErrorWF("parse array field monster_id 怪物id to []int32 failed.",
+					zap.String("xlsx", "maze_patrol_v8【迷宫-巡逻守卫】.xlsx"), zap.String("sheet", "maze_patrol_v8"),
+					// zap.String("field_data",data[2]),
+					zap.String("parse_data", v), zap.Int("index", k),
 					zap.Error(err))
 				return
 			}
@@ -314,14 +318,14 @@ func (*gMazePatrolV8Parser) Parse(logger fklog.FKLogI,data []string, row interfa
 		}
 	}
 
-	// parse column 3 brush_time : 刷新cd 
+	// parse column 3 brush_time : 刷新cd
 	if data[3] != "" {
-		tmp,err = strconv.ParseInt(data[3],10,64)
+		tmp, err = strconv.ParseInt(data[3], 10, 64)
 		if err != nil {
 			err = errors.New("parse field brush_time 刷新cd to int32 failed")
-			logger.ErrorWF("parse field brush_time 刷新cd to int32 failed.", 
-				zap.String("xlsx", "maze_patrol_v8【迷宫-巡逻守卫】.xlsx"), zap.String("sheet", "maze_patrol_v8"), 
-				zap.String("parse_data",data[3]), 
+			logger.ErrorWF("parse field brush_time 刷新cd to int32 failed.",
+				zap.String("xlsx", "maze_patrol_v8【迷宫-巡逻守卫】.xlsx"), zap.String("sheet", "maze_patrol_v8"),
+				zap.String("parse_data", data[3]),
 				zap.Error(err))
 			return
 		}
@@ -331,18 +335,18 @@ func (*gMazePatrolV8Parser) Parse(logger fklog.FKLogI,data []string, row interfa
 }
 
 var gMazePatrolV8Fields = []string{
-    "order",
-    "level_id",
-    "monster_id",
-    "brush_time",
+	"order",
+	"level_id",
+	"monster_id",
+	"brush_time",
 }
 
 // LoadDataManual load data for test
-func LoadDataManual(logger fklog.FKLogI, load func(file, sheet string, fields []string) ([][]string,error)) (err error) {
+func LoadDataManual(logger fklog.FKLogI, load func(file, sheet string, fields []string) ([][]string, error)) (err error) {
 	parser := &gMazePatrolV8Parser{}
 	loader := &gMazePatrolV8Loader{}
 	var data [][]string
-	data,err = load("maze_patrol_v8【迷宫-巡逻守卫】.xlsx", "maze_patrol_v8", gMazePatrolV8Fields)
+	data, err = load("maze_patrol_v8【迷宫-巡逻守卫】.xlsx", "maze_patrol_v8", gMazePatrolV8Fields)
 	if err != nil {
 		logger.ErrorWF("load maze_patrol_v8【迷宫-巡逻守卫】.xlsx maze_patrol_v8 data failed.", zap.Error(err))
 		return
