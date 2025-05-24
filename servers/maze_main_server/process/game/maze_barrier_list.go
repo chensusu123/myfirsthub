@@ -128,13 +128,11 @@ func OnMazeBarrierListRQ(logger fknet.TCPContext, shardingID uint64, rqMsg proto
 	}
 
 	// 检查固定关卡
-	if userInfo.Barrier == 0 {
-		fixedBarrierId, err := mazefixedbarrierredis.GetUserFixedBarrierID(logger, userId)
-		if err != nil {
-			logger.ErrorWF("OnMazeBarrierListRQ GetUserFixedBarrierID failed", zap.Error(err), zap.Uint64("userId", userId))
-		} else if fixedBarrierId > 0 {
-			currBarrier = fixedBarrierId
-		}
+	fixedBarrierId, err := mazefixedbarrierredis.GetUserFixedBarrierID(logger, userId)
+	if err != nil {
+		logger.ErrorWF("OnMazeBarrierListRQ GetUserFixedBarrierID failed", zap.Error(err), zap.Uint64("userId", userId))
+	} else if fixedBarrierId > 0 && currBarrier < fixedBarrierId {
+		currBarrier = fixedBarrierId
 	}
 
 	index := currBarrier
