@@ -29,12 +29,13 @@ var (
 
 var (
 	MazeBuffSrcDescMap = map[int32]string{
-		constdef.MazeBuffSrcEquip:     "迷宫装备",
-		constdef.MazeBuffSrcLv:        "迷宫等级",
-		constdef.MazeBuffSrcMonthCard: "迷宫月卡",
-		constdef.MazeBuffSrcOldBC:     "旧buff中心",
-		constdef.MazeBuffSrcInit:      "初始化属性",
-		constdef.MazeBuffSrcEquipPos:  "装备位强化",
+		constdef.MazeBuffSrcEquip:           "迷宫装备",
+		constdef.MazeBuffSrcLv:              "迷宫等级",
+		constdef.MazeBuffSrcMonthCard:       "迷宫月卡",
+		constdef.MazeBuffSrcOldBC:           "旧buff中心",
+		constdef.MazeBuffSrcInit:            "初始化属性",
+		constdef.MazeBuffSrcEquipPos:        "装备位强化",
+		constdef.MazeBuffSrcSelectBuffForce: "三选一buff加武力",
 	}
 
 	EquipSuitAttrMap = map[int32]string{
