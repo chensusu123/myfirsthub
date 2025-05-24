@@ -133,6 +133,7 @@ func OnMazeBarrierListRQ(logger fknet.TCPContext, shardingID uint64, rqMsg proto
 		logger.ErrorWF("OnMazeBarrierListRQ GetUserFixedBarrierID failed", zap.Error(err), zap.Uint64("userId", userId))
 	} else if fixedBarrierId > 0 && currBarrier < fixedBarrierId {
 		currBarrier = fixedBarrierId
+		logger.WarnWF("Fix current barrier", zap.Uint64("userId", userId), zap.Int32("currBarrier", currBarrier))
 	}
 
 	index := currBarrier
