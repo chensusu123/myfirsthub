@@ -84,7 +84,7 @@ func RegGm(logger fklog.FKLogI) {
 	gm.SafeHttpRegister(logger, "/SetBarrier", func(writer http.ResponseWriter, request *http.Request) {
 		var params SetBarrierParams
 
-		err := form.Decode(&params, request.PostForm)
+		err := form.Decode(&params, request.Form)
 		if err != nil {
 			writer.Write([]byte("参数不正确"))
 			return
