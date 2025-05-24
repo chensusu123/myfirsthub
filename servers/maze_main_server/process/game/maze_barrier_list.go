@@ -15,6 +15,7 @@ import (
 	"gitlab.ifreetalk.com/maze/maze_game_server/config/GMazeBarriesV8Cfg"
 	"gitlab.ifreetalk.com/maze/maze_game_server/config/GMazeConfigV8Cfg"
 	"gitlab.ifreetalk.com/maze/maze_game_server/io/redis/mazechallengenumredis"
+	"gitlab.ifreetalk.com/maze/maze_game_server/io/redis/mazefixedbarrierredis"
 	"gitlab.ifreetalk.com/maze/maze_game_server/io/redis/mazeuserbarrierredis"
 	"gitlab.ifreetalk.com/maze/maze_game_server/module/mazeuserinfo"
 
@@ -123,6 +124,16 @@ func OnMazeBarrierListRQ(logger fknet.TCPContext, shardingID uint64, rqMsg proto
 		cfg := GMazeBarriesV8Cfg.Get(userInfo.Barrier)
 		if cfg != nil {
 			currBarrier = cfg.Next_id
+		}
+	}
+
+	// 检查固定关卡
+	if userInfo.Barrier == 0 {
+		fixedBarrierId, err := mazefixedbarrierredis.GetUserFixedBarrierID(logger, userId)
+		if err != nil {
+			logger.ErrorWF("OnMazeBarrierListRQ GetUserFixedBarrierID failed", zap.Error(err), zap.Uint64("userId", userId))
+		} else if fixedBarrierId > 0 {
+			currBarrier = fixedBarrierId
 		}
 	}
 
