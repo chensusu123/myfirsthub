@@ -45,10 +45,15 @@ func SelectMazeTempBuffRQ(logger fknet.TCPContext, shardingID uint64, request, r
 			zap.Duration("costTime", time.Now().Sub(start)))
 	}()
 
-	userId, stageId, level, buffId := shardingID, req.GetStageId(), req.GetLevel(), req.GetBuffId()
+	userId, stageId, level, buffId, buffType := shardingID, req.GetStageId(), req.GetLevel(), req.GetBuffId(), int32(req.GetType())
 	if userId == 0 || stageId == 0 || level == 0 || buffId == 0 {
 		logger.WarnWF("SelectMazeTempBuffRQ args error", zap.Any("req", req))
 		res.ErrInfo = errors.COMMON_ERROR_TIPS.Wrap("参数错误")
+		return nil
+	}
+	if buffType != int32(MazeTempBuff.Type_UP_LEVEL) && buffType != int32(MazeTempBuff.Type_USE_ITEM) {
+		logger.ErrorWF("SelectMazeTempBuffRQ buffType args error", zap.Any("req", req))
+		res.ErrInfo = errors.COMMON_ERROR_TIPS.Wrap("buff类型参数错误")
 		return nil
 	}
 
@@ -73,7 +78,7 @@ func SelectMazeTempBuffRQ(logger fknet.TCPContext, shardingID uint64, request, r
 		return nil
 	}
 
-	err = updateBuffInfo(logger, userId, stageId, level, buffId, buffInfo)
+	err = updateBuffInfo(logger, userId, stageId, level, buffId, buffType, buffInfo)
 	if err != nil {
 		logger.ErrorWF("SelectMazeTempBuffRQ updateBuffInfo failed", zap.Error(err))
 		return err
@@ -102,7 +107,7 @@ func checkSelectBuff(logger fklog.FKLogI, level, buffId int32, buffInfo *MazeTem
 	return false
 }
 
-func updateBuffInfo(logger fklog.FKLogI, userId uint64, stageId, level, buffId int32,
+func updateBuffInfo(logger fklog.FKLogI, userId uint64, stageId, level, buffId, buffType int32,
 	buffInfo *MazeTempBuffSvr.TempBuffInfo) error {
 	buffInfo.BuffSequence = &MazeTempBuffSvr.BuffSequence{
 		Index: proto.Int32(level),
@@ -111,6 +116,7 @@ func updateBuffInfo(logger fklog.FKLogI, userId uint64, stageId, level, buffId i
 	buffInfo.SelectedBuff = append(buffInfo.SelectedBuff, &MazeTempBuffSvr.SelectedBuffInfo{
 		BuffId: proto.Int32(buffId),
 		Level:  proto.Int32(level),
+		Type:   proto.Int32(buffType),
 	})
 
 	var totalMap map[int32]int64
@@ -155,7 +161,7 @@ func updateBuffInfo(logger fklog.FKLogI, userId uint64, stageId, level, buffId i
 	}
 	attrDb := &MazeBuffData.MazeBuffDb{
 		MazeRealBuffs: PackMazeBuff(forceAttr),
-		// MazeShowBuffs: PackMazeBuff(showBuff),
+		// MazeShowBuffs: PackMazeBuff(showBuff), // todo 现在暂时没有展示武力值
 	}
 
 	err = mazebuffinforedis.SaveMazeBuffInfo(logger, userId, constdef.MazeBuffSrcSelectBuffForce, attrDb)
