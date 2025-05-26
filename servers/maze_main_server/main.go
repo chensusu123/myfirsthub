@@ -1,12 +1,11 @@
 package main
 
 import (
-	"github.com/lonng/nano"
-	"github.com/lonng/nano/serialize/json"
-	"gitlab.ifreetalk.com/maze-plate/freetk/fkserver"
 	"maze_game_server/servers/maze_main_server/process"
 	"maze_game_server/usecase/business"
 	"maze_game_server/usecase/tasktimer"
+
+	"gitlab.ifreetalk.com/maze-plate/freetk/fkserver"
 )
 
 // 19987	UN_CGK_SVR_TYPE_MAZE_MAIN_SERVER 小程序版迷宫主服务
@@ -14,17 +13,7 @@ func main() {
 	fkserver.SetMonitorName(fkserver.GroupNameGO, fkserver.ProjectNamePPWD, "maze_main_server")
 	// process.RegisterHandler()
 
-	// Nano
-	func() {
-		nano.Listen(":5997",
-			nano.WithDebugMode(),
-			nano.WithIsWebsocket(true),
-			// nano.WithSerializer(protobuf.NewSerializer()),
-			nano.WithSerializer(json.NewSerializer()),
-			nano.WithComponents(process.Components()),
-		)
-	}()
-
+	process.RegisterHandler()
 	fkserver.AddBusiness(&business.GCustomBusiness)
 	fkserver.AddBusiness(tasktimer.GTaskTimerBusiness)
 	fkserver.Run()

@@ -19,9 +19,10 @@ require (
 	github.com/samber/slog-zap/v2 v2.6.2
 	github.com/xuri/excelize/v2 v2.9.0
 	gitlab.ifreetalk.com/maze-plate/extra v1.0.1-0.20250401060651-722653168d37
-	gitlab.ifreetalk.com/maze-plate/freetk v1.0.1-0.20250523054256-1f7cfd835254
+	gitlab.ifreetalk.com/maze-plate/freetk v1.0.1-0.20250526125553-dee913564883
 	go.uber.org/atomic v1.9.0
 	go.uber.org/zap v1.27.0
+	google.golang.org/protobuf v1.33.0
 )
 
 require (
@@ -83,7 +84,6 @@ require (
 	golang.org/x/text v0.19.0 // indirect
 	google.golang.org/genproto/googleapis/rpc v0.0.0-20240318140521-94a12d6c2237 // indirect
 	google.golang.org/grpc v1.64.0 // indirect
-	google.golang.org/protobuf v1.33.0 // indirect
 	gopkg.in/fsnotify.v1 v1.4.7 // indirect
 	gopkg.in/tomb.v1 v1.0.0-20141024135613-dd632973f1e7 // indirect
 	gopkg.in/yaml.v2 v2.4.0 // indirect
@@ -91,4 +91,4 @@ require (
 
 //replace gitlab.ifreetalk.com/maze-plate/excel => gitlab.ifreetalk.com/maze-plate/excel v1.0.83-0.20250506053436-ef2c9ea111c0
 
-//replace gitlab.ifreetalk.com/maze-plate/freetk v1.2.61 => /Users/majiange/data/dev/go_work/go_plate/src/gitlab.ifreetalk.com/maze-plate/freetk
+//replace gitlab.ifreetalk.com/maze-plate/freetk => /Users/majiange/data/dev/go_work/maze/maze-plate/freetk
