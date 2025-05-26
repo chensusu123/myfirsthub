@@ -40,6 +40,7 @@ func SelectMazeTempBuffRQ(logger fknet.TCPContext, shardingID uint64, request, r
 	res.Header = req.Header
 	res.StageId = req.StageId
 	res.Level = req.Level
+	req.Type = res.Type
 	defer func() {
 		logger.InfoWF("SelectMazeTempBuffRQ end", zap.Any("req", req), zap.Any("res", res),
 			zap.Duration("costTime", time.Now().Sub(start)))
