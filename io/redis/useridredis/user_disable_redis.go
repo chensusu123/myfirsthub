@@ -44,14 +44,16 @@ func Generate(logger fklog.FKLogI) uint64 {
 		logger.ErrorWF("Generate error", zap.Error(err))
 		return 0
 	}
+
 	if userId <= maxUserID {
 		begin := gRegionID * maxUserID
 		gRedis.Do(context.TODO(), "SET", key, begin)
+		userId, err = redis.Int64(gRedis.Do(context.TODO(), "INCR", key))
+		if err != nil {
+			logger.ErrorWF("Generate error", zap.Error(err))
+			return 0
+		}
 	}
-	userId, err = redis.Int64(gRedis.Do(context.TODO(), "INCR", key))
-	if err != nil {
-		logger.ErrorWF("Generate error", zap.Error(err))
-		return 0
-	}
+
 	return uint64(userId)
 }
