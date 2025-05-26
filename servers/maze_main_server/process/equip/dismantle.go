@@ -11,6 +11,7 @@ import (
 	"gitlab.ifreetalk.com/maze-plate/freetk/fkserver"
 	"go.uber.org/zap"
 	"maze_game_server/common/constdef"
+	"maze_game_server/common/errors"
 	"maze_game_server/common/function/gentradeno"
 	"maze_game_server/common/function/itemutil"
 	"maze_game_server/common/function/uniqueid"
@@ -20,7 +21,6 @@ import (
 	"maze_game_server/io/redis/dollassemblesuitredis"
 	"maze_game_server/io/redis/mazebagequipredis"
 	"maze_game_server/pb/common/MazeGameEquip"
-	"maze_game_server/pb/errors"
 	"maze_game_server/pb/server/MazeEquipSvr"
 )
 

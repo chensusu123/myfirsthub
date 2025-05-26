@@ -7,6 +7,7 @@ import (
 	"gitlab.ifreetalk.com/maze-plate/freetk/fkserver"
 	"go.uber.org/zap"
 	"maze_game_server/common/constdef"
+	"maze_game_server/common/errors"
 	"maze_game_server/common/function/packtopb"
 	"maze_game_server/common/function/packtopb/equipsuittopb"
 	"maze_game_server/config/GMazeEquipInfoV8Cfg"
@@ -15,7 +16,6 @@ import (
 	"maze_game_server/module/dollassembleinfo"
 	"maze_game_server/module/effectequip"
 	"maze_game_server/pb/common/MazeGameEquip"
-	"maze_game_server/pb/errors"
 	"maze_game_server/pb/server/MazeEquipCache"
 	"maze_game_server/servers/maze_main_server/process/equip/module"
 )

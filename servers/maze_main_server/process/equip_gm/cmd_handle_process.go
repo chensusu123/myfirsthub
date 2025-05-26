@@ -7,9 +7,9 @@ import (
 	"gitlab.ifreetalk.com/maze-plate/freetk/fkserver"
 	"gitlab.ifreetalk.com/maze-plate/freetk/fkutil"
 	"go.uber.org/zap"
+	"maze_game_server/common/errors"
 	"maze_game_server/lib/net/websocket_service"
 	"maze_game_server/pb/common/MazeGameEquip"
-	"maze_game_server/pb/errors"
 	"maze_game_server/servers/maze_main_server/process/equip_gm/resetequipcmd"
 )
 

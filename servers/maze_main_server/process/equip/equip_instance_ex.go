@@ -15,6 +15,7 @@ import (
 	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fklog"
 	"gitlab.ifreetalk.com/maze-plate/freetk/fkutil"
 	"go.uber.org/zap"
+	"maze_game_server/common/errors"
 	"maze_game_server/common/function/randfuncs"
 	"maze_game_server/config/GMazeEquipAffixLimitV8Cfg"
 	"maze_game_server/config/GMazeEquipAffixRandPoolV8Cfg"
@@ -26,7 +27,6 @@ import (
 	"maze_game_server/excel/mazeequipaffixrolltypev8"
 	"maze_game_server/io/kafka/mazeequipinstancerecord"
 	"maze_game_server/pb/common/MazeGameEquip"
-	"maze_game_server/pb/errors"
 	"maze_game_server/pb/server/MazeEquipCache"
 	"maze_game_server/pb/server/MazeEquipSvr"
 )

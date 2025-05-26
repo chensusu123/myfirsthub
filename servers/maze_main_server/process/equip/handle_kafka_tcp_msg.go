@@ -14,7 +14,7 @@ import (
 	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fkprometheus"
 	"gitlab.ifreetalk.com/maze-plate/freetk/fkserver"
 	"go.uber.org/zap"
-	"maze_game_server/pb/errors"
+	"maze_game_server/common/errors"
 	"maze_game_server/pb/server/KafkaMsgNotify"
 )
 

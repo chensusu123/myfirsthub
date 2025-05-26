@@ -4,11 +4,11 @@ import (
 	"gitlab.ifreetalk.com/maze-plate/extra/protobuf/proto"
 	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fknet"
 	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fkprometheus"
+	"maze_game_server/common/errors"
 	"maze_game_server/config/GMazeEquipPosLvV8Cfg"
 	"maze_game_server/pb/common/Common"
 	"maze_game_server/pb/common/MazeEquipPos"
 	"maze_game_server/pb/common/MazeGameEquip"
-	"maze_game_server/pb/errors"
 	"maze_game_server/pb/server/MazeEquipCache"
 
 	"go.uber.org/zap"

@@ -11,6 +11,7 @@ import (
 
 	"gitlab.ifreetalk.com/maze-plate/extra/protobuf/proto"
 	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fklog"
+	"maze_game_server/common/errors"
 	"maze_game_server/common/function/packtopb"
 	"maze_game_server/common/function/uniqueid"
 	"maze_game_server/config/GMazeEquipInfoV8Cfg"
@@ -18,7 +19,6 @@ import (
 	"maze_game_server/io/rpc/dollequipbagrpc"
 	"maze_game_server/module/effectequip"
 	"maze_game_server/pb/common/MazeGameEquip"
-	"maze_game_server/pb/errors"
 	"maze_game_server/pb/server/MazeEquipSvr"
 )
 

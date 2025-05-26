@@ -4,10 +4,10 @@ import (
 	"gitlab.ifreetalk.com/maze-plate/extra/protobuf/proto"
 	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fklog"
 	"go.uber.org/zap"
+	"maze_game_server/common/errors"
 	"maze_game_server/config/GMazeEquipAffixRandPoolV8Cfg"
 	"maze_game_server/config/GMazeEquipAffixRollTypeV8Cfg"
 	"maze_game_server/io/redis/mazebagequipredis"
-	"maze_game_server/pb/errors"
 	"maze_game_server/pb/server/MazeEquipCache"
 	"maze_game_server/servers/maze_main_server/process/equip"
 )

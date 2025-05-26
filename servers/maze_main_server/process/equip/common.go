@@ -7,12 +7,12 @@ import (
 	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fklog"
 	"go.uber.org/zap"
 	"maze_game_server/common/constdef"
+	"maze_game_server/common/errors"
 	"maze_game_server/common/function/grouplock"
 	"maze_game_server/config/GMazeEquipSuiteInfoV8Cfg"
 	"maze_game_server/excel/mazeequipaffixrandpoolv8"
 	"maze_game_server/pb/common/MazeGameEquip"
 	"maze_game_server/pb/common/MessageType"
-	"maze_game_server/pb/errors"
 	"maze_game_server/pb/server/MazeEquipSvr"
 	"maze_game_server/usecase/mustarrive"
 )

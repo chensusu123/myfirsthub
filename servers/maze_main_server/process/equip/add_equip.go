@@ -19,6 +19,7 @@ import (
 	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fklog"
 	"gitlab.ifreetalk.com/maze-plate/freetk/fkserver"
 	"go.uber.org/zap"
+	"maze_game_server/common/errors"
 	"maze_game_server/common/function/packtopb"
 	"maze_game_server/excel/mazeequipaffixrandpoolv8"
 	"maze_game_server/excel/mazeequipconfigv8"
@@ -28,7 +29,6 @@ import (
 	"maze_game_server/io/redis/mazeequipguidredis"
 	"maze_game_server/module/bagmodule"
 	"maze_game_server/pb/common/MazeGameEquip"
-	"maze_game_server/pb/errors"
 )
 
 func OnSvrAddMazeEquipRQ(ctx fklog.FKLogI, shardingID int64, rqMsg proto.Message, rsMsg proto.Message) (err error) {
