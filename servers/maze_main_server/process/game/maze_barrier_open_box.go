@@ -31,6 +31,7 @@ func OnBarrierOpenBoxRQ(logger fknet.TCPContext, shardingID uint64, rqMsg proto.
 	res.ErrInfo = errors.NO_ERROR
 	res.BarrierId = req.BarrierId
 	res.BoxId = req.BoxId
+	res.MapDataUid = req.MapDataUid
 
 	userId := shardingID
 

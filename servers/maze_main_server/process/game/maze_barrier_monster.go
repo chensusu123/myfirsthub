@@ -30,6 +30,7 @@ func OnBarrierMonsterDeathRQ(logger fknet.TCPContext, shardingID uint64, rqMsg p
 	res.ErrInfo = errors.NO_ERROR
 	res.BarrierId = req.BarrierId
 	res.MonsterId = req.MonsterId
+	res.MapDataUid = req.MapDataUid
 
 	userId := shardingID
 
