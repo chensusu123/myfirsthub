@@ -3,8 +3,8 @@ package raw_pkg
 import (
 	"encoding/binary"
 
-	"gitlab.ifreetalk.com/maze/maze_game_server/lib/net/raw_pkg/tea"
 	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fknet/fkpkg"
+	"maze_game_server/lib/net/raw_pkg/tea"
 )
 
 const TeaEncryption = 1

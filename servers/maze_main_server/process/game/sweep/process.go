@@ -3,8 +3,8 @@
 package sweep
 
 import (
-	"gitlab.ifreetalk.com/maze/maze_game_server/lib/net/websocket_service"
-	"gitlab.ifreetalk.com/maze-plate/protodef/MazeGame"
+	"maze_game_server/lib/net/websocket_service"
+	"maze_game_server/pb/common/MazeGame"
 )
 
 func RegTcpHandler() {

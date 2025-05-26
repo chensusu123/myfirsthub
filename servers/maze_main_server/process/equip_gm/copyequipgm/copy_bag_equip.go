@@ -2,12 +2,12 @@ package copyequipgm
 
 import (
 	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fklog"
-	"gitlab.ifreetalk.com/maze-plate/protodef/MazeEquipCache"
 	"go.uber.org/zap"
-	"gitlab.ifreetalk.com/maze/maze_game_server/io/redis/mazebagequipredis"
-	"gitlab.ifreetalk.com/maze/maze_game_server/io/redis/mazeequipgetnumredis"
-	"gitlab.ifreetalk.com/maze/maze_game_server/io/redis/mazeequipguidredis"
-	"gitlab.ifreetalk.com/maze/maze_game_server/servers/maze_main_server/process/equip_gm/copyequipgm/copyinterface"
+	"maze_game_server/io/redis/mazebagequipredis"
+	"maze_game_server/io/redis/mazeequipgetnumredis"
+	"maze_game_server/io/redis/mazeequipguidredis"
+	"maze_game_server/pb/server/MazeEquipCache"
+	"maze_game_server/servers/maze_main_server/process/equip_gm/copyequipgm/copyinterface"
 )
 
 func CopyBagEquipData(logger fklog.FKLogI, srcUserId uint64, dstUsers []uint64, param copyinterface.CopyParam) error {

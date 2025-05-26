@@ -2,10 +2,10 @@ package game
 
 import (
 	"github.com/lonng/nano/component"
-	"gitlab.ifreetalk.com/maze-plate/protodef/MazeGame"
-	"gitlab.ifreetalk.com/maze/maze_game_server/io/kafka/mazeattrmsg"
-	"gitlab.ifreetalk.com/maze/maze_game_server/io/kafka/mazetempbuffchgmsg"
-	"gitlab.ifreetalk.com/maze/maze_game_server/lib/net/websocket_service"
+	"maze_game_server/io/kafka/mazeattrmsg"
+	"maze_game_server/io/kafka/mazetempbuffchgmsg"
+	"maze_game_server/lib/net/websocket_service"
+	"maze_game_server/pb/common/MazeGame"
 )
 
 type Game struct {

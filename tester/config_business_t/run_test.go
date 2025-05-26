@@ -4,9 +4,9 @@ import (
 	"testing"
 	"time"
 
-	"gitlab.ifreetalk.com/maze/maze_game_server/config/GMazeBarriesV8Cfg"
-	"gitlab.ifreetalk.com/maze/maze_game_server/usecase/business"
 	"go.uber.org/zap"
+	"maze_game_server/config/GMazeBarriesV8Cfg"
+	"maze_game_server/usecase/business"
 )
 
 func TestLoad(t *testing.T) {

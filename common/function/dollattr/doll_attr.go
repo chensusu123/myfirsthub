@@ -6,7 +6,7 @@
  */
 package dollattr
 
-import "gitlab.ifreetalk.com/maze/maze_game_server/common/constdef"
+import "maze_game_server/common/constdef"
 
 // 是否人偶计算属性
 func IsDollCalcAttr(typ int32) bool {

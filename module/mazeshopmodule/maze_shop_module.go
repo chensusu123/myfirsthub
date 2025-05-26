@@ -2,12 +2,12 @@ package mazeshopmodule
 
 import (
 	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fklog"
-	"gitlab.ifreetalk.com/maze/maze_game_server/common/errors"
-	"gitlab.ifreetalk.com/maze/maze_game_server/common/function/randfuncs"
-	"gitlab.ifreetalk.com/maze/maze_game_server/config/GMazeShopEquipListV8Cfg"
-	"gitlab.ifreetalk.com/maze/maze_game_server/config/GMazeShopV8Cfg"
-	"gitlab.ifreetalk.com/maze/maze_game_server/io/redis/mazeshopseqredis"
 	"go.uber.org/zap"
+	"maze_game_server/common/errors"
+	"maze_game_server/common/function/randfuncs"
+	"maze_game_server/config/GMazeShopEquipListV8Cfg"
+	"maze_game_server/config/GMazeShopV8Cfg"
+	"maze_game_server/io/redis/mazeshopseqredis"
 )
 
 //func GetMaxAreaId(barrierId, maxAreaId int32) int32 {

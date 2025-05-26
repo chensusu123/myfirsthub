@@ -5,10 +5,10 @@ import (
 	"fmt"
 
 	"gitlab.ifreetalk.com/maze-plate/extra/protobuf/proto"
-	"gitlab.ifreetalk.com/maze-plate/protodef/MazeCommon"
-	"gitlab.ifreetalk.com/maze-plate/protodef/MazeEquipSvr"
-	"gitlab.ifreetalk.com/maze/maze_game_server/config/GMazeEquipInfoV8Cfg"
-	"gitlab.ifreetalk.com/maze/maze_game_server/config/GMazeEquipTypeResV8Cfg"
+	"maze_game_server/config/GMazeEquipInfoV8Cfg"
+	"maze_game_server/config/GMazeEquipTypeResV8Cfg"
+	"maze_game_server/pb/common/MazeCommon"
+	"maze_game_server/pb/server/MazeEquipSvr"
 )
 
 func PackEquipToItem(equip *MazeEquipSvr.MazeEquipInfoSvr) (item *MazeCommon.MazeItem, err error) {

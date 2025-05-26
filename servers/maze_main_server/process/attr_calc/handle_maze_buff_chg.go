@@ -14,8 +14,8 @@ import (
 	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fkprometheus"
 
 	"go.uber.org/zap"
-	"gitlab.ifreetalk.com/maze/maze_game_server/common/structsdef"
-	"gitlab.ifreetalk.com/maze/maze_game_server/servers/maze_main_server/process/attr_calc/mazeattrlogic"
+	"maze_game_server/common/structsdef"
+	"maze_game_server/servers/maze_main_server/process/attr_calc/mazeattrlogic"
 )
 
 func OnMazeAttrCalcMsg(ctx context.Context, logger fklog.FKLogI, index int, obj interface{}) error {

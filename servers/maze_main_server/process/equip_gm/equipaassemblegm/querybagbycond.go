@@ -10,12 +10,12 @@ import (
 	"bytes"
 
 	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fklog"
-	"gitlab.ifreetalk.com/maze-plate/protodef/MazeEquipCache"
-	"gitlab.ifreetalk.com/maze/maze_game_server/config/GMazeEquipInfoV8Cfg"
-	"gitlab.ifreetalk.com/maze/maze_game_server/io/redis/dollassemblesuitredis"
-	"gitlab.ifreetalk.com/maze/maze_game_server/io/redis/mazebagequipredis"
-	"gitlab.ifreetalk.com/maze/maze_game_server/module/effectequip"
 	"go.uber.org/zap"
+	"maze_game_server/config/GMazeEquipInfoV8Cfg"
+	"maze_game_server/io/redis/dollassemblesuitredis"
+	"maze_game_server/io/redis/mazebagequipredis"
+	"maze_game_server/module/effectequip"
+	"maze_game_server/pb/server/MazeEquipCache"
 )
 
 type BagCond struct {

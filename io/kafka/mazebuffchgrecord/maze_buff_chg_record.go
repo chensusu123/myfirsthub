@@ -11,9 +11,9 @@ import (
 
 	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fkconfig"
 	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fklog"
-	"gitlab.ifreetalk.com/maze/maze_game_server/common/structsdef"
-	"gitlab.ifreetalk.com/maze/maze_game_server/io/dispatcher"
 	"go.uber.org/zap"
+	"maze_game_server/common/structsdef"
+	"maze_game_server/io/dispatcher"
 )
 
 // var kp = &fkafka.KafkaProducer{}

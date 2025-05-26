@@ -11,7 +11,7 @@ import (
 	"sync/atomic"
 	"unsafe"
 
-	"gitlab.ifreetalk.com/maze/maze_game_server/config/GMazeAttrListOrderV8Cfg"
+	"maze_game_server/config/GMazeAttrListOrderV8Cfg"
 )
 
 type MazeAttrListOrderV8ConfigEx struct {

@@ -10,9 +10,9 @@ import (
 	"errors"
 
 	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fklog"
-	"gitlab.ifreetalk.com/maze-plate/protodef/MazeEquipCache"
 	"go.uber.org/zap"
-	"gitlab.ifreetalk.com/maze/maze_game_server/io/redis/mazebagequipredis"
+	"maze_game_server/io/redis/mazebagequipredis"
+	"maze_game_server/pb/server/MazeEquipCache"
 )
 
 var EquipNoExist = errors.New("equip not exist")

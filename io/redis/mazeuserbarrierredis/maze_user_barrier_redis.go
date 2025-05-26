@@ -9,8 +9,8 @@ import (
 	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fklog"
 	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fkredis"
 	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fkredis/redis"
-	"gitlab.ifreetalk.com/maze-plate/protodef/MazeBarrierCache"
 	"go.uber.org/zap"
+	"maze_game_server/pb/server/MazeBarrierCache"
 )
 
 //doll:maze:u:%d:barrier:%d

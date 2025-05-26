@@ -10,12 +10,12 @@ import (
 	"context"
 	"fmt"
 
-	"gitlab.ifreetalk.com/maze/maze_game_server/common/errors"
 	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fklog"
 	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fkredis/redis"
 	"gitlab.ifreetalk.com/maze-plate/freetk/fkutil"
-	"gitlab.ifreetalk.com/maze-plate/protodef/MazeEquipCache"
 	"go.uber.org/zap"
+	"maze_game_server/common/errors"
+	"maze_game_server/pb/server/MazeEquipCache"
 )
 
 // 按指定字段查询装配数据

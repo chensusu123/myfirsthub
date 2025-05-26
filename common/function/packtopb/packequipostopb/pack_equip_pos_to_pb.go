@@ -11,15 +11,15 @@ import (
 
 	"gitlab.ifreetalk.com/maze-plate/extra/protobuf/proto"
 	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fklog"
-	"gitlab.ifreetalk.com/maze-plate/protodef/MazeEquipCache"
-	"gitlab.ifreetalk.com/maze-plate/protodef/MazeGameEquip"
-	"gitlab.ifreetalk.com/maze/maze_game_server/common/errors"
-	"gitlab.ifreetalk.com/maze/maze_game_server/common/function/assemble"
-	"gitlab.ifreetalk.com/maze/maze_game_server/common/function/excelutil"
-	"gitlab.ifreetalk.com/maze/maze_game_server/common/function/itemutil"
-	"gitlab.ifreetalk.com/maze/maze_game_server/common/function/packtopb"
-	"gitlab.ifreetalk.com/maze/maze_game_server/config/GMazeEquipPosLvV8Cfg"
 	"go.uber.org/zap"
+	"maze_game_server/common/errors"
+	"maze_game_server/common/function/assemble"
+	"maze_game_server/common/function/excelutil"
+	"maze_game_server/common/function/itemutil"
+	"maze_game_server/common/function/packtopb"
+	"maze_game_server/config/GMazeEquipPosLvV8Cfg"
+	"maze_game_server/pb/common/MazeGameEquip"
+	"maze_game_server/pb/server/MazeEquipCache"
 )
 
 // 打包装备位信息

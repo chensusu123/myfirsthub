@@ -5,7 +5,7 @@ import (
 	"sync/atomic"
 	"unsafe"
 
-	"gitlab.ifreetalk.com/maze/maze_game_server/config/GMazeEquipTypeResV8Cfg"
+	"maze_game_server/config/GMazeEquipTypeResV8Cfg"
 )
 
 type MazeEquipTypeResV8ConfigEx struct {

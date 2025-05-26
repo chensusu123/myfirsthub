@@ -6,13 +6,13 @@ import (
 
 	"gitlab.ifreetalk.com/maze-plate/extra/protobuf/proto"
 	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fklog"
-	"gitlab.ifreetalk.com/maze-plate/protodef/MazeEquipCache"
-	"gitlab.ifreetalk.com/maze-plate/protodef/MazeGameEquip"
-	"gitlab.ifreetalk.com/maze/maze_game_server/config/GMazeEquipPosLvSuiteV8Cfg"
+	"maze_game_server/config/GMazeEquipPosLvSuiteV8Cfg"
+	"maze_game_server/pb/common/MazeGameEquip"
+	"maze_game_server/pb/server/MazeEquipCache"
 
-	"gitlab.ifreetalk.com/maze-plate/protodef/MazeCommon"
-	"gitlab.ifreetalk.com/maze/maze_game_server/common/constdef"
 	"go.uber.org/zap"
+	"maze_game_server/common/constdef"
+	"maze_game_server/pb/common/MazeCommon"
 )
 
 // 当前套装和下级套装

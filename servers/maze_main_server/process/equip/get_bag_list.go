@@ -2,15 +2,15 @@ package equip
 
 import (
 	"gitlab.ifreetalk.com/maze-plate/extra/protobuf/proto"
-	"gitlab.ifreetalk.com/maze-plate/protodef/errors"
 	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fknet"
 	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fkprometheus"
 	"gitlab.ifreetalk.com/maze-plate/freetk/fkserver"
-	"gitlab.ifreetalk.com/maze-plate/protodef/MazeEquipCache"
-	"gitlab.ifreetalk.com/maze-plate/protodef/MazeGameEquip"
 	"go.uber.org/zap"
-	"gitlab.ifreetalk.com/maze/maze_game_server/module/bagmodule"
-	"gitlab.ifreetalk.com/maze/maze_game_server/common/function/packtopb"
+	"maze_game_server/common/function/packtopb"
+	"maze_game_server/module/bagmodule"
+	"maze_game_server/pb/common/MazeGameEquip"
+	"maze_game_server/pb/errors"
+	"maze_game_server/pb/server/MazeEquipCache"
 )
 
 func OnGetMazeBagEquipListRQ(ctx fknet.TCPContext, shardingID uint64, request proto.Message, response proto.Message) (err error) {

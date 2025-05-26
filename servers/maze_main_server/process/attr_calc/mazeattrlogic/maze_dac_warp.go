@@ -10,8 +10,8 @@ import (
 	"fmt"
 
 	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fklog"
-	"gitlab.ifreetalk.com/maze/maze_game_server/common/structsdef"
-	"gitlab.ifreetalk.com/maze/maze_game_server/common/constdef"
+	"maze_game_server/common/constdef"
+	"maze_game_server/common/structsdef"
 )
 
 func RunDacFromQue(logger fklog.FKLogI, msg *structsdef.MazeCalcAttrNotifyMsg) (needRetry bool, err error) {

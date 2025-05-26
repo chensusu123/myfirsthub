@@ -17,9 +17,9 @@ import (
 
 	"context"
 
-	"gitlab.ifreetalk.com/maze/maze_game_server/common/structsdef"
-	"gitlab.ifreetalk.com/maze/maze_game_server/servers/maze_main_server/process/attr_calc"
 	"go.uber.org/zap"
+	"maze_game_server/common/structsdef"
+	"maze_game_server/servers/maze_main_server/process/attr_calc"
 )
 
 var (

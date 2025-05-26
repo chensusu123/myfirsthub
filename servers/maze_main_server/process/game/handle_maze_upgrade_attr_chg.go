@@ -9,12 +9,12 @@ package game
 import (
 	"gitlab.ifreetalk.com/maze-plate/extra/protobuf/proto"
 	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fklog"
-	"gitlab.ifreetalk.com/maze-plate/protodef/Common"
-	"gitlab.ifreetalk.com/maze-plate/protodef/MazeGame"
-	"gitlab.ifreetalk.com/maze/maze_game_server/common/structsdef"
-	"gitlab.ifreetalk.com/maze/maze_game_server/excel/mazeconfigv8"
-	"gitlab.ifreetalk.com/maze/maze_game_server/io/redis/mazeuserlevelredis"
-	"gitlab.ifreetalk.com/maze/maze_game_server/usecase/mustarrive"
+	"maze_game_server/common/structsdef"
+	"maze_game_server/excel/mazeconfigv8"
+	"maze_game_server/io/redis/mazeuserlevelredis"
+	"maze_game_server/pb/common/Common"
+	"maze_game_server/pb/common/MazeGame"
+	"maze_game_server/usecase/mustarrive"
 
 	"go.uber.org/zap"
 )

@@ -6,8 +6,8 @@ import (
 	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fklog"
 	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fknet"
 	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fknet/pkg_ctl"
-	"gitlab.ifreetalk.com/maze/maze_game_server/lib/net/raw_pkg_ctl"
-	websocket_service_impl "gitlab.ifreetalk.com/maze/maze_game_server/lib/net/websocket_service_actor"
+	"maze_game_server/lib/net/raw_pkg_ctl"
+	websocket_service_impl "maze_game_server/lib/net/websocket_service_actor"
 )
 
 var json = jsoniter.ConfigCompatibleWithStandardLibrary

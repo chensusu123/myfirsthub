@@ -14,7 +14,7 @@ import (
 	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fknet"
 	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fknet/fkpkg"
 	"gitlab.ifreetalk.com/maze-plate/freetk/fkutil/workergroup"
-	"gitlab.ifreetalk.com/maze/maze_game_server/lib/net/raw_pkg"
+	"maze_game_server/lib/net/raw_pkg"
 )
 
 var json = jsoniter.ConfigCompatibleWithStandardLibrary

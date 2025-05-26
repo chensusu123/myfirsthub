@@ -11,8 +11,8 @@ import (
 
 	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fkconfig"
 	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fklog"
-	"gitlab.ifreetalk.com/maze/maze_game_server/io/dispatcher"
 	"go.uber.org/zap"
+	"maze_game_server/io/dispatcher"
 )
 
 // var json = jsoniter.ConfigCompatibleWithStandardLibrary

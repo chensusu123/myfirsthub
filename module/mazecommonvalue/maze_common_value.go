@@ -4,10 +4,10 @@ import (
 	"errors"
 
 	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fklog"
-	"gitlab.ifreetalk.com/maze/maze_game_server/common/constdef"
-	"gitlab.ifreetalk.com/maze/maze_game_server/config/GMazeAttributeFormulaV8Cfg"
-	"gitlab.ifreetalk.com/maze/maze_game_server/io/redis/mazecalcattrredis"
 	"go.uber.org/zap"
+	"maze_game_server/common/constdef"
+	"maze_game_server/config/GMazeAttributeFormulaV8Cfg"
+	"maze_game_server/io/redis/mazecalcattrredis"
 )
 
 func GetExtraAdditionForce(logger fklog.FKLogI, userId uint64, userLevel, forceVal int64) (money, equip, exp int64, err error) {

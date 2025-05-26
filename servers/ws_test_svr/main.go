@@ -5,11 +5,11 @@ import (
 
 	"gitlab.ifreetalk.com/maze-plate/extra/protobuf/proto"
 	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fklog"
-	"gitlab.ifreetalk.com/maze-plate/protodef/MazeGame"
-	"gitlab.ifreetalk.com/maze-plate/protodef/SysPackDef"
-	"gitlab.ifreetalk.com/maze/maze_game_server/lib/net/raw_pkg"
-	"gitlab.ifreetalk.com/maze/maze_game_server/lib/net/websocket_service"
-	"gitlab.ifreetalk.com/maze/maze_game_server/servers/maze_es/process"
+	"maze_game_server/lib/net/raw_pkg"
+	"maze_game_server/lib/net/websocket_service"
+	"maze_game_server/pb/common/MazeGame"
+	"maze_game_server/pb/common/SysPackDef"
+	"maze_game_server/servers/maze_es/process"
 )
 
 var gAddr = "127.0.0.1:9876"

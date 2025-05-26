@@ -8,12 +8,12 @@ package attr_calc
 
 import (
 	"gitlab.ifreetalk.com/maze-plate/extra/protobuf/proto"
-	"gitlab.ifreetalk.com/maze/maze_game_server/common/errors"
 	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fknet"
 	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fkprometheus"
 	"gitlab.ifreetalk.com/maze-plate/freetk/fkserver"
-	"gitlab.ifreetalk.com/maze-plate/protodef/MazePropertyPanel"
 	"go.uber.org/zap"
+	"maze_game_server/common/errors"
+	"maze_game_server/pb/common/MazePropertyPanel"
 )
 
 func OnQueryPropertyPanelRQ(ctx fknet.TCPContext, shardingID uint64, request proto.Message, response proto.Message) (err error) {

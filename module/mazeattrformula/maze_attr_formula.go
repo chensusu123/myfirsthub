@@ -11,8 +11,8 @@ import (
 	"fmt"
 
 	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fklog"
-	"gitlab.ifreetalk.com/maze/maze_game_server/config/GMazeAttributeFormulaV8Cfg"
 	"go.uber.org/zap"
+	"maze_game_server/config/GMazeAttributeFormulaV8Cfg"
 )
 
 func CalcMazeFormulaAttr(logger fklog.FKLogI, formulaId int32,

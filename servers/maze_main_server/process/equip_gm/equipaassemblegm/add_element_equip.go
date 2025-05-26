@@ -11,15 +11,15 @@ import (
 
 	"gitlab.ifreetalk.com/maze-plate/extra/protobuf/proto"
 	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fklog"
-	"gitlab.ifreetalk.com/maze-plate/protodef/MazeEquipSvr"
-	"gitlab.ifreetalk.com/maze-plate/protodef/MazeGameEquip"
-	"gitlab.ifreetalk.com/maze-plate/protodef/errors"
-	"gitlab.ifreetalk.com/maze/maze_game_server/common/function/packtopb"
-	"gitlab.ifreetalk.com/maze/maze_game_server/common/function/uniqueid"
-	"gitlab.ifreetalk.com/maze/maze_game_server/config/GMazeEquipInfoV8Cfg"
-	"gitlab.ifreetalk.com/maze/maze_game_server/config/GMazeEquipPosRankV8Cfg"
-	"gitlab.ifreetalk.com/maze/maze_game_server/io/rpc/dollequipbagrpc"
-	"gitlab.ifreetalk.com/maze/maze_game_server/module/effectequip"
+	"maze_game_server/common/function/packtopb"
+	"maze_game_server/common/function/uniqueid"
+	"maze_game_server/config/GMazeEquipInfoV8Cfg"
+	"maze_game_server/config/GMazeEquipPosRankV8Cfg"
+	"maze_game_server/io/rpc/dollequipbagrpc"
+	"maze_game_server/module/effectequip"
+	"maze_game_server/pb/common/MazeGameEquip"
+	"maze_game_server/pb/errors"
+	"maze_game_server/pb/server/MazeEquipSvr"
 )
 
 type EquipParam struct {

@@ -3,7 +3,7 @@ package mustarrive
 import (
 	"gitlab.ifreetalk.com/maze-plate/extra/protobuf/proto"
 	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fklog"
-	"gitlab.ifreetalk.com/maze/maze_game_server/lib/net/websocket_service"
+	"maze_game_server/lib/net/websocket_service"
 )
 
 func SendArrivePacket(logger fklog.FKLogI, userID int64, packetType uint16, pack proto.Message) error {

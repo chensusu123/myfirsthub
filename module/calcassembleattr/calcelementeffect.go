@@ -9,11 +9,11 @@ package calcassembleattr
 import (
 	"gitlab.ifreetalk.com/maze-plate/extra/protobuf/proto"
 	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fklog"
-	"gitlab.ifreetalk.com/maze-plate/protodef/MazeBuffData"
-	"gitlab.ifreetalk.com/maze-plate/protodef/MazeEquipCache"
-	"gitlab.ifreetalk.com/maze/maze_game_server/config/GMazeEquipSuiteInfoV8Cfg"
-	"gitlab.ifreetalk.com/maze/maze_game_server/excel/mazeequipconfigv8"
 	"go.uber.org/zap"
+	"maze_game_server/config/GMazeEquipSuiteInfoV8Cfg"
+	"maze_game_server/excel/mazeequipconfigv8"
+	"maze_game_server/pb/server/MazeBuffData"
+	"maze_game_server/pb/server/MazeEquipCache"
 )
 
 // 10410效果规则

@@ -1,7 +1,7 @@
 package mazeenergyaffixlibraryv8config
 
 import (
-	"gitlab.ifreetalk.com/maze/maze_game_server/config/GMazeEnergyAffixLibraryV8Cfg"
+	"maze_game_server/config/GMazeEnergyAffixLibraryV8Cfg"
 )
 
 /**

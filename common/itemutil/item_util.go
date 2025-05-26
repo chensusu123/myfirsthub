@@ -6,11 +6,11 @@ import (
 	"gitlab.ifreetalk.com/maze-plate/extra/protobuf/proto"
 	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fklog"
 	"gitlab.ifreetalk.com/maze-plate/freetk/fkserver"
-	"gitlab.ifreetalk.com/maze-plate/protodef/Common"
-	"gitlab.ifreetalk.com/maze-plate/protodef/MazeBag"
-	"gitlab.ifreetalk.com/maze-plate/protodef/MazeCommon"
-	"gitlab.ifreetalk.com/maze/maze_game_server/config/GMazeBagOrderV8Cfg"
 	"go.uber.org/zap"
+	"maze_game_server/config/GMazeBagOrderV8Cfg"
+	"maze_game_server/pb/common/Common"
+	"maze_game_server/pb/common/MazeBag"
+	"maze_game_server/pb/common/MazeCommon"
 )
 
 // WrapUserContext 封装UserContext信息

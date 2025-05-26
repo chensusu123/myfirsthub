@@ -11,14 +11,14 @@ import (
 	"fmt"
 
 	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fklog"
-	"gitlab.ifreetalk.com/maze/maze_game_server/common/constdef"
-	"gitlab.ifreetalk.com/maze/maze_game_server/common/vardef"
-	"gitlab.ifreetalk.com/maze/maze_game_server/config/GMazeAttrSpDescV8Cfg"
-	"gitlab.ifreetalk.com/maze/maze_game_server/config/GMazeAttributeV8Cfg"
-	"gitlab.ifreetalk.com/maze/maze_game_server/config/GMazeInitialAttrV8Cfg"
-	"gitlab.ifreetalk.com/maze/maze_game_server/io/redis/mazebuffinforedis"
-	"gitlab.ifreetalk.com/maze/maze_game_server/io/redis/mazecalcattrredis"
-	"gitlab.ifreetalk.com/maze/maze_game_server/module/mazeattrformula"
+	"maze_game_server/common/constdef"
+	"maze_game_server/common/vardef"
+	"maze_game_server/config/GMazeAttrSpDescV8Cfg"
+	"maze_game_server/config/GMazeAttributeV8Cfg"
+	"maze_game_server/config/GMazeInitialAttrV8Cfg"
+	"maze_game_server/io/redis/mazebuffinforedis"
+	"maze_game_server/io/redis/mazecalcattrredis"
+	"maze_game_server/module/mazeattrformula"
 )
 
 func DumpDollCalcAttr(logger fklog.FKLogI, userId uint64) (attrInfo string, err error) {

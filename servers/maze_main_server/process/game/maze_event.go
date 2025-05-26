@@ -4,9 +4,9 @@ import (
 	"gitlab.ifreetalk.com/maze-plate/extra/protobuf/proto"
 	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fknet"
 	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fkprometheus"
-	"gitlab.ifreetalk.com/maze-plate/protodef/MazeGame"
-	"gitlab.ifreetalk.com/maze/maze_game_server/common/errors"
 	"go.uber.org/zap"
+	"maze_game_server/common/errors"
+	"maze_game_server/pb/common/MazeGame"
 )
 
 // OnMazeReportBattleEventRQ 关卡事件上报

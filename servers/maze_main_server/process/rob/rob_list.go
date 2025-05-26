@@ -5,12 +5,12 @@ package rob
 
 import (
 	"gitlab.ifreetalk.com/maze-plate/extra/protobuf/proto"
-	"gitlab.ifreetalk.com/maze/maze_game_server/common/errors"
 	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fknet"
 	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fkprometheus"
-	"gitlab.ifreetalk.com/maze-plate/protodef/MazeCommon"
-	"gitlab.ifreetalk.com/maze-plate/protodef/MazeRobGuaJi"
 	"go.uber.org/zap"
+	"maze_game_server/common/errors"
+	"maze_game_server/pb/common/MazeCommon"
+	"maze_game_server/pb/common/MazeRobGuaJi"
 )
 
 /*

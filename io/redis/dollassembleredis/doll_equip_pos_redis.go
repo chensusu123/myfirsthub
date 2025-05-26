@@ -11,12 +11,12 @@ import (
 	"fmt"
 
 	"gitlab.ifreetalk.com/maze-plate/extra/protobuf/proto"
-	"gitlab.ifreetalk.com/maze/maze_game_server/common/errors"
 	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fklog"
 	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fkredis/redis"
-	"gitlab.ifreetalk.com/maze-plate/protodef/MazeEquipCache"
-	"gitlab.ifreetalk.com/maze/maze_game_server/common/function/assemble"
 	"go.uber.org/zap"
+	"maze_game_server/common/errors"
+	"maze_game_server/common/function/assemble"
+	"maze_game_server/pb/server/MazeEquipCache"
 )
 
 // 获取人偶装备位信息

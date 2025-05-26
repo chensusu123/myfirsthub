@@ -12,7 +12,7 @@ package mazeenergyrpc
 // 	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fklog"
 // 	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fkprometheus"
 // 	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fkrpc/thrift_rpc"
-// 	"gitlab.ifreetalk.com/maze-plate/protodef/MazeEnergySvr"
+// 	"maze_game_server/pb/common/MazeEnergySvr"
 // 	"go.uber.org/zap"
 // )
 

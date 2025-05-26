@@ -7,7 +7,6 @@ import (
 	"time"
 
 	"gitlab.ifreetalk.com/maze-plate/extra/protobuf/proto"
-	"gitlab.ifreetalk.com/maze/maze_game_server/common/errors"
 	"gitlab.ifreetalk.com/maze-plate/freetk/common/fkfmt"
 	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fkconfig"
 	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fkconfig/param"
@@ -15,9 +14,10 @@ import (
 	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fknet"
 	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fktcpclient"
 	"gitlab.ifreetalk.com/maze-plate/freetk/fkutil"
-	"gitlab.ifreetalk.com/maze-plate/protodef/KafkaMsgNotify"
-	"gitlab.ifreetalk.com/maze/maze_game_server/common/constdef"
 	"go.uber.org/zap"
+	"maze_game_server/common/constdef"
+	"maze_game_server/common/errors"
+	"maze_game_server/pb/common/KafkaMsgNotify"
 )
 
 var svrTypeToClient sync.Map     // svrType(int32):*fktcpclient.SyncClient

@@ -6,16 +6,16 @@ import (
 	"sort"
 	"strings"
 
-	"gitlab.ifreetalk.com/maze/maze_game_server/io/kafka/mazetempbuffchgmsg"
-	"gitlab.ifreetalk.com/maze/maze_game_server/io/redis/mazetempbuffredis"
-	"gitlab.ifreetalk.com/maze/maze_game_server/module/itemmodule"
+	"maze_game_server/io/kafka/mazetempbuffchgmsg"
+	"maze_game_server/io/redis/mazetempbuffredis"
+	"maze_game_server/module/itemmodule"
 
 	"gitlab.ifreetalk.com/maze-plate/extra/protobuf/proto"
 	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fklog"
 	"gitlab.ifreetalk.com/maze-plate/freetk/fkutil"
-	"gitlab.ifreetalk.com/maze-plate/protodef/MazeCommon"
-	"gitlab.ifreetalk.com/maze-plate/protodef/MazeTempBuffSvr"
 	"go.uber.org/zap"
+	"maze_game_server/pb/common/MazeCommon"
+	"maze_game_server/pb/server/MazeTempBuffSvr"
 )
 
 /**

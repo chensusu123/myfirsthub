@@ -6,8 +6,8 @@ import (
 
 	"gitlab.ifreetalk.com/maze-plate/freetk/common/fkfmt"
 	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fklog"
-	"gitlab.ifreetalk.com/maze/maze_game_server/common/function/fileio"
-	"gitlab.ifreetalk.com/maze/maze_game_server/servers/maze_main_server/process/equip_gm/asynctask"
+	"maze_game_server/common/function/fileio"
+	"maze_game_server/servers/maze_main_server/process/equip_gm/asynctask"
 )
 
 type CopyUsers struct {

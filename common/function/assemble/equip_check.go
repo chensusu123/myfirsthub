@@ -6,9 +6,9 @@ import (
 
 	"gitlab.ifreetalk.com/maze-plate/extra/protobuf/proto"
 	"gitlab.ifreetalk.com/maze-plate/freetk/fkutil"
-	"gitlab.ifreetalk.com/maze-plate/protodef/MazeEquipCache"
-	"gitlab.ifreetalk.com/maze/maze_game_server/common/constdef"
-	"gitlab.ifreetalk.com/maze/maze_game_server/config/GMazeEquipPosRankV8Cfg"
+	"maze_game_server/common/constdef"
+	"maze_game_server/config/GMazeEquipPosRankV8Cfg"
+	"maze_game_server/pb/server/MazeEquipCache"
 )
 
 // 是否有效的装备位

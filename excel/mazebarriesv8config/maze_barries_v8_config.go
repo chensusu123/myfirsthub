@@ -1,6 +1,6 @@
 package mazebarriesv8config
 
-import "gitlab.ifreetalk.com/maze/maze_game_server/config/GMazeBarriesV8Cfg"
+import "maze_game_server/config/GMazeBarriesV8Cfg"
 
 /**
  * @Author: liushuhang

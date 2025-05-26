@@ -3,11 +3,11 @@ package equip
 import (
 	"encoding/json"
 
+	"context"
 	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fklog"
 	"gitlab.ifreetalk.com/maze-plate/freetk/fkutil"
 	"go.uber.org/zap"
-	"gitlab.ifreetalk.com/maze/maze_game_server/common/structsdef"
-	"context"
+	"maze_game_server/common/structsdef"
 )
 
 // 处理人偶性别变化消息

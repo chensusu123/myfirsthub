@@ -3,11 +3,11 @@ package equip
 import (
 	"fmt"
 
-	"gitlab.ifreetalk.com/maze/maze_game_server/common/function/limiter"
-	"gitlab.ifreetalk.com/maze/maze_game_server/io/kafka/mazeuserlevelkafka"
-	"gitlab.ifreetalk.com/maze/maze_game_server/lib/net/websocket_service"
-	"gitlab.ifreetalk.com/maze-plate/protodef/MazeEquipPos"
-	"gitlab.ifreetalk.com/maze-plate/protodef/MazeGameEquip"
+	"maze_game_server/common/function/limiter"
+	"maze_game_server/io/kafka/mazeuserlevelkafka"
+	"maze_game_server/lib/net/websocket_service"
+	"maze_game_server/pb/common/MazeEquipPos"
+	"maze_game_server/pb/common/MazeGameEquip"
 )
 
 var GtcpLimiter = limiter.NewLimiter("tcpLimiter")

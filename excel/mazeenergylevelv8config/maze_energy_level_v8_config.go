@@ -1,6 +1,6 @@
 package mazeenergylevelv8config
 
-import "gitlab.ifreetalk.com/maze/maze_game_server/config/GMazeEnergyLevelV8Cfg"
+import "maze_game_server/config/GMazeEnergyLevelV8Cfg"
 
 /**
  * @Author: liushuhang

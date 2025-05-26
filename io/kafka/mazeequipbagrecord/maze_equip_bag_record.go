@@ -1,9 +1,9 @@
 package mazeequipbagrecord
 
 import (
-	"gitlab.ifreetalk.com/maze/maze_game_server/io/dispatcher"
 	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fklog"
 	"go.uber.org/zap"
+	"maze_game_server/io/dispatcher"
 )
 
 // var json = jsoniter.ConfigCompatibleWithStandardLibrary

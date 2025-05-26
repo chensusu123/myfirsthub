@@ -3,32 +3,32 @@ package interact
 import (
 	"fmt"
 
-	"gitlab.ifreetalk.com/maze-plate/protodef/MazeEquipMix"
-	"gitlab.ifreetalk.com/maze-plate/protodef/MazeItemSvr"
-	"gitlab.ifreetalk.com/maze/maze_game_server/common/cache/simCache"
-	"gitlab.ifreetalk.com/maze/maze_game_server/common/equipmix"
-	"gitlab.ifreetalk.com/maze/maze_game_server/common/tradeno"
-	"gitlab.ifreetalk.com/maze/maze_game_server/io/redis/mazeequipmixdb"
-	itemrpc "gitlab.ifreetalk.com/maze/maze_game_server/servers/maze_main_server/process/item"
+	"maze_game_server/common/cache/simCache"
+	"maze_game_server/common/equipmix"
+	"maze_game_server/common/tradeno"
+	"maze_game_server/io/redis/mazeequipmixdb"
+	"maze_game_server/pb/common/MazeEquipMix"
+	"maze_game_server/pb/common/MazeItemSvr"
+	itemrpc "maze_game_server/servers/maze_main_server/process/item"
 
 	"gitlab.ifreetalk.com/maze-plate/extra/protobuf/proto"
 	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fklog"
 	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fknet"
-	"gitlab.ifreetalk.com/maze/maze_game_server/common/errors"
-	"gitlab.ifreetalk.com/maze/maze_game_server/config/GMazeEquipMixListV8Cfg"
-	"gitlab.ifreetalk.com/maze/maze_game_server/excel/equipmixcostcfg"
-	"gitlab.ifreetalk.com/maze/maze_game_server/io/redis/mazeuserlevelredis"
-	equiprpc "gitlab.ifreetalk.com/maze/maze_game_server/servers/maze_main_server/process/equip"
+	"maze_game_server/common/errors"
+	"maze_game_server/config/GMazeEquipMixListV8Cfg"
+	"maze_game_server/excel/equipmixcostcfg"
+	"maze_game_server/io/redis/mazeuserlevelredis"
+	equiprpc "maze_game_server/servers/maze_main_server/process/equip"
 
 	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fkprometheus"
-	"gitlab.ifreetalk.com/maze/maze_game_server/lib/net/websocket_service"
+	"maze_game_server/lib/net/websocket_service"
 
 	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fkrpc"
 	"gitlab.ifreetalk.com/maze-plate/freetk/fkutil/saferand"
-	"gitlab.ifreetalk.com/maze-plate/protodef/MazeCommon"
-	"gitlab.ifreetalk.com/maze-plate/protodef/MazeEquipSvr"
-	"gitlab.ifreetalk.com/maze-plate/protodef/MessageType"
 	"go.uber.org/zap"
+	"maze_game_server/pb/common/MazeCommon"
+	"maze_game_server/pb/common/MazeEquipSvr"
+	"maze_game_server/pb/common/MessageType"
 )
 
 func RegTcpHandler() {

@@ -13,7 +13,7 @@ import (
 	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fknet"
 	"gitlab.ifreetalk.com/maze-plate/freetk/fktestutil/testio"
 	_ "gitlab.ifreetalk.com/maze-plate/freetk/fktestutil/testlogger"
-	"gitlab.ifreetalk.com/maze-plate/protodef/MazeGame"
+	"maze_game_server/pb/common/MazeGame"
 )
 
 var (

@@ -1,10 +1,10 @@
 package mazemoney
 
 import (
-	"gitlab.ifreetalk.com/maze/maze_game_server/common/constdef"
-	"gitlab.ifreetalk.com/maze/maze_game_server/io/redis/mazebarriermoneyredis"
 	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fklog"
 	"go.uber.org/zap"
+	"maze_game_server/common/constdef"
+	"maze_game_server/io/redis/mazebarriermoneyredis"
 )
 
 func GetUserMoney(logger fklog.FKLogI, uid uint64) (coin, diamond int64, err error) {

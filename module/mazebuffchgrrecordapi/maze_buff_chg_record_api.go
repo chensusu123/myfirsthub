@@ -12,11 +12,11 @@ import (
 	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fkconfig/param"
 	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fklog"
 	"gitlab.ifreetalk.com/maze-plate/freetk/fkutil"
-	"gitlab.ifreetalk.com/maze-plate/protodef/MazeBuffData"
-	"gitlab.ifreetalk.com/maze/maze_game_server/common/function/maputil"
-	"gitlab.ifreetalk.com/maze/maze_game_server/common/structsdef"
-	"gitlab.ifreetalk.com/maze/maze_game_server/common/vardef"
-	"gitlab.ifreetalk.com/maze/maze_game_server/io/kafka/mazebuffchgrecord"
+	"maze_game_server/common/function/maputil"
+	"maze_game_server/common/structsdef"
+	"maze_game_server/common/vardef"
+	"maze_game_server/io/kafka/mazebuffchgrecord"
+	"maze_game_server/pb/server/MazeBuffData"
 )
 
 func SendMazeBuffChgRecord(logger fklog.FKLogI, userId uint64, src, chgReason int32, attrDbOld, attrDbNew *MazeBuffData.MazeBuffDb) error {

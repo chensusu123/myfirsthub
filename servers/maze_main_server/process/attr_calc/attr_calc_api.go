@@ -10,14 +10,14 @@ import (
 	"fmt"
 
 	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fklog"
-	"gitlab.ifreetalk.com/maze-plate/protodef/MazeBuffData"
-	"gitlab.ifreetalk.com/maze/maze_game_server/common/constdef"
-	"gitlab.ifreetalk.com/maze/maze_game_server/common/function/dollattr"
-	"gitlab.ifreetalk.com/maze/maze_game_server/common/vardef"
-	"gitlab.ifreetalk.com/maze/maze_game_server/config/GMazeAttributeV8Cfg"
-	"gitlab.ifreetalk.com/maze/maze_game_server/config/GMazeEquipConfigV8Cfg"
-	"gitlab.ifreetalk.com/maze/maze_game_server/servers/maze_main_server/process/attr_calc/commonlogic"
 	"go.uber.org/zap"
+	"maze_game_server/common/constdef"
+	"maze_game_server/common/function/dollattr"
+	"maze_game_server/common/vardef"
+	"maze_game_server/config/GMazeAttributeV8Cfg"
+	"maze_game_server/config/GMazeEquipConfigV8Cfg"
+	"maze_game_server/pb/server/MazeBuffData"
+	"maze_game_server/servers/maze_main_server/process/attr_calc/commonlogic"
 )
 
 func AddtionMazeAttr(in map[int32]int64, attr *MazeBuffData.MazeBuffAttr) {

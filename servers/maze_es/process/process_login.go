@@ -4,13 +4,13 @@ import (
 	"gitlab.ifreetalk.com/maze-plate/extra/protobuf/proto"
 	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fknet"
 	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fkprometheus"
-	"gitlab.ifreetalk.com/maze-plate/protodef/MazeGame"
-	"gitlab.ifreetalk.com/maze-plate/protodef/SysPackDef"
-	"gitlab.ifreetalk.com/maze/maze_game_server/common/errors"
-	"gitlab.ifreetalk.com/maze/maze_game_server/config/GMazeBarriesV8Cfg"
-	_ "gitlab.ifreetalk.com/maze/maze_game_server/config/GMazeEquipPosLvV8Cfg"
+	"maze_game_server/common/errors"
+	"maze_game_server/config/GMazeBarriesV8Cfg"
+	_ "maze_game_server/config/GMazeEquipPosLvV8Cfg"
+	"maze_game_server/pb/common/MazeGame"
+	"maze_game_server/pb/common/SysPackDef"
 
-	_ "gitlab.ifreetalk.com/maze/maze_game_server/io/redis/mazeequipgetnumredis"
+	_ "maze_game_server/io/redis/mazeequipgetnumredis"
 
 	"go.uber.org/zap"
 )

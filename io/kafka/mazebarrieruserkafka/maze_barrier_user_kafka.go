@@ -5,7 +5,7 @@ import (
 
 	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fkconfig"
 	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fklog"
-	"gitlab.ifreetalk.com/maze/maze_game_server/io/dispatcher"
+	"maze_game_server/io/dispatcher"
 )
 
 const (

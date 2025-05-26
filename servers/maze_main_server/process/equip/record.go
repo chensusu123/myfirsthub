@@ -5,13 +5,13 @@ import (
 	"strings"
 	"time"
 
-	"gitlab.ifreetalk.com/maze-plate/protodef/MazeEquipCache"
+	"maze_game_server/pb/server/MazeEquipCache"
 
 	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fkconfig"
 	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fklog"
 	"go.uber.org/zap"
-	"gitlab.ifreetalk.com/maze/maze_game_server/io/kafka/mazeequipinstancerecord"
-	"gitlab.ifreetalk.com/maze/maze_game_server/io/kafka/mazeequipbagrecord"
+	"maze_game_server/io/kafka/mazeequipbagrecord"
+	"maze_game_server/io/kafka/mazeequipinstancerecord"
 )
 
 type MazeGameEquipInstanceRecord struct {

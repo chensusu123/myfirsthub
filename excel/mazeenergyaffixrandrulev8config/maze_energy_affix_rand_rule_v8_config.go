@@ -1,6 +1,6 @@
 package mazeenergyaffixrandrulev8config
 
-import "gitlab.ifreetalk.com/maze/maze_game_server/config/GMazeEnergyAffixRandRuleV8Cfg"
+import "maze_game_server/config/GMazeEnergyAffixRandRuleV8Cfg"
 
 /**
  * @Author: liushuhang

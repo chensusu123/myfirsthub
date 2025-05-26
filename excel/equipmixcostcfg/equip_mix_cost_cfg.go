@@ -8,8 +8,8 @@ import (
 	"sync"
 
 	"gitlab.ifreetalk.com/maze-plate/extra/protobuf/proto"
-	"gitlab.ifreetalk.com/maze-plate/protodef/MazeCommon"
-	"gitlab.ifreetalk.com/maze/maze_game_server/config/GMazeEquipMixV8Cfg"
+	"maze_game_server/config/GMazeEquipMixV8Cfg"
+	"maze_game_server/pb/common/MazeCommon"
 )
 
 var (

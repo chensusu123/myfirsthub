@@ -4,7 +4,7 @@ import (
 	"context"
 	"time"
 
-	"gitlab.ifreetalk.com/maze/maze_game_server/io/redis/mazecardlistgroupredis"
+	"maze_game_server/io/redis/mazecardlistgroupredis"
 
 	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fkconfig"
 	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fkconfig/param"

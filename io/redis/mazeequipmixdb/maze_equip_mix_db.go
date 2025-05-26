@@ -8,7 +8,7 @@ import (
 	"errors"
 	"fmt"
 
-	"gitlab.ifreetalk.com/maze/maze_game_server/common/equipmix"
+	"maze_game_server/common/equipmix"
 
 	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fkconfig"
 	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fklog"

@@ -2,10 +2,10 @@ package mazebarrier
 
 import (
 	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fklog"
-	"gitlab.ifreetalk.com/maze/maze_game_server/common/errors"
-	"gitlab.ifreetalk.com/maze/maze_game_server/config/GMazeBarriesV8Cfg"
-	"gitlab.ifreetalk.com/maze/maze_game_server/config/GMazeBoxV8Cfg"
 	"go.uber.org/zap"
+	"maze_game_server/common/errors"
+	"maze_game_server/config/GMazeBarriesV8Cfg"
+	"maze_game_server/config/GMazeBoxV8Cfg"
 )
 
 func GetBarrierPassAward(logger fklog.FKLogI, barrierId int32) (awardMap map[int32]int64, equipMap map[int32]int32, err error) {

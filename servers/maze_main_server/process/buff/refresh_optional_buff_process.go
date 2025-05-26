@@ -4,19 +4,19 @@ import (
 	"time"
 
 	"gitlab.ifreetalk.com/maze-plate/extra/protobuf/proto"
-	"gitlab.ifreetalk.com/maze/maze_game_server/common/errors"
 	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fklog"
 	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fknet"
 	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fkprometheus"
-	"gitlab.ifreetalk.com/maze-plate/protodef/MazeCommon"
-	"gitlab.ifreetalk.com/maze-plate/protodef/MazeTempBuff"
-	"gitlab.ifreetalk.com/maze-plate/protodef/MazeTempBuffSvr"
-	"gitlab.ifreetalk.com/maze/maze_game_server/excel/mazebarriesv8config"
-	"gitlab.ifreetalk.com/maze/maze_game_server/excel/mazeenergyaffixrandrulev8config"
-	"gitlab.ifreetalk.com/maze/maze_game_server/excel/mazeenergyresetcostv8config"
-	"gitlab.ifreetalk.com/maze/maze_game_server/io/redis/mazetempbuffredis"
-	"gitlab.ifreetalk.com/maze/maze_game_server/module/itemmodule"
 	"go.uber.org/zap"
+	"maze_game_server/common/errors"
+	"maze_game_server/excel/mazebarriesv8config"
+	"maze_game_server/excel/mazeenergyaffixrandrulev8config"
+	"maze_game_server/excel/mazeenergyresetcostv8config"
+	"maze_game_server/io/redis/mazetempbuffredis"
+	"maze_game_server/module/itemmodule"
+	"maze_game_server/pb/common/MazeCommon"
+	"maze_game_server/pb/common/MazeTempBuff"
+	"maze_game_server/pb/server/MazeTempBuffSvr"
 )
 
 /**

@@ -11,12 +11,12 @@ import (
 
 	"gitlab.ifreetalk.com/maze-plate/extra/protobuf/proto"
 	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fklog"
-	"gitlab.ifreetalk.com/maze-plate/protodef/MazeBuffData"
-	"gitlab.ifreetalk.com/maze-plate/protodef/MazeEquipCache"
-	"gitlab.ifreetalk.com/maze/maze_game_server/common/constdef"
-	"gitlab.ifreetalk.com/maze/maze_game_server/common/function/assemble"
-	"gitlab.ifreetalk.com/maze/maze_game_server/config/GMazeAttributeV8Cfg"
 	"go.uber.org/zap"
+	"maze_game_server/common/constdef"
+	"maze_game_server/common/function/assemble"
+	"maze_game_server/config/GMazeAttributeV8Cfg"
+	"maze_game_server/pb/server/MazeBuffData"
+	"maze_game_server/pb/server/MazeEquipCache"
 )
 
 type EquipmentEffectInfo struct {

@@ -7,12 +7,12 @@
 package dollassembleredis
 
 import (
-	"gitlab.ifreetalk.com/maze/maze_game_server/common/errors"
-	"gitlab.ifreetalk.com/maze-plate/freetk/fkutil"
-	"gitlab.ifreetalk.com/maze-plate/protodef/MazeEquipCache"
-	"gitlab.ifreetalk.com/maze/maze_game_server/common/constdef"
-	"gitlab.ifreetalk.com/maze/maze_game_server/common/function/assemble"
 	"gitlab.ifreetalk.com/maze-plate/extra/protobuf/proto"
+	"gitlab.ifreetalk.com/maze-plate/freetk/fkutil"
+	"maze_game_server/common/constdef"
+	"maze_game_server/common/errors"
+	"maze_game_server/common/function/assemble"
+	"maze_game_server/pb/server/MazeEquipCache"
 )
 
 func unpackFieldToPb(field string, in []byte, pb *MazeEquipCache.MazeAssembleDb) error {

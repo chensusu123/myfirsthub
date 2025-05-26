@@ -9,9 +9,9 @@ import (
 
 	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fklog"
 	"gitlab.ifreetalk.com/maze-plate/freetk/fkutil"
-	"gitlab.ifreetalk.com/maze-plate/protodef/MazeRobGuaJi"
-	"gitlab.ifreetalk.com/maze/maze_game_server/lib/net/websocket_service"
 	"go.uber.org/zap"
+	"maze_game_server/lib/net/websocket_service"
+	"maze_game_server/pb/common/MazeRobGuaJi"
 )
 
 func RegTcpHandler() {

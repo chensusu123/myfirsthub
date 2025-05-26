@@ -12,17 +12,17 @@ import (
 
 	"gitlab.ifreetalk.com/maze-plate/extra/protobuf/proto"
 	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fklog"
-	"gitlab.ifreetalk.com/maze-plate/protodef/MazeBuffData"
-	"gitlab.ifreetalk.com/maze-plate/protodef/MazeGameEquip"
-	"gitlab.ifreetalk.com/maze-plate/protodef/MazePropertyPanel"
-	"gitlab.ifreetalk.com/maze/maze_game_server/common/constdef"
-	"gitlab.ifreetalk.com/maze/maze_game_server/config/GMazeAttrListOrderV8Cfg"
-	"gitlab.ifreetalk.com/maze/maze_game_server/config/GMazeAttrListTypeV8Cfg"
-	"gitlab.ifreetalk.com/maze/maze_game_server/config/GMazeAttrSpDescV8Cfg"
-	"gitlab.ifreetalk.com/maze/maze_game_server/config/GMazeAttributeV8Cfg"
-	"gitlab.ifreetalk.com/maze/maze_game_server/excel/mazeattrorderv8"
-	"gitlab.ifreetalk.com/maze/maze_game_server/io/redis/mazecalcattrredis"
 	"go.uber.org/zap"
+	"maze_game_server/common/constdef"
+	"maze_game_server/config/GMazeAttrListOrderV8Cfg"
+	"maze_game_server/config/GMazeAttrListTypeV8Cfg"
+	"maze_game_server/config/GMazeAttrSpDescV8Cfg"
+	"maze_game_server/config/GMazeAttributeV8Cfg"
+	"maze_game_server/excel/mazeattrorderv8"
+	"maze_game_server/io/redis/mazecalcattrredis"
+	"maze_game_server/pb/common/MazeGameEquip"
+	"maze_game_server/pb/common/MazePropertyPanel"
+	"maze_game_server/pb/server/MazeBuffData"
 )
 
 type DPAC struct {

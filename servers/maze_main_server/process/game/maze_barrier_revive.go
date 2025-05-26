@@ -14,18 +14,18 @@ import (
 	"gitlab.ifreetalk.com/maze-plate/extra/protobuf/proto"
 	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fknet"
 	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fkprometheus"
-	"gitlab.ifreetalk.com/maze-plate/protodef/MazeCommon"
-	"gitlab.ifreetalk.com/maze-plate/protodef/MazeGame"
-	"gitlab.ifreetalk.com/maze/maze_game_server/common/errors"
-	"gitlab.ifreetalk.com/maze/maze_game_server/common/function/gentradeno"
-	"gitlab.ifreetalk.com/maze/maze_game_server/common/function/itemutil"
-	"gitlab.ifreetalk.com/maze/maze_game_server/common/function/uniqueid"
-	"gitlab.ifreetalk.com/maze/maze_game_server/config/GMazeRebornCostV8Cfg"
-	"gitlab.ifreetalk.com/maze/maze_game_server/excel/mazeconfigv8"
+	"maze_game_server/common/errors"
+	"maze_game_server/common/function/gentradeno"
+	"maze_game_server/common/function/itemutil"
+	"maze_game_server/common/function/uniqueid"
+	"maze_game_server/config/GMazeRebornCostV8Cfg"
+	"maze_game_server/excel/mazeconfigv8"
+	"maze_game_server/pb/common/MazeCommon"
+	"maze_game_server/pb/common/MazeGame"
 
-	"gitlab.ifreetalk.com/maze/maze_game_server/io/kafka/mazerebornkafka"
-	"gitlab.ifreetalk.com/maze/maze_game_server/io/redis/mazeuserbarrierredis"
 	"go.uber.org/zap"
+	"maze_game_server/io/kafka/mazerebornkafka"
+	"maze_game_server/io/redis/mazeuserbarrierredis"
 )
 
 func OnMazeBarrierRebornRQ(logger fknet.TCPContext, shardingID uint64, rqMsg proto.Message, rsMsg proto.Message) (err error) {

@@ -6,9 +6,9 @@ import (
 	"errors"
 	"time"
 
-	"gitlab.ifreetalk.com/maze/maze_game_server/usecase/tasktimer/delay/redisclient"
 	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fklog"
 	"go.uber.org/zap"
+	"maze_game_server/usecase/tasktimer/delay/redisclient"
 )
 
 // define bucket ticker

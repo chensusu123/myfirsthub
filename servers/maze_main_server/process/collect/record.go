@@ -6,10 +6,10 @@ import (
 	"strings"
 
 	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fklog"
-	"gitlab.ifreetalk.com/maze-plate/protodef/MazeCollectCache"
-	"gitlab.ifreetalk.com/maze-plate/protodef/MazeCommon"
-	"gitlab.ifreetalk.com/maze/maze_game_server/io/kafka/mazecollectrecord"
 	"go.uber.org/zap"
+	"maze_game_server/io/kafka/mazecollectrecord"
+	"maze_game_server/pb/common/MazeCommon"
+	"maze_game_server/pb/server/MazeCollectCache"
 )
 
 func PushDollMazeCollectInfoLog(logger fklog.FKLogI, userId uint64, collectInfo *MazeCollectCache.MazeCollectInfo, oldLastTime, collectTimes int64, opType int32, tradeNumber uint64, items []*MazeCommon.MazeItem, retCode int64) error {

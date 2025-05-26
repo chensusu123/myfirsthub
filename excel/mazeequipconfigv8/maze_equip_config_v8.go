@@ -7,8 +7,8 @@
 package mazeequipconfigv8
 
 import (
-	"gitlab.ifreetalk.com/maze/maze_game_server/common/constdef"
-	"gitlab.ifreetalk.com/maze/maze_game_server/config/GMazeEquipConfigV8Cfg"
+	"maze_game_server/common/constdef"
+	"maze_game_server/config/GMazeEquipConfigV8Cfg"
 )
 
 // 获取最大装备套数量

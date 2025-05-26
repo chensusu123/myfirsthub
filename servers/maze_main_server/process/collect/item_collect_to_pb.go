@@ -3,12 +3,12 @@ package collect
 import (
 	"gitlab.ifreetalk.com/maze-plate/extra/protobuf/proto"
 	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fklog"
-	"gitlab.ifreetalk.com/maze-plate/protodef/MazeCollect"
-	"gitlab.ifreetalk.com/maze-plate/protodef/MazeCollectCache"
-	"gitlab.ifreetalk.com/maze-plate/protodef/MazeCommon"
-	"gitlab.ifreetalk.com/maze/maze_game_server/common/errors"
-	"gitlab.ifreetalk.com/maze/maze_game_server/config/GMazeBarriesOnHookV8Cfg"
 	"go.uber.org/zap"
+	"maze_game_server/common/errors"
+	"maze_game_server/config/GMazeBarriesOnHookV8Cfg"
+	"maze_game_server/pb/common/MazeCollect"
+	"maze_game_server/pb/common/MazeCommon"
+	"maze_game_server/pb/server/MazeCollectCache"
 )
 
 func MazeCollectToCliPB(logger fklog.FKLogI, collectInfo *MazeCollectCache.MazeCollectInfo, passBarrier int32) (*MazeCollect.MazeCollectInfo, error) {

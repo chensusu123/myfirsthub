@@ -1,6 +1,6 @@
 package mazeenergyaffixfrontv8config
 
-import "gitlab.ifreetalk.com/maze/maze_game_server/config/GMazeEnergyAffixFrontV8Cfg"
+import "maze_game_server/config/GMazeEnergyAffixFrontV8Cfg"
 
 /**
  * @Author: liushuhang

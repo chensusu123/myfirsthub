@@ -17,9 +17,9 @@ import (
 	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fkredis"
 	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fkredis/redis"
 	"gitlab.ifreetalk.com/maze-plate/freetk/fkutil"
-	"gitlab.ifreetalk.com/maze-plate/protodef/MazeEquipCache"
-	"gitlab.ifreetalk.com/maze/maze_game_server/common/function/assemble"
 	"go.uber.org/zap"
+	"maze_game_server/common/function/assemble"
+	"maze_game_server/pb/server/MazeEquipCache"
 )
 
 var (

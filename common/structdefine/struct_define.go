@@ -6,7 +6,7 @@
 
 package structdefine
 
-import "gitlab.ifreetalk.com/maze-plate/protodef/MazeCommon"
+import "maze_game_server/pb/common/MazeCommon"
 
 type AddItemRes struct {
 	IsCheckErr  bool                   // 是否是检查过程出错,废弃

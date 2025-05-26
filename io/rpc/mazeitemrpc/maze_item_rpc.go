@@ -6,8 +6,8 @@ import (
 	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fklog"
 	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fkrpc/stru"
 	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fkrpc/thrift_rpc"
-	"gitlab.ifreetalk.com/maze-plate/protodef/MazeItemSvr"
 	"go.uber.org/zap"
+	"maze_game_server/pb/common/MazeItemSvr"
 )
 
 var itemRpc = thrift_rpc.AsyncRpc{}

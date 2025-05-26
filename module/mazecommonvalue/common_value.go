@@ -5,9 +5,9 @@ import (
 
 	"gitlab.ifreetalk.com/maze-plate/extra/protobuf/proto"
 	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fklog"
-	"gitlab.ifreetalk.com/maze-plate/protodef/MazeGame"
-	"gitlab.ifreetalk.com/maze/maze_game_server/usecase/mustarrive"
 	"go.uber.org/zap"
+	"maze_game_server/pb/common/MazeGame"
+	"maze_game_server/usecase/mustarrive"
 )
 
 var commonMap = map[int32]struct{}{

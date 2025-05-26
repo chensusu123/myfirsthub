@@ -5,16 +5,16 @@ import (
 
 	"gitlab.ifreetalk.com/maze-plate/extra/protobuf/proto"
 	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fklog"
-	"gitlab.ifreetalk.com/maze-plate/protodef/MazeEquipSvr"
-	"gitlab.ifreetalk.com/maze-plate/protodef/MazeGameEquip"
-	"gitlab.ifreetalk.com/maze-plate/protodef/MessageType"
-	"gitlab.ifreetalk.com/maze-plate/protodef/errors"
-	"gitlab.ifreetalk.com/maze/maze_game_server/common/constdef"
-	"gitlab.ifreetalk.com/maze/maze_game_server/common/function/grouplock"
-	"gitlab.ifreetalk.com/maze/maze_game_server/config/GMazeEquipSuiteInfoV8Cfg"
-	"gitlab.ifreetalk.com/maze/maze_game_server/excel/mazeequipaffixrandpoolv8"
-	"gitlab.ifreetalk.com/maze/maze_game_server/usecase/mustarrive"
 	"go.uber.org/zap"
+	"maze_game_server/common/constdef"
+	"maze_game_server/common/function/grouplock"
+	"maze_game_server/config/GMazeEquipSuiteInfoV8Cfg"
+	"maze_game_server/excel/mazeequipaffixrandpoolv8"
+	"maze_game_server/pb/common/MazeGameEquip"
+	"maze_game_server/pb/common/MessageType"
+	"maze_game_server/pb/errors"
+	"maze_game_server/pb/server/MazeEquipSvr"
+	"maze_game_server/usecase/mustarrive"
 )
 
 var globalLock = grouplock.NewGroupLock(10240)

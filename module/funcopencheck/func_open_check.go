@@ -1,8 +1,8 @@
 package funcopencheck
 
 import (
-	"gitlab.ifreetalk.com/maze/maze_game_server/common/errors"
-	"gitlab.ifreetalk.com/maze/maze_game_server/config/GMazeActionCountV8Cfg"
+	"maze_game_server/common/errors"
+	"maze_game_server/config/GMazeActionCountV8Cfg"
 )
 
 // 检查结果

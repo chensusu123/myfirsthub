@@ -6,8 +6,8 @@ import (
 
 	"gitlab.ifreetalk.com/maze-plate/extra/protobuf/proto"
 	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fknet"
-	"gitlab.ifreetalk.com/maze-plate/protodef/MazeCommon"
-	"gitlab.ifreetalk.com/maze-plate/protodef/MazeTempBuff"
+	"maze_game_server/pb/common/MazeCommon"
+	"maze_game_server/pb/common/MazeTempBuff"
 )
 
 /**

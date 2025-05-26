@@ -5,9 +5,9 @@ import (
 	"time"
 
 	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fklog"
-	"gitlab.ifreetalk.com/maze/maze_game_server/servers/maze_main_server/process/equip_gm/copyequipgm"
-	"gitlab.ifreetalk.com/maze/maze_game_server/servers/maze_main_server/process/equip_gm/equipaassemblegm"
-	"gitlab.ifreetalk.com/maze/maze_game_server/servers/maze_main_server/process/equip_gm/equipbaggm"
+	"maze_game_server/servers/maze_main_server/process/equip_gm/copyequipgm"
+	"maze_game_server/servers/maze_main_server/process/equip_gm/equipaassemblegm"
+	"maze_game_server/servers/maze_main_server/process/equip_gm/equipbaggm"
 )
 
 func RegEquipGm(logger fklog.FKLogI) {

@@ -6,10 +6,10 @@ import (
 	"gitlab.ifreetalk.com/maze-plate/extra/protobuf/proto"
 	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fknet"
 	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fkprometheus"
-	"gitlab.ifreetalk.com/maze-plate/protodef/UserLogin"
-	"gitlab.ifreetalk.com/maze/maze_game_server/common/errors"
-	"gitlab.ifreetalk.com/maze/maze_game_server/io/redis/UnionIDBindRedis"
-	"gitlab.ifreetalk.com/maze/maze_game_server/io/redis/useridredis"
+	"maze_game_server/common/errors"
+	"maze_game_server/io/redis/UnionIDBindRedis"
+	"maze_game_server/io/redis/useridredis"
+	"maze_game_server/pb/common/UserLogin"
 
 	"go.uber.org/zap"
 )

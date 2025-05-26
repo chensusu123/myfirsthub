@@ -2,11 +2,11 @@ package collect
 
 import (
 	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fklog"
-	"gitlab.ifreetalk.com/maze/maze_game_server/io/kafka/mazeuserlevelkafka"
-	"gitlab.ifreetalk.com/maze/maze_game_server/io/redis/mazecollectredis"
-	"gitlab.ifreetalk.com/maze/maze_game_server/module/funcopencheck"
-	"gitlab.ifreetalk.com/maze/maze_game_server/module/mazeuserinfo"
 	"go.uber.org/zap"
+	"maze_game_server/io/kafka/mazeuserlevelkafka"
+	"maze_game_server/io/redis/mazecollectredis"
+	"maze_game_server/module/funcopencheck"
+	"maze_game_server/module/mazeuserinfo"
 )
 
 // 用户等级变化流水

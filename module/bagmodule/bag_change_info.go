@@ -3,7 +3,7 @@ package bagmodule
 import (
 	"gitlab.ifreetalk.com/maze-plate/extra/protobuf/proto"
 	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fklog"
-	"gitlab.ifreetalk.com/maze-plate/protodef/MazeEquipCache"
+	"maze_game_server/pb/server/MazeEquipCache"
 )
 
 const (

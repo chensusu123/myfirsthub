@@ -1,13 +1,13 @@
 package buff
 
 import (
-	"gitlab.ifreetalk.com/maze/maze_game_server/common/constdef"
-	"gitlab.ifreetalk.com/maze/maze_game_server/common/structsdef"
-	"gitlab.ifreetalk.com/maze/maze_game_server/io/kafka/mazebarrieruserkafka"
-	"gitlab.ifreetalk.com/maze/maze_game_server/io/redis/mazeattrcalcnotifyqueue"
-	"gitlab.ifreetalk.com/maze/maze_game_server/io/redis/mazebuffinforedis"
-	"gitlab.ifreetalk.com/maze/maze_game_server/io/redis/mazetempbuffredis"
 	"go.uber.org/zap"
+	"maze_game_server/common/constdef"
+	"maze_game_server/common/structsdef"
+	"maze_game_server/io/kafka/mazebarrieruserkafka"
+	"maze_game_server/io/redis/mazeattrcalcnotifyqueue"
+	"maze_game_server/io/redis/mazebuffinforedis"
+	"maze_game_server/io/redis/mazetempbuffredis"
 
 	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fklog"
 )

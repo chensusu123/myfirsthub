@@ -3,8 +3,8 @@ package module
 import (
 	"gitlab.ifreetalk.com/maze-plate/extra/protobuf/proto"
 	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fklog"
-	"gitlab.ifreetalk.com/maze-plate/protodef/MazeEquipCache"
-	"gitlab.ifreetalk.com/maze/maze_game_server/common/function/assemble"
+	"maze_game_server/common/function/assemble"
+	"maze_game_server/pb/server/MazeEquipCache"
 )
 
 func GetEquipPosInfo(assembleInfo *MazeEquipCache.MazeAssembleDb, pos int32) *MazeEquipCache.MazeEquipPosInfo {

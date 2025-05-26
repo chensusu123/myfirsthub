@@ -1,6 +1,6 @@
 package vardef
 
-import "gitlab.ifreetalk.com/maze/maze_game_server/common/constdef"
+import "maze_game_server/common/constdef"
 
 var (
 	MazeBuffChgTypeDesc = map[int32]string{

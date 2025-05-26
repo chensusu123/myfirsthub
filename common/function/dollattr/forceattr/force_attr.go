@@ -8,7 +8,7 @@
 package forceattr
 
 import (
-	"gitlab.ifreetalk.com/maze/maze_game_server/config/GMazeAttributeFormulaV8Cfg"
+	"maze_game_server/config/GMazeAttributeFormulaV8Cfg"
 )
 
 // 根据配表判断是否是展示武力值属性

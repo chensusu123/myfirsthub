@@ -7,8 +7,8 @@
 package item
 
 import (
-	"gitlab.ifreetalk.com/maze/maze_game_server/common/itemclass/mazebag"
-	"gitlab.ifreetalk.com/maze/maze_game_server/common/itemclass/mazecommonvalue"
+	"maze_game_server/common/itemclass/mazebag"
+	"maze_game_server/common/itemclass/mazecommonvalue"
 )
 
 func init() {

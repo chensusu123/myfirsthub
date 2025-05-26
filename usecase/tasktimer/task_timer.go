@@ -4,7 +4,7 @@ import (
 	"errors"
 
 	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fklog"
-	"gitlab.ifreetalk.com/maze-plate/protodef/SeaTaskSvr"
+	"maze_game_server/pb/server/SeaTaskSvr"
 )
 
 func init() {

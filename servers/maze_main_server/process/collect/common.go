@@ -5,12 +5,12 @@ import (
 	"time"
 
 	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fklog"
-	"gitlab.ifreetalk.com/maze/maze_game_server/common/constdef"
 	"go.uber.org/zap"
+	"maze_game_server/common/constdef"
 
-	"gitlab.ifreetalk.com/maze-plate/protodef/MazeCollectCache"
-	"gitlab.ifreetalk.com/maze-plate/protodef/MazeCommon"
 	"gitlab.ifreetalk.com/maze-plate/extra/protobuf/proto"
+	"maze_game_server/pb/common/MazeCommon"
+	"maze_game_server/pb/server/MazeCollectCache"
 )
 
 // 获取道具刷新时间

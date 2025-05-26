@@ -2,12 +2,12 @@ package pbutil
 
 import (
 	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fklog"
-	"gitlab.ifreetalk.com/maze-plate/protodef/MazeEquipCache"
-	"gitlab.ifreetalk.com/maze/maze_game_server/config/GMazeEquipSuiteNameV8Cfg"
-	"gitlab.ifreetalk.com/maze/maze_game_server/config/GMazeItemsV8Cfg"
-	"gitlab.ifreetalk.com/maze/maze_game_server/excel/mazeequipconfigv8"
-	"gitlab.ifreetalk.com/maze/maze_game_server/excel/mazeequiptyperesv8"
 	"go.uber.org/zap"
+	"maze_game_server/config/GMazeEquipSuiteNameV8Cfg"
+	"maze_game_server/config/GMazeItemsV8Cfg"
+	"maze_game_server/excel/mazeequipconfigv8"
+	"maze_game_server/excel/mazeequiptyperesv8"
+	"maze_game_server/pb/server/MazeEquipCache"
 )
 
 func GetDollEquipName(equipInfo *MazeEquipCache.MazeEquipInfoDb, equipType int32) (equipResId int32, equipName string) {

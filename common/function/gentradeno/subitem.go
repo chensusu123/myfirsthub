@@ -2,13 +2,13 @@ package gentradeno
 
 import (
 	"gitlab.ifreetalk.com/maze-plate/extra/protobuf/proto"
-	"gitlab.ifreetalk.com/maze/maze_game_server/common/errors"
 	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fklog"
-	"gitlab.ifreetalk.com/maze-plate/protodef/MazeCommon"
-	"gitlab.ifreetalk.com/maze-plate/protodef/MazeItemSvr"
-	"gitlab.ifreetalk.com/maze-plate/protodef/MessageType"
-	"gitlab.ifreetalk.com/maze/maze_game_server/servers/maze_main_server/process/item"
 	"go.uber.org/zap"
+	"maze_game_server/common/errors"
+	"maze_game_server/pb/common/MazeCommon"
+	"maze_game_server/pb/common/MessageType"
+	"maze_game_server/pb/server/MazeItemSvr"
+	"maze_game_server/servers/maze_main_server/process/item"
 )
 
 var (

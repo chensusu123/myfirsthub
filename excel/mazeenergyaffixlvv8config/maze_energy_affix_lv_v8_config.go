@@ -4,7 +4,7 @@ import (
 	"sync/atomic"
 	"unsafe"
 
-	"gitlab.ifreetalk.com/maze/maze_game_server/config/GMazeEnergyAffixV8Cfg"
+	"maze_game_server/config/GMazeEnergyAffixV8Cfg"
 )
 
 /**

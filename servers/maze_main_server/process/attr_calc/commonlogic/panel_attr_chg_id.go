@@ -9,13 +9,13 @@ package commonlogic
 import (
 	"gitlab.ifreetalk.com/maze-plate/extra/protobuf/proto"
 	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fklog"
-	"gitlab.ifreetalk.com/maze-plate/protodef/Common"
-	"gitlab.ifreetalk.com/maze-plate/protodef/MazePropertyPanel"
-	"gitlab.ifreetalk.com/maze/maze_game_server/common/constdef"
-	"gitlab.ifreetalk.com/maze/maze_game_server/common/structsdef"
-	"gitlab.ifreetalk.com/maze/maze_game_server/excel/mazeconfigv8"
-	"gitlab.ifreetalk.com/maze/maze_game_server/usecase/mustarrive"
 	"go.uber.org/zap"
+	"maze_game_server/common/constdef"
+	"maze_game_server/common/structsdef"
+	"maze_game_server/excel/mazeconfigv8"
+	"maze_game_server/pb/common/Common"
+	"maze_game_server/pb/common/MazePropertyPanel"
+	"maze_game_server/usecase/mustarrive"
 )
 
 func NotifyClientAttrChg(logger fklog.FKLogI, userId uint64, msg *structsdef.DollAttrChgNotify) {

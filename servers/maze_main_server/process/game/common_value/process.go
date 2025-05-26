@@ -2,7 +2,7 @@ package common_value
 
 // import (
 // 	"gitlab.ifreetalk.com/maze-plate/freetk/fkserver/thrift_service"
-// 	"gitlab.ifreetalk.com/maze-plate/protodef/MazeCommonValueSvr"
+// 	"maze_game_server/pb/common/MazeCommonValueSvr"
 // )
 
 // func RegisterRpcPackProcessor() {

@@ -5,12 +5,12 @@ import (
 	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fknet"
 	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fkprometheus"
 	"gitlab.ifreetalk.com/maze-plate/freetk/fkutil"
-	"gitlab.ifreetalk.com/maze-plate/protodef/MazeEquipSvr"
-	"gitlab.ifreetalk.com/maze-plate/protodef/MazeGame"
-	"gitlab.ifreetalk.com/maze/maze_game_server/common/errors"
-	"gitlab.ifreetalk.com/maze/maze_game_server/common/function/addequip"
-	"gitlab.ifreetalk.com/maze/maze_game_server/common/function/gentradeno"
-	"gitlab.ifreetalk.com/maze/maze_game_server/config/GMazeBoxV8Cfg"
+	"maze_game_server/common/errors"
+	"maze_game_server/common/function/addequip"
+	"maze_game_server/common/function/gentradeno"
+	"maze_game_server/config/GMazeBoxV8Cfg"
+	"maze_game_server/pb/common/MazeGame"
+	"maze_game_server/pb/server/MazeEquipSvr"
 
 	"go.uber.org/zap"
 )

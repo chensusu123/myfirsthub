@@ -10,15 +10,15 @@ import (
 
 	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fklog"
 	"gitlab.ifreetalk.com/maze-plate/freetk/fkutil"
-	"gitlab.ifreetalk.com/maze/maze_game_server/common/function/fileio"
-	"gitlab.ifreetalk.com/maze/maze_game_server/common/function/gm"
-	"gitlab.ifreetalk.com/maze/maze_game_server/io/redis/mazebuffinforedis"
-	"gitlab.ifreetalk.com/maze/maze_game_server/io/redis/mazeuserlevelredis"
-	"gitlab.ifreetalk.com/maze/maze_game_server/module/calcassembleattr"
-	"gitlab.ifreetalk.com/maze/maze_game_server/module/dollassembleinfo"
-	"gitlab.ifreetalk.com/maze/maze_game_server/servers/maze_main_server/process/equip"
-	"gitlab.ifreetalk.com/maze/maze_game_server/servers/maze_main_server/process/equip_gm/equipbaggm"
 	"go.uber.org/zap"
+	"maze_game_server/common/function/fileio"
+	"maze_game_server/common/function/gm"
+	"maze_game_server/io/redis/mazebuffinforedis"
+	"maze_game_server/io/redis/mazeuserlevelredis"
+	"maze_game_server/module/calcassembleattr"
+	"maze_game_server/module/dollassembleinfo"
+	"maze_game_server/servers/maze_main_server/process/equip"
+	"maze_game_server/servers/maze_main_server/process/equip_gm/equipbaggm"
 )
 
 var EndLine = "-----------------------------------------------------------\n"

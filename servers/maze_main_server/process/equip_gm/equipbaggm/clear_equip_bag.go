@@ -2,7 +2,7 @@ package equipbaggm
 
 import (
 	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fklog"
-	"gitlab.ifreetalk.com/maze/maze_game_server/io/redis/mazebagequipredis"
+	"maze_game_server/io/redis/mazebagequipredis"
 )
 
 func ClearEquipBag(logger fklog.FKLogI, userId uint64) error {

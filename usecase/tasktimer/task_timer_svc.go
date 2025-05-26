@@ -8,9 +8,9 @@ import (
 
 	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fkconfig"
 	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fklog"
-	"gitlab.ifreetalk.com/maze-plate/protodef/SeaTaskSvr"
-	"gitlab.ifreetalk.com/maze/maze_game_server/usecase/tasktimer/delay/redisdelay"
 	"go.uber.org/zap"
+	"maze_game_server/pb/server/SeaTaskSvr"
+	"maze_game_server/usecase/tasktimer/delay/redisdelay"
 )
 
 type TaskTimerBusiness struct {

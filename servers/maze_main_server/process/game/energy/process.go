@@ -7,8 +7,8 @@
 package energy
 
 import (
-	"gitlab.ifreetalk.com/maze/maze_game_server/lib/net/websocket_service"
-	"gitlab.ifreetalk.com/maze-plate/protodef/MazeEnergy"
+	"maze_game_server/lib/net/websocket_service"
+	"maze_game_server/pb/common/MazeEnergy"
 )
 
 func RegTcpHandler() {

@@ -3,16 +3,16 @@ package dollassembleinfo
 import (
 	"gitlab.ifreetalk.com/maze-plate/extra/protobuf/proto"
 	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fklog"
-	"gitlab.ifreetalk.com/maze-plate/protodef/MazeEquipCache"
-	"gitlab.ifreetalk.com/maze/maze_game_server/common/constdef"
-	"gitlab.ifreetalk.com/maze/maze_game_server/common/errors"
-	"gitlab.ifreetalk.com/maze/maze_game_server/common/function/assemble"
-	"gitlab.ifreetalk.com/maze/maze_game_server/config/GMazeEquipPosRankV8Cfg"
-	"gitlab.ifreetalk.com/maze/maze_game_server/io/redis/dollassembleredis"
-	"gitlab.ifreetalk.com/maze/maze_game_server/io/redis/dollassemblesuitredis"
-	"gitlab.ifreetalk.com/maze/maze_game_server/module/calcassembleattr"
-	"gitlab.ifreetalk.com/maze/maze_game_server/module/effectequip"
 	"go.uber.org/zap"
+	"maze_game_server/common/constdef"
+	"maze_game_server/common/errors"
+	"maze_game_server/common/function/assemble"
+	"maze_game_server/config/GMazeEquipPosRankV8Cfg"
+	"maze_game_server/io/redis/dollassembleredis"
+	"maze_game_server/io/redis/dollassemblesuitredis"
+	"maze_game_server/module/calcassembleattr"
+	"maze_game_server/module/effectequip"
+	"maze_game_server/pb/server/MazeEquipCache"
 )
 
 // 打包装配信息

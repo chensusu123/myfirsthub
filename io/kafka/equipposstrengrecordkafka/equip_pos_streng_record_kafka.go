@@ -5,10 +5,10 @@ import (
 
 	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fkconfig"
 	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fklog"
-	"gitlab.ifreetalk.com/maze-plate/protodef/MazeCommon"
-	"gitlab.ifreetalk.com/maze/maze_game_server/common/function/itemutil"
-	"gitlab.ifreetalk.com/maze/maze_game_server/io/dispatcher"
 	"go.uber.org/zap"
+	"maze_game_server/common/function/itemutil"
+	"maze_game_server/io/dispatcher"
+	"maze_game_server/pb/common/MazeCommon"
 )
 
 // 装备位强化流水

@@ -10,8 +10,8 @@ import (
 	"testing"
 
 	"gitlab.ifreetalk.com/maze-plate/extra/protobuf/proto"
-	"gitlab.ifreetalk.com/maze-plate/protodef/MazeEnergySvr"
-	"gitlab.ifreetalk.com/maze/maze_game_server/servers/maze_main_server/process/game/energy"
+	"maze_game_server/pb/common/MazeEnergySvr"
+	"maze_game_server/servers/maze_main_server/process/game/energy"
 )
 
 func TestSubEnergyRq(t *testing.T) {

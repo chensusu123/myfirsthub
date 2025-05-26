@@ -9,11 +9,11 @@ package equipaassemblegm
 import (
 	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fklog"
 	"go.uber.org/zap"
-	"gitlab.ifreetalk.com/maze/maze_game_server/module/dollassembleinfo"
-	"gitlab.ifreetalk.com/maze/maze_game_server/io/redis/mazebuffinforedis"
-	"gitlab.ifreetalk.com/maze/maze_game_server/common/structsdef"
-	"gitlab.ifreetalk.com/maze/maze_game_server/common/constdef"
-	"gitlab.ifreetalk.com/maze/maze_game_server/io/redis/mazeattrcalcnotifyqueue"
+	"maze_game_server/common/constdef"
+	"maze_game_server/common/structsdef"
+	"maze_game_server/io/redis/mazeattrcalcnotifyqueue"
+	"maze_game_server/io/redis/mazebuffinforedis"
+	"maze_game_server/module/dollassembleinfo"
 )
 
 // 1 修复非武力值buff 2=修复武力值buff

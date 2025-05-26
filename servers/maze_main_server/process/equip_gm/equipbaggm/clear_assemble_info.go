@@ -3,13 +3,13 @@ package equipbaggm
 import (
 	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fklog"
 	"go.uber.org/zap"
-	"gitlab.ifreetalk.com/maze/maze_game_server/io/redis/dollassemblesuitredis"
-	"gitlab.ifreetalk.com/maze/maze_game_server/common/constdef"
-	"gitlab.ifreetalk.com/maze/maze_game_server/common/function/assemble"
-	"gitlab.ifreetalk.com/maze/maze_game_server/io/redis/dollassembleredis"
-	"gitlab.ifreetalk.com/maze/maze_game_server/io/redis/mazebuffinforedis"
-	"gitlab.ifreetalk.com/maze/maze_game_server/common/structsdef"
-	"gitlab.ifreetalk.com/maze/maze_game_server/io/redis/mazeattrcalcnotifyqueue"
+	"maze_game_server/common/constdef"
+	"maze_game_server/common/function/assemble"
+	"maze_game_server/common/structsdef"
+	"maze_game_server/io/redis/dollassembleredis"
+	"maze_game_server/io/redis/dollassemblesuitredis"
+	"maze_game_server/io/redis/mazeattrcalcnotifyqueue"
+	"maze_game_server/io/redis/mazebuffinforedis"
 )
 
 // 删除人偶装配信息

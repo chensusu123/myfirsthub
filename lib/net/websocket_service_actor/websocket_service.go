@@ -20,9 +20,9 @@ import (
 	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fknet/pkg_ctl"
 	"gitlab.ifreetalk.com/maze-plate/freetk/fkserver"
 	"gitlab.ifreetalk.com/maze-plate/freetk/fkutil"
-	"gitlab.ifreetalk.com/maze/maze_game_server/lib/net/raw_pkg"
 	"go.uber.org/atomic"
 	"go.uber.org/zap"
+	"maze_game_server/lib/net/raw_pkg"
 )
 
 var json = jsoniter.ConfigCompatibleWithStandardLibrary

@@ -16,9 +16,9 @@ import (
 	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fkredis"
 	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fkredis/redis"
 	"gitlab.ifreetalk.com/maze-plate/freetk/fkutil"
-	"gitlab.ifreetalk.com/maze-plate/protodef/MazeBuffData"
-	"gitlab.ifreetalk.com/maze/maze_game_server/common/constdef"
 	"go.uber.org/zap"
+	"maze_game_server/common/constdef"
+	"maze_game_server/pb/server/MazeBuffData"
 )
 
 var (

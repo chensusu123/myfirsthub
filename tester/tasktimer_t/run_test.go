@@ -5,11 +5,11 @@ import (
 	"time"
 
 	"gitlab.ifreetalk.com/maze-plate/extra/protobuf/proto"
-	"gitlab.ifreetalk.com/maze/maze_game_server/common/errors"
 	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fklog"
-	"gitlab.ifreetalk.com/maze-plate/protodef/SeaTaskSvr"
-	"gitlab.ifreetalk.com/maze/maze_game_server/usecase/tasktimer"
 	"go.uber.org/zap"
+	"maze_game_server/common/errors"
+	"maze_game_server/pb/common/SeaTaskSvr"
+	"maze_game_server/usecase/tasktimer"
 )
 
 func ProcessTimeOut(logger fklog.FKLogI, shardingID uint64, req SeaTaskSvr.TaskExpireNotifyRQ) (res SeaTaskSvr.TaskExpireNotifyRS, err error) {

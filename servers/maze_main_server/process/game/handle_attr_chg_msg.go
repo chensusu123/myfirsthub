@@ -8,13 +8,13 @@ package game
 
 import (
 	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fklog"
-	"gitlab.ifreetalk.com/maze-plate/protodef/MazeGame"
-	"gitlab.ifreetalk.com/maze/maze_game_server/common/constdef"
-	"gitlab.ifreetalk.com/maze/maze_game_server/common/structsdef"
-	"gitlab.ifreetalk.com/maze/maze_game_server/io/redis/mazecalcattrredis"
-	"gitlab.ifreetalk.com/maze/maze_game_server/module/mazecommonvalue"
-	"gitlab.ifreetalk.com/maze/maze_game_server/module/mazeuserinfo"
 	"go.uber.org/zap"
+	"maze_game_server/common/constdef"
+	"maze_game_server/common/structsdef"
+	"maze_game_server/io/redis/mazecalcattrredis"
+	"maze_game_server/module/mazecommonvalue"
+	"maze_game_server/module/mazeuserinfo"
+	"maze_game_server/pb/common/MazeGame"
 )
 
 func HandleUserAttrMsg(logger fklog.FKLogI, msg *structsdef.DollAttrChgNotify) {

@@ -3,23 +3,23 @@ package packtopb
 import (
 	"sort"
 
-	"gitlab.ifreetalk.com/maze-plate/protodef/MazeGameEquip"
-	"gitlab.ifreetalk.com/maze/maze_game_server/config/GMazeEquipAffixOrderV8Cfg"
+	"maze_game_server/config/GMazeEquipAffixOrderV8Cfg"
+	"maze_game_server/pb/common/MazeGameEquip"
 
-	"gitlab.ifreetalk.com/maze/maze_game_server/config/GMazeAttributeV8Cfg"
-	"gitlab.ifreetalk.com/maze/maze_game_server/config/GMazeEquipConfigV8Cfg"
+	"maze_game_server/config/GMazeAttributeV8Cfg"
+	"maze_game_server/config/GMazeEquipConfigV8Cfg"
 
 	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fklog"
-	"gitlab.ifreetalk.com/maze/maze_game_server/common/errors"
 	"go.uber.org/zap"
+	"maze_game_server/common/errors"
 
 	"gitlab.ifreetalk.com/maze-plate/extra/protobuf/proto"
-	"gitlab.ifreetalk.com/maze-plate/protodef/MazeEquipCache"
-	"gitlab.ifreetalk.com/maze/maze_game_server/common/constdef"
-	"gitlab.ifreetalk.com/maze/maze_game_server/common/function/pbutil"
-	"gitlab.ifreetalk.com/maze/maze_game_server/common/function/randfuncs"
-	"gitlab.ifreetalk.com/maze/maze_game_server/config/GMazeAttrSpDescV8Cfg"
-	"gitlab.ifreetalk.com/maze/maze_game_server/config/GMazeEquipInfoV8Cfg"
+	"maze_game_server/common/constdef"
+	"maze_game_server/common/function/pbutil"
+	"maze_game_server/common/function/randfuncs"
+	"maze_game_server/config/GMazeAttrSpDescV8Cfg"
+	"maze_game_server/config/GMazeEquipInfoV8Cfg"
+	"maze_game_server/pb/server/MazeEquipCache"
 )
 
 func EquipInfoToCliPB(logger fklog.FKLogI, equipInfo *MazeEquipCache.MazeEquipInfoDb) (*MazeGameEquip.MazeEquipInfo, error) {

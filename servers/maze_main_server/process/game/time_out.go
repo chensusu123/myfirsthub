@@ -7,7 +7,7 @@ import (
 	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fkconfig/param"
 	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fklog"
 	"gitlab.ifreetalk.com/maze-plate/freetk/fkutil"
-	"gitlab.ifreetalk.com/maze/maze_game_server/common/errors"
+	"maze_game_server/common/errors"
 )
 
 var HeartTime int64

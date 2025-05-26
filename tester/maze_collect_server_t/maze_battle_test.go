@@ -6,11 +6,11 @@ import (
 	"testing"
 
 	"gitlab.ifreetalk.com/maze-plate/extra/protobuf/proto"
-	"gitlab.ifreetalk.com/maze/maze_game_server/common/errors"
 	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fknet"
-	"gitlab.ifreetalk.com/maze-plate/protodef/Common"
-	"gitlab.ifreetalk.com/maze-plate/protodef/MazeCollect"
-	"gitlab.ifreetalk.com/maze/maze_game_server/servers/maze_main_server/process/collect"
+	"maze_game_server/common/errors"
+	"maze_game_server/pb/common/Common"
+	"maze_game_server/pb/common/MazeCollect"
+	"maze_game_server/servers/maze_main_server/process/collect"
 )
 
 func TestMazeCollectInfoQueryRQ(t *testing.T) {

@@ -3,8 +3,8 @@ package setseataskrpc
 import (
 	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fklog"
 	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fkrpc"
-	"gitlab.ifreetalk.com/maze-plate/protodef/SeaTaskSvr"
-	"gitlab.ifreetalk.com/maze/maze_game_server/usecase/tasktimer"
+	"maze_game_server/pb/server/SeaTaskSvr"
+	"maze_game_server/usecase/tasktimer"
 
 	"go.uber.org/zap"
 )

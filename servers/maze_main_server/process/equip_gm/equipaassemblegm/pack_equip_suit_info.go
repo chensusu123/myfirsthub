@@ -11,9 +11,9 @@ import (
 	"fmt"
 
 	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fklog"
-	"gitlab.ifreetalk.com/maze-plate/protodef/MazeEquipCache"
-	"gitlab.ifreetalk.com/maze/maze_game_server/config/GMazeEquipPosLvSuiteV8Cfg"
-	"gitlab.ifreetalk.com/maze/maze_game_server/module/calcassembleattr"
+	"maze_game_server/config/GMazeEquipPosLvSuiteV8Cfg"
+	"maze_game_server/module/calcassembleattr"
+	"maze_game_server/pb/server/MazeEquipCache"
 )
 
 func PackEquipSuitInfo(logger fklog.FKLogI, userId uint64, assembleInfo *MazeEquipCache.MazeAssembleDb, effectInfo *calcassembleattr.EquipmentEffectInfo) (s string, e error) {

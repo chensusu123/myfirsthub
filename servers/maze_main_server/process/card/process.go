@@ -1,9 +1,9 @@
 package card
 
 import (
-	"gitlab.ifreetalk.com/maze/maze_game_server/lib/net/websocket_service"
 	"gitlab.ifreetalk.com/maze-plate/freetk/fkserver/custom"
-	"gitlab.ifreetalk.com/maze-plate/protodef/MazeCard"
+	"maze_game_server/lib/net/websocket_service"
+	"maze_game_server/pb/common/MazeCard"
 )
 
 func RegTcpHandler() {

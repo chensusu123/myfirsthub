@@ -4,11 +4,11 @@ import (
 	"time"
 
 	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fklog"
-	"gitlab.ifreetalk.com/maze-plate/protodef/MazeCommonValueSvr"
-	"gitlab.ifreetalk.com/maze/maze_game_server/common/constdef"
-	"gitlab.ifreetalk.com/maze/maze_game_server/common/errors"
-	"gitlab.ifreetalk.com/maze/maze_game_server/module/mazemoney"
 	"go.uber.org/zap"
+	"maze_game_server/common/constdef"
+	"maze_game_server/common/errors"
+	"maze_game_server/module/mazemoney"
+	"maze_game_server/pb/server/MazeCommonValueSvr"
 )
 
 func MazeCommonValueSetRQ(logger fklog.FKLogI, userID int64, req *MazeCommonValueSvr.MazeCommonValueSetRQ, res *MazeCommonValueSvr.MazeCommonValueSetRS) (err error) {

@@ -2,15 +2,15 @@ package equip_gm
 
 import (
 	"gitlab.ifreetalk.com/maze-plate/extra/protobuf/proto"
-	"gitlab.ifreetalk.com/maze-plate/protodef/errors"
 	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fknet"
 	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fkprometheus"
 	"gitlab.ifreetalk.com/maze-plate/freetk/fkserver"
 	"gitlab.ifreetalk.com/maze-plate/freetk/fkutil"
-	"gitlab.ifreetalk.com/maze-plate/protodef/MazeGameEquip"
 	"go.uber.org/zap"
-	"gitlab.ifreetalk.com/maze/maze_game_server/servers/maze_main_server/process/equip_gm/resetequipcmd"
-	"gitlab.ifreetalk.com/maze/maze_game_server/lib/net/websocket_service"
+	"maze_game_server/lib/net/websocket_service"
+	"maze_game_server/pb/common/MazeGameEquip"
+	"maze_game_server/pb/errors"
+	"maze_game_server/servers/maze_main_server/process/equip_gm/resetequipcmd"
 )
 
 func RegTcpHandler() {

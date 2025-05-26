@@ -9,9 +9,9 @@ package equipaassemblegm
 import (
 	"gitlab.ifreetalk.com/maze-plate/extra/protobuf/proto"
 	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fklog"
-	"gitlab.ifreetalk.com/maze-plate/protodef/MazeEquipCache"
-	"gitlab.ifreetalk.com/maze/maze_game_server/io/redis/dollassemblesuitredis"
-	"gitlab.ifreetalk.com/maze/maze_game_server/io/redis/dollassembleredis"
+	"maze_game_server/io/redis/dollassembleredis"
+	"maze_game_server/io/redis/dollassemblesuitredis"
+	"maze_game_server/pb/server/MazeEquipCache"
 )
 
 func UnlockPosByEquip(logger fklog.FKLogI, userId uint64) (cnt int32, err error) {

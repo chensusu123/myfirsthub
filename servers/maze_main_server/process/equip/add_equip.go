@@ -6,29 +6,29 @@ import (
 	"sync"
 	"time"
 
-	"gitlab.ifreetalk.com/maze-plate/protodef/MazeEquipCache"
+	"maze_game_server/pb/server/MazeEquipCache"
 
 	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fkprometheus"
-	"gitlab.ifreetalk.com/maze-plate/protodef/MazeEquipSvr"
-	"gitlab.ifreetalk.com/maze/maze_game_server/config/GMazeEquipAttrStageV8Cfg"
-	"gitlab.ifreetalk.com/maze/maze_game_server/config/GMazeEquipInfoV8Cfg"
+	"maze_game_server/config/GMazeEquipAttrStageV8Cfg"
+	"maze_game_server/config/GMazeEquipInfoV8Cfg"
+	"maze_game_server/pb/server/MazeEquipSvr"
 
 	"context"
 
 	"gitlab.ifreetalk.com/maze-plate/extra/protobuf/proto"
 	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fklog"
 	"gitlab.ifreetalk.com/maze-plate/freetk/fkserver"
-	"gitlab.ifreetalk.com/maze-plate/protodef/MazeGameEquip"
-	"gitlab.ifreetalk.com/maze-plate/protodef/errors"
-	"gitlab.ifreetalk.com/maze/maze_game_server/common/function/packtopb"
-	"gitlab.ifreetalk.com/maze/maze_game_server/excel/mazeequipaffixrandpoolv8"
-	"gitlab.ifreetalk.com/maze/maze_game_server/excel/mazeequipconfigv8"
-	"gitlab.ifreetalk.com/maze/maze_game_server/io/kafka/mazeequipbagrecord"
-	"gitlab.ifreetalk.com/maze/maze_game_server/io/kafka/mazeequipinstancerecord"
-	"gitlab.ifreetalk.com/maze/maze_game_server/io/redis/mazeequipgetnumredis"
-	"gitlab.ifreetalk.com/maze/maze_game_server/io/redis/mazeequipguidredis"
-	"gitlab.ifreetalk.com/maze/maze_game_server/module/bagmodule"
 	"go.uber.org/zap"
+	"maze_game_server/common/function/packtopb"
+	"maze_game_server/excel/mazeequipaffixrandpoolv8"
+	"maze_game_server/excel/mazeequipconfigv8"
+	"maze_game_server/io/kafka/mazeequipbagrecord"
+	"maze_game_server/io/kafka/mazeequipinstancerecord"
+	"maze_game_server/io/redis/mazeequipgetnumredis"
+	"maze_game_server/io/redis/mazeequipguidredis"
+	"maze_game_server/module/bagmodule"
+	"maze_game_server/pb/common/MazeGameEquip"
+	"maze_game_server/pb/errors"
 )
 
 func OnSvrAddMazeEquipRQ(ctx fklog.FKLogI, shardingID int64, rqMsg proto.Message, rsMsg proto.Message) (err error) {

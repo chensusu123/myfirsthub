@@ -8,9 +8,9 @@ package game
 
 import (
 	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fklog"
-	"gitlab.ifreetalk.com/maze/maze_game_server/io/kafka/mazetempbuffchgmsg"
-	"gitlab.ifreetalk.com/maze/maze_game_server/module/mazeuserinfo"
 	"go.uber.org/zap"
+	"maze_game_server/io/kafka/mazetempbuffchgmsg"
+	"maze_game_server/module/mazeuserinfo"
 )
 
 type MazeTempBuffChangeMsg = mazetempbuffchgmsg.MazeTempBuffChangeMsg

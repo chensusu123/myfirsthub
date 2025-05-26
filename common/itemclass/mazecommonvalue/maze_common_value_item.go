@@ -10,18 +10,18 @@ import (
 	"fmt"
 
 	"gitlab.ifreetalk.com/maze-plate/extra/protobuf/proto"
-	"gitlab.ifreetalk.com/maze/maze_game_server/common/errors"
 	"gitlab.ifreetalk.com/maze-plate/freetk/fkserver"
-	"gitlab.ifreetalk.com/maze-plate/protodef/MazeCommon"
-	"gitlab.ifreetalk.com/maze-plate/protodef/MazeCommonValueSvr"
-	"gitlab.ifreetalk.com/maze-plate/protodef/MessageType"
-	"gitlab.ifreetalk.com/maze/maze_game_server/common/additemdefine"
-	"gitlab.ifreetalk.com/maze/maze_game_server/common/itemdefine/constdefine"
-	"gitlab.ifreetalk.com/maze/maze_game_server/common/itemdefine/errdefine"
-	"gitlab.ifreetalk.com/maze/maze_game_server/common/structdefine"
-	"gitlab.ifreetalk.com/maze/maze_game_server/io/redis/mazecommonvaluedb"
-	"gitlab.ifreetalk.com/maze/maze_game_server/servers/maze_main_server/process/game/common_value"
 	"go.uber.org/zap"
+	"maze_game_server/common/additemdefine"
+	"maze_game_server/common/errors"
+	"maze_game_server/common/itemdefine/constdefine"
+	"maze_game_server/common/itemdefine/errdefine"
+	"maze_game_server/common/structdefine"
+	"maze_game_server/io/redis/mazecommonvaluedb"
+	"maze_game_server/pb/common/MazeCommon"
+	"maze_game_server/pb/common/MessageType"
+	"maze_game_server/pb/server/MazeCommonValueSvr"
+	"maze_game_server/servers/maze_main_server/process/game/common_value"
 )
 
 var GlobalMazeCommonValue = &class{}

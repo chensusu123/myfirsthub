@@ -18,7 +18,7 @@ package main
 // 	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore"
 // 	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fkconfig"
 // 	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fklog"
-// 	"gitlab.ifreetalk.com/maze/maze_game_server/servers/maze_main_server/process"
+// 	"maze_game_server/servers/maze_main_server/process"
 // 	"go.uber.org/zap"
 // )
 

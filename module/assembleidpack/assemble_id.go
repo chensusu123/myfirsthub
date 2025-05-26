@@ -9,14 +9,14 @@ package assembleidpack
 import (
 	"gitlab.ifreetalk.com/maze-plate/extra/protobuf/proto"
 	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fklog"
-	"gitlab.ifreetalk.com/maze-plate/protodef/MazeEquipCache"
-	"gitlab.ifreetalk.com/maze-plate/protodef/MazeGameEquip"
+	"maze_game_server/pb/common/MazeGameEquip"
+	"maze_game_server/pb/server/MazeEquipCache"
 
-	"gitlab.ifreetalk.com/maze/maze_game_server/common/function/packtopb/asequipsuittopb"
-	"gitlab.ifreetalk.com/maze/maze_game_server/common/function/packtopb/packequipostopb"
-	"gitlab.ifreetalk.com/maze/maze_game_server/module/equippossuit"
-	"gitlab.ifreetalk.com/maze/maze_game_server/usecase/mustarrive"
 	"go.uber.org/zap"
+	"maze_game_server/common/function/packtopb/asequipsuittopb"
+	"maze_game_server/common/function/packtopb/packequipostopb"
+	"maze_game_server/module/equippossuit"
+	"maze_game_server/usecase/mustarrive"
 )
 
 func SendAssembleChgID(logger fklog.FKLogI, userId uint64, assembleInfo *MazeEquipCache.MazeAssembleDb, wantMask, posMask, reason int32) error {

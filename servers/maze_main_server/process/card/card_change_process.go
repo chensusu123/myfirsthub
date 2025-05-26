@@ -6,21 +6,21 @@ import (
 	"fmt"
 	"time"
 
-	"gitlab.ifreetalk.com/maze/maze_game_server/common/constdef"
-	"gitlab.ifreetalk.com/maze/maze_game_server/common/structsdef"
-	"gitlab.ifreetalk.com/maze/maze_game_server/excel/mazeconfigv8config"
-	"gitlab.ifreetalk.com/maze/maze_game_server/io/redis/mazeattrcalcnotifyqueue"
-	"gitlab.ifreetalk.com/maze/maze_game_server/io/redis/mazebuffinforedis"
-	"gitlab.ifreetalk.com/maze/maze_game_server/io/redis/mazecardlistgroupredis"
-	"gitlab.ifreetalk.com/maze/maze_game_server/io/redis/userriddlemonthlyredis"
+	"maze_game_server/common/constdef"
+	"maze_game_server/common/structsdef"
+	"maze_game_server/excel/mazeconfigv8config"
+	"maze_game_server/io/redis/mazeattrcalcnotifyqueue"
+	"maze_game_server/io/redis/mazebuffinforedis"
+	"maze_game_server/io/redis/mazecardlistgroupredis"
+	"maze_game_server/io/redis/userriddlemonthlyredis"
 
 	"gitlab.ifreetalk.com/maze-plate/extra/protobuf/proto"
 	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fkconfig"
 	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fklog"
 	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fkprometheus"
-	"gitlab.ifreetalk.com/maze-plate/protodef/MazeBuffData"
-	"gitlab.ifreetalk.com/maze-plate/protodef/MazeCard"
 	"go.uber.org/zap"
+	"maze_game_server/pb/common/MazeCard"
+	"maze_game_server/pb/server/MazeBuffData"
 )
 
 // 月卡变化通知

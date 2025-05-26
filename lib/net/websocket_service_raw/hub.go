@@ -15,8 +15,8 @@ import (
 	"gitlab.ifreetalk.com/maze-plate/extra/protobuf/proto"
 	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fklog"
 	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fknet"
-	"gitlab.ifreetalk.com/maze/maze_game_server/lib/net/raw_pkg"
 	"go.uber.org/zap"
+	"maze_game_server/lib/net/raw_pkg"
 )
 
 // Hub maintains the set of active clients and broadcasts messages to the

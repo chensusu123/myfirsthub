@@ -4,25 +4,25 @@ import (
 	"fmt"
 	"time"
 
-	"gitlab.ifreetalk.com/maze/maze_game_server/config/GMazeAttributeV8Cfg"
-	"gitlab.ifreetalk.com/maze/maze_game_server/excel/mazeenergyaffixlvv8config"
-	"gitlab.ifreetalk.com/maze/maze_game_server/io/kafka/mazetempbuffchgmsg"
-	"gitlab.ifreetalk.com/maze/maze_game_server/io/redis/mazeattrcalcnotifyqueue"
-	"gitlab.ifreetalk.com/maze/maze_game_server/io/redis/mazebuffinforedis"
-	"gitlab.ifreetalk.com/maze/maze_game_server/io/redis/mazetempbuffredis"
+	"maze_game_server/config/GMazeAttributeV8Cfg"
+	"maze_game_server/excel/mazeenergyaffixlvv8config"
+	"maze_game_server/io/kafka/mazetempbuffchgmsg"
+	"maze_game_server/io/redis/mazeattrcalcnotifyqueue"
+	"maze_game_server/io/redis/mazebuffinforedis"
+	"maze_game_server/io/redis/mazetempbuffredis"
 
 	"gitlab.ifreetalk.com/maze-plate/extra/protobuf/proto"
 	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fklog"
 	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fknet"
 	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fkprometheus"
-	"gitlab.ifreetalk.com/maze-plate/protodef/MazeBuffData"
-	"gitlab.ifreetalk.com/maze-plate/protodef/MazeTempBuff"
-	"gitlab.ifreetalk.com/maze-plate/protodef/MazeTempBuffSvr"
-	"gitlab.ifreetalk.com/maze/maze_game_server/common/constdef"
-	"gitlab.ifreetalk.com/maze/maze_game_server/common/errors"
+	"maze_game_server/common/constdef"
+	"maze_game_server/common/errors"
+	"maze_game_server/pb/common/MazeTempBuff"
+	"maze_game_server/pb/server/MazeBuffData"
+	"maze_game_server/pb/server/MazeTempBuffSvr"
 
-	"gitlab.ifreetalk.com/maze/maze_game_server/common/structsdef"
 	"go.uber.org/zap"
+	"maze_game_server/common/structsdef"
 )
 
 /**

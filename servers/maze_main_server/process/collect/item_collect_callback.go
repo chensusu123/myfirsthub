@@ -5,19 +5,19 @@ import (
 	"strings"
 	"time"
 
-	"gitlab.ifreetalk.com/maze/maze_game_server/io/kafka/mazecollectrecord"
+	"maze_game_server/io/kafka/mazecollectrecord"
 
 	"gitlab.ifreetalk.com/maze-plate/extra/protobuf/proto"
 	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fklog"
 	"gitlab.ifreetalk.com/maze-plate/freetk/fkutil"
-	"gitlab.ifreetalk.com/maze-plate/protodef/MazeCollectCache"
-	"gitlab.ifreetalk.com/maze/maze_game_server/common/constdef"
-	"gitlab.ifreetalk.com/maze/maze_game_server/common/errors"
-	"gitlab.ifreetalk.com/maze/maze_game_server/common/function/settimer"
-	"gitlab.ifreetalk.com/maze/maze_game_server/config/GMazeBarriesOnHookV8Cfg"
-	"gitlab.ifreetalk.com/maze/maze_game_server/io/redis/mazecollectredis"
-	"gitlab.ifreetalk.com/maze/maze_game_server/module/mazeuserinfo"
 	"go.uber.org/zap"
+	"maze_game_server/common/constdef"
+	"maze_game_server/common/errors"
+	"maze_game_server/common/function/settimer"
+	"maze_game_server/config/GMazeBarriesOnHookV8Cfg"
+	"maze_game_server/io/redis/mazecollectredis"
+	"maze_game_server/module/mazeuserinfo"
+	"maze_game_server/pb/server/MazeCollectCache"
 )
 
 type CollectMsg struct {

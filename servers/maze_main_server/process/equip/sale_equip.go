@@ -1,18 +1,18 @@
 package equip
 
 import (
-	"gitlab.ifreetalk.com/maze-plate/extra/protobuf/proto"
-	"gitlab.ifreetalk.com/maze-plate/protodef/errors"
-	"gitlab.ifreetalk.com/maze-plate/freetk/fkserver"
-	"gitlab.ifreetalk.com/maze-plate/protodef/MazeEquipCache"
-	"gitlab.ifreetalk.com/maze-plate/protodef/MazeEquipSvr"
-	"gitlab.ifreetalk.com/maze-plate/protodef/MazeGameEquip"
-	"go.uber.org/zap"
-	"gitlab.ifreetalk.com/maze/maze_game_server/common/function/packtopb"
-	"gitlab.ifreetalk.com/maze/maze_game_server/module/bagmodule"
-	"gitlab.ifreetalk.com/maze/maze_game_server/io/kafka/mazeequipbagrecord"
-	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fklog"
 	"context"
+	"gitlab.ifreetalk.com/maze-plate/extra/protobuf/proto"
+	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fklog"
+	"gitlab.ifreetalk.com/maze-plate/freetk/fkserver"
+	"go.uber.org/zap"
+	"maze_game_server/common/function/packtopb"
+	"maze_game_server/io/kafka/mazeequipbagrecord"
+	"maze_game_server/module/bagmodule"
+	"maze_game_server/pb/common/MazeGameEquip"
+	"maze_game_server/pb/errors"
+	"maze_game_server/pb/server/MazeEquipCache"
+	"maze_game_server/pb/server/MazeEquipSvr"
 )
 
 func OnSvrDollEquipSaleRQ(ctx fklog.FKLogI, shardingID int64, rqMsg proto.Message, rsMsg proto.Message) (err error) {

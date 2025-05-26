@@ -14,16 +14,16 @@ import (
 
 	"gitlab.ifreetalk.com/maze-plate/extra/protobuf/proto"
 	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fklog"
-	"gitlab.ifreetalk.com/maze-plate/protodef/MazeEquipCache"
-	"gitlab.ifreetalk.com/maze-plate/protodef/MazeGameEquip"
-	"gitlab.ifreetalk.com/maze/maze_game_server/common/constdef"
-	"gitlab.ifreetalk.com/maze/maze_game_server/common/function/pbutil"
-	"gitlab.ifreetalk.com/maze/maze_game_server/config/GMazeEquipInfoV8Cfg"
-	"gitlab.ifreetalk.com/maze/maze_game_server/config/GMazeEquipSuiteAttrV8Cfg"
-	"gitlab.ifreetalk.com/maze/maze_game_server/config/GMazeEquipSuiteInfoV8Cfg"
-	"gitlab.ifreetalk.com/maze/maze_game_server/config/GMazeEquipSuiteNameV8Cfg"
-	"gitlab.ifreetalk.com/maze/maze_game_server/excel/mazeequipinfocfgex"
 	"go.uber.org/zap"
+	"maze_game_server/common/constdef"
+	"maze_game_server/common/function/pbutil"
+	"maze_game_server/config/GMazeEquipInfoV8Cfg"
+	"maze_game_server/config/GMazeEquipSuiteAttrV8Cfg"
+	"maze_game_server/config/GMazeEquipSuiteInfoV8Cfg"
+	"maze_game_server/config/GMazeEquipSuiteNameV8Cfg"
+	"maze_game_server/excel/mazeequipinfocfgex"
+	"maze_game_server/pb/common/MazeGameEquip"
+	"maze_game_server/pb/server/MazeEquipCache"
 )
 
 func PackEquipSuitCliPb(logger fklog.FKLogI, pos int32, equips []*MazeEquipCache.MazeEquipPosInfo, suitId int32, dollLv int32) (cliSuitInfo *MazeGameEquip.EquipSuitInfo, err error) {

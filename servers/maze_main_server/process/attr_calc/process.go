@@ -2,9 +2,9 @@ package attr_calc
 
 import (
 	"gitlab.ifreetalk.com/maze-plate/freetk/fkserver/thrift_service"
-	"gitlab.ifreetalk.com/maze-plate/protodef/MazeAttrCalcSvr"
-	"gitlab.ifreetalk.com/maze/maze_game_server/lib/net/websocket_service"
-	"gitlab.ifreetalk.com/maze-plate/protodef/MazePropertyPanel"
+	"maze_game_server/lib/net/websocket_service"
+	"maze_game_server/pb/common/MazePropertyPanel"
+	"maze_game_server/pb/server/MazeAttrCalcSvr"
 )
 
 func RegRpcHandler() {

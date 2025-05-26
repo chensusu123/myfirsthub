@@ -7,7 +7,7 @@ import (
 	"gitlab.ifreetalk.com/maze-plate/extra/protobuf/proto"
 	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fkconfig"
 	"gitlab.ifreetalk.com/maze-plate/freetk/fkutil/uniqueid"
-	"gitlab.ifreetalk.com/maze-plate/protodef/MazeCommon"
+	"maze_game_server/pb/common/MazeCommon"
 )
 
 func Common2Map(attrs []*MazeCommon.Attr) (m map[int32]int64) {

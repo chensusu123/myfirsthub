@@ -12,11 +12,11 @@ import (
 	"time"
 
 	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fklog"
-	"gitlab.ifreetalk.com/maze-plate/protodef/MazeEquipCache"
-	"gitlab.ifreetalk.com/maze/maze_game_server/io/redis/mazeuserlevelredis"
-	"gitlab.ifreetalk.com/maze/maze_game_server/io/redis/mazecalcattrredis"
-	"gitlab.ifreetalk.com/maze/maze_game_server/common/constdef"
-	"gitlab.ifreetalk.com/maze/maze_game_server/io/redis/dollassembleredis"
+	"maze_game_server/common/constdef"
+	"maze_game_server/io/redis/dollassembleredis"
+	"maze_game_server/io/redis/mazecalcattrredis"
+	"maze_game_server/io/redis/mazeuserlevelredis"
+	"maze_game_server/pb/server/MazeEquipCache"
 )
 
 func PackAssembleHeader(logger fklog.FKLogI, userId uint64, as *MazeEquipCache.MazeAssembleDb) (header string, err error) {

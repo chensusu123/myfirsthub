@@ -7,11 +7,11 @@
 package iteminterface
 
 import (
-	"gitlab.ifreetalk.com/maze/maze_game_server/common/errors"
 	"gitlab.ifreetalk.com/maze-plate/freetk/fkserver"
-	"gitlab.ifreetalk.com/maze-plate/protodef/MazeCommon"
-	"gitlab.ifreetalk.com/maze-plate/protodef/MessageType"
-	"gitlab.ifreetalk.com/maze/maze_game_server/common/additemdefine"
+	"maze_game_server/common/additemdefine"
+	"maze_game_server/common/errors"
+	"maze_game_server/pb/common/MazeCommon"
+	"maze_game_server/pb/common/MessageType"
 
 	"go.uber.org/zap"
 )

@@ -11,8 +11,8 @@ import (
 
 	"gitlab.ifreetalk.com/maze-plate/freetk/common/fkfmt"
 	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fklog"
-	"gitlab.ifreetalk.com/maze/maze_game_server/common/function/gm"
-	"gitlab.ifreetalk.com/maze/maze_game_server/servers/maze_main_server/process/equip_gm/copyequipgm/copyusers"
+	"maze_game_server/common/function/gm"
+	"maze_game_server/servers/maze_main_server/process/equip_gm/copyequipgm/copyusers"
 )
 
 func RegGm(logger fklog.FKLogI) {

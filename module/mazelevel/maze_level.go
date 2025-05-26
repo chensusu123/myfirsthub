@@ -8,7 +8,7 @@ package mazelevel
 
 import (
 	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fklog"
-	"gitlab.ifreetalk.com/maze/maze_game_server/io/redis/mazeuserlevelredis"
+	"maze_game_server/io/redis/mazeuserlevelredis"
 )
 
 func GetMazelLevel(logger fklog.FKLogI, userId uint64) (level int64, err error) {

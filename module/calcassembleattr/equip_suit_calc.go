@@ -10,10 +10,10 @@ import (
 	"errors"
 
 	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fklog"
-	"gitlab.ifreetalk.com/maze-plate/protodef/MazeEquipCache"
-	"gitlab.ifreetalk.com/maze/maze_game_server/common/function/assemble"
-	"gitlab.ifreetalk.com/maze/maze_game_server/config/GMazeEquipSuiteInfoV8Cfg"
 	"go.uber.org/zap"
+	"maze_game_server/common/function/assemble"
+	"maze_game_server/config/GMazeEquipSuiteInfoV8Cfg"
+	"maze_game_server/pb/server/MazeEquipCache"
 )
 
 func CalcEquipSuit(logger fklog.FKLogI, equips []*MazeEquipCache.MazeEquipPosInfo) (suitMgr *EquipSuitMgr, err error) {

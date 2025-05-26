@@ -12,11 +12,11 @@ import (
 
 	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fklog"
 	"gitlab.ifreetalk.com/maze-plate/freetk/fkserver"
-	"gitlab.ifreetalk.com/maze-plate/protodef/MazeCommon"
-	"gitlab.ifreetalk.com/maze-plate/protodef/MessageType"
-	"gitlab.ifreetalk.com/maze/maze_game_server/common/structdefine"
-	"gitlab.ifreetalk.com/maze/maze_game_server/config/GMazeItemsV8Cfg"
 	"go.uber.org/zap"
+	"maze_game_server/common/structdefine"
+	"maze_game_server/config/GMazeItemsV8Cfg"
+	"maze_game_server/pb/common/MazeCommon"
+	"maze_game_server/pb/common/MessageType"
 )
 
 type AddItemOption struct {

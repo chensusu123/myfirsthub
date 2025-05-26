@@ -5,15 +5,15 @@ import (
 
 	"gitlab.ifreetalk.com/maze-plate/extra/protobuf/proto"
 	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fklog"
-	"gitlab.ifreetalk.com/maze-plate/protodef/MazeCommon"
-	"gitlab.ifreetalk.com/maze-plate/protodef/MazeCommonValueSvr"
-	"gitlab.ifreetalk.com/maze-plate/protodef/MazeGame"
-	"gitlab.ifreetalk.com/maze/maze_game_server/common/constdef"
-	"gitlab.ifreetalk.com/maze/maze_game_server/common/errors"
-	"gitlab.ifreetalk.com/maze/maze_game_server/io/kafka/mazemoneykafka"
-	"gitlab.ifreetalk.com/maze/maze_game_server/module/mazecommonvalue"
-	"gitlab.ifreetalk.com/maze/maze_game_server/module/mazemoney"
 	"go.uber.org/zap"
+	"maze_game_server/common/constdef"
+	"maze_game_server/common/errors"
+	"maze_game_server/io/kafka/mazemoneykafka"
+	"maze_game_server/module/mazecommonvalue"
+	"maze_game_server/module/mazemoney"
+	"maze_game_server/pb/common/MazeCommon"
+	"maze_game_server/pb/common/MazeGame"
+	"maze_game_server/pb/server/MazeCommonValueSvr"
 )
 
 func MazeCommonValueSubRQ(logger fklog.FKLogI, shardingID int64, req *MazeCommonValueSvr.MazeCommonValueSubRQ, res *MazeCommonValueSvr.MazeCommonValueSubRS) (err error) {

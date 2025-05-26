@@ -3,14 +3,14 @@ package dollequipbagrpc
 import (
 	"time"
 
-	"gitlab.ifreetalk.com/maze-plate/protodef/MazeEquipSvr"
+	"maze_game_server/pb/server/MazeEquipSvr"
 
 	"gitlab.ifreetalk.com/maze-plate/extra/protobuf/proto"
-	"gitlab.ifreetalk.com/maze/maze_game_server/common/errors"
 	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fklog"
 	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fkrpc/thrift_rpc"
-	"gitlab.ifreetalk.com/maze/maze_game_server/servers/maze_main_server/process/equip"
 	"go.uber.org/zap"
+	"maze_game_server/common/errors"
+	"maze_game_server/servers/maze_main_server/process/equip"
 )
 
 var gRpcClient = thrift_rpc.AsyncRpc{}

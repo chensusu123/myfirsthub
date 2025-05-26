@@ -6,8 +6,8 @@ import (
 	"testing"
 	"time"
 
-	"gitlab.ifreetalk.com/maze/maze_game_server/lib/net/websocket_service"
 	"go.uber.org/zap"
+	"maze_game_server/lib/net/websocket_service"
 )
 
 func dataProcess(c *websocket_service.Client, data []byte) {

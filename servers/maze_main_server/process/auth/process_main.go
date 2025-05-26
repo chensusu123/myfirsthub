@@ -1,8 +1,8 @@
 package auth
 
 import (
-	"gitlab.ifreetalk.com/maze-plate/protodef/UserLogin"
-	"gitlab.ifreetalk.com/maze/maze_game_server/lib/net/websocket_service"
+	"maze_game_server/lib/net/websocket_service"
+	"maze_game_server/pb/common/UserLogin"
 )
 
 func RegisterHandler() {

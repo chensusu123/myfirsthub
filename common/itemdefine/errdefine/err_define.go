@@ -7,8 +7,8 @@
 package errdefine
 
 import (
-	"gitlab.ifreetalk.com/maze/maze_game_server/common/errors"
-	"gitlab.ifreetalk.com/maze-plate/protodef/MessageType"
+	"maze_game_server/common/errors"
+	"maze_game_server/pb/common/MessageType"
 	"strings"
 )
 

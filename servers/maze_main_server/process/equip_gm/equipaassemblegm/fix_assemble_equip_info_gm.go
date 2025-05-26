@@ -8,11 +8,11 @@ package equipaassemblegm
 
 import (
 	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fklog"
-	"gitlab.ifreetalk.com/maze-plate/protodef/MazeEquipCache"
 	"go.uber.org/zap"
-	"gitlab.ifreetalk.com/maze/maze_game_server/io/redis/dollassemblesuitredis"
-	"gitlab.ifreetalk.com/maze/maze_game_server/module/effectequip"
-	"gitlab.ifreetalk.com/maze/maze_game_server/common/function/assemble"
+	"maze_game_server/common/function/assemble"
+	"maze_game_server/io/redis/dollassemblesuitredis"
+	"maze_game_server/module/effectequip"
+	"maze_game_server/pb/server/MazeEquipCache"
 )
 
 // 修复装配信息里装备信息

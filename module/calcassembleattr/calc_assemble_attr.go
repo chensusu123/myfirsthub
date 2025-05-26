@@ -3,9 +3,9 @@ package calcassembleattr
 import (
 	"gitlab.ifreetalk.com/maze-plate/extra/protobuf/proto"
 	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fklog"
-	"gitlab.ifreetalk.com/maze-plate/protodef/MazeBuffData"
-	"gitlab.ifreetalk.com/maze-plate/protodef/MazeEquipCache"
-	"gitlab.ifreetalk.com/maze/maze_game_server/common/function/assemble"
+	"maze_game_server/common/function/assemble"
+	"maze_game_server/pb/server/MazeBuffData"
+	"maze_game_server/pb/server/MazeEquipCache"
 )
 
 // 计算装备属性加成

@@ -8,11 +8,11 @@ package resetequipcmd
 
 import (
 	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fklog"
-	"gitlab.ifreetalk.com/maze/maze_game_server/common/constdef"
-	"gitlab.ifreetalk.com/maze/maze_game_server/io/redis/mazebuffinforedis"
-	"gitlab.ifreetalk.com/maze/maze_game_server/servers/maze_main_server/process/equip"
-	"gitlab.ifreetalk.com/maze/maze_game_server/servers/maze_main_server/process/equip_gm/equipbaggm"
 	"go.uber.org/zap"
+	"maze_game_server/common/constdef"
+	"maze_game_server/io/redis/mazebuffinforedis"
+	"maze_game_server/servers/maze_main_server/process/equip"
+	"maze_game_server/servers/maze_main_server/process/equip_gm/equipbaggm"
 )
 
 func RunCmd1001(logger fklog.FKLogI, userID uint64, session string, param string) error {

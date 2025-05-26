@@ -2,9 +2,9 @@ package mazecommonvalue
 
 import (
 	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fklog"
-	"gitlab.ifreetalk.com/maze-plate/protodef/MazeGame"
-	"gitlab.ifreetalk.com/maze/maze_game_server/config/GMazeLevelV8Cfg"
 	"go.uber.org/zap"
+	"maze_game_server/config/GMazeLevelV8Cfg"
+	"maze_game_server/pb/common/MazeGame"
 )
 
 // 上报数据后 只更新额外加成

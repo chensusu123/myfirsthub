@@ -4,7 +4,7 @@ import (
 	"context"
 	"fmt"
 
-	"gitlab.ifreetalk.com/maze-plate/protodef/MazeCollectCache"
+	"maze_game_server/pb/server/MazeCollectCache"
 
 	"gitlab.ifreetalk.com/maze-plate/extra/protobuf/proto"
 	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fkconfig"
