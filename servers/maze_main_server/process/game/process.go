@@ -1,11 +1,12 @@
 package game
 
 import (
-	"github.com/lonng/nano/component"
 	"maze_game_server/io/kafka/mazeattrmsg"
 	"maze_game_server/io/kafka/mazetempbuffchgmsg"
 	"maze_game_server/lib/net/websocket_service"
 	"maze_game_server/pb/common/MazeGame"
+
+	"github.com/lonng/nano/component"
 )
 
 type Game struct {
@@ -69,6 +70,11 @@ func RegTcpHandler() {
 		10449, &MazeGame.BarrierDeathRQ{},
 		10450, &MazeGame.BarrierDeathRS{},
 		OnMazeBarrierDeathRQ)
+
+	websocket_service.RegProcSimple(
+		10498, &MazeGame.BarrierMonsterDeathRQ{},
+		10499, &MazeGame.BarrierMonsterDeathRS{},
+		OnBarrierMonsterDeathRQ)
 
 	// 人偶版本迷宫查询关卡区域RQ
 	// websocket_service.RegProcSimple(
