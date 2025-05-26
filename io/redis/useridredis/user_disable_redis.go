@@ -21,12 +21,23 @@ var gRegionID = uint64(1)
 
 const maxUserID = 10000000
 
+func SetRegionID(regionID uint64) {
+	gRegionID = regionID
+}
+
 func getKey(userId uint64) string {
 	return fmt.Sprintf("uid:generate", userId)
 }
 
 // 获取用户信息是否封禁
 func Generate(logger fklog.FKLogI) uint64 {
+	groupID := fkconfig.EnvVal.GroupID
+	if groupID == 5 {
+		gRegionID = uint64(1)
+	} else {
+		gRegionID = uint64(groupID)
+	}
+
 	key := "uid:generate"
 	userId, err := redis.Int64(gRedis.Do(context.TODO(), "INCR", key))
 	if err != nil {
