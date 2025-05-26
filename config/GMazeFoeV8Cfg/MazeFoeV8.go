@@ -18,6 +18,7 @@ type MazeFoeV8ConfigRow struct {
 	In_barries_id                int32           `json:"in_barries_id"`                // 所属关卡id
 	Foe_type                     int32           `json:"foe_type"`                     // 怪物类型（1-小怪 2-守关boss 3-巡逻守卫
 	Drop_item                    map[int32]int64 `json:"drop_item"`                    // 怪物掉落物品
+	Drop_equip                   []int32         `json:"drop_equip"`                   // 怪物掉落装备
 	Name                         string          `json:"name"`                         // 怪物名称
 	Model_id                     int32           `json:"model_id"`                     // 资源组id
 	Level                        int32           `json:"level"`                        // 怪物等级
@@ -371,158 +372,177 @@ func (*gMazeFoeV8Parser) Parse(logger fklog.FKLogI, data []string, row interface
 		}
 	}
 
-	// parse column 4 name : 怪物名称
+	// parse column 4 drop_equip : 怪物掉落装备
 	if data[4] != "" {
-		config.Name = data[4]
+
+		vals := strings.Split(data[4], ",")
+		for k, v := range vals {
+			tmp, err = strconv.ParseInt(v, 10, 64)
+			if err != nil {
+				err = errors.New("parse array field drop_equip 怪物掉落装备 to []int32 failed")
+				logger.ErrorWF("parse array field drop_equip 怪物掉落装备 to []int32 failed.",
+					zap.String("xlsx", "maze_foe_v8【迷宫-敌人信息】.xlsx"), zap.String("sheet", "maze_foe_v8"),
+					// zap.String("field_data",data[4]),
+					zap.String("parse_data", v), zap.Int("index", k),
+					zap.Error(err))
+				return
+			}
+			config.Drop_equip = append(config.Drop_equip, int32(tmp))
+		}
 	}
 
-	// parse column 5 model_id : 资源组id
+	// parse column 5 name : 怪物名称
 	if data[5] != "" {
-		tmp, err = strconv.ParseInt(data[5], 10, 64)
+		config.Name = data[5]
+	}
+
+	// parse column 6 model_id : 资源组id
+	if data[6] != "" {
+		tmp, err = strconv.ParseInt(data[6], 10, 64)
 		if err != nil {
 			err = errors.New("parse field model_id 资源组id to int32 failed")
 			logger.ErrorWF("parse field model_id 资源组id to int32 failed.",
 				zap.String("xlsx", "maze_foe_v8【迷宫-敌人信息】.xlsx"), zap.String("sheet", "maze_foe_v8"),
-				zap.String("parse_data", data[5]),
+				zap.String("parse_data", data[6]),
 				zap.Error(err))
 			return
 		}
 		config.Model_id = int32(tmp)
 	}
 
-	// parse column 6 level : 怪物等级
-	if data[6] != "" {
-		tmp, err = strconv.ParseInt(data[6], 10, 64)
+	// parse column 7 level : 怪物等级
+	if data[7] != "" {
+		tmp, err = strconv.ParseInt(data[7], 10, 64)
 		if err != nil {
 			err = errors.New("parse field level 怪物等级 to int32 failed")
 			logger.ErrorWF("parse field level 怪物等级 to int32 failed.",
 				zap.String("xlsx", "maze_foe_v8【迷宫-敌人信息】.xlsx"), zap.String("sheet", "maze_foe_v8"),
-				zap.String("parse_data", data[6]),
+				zap.String("parse_data", data[7]),
 				zap.Error(err))
 			return
 		}
 		config.Level = int32(tmp)
 	}
 
-	// parse column 7 kongfu : 怪物武力值
-	if data[7] != "" {
-		tmp, err = strconv.ParseInt(data[7], 10, 64)
+	// parse column 8 kongfu : 怪物武力值
+	if data[8] != "" {
+		tmp, err = strconv.ParseInt(data[8], 10, 64)
 		if err != nil {
 			err = errors.New("parse field kongfu 怪物武力值 to int32 failed")
 			logger.ErrorWF("parse field kongfu 怪物武力值 to int32 failed.",
 				zap.String("xlsx", "maze_foe_v8【迷宫-敌人信息】.xlsx"), zap.String("sheet", "maze_foe_v8"),
-				zap.String("parse_data", data[7]),
+				zap.String("parse_data", data[8]),
 				zap.Error(err))
 			return
 		}
 		config.Kongfu = int32(tmp)
 	}
 
-	// parse column 8 hp_lose_type : 损血类型
-	if data[8] != "" {
-		tmp, err = strconv.ParseInt(data[8], 10, 64)
+	// parse column 9 hp_lose_type : 损血类型
+	if data[9] != "" {
+		tmp, err = strconv.ParseInt(data[9], 10, 64)
 		if err != nil {
 			err = errors.New("parse field hp_lose_type 损血类型 to int32 failed")
 			logger.ErrorWF("parse field hp_lose_type 损血类型 to int32 failed.",
 				zap.String("xlsx", "maze_foe_v8【迷宫-敌人信息】.xlsx"), zap.String("sheet", "maze_foe_v8"),
-				zap.String("parse_data", data[8]),
+				zap.String("parse_data", data[9]),
 				zap.Error(err))
 			return
 		}
 		config.Hp_lose_type = int32(tmp)
 	}
 
-	// parse column 9 attack_max : 怪物攻击
-	if data[9] != "" {
-		tmp, err = strconv.ParseInt(data[9], 10, 64)
+	// parse column 10 attack_max : 怪物攻击
+	if data[10] != "" {
+		tmp, err = strconv.ParseInt(data[10], 10, 64)
 		if err != nil {
 			err = errors.New("parse field attack_max 怪物攻击 to int32 failed")
 			logger.ErrorWF("parse field attack_max 怪物攻击 to int32 failed.",
 				zap.String("xlsx", "maze_foe_v8【迷宫-敌人信息】.xlsx"), zap.String("sheet", "maze_foe_v8"),
-				zap.String("parse_data", data[9]),
+				zap.String("parse_data", data[10]),
 				zap.Error(err))
 			return
 		}
 		config.Attack_max = int32(tmp)
 	}
 
-	// parse column 10 def_max : 怪物防御
-	if data[10] != "" {
-		tmp, err = strconv.ParseInt(data[10], 10, 64)
+	// parse column 11 def_max : 怪物防御
+	if data[11] != "" {
+		tmp, err = strconv.ParseInt(data[11], 10, 64)
 		if err != nil {
 			err = errors.New("parse field def_max 怪物防御 to int32 failed")
 			logger.ErrorWF("parse field def_max 怪物防御 to int32 failed.",
 				zap.String("xlsx", "maze_foe_v8【迷宫-敌人信息】.xlsx"), zap.String("sheet", "maze_foe_v8"),
-				zap.String("parse_data", data[10]),
+				zap.String("parse_data", data[11]),
 				zap.Error(err))
 			return
 		}
 		config.Def_max = int32(tmp)
 	}
 
-	// parse column 11 hp_max : 怪物血量
-	if data[11] != "" {
-		tmp, err = strconv.ParseInt(data[11], 10, 64)
+	// parse column 12 hp_max : 怪物血量
+	if data[12] != "" {
+		tmp, err = strconv.ParseInt(data[12], 10, 64)
 		if err != nil {
 			err = errors.New("parse field hp_max 怪物血量 to int32 failed")
 			logger.ErrorWF("parse field hp_max 怪物血量 to int32 failed.",
 				zap.String("xlsx", "maze_foe_v8【迷宫-敌人信息】.xlsx"), zap.String("sheet", "maze_foe_v8"),
-				zap.String("parse_data", data[11]),
+				zap.String("parse_data", data[12]),
 				zap.Error(err))
 			return
 		}
 		config.Hp_max = int32(tmp)
 	}
 
-	// parse column 12 speed : 移动速度(万分比）
-	if data[12] != "" {
-		tmp, err = strconv.ParseInt(data[12], 10, 64)
+	// parse column 13 speed : 移动速度(万分比）
+	if data[13] != "" {
+		tmp, err = strconv.ParseInt(data[13], 10, 64)
 		if err != nil {
 			err = errors.New("parse field speed 移动速度(万分比） to int32 failed")
 			logger.ErrorWF("parse field speed 移动速度(万分比） to int32 failed.",
 				zap.String("xlsx", "maze_foe_v8【迷宫-敌人信息】.xlsx"), zap.String("sheet", "maze_foe_v8"),
-				zap.String("parse_data", data[12]),
+				zap.String("parse_data", data[13]),
 				zap.Error(err))
 			return
 		}
 		config.Speed = int32(tmp)
 	}
 
-	// parse column 13 hp_num : 血条数量
-	if data[13] != "" {
-		tmp, err = strconv.ParseInt(data[13], 10, 64)
+	// parse column 14 hp_num : 血条数量
+	if data[14] != "" {
+		tmp, err = strconv.ParseInt(data[14], 10, 64)
 		if err != nil {
 			err = errors.New("parse field hp_num 血条数量 to int32 failed")
 			logger.ErrorWF("parse field hp_num 血条数量 to int32 failed.",
 				zap.String("xlsx", "maze_foe_v8【迷宫-敌人信息】.xlsx"), zap.String("sheet", "maze_foe_v8"),
-				zap.String("parse_data", data[13]),
+				zap.String("parse_data", data[14]),
 				zap.Error(err))
 			return
 		}
 		config.Hp_num = int32(tmp)
 	}
 
-	// parse column 14 tough_max : 怪物韧性上限
-	if data[14] != "" {
-		tmp, err = strconv.ParseInt(data[14], 10, 64)
+	// parse column 15 tough_max : 怪物韧性上限
+	if data[15] != "" {
+		tmp, err = strconv.ParseInt(data[15], 10, 64)
 		if err != nil {
 			err = errors.New("parse field tough_max 怪物韧性上限 to int32 failed")
 			logger.ErrorWF("parse field tough_max 怪物韧性上限 to int32 failed.",
 				zap.String("xlsx", "maze_foe_v8【迷宫-敌人信息】.xlsx"), zap.String("sheet", "maze_foe_v8"),
-				zap.String("parse_data", data[14]),
+				zap.String("parse_data", data[15]),
 				zap.Error(err))
 			return
 		}
 		config.Tough_max = int32(tmp)
 	}
 
-	// parse column 15 drop_exp_num : 冒险等级:掉落经验数量
-	if data[15] != "" {
+	// parse column 16 drop_exp_num : 冒险等级:掉落经验数量
+	if data[16] != "" {
 
 		config.Drop_exp_num = make(map[int32]int64)
 		var key int32
 		var value int64
-		vals := strings.Split(data[15], "_")
+		vals := strings.Split(data[16], "_")
 		for k, val := range vals {
 			items := strings.Split(val, ":")
 			tmp, err = strconv.ParseInt(items[0], 10, 64)
@@ -530,7 +550,7 @@ func (*gMazeFoeV8Parser) Parse(logger fklog.FKLogI, data []string, row interface
 				err = errors.New("parse map field drop_exp_num 冒险等级:掉落经验数量 to key int32 failed")
 				logger.ErrorWF("parse map field drop_exp_num 冒险等级:掉落经验数量 to key int32 failed.",
 					zap.String("xlsx", "maze_foe_v8【迷宫-敌人信息】.xlsx"), zap.String("sheet", "maze_foe_v8"),
-					// zap.String("field_data",data[15]),
+					// zap.String("field_data",data[16]),
 					zap.String("item_data", val), zap.Int("index", k),
 					zap.String("parse_data", items[0]),
 					zap.Error(err))
@@ -542,7 +562,7 @@ func (*gMazeFoeV8Parser) Parse(logger fklog.FKLogI, data []string, row interface
 				err = errors.New("parse map field drop_exp_num 冒险等级:掉落经验数量 to value int64 failed")
 				logger.ErrorWF("parse map field drop_exp_num 冒险等级:掉落经验数量 to value int64 failed.",
 					zap.String("xlsx", "maze_foe_v8【迷宫-敌人信息】.xlsx"), zap.String("sheet", "maze_foe_v8"),
-					// zap.String("field_data",data[15]),
+					// zap.String("field_data",data[16]),
 					zap.String("item_data", val), zap.Int("index", k),
 					zap.String("parse_data", items[1]),
 					zap.Error(err))
@@ -553,13 +573,13 @@ func (*gMazeFoeV8Parser) Parse(logger fklog.FKLogI, data []string, row interface
 		}
 	}
 
-	// parse column 16 drop_coin_num : 冒险等级:掉落钱币数量
-	if data[16] != "" {
+	// parse column 17 drop_coin_num : 冒险等级:掉落钱币数量
+	if data[17] != "" {
 
 		config.Drop_coin_num = make(map[int32]int64)
 		var key int32
 		var value int64
-		vals := strings.Split(data[16], "_")
+		vals := strings.Split(data[17], "_")
 		for k, val := range vals {
 			items := strings.Split(val, ":")
 			tmp, err = strconv.ParseInt(items[0], 10, 64)
@@ -567,7 +587,7 @@ func (*gMazeFoeV8Parser) Parse(logger fklog.FKLogI, data []string, row interface
 				err = errors.New("parse map field drop_coin_num 冒险等级:掉落钱币数量 to key int32 failed")
 				logger.ErrorWF("parse map field drop_coin_num 冒险等级:掉落钱币数量 to key int32 failed.",
 					zap.String("xlsx", "maze_foe_v8【迷宫-敌人信息】.xlsx"), zap.String("sheet", "maze_foe_v8"),
-					// zap.String("field_data",data[16]),
+					// zap.String("field_data",data[17]),
 					zap.String("item_data", val), zap.Int("index", k),
 					zap.String("parse_data", items[0]),
 					zap.Error(err))
@@ -579,7 +599,7 @@ func (*gMazeFoeV8Parser) Parse(logger fklog.FKLogI, data []string, row interface
 				err = errors.New("parse map field drop_coin_num 冒险等级:掉落钱币数量 to value int64 failed")
 				logger.ErrorWF("parse map field drop_coin_num 冒险等级:掉落钱币数量 to value int64 failed.",
 					zap.String("xlsx", "maze_foe_v8【迷宫-敌人信息】.xlsx"), zap.String("sheet", "maze_foe_v8"),
-					// zap.String("field_data",data[16]),
+					// zap.String("field_data",data[17]),
 					zap.String("item_data", val), zap.Int("index", k),
 					zap.String("parse_data", items[1]),
 					zap.Error(err))
@@ -590,13 +610,13 @@ func (*gMazeFoeV8Parser) Parse(logger fklog.FKLogI, data []string, row interface
 		}
 	}
 
-	// parse column 17 drop_equip_score_num : 冒险等级:掉落装备分数量
-	if data[17] != "" {
+	// parse column 18 drop_equip_score_num : 冒险等级:掉落装备分数量
+	if data[18] != "" {
 
 		config.Drop_equip_score_num = make(map[int32]int64)
 		var key int32
 		var value int64
-		vals := strings.Split(data[17], "_")
+		vals := strings.Split(data[18], "_")
 		for k, val := range vals {
 			items := strings.Split(val, ":")
 			tmp, err = strconv.ParseInt(items[0], 10, 64)
@@ -604,7 +624,7 @@ func (*gMazeFoeV8Parser) Parse(logger fklog.FKLogI, data []string, row interface
 				err = errors.New("parse map field drop_equip_score_num 冒险等级:掉落装备分数量 to key int32 failed")
 				logger.ErrorWF("parse map field drop_equip_score_num 冒险等级:掉落装备分数量 to key int32 failed.",
 					zap.String("xlsx", "maze_foe_v8【迷宫-敌人信息】.xlsx"), zap.String("sheet", "maze_foe_v8"),
-					// zap.String("field_data",data[17]),
+					// zap.String("field_data",data[18]),
 					zap.String("item_data", val), zap.Int("index", k),
 					zap.String("parse_data", items[0]),
 					zap.Error(err))
@@ -616,7 +636,7 @@ func (*gMazeFoeV8Parser) Parse(logger fklog.FKLogI, data []string, row interface
 				err = errors.New("parse map field drop_equip_score_num 冒险等级:掉落装备分数量 to value int64 failed")
 				logger.ErrorWF("parse map field drop_equip_score_num 冒险等级:掉落装备分数量 to value int64 failed.",
 					zap.String("xlsx", "maze_foe_v8【迷宫-敌人信息】.xlsx"), zap.String("sheet", "maze_foe_v8"),
-					// zap.String("field_data",data[17]),
+					// zap.String("field_data",data[18]),
 					zap.String("item_data", val), zap.Int("index", k),
 					zap.String("parse_data", items[1]),
 					zap.Error(err))
@@ -627,31 +647,31 @@ func (*gMazeFoeV8Parser) Parse(logger fklog.FKLogI, data []string, row interface
 		}
 	}
 
-	// parse column 18 nor_attack_skill_id : 普通攻击技能id
-	if data[18] != "" {
-		tmp, err = strconv.ParseInt(data[18], 10, 64)
+	// parse column 19 nor_attack_skill_id : 普通攻击技能id
+	if data[19] != "" {
+		tmp, err = strconv.ParseInt(data[19], 10, 64)
 		if err != nil {
 			err = errors.New("parse field nor_attack_skill_id 普通攻击技能id to int32 failed")
 			logger.ErrorWF("parse field nor_attack_skill_id 普通攻击技能id to int32 failed.",
 				zap.String("xlsx", "maze_foe_v8【迷宫-敌人信息】.xlsx"), zap.String("sheet", "maze_foe_v8"),
-				zap.String("parse_data", data[18]),
+				zap.String("parse_data", data[19]),
 				zap.Error(err))
 			return
 		}
 		config.Nor_attack_skill_id = int32(tmp)
 	}
 
-	// parse column 19 passive_skill_id : 被动技能id
-	if data[19] != "" {
+	// parse column 20 passive_skill_id : 被动技能id
+	if data[20] != "" {
 
-		vals := strings.Split(data[19], ",")
+		vals := strings.Split(data[20], ",")
 		for k, v := range vals {
 			tmp, err = strconv.ParseInt(v, 10, 64)
 			if err != nil {
 				err = errors.New("parse array field passive_skill_id 被动技能id to []int32 failed")
 				logger.ErrorWF("parse array field passive_skill_id 被动技能id to []int32 failed.",
 					zap.String("xlsx", "maze_foe_v8【迷宫-敌人信息】.xlsx"), zap.String("sheet", "maze_foe_v8"),
-					// zap.String("field_data",data[19]),
+					// zap.String("field_data",data[20]),
 					zap.String("parse_data", v), zap.Int("index", k),
 					zap.Error(err))
 				return
@@ -660,27 +680,27 @@ func (*gMazeFoeV8Parser) Parse(logger fklog.FKLogI, data []string, row interface
 		}
 	}
 
-	// parse column 20 drop_energy_num : 死亡后掉落的能量点数
-	if data[20] != "" {
-		tmp, err = strconv.ParseInt(data[20], 10, 64)
+	// parse column 21 drop_energy_num : 死亡后掉落的能量点数
+	if data[21] != "" {
+		tmp, err = strconv.ParseInt(data[21], 10, 64)
 		if err != nil {
 			err = errors.New("parse field drop_energy_num 死亡后掉落的能量点数 to int32 failed")
 			logger.ErrorWF("parse field drop_energy_num 死亡后掉落的能量点数 to int32 failed.",
 				zap.String("xlsx", "maze_foe_v8【迷宫-敌人信息】.xlsx"), zap.String("sheet", "maze_foe_v8"),
-				zap.String("parse_data", data[20]),
+				zap.String("parse_data", data[21]),
 				zap.Error(err))
 			return
 		}
 		config.Drop_energy_num = int32(tmp)
 	}
 
-	// parse column 21 tough_borke_raitio : 武力对应削韧倍率（万分比）
-	if data[21] != "" {
+	// parse column 22 tough_borke_raitio : 武力对应削韧倍率（万分比）
+	if data[22] != "" {
 
 		config.Tough_borke_raitio = make(map[int64]int32)
 		var key int64
 		var value int32
-		vals := strings.Split(data[21], "_")
+		vals := strings.Split(data[22], "_")
 		for k, val := range vals {
 			items := strings.Split(val, ":")
 			tmp, err = strconv.ParseInt(items[0], 10, 64)
@@ -688,7 +708,7 @@ func (*gMazeFoeV8Parser) Parse(logger fklog.FKLogI, data []string, row interface
 				err = errors.New("parse map field tough_borke_raitio 武力对应削韧倍率（万分比） to key int64 failed")
 				logger.ErrorWF("parse map field tough_borke_raitio 武力对应削韧倍率（万分比） to key int64 failed.",
 					zap.String("xlsx", "maze_foe_v8【迷宫-敌人信息】.xlsx"), zap.String("sheet", "maze_foe_v8"),
-					// zap.String("field_data",data[21]),
+					// zap.String("field_data",data[22]),
 					zap.String("item_data", val), zap.Int("index", k),
 					zap.String("parse_data", items[0]),
 					zap.Error(err))
@@ -700,7 +720,7 @@ func (*gMazeFoeV8Parser) Parse(logger fklog.FKLogI, data []string, row interface
 				err = errors.New("parse map field tough_borke_raitio 武力对应削韧倍率（万分比） to value int32 failed")
 				logger.ErrorWF("parse map field tough_borke_raitio 武力对应削韧倍率（万分比） to value int32 failed.",
 					zap.String("xlsx", "maze_foe_v8【迷宫-敌人信息】.xlsx"), zap.String("sheet", "maze_foe_v8"),
-					// zap.String("field_data",data[21]),
+					// zap.String("field_data",data[22]),
 					zap.String("item_data", val), zap.Int("index", k),
 					zap.String("parse_data", items[1]),
 					zap.Error(err))
@@ -711,42 +731,42 @@ func (*gMazeFoeV8Parser) Parse(logger fklog.FKLogI, data []string, row interface
 		}
 	}
 
-	// parse column 22 attack_speed_pro : 怪物攻击速度系数（>10000加速 ,<10000减速
-	if data[22] != "" {
-		tmp, err = strconv.ParseInt(data[22], 10, 64)
+	// parse column 23 attack_speed_pro : 怪物攻击速度系数（>10000加速 ,<10000减速
+	if data[23] != "" {
+		tmp, err = strconv.ParseInt(data[23], 10, 64)
 		if err != nil {
 			err = errors.New("parse field attack_speed_pro 怪物攻击速度系数（>10000加速 ,<10000减速 to int32 failed")
 			logger.ErrorWF("parse field attack_speed_pro 怪物攻击速度系数（>10000加速 ,<10000减速 to int32 failed.",
 				zap.String("xlsx", "maze_foe_v8【迷宫-敌人信息】.xlsx"), zap.String("sheet", "maze_foe_v8"),
-				zap.String("parse_data", data[22]),
+				zap.String("parse_data", data[23]),
 				zap.Error(err))
 			return
 		}
 		config.Attack_speed_pro = int32(tmp)
 	}
 
-	// parse column 23 be_attack_recovery_speed_pro : 受击回复动作播放速度系数（>10000加速 ,<10000减速
-	if data[23] != "" {
-		tmp, err = strconv.ParseInt(data[23], 10, 64)
+	// parse column 24 be_attack_recovery_speed_pro : 受击回复动作播放速度系数（>10000加速 ,<10000减速
+	if data[24] != "" {
+		tmp, err = strconv.ParseInt(data[24], 10, 64)
 		if err != nil {
 			err = errors.New("parse field be_attack_recovery_speed_pro 受击回复动作播放速度系数（>10000加速 ,<10000减速 to int32 failed")
 			logger.ErrorWF("parse field be_attack_recovery_speed_pro 受击回复动作播放速度系数（>10000加速 ,<10000减速 to int32 failed.",
 				zap.String("xlsx", "maze_foe_v8【迷宫-敌人信息】.xlsx"), zap.String("sheet", "maze_foe_v8"),
-				zap.String("parse_data", data[23]),
+				zap.String("parse_data", data[24]),
 				zap.Error(err))
 			return
 		}
 		config.Be_attack_recovery_speed_pro = int32(tmp)
 	}
 
-	// parse column 24 tough_deplete : 韧性被打空时释放技能
-	if data[24] != "" {
-		tmp, err = strconv.ParseInt(data[24], 10, 64)
+	// parse column 25 tough_deplete : 韧性被打空时释放技能
+	if data[25] != "" {
+		tmp, err = strconv.ParseInt(data[25], 10, 64)
 		if err != nil {
 			err = errors.New("parse field tough_deplete 韧性被打空时释放技能 to int32 failed")
 			logger.ErrorWF("parse field tough_deplete 韧性被打空时释放技能 to int32 failed.",
 				zap.String("xlsx", "maze_foe_v8【迷宫-敌人信息】.xlsx"), zap.String("sheet", "maze_foe_v8"),
-				zap.String("parse_data", data[24]),
+				zap.String("parse_data", data[25]),
 				zap.Error(err))
 			return
 		}
@@ -760,6 +780,7 @@ var gMazeFoeV8Fields = []string{
 	"in_barries_id",
 	"foe_type",
 	"drop_item",
+	"drop_equip",
 	"name",
 	"model_id",
 	"level",
