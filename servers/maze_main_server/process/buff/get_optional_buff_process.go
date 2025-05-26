@@ -23,7 +23,6 @@ import (
 	"gitlab.ifreetalk.com/maze/maze_game_server/excel/mazeenergyresetcostv8config"
 	"gitlab.ifreetalk.com/maze/maze_game_server/io/redis/mazetempbuffredis"
 	"go.uber.org/zap"
-	"gitlab.ifreetalk.com/maze/maze_game_server/config/GMazeEnergyLevelV8Cfg"
 )
 
 /**
@@ -126,20 +125,20 @@ func getOptionalBuffList(logger fklog.FKLogI, userId uint64, stageId, level, buf
 	}
 
 	// 校验选择buff数量
-	configId := mazeenergylevelv8config.GetKey(stageConfig.Energy_id, level)
-	config := mazeenergylevelv8config.GetEnergyLevelConfig(configId)
-	if config == nil {
-		logger.WarnWF("getOptionalBuffList level config unknown", zap.Int32("level", level))
-		return errors.COMMON_ERROR_TIPS.Wrap("当前等级无法选择buff")
-	}
+	// configId := mazeenergylevelv8config.GetKey(stageConfig.Energy_id, level)
+	// config := mazeenergylevelv8config.GetEnergyLevelConfig(configId)
+	// if config == nil {
+	// 	logger.WarnWF("getOptionalBuffList level config unknown", zap.Int32("level", level))
+	// 	return errors.COMMON_ERROR_TIPS.Wrap("当前等级无法选择buff")
+	// }
 
 	if buffType == int32(MazeTempBuff.Type_UP_LEVEL) {
-		checkErr := checkUpLevelSelectBuff(logger, level, buffInfo, config)
+		checkErr := checkUpLevelSelectBuff(logger, level, stageConfig.Energy_id, buffInfo)
 		if checkErr != nil && checkErr.GetErrCode() != errors.NO_ERROR_CODE {
 			return checkErr
 		}
 	} else if buffType == int32(MazeTempBuff.Type_USE_ITEM) {
-		checkErr := checkUseItemLevelSelectBuff(logger, level, buffInfo, config)
+		checkErr := checkUseItemLevelSelectBuff(logger, stageConfig.Energy_id, buffInfo)
 		if checkErr != nil && checkErr.GetErrCode() != errors.NO_ERROR_CODE {
 			return checkErr
 		}
@@ -160,7 +159,7 @@ func getOptionalBuffList(logger fklog.FKLogI, userId uint64, stageId, level, buf
 
 	buffInfo.BuffSequence.Index = proto.Int32(level)
 	// 生成可选的buff列表
-	configId = mazeenergyaffixrandrulev8config.GetKey(stageConfig.Energy_affix_rand_rule, level)
+	configId := mazeenergyaffixrandrulev8config.GetKey(stageConfig.Energy_affix_rand_rule, level)
 	buffList, err := createOptionalBuffList(logger, buffInfo, configId)
 	if err != nil {
 		logger.ErrorWF("getOptionalBuffList createOptionalBuffList failed", zap.Error(err))
@@ -178,10 +177,12 @@ func getOptionalBuffList(logger fklog.FKLogI, userId uint64, stageId, level, buf
 	return nil
 }
 
-func checkUpLevelSelectBuff(logger fklog.FKLogI, level int32, buffInfo *MazeTempBuffSvr.TempBuffInfo,
-	config *GMazeEnergyLevelV8Cfg.MazeEnergyLevelV8ConfigRow) *MessageType.ErrorInfo {
+func checkUpLevelSelectBuff(logger fklog.FKLogI, level, energyID int32, buffInfo *MazeTempBuffSvr.TempBuffInfo) *MessageType.ErrorInfo {
+	configId := mazeenergylevelv8config.GetKey(energyID, level)
+	config := mazeenergylevelv8config.GetEnergyLevelConfig(configId)
 	if config == nil {
-		return errors.COMMON_ERROR_TIPS.Wrap("关卡配置信息异常")
+		logger.WarnWF("checkUpLevelSelectBuff level config unknown", zap.Int32("level", level), zap.Int32("configId", configId))
+		return errors.COMMON_ERROR_TIPS.Wrap("当前等级无法选择buff")
 	}
 	var count int32
 	for _, info := range buffInfo.GetSelectedBuff() {
@@ -198,14 +199,16 @@ func checkUpLevelSelectBuff(logger fklog.FKLogI, level int32, buffInfo *MazeTemp
 	return nil
 }
 
-func checkUseItemLevelSelectBuff(logger fklog.FKLogI, level int32, buffInfo *MazeTempBuffSvr.TempBuffInfo,
-	config *GMazeEnergyLevelV8Cfg.MazeEnergyLevelV8ConfigRow) *MessageType.ErrorInfo {
+func checkUseItemLevelSelectBuff(logger fklog.FKLogI, energyID int32, buffInfo *MazeTempBuffSvr.TempBuffInfo) *MessageType.ErrorInfo {
+	configId := mazeenergylevelv8config.GetKey(energyID, 1)
+	config := mazeenergylevelv8config.GetEnergyLevelConfig(configId)
 	if config == nil {
-		return errors.COMMON_ERROR_TIPS.Wrap("关卡配置信息异常")
+		logger.WarnWF("checkUseItemLevelSelectBuff level config unknown", zap.Int32("configId", configId))
+		return errors.COMMON_ERROR_TIPS.Wrap("读取buff能力配置失败")
 	}
 	var count int32
 	for _, info := range buffInfo.GetSelectedBuff() {
-		if info.GetLevel() == level && info.GetType() == int32(MazeTempBuff.Type_USE_ITEM) {
+		if info.GetType() == int32(MazeTempBuff.Type_USE_ITEM) {
 			count++
 		}
 	}
@@ -213,7 +216,7 @@ func checkUseItemLevelSelectBuff(logger fklog.FKLogI, level int32, buffInfo *Maz
 	if count >= config.Energy_item_select {
 		logger.WarnWF("checkUseItemLevelSelectBuff buff count select max", zap.Int32("count", count),
 			zap.Int32("maxCount", config.Energy_item_select))
-		return errors.COMMON_ERROR_TIPS.Wrap("当前等级道具选择buff次数已用完")
+		return errors.COMMON_ERROR_TIPS.Wrap("道具选择buff次数已用完")
 	}
 	return nil
 }
