@@ -19,6 +19,7 @@ type MazeBoxV8ConfigRow struct {
 	Award_equip  []int32         `json:"award_equip"`  // 装备奖励
 	Drop_exp_num map[int32]int64 `json:"drop_exp_num"` // 冒险等级:掉落经验数量
 	Drop_item    map[int32]int64 `json:"drop_item"`    // 宝箱掉落物品id：数量
+	Add_kongfu   int32           `json:"add_kongfu"`   // 增加通关值
 }
 
 // MazeBoxV8Config from maze_box_v8【迷宫-宝箱】.xlsx maze_box_v8
@@ -383,6 +384,20 @@ func (*gMazeBoxV8Parser) Parse(logger fklog.FKLogI, data []string, row interface
 			config.Drop_item[key] = value
 		}
 	}
+
+	// parse column 5 add_kongfu : 增加通关值
+	if data[5] != "" {
+		tmp, err = strconv.ParseInt(data[5], 10, 64)
+		if err != nil {
+			err = errors.New("parse field add_kongfu 增加通关值 to int32 failed")
+			logger.ErrorWF("parse field add_kongfu 增加通关值 to int32 failed.",
+				zap.String("xlsx", "maze_box_v8【迷宫-宝箱】.xlsx"), zap.String("sheet", "maze_box_v8"),
+				zap.String("parse_data", data[5]),
+				zap.Error(err))
+			return
+		}
+		config.Add_kongfu = int32(tmp)
+	}
 	return
 }
 
@@ -392,6 +407,7 @@ var gMazeBoxV8Fields = []string{
 	"award_equip",
 	"drop_exp_num",
 	"drop_item",
+	"add_kongfu",
 }
 
 // LoadDataManual load data for test
