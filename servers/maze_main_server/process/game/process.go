@@ -2,10 +2,10 @@ package game
 
 import (
 	"github.com/lonng/nano/component"
+	"gitlab.ifreetalk.com/maze-plate/protodef/MazeGame"
 	"gitlab.ifreetalk.com/maze/maze_game_server/io/kafka/mazeattrmsg"
 	"gitlab.ifreetalk.com/maze/maze_game_server/io/kafka/mazetempbuffchgmsg"
 	"gitlab.ifreetalk.com/maze/maze_game_server/lib/net/websocket_service"
-	"gitlab.ifreetalk.com/maze-plate/protodef/MazeGame"
 )
 
 type Game struct {
@@ -101,6 +101,12 @@ func RegTcpHandler() {
 		10453, &MazeGame.ReportDataRQ{},
 		10454, &MazeGame.ReportDataRS{},
 		OnReportDataRQ)
+
+	// 上报人物等级和关卡
+	websocket_service.RegProcSimple(
+		10496, &MazeGame.ReportBattleEventRQ{},
+		10497, &MazeGame.ReportBattleEventRS{},
+		OnMazeReportBattleEventRQ)
 
 	// 打怪上报申请加装备
 	websocket_service.RegProcSimple(

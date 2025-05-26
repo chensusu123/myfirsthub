@@ -20,7 +20,7 @@ require (
 	github.com/xuri/excelize/v2 v2.9.0
 	gitlab.ifreetalk.com/maze-plate/extra v1.0.1-0.20250401060651-722653168d37
 	gitlab.ifreetalk.com/maze-plate/freetk v1.0.1-0.20250523054256-1f7cfd835254
-	gitlab.ifreetalk.com/maze-plate/protodef v0.0.0-20250524092540-340b19efe6c5
+	gitlab.ifreetalk.com/maze-plate/protodef v0.0.0-20250526061907-ae00343a92b7
 	go.uber.org/atomic v1.9.0
 	go.uber.org/zap v1.27.0
 )
