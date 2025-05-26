@@ -102,7 +102,7 @@ func RegTcpHandler() {
 		10454, &MazeGame.ReportDataRS{},
 		OnReportDataRQ)
 
-	// 上报人物等级和关卡
+	// 关卡事件上报
 	websocket_service.RegProcSimple(
 		10496, &MazeGame.ReportBattleEventRQ{},
 		10497, &MazeGame.ReportBattleEventRS{},
