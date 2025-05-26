@@ -4,7 +4,7 @@ import (
 	"strings"
 	"time"
 
-	"gitlab.ifreetalk.com/maze-plate/extra/protobuf/proto"
+	"google.golang.org/protobuf/proto"
 	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fklog"
 	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fknet"
 	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fkprometheus"
@@ -201,7 +201,7 @@ func SetMazeBarrier(logger fklog.FKLogI, userId uint64, barrierId int32) (err er
 		return
 	}
 
-	//设置关卡升级
+	// 设置关卡升级
 	// err = mazebarrierredis.SetBarrier(logger, uint64(userId), int32(barrierId))
 	// if err != nil {
 	// 	return
@@ -216,13 +216,13 @@ func ClearBarrier(logger fklog.FKLogI, userId uint64) (err error) {
 		return
 	}
 
-	//清楚关卡信息
+	// 清楚关卡信息
 	// err = mazebarrierredis.GMDel(logger, uint64(userId))
 	// if err != nil {
 	// 	return
 	// }
 
-	//清除等级经验通用数值
+	// 清除等级经验通用数值
 	err = mazeuserlevelredis.GMDel(logger, userId)
 	if err != nil {
 		return

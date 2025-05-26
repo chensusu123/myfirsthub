@@ -9,7 +9,7 @@ package maze_energy_server_t
 import (
 	"testing"
 
-	"gitlab.ifreetalk.com/maze-plate/extra/protobuf/proto"
+	"google.golang.org/protobuf/proto"
 	"maze_game_server/pb/common/MazeEnergySvr"
 	"maze_game_server/servers/maze_main_server/process/game/energy"
 )

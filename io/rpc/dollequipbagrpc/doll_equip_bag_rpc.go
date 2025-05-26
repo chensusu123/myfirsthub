@@ -5,7 +5,7 @@ import (
 
 	"maze_game_server/pb/server/MazeEquipSvr"
 
-	"gitlab.ifreetalk.com/maze-plate/extra/protobuf/proto"
+	"google.golang.org/protobuf/proto"
 	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fklog"
 	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fkrpc/thrift_rpc"
 	"go.uber.org/zap"
@@ -16,7 +16,7 @@ import (
 var gRpcClient = thrift_rpc.AsyncRpc{}
 
 func init() {
-	//_ = fkconfig.RegisterNameNode("dollequipbagrpc", 19582, &gRpcClient)
+	// _ = fkconfig.RegisterNameNode("dollequipbagrpc", 19582, &gRpcClient)
 }
 
 // 添加装备

@@ -13,7 +13,7 @@ import (
 
 	"go.uber.org/zap"
 
-	"gitlab.ifreetalk.com/maze-plate/extra/protobuf/proto"
+	"google.golang.org/protobuf/proto"
 	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fklog"
 	"maze_game_server/common/constdef"
 	"maze_game_server/config/GMazeEquipPosRankV8Cfg"

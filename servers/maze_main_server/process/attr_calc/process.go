@@ -1,21 +1,19 @@
 package attr_calc
 
 import (
-	"gitlab.ifreetalk.com/maze-plate/freetk/fkserver/thrift_service"
 	"maze_game_server/lib/net/websocket_service"
 	"maze_game_server/pb/common/MazePropertyPanel"
-	"maze_game_server/pb/server/MazeAttrCalcSvr"
 )
 
-func RegRpcHandler() {
-	// 人偶属性预览
-	thrift_service.RegisterTwowaySimple(100000, &MazeAttrCalcSvr.MazeAttrPreviewRQ{},
-		100001, &MazeAttrCalcSvr.MazeAttrPreviewRS{}, OnMazeAttrPreviewRQ)
-
-	// 人偶属性成对预览
-	thrift_service.RegisterTwowaySimple(100002, &MazeAttrCalcSvr.MazeAttrPairPreviewRQ{},
-		100003, &MazeAttrCalcSvr.MazeAttrPairPreviewRS{}, OnMazeAttrPairPreviewRQ)
-}
+// func RegRpcHandler() {
+// 	// 人偶属性预览
+// 	thrift_service.RegisterTwowaySimple(100000, &MazeAttrCalcSvr.MazeAttrPreviewRQ{},
+// 		100001, &MazeAttrCalcSvr.MazeAttrPreviewRS{}, OnMazeAttrPreviewRQ)
+//
+// 	// 人偶属性成对预览
+// 	thrift_service.RegisterTwowaySimple(100002, &MazeAttrCalcSvr.MazeAttrPairPreviewRQ{},
+// 		100003, &MazeAttrCalcSvr.MazeAttrPairPreviewRS{}, OnMazeAttrPairPreviewRQ)
+// }
 
 func RegTcpHandler() {
 	// 查询属性面板

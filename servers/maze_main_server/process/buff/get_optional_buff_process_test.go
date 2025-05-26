@@ -9,7 +9,7 @@ import (
 	"maze_game_server/pb/common/MazeTempBuff"
 	"maze_game_server/pb/server/MazeTempBuffSvr"
 
-	"gitlab.ifreetalk.com/maze-plate/extra/protobuf/proto"
+	"google.golang.org/protobuf/proto"
 	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fknet"
 	"go.uber.org/zap"
 )

@@ -1,7 +1,7 @@
 package packtopb
 
 import (
-	"gitlab.ifreetalk.com/maze-plate/extra/protobuf/proto"
+	"google.golang.org/protobuf/proto"
 	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fklog"
 	"maze_game_server/config/GMazeEquipAffixRandPoolV8Cfg"
 	"maze_game_server/pb/common/MazeGameEquip"

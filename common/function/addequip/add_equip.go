@@ -1,7 +1,7 @@
 package addequip
 
 import (
-	"gitlab.ifreetalk.com/maze-plate/extra/protobuf/proto"
+	"google.golang.org/protobuf/proto"
 	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fklog"
 	"go.uber.org/zap"
 	"maze_game_server/common/errors"
@@ -22,7 +22,7 @@ func AddEquipToBag(logger fklog.FKLogI, userId uint64, opType int32, tradeNo uin
 			rqAdd.EquipList = append(rqAdd.EquipList, equipCond)
 		}
 	}
-	//for k := range equips {
+	// for k := range equips {
 	//	equipCond := &DollEquipSvr.SvrEquipInfo{EquipId: proto.Int32(k)}
 	//	// 初始化武器子类型固定是1 刀
 	//	equipCfg := GMazeEquipInfoV8Cfg.GetMazeEquipInfoV8Config(k)
@@ -31,7 +31,7 @@ func AddEquipToBag(logger fklog.FKLogI, userId uint64, opType int32, tradeNo uin
 	//			Id: proto.Int32(int32(DollEquipSvr.EQUIP_ADD_CONDITION_ASSIGN_EQUIP_SUB_TYPE)), Value: proto.Int64(1)})
 	//	}
 	//	rqAdd.EquipList = append(rqAdd.EquipList, equipCond)
-	//}
+	// }
 	// rqAdd.NotNotify = proto.Bool(true)
 
 	rsAdd = &MazeEquipSvr.SvrAddMazeEquipRS{}
@@ -47,8 +47,8 @@ func AddEquipToBag(logger fklog.FKLogI, userId uint64, opType int32, tradeNo uin
 	return
 }
 
-//// 实例化装备
-//func InstanceEquip(logger fklog.FKLogI, userId uint64, opType int32, tradeNo uint64, equipNumPerCycle int32, equipMap map[int32]int32) (rsAdd *MazeEquipSvr.SvrMazeEquipInstanceRS, err error) {
+// // 实例化装备
+// func InstanceEquip(logger fklog.FKLogI, userId uint64, opType int32, tradeNo uint64, equipNumPerCycle int32, equipMap map[int32]int32) (rsAdd *MazeEquipSvr.SvrMazeEquipInstanceRS, err error) {
 //	rqAdd := &MazeEquipSvr.SvrMazeEquipInstanceRQ{
 //		UserId:      proto.Uint64(userId),
 //		EquipList:   make([]*MazeEquipSvr.SvrInstanceEquipInfo, 0),
@@ -74,4 +74,4 @@ func AddEquipToBag(logger fklog.FKLogI, userId uint64, opType int32, tradeNo uin
 //		}
 //	}
 //	return
-//}
+// }

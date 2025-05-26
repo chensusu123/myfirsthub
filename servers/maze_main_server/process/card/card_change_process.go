@@ -14,7 +14,7 @@ import (
 	"maze_game_server/io/redis/mazecardlistgroupredis"
 	"maze_game_server/io/redis/userriddlemonthlyredis"
 
-	"gitlab.ifreetalk.com/maze-plate/extra/protobuf/proto"
+	"google.golang.org/protobuf/proto"
 	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fkconfig"
 	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fklog"
 	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fkprometheus"
@@ -155,7 +155,7 @@ func SendMazeCardMsg(logger fklog.FKLogI, userId uint64, state int32, expiration
 	}
 	_ = msg
 	// TODO 为什么注释掉？？
-	//_ = commonmustarriveredis.SendArrivePacketWithLogFix(logger, userId, 16200, msg)
+	// _ = commonmustarriveredis.SendArrivePacketWithLogFix(logger, userId, 16200, msg)
 }
 
 func PackMazeBuff(buffMap map[int32]int64) []*MazeBuffData.MazeBuffAttr {

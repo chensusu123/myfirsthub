@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"time"
 
-	"gitlab.ifreetalk.com/maze-plate/extra/protobuf/proto"
+	"google.golang.org/protobuf/proto"
 	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fklog"
 	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fknet"
 	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fkprometheus"
@@ -68,7 +68,7 @@ func OnMazeBarrierDeathRQ(logger fknet.TCPContext, shardingID uint64, rqMsg prot
 		return
 	}
 
-	//更新等级经验
+	// 更新等级经验
 	oldLevel := userInfo.Level
 	oldExp := userInfo.TotalExp
 	err = userInfo.AddExp(int64(req.GetFoeExp()))

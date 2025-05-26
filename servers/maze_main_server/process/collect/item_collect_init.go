@@ -5,7 +5,7 @@ import (
 
 	"maze_game_server/io/kafka/mazecollectrecord"
 
-	"gitlab.ifreetalk.com/maze-plate/extra/protobuf/proto"
+	"google.golang.org/protobuf/proto"
 	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fklog"
 	"go.uber.org/zap"
 	"maze_game_server/common/errors"

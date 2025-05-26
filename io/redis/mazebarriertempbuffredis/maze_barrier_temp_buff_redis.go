@@ -4,7 +4,7 @@ import (
 	"context"
 	"fmt"
 
-	"gitlab.ifreetalk.com/maze-plate/extra/protobuf/proto"
+	"google.golang.org/protobuf/proto"
 	"maze_game_server/pb/server/MazeTempBuffSvr"
 
 	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fkconfig"

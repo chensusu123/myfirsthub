@@ -1,7 +1,7 @@
 package game
 
 import (
-	"gitlab.ifreetalk.com/maze-plate/extra/protobuf/proto"
+	"google.golang.org/protobuf/proto"
 	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fknet"
 	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fkprometheus"
 	"maze_game_server/common/errors"
@@ -59,7 +59,7 @@ func OnReportAwardFoeEquipRQ(logger fknet.TCPContext, shardingID uint64, rqMsg p
 	}
 
 	tradeNo := gentradeno.GetTradeNum()
-	//rs, err2 := addequip.InstanceEquip(logger, userId, int32(MazeEquipSvr.ENUM_EQUIP_BAG_OP_TYPE_MAZE_EQUIP_FOE), tradeNo, equipNumPerCycle, addEquipMap)
+	// rs, err2 := addequip.InstanceEquip(logger, userId, int32(MazeEquipSvr.ENUM_EQUIP_BAG_OP_TYPE_MAZE_EQUIP_FOE), tradeNo, equipNumPerCycle, addEquipMap)
 	rs, err2 := addequip.AddEquipToBag(logger, userId, int32(MazeEquipSvr.ENUM_EQUIP_BAG_OP_TYPE_MAZE_EQUIP_FOE), tradeNo, addEquipMap)
 	if err2 != nil {
 		logger.ErrorWF("OnReportAwardFoeEquipRQ addEquipToBag fail", zap.Error(err2), zap.Any("optype", MazeEquipSvr.ENUM_EQUIP_BAG_OP_TYPE_MAZE_EQUIP_FOE),

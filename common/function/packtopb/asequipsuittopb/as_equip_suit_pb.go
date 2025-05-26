@@ -7,7 +7,7 @@
 package asequipsuittopb
 
 import (
-	"gitlab.ifreetalk.com/maze-plate/extra/protobuf/proto"
+	"google.golang.org/protobuf/proto"
 	"maze_game_server/config/GMazeEquipSuiteAttrV8Cfg"
 	"maze_game_server/pb/common/MazeGameEquip"
 )

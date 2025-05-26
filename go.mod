@@ -18,7 +18,6 @@ require (
 	github.com/lonng/nano v0.5.1
 	github.com/samber/slog-zap/v2 v2.6.2
 	github.com/xuri/excelize/v2 v2.9.0
-	gitlab.ifreetalk.com/maze-plate/extra v1.0.1-0.20250401060651-722653168d37
 	gitlab.ifreetalk.com/maze-plate/freetk v1.0.1-0.20250526125553-dee913564883
 	go.uber.org/atomic v1.9.0
 	go.uber.org/zap v1.27.0
@@ -70,6 +69,7 @@ require (
 	github.com/twmb/murmur3 v1.1.8 // indirect
 	github.com/xuri/efp v0.0.0-20240408161823-9ad904a10d6d // indirect
 	github.com/xuri/nfp v0.0.0-20240318013403-ab9948c2c4a7 // indirect
+	gitlab.ifreetalk.com/maze-plate/extra v1.0.1-0.20250401060651-722653168d37 // indirect
 	go.opentelemetry.io/otel v1.21.0 // indirect
 	go.opentelemetry.io/otel/exporters/prometheus v0.44.0 // indirect
 	go.opentelemetry.io/otel/metric v1.21.0 // indirect

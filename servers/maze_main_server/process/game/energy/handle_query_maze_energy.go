@@ -9,7 +9,7 @@ package energy
 import (
 	"time"
 
-	"gitlab.ifreetalk.com/maze-plate/extra/protobuf/proto"
+	"google.golang.org/protobuf/proto"
 	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fklog"
 	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fknet"
 	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fkprometheus"
@@ -45,7 +45,7 @@ func OnQueryMazeEnergyRQ(ctx fknet.TCPContext, shardingID uint64, request proto.
 		res.ErrInfo = errors.MODULE_ERROR.ToInfo()
 		return
 	}
-	var updateFlag int32 //是否需要更新
+	var updateFlag int32 // 是否需要更新
 	now := time.Now().Unix()
 	maxVal := mazeconfigv8.GetEnergyMax()     // 体力最大值
 	cost, val := mazeconfigv8.GetEnergyRate() // 每n秒回复多少体力

@@ -7,7 +7,7 @@ import (
 
 	"maze_game_server/io/kafka/mazecollectrecord"
 
-	"gitlab.ifreetalk.com/maze-plate/extra/protobuf/proto"
+	"google.golang.org/protobuf/proto"
 	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fklog"
 	"gitlab.ifreetalk.com/maze-plate/freetk/fkutil"
 	"go.uber.org/zap"
@@ -55,17 +55,17 @@ func ItemCollectCallback(logger fklog.FKLogI, userId uint64, bs []byte) error {
 		return errors.New("用户id不匹配")
 	}
 
-	//// 判断用户是否移民，移民直接丢弃定时器，移民用户登录时自修复道具产出数据
-	//groupId, err := usergroup.GetUserGroupId(ctx, userId)
-	//if err != nil {
+	// // 判断用户是否移民，移民直接丢弃定时器，移民用户登录时自修复道具产出数据
+	// groupId, err := usergroup.GetUserGroupId(ctx, userId)
+	// if err != nil {
 	//	ctx.ErrorWF("OnItemCollectRQ GetUserGroupId err", zap.Error(err), zap.Any("userId", userId))
 	//	return
-	//}
-	//if fkconfig.EnvVal.GroupID != uint32(groupId) {
+	// }
+	// if fkconfig.EnvVal.GroupID != uint32(groupId) {
 	//	ctx.WarnWF("OnItemCollectRQ user groupId no match, maybe migrate",
 	//		zap.Uint32("srcGroupId", fkconfig.EnvVal.GroupID), zap.Int64("currentGroupId", groupId))
 	//	return
-	//}
+	// }
 
 	// 是否已经初始化
 	collectInfo, err := mazecollectredis.GetCollectInfo(logger, userId)

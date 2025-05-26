@@ -1,7 +1,7 @@
 package game
 
 import (
-	"gitlab.ifreetalk.com/maze-plate/extra/protobuf/proto"
+	"google.golang.org/protobuf/proto"
 	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fklog"
 	"go.uber.org/zap"
 	"maze_game_server/common/constdef"
@@ -15,11 +15,11 @@ import (
 )
 
 func GetUserAttrMap(logger fklog.FKLogI, userId uint64) (map[int32]int64, error) {
-	//attrIds := GetAttrIds()
-	//skillAttrIds := GetSkillAttrIds()
-	//if len(skillAttrIds) > 0 {
+	// attrIds := GetAttrIds()
+	// skillAttrIds := GetSkillAttrIds()
+	// if len(skillAttrIds) > 0 {
 	//	attrIds = append(attrIds, skillAttrIds...)
-	//}
+	// }
 	attrDbs, err := mazecalcattrredis.GetAllMazeCalcAttr(logger, userId)
 	if err != nil {
 		logger.WarnWF("GetUserBattleAttr BatchGetDollCalcAttr nil", zap.Uint64("userId", userId))
@@ -27,10 +27,10 @@ func GetUserAttrMap(logger fklog.FKLogI, userId uint64) (map[int32]int64, error)
 	}
 	attrMap := make(map[int32]int64, 0)
 	for attrId, attrVal := range attrDbs {
-		//attrCfg := GMazeAttributeV8Cfg.GetMazeAttributeV8Config(attrId)
-		//if attrCfg.Type != 1{
+		// attrCfg := GMazeAttributeV8Cfg.GetMazeAttributeV8Config(attrId)
+		// if attrCfg.Type != 1{
 		//	continue
-		//}
+		// }
 		attrMap[attrId] = attrVal
 	}
 	return attrMap, nil
@@ -53,7 +53,7 @@ func GetUserBattleAttr(logger fklog.FKLogI, userId uint64, userAttrMap map[int32
 			UserValueType: proto.Int32(attrCfg.Figure),
 		}
 	}
-	//if len(skillIds) > 0 {
+	// if len(skillIds) > 0 {
 	//	skillCfg := GMazeSkillInfoV8Cfg.Get(skillIds[0])
 	//	if skillCfg != nil {
 	//		//if attrMap[constdef.AtkNumber] == nil {
@@ -83,7 +83,7 @@ func GetUserBattleAttr(logger fklog.FKLogI, userId uint64, userAttrMap map[int32
 	//		//attrMap[constdef.AtkNumber].UserValue = proto.Int32(attrMap[constdef.AtkNumber].GetUserValue())
 	//		attrMap[constdef.AtkDis].UserValue = proto.Int32(attrMap[constdef.AtkDis].GetUserValue() + skillCfg.Distance_max)
 	//	}
-	//}
+	// }
 	return attrMap, nil
 }
 
@@ -168,7 +168,7 @@ func GetAttrType() map[int32]int32 {
 	return attrTypeMap
 }
 
-//func GetAttrIds() []int32 {
+// func GetAttrIds() []int32 {
 //	attrIds := []int32{
 //		constdef.DollFormulaAttack,
 //		constdef.DollFormulaDefend,
@@ -181,15 +181,15 @@ func GetAttrType() map[int32]int32 {
 //		constdef.MazeAttr10152,
 //	}
 //	return attrIds
-//}
+// }
 
 func HasBattleAttr(chgAttrs []*structsdef.AttrChgInfo) bool {
-	//for _, attr := range chgAttrs {
+	// for _, attr := range chgAttrs {
 	//	attrCfg := GMazeAttributeV8Cfg.GetMazeAttributeV8Config(attr.AttrId)
 	//	if attrCfg.Type == 1{
 	//		return true
 	//	}
-	//}
+	// }
 	return true
 }
 

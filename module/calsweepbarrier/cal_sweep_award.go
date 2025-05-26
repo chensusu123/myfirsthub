@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"strings"
 
-	"gitlab.ifreetalk.com/maze-plate/extra/protobuf/proto"
+	"google.golang.org/protobuf/proto"
 	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fklog"
 	"go.uber.org/zap"
 	"maze_game_server/common/constdef"
@@ -36,7 +36,7 @@ func CalUserSweepBarrierAward(logger fklog.FKLogI, uid uint64, barrierId int32, 
 		return
 	}
 
-	//稀有材料集合
+	// 稀有材料集合
 	rareMap := make(map[int32]struct{})
 	barrierCfg := GMazeBarriesV8Cfg.Get(barrierId)
 	if barrierCfg == nil {
@@ -47,7 +47,7 @@ func CalUserSweepBarrierAward(logger fklog.FKLogI, uid uint64, barrierId int32, 
 	for _, v := range barrierCfg.Rare_items_show {
 		rareMap[v] = struct{}{}
 	}
-	//获取关卡所有怪物集合
+	// 获取关卡所有怪物集合
 	foeCountMap := make(map[int32]int32)
 	allFoe := GMazeBrushFoeV8Cfg.GetAll()
 	if len(allFoe) == 0 {
@@ -75,7 +75,7 @@ func CalUserSweepBarrierAward(logger fklog.FKLogI, uid uint64, barrierId int32, 
 		return
 	}
 
-	//计算所有怪物可获得的经验和钱和装备
+	// 计算所有怪物可获得的经验和钱和装备
 	foeExpMap := make(map[int32]int64)
 	foeMoneyMap := make(map[int32]int64)
 	foeEquipPointMap := make(map[int32]int64)
@@ -102,7 +102,7 @@ func CalUserSweepBarrierAward(logger fklog.FKLogI, uid uint64, barrierId int32, 
 		return
 	}
 
-	//取存储的装备分 加上扫荡新增的分数 计算掉落的装备
+	// 取存储的装备分 加上扫荡新增的分数 计算掉落的装备
 	calLv := calequipsequence.GetMazeBarrierLv(int32(userInfo.Level), barrierId)
 	shopInfo, err := calequipsequence.GetMazeShopInfo(logger, uid, calLv, barrierId)
 	if err != nil {
@@ -116,7 +116,7 @@ func CalUserSweepBarrierAward(logger fklog.FKLogI, uid uint64, barrierId int32, 
 		return
 	}
 
-	//根据装备积分额外增加装备
+	// 根据装备积分额外增加装备
 	newTotal := shopInfo.EquipPoints + int32(addEquipPoint)
 	shopInfo.EquipPoints = newTotal % shopCfg.Need_equip_score
 	equipNum := newTotal / shopCfg.Need_equip_score
@@ -130,7 +130,7 @@ func CalUserSweepBarrierAward(logger fklog.FKLogI, uid uint64, barrierId int32, 
 		equipMap[k] += v
 	}
 
-	//加经验 加钱 加装备
+	// 加经验 加钱 加装备
 	if addExp > 0 {
 		oldLevel := userInfo.Level
 		oldExp := userInfo.TotalExp
@@ -172,7 +172,7 @@ func CalUserSweepBarrierAward(logger fklog.FKLogI, uid uint64, barrierId int32, 
 	addItems[constdef.MazeCommonItemCoin] += addMoney
 	if len(addItems) > 0 {
 		awardItems := itemutil.Map2Common(addItems)
-		//697	UN_CGK_COMMON_BILL_TYPE_697	迷宫扫荡
+		// 697	UN_CGK_COMMON_BILL_TYPE_697	迷宫扫荡
 		errInfo := gentradeno.AddItemEx(logger, uid, 697, tradeNo, header, awardItems...)
 		if errInfo != nil {
 			logger.ErrorWF("CalUserSweepBarrierAward AddItemEx fail", zap.Any("errInfo", errInfo), zap.Any("awardItems", awardItems))

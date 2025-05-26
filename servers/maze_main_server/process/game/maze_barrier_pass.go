@@ -5,7 +5,7 @@ import (
 	"strings"
 	"time"
 
-	"gitlab.ifreetalk.com/maze-plate/extra/protobuf/proto"
+	"google.golang.org/protobuf/proto"
 	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fknet"
 	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fkprometheus"
 	"go.uber.org/zap"
@@ -136,10 +136,10 @@ func OnMazeBarrierPassRQ(logger fknet.TCPContext, shardingID uint64, rqMsg proto
 		}
 	}
 
-	//成功通关需要 (1和2通过kafka清理)
-	//1. 清除临时buff
-	//2. 影响挂机生产
-	//3. 清除客户端透传数据(通过切换关卡id 切换不同的key 目前没清)
+	// 成功通关需要 (1和2通过kafka清理)
+	// 1. 清除临时buff
+	// 2. 影响挂机生产
+	// 3. 清除客户端透传数据(通过切换关卡id 切换不同的key 目前没清)
 
 	// 死亡之后是否需要清空复活次数
 	userBarrier.RebornCount = proto.Int32(0)
@@ -178,7 +178,7 @@ func OnMazeBarrierPassRQ(logger fknet.TCPContext, shardingID uint64, rqMsg proto
 	if err != nil {
 		logger.ErrorWF("OnMazeBarrierPassRQ GetBarrierPassAwardWithFirst fail", zap.Error(err), zap.Any("barrier", req.GetBarrierId()))
 	} else {
-		//696	UN_CGK_COMMON_BILL_TYPE_696	迷宫通关
+		// 696	UN_CGK_COMMON_BILL_TYPE_696	迷宫通关
 		tradeNo := gentradeno.GetTradeNum()
 		if len(awardMap) > 0 {
 			awardItems := itemutil.Map2Common(awardMap)
@@ -198,7 +198,7 @@ func OnMazeBarrierPassRQ(logger fknet.TCPContext, shardingID uint64, rqMsg proto
 		}
 
 		if len(equipMap) > 0 {
-			//MAZE_EQUIP_PASS_AWARD = 9;//迷宫通关奖励 张登元
+			// MAZE_EQUIP_PASS_AWARD = 9;//迷宫通关奖励 张登元
 			rs, err := addequip.AddEquipToBag(logger, userId, int32(MazeEquipSvr.ENUM_EQUIP_BAG_OP_TYPE_MAZE_EQUIP_PASS_AWARD), tradeNo, equipMap)
 			if err != nil {
 				logger.ErrorWF("OnMazeBarrierPassRQ addEquipToBag fail", zap.Error(err), zap.Any("optype", int32(MazeEquipSvr.ENUM_EQUIP_BAG_OP_TYPE_MAZE_EQUIP_BOX_AWARD)),

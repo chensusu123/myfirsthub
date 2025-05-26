@@ -10,7 +10,7 @@ import (
 
 	"github.com/asynkron/protoactor-go/actor"
 	jsoniter "github.com/json-iterator/go"
-	"gitlab.ifreetalk.com/maze-plate/extra/protobuf/proto"
+	"google.golang.org/protobuf/proto"
 	"gitlab.ifreetalk.com/maze-plate/freetk/common/fkfmt"
 	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore"
 	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fkconfig"

@@ -1,7 +1,7 @@
 package game
 
 import (
-	"gitlab.ifreetalk.com/maze-plate/extra/protobuf/proto"
+	"google.golang.org/protobuf/proto"
 	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fknet"
 	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fkprometheus"
 	"maze_game_server/common/constdef"
@@ -52,7 +52,7 @@ func OnReportDataRQ(logger fknet.TCPContext, shardingID uint64, rqMsg proto.Mess
 
 	if reportInfo.GetReportMask()&1 == 1 {
 
-		//上报总经验
+		// 上报总经验
 		levelRecord = &mazeuserlevelkafka.MazeUserLevelRecord{
 			UserId:   userId,
 			OldLevel: int32(userInfo.Level),
@@ -98,7 +98,7 @@ func OnReportDataRQ(logger fknet.TCPContext, shardingID uint64, rqMsg proto.Mess
 	}
 
 	if reportInfo.GetReportMask()&2 == 2 {
-		//上报金币
+		// 上报金币
 
 		// oldCount, err2 := mazemoney.GetUserMoney(logger, userId)
 		// if err2 != nil {

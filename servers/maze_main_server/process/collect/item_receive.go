@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"time"
 
-	"gitlab.ifreetalk.com/maze-plate/extra/protobuf/proto"
+	"google.golang.org/protobuf/proto"
 	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fklog"
 	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fknet"
 	"go.uber.org/zap"
@@ -64,8 +64,8 @@ func OnMazeCollectItemReceiveRQ(ctx fknet.TCPContext, userId uint64, rq proto.Me
 		return
 	}
 
-	//// 已收集道具
-	//collectItems := collectInfo.GetItems()
+	// // 已收集道具
+	// collectItems := collectInfo.GetItems()
 	addItems := make(map[int32]int64)
 	for _, item := range collectItems {
 		addItems[item.GetItemId()] = item.GetCount()
@@ -108,8 +108,8 @@ func OnMazeCollectItemReceiveRQ(ctx fknet.TCPContext, userId uint64, rq proto.Me
 	errInfo := gentradeno.AddItemEx(ctx, userId, 692, tradeNo, req.Header, items...)
 	if errInfo != nil {
 		ctx.ErrorWF("GetAllEquipDismantleAward AddItemEx fail", zap.Any("items", items))
-		//res.ErrInfo = errInfo
-		//return nil
+		// res.ErrInfo = errInfo
+		// return nil
 	}
 
 	mazeCollectInfoPb, err := MazeCollectToCliPB(ctx, resetCollectInfo, userInfo.PassBarrier)

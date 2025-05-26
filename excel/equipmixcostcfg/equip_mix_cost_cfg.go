@@ -7,7 +7,7 @@ import (
 	"sort"
 	"sync"
 
-	"gitlab.ifreetalk.com/maze-plate/extra/protobuf/proto"
+	"google.golang.org/protobuf/proto"
 	"maze_game_server/config/GMazeEquipMixV8Cfg"
 	"maze_game_server/pb/common/MazeCommon"
 )

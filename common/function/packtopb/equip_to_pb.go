@@ -13,7 +13,7 @@ import (
 	"go.uber.org/zap"
 	"maze_game_server/common/errors"
 
-	"gitlab.ifreetalk.com/maze-plate/extra/protobuf/proto"
+	"google.golang.org/protobuf/proto"
 	"maze_game_server/common/constdef"
 	"maze_game_server/common/function/pbutil"
 	"maze_game_server/common/function/randfuncs"

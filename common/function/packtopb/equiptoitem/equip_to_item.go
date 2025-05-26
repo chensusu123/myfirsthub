@@ -4,7 +4,7 @@ import (
 	"errors"
 	"fmt"
 
-	"gitlab.ifreetalk.com/maze-plate/extra/protobuf/proto"
+	"google.golang.org/protobuf/proto"
 	"maze_game_server/config/GMazeEquipInfoV8Cfg"
 	"maze_game_server/config/GMazeEquipTypeResV8Cfg"
 	"maze_game_server/pb/common/MazeCommon"

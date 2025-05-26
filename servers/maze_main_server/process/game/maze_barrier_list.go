@@ -4,7 +4,7 @@ import (
 	"sort"
 	"time"
 
-	"gitlab.ifreetalk.com/maze-plate/extra/protobuf/proto"
+	"google.golang.org/protobuf/proto"
 	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fknet"
 	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fkprometheus"
 	"maze_game_server/common/errors"
@@ -82,7 +82,7 @@ func OnMazeBarrierListRQ(logger fknet.TCPContext, shardingID uint64, rqMsg proto
 	barrierListCfg := GMazeConfigV8Cfg.Get(501)
 	if barrierListCfg != nil {
 		for k, v := range barrierListCfg.Value_map {
-			//由于配置的是以当前尚未通关的最小关卡id为基准，但是用户未进入新关卡id时 存储的新关卡id不更新 所以这里以最大通关id为基准查找
+			// 由于配置的是以当前尚未通关的最小关卡id为基准，但是用户未进入新关卡id时 存储的新关卡id不更新 所以这里以最大通关id为基准查找
 			passBarrierOffset = k
 			newBarrierOffset = int32(v)
 			break
@@ -107,7 +107,7 @@ func OnMazeBarrierListRQ(logger fknet.TCPContext, shardingID uint64, rqMsg proto
 				BarrierId:        proto.Int32(i),
 				BarrierName:      proto.String(sweepCfg.Name),
 				MopCost:          proto.Int32(sweepCfg.Mop_cost),
-				BarrierStatus:    proto.Int32(3), //3 已通关 可以扫荡
+				BarrierStatus:    proto.Int32(3), // 3 已通关 可以扫荡
 				ChallengeTimes:   proto.Int32(maxNum),
 				ReChallengeTimes: proto.Int32(curNumToday),
 			}

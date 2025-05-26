@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"strings"
 
-	"gitlab.ifreetalk.com/maze-plate/extra/protobuf/proto"
+	"google.golang.org/protobuf/proto"
 	"gitlab.ifreetalk.com/maze-plate/freetk/fkutil"
 	"maze_game_server/common/constdef"
 	"maze_game_server/config/GMazeEquipPosRankV8Cfg"
