@@ -5,30 +5,28 @@ import (
 
 	"maze_game_server/common/cache/simCache"
 	"maze_game_server/common/equipmix"
+	"maze_game_server/common/errors"
 	"maze_game_server/common/tradeno"
+	"maze_game_server/config/GMazeEquipMixListV8Cfg"
+	"maze_game_server/excel/equipmixcostcfg"
 	"maze_game_server/io/redis/mazeequipmixdb"
+	"maze_game_server/io/redis/mazeuserlevelredis"
+	"maze_game_server/lib/net/websocket_service"
+	"maze_game_server/pb/common/MazeCommon"
 	"maze_game_server/pb/common/MazeEquipMix"
-	"maze_game_server/pb/common/MazeItemSvr"
+	"maze_game_server/pb/common/MessageType"
+	"maze_game_server/pb/server/MazeEquipSvr"
+	"maze_game_server/pb/server/MazeItemSvr"
+	equiprpc "maze_game_server/servers/maze_main_server/process/equip"
 	itemrpc "maze_game_server/servers/maze_main_server/process/item"
 
 	"gitlab.ifreetalk.com/maze-plate/extra/protobuf/proto"
 	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fklog"
 	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fknet"
-	"maze_game_server/common/errors"
-	"maze_game_server/config/GMazeEquipMixListV8Cfg"
-	"maze_game_server/excel/equipmixcostcfg"
-	"maze_game_server/io/redis/mazeuserlevelredis"
-	equiprpc "maze_game_server/servers/maze_main_server/process/equip"
-
 	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fkprometheus"
-	"maze_game_server/lib/net/websocket_service"
-
 	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fkrpc"
 	"gitlab.ifreetalk.com/maze-plate/freetk/fkutil/saferand"
 	"go.uber.org/zap"
-	"maze_game_server/pb/common/MazeCommon"
-	"maze_game_server/pb/common/MazeEquipSvr"
-	"maze_game_server/pb/common/MessageType"
 )
 
 func RegTcpHandler() {

@@ -1,13 +1,14 @@
 package mazeitemrpc
 
 import (
+	"maze_game_server/pb/server/MazeItemSvr"
+
 	"gitlab.ifreetalk.com/maze-plate/extra/protobuf/proto"
 	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fkconfig"
 	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fklog"
 	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fkrpc/stru"
 	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fkrpc/thrift_rpc"
 	"go.uber.org/zap"
-	"maze_game_server/pb/common/MazeItemSvr"
 )
 
 var itemRpc = thrift_rpc.AsyncRpc{}

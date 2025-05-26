@@ -1,14 +1,15 @@
 package process
 
 import (
-	"gitlab.ifreetalk.com/maze-plate/extra/protobuf/proto"
-	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fknet"
-	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fkprometheus"
 	"maze_game_server/common/errors"
 	"maze_game_server/config/GMazeBarriesV8Cfg"
 	_ "maze_game_server/config/GMazeEquipPosLvV8Cfg"
 	"maze_game_server/pb/common/MazeGame"
 	"maze_game_server/pb/common/SysPackDef"
+
+	"gitlab.ifreetalk.com/maze-plate/extra/protobuf/proto"
+	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fknet"
+	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fkprometheus"
 
 	_ "maze_game_server/io/redis/mazeequipgetnumredis"
 
