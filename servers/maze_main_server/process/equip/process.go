@@ -4,7 +4,6 @@ import (
 	"fmt"
 	"maze_game_server/common/function/limiter"
 	"maze_game_server/io/kafka/mazeuserlevelkafka"
-
 	"maze_game_server/lib/nano/component"
 )
 

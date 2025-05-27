@@ -11,12 +11,11 @@ import (
 	"maze_game_server/common/structdefine"
 	"maze_game_server/io/redis/mazebagdb"
 	"maze_game_server/lib/log"
+	"maze_game_server/lib/nano/component"
+	"maze_game_server/lib/nano/session"
 	"maze_game_server/pb/common/MazeBag"
 	"maze_game_server/pb/common/MessageType"
 	"maze_game_server/pb/server/MazeItemSvr"
-
-	"maze_game_server/lib/nano/component"
-	"maze_game_server/lib/nano/session"
 
 	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fklog"
 	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fkprometheus"

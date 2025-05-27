@@ -23,6 +23,7 @@ import (
 	"maze_game_server/io/redis/mazebuffinforedis"
 	"maze_game_server/io/redis/mazeuserlevelredis"
 	"maze_game_server/lib/log"
+	"maze_game_server/lib/nano/session"
 	"maze_game_server/module/assembleidpack"
 	"maze_game_server/module/calcassembleattr"
 	"maze_game_server/module/equippossuit"
@@ -31,8 +32,6 @@ import (
 	"maze_game_server/pb/common/MazeEquipPos"
 	"maze_game_server/pb/common/MazeGameEquip"
 	"maze_game_server/pb/server/MazeEquipCache"
-
-	"maze_game_server/lib/nano/session"
 
 	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fklog"
 	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fkprometheus"

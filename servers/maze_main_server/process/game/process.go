@@ -3,7 +3,6 @@ package game
 import (
 	"maze_game_server/io/kafka/mazeattrmsg"
 	"maze_game_server/io/kafka/mazetempbuffchgmsg"
-
 	"maze_game_server/lib/nano/component"
 	"maze_game_server/lib/nano/session"
 )

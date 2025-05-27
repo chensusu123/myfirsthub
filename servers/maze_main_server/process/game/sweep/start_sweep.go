@@ -8,14 +8,13 @@ import (
 	"maze_game_server/common/function/uniqueid"
 	"maze_game_server/config/GMazeBarriesV8Cfg"
 	"maze_game_server/lib/log"
+	"maze_game_server/lib/nano/session"
 	"maze_game_server/module/calsweepbarrier"
 	"maze_game_server/module/mazeuserinfo"
 	"maze_game_server/pb/common/MazeGame"
 	"maze_game_server/pb/common/MessageType"
 	"maze_game_server/pb/server/MazeEnergySvr"
 	"maze_game_server/servers/maze_main_server/process/game/energy"
-
-	"maze_game_server/lib/nano/session"
 
 	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fkconfig"
 	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fklog"

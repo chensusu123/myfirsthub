@@ -11,11 +11,10 @@ import (
 	"maze_game_server/excel/mazeconfigv8"
 	"maze_game_server/io/kafka/mazeenergyrecord"
 	"maze_game_server/lib/log"
+	"maze_game_server/lib/nano/session"
 	"maze_game_server/module/mazeuserinfo"
 	"maze_game_server/pb/common/MazeEnergy"
 	"time"
-
-	"maze_game_server/lib/nano/session"
 
 	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fklog"
 	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fkprometheus"

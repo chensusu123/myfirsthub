@@ -8,12 +8,11 @@ import (
 	"maze_game_server/io/kafka/mazecollectrecord"
 	"maze_game_server/io/redis/mazecollectredis"
 	"maze_game_server/lib/log"
+	"maze_game_server/lib/nano/session"
 	"maze_game_server/module/mazeuserinfo"
 	"maze_game_server/pb/common/MazeCollect"
 	"maze_game_server/pb/server/MazeCollectCache"
 	"time"
-
-	"maze_game_server/lib/nano/session"
 
 	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fklog"
 	"go.uber.org/zap"

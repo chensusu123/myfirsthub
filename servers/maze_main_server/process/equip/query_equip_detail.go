@@ -5,10 +5,9 @@ import (
 	"maze_game_server/common/function/packtopb"
 	"maze_game_server/io/redis/mazebagequipredis"
 	"maze_game_server/lib/log"
+	"maze_game_server/lib/nano/session"
 	"maze_game_server/pb/common/MazeGameEquip"
 	"maze_game_server/pb/server/MazeEquipCache"
-
-	"maze_game_server/lib/nano/session"
 
 	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fkprometheus"
 	"go.uber.org/zap"

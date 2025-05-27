@@ -6,13 +6,11 @@ import (
 	"errors"
 	"fmt"
 	"math"
-	"time"
-
 	"maze_game_server/lib/codec/raw_pkg"
-
 	"maze_game_server/lib/nano/component"
 	"maze_game_server/lib/nano/frame"
 	"maze_game_server/lib/nano/serialize"
+	"time"
 )
 
 // TODO 需要补全日志

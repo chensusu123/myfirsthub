@@ -4,10 +4,9 @@ import (
 	"maze_game_server/common/errors"
 	"maze_game_server/io/redis/mazecollectredis"
 	"maze_game_server/lib/log"
+	"maze_game_server/lib/nano/session"
 	"maze_game_server/module/mazeuserinfo"
 	"maze_game_server/pb/common/MazeCollect"
-
-	"maze_game_server/lib/nano/session"
 
 	"go.uber.org/zap"
 	"google.golang.org/protobuf/proto"

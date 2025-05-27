@@ -3,11 +3,10 @@ package equip_gm
 import (
 	"maze_game_server/common/errors"
 	"maze_game_server/lib/log"
-	"maze_game_server/pb/common/MazeGameEquip"
-	"maze_game_server/servers/maze_main_server/process/equip_gm/resetequipcmd"
-
 	"maze_game_server/lib/nano/component"
 	"maze_game_server/lib/nano/session"
+	"maze_game_server/pb/common/MazeGameEquip"
+	"maze_game_server/servers/maze_main_server/process/equip_gm/resetequipcmd"
 
 	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fkprometheus"
 	"gitlab.ifreetalk.com/maze-plate/freetk/fkutil"

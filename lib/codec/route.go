@@ -2,10 +2,9 @@ package codec
 
 import (
 	"errors"
+	"maze_game_server/lib/nano/component"
 	"regexp"
 	"strconv"
-
-	"maze_game_server/lib/nano/component"
 )
 
 var (

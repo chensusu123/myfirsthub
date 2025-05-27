@@ -10,6 +10,7 @@ import (
 	"maze_game_server/usecase/online"
 	"time"
 
+	"gitlab.ifreetalk.com/maze-plate/extra/protobuf/proto"
 	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fkprometheus"
 	"gitlab.ifreetalk.com/maze-plate/freetk/fkserver/config_manager"
 	"go.uber.org/zap"

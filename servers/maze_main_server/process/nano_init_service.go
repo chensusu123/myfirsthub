@@ -2,10 +2,9 @@ package process
 
 import (
 	"maze_game_server/lib/codec"
-	"maze_game_server/usecase/online"
-
 	"maze_game_server/lib/nano"
 	"maze_game_server/lib/nano/serialize/json"
+	"maze_game_server/usecase/online"
 
 	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fkconfig"
 	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fklog"

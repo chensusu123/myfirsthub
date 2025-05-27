@@ -2,7 +2,6 @@ package buff
 
 import (
 	"maze_game_server/io/kafka/mazebarrieruserkafka"
-
 	"maze_game_server/lib/nano/component"
 )
 

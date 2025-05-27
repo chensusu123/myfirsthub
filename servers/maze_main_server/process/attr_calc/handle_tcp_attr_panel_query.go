@@ -9,9 +9,8 @@ package attr_calc
 import (
 	"maze_game_server/common/errors"
 	"maze_game_server/lib/log"
-	"maze_game_server/pb/common/MazePropertyPanel"
-
 	"maze_game_server/lib/nano/session"
+	"maze_game_server/pb/common/MazePropertyPanel"
 
 	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fkprometheus"
 	"go.uber.org/zap"

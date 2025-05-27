@@ -15,6 +15,7 @@ import (
 	"maze_game_server/io/redis/mazechallengenumredis"
 	"maze_game_server/io/redis/mazeuserbarrierredis"
 	"maze_game_server/lib/log"
+	"maze_game_server/lib/nano/session"
 	"maze_game_server/module/mazebarrier"
 	"maze_game_server/module/mazecommonvalue"
 	"maze_game_server/module/mazeuserinfo"
@@ -23,8 +24,6 @@ import (
 	"maze_game_server/pb/server/MazeEquipSvr"
 	"strings"
 	"time"
-
-	"maze_game_server/lib/nano/session"
 
 	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fkprometheus"
 	"go.uber.org/zap"

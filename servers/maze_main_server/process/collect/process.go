@@ -3,9 +3,8 @@ package collect
 import (
 	"maze_game_server/io/kafka/mazebarrieruserkafka"
 	"maze_game_server/io/kafka/mazeuserlevelkafka"
-	"maze_game_server/usecase/tasktimer"
-
 	"maze_game_server/lib/nano/component"
+	"maze_game_server/usecase/tasktimer"
 )
 
 type Collect struct {

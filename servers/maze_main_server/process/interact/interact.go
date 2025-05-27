@@ -12,6 +12,8 @@ import (
 	"maze_game_server/io/redis/mazeequipmixdb"
 	"maze_game_server/io/redis/mazeuserlevelredis"
 	"maze_game_server/lib/log"
+	"maze_game_server/lib/nano/component"
+	"maze_game_server/lib/nano/session"
 	"maze_game_server/pb/common/MazeCommon"
 	"maze_game_server/pb/common/MazeEquipMix"
 	"maze_game_server/pb/common/MessageType"
@@ -19,9 +21,6 @@ import (
 	"maze_game_server/pb/server/MazeItemSvr"
 	equiprpc "maze_game_server/servers/maze_main_server/process/equip"
 	itemrpc "maze_game_server/servers/maze_main_server/process/item"
-
-	"maze_game_server/lib/nano/component"
-	"maze_game_server/lib/nano/session"
 
 	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fklog"
 	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fkprometheus"

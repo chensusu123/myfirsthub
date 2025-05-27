@@ -4,10 +4,9 @@
 package rob
 
 import (
+	"maze_game_server/lib/nano/component"
 	"net/http"
 	"time"
-
-	"maze_game_server/lib/nano/component"
 
 	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fklog"
 	"gitlab.ifreetalk.com/maze-plate/freetk/fkutil"

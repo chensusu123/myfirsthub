@@ -8,13 +8,12 @@ import (
 	"maze_game_server/excel/equipposexcel"
 	"maze_game_server/io/redis/dollassembleredis"
 	"maze_game_server/lib/log"
+	"maze_game_server/lib/nano/session"
 	"maze_game_server/module/equippossuit"
 	"maze_game_server/pb/common/Common"
 	"maze_game_server/pb/common/MazeEquipPos"
 	"maze_game_server/pb/common/MazeGameEquip"
 	"maze_game_server/pb/server/MazeEquipCache"
-
-	"maze_game_server/lib/nano/session"
 
 	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fkprometheus"
 	"go.uber.org/zap"

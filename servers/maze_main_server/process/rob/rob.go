@@ -6,9 +6,8 @@ package rob
 import (
 	"maze_game_server/common/errors"
 	"maze_game_server/lib/log"
-	"maze_game_server/pb/common/MazeRobGuaJi"
-
 	"maze_game_server/lib/nano/session"
+	"maze_game_server/pb/common/MazeRobGuaJi"
 
 	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fkprometheus"
 	"go.uber.org/zap"

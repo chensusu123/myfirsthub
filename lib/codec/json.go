@@ -4,11 +4,10 @@ import (
 	"bytes"
 	"fmt"
 	"io"
-	"time"
-
 	"maze_game_server/lib/nano/component"
 	"maze_game_server/lib/nano/frame"
 	"maze_game_server/lib/nano/serialize"
+	"time"
 
 	jsoniter "github.com/json-iterator/go"
 )

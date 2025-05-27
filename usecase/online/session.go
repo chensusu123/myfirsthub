@@ -2,12 +2,10 @@ package online
 
 import (
 	"errors"
+	"maze_game_server/lib/codec"
+	"maze_game_server/lib/nano/session"
 	"sync"
 	"time"
-
-	"maze_game_server/lib/codec"
-
-	"maze_game_server/lib/nano/session"
 
 	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fklog"
 	"go.uber.org/zap"

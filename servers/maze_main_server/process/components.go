@@ -2,6 +2,7 @@ package process
 
 import (
 	"maze_game_server/lib/codec"
+	"maze_game_server/lib/nano/component"
 	"maze_game_server/servers/maze_main_server/process/attr_calc"
 	"maze_game_server/servers/maze_main_server/process/auth"
 	"maze_game_server/servers/maze_main_server/process/buff"
@@ -15,8 +16,6 @@ import (
 	"maze_game_server/servers/maze_main_server/process/interact"
 	"maze_game_server/servers/maze_main_server/process/item"
 	"maze_game_server/servers/maze_main_server/process/rob"
-
-	"maze_game_server/lib/nano/component"
 )
 
 func Components() (comps *component.Components, routes *codec.Routes) {
