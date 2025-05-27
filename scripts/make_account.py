@@ -9,24 +9,42 @@ import sys
 
 # 定义不同环境的配置
 ENV_CONFIG = {
-    "dev": {
+    "test": {
         "redis_host": "10.101.110.231",
         "redis_port": 9004,
-        "http_url": "https://test-reg.midudutech.com/user/register/mail"
+        "http_url": "https://test-reg.midudutech.com/user/register/mail",
+        "gm_url_template": "http://test-gm.midudutech.com/generateUser?AuthId=%s"
     },
-    "test": {
-        "redis_host": "your_test_redis_host",  # 请替换为实际的测试环境 Redis 主机地址
-        "redis_port": 6379,  # 请替换为实际的测试环境 Redis 端口
-        "http_url": "https://your_test_http_url"  # 请替换为实际的测试环境 HTTP 地址
+    "play": {
+        "redis_host": "10.101.110.231",
+        "redis_port": 9004,
+        "http_url": "https://play-reg.midudutech.com/user/register/mail",
+        "gm_url_template": "http://play-gm.midudutech.com/generateUser?AuthId=%s"
     }
 }
 
+def call_gm_api(auth_id, env):
+    gm_url = ENV_CONFIG[env]["gm_url_template"] % auth_id
+    try:
+        response = requests.get(gm_url)
+        response.raise_for_status()
+        result = response.json()
+        error_code = result.get("errorCode")
+        error_msg = result.get("errorMsg")
+        user_id = result.get("userId")
+
+        if error_code == 0:
+            return True, user_id, error_msg
+        else:
+            return False, user_id, error_msg
+    except requests.RequestException as e:
+        return False, 0, f"调用 GM 接口失败: {e}"
+    except ValueError:
+        return False, 0, "无法解析 GM 接口返回的 JSON 数据"
+
 def create_email_accounts(email_prefix, count, env):
-    if env == "test":
-        print("暂时不支持 test 环境，请使用 dev 环境。")
-        return
     if env not in ENV_CONFIG:
-        print(f"不支持的环境: {env}，请使用 dev 或 test")
+        print(f"不支持的环境: {env}，请使用 test 或 play")
         return
 
     config = ENV_CONFIG[env]
@@ -41,6 +59,9 @@ def create_email_accounts(email_prefix, count, env):
         'Connection': 'keep-alive',
         'User-Agent': 'Make-Maze-Account/1.1.0'
     }
+
+    # 输出表头
+    print("邮箱账号,密码,AuthID,角色ID")
 
     for _ in range(count):
         # 从 user:id:pool 队列中获取最右侧的数字
@@ -65,7 +86,11 @@ def create_email_accounts(email_prefix, count, env):
             result = response.json()
             if result.get("status") == 200:
                 auth_id = result.get("data", {}).get("auth_info", {}).get("auth_id")
-                print(f"邮箱账号: {email}, 密码: {password}, auth_id: {auth_id}")
+                success, user_id, error_msg = call_gm_api(auth_id, env)
+                if success:
+                    print(f"\"{email}\",\"{password}\",\"{auth_id}\",\"{user_id}\"")
+                else:
+                    print(f"创建邮箱账号 {email} 后，调用 GM 接口失败: {error_msg}")
             else:
                 print(f"创建邮箱账号 {email} 失败，接口返回非 200 状态码: {result.get('desc', '未知错误')}")
         except requests.RequestException as e:
@@ -75,7 +100,7 @@ def create_email_accounts(email_prefix, count, env):
 
 if __name__ == "__main__":
     if len(sys.argv) != 4:
-        print("用法: python make_account.py <邮箱前缀> <数量> <环境（dev/test）>")
+        print("用法: python make_account.py <邮箱前缀> <数量> <test/play）>")
         sys.exit(1)
 
     email_prefix = sys.argv[1]
