@@ -62,6 +62,7 @@ def create_email_accounts(email_prefix, count, env):
 
     # 输出表头
     print("邮箱账号,密码,AuthID,角色ID")
+    import hashlib  # 导入 hashlib 库
 
     for _ in range(count):
         # 从 user:id:pool 队列中获取最右侧的数字
@@ -74,9 +75,13 @@ def create_email_accounts(email_prefix, count, env):
         email_num_part = str(last_id)[-7:].zfill(7)
         email = f"{email_prefix}{email_num_part}@v8.com"
         password = ''.join(random.choices(string.digits, k=6))
+
+        # 计算密码的 MD5 值
+        md5_password = hashlib.md5(password.encode('utf-8')).hexdigest()
+
         data = {
             'mail': email,
-            'password': password,
+            'password': md5_password,  # 使用 MD5 密码
             'op_type': 1,
         }
 
