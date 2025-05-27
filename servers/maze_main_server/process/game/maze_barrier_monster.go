@@ -48,7 +48,7 @@ func OnBarrierMonsterDeathRQ(logger fknet.TCPContext, shardingID uint64, rqMsg p
 		for _, v := range foeCfg.Drop_equip {
 			equip[v] += 1
 		}
-		_, err = addequip.AddEquipToBag(logger, userId, int32(MazeEquipSvr.ENUM_EQUIP_BAG_OP_TYPE_MAZE_EQUIP_FOE), tradeNo, equip)
+		_, err = addequip.AddEquipToBag(logger, userId, int32(MazeEquipSvr.ENUM_EQUIP_BAG_OP_TYPE_MAZE_EQUIP_SWEEP_AWARD), tradeNo, equip)
 		if err != nil {
 			logger.ErrorWF("OnBarrierMonsterDeathRQ addEquipToBag fail", zap.Error(err), zap.Any("optype", int32(MazeEquipSvr.ENUM_EQUIP_BAG_OP_TYPE_MAZE_EQUIP_FOE)),
 				zap.Any("tradeNo", tradeNo), zap.Any("addEquip", equip))
@@ -57,7 +57,9 @@ func OnBarrierMonsterDeathRQ(logger fknet.TCPContext, shardingID uint64, rqMsg p
 
 	// 增加掉落物品返回
 	for itemID, count := range foeCfg.Drop_item {
-		res.Awards = append(res.Awards, &MazeCommon.MazeItem{ItemId: proto.Int32(itemID), Count: proto.Int64(count)})
+		if itemID > 0 {
+			res.Awards = append(res.Awards, &MazeCommon.MazeItem{ItemId: proto.Int32(itemID), Count: proto.Int64(count)})
+		}
 	}
 	// 通关值
 	res.Kongfu = proto.Int32(foeCfg.Kongfu)

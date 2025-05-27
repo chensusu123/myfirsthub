@@ -1,10 +1,6 @@
 package game
 
 import (
-	"google.golang.org/protobuf/proto"
-	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fknet"
-	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fkprometheus"
-	"gitlab.ifreetalk.com/maze-plate/freetk/fkutil"
 	"maze_game_server/common/errors"
 	"maze_game_server/common/function/addequip"
 	"maze_game_server/common/function/gentradeno"
@@ -12,6 +8,11 @@ import (
 	"maze_game_server/pb/common/MazeCommon"
 	"maze_game_server/pb/common/MazeGame"
 	"maze_game_server/pb/server/MazeEquipSvr"
+
+	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fknet"
+	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fkprometheus"
+	"gitlab.ifreetalk.com/maze-plate/freetk/fkutil"
+	"google.golang.org/protobuf/proto"
 
 	"go.uber.org/zap"
 )
@@ -65,7 +66,9 @@ func OnBarrierOpenBoxRQ(logger fknet.TCPContext, shardingID uint64, rqMsg proto.
 
 	// 增加掉落物品返回
 	for itemID, count := range boxCfg.Drop_item {
-		res.Awards = append(res.Awards, &MazeCommon.MazeItem{ItemId: proto.Int32(itemID), Count: proto.Int64(count)})
+		if itemID > 0 {
+			res.Awards = append(res.Awards, &MazeCommon.MazeItem{ItemId: proto.Int32(itemID), Count: proto.Int64(count)})
+		}
 	}
 	// 通关值
 	res.Kongfu = proto.Int32(boxCfg.Add_kongfu)
