@@ -1,7 +1,7 @@
 package attr_calc
 
 import (
-	"github.com/lonng/nano/component"
+	"maze_game_server/lib/nano/component"
 )
 
 func RegRpcHandler() {

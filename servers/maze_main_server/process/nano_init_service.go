@@ -4,8 +4,9 @@ import (
 	"maze_game_server/lib/codec"
 	"maze_game_server/usecase/online"
 
-	"github.com/lonng/nano"
-	"github.com/lonng/nano/serialize/json"
+	"maze_game_server/lib/nano"
+	"maze_game_server/lib/nano/serialize/json"
+
 	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fkconfig"
 	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fklog"
 )

@@ -1,7 +1,7 @@
 package codec
 
 import (
-	"github.com/lonng/nano/serialize"
+	"maze_game_server/lib/nano/serialize"
 )
 
 type CodecOption func(codec interface{})

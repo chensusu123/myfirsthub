@@ -1,7 +1,8 @@
 package card
 
 import (
-	"github.com/lonng/nano/component"
+	"maze_game_server/lib/nano/component"
+
 	"gitlab.ifreetalk.com/maze-plate/freetk/fkserver/custom"
 )
 

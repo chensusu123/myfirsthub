@@ -10,7 +10,8 @@ import (
 	"maze_game_server/pb/common/MazeGame"
 	"maze_game_server/pb/server/MazeEquipSvr"
 
-	"github.com/lonng/nano/session"
+	"maze_game_server/lib/nano/session"
+
 	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fkprometheus"
 	"go.uber.org/zap"
 )

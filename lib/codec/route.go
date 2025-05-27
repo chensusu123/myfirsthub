@@ -5,7 +5,7 @@ import (
 	"regexp"
 	"strconv"
 
-	"github.com/lonng/nano/component"
+	"maze_game_server/lib/nano/component"
 )
 
 var (

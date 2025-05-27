@@ -9,7 +9,8 @@ import (
 	"maze_game_server/usecase/online"
 	"time"
 
-	"github.com/lonng/nano/session"
+	"maze_game_server/lib/nano/session"
+
 	"gitlab.ifreetalk.com/maze-plate/extra/protobuf/proto"
 	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fknet"
 	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fkprometheus"

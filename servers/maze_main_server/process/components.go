@@ -16,7 +16,7 @@ import (
 	"maze_game_server/servers/maze_main_server/process/item"
 	"maze_game_server/servers/maze_main_server/process/rob"
 
-	"github.com/lonng/nano/component"
+	"maze_game_server/lib/nano/component"
 )
 
 func Components() (comps *component.Components, routes *codec.Routes) {

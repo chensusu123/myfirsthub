@@ -6,10 +6,11 @@ import (
 	"io"
 	"time"
 
+	"maze_game_server/lib/nano/component"
+	"maze_game_server/lib/nano/frame"
+	"maze_game_server/lib/nano/serialize"
+
 	jsoniter "github.com/json-iterator/go"
-	"github.com/lonng/nano/component"
-	"github.com/lonng/nano/frame"
-	"github.com/lonng/nano/serialize"
 )
 
 var (

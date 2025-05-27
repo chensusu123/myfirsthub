@@ -5,7 +5,7 @@ import (
 	"maze_game_server/common/function/limiter"
 	"maze_game_server/io/kafka/mazeuserlevelkafka"
 
-	"github.com/lonng/nano/component"
+	"maze_game_server/lib/nano/component"
 )
 
 var GtcpLimiter = limiter.NewLimiter("tcpLimiter")

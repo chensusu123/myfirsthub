@@ -13,7 +13,8 @@ import (
 	"maze_game_server/pb/server/MazeCollectCache"
 	"time"
 
-	"github.com/lonng/nano/session"
+	"maze_game_server/lib/nano/session"
+
 	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fklog"
 	"go.uber.org/zap"
 	"google.golang.org/protobuf/proto"

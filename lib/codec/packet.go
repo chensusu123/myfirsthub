@@ -10,9 +10,9 @@ import (
 
 	"maze_game_server/lib/codec/raw_pkg"
 
-	"github.com/lonng/nano/component"
-	"github.com/lonng/nano/frame"
-	"github.com/lonng/nano/serialize"
+	"maze_game_server/lib/nano/component"
+	"maze_game_server/lib/nano/frame"
+	"maze_game_server/lib/nano/serialize"
 )
 
 // TODO 需要补全日志

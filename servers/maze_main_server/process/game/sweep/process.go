@@ -3,7 +3,7 @@
 package sweep
 
 import (
-	"github.com/lonng/nano/component"
+	"maze_game_server/lib/nano/component"
 )
 
 type Sweep struct {

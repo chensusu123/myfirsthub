@@ -5,7 +5,7 @@ import (
 	"maze_game_server/io/kafka/mazeuserlevelkafka"
 	"maze_game_server/usecase/tasktimer"
 
-	"github.com/lonng/nano/component"
+	"maze_game_server/lib/nano/component"
 )
 
 type Collect struct {

@@ -19,10 +19,10 @@ func TestSendPacket(t *testing.T) {
 	pb := &MazeGame.MazeLoginRQ{}
 	pb.Header = &Common.PacketHeader{
 		Session:       proto.String("2"),
-		Protocol:      proto.Int(370),
-		RanchProtocol: proto.Int(1),
+		Protocol:      proto.Int32(370),
+		RanchProtocol: proto.Int32(1),
 	}
-	pb.MazeVersion = proto.Int(2)
+	pb.MazeVersion = proto.Int32(2)
 
 	pd, _ := proto.Marshal(pb)
 

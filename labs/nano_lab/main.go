@@ -11,9 +11,9 @@ package main
 // 	"time"
 
 // 	"github.com/gorilla/websocket"
-// 	"github.com/lonng/nano"
-// 	"github.com/lonng/nano/component"
-// 	"github.com/lonng/nano/session"
+// 	"maze_game_server/lib/nano"
+// 	"maze_game_server/lib/nano/component"
+// 	"maze_game_server/lib/nano/session"
 // 	"gitlab.ifreetalk.com/maze-plate/freetk/common/fkfmt"
 // 	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore"
 // 	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fkconfig"

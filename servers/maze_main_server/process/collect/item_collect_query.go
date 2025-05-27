@@ -7,7 +7,8 @@ import (
 	"maze_game_server/module/mazeuserinfo"
 	"maze_game_server/pb/common/MazeCollect"
 
-	"github.com/lonng/nano/session"
+	"maze_game_server/lib/nano/session"
+
 	"go.uber.org/zap"
 	"google.golang.org/protobuf/proto"
 )

@@ -19,7 +19,8 @@ import (
 	"strings"
 	"time"
 
-	"github.com/lonng/nano/session"
+	"maze_game_server/lib/nano/session"
+
 	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fklog"
 	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fkprometheus"
 	"gitlab.ifreetalk.com/maze-plate/freetk/fkutil"

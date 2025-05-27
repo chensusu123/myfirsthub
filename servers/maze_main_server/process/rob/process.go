@@ -7,7 +7,8 @@ import (
 	"net/http"
 	"time"
 
-	"github.com/lonng/nano/component"
+	"maze_game_server/lib/nano/component"
+
 	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fklog"
 	"gitlab.ifreetalk.com/maze-plate/freetk/fkutil"
 	"go.uber.org/zap"

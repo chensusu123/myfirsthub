@@ -4,8 +4,8 @@ import (
 	"maze_game_server/io/kafka/mazeattrmsg"
 	"maze_game_server/io/kafka/mazetempbuffchgmsg"
 
-	"github.com/lonng/nano/component"
-	"github.com/lonng/nano/session"
+	"maze_game_server/lib/nano/component"
+	"maze_game_server/lib/nano/session"
 )
 
 type Game struct {
