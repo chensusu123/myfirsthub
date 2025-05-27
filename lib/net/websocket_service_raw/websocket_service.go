@@ -9,8 +9,10 @@ import (
 	"sync"
 	"time"
 
+	"maze_game_server/lib/net/raw_pkg"
+	"maze_game_server/lib/net/raw_pkg_ctl"
+
 	jsoniter "github.com/json-iterator/go"
-	"google.golang.org/protobuf/proto"
 	"gitlab.ifreetalk.com/maze-plate/freetk/common/fkfmt"
 	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore"
 	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fkalert"
@@ -23,8 +25,7 @@ import (
 	"gitlab.ifreetalk.com/maze-plate/freetk/fkutil"
 	"go.uber.org/atomic"
 	"go.uber.org/zap"
-	"maze_game_server/lib/net/raw_pkg"
-	"maze_game_server/lib/net/raw_pkg_ctl"
+	"google.golang.org/protobuf/proto"
 )
 
 var json = jsoniter.ConfigCompatibleWithStandardLibrary

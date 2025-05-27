@@ -4,11 +4,12 @@ import (
 	"fmt"
 	"strings"
 
-	"google.golang.org/protobuf/proto"
-	"gitlab.ifreetalk.com/maze-plate/freetk/fkutil"
 	"maze_game_server/common/constdef"
 	"maze_game_server/config/GMazeEquipPosRankV8Cfg"
 	"maze_game_server/pb/server/MazeEquipCache"
+
+	"gitlab.ifreetalk.com/maze-plate/freetk/fkutil"
+	"google.golang.org/protobuf/proto"
 )
 
 // 是否有效的装备位

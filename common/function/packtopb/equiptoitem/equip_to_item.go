@@ -4,11 +4,12 @@ import (
 	"errors"
 	"fmt"
 
-	"google.golang.org/protobuf/proto"
 	"maze_game_server/config/GMazeEquipInfoV8Cfg"
 	"maze_game_server/config/GMazeEquipTypeResV8Cfg"
 	"maze_game_server/pb/common/MazeCommon"
 	"maze_game_server/pb/server/MazeEquipSvr"
+
+	"google.golang.org/protobuf/proto"
 )
 
 func PackEquipToItem(equip *MazeEquipSvr.MazeEquipInfoSvr) (item *MazeCommon.MazeItem, err error) {

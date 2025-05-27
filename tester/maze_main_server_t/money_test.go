@@ -6,12 +6,13 @@ import (
 	"testing"
 	"time"
 
-	"google.golang.org/protobuf/proto"
-	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fknet"
 	"maze_game_server/common/errors"
 	"maze_game_server/io/rpc/mazeitemrpc"
 	"maze_game_server/pb/common/MazeCommon"
 	"maze_game_server/pb/common/MazeItemSvr"
+
+	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fknet"
+	"google.golang.org/protobuf/proto"
 )
 
 func TestQueryMoney(t *testing.T) {

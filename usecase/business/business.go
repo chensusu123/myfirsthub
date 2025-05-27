@@ -187,6 +187,7 @@ func (tb *tCustomBusiness) OnInit(logger fklog.FKLogI, cfg fkconfig.FkConfigerI)
 		return
 	}
 	logger.InfoWF("OnInit monitor file path success.", zap.String("path", flagConfigPath), zap.String("version", tb.gitFile))
+
 	return
 }
 

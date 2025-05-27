@@ -4,10 +4,6 @@ import (
 	"fmt"
 	"strings"
 
-	"google.golang.org/protobuf/proto"
-	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fkconfig"
-	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fklog"
-	"go.uber.org/zap"
 	"maze_game_server/common/errors"
 	"maze_game_server/common/function/monitor"
 	"maze_game_server/pb/common/Common"
@@ -15,6 +11,11 @@ import (
 	"maze_game_server/pb/common/MessageType"
 	"maze_game_server/pb/server/MazeItemSvr"
 	"maze_game_server/servers/maze_main_server/process/item"
+
+	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fkconfig"
+	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fklog"
+	"go.uber.org/zap"
+	"google.golang.org/protobuf/proto"
 )
 
 var (

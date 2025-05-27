@@ -2,8 +2,8 @@ package buff
 
 import (
 	"maze_game_server/io/kafka/mazebarrieruserkafka"
-	"maze_game_server/lib/net/websocket_service"
-	"maze_game_server/pb/common/MazeTempBuff"
+
+	"github.com/lonng/nano/component"
 )
 
 /**
@@ -12,22 +12,30 @@ import (
  * @Description:
  */
 
+type Buff struct {
+	component.Base
+}
+
+func NewBuff() *Buff {
+	return &Buff{}
+}
+
 func RegTcpHandler() {
-	// 查询迷宫buff列表
-	websocket_service.RegProcSimple(10433, &MazeTempBuff.GetMazeTempBuffListRQ{},
-		10434, &MazeTempBuff.GetMazeTempBuffListRS{}, GetMazeTempBuffListRQ)
+	// // 查询迷宫buff列表
+	// websocket_service.RegProcSimple(10433, &MazeTempBuff.GetMazeTempBuffListRQ{},
+	// 	10434, &MazeTempBuff.GetMazeTempBuffListRS{}, GetMazeTempBuffListRQ)
 
-	// 查询迷宫可选buff列表
-	websocket_service.RegProcSimple(10435, &MazeTempBuff.GetOptionalMazeTempBuffListRQ{},
-		10436, &MazeTempBuff.GetOptionalMazeTempBuffListRS{}, GetOptionalMazeTempBuffListRQ)
+	// // 查询迷宫可选buff列表
+	// websocket_service.RegProcSimple(10435, &MazeTempBuff.GetOptionalMazeTempBuffListRQ{},
+	// 	10436, &MazeTempBuff.GetOptionalMazeTempBuffListRS{}, GetOptionalMazeTempBuffListRQ)
 
-	// 刷新迷宫可选buff列表
-	websocket_service.RegProcSimple(10439, &MazeTempBuff.RefreshOptionalMazeTempBuffListRQ{},
-		10440, &MazeTempBuff.RefreshOptionalMazeTempBuffListRS{}, RefreshOptionalMazeTempBuffListRQ)
+	// // 刷新迷宫可选buff列表
+	// websocket_service.RegProcSimple(10439, &MazeTempBuff.RefreshOptionalMazeTempBuffListRQ{},
+	// 	10440, &MazeTempBuff.RefreshOptionalMazeTempBuffListRS{}, RefreshOptionalMazeTempBuffListRQ)
 
-	// 选择迷宫buff
-	websocket_service.RegProcSimple(10437, &MazeTempBuff.SelectMazeTempBuffRQ{},
-		10438, &MazeTempBuff.SelectMazeTempBuffRS{}, SelectMazeTempBuffRQ)
+	// // 选择迷宫buff
+	// websocket_service.RegProcSimple(10437, &MazeTempBuff.SelectMazeTempBuffRQ{},
+	// 	10438, &MazeTempBuff.SelectMazeTempBuffRS{}, SelectMazeTempBuffRQ)
 }
 
 func InitKafkaConsumer() {

@@ -1,19 +1,18 @@
 package collect
 
 import (
-	"time"
-
-	"maze_game_server/io/kafka/mazecollectrecord"
-
-	"google.golang.org/protobuf/proto"
-	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fklog"
-	"go.uber.org/zap"
 	"maze_game_server/common/errors"
 	"maze_game_server/config/GMazeBarriesOnHookV8Cfg"
+	"maze_game_server/io/kafka/mazecollectrecord"
 	"maze_game_server/io/redis/mazecollectredis"
 	"maze_game_server/pb/common/MazeCollect"
 	"maze_game_server/pb/server/MazeCollectCache"
 	"maze_game_server/usecase/mustarrive"
+	"time"
+
+	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fklog"
+	"go.uber.org/zap"
+	"google.golang.org/protobuf/proto"
 )
 
 // 初始化迷宫挂机

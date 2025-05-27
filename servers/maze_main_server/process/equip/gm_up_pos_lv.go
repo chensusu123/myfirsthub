@@ -3,10 +3,6 @@ package equip
 import (
 	"fmt"
 
-	"google.golang.org/protobuf/proto"
-	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fklog"
-	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fkprometheus"
-	"go.uber.org/zap"
 	"maze_game_server/common/constdef"
 	"maze_game_server/common/function/assemble"
 	"maze_game_server/common/function/excelutil"
@@ -19,6 +15,11 @@ import (
 	"maze_game_server/module/equippossuit"
 	"maze_game_server/pb/common/MazeGameEquip"
 	"maze_game_server/pb/server/MazeEquipCache"
+
+	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fklog"
+	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fkprometheus"
+	"go.uber.org/zap"
+	"google.golang.org/protobuf/proto"
 )
 
 // OnGmEquipPosLvUp 不扣道具，直接将用户装备提升到某个等级 ！！！谨慎使用

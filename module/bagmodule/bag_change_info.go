@@ -1,9 +1,10 @@
 package bagmodule
 
 import (
-	"google.golang.org/protobuf/proto"
-	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fklog"
 	"maze_game_server/pb/server/MazeEquipCache"
+
+	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fklog"
+	"google.golang.org/protobuf/proto"
 )
 
 const (
@@ -45,9 +46,9 @@ func (b *BagChangeInfo) AddBagAdd(equip *MazeEquipCache.MazeEquipInfoDb) {
 	b.addInfo(equip, DB_OP_TYPE_ADD)
 }
 
-// func (b *BagChangeInfo) GetAllChgBag() int {
+//func (b *BagChangeInfo) GetAllChgBag() int {
 //	return len(b.changeEquips)
-// }
+//}
 
 // 合并添加上又删除的装备信息
 func (b *BagChangeInfo) MergeAddAndRemoveUpdateInfo() (rems []int64, adds []*MazeEquipCache.MazeEquipInfoDb) {

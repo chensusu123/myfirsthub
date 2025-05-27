@@ -19,6 +19,7 @@ require (
 	github.com/polarismesh/polaris-go v1.6.1
 	github.com/samber/slog-zap/v2 v2.6.2
 	github.com/xuri/excelize/v2 v2.9.0
+	gitlab.ifreetalk.com/maze-plate/extra v1.0.1-0.20250401060651-722653168d37
 	gitlab.ifreetalk.com/maze-plate/freetk v1.0.1-0.20250605035228-5d22f962d0a6
 	go.uber.org/atomic v1.11.0
 	go.uber.org/zap v1.27.0
@@ -38,7 +39,7 @@ require (
 	github.com/dlclark/regexp2 v1.7.0 // indirect
 	github.com/emirpasic/gods v1.18.1 // indirect
 	github.com/fsnotify/fsnotify v1.5.4 // indirect
-	github.com/go-logr/logr v1.3.0 // indirect
+	github.com/go-logr/logr v1.4.1 // indirect
 	github.com/go-logr/stdr v1.2.2 // indirect
 	github.com/golang/protobuf v1.5.4 // indirect
 	github.com/google/uuid v1.6.0 // indirect
@@ -77,13 +78,12 @@ require (
 	github.com/twmb/murmur3 v1.1.8 // indirect
 	github.com/xuri/efp v0.0.0-20240408161823-9ad904a10d6d // indirect
 	github.com/xuri/nfp v0.0.0-20240318013403-ab9948c2c4a7 // indirect
-	gitlab.ifreetalk.com/maze-plate/extra v1.0.1-0.20250401060651-722653168d37 // indirect
-	go.opentelemetry.io/otel v1.21.0 // indirect
+	go.opentelemetry.io/otel v1.24.0 // indirect
 	go.opentelemetry.io/otel/exporters/prometheus v0.44.0 // indirect
-	go.opentelemetry.io/otel/metric v1.21.0 // indirect
-	go.opentelemetry.io/otel/sdk v1.21.0 // indirect
+	go.opentelemetry.io/otel/metric v1.24.0 // indirect
+	go.opentelemetry.io/otel/sdk v1.22.0 // indirect
 	go.opentelemetry.io/otel/sdk/metric v1.21.0 // indirect
-	go.opentelemetry.io/otel/trace v1.21.0 // indirect
+	go.opentelemetry.io/otel/trace v1.24.0 // indirect
 	go.uber.org/multierr v1.11.0 // indirect
 	golang.org/x/arch v0.2.0 // indirect
 	golang.org/x/crypto v0.28.0 // indirect
@@ -99,5 +99,9 @@ require (
 )
 
 //replace gitlab.ifreetalk.com/maze-plate/excel => gitlab.ifreetalk.com/maze-plate/excel v1.0.83-0.20250506053436-ef2c9ea111c0
+
+//replace gitlab.ifreetalk.com/maze-plate/freetk v1.2.61 => /Users/majiange/data/dev/go_work/go_plate/src/gitlab.ifreetalk.com/maze-plate/freetk
+
+replace github.com/lonng/nano => github.com/thecxx/nano-ex v0.0.0-20250523125637-695a11bba8f9
 
 //replace gitlab.ifreetalk.com/maze-plate/freetk => /Users/majiange/data/dev/go_work/maze/maze-plate/freetk

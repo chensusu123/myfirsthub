@@ -3,14 +3,15 @@ package itemutil
 import (
 	"context"
 
-	"google.golang.org/protobuf/proto"
-	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fklog"
-	"gitlab.ifreetalk.com/maze-plate/freetk/fkserver"
-	"go.uber.org/zap"
 	"maze_game_server/config/GMazeBagOrderV8Cfg"
 	"maze_game_server/pb/common/Common"
 	"maze_game_server/pb/common/MazeBag"
 	"maze_game_server/pb/common/MazeCommon"
+
+	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fklog"
+	"gitlab.ifreetalk.com/maze-plate/freetk/fkserver"
+	"go.uber.org/zap"
+	"google.golang.org/protobuf/proto"
 )
 
 // WrapUserContext 封装UserContext信息

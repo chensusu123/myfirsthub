@@ -4,53 +4,62 @@ import (
 	"context"
 	"time"
 
-	"google.golang.org/protobuf/proto"
-	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fklog"
-	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fknet"
-	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fkprometheus"
-	"go.uber.org/zap"
 	"maze_game_server/common/additemdefine"
 	"maze_game_server/common/errors"
 	"maze_game_server/common/iteminterface"
 	"maze_game_server/common/itemutil"
 	"maze_game_server/common/structdefine"
 	"maze_game_server/io/redis/mazebagdb"
-	"maze_game_server/lib/net/websocket_service"
+	"maze_game_server/lib/log"
 	"maze_game_server/pb/common/MazeBag"
 	"maze_game_server/pb/common/MessageType"
 	"maze_game_server/pb/server/MazeItemSvr"
+
+	"github.com/lonng/nano/component"
+	"github.com/lonng/nano/session"
+	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fklog"
+	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fkprometheus"
+	"go.uber.org/zap"
+	"google.golang.org/protobuf/proto"
 )
 
-func RegTcpHandler() {
-	// 获取迷宫背包列表
-	_ = websocket_service.RegProcSimple(10400, &MazeBag.MazeBagListRQ{},
-		10401, &MazeBag.MazeBagListRS{}, OnMazeBagListRQ)
-
-	// 重置迷宫背包列表
-	_ = websocket_service.RegProcSimple(10402, &MazeBag.ResetMazeBagRQ{},
-		10403, &MazeBag.ResetMazeBagRS{}, OnResetMazeBagRQ)
+type Item struct {
+	component.Base
 }
 
-func OnMazeBagListRQ(ctx fknet.TCPContext, uid uint64, rqMsg proto.Message, rsMsg proto.Message) (err error) {
-	req, ok := rqMsg.(*MazeBag.MazeBagListRQ)
-	if !ok {
-		ctx.ErrorWF("OnMazeBagListRQ pb is wrong", zap.Any("rqMsg", rqMsg))
-		return
-	}
-	res, ok := rsMsg.(*MazeBag.MazeBagListRS)
-	if !ok {
-		ctx.ErrorWF("OnMazeBagListRQ pb is wrong", zap.Any("rsMsg", rsMsg))
-		return
-	}
+func NewItem() *Item {
+	return &Item{}
+}
+
+func RegTcpHandler() {
+	// // 获取迷宫背包列表
+	// _ = websocket_service.RegProcSimple(10400, &MazeBag.MazeBagListRQ{},
+	// 	10401, &MazeBag.MazeBagListRS{}, OnMazeBagListRQ)
+
+	// // 重置迷宫背包列表
+	// _ = websocket_service.RegProcSimple(10402, &MazeBag.ResetMazeBagRQ{},
+	// 	10403, &MazeBag.ResetMazeBagRS{}, OnResetMazeBagRQ)
+}
+
+func (i *Item) OnMazeBagListRQ_10400_10401(s *session.Session, req *MazeBag.MazeBagListRQ) (err error) {
+
+	logger := log.Clone("Item", uint64(s.UID()), 0)
+	res := &MazeBag.MazeBagListRS{}
+
 	res.Header = req.Header
 	res.ErrInfo = errors.NO_ERROR
 
-	defer fkprometheus.DebugPMT("OnMazeBagListRQ")()
-	defer ctx.InfoWF("OnMazeBagListRQ end", zap.Any("req", req), zap.Any("res", res))
+	uid := uint64(s.UID())
 
-	bagItemMap, err := mazebagdb.GetAllBagItem(ctx, uid, 300)
+	defer fkprometheus.DebugPMT("OnMazeBagListRQ")()
+	defer func() {
+		err = s.Response(res)
+		logger.InfoWF("OnMazeBagListRQ end", zap.Any("req", req), zap.Any("res", res))
+	}()
+
+	bagItemMap, err := mazebagdb.GetAllBagItem(logger, uid, 300)
 	if err != nil {
-		ctx.ErrorWF("OnMazeBagListRQ GetAllBagItem err", zap.Error(err))
+		logger.ErrorWF("OnMazeBagListRQ GetAllBagItem err", zap.Error(err))
 		res.ErrInfo = errors.MODULE_ERROR.ToInfo()
 		return
 	}
@@ -60,31 +69,26 @@ func OnMazeBagListRQ(ctx fknet.TCPContext, uid uint64, rqMsg proto.Message, rsMs
 		if id <= 0 || count <= 0 {
 			continue
 		}
-		res.Items = append(res.Items, itemutil.BuildMazeBagItem(ctx, id, count))
+		res.Items = append(res.Items, itemutil.BuildMazeBagItem(logger, id, count))
 	}
 	return
 }
 
-func OnResetMazeBagRQ(ctx fknet.TCPContext, uid uint64, rqMsg proto.Message, rsMsg proto.Message) (err error) {
-	req, ok := rqMsg.(*MazeBag.ResetMazeBagRQ)
-	if !ok {
-		ctx.ErrorWF("OnResetMazeBagRQ pb is wrong", zap.Any("rqMsg", rqMsg))
-		return
-	}
-	res, ok := rsMsg.(*MazeBag.ResetMazeBagRS)
-	if !ok {
-		ctx.ErrorWF("OnResetMazeBagRQ pb is wrong", zap.Any("rsMsg", rsMsg))
-		return
-	}
+func (i *Item) OnResetMazeBagRQ_10402_10403(s *session.Session, req *MazeBag.ResetMazeBagRQ) (err error) {
+
+	logger := log.Clone("Item", uint64(s.UID()), 0)
+	res := &MazeBag.ResetMazeBagRS{}
+
 	res.Header = req.Header
 	res.ErrInfo = errors.NO_ERROR
+	uid := uint64(s.UID())
 
 	defer fkprometheus.DebugPMT("OnResetMazeBagRQ")()
-	defer ctx.InfoWF("OnResetMazeBagRQ end", zap.Any("req", req), zap.Any("res", res))
+	defer logger.InfoWF("OnResetMazeBagRQ end", zap.Any("req", req), zap.Any("res", res))
 
-	err = mazebagdb.DelKey(ctx, uid)
+	err = mazebagdb.DelKey(logger, uid)
 	if err != nil {
-		ctx.ErrorWF("OnResetMazeBagRQ DelKey err", zap.Error(err))
+		logger.ErrorWF("OnResetMazeBagRQ DelKey err", zap.Error(err))
 		res.ErrInfo = errors.DB_SAVE_ERROR.ToInfo()
 		return
 	}

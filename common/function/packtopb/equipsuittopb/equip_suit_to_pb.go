@@ -12,9 +12,6 @@ import (
 	"fmt"
 	"sort"
 
-	"google.golang.org/protobuf/proto"
-	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fklog"
-	"go.uber.org/zap"
 	"maze_game_server/common/constdef"
 	"maze_game_server/common/function/pbutil"
 	"maze_game_server/config/GMazeEquipInfoV8Cfg"
@@ -24,6 +21,10 @@ import (
 	"maze_game_server/excel/mazeequipinfocfgex"
 	"maze_game_server/pb/common/MazeGameEquip"
 	"maze_game_server/pb/server/MazeEquipCache"
+
+	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fklog"
+	"go.uber.org/zap"
+	"google.golang.org/protobuf/proto"
 )
 
 func PackEquipSuitCliPb(logger fklog.FKLogI, pos int32, equips []*MazeEquipCache.MazeEquipPosInfo, suitId int32, dollLv int32) (cliSuitInfo *MazeGameEquip.EquipSuitInfo, err error) {

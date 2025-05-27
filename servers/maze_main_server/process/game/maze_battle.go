@@ -1,8 +1,6 @@
 package game
 
 import (
-	"sort"
-
 	"maze_game_server/common/constdef"
 	"maze_game_server/common/errors"
 	"maze_game_server/config/GMazeActInfoV8Cfg"
@@ -17,6 +15,7 @@ import (
 	"maze_game_server/io/redis/mazebarriertempbuffredis"
 	"maze_game_server/io/redis/mazecalcattrredis"
 	"maze_game_server/pb/common/MazeAIBattle"
+	"sort"
 
 	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fklog"
 	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fkprometheus"

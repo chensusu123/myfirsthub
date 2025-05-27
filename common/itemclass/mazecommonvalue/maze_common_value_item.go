@@ -9,9 +9,6 @@ package mazecommonvalue
 import (
 	"fmt"
 
-	"google.golang.org/protobuf/proto"
-	"gitlab.ifreetalk.com/maze-plate/freetk/fkserver"
-	"go.uber.org/zap"
 	"maze_game_server/common/additemdefine"
 	"maze_game_server/common/errors"
 	"maze_game_server/common/itemdefine/constdefine"
@@ -22,6 +19,10 @@ import (
 	"maze_game_server/pb/common/MessageType"
 	"maze_game_server/pb/server/MazeCommonValueSvr"
 	"maze_game_server/servers/maze_main_server/process/game/common_value"
+
+	"gitlab.ifreetalk.com/maze-plate/freetk/fkserver"
+	"go.uber.org/zap"
+	"google.golang.org/protobuf/proto"
 )
 
 var GlobalMazeCommonValue = &class{}

@@ -8,15 +8,16 @@
 package websocket_service_raw
 
 import (
+	"encoding/json"
+	"maze_game_server/lib/net/raw_pkg"
 	"sync"
 	"sync/atomic"
 	"time"
 
-	"google.golang.org/protobuf/proto"
 	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fklog"
 	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fknet"
 	"go.uber.org/zap"
-	"maze_game_server/lib/net/raw_pkg"
+	"google.golang.org/protobuf/proto"
 )
 
 // Hub maintains the set of active clients and broadcasts messages to the

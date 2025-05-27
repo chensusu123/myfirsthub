@@ -1,39 +1,45 @@
 package collect
 
 import (
-	"google.golang.org/protobuf/proto"
-	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fknet"
-	"go.uber.org/zap"
 	"maze_game_server/common/errors"
 	"maze_game_server/io/redis/mazecollectredis"
+	"maze_game_server/lib/log"
 	"maze_game_server/module/mazeuserinfo"
 	"maze_game_server/pb/common/MazeCollect"
+
+	"github.com/lonng/nano/session"
+	"go.uber.org/zap"
+	"google.golang.org/protobuf/proto"
 )
 
 // 道具收集查询
-func OnMazeCollectInfoQueryRQ(ctx fknet.TCPContext, userId uint64, rq proto.Message, rs proto.Message) (err error) {
-	req := rq.(*MazeCollect.MazeCollectInfoQueryRQ)
-	res := rs.(*MazeCollect.MazeCollectInfoQueryRS)
+func (c *Collect) OnMazeCollectInfoQueryRQ_10465_10466(s *session.Session, req *MazeCollect.MazeCollectInfoQueryRQ) (err error) {
+
+	logger := log.Clone("Collect", uint64(s.UID()), 0)
+	res := &MazeCollect.MazeCollectInfoQueryRS{}
 	res.Header = req.Header
 	res.ErrInfo = errors.NO_ERROR
 	res.QueryType = req.QueryType
 
-	ctx.InfoWF("OnMazeCollectInfoQueryRQ start", zap.Any("req", req))
+	logger.InfoWF("OnMazeCollectInfoQueryRQ start", zap.Any("req", req))
 	defer func() {
-		ctx.InfoWF("OnMazeCollectInfoQueryRQ end", zap.Any("res", res))
+		err = s.Response(res)
+		logger.InfoWF("OnMazeCollectInfoQueryRQ end", zap.Any("res", res))
 	}()
 
-	userInfo, err := mazeuserinfo.GetUserInfoV2(ctx, userId)
+	userId := uint64(s.UID())
+
+	userInfo, err := mazeuserinfo.GetUserInfoV2(logger, userId)
 	if err != nil {
-		ctx.ErrorWF("OnMazeCollectInfoQueryRQ GetUserInfoV2", zap.Error(err))
+		logger.ErrorWF("OnMazeCollectInfoQueryRQ GetUserInfoV2", zap.Error(err))
 		res.ErrInfo = errors.MODULE_ERROR.ToInfo()
 		return err
 	}
 
 	// 道具产出信息
-	collectInfo, err := mazecollectredis.GetCollectInfo(ctx, userId)
+	collectInfo, err := mazecollectredis.GetCollectInfo(logger, userId)
 	if err != nil {
-		ctx.ErrorWF("OnMazeCollectInfoQueryRQ GetCollectInfo", zap.Error(err))
+		logger.ErrorWF("OnMazeCollectInfoQueryRQ GetCollectInfo", zap.Error(err))
 		res.ErrInfo = errors.MODULE_ERROR.ToInfo()
 		return
 	}
@@ -41,16 +47,16 @@ func OnMazeCollectInfoQueryRQ(ctx fknet.TCPContext, userId uint64, rq proto.Mess
 		if userInfo.PassBarrier <= 0 {
 			return nil
 		}
-		err = InitMazeCollectLand(ctx, userId, userInfo.PassBarrier)
+		err = InitMazeCollectLand(logger, userId, userInfo.PassBarrier)
 		if err != nil {
-			ctx.ErrorWF("OnMazeCollectInfoQueryRQ InitMazeCollectLand", zap.Error(err))
+			logger.ErrorWF("OnMazeCollectInfoQueryRQ InitMazeCollectLand", zap.Error(err))
 			res.ErrInfo = errors.MODULE_ERROR.ToInfo()
 			return err
 		}
 		// 道具产出信息
-		collectInfo, err = mazecollectredis.GetCollectInfo(ctx, userId)
+		collectInfo, err = mazecollectredis.GetCollectInfo(logger, userId)
 		if err != nil {
-			ctx.ErrorWF("OnMazeCollectInfoQueryRQ GetCollectInfo", zap.Error(err))
+			logger.ErrorWF("OnMazeCollectInfoQueryRQ GetCollectInfo", zap.Error(err))
 			res.ErrInfo = errors.MODULE_ERROR.ToInfo()
 			return err
 		}
@@ -60,19 +66,19 @@ func OnMazeCollectInfoQueryRQ(ctx fknet.TCPContext, userId uint64, rq proto.Mess
 	}
 	if IsTimerLoss(collectInfo) {
 		// 定时器丢失修复道具产出
-		ctx.InfoWF("OnMazeCollectInfoQueryRQ fix ItemCollect start", zap.Any("collectInfo", collectInfo))
-		err = ItemCollect(ctx, userId, collectInfo)
+		logger.InfoWF("OnMazeCollectInfoQueryRQ fix ItemCollect start", zap.Any("collectInfo", collectInfo))
+		err = ItemCollect(logger, userId, collectInfo)
 		if err != nil {
-			ctx.ErrorWF("OnPetCollectInfoQueryRQ fix ItemCollect", zap.Error(err))
+			logger.ErrorWF("OnPetCollectInfoQueryRQ fix ItemCollect", zap.Error(err))
 			res.ErrInfo = errors.MODULE_ERROR.ToInfo()
 			return
 		}
-		ctx.InfoWF("OnPetCollectInfoQueryRQ fix ItemCollect end", zap.Any("collectInfo", collectInfo))
+		logger.InfoWF("OnPetCollectInfoQueryRQ fix ItemCollect end", zap.Any("collectInfo", collectInfo))
 	}
 
-	mazeCollectInfoPb, err := MazeCollectToCliPB(ctx, collectInfo, userInfo.PassBarrier)
+	mazeCollectInfoPb, err := MazeCollectToCliPB(logger, collectInfo, userInfo.PassBarrier)
 	if err != nil {
-		ctx.ErrorWF("ItemCollect MazeCollectToCliPB err", zap.Any("collectInfo", collectInfo), zap.Error(err))
+		logger.ErrorWF("ItemCollect MazeCollectToCliPB err", zap.Any("collectInfo", collectInfo), zap.Error(err))
 		return err
 	}
 	res.MazeCollectInfo = mazeCollectInfoPb

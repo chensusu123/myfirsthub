@@ -1,37 +1,42 @@
 package equip
 
 import (
-	"google.golang.org/protobuf/proto"
-	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fknet"
-	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fkprometheus"
+	"maze_game_server/common/constdef"
 	"maze_game_server/common/errors"
+	"maze_game_server/common/function/itemutil"
 	"maze_game_server/config/GMazeEquipPosLvV8Cfg"
+	"maze_game_server/excel/equipposexcel"
+	"maze_game_server/io/redis/dollassembleredis"
+	"maze_game_server/lib/log"
+	"maze_game_server/module/equippossuit"
 	"maze_game_server/pb/common/Common"
 	"maze_game_server/pb/common/MazeEquipPos"
 	"maze_game_server/pb/common/MazeGameEquip"
 	"maze_game_server/pb/server/MazeEquipCache"
 
+	"github.com/lonng/nano/session"
+	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fkprometheus"
 	"go.uber.org/zap"
-	"maze_game_server/common/constdef"
-	"maze_game_server/common/function/itemutil"
-	"maze_game_server/excel/equipposexcel"
-	"maze_game_server/io/redis/dollassembleredis"
-	"maze_game_server/module/equippossuit"
+	"google.golang.org/protobuf/proto"
 )
 
 // 装备位强化预览
-func OnEquipPosLvUpPreviewRQ(logger fknet.TCPContext, userId uint64, rqMsg proto.Message, rsMsg proto.Message) (err error) {
+func (e *Equip) OnEquipPosLvUpPreviewRQ_10423_10424(s *session.Session, rq *MazeEquipPos.MazeEquipPosLvUpPreviewRQ) (err error) {
 	defer fkprometheus.DebugPMT("OnEquipPosLvUpPreviewRQ")()
-	rq := rqMsg.(*MazeEquipPos.MazeEquipPosLvUpPreviewRQ)
-	rs := rsMsg.(*MazeEquipPos.MazeEquipPosLvUpPreviewRS)
+
+	logger := log.Clone("Equip", uint64(s.UID()), 0)
+	rs := &MazeEquipPos.MazeEquipPosLvUpPreviewRS{}
 
 	rs.ErrInfo = errors.NO_ERROR
 	rs.Header = rq.Header
 	rs.PosId = rq.PosId
 	posId := rq.GetPosId()
 
+	userId := uint64(s.UID())
+
 	logger.InfoWF("OnEquipPosLvUpPreviewRQ start", zap.Any("rq", rq))
 	defer func() {
+		err = s.Response(rs)
 		logger.InfoWF("OnEquipPosLvUpPreviewRQ end", zap.Any("rs", rs))
 	}()
 

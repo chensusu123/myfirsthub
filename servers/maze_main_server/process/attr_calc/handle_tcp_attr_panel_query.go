@@ -7,41 +7,44 @@
 package attr_calc
 
 import (
-	"google.golang.org/protobuf/proto"
-	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fknet"
-	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fkprometheus"
-	"gitlab.ifreetalk.com/maze-plate/freetk/fkserver"
-	"go.uber.org/zap"
 	"maze_game_server/common/errors"
+	"maze_game_server/lib/log"
 	"maze_game_server/pb/common/MazePropertyPanel"
+
+	"github.com/lonng/nano/session"
+	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fkprometheus"
+	"go.uber.org/zap"
 )
 
-func OnQueryPropertyPanelRQ(ctx fknet.TCPContext, shardingID uint64, request proto.Message, response proto.Message) (err error) {
+func (p *Property) OnQueryPropertyPanelRQ_10427_10428(s *session.Session, req *MazePropertyPanel.QueryMazePropertyPanelRQ) (err error) {
 	defer fkprometheus.DebugPMT("OnQueryPropertyPanelRQ")()
-	req := request.(*MazePropertyPanel.QueryMazePropertyPanelRQ)
-	res := response.(*MazePropertyPanel.QueryMazePropertyPanelRS)
+
+	logger := log.Clone("Property", uint64(s.UID()), 0)
+	res := &MazePropertyPanel.QueryMazePropertyPanelRS{}
 
 	res.ErrInfo = errors.NO_ERROR
 	res.Header = req.Header
-	userCtx := fkserver.NewUserContext(ctx.Context, shardingID, ctx.FKLogI)
+
+	userId := uint64(s.UID())
 
 	defer func() {
-		userCtx.InfoWF("OnQueryPropertyPanelRQ end", zap.Any("res", res))
+		err = s.Response(res)
+		logger.InfoWF("OnQueryPropertyPanelRQ end", zap.Any("res", res))
 	}()
 
-	userCtx.InfoWF("OnQueryPropertyPanelRQ with", zap.Any("req", req))
+	logger.InfoWF("OnQueryPropertyPanelRQ with", zap.Any("req", req))
 
-	panelCalc := NewDPAC(shardingID)
-	err = panelCalc.Init(userCtx, DPACParam{Force: 0})
+	panelCalc := NewDPAC(userId)
+	err = panelCalc.Init(logger, DPACParam{Force: 0})
 	if err != nil {
 		res.ErrInfo = errors.MODULE_ERROR.ToInfo()
-		userCtx.ErrorWF("OnQueryPropertyPanelRQ Init fail", zap.Error(err))
+		logger.ErrorWF("OnQueryPropertyPanelRQ Init fail", zap.Error(err))
 		return err
 	}
-	err = panelCalc.Calc(userCtx)
+	err = panelCalc.Calc(logger)
 	if err != nil {
 		res.ErrInfo = errors.MODULE_ERROR.ToInfo()
-		userCtx.ErrorWF("OnQueryPropertyPanelRQ Calc fail", zap.Error(err))
+		logger.ErrorWF("OnQueryPropertyPanelRQ Calc fail", zap.Error(err))
 		return err
 	}
 	res.PropertyPanel = panelCalc.Panel

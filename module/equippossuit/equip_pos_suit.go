@@ -2,17 +2,16 @@ package equippossuit
 
 import (
 	"fmt"
-	"sort"
-
-	"google.golang.org/protobuf/proto"
-	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fklog"
+	"maze_game_server/common/constdef"
 	"maze_game_server/config/GMazeEquipPosLvSuiteV8Cfg"
+	"maze_game_server/pb/common/MazeCommon"
 	"maze_game_server/pb/common/MazeGameEquip"
 	"maze_game_server/pb/server/MazeEquipCache"
+	"sort"
 
+	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fklog"
 	"go.uber.org/zap"
-	"maze_game_server/common/constdef"
-	"maze_game_server/pb/common/MazeCommon"
+	"google.golang.org/protobuf/proto"
 )
 
 // 当前套装和下级套装

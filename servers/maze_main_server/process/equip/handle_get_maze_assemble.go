@@ -7,14 +7,6 @@
 package equip
 
 import (
-	"sort"
-
-	"google.golang.org/protobuf/proto"
-	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fklog"
-	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fknet"
-	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fkprometheus"
-	"gitlab.ifreetalk.com/maze-plate/freetk/fkserver"
-	"go.uber.org/zap"
 	"maze_game_server/common/constdef"
 	"maze_game_server/common/errors"
 	"maze_game_server/common/function/assemble"
@@ -26,6 +18,7 @@ import (
 	"maze_game_server/io/redis/dollassemblesuitredis"
 	"maze_game_server/io/redis/mazeattrcalcnotifyqueue"
 	"maze_game_server/io/redis/mazebuffinforedis"
+	"maze_game_server/lib/log"
 	"maze_game_server/module/assembleidpack"
 	"maze_game_server/module/calcassembleattr"
 	"maze_game_server/module/dollassembleinfo"
@@ -35,44 +28,54 @@ import (
 	"maze_game_server/pb/server/MazeEquipCache"
 	"maze_game_server/servers/maze_main_server/process/equip/demconstdef"
 	"maze_game_server/servers/maze_main_server/process/equip/module"
+	"sort"
+
+	"github.com/lonng/nano/session"
+	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fklog"
+	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fkprometheus"
+	"go.uber.org/zap"
+	"google.golang.org/protobuf/proto"
 )
 
-func OnGetMazeAssembleRQ(ctx fknet.TCPContext, shardingID uint64, request proto.Message, response proto.Message) (err error) {
+func (e *Equip) OnGetMazeAssembleRQ_10414_10415(s *session.Session, req *MazeGameEquip.GetMazeGameAssembleInfoRQ) (err error) {
 	defer fkprometheus.DebugPMT("OnGetDollAssembleRQ")()
-	req := request.(*MazeGameEquip.GetMazeGameAssembleInfoRQ)
-	res := response.(*MazeGameEquip.GetMazeGameAssembleInfoRS)
+
+	logger := log.Clone("Equip", uint64(s.UID()), 0)
+	res := &MazeGameEquip.GetMazeGameAssembleInfoRS{}
 
 	res.ErrInfo = errors.NO_ERROR
 	res.Header = req.Header
-	userCtx := fkserver.NewUserContext(ctx.Context, shardingID, ctx.FKLogI)
+
+	userId := uint64(s.UID())
 
 	defer func() {
-		userCtx.InfoWF("OnGetMazeAssembleRQ end", zap.Any("res", res))
+		err = s.Response(res)
+		logger.InfoWF("OnGetMazeAssembleRQ end", zap.Any("res", res))
 	}()
 
-	userCtx.InfoWF("OnGetMazeAssembleRQ with", zap.Any("req", req))
+	logger.InfoWF("OnGetMazeAssembleRQ with", zap.Any("req", req))
 	// 检查装备位解锁
-	ChkEquipPosUnlock(userCtx, shardingID, UnlockSrcInit, false)
+	ChkEquipPosUnlock(logger, userId, UnlockSrcInit, false)
 
 	// 初始装备套检查
-	InitDollEquipSuitSeq(userCtx, shardingID)
+	InitDollEquipSuitSeq(logger, userId)
 
 	// 处理初始化装备
-	HandleDollEquipInit(userCtx, shardingID, false)
+	HandleDollEquipInit(logger, userId, false)
 
 	// 人偶属性初始化
-	HandleDollAttrInit(userCtx, shardingID, req.GetHeader().GetSession())
+	HandleDollAttrInit(logger, userId, req.GetHeader().GetSession())
 
-	assembleInfo, effect, err := dollassembleinfo.GetDollAssembleInfoEx(userCtx, shardingID)
+	assembleInfo, effect, err := dollassembleinfo.GetDollAssembleInfoEx(logger, userId)
 	if err != nil {
 		res.ErrInfo = errors.MODULE_ERROR.ToInfo()
-		userCtx.ErrorWF("OnGetMazeAssembleRQ Get Assemble info fail", zap.Error(err))
+		logger.ErrorWF("OnGetMazeAssembleRQ Get Assemble info fail", zap.Error(err))
 		return err
 	}
-	err = checkAssembleEquipConsistent(userCtx, shardingID, assembleInfo)
+	err = checkAssembleEquipConsistent(logger, userId, assembleInfo)
 	if err != nil {
 		res.ErrInfo = errors.MODULE_ERROR.ToInfo()
-		userCtx.ErrorWF("OnGetMazeAssembleRQ checkAssembleEquipConsistent fail", zap.Error(err))
+		logger.ErrorWF("OnGetMazeAssembleRQ checkAssembleEquipConsistent fail", zap.Error(err))
 		return err
 	}
 	_ = effect
@@ -87,10 +90,10 @@ func OnGetMazeAssembleRQ(ctx fknet.TCPContext, shardingID uint64, request proto.
 		var unlock int32
 		for _, aEquip := range assembleInfo.MazeEquips {
 			if posCfg.Pos_id == aEquip.GetEquipPos().GetPos() {
-				cliEquip, e := packequipostopb.PackEquipPosPb(userCtx, aEquip, -1)
+				cliEquip, e := packequipostopb.PackEquipPosPb(logger, aEquip, -1)
 				if e != nil {
 					res.ErrInfo = errors.MODULE_ERROR.ToInfo()
-					userCtx.ErrorWF("OnGetMazeAssembleRQ AssembleEquipToCliPb fail", zap.Error(e), zap.Int32("pos", posCfg.Pos_id))
+					logger.ErrorWF("OnGetMazeAssembleRQ AssembleEquipToCliPb fail", zap.Error(e), zap.Int32("pos", posCfg.Pos_id))
 					return e
 				}
 				dai.EquipPosList = append(dai.EquipPosList, cliEquip)
@@ -116,9 +119,9 @@ func OnGetMazeAssembleRQ(ctx fknet.TCPContext, shardingID uint64, request proto.
 	dai.AsEquipSuitInfo = asequipsuittopb.PackAsEquipSuitInfo(assembleInfo.GetEpSuitId())
 	var e1 error
 	dai.EquipPosStSuit,
-		dai.EquipPosNextStSuit, e1 = equippossuit.GetCurAndNextSuit(userCtx, assembleInfo.GetEpEnSuitId())
+		dai.EquipPosNextStSuit, e1 = equippossuit.GetCurAndNextSuit(logger, assembleInfo.GetEpEnSuitId())
 	if e1 != nil {
-		userCtx.ErrorWF("OnGetMazeAssembleRQ GetCurAndNextSuit fail", zap.Error(e1), zap.Int32("enSuitId", assembleInfo.GetEpEnSuitId()))
+		logger.ErrorWF("OnGetMazeAssembleRQ GetCurAndNextSuit fail", zap.Error(e1), zap.Int32("enSuitId", assembleInfo.GetEpEnSuitId()))
 	}
 	res.MazeAssembleInfo = dai
 

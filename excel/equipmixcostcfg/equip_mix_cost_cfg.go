@@ -7,9 +7,10 @@ import (
 	"sort"
 	"sync"
 
-	"google.golang.org/protobuf/proto"
 	"maze_game_server/config/GMazeEquipMixV8Cfg"
 	"maze_game_server/pb/common/MazeCommon"
+
+	"google.golang.org/protobuf/proto"
 )
 
 var (

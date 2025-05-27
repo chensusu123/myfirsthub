@@ -7,13 +7,14 @@
 package attr_calc
 
 import (
-	"google.golang.org/protobuf/proto"
+	"maze_game_server/common/errors"
+	"maze_game_server/pb/server/MazeAttrCalcSvr"
+
 	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fkprometheus"
 	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fkrpc"
 	"gitlab.ifreetalk.com/maze-plate/freetk/fkserver"
 	"go.uber.org/zap"
-	"maze_game_server/common/errors"
-	"maze_game_server/pb/server/MazeAttrCalcSvr"
+	"google.golang.org/protobuf/proto"
 )
 
 func OnMazeAttrPairPreviewRQ(ctx fkrpc.RPCContext, shardingID int64, rqMsg proto.Message, rsMsg proto.Message) (err error) {

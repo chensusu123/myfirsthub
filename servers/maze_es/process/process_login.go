@@ -4,16 +4,14 @@ import (
 	"maze_game_server/common/errors"
 	"maze_game_server/config/GMazeBarriesV8Cfg"
 	_ "maze_game_server/config/GMazeEquipPosLvV8Cfg"
+	_ "maze_game_server/io/redis/mazeequipgetnumredis"
 	"maze_game_server/pb/common/MazeGame"
 	"maze_game_server/pb/common/SysPackDef"
 
-	"google.golang.org/protobuf/proto"
 	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fknet"
 	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fkprometheus"
-
-	_ "maze_game_server/io/redis/mazeequipgetnumredis"
-
 	"go.uber.org/zap"
+	"google.golang.org/protobuf/proto"
 )
 
 func OnLoginRQ(ctx fknet.TCPContext, shardingID uint64, rqMsg proto.Message, rsMsg proto.Message) (err error) {

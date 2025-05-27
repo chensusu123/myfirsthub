@@ -10,13 +10,14 @@ import (
 	"context"
 	"fmt"
 
-	"google.golang.org/protobuf/proto"
-	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fklog"
-	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fkredis/redis"
-	"go.uber.org/zap"
 	"maze_game_server/common/errors"
 	"maze_game_server/common/function/assemble"
 	"maze_game_server/pb/server/MazeEquipCache"
+
+	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fklog"
+	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fkredis/redis"
+	"go.uber.org/zap"
+	"google.golang.org/protobuf/proto"
 )
 
 // 获取人偶装备位信息

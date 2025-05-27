@@ -8,23 +8,22 @@ package mazeattrlogic
 
 import (
 	"fmt"
-	"time"
-
-	"google.golang.org/protobuf/proto"
-	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fklog"
-	"maze_game_server/config/GMazeAttrSpDescV8Cfg"
-	"maze_game_server/config/GMazeAttributeV8Cfg"
-	"maze_game_server/pb/server/MazeBuffData"
-
-	"go.uber.org/zap"
 	"maze_game_server/common/constdef"
 	"maze_game_server/common/structsdef"
+	"maze_game_server/config/GMazeAttrSpDescV8Cfg"
+	"maze_game_server/config/GMazeAttributeV8Cfg"
 	"maze_game_server/io/kafka/mazeattrchgrecord"
 	"maze_game_server/io/kafka/mazeattrmsg"
 	"maze_game_server/io/redis/mazebuffinforedis"
 	"maze_game_server/io/redis/mazecalcattrredis"
 	"maze_game_server/module/mazeattrformula"
+	"maze_game_server/pb/server/MazeBuffData"
 	"maze_game_server/servers/maze_main_server/process/attr_calc/commonlogic"
+	"time"
+
+	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fklog"
+	"go.uber.org/zap"
+	"google.golang.org/protobuf/proto"
 )
 
 type DAC struct {

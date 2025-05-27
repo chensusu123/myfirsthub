@@ -1,16 +1,16 @@
 package common_value
 
 import (
-	"time"
-
-	"google.golang.org/protobuf/proto"
-	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fklog"
-	"go.uber.org/zap"
 	"maze_game_server/common/constdef"
 	"maze_game_server/common/errors"
 	"maze_game_server/module/mazemoney"
 	"maze_game_server/pb/common/MazeCommon"
 	"maze_game_server/pb/server/MazeCommonValueSvr"
+	"time"
+
+	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fklog"
+	"go.uber.org/zap"
+	"google.golang.org/protobuf/proto"
 )
 
 func MazeCommonValueQueryRQ(logger fklog.FKLogI, userID int64, req *MazeCommonValueSvr.MazeCommonValueQueryRQ, res *MazeCommonValueSvr.MazeCommonValueQueryRS) (err error) {

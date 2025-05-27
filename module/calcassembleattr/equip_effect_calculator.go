@@ -8,15 +8,15 @@ package calcassembleattr
 
 import (
 	"errors"
-
-	"google.golang.org/protobuf/proto"
-	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fklog"
-	"go.uber.org/zap"
 	"maze_game_server/common/constdef"
 	"maze_game_server/common/function/assemble"
 	"maze_game_server/config/GMazeAttributeV8Cfg"
 	"maze_game_server/pb/server/MazeBuffData"
 	"maze_game_server/pb/server/MazeEquipCache"
+
+	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fklog"
+	"go.uber.org/zap"
+	"google.golang.org/protobuf/proto"
 )
 
 type EquipmentEffectInfo struct {

@@ -1,15 +1,22 @@
 package card
 
 import (
+	"github.com/lonng/nano/component"
 	"gitlab.ifreetalk.com/maze-plate/freetk/fkserver/custom"
-	"maze_game_server/lib/net/websocket_service"
-	"maze_game_server/pb/common/MazeCard"
 )
 
+type Card struct {
+	component.Base
+}
+
+func NewCard() *Card {
+	return &Card{}
+}
+
 func RegTcpHandler() {
-	// 获取迷宫月卡
-	websocket_service.RegProcSimple(10430, &MazeCard.GetMazeCardRQ{},
-		10431, &MazeCard.GetMazeCardRS{}, GetMazeCardRQ)
+	// // 获取迷宫月卡
+	// websocket_service.RegProcSimple(10430, &MazeCard.GetMazeCardRQ{},
+	// 	10431, &MazeCard.GetMazeCardRS{}, GetMazeCardRQ)
 }
 
 func InitKafkaConsumer() {

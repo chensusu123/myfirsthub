@@ -7,9 +7,6 @@
 package equip
 
 import (
-	"google.golang.org/protobuf/proto"
-	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fklog"
-	"go.uber.org/zap"
 	"maze_game_server/common/constdef"
 	"maze_game_server/common/structsdef"
 	"maze_game_server/config/GMazeLevelV8Cfg"
@@ -19,6 +16,10 @@ import (
 	"maze_game_server/io/redis/mazeuserlevelredis"
 	"maze_game_server/pb/server/MazeBuffData"
 	"maze_game_server/servers/maze_main_server/process/equip/demconstdef"
+
+	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fklog"
+	"go.uber.org/zap"
+	"google.golang.org/protobuf/proto"
 )
 
 type MazeUserLevelRecord = mazeuserlevelkafka.MazeUserLevelRecord

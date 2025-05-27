@@ -1,34 +1,37 @@
 package card
 
 import (
-	"time"
-
 	"maze_game_server/common/constdef"
+	"maze_game_server/common/errors"
 	"maze_game_server/io/redis/mazebuffinforedis"
 	"maze_game_server/io/redis/userriddlemonthlyredis"
+	"maze_game_server/lib/log"
+	"maze_game_server/pb/common/MazeCard"
+	"time"
 
-	"google.golang.org/protobuf/proto"
+	"github.com/lonng/nano/session"
 	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fklog"
-	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fknet"
 	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fkprometheus"
 	"go.uber.org/zap"
-	"maze_game_server/common/errors"
-	"maze_game_server/pb/common/MazeCard"
+	"google.golang.org/protobuf/proto"
 )
 
-func GetMazeCardRQ(logger fknet.TCPContext, shardingID uint64, request, response proto.Message) error {
+func (*Card) GetMazeCardRQ_10430_10431(s *session.Session, req *MazeCard.GetMazeCardRQ) (err error) {
 	defer fkprometheus.InfoPMT("GetMazeCardRQ")()
 	start := time.Now()
-	req := request.(*MazeCard.GetMazeCardRQ)
-	res := response.(*MazeCard.GetMazeCardRS)
+
+	logger := log.Clone("Card", uint64(s.UID()), 0)
+	res := &MazeCard.GetMazeCardRS{}
 	res.ErrInfo = errors.NO_ERROR
 	res.Header = req.Header
 	defer func() {
+		err = s.Response(res)
 		logger.InfoWF("GetMazeCardRQ end", zap.Any("req", req), zap.Any("res", res),
 			zap.Duration("costTime", time.Now().Sub(start)))
 	}()
 
-	userId := shardingID
+	userId := uint64(s.UID())
+
 	if userId == 0 {
 		logger.WarnWF("GetMazeCardRQ args error")
 		res.ErrInfo = errors.COMMON_ERROR_TIPS.Wrap("参数错误")

@@ -8,11 +8,6 @@
 package attr_calc
 
 import (
-	"sort"
-
-	"google.golang.org/protobuf/proto"
-	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fklog"
-	"go.uber.org/zap"
 	"maze_game_server/common/constdef"
 	"maze_game_server/config/GMazeAttrListOrderV8Cfg"
 	"maze_game_server/config/GMazeAttrListTypeV8Cfg"
@@ -23,6 +18,11 @@ import (
 	"maze_game_server/pb/common/MazeGameEquip"
 	"maze_game_server/pb/common/MazePropertyPanel"
 	"maze_game_server/pb/server/MazeBuffData"
+	"sort"
+
+	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fklog"
+	"go.uber.org/zap"
+	"google.golang.org/protobuf/proto"
 )
 
 type DPAC struct {

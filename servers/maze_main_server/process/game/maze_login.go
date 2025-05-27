@@ -1,28 +1,30 @@
 package game
 
 import (
-	"google.golang.org/protobuf/proto"
-	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fknet"
-	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fkprometheus"
-	"go.uber.org/zap"
 	"maze_game_server/common/errors"
 	"maze_game_server/config/GMazeLevelV8Cfg"
 	"maze_game_server/io/kafka/mazeuserlevelkafka"
 	"maze_game_server/io/redis/mazecalcattrredis"
+	"maze_game_server/lib/log"
 	"maze_game_server/module/mazecommonvalue"
 	"maze_game_server/module/mazemoney"
 	"maze_game_server/module/mazeuserinfo"
 	"maze_game_server/pb/common/MazeGame"
+
+	"github.com/lonng/nano/session"
+	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fkprometheus"
+	"go.uber.org/zap"
 )
 
-func OnMazeLoginRQ(logger fknet.TCPContext, shardingID uint64, rqMsg proto.Message, rsMsg proto.Message) (err error) {
-	fkprometheus.InfoPMT("OnMazeLoginRQ")()
+func (g *Game) OnMazeLoginRQ_10451_10452(s *session.Session, req *MazeGame.MazeLoginRQ) (err error) {
+	defer fkprometheus.InfoPMT("OnMazeLoginRQ")()
 
-	req := rqMsg.(*MazeGame.MazeLoginRQ)
-	res := rsMsg.(*MazeGame.MazeLoginRS)
+	logger := log.Clone("Game", uint64(s.UID()), 0)
+	res := &MazeGame.MazeLoginRS{}
 
 	logger.InfoWF("OnMazeLoginRQ start", zap.Any("req", req))
 	defer func() {
+		err = s.Response(res)
 		logger.InfoWF("OnMazeLoginRQ end", zap.Any("res", res))
 	}()
 
@@ -30,7 +32,7 @@ func OnMazeLoginRQ(logger fknet.TCPContext, shardingID uint64, rqMsg proto.Messa
 	res.ErrInfo = errors.NO_ERROR
 	res.MazeVersion = req.MazeVersion
 
-	userId := shardingID
+	userId := uint64(s.UID())
 
 	var level, exp, expMax, force, money, extra, extraExp, diamond int64
 	var isInit bool

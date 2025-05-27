@@ -2,8 +2,6 @@ package buff
 
 import (
 	"math/rand"
-	"time"
-
 	"maze_game_server/common/errors"
 	"maze_game_server/excel/mazebarriesv8config"
 	"maze_game_server/excel/mazeconfigv8config"
@@ -14,13 +12,15 @@ import (
 	"maze_game_server/excel/mazeenergylevelv8config"
 	"maze_game_server/excel/mazeenergyresetcostv8config"
 	"maze_game_server/io/redis/mazetempbuffredis"
+	"maze_game_server/lib/log"
 	"maze_game_server/pb/common/MazeCommon"
 	"maze_game_server/pb/common/MazeTempBuff"
 	"maze_game_server/pb/common/MessageType"
 	"maze_game_server/pb/server/MazeTempBuffSvr"
+	"time"
 
+	"github.com/lonng/nano/session"
 	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fklog"
-	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fknet"
 	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fkprometheus"
 	"go.uber.org/zap"
 	"google.golang.org/protobuf/proto"
@@ -32,22 +32,25 @@ import (
  * @Description: 查询迷宫可选buff列表
  */
 
-func GetOptionalMazeTempBuffListRQ(logger fknet.TCPContext, shardingID uint64, request, response proto.Message) error {
+func (b *Buff) GetOptionalMazeTempBuffListRQ_10435_10436(s *session.Session, req *MazeTempBuff.GetOptionalMazeTempBuffListRQ) (err error) {
 	defer fkprometheus.InfoPMT("GetOptionalMazeTempBuffListRQ")()
+
 	start := time.Now()
-	req := request.(*MazeTempBuff.GetOptionalMazeTempBuffListRQ)
-	res := response.(*MazeTempBuff.GetOptionalMazeTempBuffListRS)
+
+	logger := log.Clone("Buff", uint64(s.UID()), 0)
+	res := &MazeTempBuff.GetOptionalMazeTempBuffListRS{}
 	res.ErrInfo = errors.NO_ERROR
 	res.Header = req.Header
 	res.StageId = req.StageId
 	res.Level = req.Level
 	res.Type = req.Type
 	defer func() {
+		err = s.Response(res)
 		logger.InfoWF("GetOptionalMazeTempBuffListRQ end", zap.Any("req", req), zap.Any("res", res),
 			zap.Duration("costTime", time.Now().Sub(start)))
 	}()
 
-	userId, stageId, level, buffType := shardingID, req.GetStageId(), req.GetLevel(), int32(req.GetType())
+	userId, stageId, level, buffType := uint64(s.UID()), req.GetStageId(), req.GetLevel(), int32(req.GetType())
 	if userId == 0 || stageId == 0 || level == 0 {
 		logger.WarnWF("GetOptionalMazeTempBuffListRQ args error", zap.Any("req", req))
 		res.ErrInfo = errors.COMMON_ERROR_TIPS.Wrap("参数错误")

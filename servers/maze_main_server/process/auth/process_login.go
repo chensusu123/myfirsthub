@@ -1,33 +1,35 @@
 package auth
 
 import (
-	"time"
-
 	"maze_game_server/common/errors"
 	"maze_game_server/io/redis/UnionIDBindRedis"
 	"maze_game_server/io/redis/useridredis"
+	"maze_game_server/lib/log"
 	"maze_game_server/pb/common/UserLogin"
+	"maze_game_server/usecase/online"
+	"time"
 
+	"github.com/lonng/nano/session"
+	"gitlab.ifreetalk.com/maze-plate/extra/protobuf/proto"
 	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fknet"
 	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fkprometheus"
 	"gitlab.ifreetalk.com/maze-plate/freetk/fkserver/config_manager"
-	"google.golang.org/protobuf/proto"
-
 	"go.uber.org/zap"
+	"google.golang.org/protobuf/proto"
 )
 
-func OnLoginRQ(ctx fknet.TCPContext, shardingID uint64, rqMsg proto.Message, rsMsg proto.Message) (err error) {
-	fkprometheus.InfoPMT("OnLoginRQ")()
+func (a *Auth) OnLoginRQ_10492_10493(s *session.Session, req *UserLogin.UserLoginRq) (err error) {
+	defer fkprometheus.InfoPMT("OnLoginRQ")()
 
-	req := rqMsg.(*UserLogin.UserLoginRq)
-	res := rsMsg.(*UserLogin.UserLoginRs)
+	logger := log.Clone("Auth", uint64(req.GetAuthId()), 0)
+	res := &UserLogin.UserLoginRs{}
 
-	logger := ctx
 	res.Session = req.Session
 	res.ClientTime = req.ClientTime
 	res.ServerTime = proto.Int64(time.Now().UnixMilli())
 
 	defer func() {
+		err = s.Response(res)
 		logger.InfoWF("OnLoginRQ end", zap.Any("req", req), zap.Any("res", res))
 	}()
 
@@ -69,7 +71,11 @@ func OnLoginRQ(ctx fknet.TCPContext, shardingID uint64, rqMsg proto.Message, rsM
 	res.UserId = proto.Uint64(userID)
 	// 认证成功设置用户ID, 底层会处理
 
-	ctx.SetTag("userID", userID)
+	// ctx.SetTag("userID", userID)
+	s.Bind(int64(userID))
+	online.Bind(logger, s, userID)
+
+	res.ServerTime = proto.Int64(time.Now().UnixMilli())
 
 	time.AfterFunc(time.Second*2, func() {
 		SendArrivePacket(logger, int64(userID), 111, &UserLogin.UserLiveRs{
@@ -79,15 +85,15 @@ func OnLoginRQ(ctx fknet.TCPContext, shardingID uint64, rqMsg proto.Message, rsM
 	return nil
 }
 
-func OnLiveRQ(ctx fknet.TCPContext, shardingID uint64, rqMsg proto.Message, rsMsg proto.Message) (err error) {
-	fkprometheus.InfoPMT("OnLiveRQ")()
+func (a *Auth) OnLiveRQ_10494_10495(s *session.Session, req *UserLogin.UserLiveRq) (err error) {
+	defer fkprometheus.InfoPMT("OnLiveRQ")()
 
-	req := rqMsg.(*UserLogin.UserLiveRq)
-	res := rsMsg.(*UserLogin.UserLiveRs)
+	logger := log.Clone("Auth", uint64(s.UID()), 0)
+	res := &UserLogin.UserLiveRs{}
 
-	logger := ctx
 	res.Session = req.Session
 	defer func() {
+		err = s.Response(res)
 		logger.InfoWF("OnLiveRQ end", zap.Any("req", req), zap.Any("res", res))
 	}()
 

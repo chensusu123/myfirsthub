@@ -10,8 +10,9 @@ import (
 	"errors"
 	"fmt"
 
-	"google.golang.org/protobuf/proto"
 	"maze_game_server/pb/common/MessageType"
+
+	"google.golang.org/protobuf/proto"
 )
 
 func New(text string) error {
@@ -157,20 +158,20 @@ var (
 	ARGS_NOT_MATCH      = NewCodeError(61104, "无效参数")
 	SPEED_UP            = NewCodeError(61105, "加速失败")
 	SPEED_UP_TIME_OVER  = NewCodeError(61106, "时间已到")
-	SPEED_UP_COUNT_ZERO = NewCodeError(61107, "加速道具个数0")  // 扣0个道具
+	SPEED_UP_COUNT_ZERO = NewCodeError(61107, "加速道具个数0") // 扣0个道具
 
 	// 逻辑错误
 	STOREHOUSE_FULL_ERROR       = NewCodeError(71101, "仓库已满")
 	STOREHOUSE_ADD_ERROR        = NewCodeError(71102, "添加仓库物品失败")
 	STOREHOUSE_ITEM_LIMIT_ERROR = NewCodeError(71103, "添加仓库单个物品数量已达上限")
-	BAG_FULL_ERROR              = NewCodeError(71104, "背包已满")         // 老业务的背包
+	BAG_FULL_ERROR              = NewCodeError(71104, "背包已满")     // 老业务的背包
 	BAG_ITEM_LIMIT_MAX_ERROR    = NewCodeError(71105, "背包道具已达上限") // 老业务的背包
 	GAME_PROTO_SMALL_ERROR      = NewCodeError(71106, "user protocol small 200")
 	SPEEDUP_ITEM_NUM_SHORT      = NewCodeError(72101, "加速道具不足")
 	ERR_BAG_DATA_NOT_MATCH      = NewCodeError(72102, "背包数据不匹配")
 	ERR_BUILDING_DATA_ERROR     = NewCodeError(72103, "建筑未初始化")
 	NOT_AUTHORITY               = NewCodeError(61951, "没有操作权限")
-	COMMON_BUY_COST_ERR         = NewCodeError(62301, "花费值错误")       // 前后端不一致,按后端扣并返回正确的
+	COMMON_BUY_COST_ERR         = NewCodeError(62301, "花费值错误") // 前后端不一致,按后端扣并返回正确的
 
 	SLOT_NOT_UNLOCK           = NewCodeError(61995, "栏位没有解锁")
 	SLOT_NIL_ERROR            = NewCodeError(61994, "栏位为空")

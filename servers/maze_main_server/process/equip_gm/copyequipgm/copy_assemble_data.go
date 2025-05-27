@@ -7,9 +7,6 @@
 package copyequipgm
 
 import (
-	"google.golang.org/protobuf/proto"
-	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fklog"
-	"go.uber.org/zap"
 	"maze_game_server/common/constdef"
 	"maze_game_server/common/function/assemble"
 	"maze_game_server/common/structsdef"
@@ -22,6 +19,10 @@ import (
 	"maze_game_server/module/mazebuffchgrrecordapi"
 	"maze_game_server/pb/server/MazeEquipCache"
 	"maze_game_server/servers/maze_main_server/process/equip_gm/copyequipgm/copyinterface"
+
+	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fklog"
+	"go.uber.org/zap"
+	"google.golang.org/protobuf/proto"
 )
 
 func CopyAssembleData(logger fklog.FKLogI, srcUserId uint64, dstUsers []uint64, param copyinterface.CopyParam) error {

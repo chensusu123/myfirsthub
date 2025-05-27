@@ -1,17 +1,13 @@
 package buff
 
 import (
-	"context"
+	"maze_game_server/excel/mazeenergyaffixlibraryv8config"
+	"maze_game_server/pb/server/MazeTempBuffSvr"
 	"testing"
 	"time"
 
-	"maze_game_server/excel/mazeenergyaffixlibraryv8config"
-	"maze_game_server/pb/common/MazeTempBuff"
-	"maze_game_server/pb/server/MazeTempBuffSvr"
-
-	"google.golang.org/protobuf/proto"
-	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fknet"
 	"go.uber.org/zap"
+	"google.golang.org/protobuf/proto"
 )
 
 /**
@@ -20,44 +16,44 @@ import (
  * @Description:
  */
 
-func TestGetOptionalMazeTempBuffListRQ(t *testing.T) {
-	type args struct {
-		logger     fknet.TCPContext
-		shardingID uint64
-		request    *MazeTempBuff.GetOptionalMazeTempBuffListRQ
-		response   *MazeTempBuff.GetOptionalMazeTempBuffListRS
-	}
-	tests := []struct {
-		name    string
-		args    args
-		wantErr bool
-	}{
-		{
-			name: "查询选择buff",
-			args: args{
-				logger: fknet.TCPContext{
-					Context: context.Background(),
-					FKLogI:  gTestLogger,
-				},
-				shardingID: 9003200130019765,
-				request: &MazeTempBuff.GetOptionalMazeTempBuffListRQ{
-					Header:  nil,
-					StageId: proto.Int32(1),
-					Level:   proto.Int32(2),
-				},
-				response: &MazeTempBuff.GetOptionalMazeTempBuffListRS{},
-			},
-			wantErr: false,
-		},
-	}
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			if err := GetOptionalMazeTempBuffListRQ(tt.args.logger, tt.args.shardingID, tt.args.request, tt.args.response); (err != nil) != tt.wantErr {
-				t.Errorf("GetOptionalMazeTempBuffListRQ() error = %v, wantErr %v", err, tt.wantErr)
-			}
-		})
-	}
-}
+// func TestGetOptionalMazeTempBuffListRQ(t *testing.T) {
+// 	type args struct {
+// 		logger     fknet.TCPContext
+// 		shardingID uint64
+// 		request    *MazeTempBuff.GetOptionalMazeTempBuffListRQ
+// 		response   *MazeTempBuff.GetOptionalMazeTempBuffListRS
+// 	}
+// 	tests := []struct {
+// 		name    string
+// 		args    args
+// 		wantErr bool
+// 	}{
+// 		{
+// 			name: "查询选择buff",
+// 			args: args{
+// 				logger: fknet.TCPContext{
+// 					Context: context.Background(),
+// 					FKLogI:  gTestLogger,
+// 				},
+// 				shardingID: 9003200130019765,
+// 				request: &MazeTempBuff.GetOptionalMazeTempBuffListRQ{
+// 					Header:  nil,
+// 					StageId: proto.Int32(1),
+// 					Level:   proto.Int32(2),
+// 				},
+// 				response: &MazeTempBuff.GetOptionalMazeTempBuffListRS{},
+// 			},
+// 			wantErr: false,
+// 		},
+// 	}
+// 	for _, tt := range tests {
+// 		t.Run(tt.name, func(t *testing.T) {
+// 			if err := GetOptionalMazeTempBuffListRQ(tt.args.logger, tt.args.shardingID, tt.args.request, tt.args.response); (err != nil) != tt.wantErr {
+// 				t.Errorf("GetOptionalMazeTempBuffListRQ() error = %v, wantErr %v", err, tt.wantErr)
+// 			}
+// 		})
+// 	}
+// }
 
 func Test_randomBuff(t *testing.T) {
 	// 随机库id

@@ -1,12 +1,6 @@
 package game
 
 import (
-	"time"
-
-	"google.golang.org/protobuf/proto"
-	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fklog"
-	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fknet"
-	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fkprometheus"
 	"maze_game_server/common/constdef"
 	"maze_game_server/common/errors"
 	"maze_game_server/common/function/gentradeno"
@@ -16,6 +10,7 @@ import (
 	"maze_game_server/io/redis/mazebarriertempbuffredis"
 	"maze_game_server/io/redis/mazechallengenumredis"
 	"maze_game_server/io/redis/mazeuserbarrierredis"
+	"maze_game_server/lib/log"
 	"maze_game_server/module/calequipsequence"
 	"maze_game_server/module/mazecommonvalue"
 	"maze_game_server/module/mazeuserinfo"
@@ -24,25 +19,31 @@ import (
 	"maze_game_server/pb/common/MazeGame"
 	"maze_game_server/pb/server/MazeEnergySvr"
 	"maze_game_server/servers/maze_main_server/process/game/energy"
+	"time"
 
+	"github.com/lonng/nano/session"
+	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fklog"
+	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fkprometheus"
 	"go.uber.org/zap"
+	"google.golang.org/protobuf/proto"
 )
 
-func OnMazeBarrierEnterRQ(logger fknet.TCPContext, shardingID uint64, rqMsg proto.Message, rsMsg proto.Message) (err error) {
-	fkprometheus.InfoPMT("OnMazeBarrierEnterRQ")()
+func (g *Game) OnMazeBarrierEnterRQ_10447_10448(s *session.Session, req *MazeGame.MazeBarrierEnterRQ) (err error) {
+	defer fkprometheus.InfoPMT("OnMazeBarrierEnterRQ")()
 
-	req := rqMsg.(*MazeGame.MazeBarrierEnterRQ)
-	res := rsMsg.(*MazeGame.MazeBarrierEnterRS)
+	logger := log.Clone("Game", uint64(s.UID()), 0)
+	res := &MazeGame.MazeBarrierEnterRS{}
 
 	logger.InfoWF("OnMazeBarrierEnterRQ start", zap.Any("req", req))
 	defer func() {
+		err = s.Response(res)
 		logger.InfoWF("OnMazeBarrierEnterRQ end", zap.Any("res", res))
 	}()
 
 	res.Header = req.Header
 	res.ErrInfo = errors.NO_ERROR
 
-	userId := shardingID
+	userId := uint64(s.UID())
 
 	if req.GetBarrierId() <= 0 {
 		logger.ErrorWF("OnMazeBarrierEnterRQ req barrier invalid", zap.Any("req", req))
@@ -72,7 +73,7 @@ func OnMazeBarrierEnterRQ(logger fknet.TCPContext, shardingID uint64, rqMsg prot
 	//	res.Energy = proto.Int32(userInfo.Energy)
 	var isNewBarrier bool
 
-	// 进入清临时buff
+	//进入清临时buff
 	mazebarriertempbuffredis.ClearBarrierTempBuff(logger, userId, req.GetBarrierId())
 
 	mazeBattleInfo, err3 := GetMazeBattleData(logger, userId, req.GetBarrierId())
@@ -107,15 +108,15 @@ func OnMazeBarrierEnterRQ(logger fknet.TCPContext, shardingID uint64, rqMsg prot
 
 	var curEnergy int32
 
-	// 进入关卡需要
+	//进入关卡需要
 
-	// 首次进入新关还额外需要
-	// 0. 扣次数
-	// 1. 更新记录的关卡id
-	// 2. 判断是否切换装备序列 清空装备积分 (不需要清 旧关卡积分保留 扫荡会继续加
-	// 3. 清临时buff
+	//首次进入新关还额外需要
+	//0. 扣次数
+	//1. 更新记录的关卡id
+	//2. 判断是否切换装备序列 清空装备积分 (不需要清 旧关卡积分保留 扫荡会继续加
+	//3. 清临时buff
 	if isNewBarrier {
-		// 首次进入判断体力是否足够 直接扣根据错误码判断
+		//首次进入判断体力是否足够 直接扣根据错误码判断
 		// isEnergyEnough, remainVal, err2 := SubUserEnergy(logger, userId, barrierCfg.Mop_cost)
 		// if err2 != nil {
 		// 	logger.ErrorWF("OnMazeBarrierEnterRQ SubUserEnergy fail", zap.Error(err2))
@@ -129,7 +130,7 @@ func OnMazeBarrierEnterRQ(logger fknet.TCPContext, shardingID uint64, rqMsg prot
 		// }
 		// curEnergy = remainVal
 
-		// 扣次数
+		//扣次数
 		var maxNum int32
 		maxNumCfg := GMazeActionCountV8Cfg.Get(101)
 		if maxNumCfg == nil {
@@ -176,7 +177,7 @@ func OnMazeBarrierEnterRQ(logger fknet.TCPContext, shardingID uint64, rqMsg prot
 			logger.ErrorWF("OnMazeBarrierEnterRQ SetUserBarrierInfo fail", zap.Error(err))
 		}
 
-		// 2. 判断是否切换装备序列 清空装备积分 (不需要清 旧关卡积分保留 扫荡会继续加)
+		//2. 判断是否切换装备序列 清空装备积分 (不需要清 旧关卡积分保留 扫荡会继续加)
 
 		// //3. 首次进入清临时buff
 		// mazebarriertempbuffredis.ClearBarrierTempBuff(logger, userId, req.GetBarrierId())
@@ -231,7 +232,7 @@ func SubUserEnergy(logger fklog.FKLogI, uid uint64, subEnergy int32) (isSucc boo
 	req := &MazeEnergySvr.SubMazeEnergyRQ{
 		UserId:      proto.Uint64(uid),
 		SubVal:      proto.Int32(subEnergy),
-		OpType:      proto.Int32(1), // NUM_MAZE_ENERGY_OP_TYPE_CHALLLENGE
+		OpType:      proto.Int32(1), //NUM_MAZE_ENERGY_OP_TYPE_CHALLLENGE
 		OpDesc:      proto.String("maze_barrier_enter"),
 		TradeNumber: proto.Uint64(gentradeno.GetTradeNum()),
 	}

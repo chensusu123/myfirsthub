@@ -7,16 +7,16 @@
 package assembleidpack
 
 import (
-	"google.golang.org/protobuf/proto"
-	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fklog"
-	"maze_game_server/pb/common/MazeGameEquip"
-	"maze_game_server/pb/server/MazeEquipCache"
-
-	"go.uber.org/zap"
 	"maze_game_server/common/function/packtopb/asequipsuittopb"
 	"maze_game_server/common/function/packtopb/packequipostopb"
 	"maze_game_server/module/equippossuit"
+	"maze_game_server/pb/common/MazeGameEquip"
+	"maze_game_server/pb/server/MazeEquipCache"
 	"maze_game_server/usecase/mustarrive"
+
+	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fklog"
+	"go.uber.org/zap"
+	"google.golang.org/protobuf/proto"
 )
 
 func SendAssembleChgID(logger fklog.FKLogI, userId uint64, assembleInfo *MazeEquipCache.MazeAssembleDb, wantMask, posMask, reason int32) error {

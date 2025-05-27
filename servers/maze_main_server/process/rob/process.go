@@ -7,22 +7,29 @@ import (
 	"net/http"
 	"time"
 
+	"github.com/lonng/nano/component"
 	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fklog"
 	"gitlab.ifreetalk.com/maze-plate/freetk/fkutil"
 	"go.uber.org/zap"
-	"maze_game_server/lib/net/websocket_service"
-	"maze_game_server/pb/common/MazeRobGuaJi"
 )
+
+type Rob struct {
+	component.Base
+}
+
+func NewRob() *Rob {
+	return &Rob{}
+}
 
 func RegTcpHandler() {
 
-	// 迷宫掠夺列表
-	websocket_service.RegProcSimple(10488, &MazeRobGuaJi.MazeRobGuaJiListRQ{},
-		10489, &MazeRobGuaJi.MazeRobGuaJiListRS{}, OnMazeRobGuaJiListRQ)
+	// // 迷宫掠夺列表
+	// websocket_service.RegProcSimple(10488, &MazeRobGuaJi.MazeRobGuaJiListRQ{},
+	// 	10489, &MazeRobGuaJi.MazeRobGuaJiListRS{}, OnMazeRobGuaJiListRQ)
 
-	// 迷宫掠夺
-	websocket_service.RegProcSimple(10490, &MazeRobGuaJi.MazeRobGuaJiRQ{},
-		10491, &MazeRobGuaJi.MazeRobGuaJiRS{}, OnMazeRobGuaJiRQ)
+	// // 迷宫掠夺
+	// websocket_service.RegProcSimple(10490, &MazeRobGuaJi.MazeRobGuaJiRQ{},
+	// 	10491, &MazeRobGuaJi.MazeRobGuaJiRS{}, OnMazeRobGuaJiRQ)
 
 }
 

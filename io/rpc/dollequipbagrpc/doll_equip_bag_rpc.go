@@ -1,12 +1,10 @@
 package dollequipbagrpc
 
 import (
-	"time"
-
-	"maze_game_server/pb/server/MazeEquipSvr"
-
 	"maze_game_server/common/errors"
+	"maze_game_server/pb/server/MazeEquipSvr"
 	"maze_game_server/servers/maze_main_server/process/equip"
+	"time"
 
 	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fklog"
 	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fkrpc/thrift_rpc"
@@ -17,7 +15,7 @@ import (
 var gRpcClient = thrift_rpc.AsyncRpc{}
 
 func init() {
-	// _ = fkconfig.RegisterNameNode("dollequipbagrpc", 19582, &gRpcClient)
+	//_ = fkconfig.RegisterNameNode("dollequipbagrpc", 19582, &gRpcClient)
 }
 
 // 添加装备

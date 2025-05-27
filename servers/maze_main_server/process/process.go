@@ -1,23 +1,19 @@
 package process
 
 import (
-	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fklog"
-	"gitlab.ifreetalk.com/maze-plate/freetk/fkserver/web_service"
 	"maze_game_server/io/mysql/flowrecord"
-	"maze_game_server/lib/net/websocket_service"
-	"maze_game_server/servers/maze_main_server/process/attr_calc"
-	"maze_game_server/servers/maze_main_server/process/auth"
 	"maze_game_server/servers/maze_main_server/process/buff"
-	"maze_game_server/servers/maze_main_server/process/card"
 	"maze_game_server/servers/maze_main_server/process/collect"
 	"maze_game_server/servers/maze_main_server/process/equip"
 	"maze_game_server/servers/maze_main_server/process/equip_gm"
 	"maze_game_server/servers/maze_main_server/process/game"
-	"maze_game_server/servers/maze_main_server/process/game/energy"
-	"maze_game_server/servers/maze_main_server/process/game/sweep"
 	"maze_game_server/servers/maze_main_server/process/gm"
-	"maze_game_server/servers/maze_main_server/process/item"
-	"maze_game_server/servers/maze_main_server/process/rob"
+
+	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fklog"
+	"gitlab.ifreetalk.com/maze-plate/freetk/fkserver/web_service"
+
+	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fklog"
+	"gitlab.ifreetalk.com/maze-plate/freetk/fkserver/web_service"
 )
 
 func RegisterHandler() {
@@ -28,32 +24,32 @@ func RegisterHandler() {
 	// })
 	collect.RegTcpHandler()
 
-	// 注册WebSocket接口
-	websocket_service.PlugTcpRawService(func() {
-		auth.RegisterHandler()
-		// 主功能接口
-		game.RegTcpHandler()
-		// 扫荡功能接口
-		sweep.RegTcpHandler()
-		// 体力相关接口
-		energy.RegTcpHandler()
-		// 装备功能接口
-		equip.RegTcpHandler()
-		// 挂机收集接口
-		collect.RegWsHandler()
-		item.RegTcpHandler()
-		// interact.RegTcpHandler()
-		// 装备gm接口
-		equip_gm.RegTcpHandler()
+	// // 注册WebSocket接口
+	// websocket_service.PlugTcpRawService(func() {
+	// 	auth.RegisterHandler()
+	// 	// 主功能接口
+	// 	game.RegTcpHandler()
+	// 	// 扫荡功能接口
+	// 	sweep.RegTcpHandler()
+	// 	// 体力相关接口
+	// 	energy.RegTcpHandler()
+	// 	// 装备功能接口
+	// 	equip.RegTcpHandler()
+	// 	// 挂机收集接口
+	// 	collect.RegWsHandler()
+	// 	item.RegTcpHandler()
+	// 	// interact.RegTcpHandler()
+	// 	// 装备gm接口
+	// 	equip_gm.RegTcpHandler()
 
-		buff.RegTcpHandler()
+	// 	buff.RegTcpHandler()
 
-		// 属性计算
-		attr_calc.RegTcpHandler()
-		card.RegTcpHandler()
+	// 	// 属性计算
+	// 	attr_calc.RegTcpHandler()
+	// 	card.RegTcpHandler()
 
-		rob.RegTcpHandler()
-	})
+	// 	rob.RegTcpHandler()
+	// })
 
 	// 注册Rpc接口
 	// thrift_service.PlugThriftRpcService(func() {
@@ -78,7 +74,7 @@ func RegisterHandler() {
 		// attr_calc.RegConsumeHandler()
 		// kafka转发队列 废弃
 		// kafka_dispatch.RegConsumeHandler()
-		
+
 		// 流水队列
 		flowrecord.RegConsumeHandler()
 	}

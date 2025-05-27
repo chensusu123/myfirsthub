@@ -2,33 +2,34 @@ package game
 
 import (
 	"fmt"
-	"time"
-
-	"google.golang.org/protobuf/proto"
-	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fklog"
-	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fknet"
-	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fkprometheus"
 	"maze_game_server/common/constdef"
 	"maze_game_server/common/errors"
 	"maze_game_server/io/kafka/mazebarrieruserkafka"
 	"maze_game_server/io/kafka/mazeuserlevelkafka"
 	"maze_game_server/io/redis/mazeuserbarrierredis"
+	"maze_game_server/lib/log"
 	"maze_game_server/module/mazecommonvalue"
 	"maze_game_server/module/mazeuserinfo"
 	"maze_game_server/pb/common/MazeCommon"
 	"maze_game_server/pb/common/MazeGame"
+	"time"
 
+	"github.com/lonng/nano/session"
+	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fklog"
+	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fkprometheus"
 	"go.uber.org/zap"
+	"google.golang.org/protobuf/proto"
 )
 
-func OnMazeBarrierDeathRQ(logger fknet.TCPContext, shardingID uint64, rqMsg proto.Message, rsMsg proto.Message) (err error) {
-	fkprometheus.InfoPMT("OnMazeBarrierDeathRQ")()
+func (g *Game) OnMazeBarrierDeathRQ_10449_10450(s *session.Session, req *MazeGame.BarrierDeathRQ) (err error) {
+	defer fkprometheus.InfoPMT("OnMazeBarrierDeathRQ")()
 
-	req := rqMsg.(*MazeGame.BarrierDeathRQ)
-	res := rsMsg.(*MazeGame.BarrierDeathRS)
+	logger := log.Clone("Game", uint64(s.UID()), 0)
+	res := &MazeGame.BarrierDeathRS{}
 
 	logger.InfoWF("OnMazeBarrierDeathRQ start", zap.Any("req", req))
 	defer func() {
+		err = s.Response(res)
 		logger.InfoWF("OnMazeBarrierDeathRQ end", zap.Any("res", res))
 	}()
 
@@ -36,7 +37,7 @@ func OnMazeBarrierDeathRQ(logger fknet.TCPContext, shardingID uint64, rqMsg prot
 	res.ErrInfo = errors.NO_ERROR
 	res.BarrierId = req.BarrierId
 
-	userId := shardingID
+	userId := uint64(s.UID())
 
 	if req.GetBarrierId() <= 0 {
 		logger.ErrorWF("OnMazeBarrierDeathRQ req barrier invalid", zap.Any("req", req))
@@ -68,7 +69,7 @@ func OnMazeBarrierDeathRQ(logger fknet.TCPContext, shardingID uint64, rqMsg prot
 		return
 	}
 
-	// 更新等级经验
+	//更新等级经验
 	oldLevel := userInfo.Level
 	oldExp := userInfo.TotalExp
 	err = userInfo.AddExp(int64(req.GetFoeExp()))

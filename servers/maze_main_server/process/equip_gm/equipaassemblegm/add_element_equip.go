@@ -8,9 +8,6 @@ package equipaassemblegm
 
 import (
 	"fmt"
-
-	"google.golang.org/protobuf/proto"
-	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fklog"
 	"maze_game_server/common/errors"
 	"maze_game_server/common/function/packtopb"
 	"maze_game_server/common/function/uniqueid"
@@ -20,6 +17,9 @@ import (
 	"maze_game_server/module/effectequip"
 	"maze_game_server/pb/common/MazeGameEquip"
 	"maze_game_server/pb/server/MazeEquipSvr"
+
+	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fklog"
+	"google.golang.org/protobuf/proto"
 )
 
 type EquipParam struct {

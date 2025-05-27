@@ -7,8 +7,8 @@ import (
 	"maze_game_server/io/rpc/setseataskrpc"
 	"maze_game_server/pb/server/SeaTaskSvr"
 
-	"google.golang.org/protobuf/proto"
 	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fklog"
+	"google.golang.org/protobuf/proto"
 )
 
 func newSessionID() uint64 {

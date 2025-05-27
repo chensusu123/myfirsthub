@@ -1,43 +1,48 @@
 package equip
 
 import (
-	"google.golang.org/protobuf/proto"
-	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fknet"
-	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fkprometheus"
-	"gitlab.ifreetalk.com/maze-plate/freetk/fkserver"
-	"go.uber.org/zap"
 	"maze_game_server/common/errors"
 	"maze_game_server/common/function/packtopb"
 	"maze_game_server/io/redis/mazebagequipredis"
+	"maze_game_server/lib/log"
 	"maze_game_server/pb/common/MazeGameEquip"
 	"maze_game_server/pb/server/MazeEquipCache"
+
+	"github.com/lonng/nano/session"
+	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fkprometheus"
+	"go.uber.org/zap"
+	"google.golang.org/protobuf/proto"
 )
 
-func OnQueryMazeEquipDetailRQ(ctx fknet.TCPContext, shardingID uint64, request proto.Message, response proto.Message) (err error) {
+func (e *Equip) OnQueryMazeEquipDetailRQ_10407_10408(s *session.Session, req *MazeGameEquip.QueryMazeEquipDetailRQ) (err error) {
 	defer fkprometheus.DebugPMT("OnQueryMazeEquipDetailRQ")()
-	req := request.(*MazeGameEquip.QueryMazeEquipDetailRQ)
-	res := response.(*MazeGameEquip.QueryMazeEquipDetailRS)
+
+	logger := log.Clone("Equip", uint64(s.UID()), 0)
+	res := &MazeGameEquip.QueryMazeEquipDetailRS{}
 
 	res.ErrInfo = errors.NO_ERROR
 	res.Header = req.Header
 	res.QueryType = req.QueryType
 	res.PreviewForce = req.PreviewForce
-	userCtx := fkserver.NewUserContext(ctx.Context, shardingID, ctx.FKLogI)
-	userCtx.InfoWF("OnQueryMazeEquipDetailRQ with", zap.Any("req", req))
+
+	userId := uint64(s.UID())
+
+	logger.InfoWF("OnQueryMazeEquipDetailRQ with", zap.Any("req", req))
 	defer func() {
-		userCtx.InfoWF("OnQueryMazeEquipDetailRQ end", zap.Any("res", res))
+		err = s.Response(res)
+		logger.InfoWF("OnQueryMazeEquipDetailRQ end", zap.Any("res", res))
 	}()
-	// if !BreedVersionFC.IsDollVersion(userCtx, shardingID) {
-	// 	userCtx.ErrorWF("OnQueryMazeEquipDetailRQ not doll version", zap.Uint64("userID", shardingID))
+	// if !BreedVersionFC.IsDollVersion(logger, userId) {
+	// 	logger.ErrorWF("OnQueryMazeEquipDetailRQ not doll version", zap.Uint64("userID", userId))
 	// 	return
 	// }
 	if len(req.GetEquipGuids()) <= 0 {
 		return
 	}
-	equipMap, err := mazebagequipredis.GetBatchEquipInfo(userCtx, userCtx.UserID, req.GetEquipGuids()...)
+	equipMap, err := mazebagequipredis.GetBatchEquipInfo(logger, userId, req.GetEquipGuids()...)
 	bagEquips := make([]*MazeEquipCache.MazeEquipInfoDb, 0)
 	for _, equipInfo := range equipMap {
-		// newEquipInfo, err := pbutil.ConvertIdentifyEquipDb(userCtx, equipInfo)
+		// newEquipInfo, err := pbutil.ConvertIdentifyEquipDb(logger, equipInfo)
 		// if err != nil {
 		//	res.ErrInfo = errors.MODULE_ERROR.ToInfo()
 		//	ctx.ErrorWF("OnQueryMazeEquipDetailRQ ConvertIdentifyEquipDb fail", zap.Error(err))
@@ -52,10 +57,10 @@ func OnQueryMazeEquipDetailRQ(ctx fknet.TCPContext, shardingID uint64, request p
 			EquipGuid: proto.Int64(equipInfo.GetEquipGuid()),
 		}
 		if req.GetQueryType() == 0 {
-			equipCli, err = packtopb.EquipInfoToCliPB(userCtx, equipInfo)
+			equipCli, err = packtopb.EquipInfoToCliPB(logger, equipInfo)
 			if err != nil {
 				res.ErrInfo = errors.MODULE_ERROR.ToInfo()
-				ctx.ErrorWF("OnQueryMazeEquipDetailRQ EquipInfoToCliPB fail", zap.Error(err))
+				logger.ErrorWF("OnQueryMazeEquipDetailRQ EquipInfoToCliPB fail", zap.Error(err))
 				return err
 			}
 		}

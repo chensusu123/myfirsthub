@@ -7,20 +7,15 @@
 package equipaassemblegm
 
 import (
-	"context"
-
-	"google.golang.org/protobuf/proto"
-	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fklog"
-	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fknet"
-	"go.uber.org/zap"
 	"maze_game_server/common/constdef"
 	"maze_game_server/common/function/assemble"
 	"maze_game_server/config/GMazeEquipInfoV8Cfg"
 	"maze_game_server/io/redis/mazebagequipredis"
 	"maze_game_server/module/dollassembleinfo"
-	"maze_game_server/pb/common/MazeGameEquip"
 	"maze_game_server/pb/server/MazeEquipCache"
-	"maze_game_server/servers/maze_main_server/process/equip"
+
+	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fklog"
+	"go.uber.org/zap"
 )
 
 func DressEquipGm(logger fklog.FKLogI, userId uint64, pos int32, equipGuid int64) error {
@@ -65,7 +60,8 @@ func DressEquipGm(logger fklog.FKLogI, userId uint64, pos int32, equipGuid int64
 							zap.Int32("pos", int32(i)),
 							zap.Int64("equipGuid", equipGuid))
 					} else {
-						gmDressOneEquip(logger, userId, int32(i), equipDetail.GetEquipId(), equipGuid)
+						// TODO 待补充
+						// gmDressOneEquip(logger, userId, int32(i), equipDetail.GetEquipId(), equipGuid)
 					}
 				}
 			}
@@ -74,13 +70,13 @@ func DressEquipGm(logger fklog.FKLogI, userId uint64, pos int32, equipGuid int64
 	return nil
 }
 
-func gmDressOneEquip(logger fklog.FKLogI, userId uint64, pos, equipId int32, guid int64) error {
-	ctx := fknet.TCPContext{Context: context.Background(), FKLogI: logger}
-	rq := &MazeGameEquip.MazeDressEquipRQ{}
-	rs := &MazeGameEquip.MazeDressEquipRS{}
-	rq.EquipPos = proto.Int32(pos)
-	rq.EquipGuid = proto.Int64(guid)
-	rq.OpSrc = proto.Int32(0)
-	rq.OpType = proto.Int32(1)
-	return equip.OnDressMazeEquipRQ(ctx, userId, rq, rs)
-}
+// func gmDressOneEquip(logger fklog.FKLogI, userId uint64, pos, equipId int32, guid int64) error {
+// 	ctx := fknet.TCPContext{Context: context.Background(), FKLogI: logger}
+// 	rq := &MazeGameEquip.MazeDressEquipRQ{}
+// 	rs := &MazeGameEquip.MazeDressEquipRS{}
+// 	rq.EquipPos = proto.Int32(pos)
+// 	rq.EquipGuid = proto.Int64(guid)
+// 	rq.OpSrc = proto.Int32(0)
+// 	rq.OpType = proto.Int32(1)
+// 	return equip.OnDressMazeEquipRQ(ctx, userId, rq, rs)
+// }

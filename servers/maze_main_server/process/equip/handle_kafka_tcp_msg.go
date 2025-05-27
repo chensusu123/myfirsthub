@@ -7,15 +7,16 @@
 package equip
 
 import (
-	"google.golang.org/protobuf/proto"
+	"maze_game_server/common/errors"
+	"maze_game_server/pb/server/KafkaMsgNotify"
+
 	"gitlab.ifreetalk.com/maze-plate/freetk/common/fkfmt"
 	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fklog"
 	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fknet"
 	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fkprometheus"
 	"gitlab.ifreetalk.com/maze-plate/freetk/fkserver"
 	"go.uber.org/zap"
-	"maze_game_server/common/errors"
-	"maze_game_server/pb/server/KafkaMsgNotify"
+	"google.golang.org/protobuf/proto"
 )
 
 func OnKafkaTcpMsgRQ(ctx fknet.TCPContext, shardingID uint64, request proto.Message, response proto.Message) (err error) {

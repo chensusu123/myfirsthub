@@ -7,12 +7,13 @@
 package dollassembleredis
 
 import (
-	"google.golang.org/protobuf/proto"
-	"gitlab.ifreetalk.com/maze-plate/freetk/fkutil"
 	"maze_game_server/common/constdef"
 	"maze_game_server/common/errors"
 	"maze_game_server/common/function/assemble"
 	"maze_game_server/pb/server/MazeEquipCache"
+
+	"gitlab.ifreetalk.com/maze-plate/freetk/fkutil"
+	"google.golang.org/protobuf/proto"
 )
 
 func unpackFieldToPb(field string, in []byte, pb *MazeEquipCache.MazeAssembleDb) error {

@@ -1,10 +1,11 @@
 package game
 
 import (
-	"google.golang.org/protobuf/proto"
+	"maze_game_server/module/mazeuserbarrier"
+
 	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fknet"
 	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fkprometheus"
-	"maze_game_server/module/mazeuserbarrier"
+	"google.golang.org/protobuf/proto"
 )
 
 func OnGetFeoAwardRQ(logger fknet.TCPContext, shardingID uint64, rqMsg proto.Message, rsMsg proto.Message) (err error) {

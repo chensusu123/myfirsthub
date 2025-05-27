@@ -34,6 +34,7 @@ func main() {
 		polarismessSvc := polarismessvc.NewPolarismesSvc()
 		fkserver.AddBusiness(polarismessSvc)
 	}
+
 	fkserver.AddBusiness(tasktimer.GTaskTimerBusiness)
 
 	fkserver.Run()

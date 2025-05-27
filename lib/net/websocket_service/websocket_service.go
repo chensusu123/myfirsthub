@@ -1,13 +1,14 @@
 package websocket_service
 
 import (
+	"maze_game_server/lib/net/raw_pkg_ctl"
+	websocket_service_impl "maze_game_server/lib/net/websocket_service_actor"
+
 	jsoniter "github.com/json-iterator/go"
-	"google.golang.org/protobuf/proto"
 	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fklog"
 	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fknet"
 	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fknet/pkg_ctl"
-	"maze_game_server/lib/net/raw_pkg_ctl"
-	websocket_service_impl "maze_game_server/lib/net/websocket_service_actor"
+	"google.golang.org/protobuf/proto"
 )
 
 var json = jsoniter.ConfigCompatibleWithStandardLibrary

@@ -2,27 +2,26 @@ package buff
 
 import (
 	"fmt"
-	"time"
-
+	"maze_game_server/common/constdef"
+	"maze_game_server/common/errors"
+	"maze_game_server/common/structsdef"
 	"maze_game_server/config/GMazeAttributeV8Cfg"
 	"maze_game_server/excel/mazeenergyaffixlvv8config"
 	"maze_game_server/io/kafka/mazetempbuffchgmsg"
 	"maze_game_server/io/redis/mazeattrcalcnotifyqueue"
 	"maze_game_server/io/redis/mazebuffinforedis"
 	"maze_game_server/io/redis/mazetempbuffredis"
-
-	"google.golang.org/protobuf/proto"
-	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fklog"
-	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fknet"
-	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fkprometheus"
-	"maze_game_server/common/constdef"
-	"maze_game_server/common/errors"
+	"maze_game_server/lib/log"
 	"maze_game_server/pb/common/MazeTempBuff"
 	"maze_game_server/pb/server/MazeBuffData"
 	"maze_game_server/pb/server/MazeTempBuffSvr"
+	"time"
 
+	"github.com/lonng/nano/session"
+	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fklog"
+	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fkprometheus"
 	"go.uber.org/zap"
-	"maze_game_server/common/structsdef"
+	"google.golang.org/protobuf/proto"
 )
 
 /**
@@ -31,22 +30,25 @@ import (
  * @Description: 选择迷宫buff
  */
 
-func SelectMazeTempBuffRQ(logger fknet.TCPContext, shardingID uint64, request, response proto.Message) error {
+func (b *Buff) SelectMazeTempBuffRQ_10437_10438(s *session.Session, req *MazeTempBuff.SelectMazeTempBuffRQ) (err error) {
 	defer fkprometheus.InfoPMT("SelectMazeTempBuffRQ")()
+
 	start := time.Now()
-	req := request.(*MazeTempBuff.SelectMazeTempBuffRQ)
-	res := response.(*MazeTempBuff.SelectMazeTempBuffRS)
+
+	logger := log.Clone("Buff", uint64(s.UID()), 0)
+	res := &MazeTempBuff.SelectMazeTempBuffRS{}
 	res.ErrInfo = errors.NO_ERROR
 	res.Header = req.Header
 	res.StageId = req.StageId
 	res.Level = req.Level
 	res.Type = req.Type
 	defer func() {
+		err = s.Response(res)
 		logger.InfoWF("SelectMazeTempBuffRQ end", zap.Any("req", req), zap.Any("res", res),
 			zap.Duration("costTime", time.Now().Sub(start)))
 	}()
 
-	userId, stageId, level, buffId, buffType := shardingID, req.GetStageId(), req.GetLevel(), req.GetBuffId(), int32(req.GetType())
+	userId, stageId, level, buffId, buffType := uint64(s.UID()), req.GetStageId(), req.GetLevel(), req.GetBuffId(), int32(req.GetType())
 	if userId == 0 || stageId == 0 || level == 0 || buffId == 0 {
 		logger.WarnWF("SelectMazeTempBuffRQ args error", zap.Any("req", req))
 		res.ErrInfo = errors.COMMON_ERROR_TIPS.Wrap("参数错误")

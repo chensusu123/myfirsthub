@@ -1,16 +1,15 @@
 package collect
 
 import (
+	"maze_game_server/common/constdef"
+	"maze_game_server/pb/common/MazeCommon"
+	"maze_game_server/pb/server/MazeCollectCache"
 	"sort"
 	"time"
 
 	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fklog"
 	"go.uber.org/zap"
-	"maze_game_server/common/constdef"
-
 	"google.golang.org/protobuf/proto"
-	"maze_game_server/pb/common/MazeCommon"
-	"maze_game_server/pb/server/MazeCollectCache"
 )
 
 // 获取道具刷新时间

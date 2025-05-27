@@ -1,10 +1,11 @@
 package module
 
 import (
-	"google.golang.org/protobuf/proto"
-	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fklog"
 	"maze_game_server/common/function/assemble"
 	"maze_game_server/pb/server/MazeEquipCache"
+
+	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fklog"
+	"google.golang.org/protobuf/proto"
 )
 
 func GetEquipPosInfo(assembleInfo *MazeEquipCache.MazeAssembleDb, pos int32) *MazeEquipCache.MazeEquipPosInfo {

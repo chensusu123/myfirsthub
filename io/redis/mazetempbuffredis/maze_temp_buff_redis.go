@@ -3,14 +3,14 @@ package mazetempbuffredis
 import (
 	"context"
 	"fmt"
+	"maze_game_server/pb/server/MazeTempBuffSvr"
 
-	"google.golang.org/protobuf/proto"
 	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fkconfig"
 	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fklog"
 	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fkredis"
 	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fkredis/redis"
 	"go.uber.org/zap"
-	"maze_game_server/pb/server/MazeTempBuffSvr"
+	"google.golang.org/protobuf/proto"
 )
 
 /**

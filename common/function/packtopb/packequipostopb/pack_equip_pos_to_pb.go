@@ -9,9 +9,6 @@ package packequipostopb
 import (
 	"fmt"
 
-	"google.golang.org/protobuf/proto"
-	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fklog"
-	"go.uber.org/zap"
 	"maze_game_server/common/errors"
 	"maze_game_server/common/function/assemble"
 	"maze_game_server/common/function/excelutil"
@@ -20,6 +17,10 @@ import (
 	"maze_game_server/config/GMazeEquipPosLvV8Cfg"
 	"maze_game_server/pb/common/MazeGameEquip"
 	"maze_game_server/pb/server/MazeEquipCache"
+
+	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fklog"
+	"go.uber.org/zap"
+	"google.golang.org/protobuf/proto"
 )
 
 // 打包装备位信息

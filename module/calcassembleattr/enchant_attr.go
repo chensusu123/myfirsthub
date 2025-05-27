@@ -7,9 +7,10 @@
 package calcassembleattr
 
 import (
-	"google.golang.org/protobuf/proto"
 	"maze_game_server/pb/server/MazeBuffData"
 	"maze_game_server/pb/server/MazeEquipCache"
+
+	"google.golang.org/protobuf/proto"
 )
 
 // 打包普通属性

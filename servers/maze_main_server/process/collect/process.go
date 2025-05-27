@@ -3,18 +3,26 @@ package collect
 import (
 	"maze_game_server/io/kafka/mazebarrieruserkafka"
 	"maze_game_server/io/kafka/mazeuserlevelkafka"
-	"maze_game_server/lib/net/websocket_service"
-	"maze_game_server/pb/common/MazeCollect"
 	"maze_game_server/usecase/tasktimer"
+
+	"github.com/lonng/nano/component"
 )
 
-func RegWsHandler() {
-	// 迷宫挂机查询
-	_ = websocket_service.RegProcSimple(10465, &MazeCollect.MazeCollectInfoQueryRQ{},
-		10466, &MazeCollect.MazeCollectInfoQueryRS{}, OnMazeCollectInfoQueryRQ)
+type Collect struct {
+	component.Base
+}
 
-	_ = websocket_service.RegProcSimple(10467, &MazeCollect.MazeCollectItemReceiveRQ{},
-		10468, &MazeCollect.MazeCollectItemReceiveRS{}, OnMazeCollectItemReceiveRQ)
+func NewCollect() *Collect {
+	return &Collect{}
+}
+
+func RegWsHandler() {
+	// // 迷宫挂机查询
+	// _ = websocket_service.RegProcSimple(10465, &MazeCollect.MazeCollectInfoQueryRQ{},
+	// 	10466, &MazeCollect.MazeCollectInfoQueryRS{}, OnMazeCollectInfoQueryRQ)
+
+	// _ = websocket_service.RegProcSimple(10467, &MazeCollect.MazeCollectItemReceiveRQ{},
+	// 	10468, &MazeCollect.MazeCollectItemReceiveRS{}, OnMazeCollectItemReceiveRQ)
 }
 
 func RegTcpHandler() {

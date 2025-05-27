@@ -4,20 +4,20 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"maze_game_server/pb/server/MazeEquipCache"
 
-	"google.golang.org/protobuf/proto"
 	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fkconfig"
 	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fklog"
 	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fkredis"
 	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fkredis/redis"
 	"go.uber.org/zap"
-	"maze_game_server/pb/server/MazeEquipCache"
+	"google.golang.org/protobuf/proto"
 )
 
 var gRedis = &fkredis.FkRedis{}
 
 func init() {
-	// 21640 maze:bag:equip:info:%llu 迷宫游戏装备背包存储
+	//21640 maze:bag:equip:info:%llu 迷宫游戏装备背包存储
 	fkconfig.RegisterNameNode("mazebagequipredis", 21640, gRedis)
 }
 
@@ -139,7 +139,7 @@ func BatchDelEquip(logger fklog.FKLogI, userId uint64, equipGuids ...int64) (err
 	args := make([]interface{}, 0)
 	args = append(args, key)
 	for _, guid := range equipGuids {
-		args = append(args, guid) // field
+		args = append(args, guid) //field
 	}
 	if len(args) <= 1 {
 		logger.WarnWF("no has equip to save", zap.Any("args", args), zap.String("key", key))
@@ -195,6 +195,6 @@ func GetAllEquipInfo(logger fklog.FKLogI, userId uint64) (equipMap map[int64]*Ma
 	if len(equipMap) > batchCount {
 		logger.WarnWF("GetAllEquipInfo equip count too many", zap.String("key", key), zap.Any("equipMap", len(equipMap)))
 	}
-	// logger.InfoWF("GetAllEquipInfo end", zap.String("key", key), zap.Any("equipMap", equipMap))
+	//logger.InfoWF("GetAllEquipInfo end", zap.String("key", key), zap.Any("equipMap", equipMap))
 	return equipMap, nil
 }

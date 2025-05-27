@@ -4,10 +4,11 @@ import (
 	"fmt"
 	"sort"
 
-	"google.golang.org/protobuf/proto"
+	"maze_game_server/pb/common/MazeCommon"
+
 	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fkconfig"
 	"gitlab.ifreetalk.com/maze-plate/freetk/fkutil/uniqueid"
-	"maze_game_server/pb/common/MazeCommon"
+	"google.golang.org/protobuf/proto"
 )
 
 func Common2Map(attrs []*MazeCommon.Attr) (m map[int32]int64) {

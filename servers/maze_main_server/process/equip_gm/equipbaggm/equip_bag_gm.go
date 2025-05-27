@@ -2,14 +2,6 @@ package equipbaggm
 
 import (
 	"fmt"
-	"net/http"
-	"strings"
-
-	"google.golang.org/protobuf/proto"
-	"gitlab.ifreetalk.com/maze-plate/freetk/common/fkfmt"
-	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fklog"
-	"gitlab.ifreetalk.com/maze-plate/freetk/fkutil"
-	"go.uber.org/zap"
 	"maze_game_server/common/function/fileio"
 	"maze_game_server/common/function/gm"
 	"maze_game_server/common/function/uniqueid"
@@ -19,6 +11,14 @@ import (
 	"maze_game_server/io/redis/mazeequipgetnumredis"
 	"maze_game_server/io/rpc/dollequipbagrpc"
 	"maze_game_server/pb/server/MazeEquipSvr"
+	"net/http"
+	"strings"
+
+	"gitlab.ifreetalk.com/maze-plate/freetk/common/fkfmt"
+	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fklog"
+	"gitlab.ifreetalk.com/maze-plate/freetk/fkutil"
+	"go.uber.org/zap"
+	"google.golang.org/protobuf/proto"
 )
 
 func Reg(logger fklog.FKLogI) {

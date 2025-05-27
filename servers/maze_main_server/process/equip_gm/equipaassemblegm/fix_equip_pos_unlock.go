@@ -7,11 +7,12 @@
 package equipaassemblegm
 
 import (
-	"google.golang.org/protobuf/proto"
-	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fklog"
 	"maze_game_server/io/redis/dollassembleredis"
 	"maze_game_server/io/redis/dollassemblesuitredis"
 	"maze_game_server/pb/server/MazeEquipCache"
+
+	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fklog"
+	"google.golang.org/protobuf/proto"
 )
 
 func UnlockPosByEquip(logger fklog.FKLogI, userId uint64) (cnt int32, err error) {

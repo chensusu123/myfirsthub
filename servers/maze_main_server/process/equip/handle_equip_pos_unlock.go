@@ -13,8 +13,6 @@ import (
 
 	"go.uber.org/zap"
 
-	"google.golang.org/protobuf/proto"
-	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fklog"
 	"maze_game_server/common/constdef"
 	"maze_game_server/config/GMazeEquipPosRankV8Cfg"
 	"maze_game_server/io/redis/dollassembleredis"
@@ -22,6 +20,9 @@ import (
 	"maze_game_server/module/mazelevel"
 	"maze_game_server/pb/common/MazeGameEquip"
 	"maze_game_server/pb/server/MazeEquipCache"
+
+	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fklog"
+	"google.golang.org/protobuf/proto"
 )
 
 const (

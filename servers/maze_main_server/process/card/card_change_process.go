@@ -4,8 +4,6 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
-	"time"
-
 	"maze_game_server/common/constdef"
 	"maze_game_server/common/structsdef"
 	"maze_game_server/excel/mazeconfigv8config"
@@ -13,14 +11,15 @@ import (
 	"maze_game_server/io/redis/mazebuffinforedis"
 	"maze_game_server/io/redis/mazecardlistgroupredis"
 	"maze_game_server/io/redis/userriddlemonthlyredis"
+	"maze_game_server/pb/common/MazeCard"
+	"maze_game_server/pb/server/MazeBuffData"
+	"time"
 
-	"google.golang.org/protobuf/proto"
 	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fkconfig"
 	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fklog"
 	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fkprometheus"
 	"go.uber.org/zap"
-	"maze_game_server/pb/common/MazeCard"
-	"maze_game_server/pb/server/MazeBuffData"
+	"google.golang.org/protobuf/proto"
 )
 
 // 月卡变化通知
@@ -155,7 +154,7 @@ func SendMazeCardMsg(logger fklog.FKLogI, userId uint64, state int32, expiration
 	}
 	_ = msg
 	// TODO 为什么注释掉？？
-	// _ = commonmustarriveredis.SendArrivePacketWithLogFix(logger, userId, 16200, msg)
+	//_ = commonmustarriveredis.SendArrivePacketWithLogFix(logger, userId, 16200, msg)
 }
 
 func PackMazeBuff(buffMap map[int32]int64) []*MazeBuffData.MazeBuffAttr {

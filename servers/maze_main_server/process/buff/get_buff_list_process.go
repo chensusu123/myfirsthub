@@ -2,19 +2,20 @@ package buff
 
 import (
 	"fmt"
-	"time"
-
-	"google.golang.org/protobuf/proto"
-	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fklog"
-	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fknet"
-	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fkprometheus"
-	"go.uber.org/zap"
 	"maze_game_server/common/errors"
 	"maze_game_server/excel/mazeattributeconfig"
 	"maze_game_server/excel/mazeenergyaffixlvv8config"
 	"maze_game_server/io/redis/mazetempbuffredis"
+	"maze_game_server/lib/log"
 	"maze_game_server/pb/common/MazeTempBuff"
 	"maze_game_server/pb/server/MazeTempBuffSvr"
+	"time"
+
+	"github.com/lonng/nano/session"
+	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fklog"
+	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fkprometheus"
+	"go.uber.org/zap"
+	"google.golang.org/protobuf/proto"
 )
 
 /**
@@ -23,20 +24,24 @@ import (
  * @Description: 查询迷宫buff列表
  */
 
-func GetMazeTempBuffListRQ(logger fknet.TCPContext, shardingID uint64, request, response proto.Message) error {
+func (b *Buff) GetMazeTempBuffListRQ_10433_10434(s *session.Session, req *MazeTempBuff.GetMazeTempBuffListRQ) (err error) {
 	defer fkprometheus.InfoPMT("GetMazeTempBuffListRQ")()
+
 	start := time.Now()
-	req := request.(*MazeTempBuff.GetMazeTempBuffListRQ)
-	res := response.(*MazeTempBuff.GetMazeTempBuffListRS)
+
+	logger := log.Clone("Buff", uint64(s.UID()), 0)
+	res := &MazeTempBuff.GetMazeTempBuffListRS{}
 	res.ErrInfo = errors.NO_ERROR
 	res.Header = req.Header
 	res.StageId = req.StageId
+
 	defer func() {
+		err = s.Response(res)
 		logger.InfoWF("GetMazeTempBuffListRQ end", zap.Any("req", req), zap.Any("res", res),
 			zap.Duration("costTime", time.Now().Sub(start)))
 	}()
 
-	userId, stageId := shardingID, req.GetStageId()
+	userId, stageId := uint64(s.UID()), req.GetStageId()
 	if userId == 0 || stageId == 0 {
 		logger.WarnWF("GetMazeTempBuffListRQ args error", zap.Any("req", req))
 		res.ErrInfo = errors.COMMON_ERROR_TIPS.Wrap("参数错误")

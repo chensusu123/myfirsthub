@@ -9,17 +9,19 @@ import (
 	"maze_game_server/config/GMazeAttributeV8Cfg"
 	"maze_game_server/config/GMazeEquipConfigV8Cfg"
 
-	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fklog"
-	"go.uber.org/zap"
 	"maze_game_server/common/errors"
 
-	"google.golang.org/protobuf/proto"
+	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fklog"
+	"go.uber.org/zap"
+
 	"maze_game_server/common/constdef"
 	"maze_game_server/common/function/pbutil"
 	"maze_game_server/common/function/randfuncs"
 	"maze_game_server/config/GMazeAttrSpDescV8Cfg"
 	"maze_game_server/config/GMazeEquipInfoV8Cfg"
 	"maze_game_server/pb/server/MazeEquipCache"
+
+	"google.golang.org/protobuf/proto"
 )
 
 func EquipInfoToCliPB(logger fklog.FKLogI, equipInfo *MazeEquipCache.MazeEquipInfoDb) (*MazeGameEquip.MazeEquipInfo, error) {

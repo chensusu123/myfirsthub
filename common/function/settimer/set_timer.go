@@ -3,10 +3,11 @@ package settimer
 import (
 	"time"
 
-	"google.golang.org/protobuf/proto"
-	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fklog"
 	"maze_game_server/io/rpc/setseataskrpc"
 	"maze_game_server/pb/server/SeaTaskSvr"
+
+	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fklog"
+	"google.golang.org/protobuf/proto"
 )
 
 // 设置定时器

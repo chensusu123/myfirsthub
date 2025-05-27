@@ -1,9 +1,6 @@
 package game
 
 import (
-	"strings"
-	"time"
-
 	"maze_game_server/common/constdef"
 	"maze_game_server/common/errors"
 	"maze_game_server/common/function/uniqueid"
@@ -15,36 +12,40 @@ import (
 	"maze_game_server/io/redis/mazeshopseqredis"
 	"maze_game_server/io/redis/mazeuserbarrierredis"
 	"maze_game_server/io/redis/mazeuserlevelredis"
+	"maze_game_server/lib/log"
 	"maze_game_server/pb/common/MazeGame"
 	"maze_game_server/pb/server/MazeEnergySvr"
 	"maze_game_server/servers/maze_main_server/process/game/energy"
+	"strings"
+	"time"
 
+	"github.com/lonng/nano/session"
 	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fklog"
-	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fknet"
 	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fkprometheus"
-	"gitlab.ifreetalk.com/maze-plate/freetk/fkserver"
 	"gitlab.ifreetalk.com/maze-plate/freetk/fkutil"
-	"google.golang.org/protobuf/proto"
-
 	"go.uber.org/zap"
+	"google.golang.org/protobuf/proto"
 )
 
-func OnSendDollMazeCmdRQ(ctx fknet.TCPContext, shardingID uint64, request proto.Message, response proto.Message) (err error) {
+func (g *Game) OnSendDollMazeCmdRQ_10463_10464(s *session.Session, req *MazeGame.SendDollMazeCmdRQ) (err error) {
 	defer fkprometheus.DebugPMT("OnSendDollMazeCmdRQ")()
-	req := request.(*MazeGame.SendDollMazeCmdRQ)
-	res := response.(*MazeGame.SendDollMazeCmdRS)
+
+	logger := log.Clone("Game", uint64(s.UID()), 0)
+	res := &MazeGame.SendDollMazeCmdRS{}
 
 	res.ErrInfo = errors.NO_ERROR
 	res.Header = req.Header
 	res.CmdCode = req.CmdCode
 	res.CmdParam = req.CmdParam
-	userCtx := fkserver.NewUserContext(ctx.Context, shardingID, ctx.FKLogI)
+
+	userId := uint64(s.UID())
 
 	defer func() {
-		userCtx.InfoWF("OnSendDollMazeCmdRQ end", zap.Any("res", res))
+		err = s.Response(res)
+		logger.InfoWF("OnSendDollMazeCmdRQ end", zap.Any("res", res))
 	}()
 
-	userCtx.InfoWF("OnSendDollMazeCmdRQ with", zap.Any("req", req))
+	logger.InfoWF("OnSendDollMazeCmdRQ with", zap.Any("req", req))
 	// if !BreedVersionFC.IsDollVersion(userCtx, shardingID) {
 	// 	userCtx.WarnWF("OnSendDollMazeCmdRQ not doll version", zap.Uint64("userID", shardingID))
 	// 	return
@@ -59,27 +60,27 @@ func OnSendDollMazeCmdRQ(ctx fknet.TCPContext, shardingID uint64, request proto.
 	// 		err = errors.New("执行失败")
 	// 	}
 	case 1002:
-		err = ParseCmd(userCtx, shardingID, code, req.GetCmdParam(), req.GetHeader().GetSession())
+		err = ParseCmd(logger, userId, code, req.GetCmdParam(), req.GetHeader().GetSession())
 		if err != nil {
 			err = errors.New("执行失败")
 		}
 	case 1003:
-		err = ParseCmd(userCtx, shardingID, code, req.GetCmdParam(), req.GetHeader().GetSession())
+		err = ParseCmd(logger, userId, code, req.GetCmdParam(), req.GetHeader().GetSession())
 		if err != nil {
 			err = errors.New("执行失败")
 		}
 	case 1004:
-		err = ParseCmd(userCtx, shardingID, code, req.GetCmdParam(), req.GetHeader().GetSession())
+		err = ParseCmd(logger, userId, code, req.GetCmdParam(), req.GetHeader().GetSession())
 		if err != nil {
 			err = errors.New("执行失败")
 		}
 	case 1005:
-		err = ParseCmd(userCtx, shardingID, code, req.GetCmdParam(), req.GetHeader().GetSession())
+		err = ParseCmd(logger, userId, code, req.GetCmdParam(), req.GetHeader().GetSession())
 		if err != nil {
 			err = errors.New("执行失败")
 		}
 	case 1006: // 添加体力
-		err = CmdAddEnergy(userCtx, shardingID, args)
+		err = CmdAddEnergy(logger, userId, args)
 		if err != nil {
 			err = errors.New("执行失败")
 		}
@@ -207,7 +208,7 @@ func SetMazeBarrier(logger fklog.FKLogI, userId uint64, barrierId int32) (err er
 		return
 	}
 
-	// 设置关卡升级
+	//设置关卡升级
 	// err = mazebarrierredis.SetBarrier(logger, uint64(userId), int32(barrierId))
 	// if err != nil {
 	// 	return
@@ -222,13 +223,13 @@ func ClearBarrier(logger fklog.FKLogI, userId uint64) (err error) {
 		return
 	}
 
-	// 清楚关卡信息
+	//清楚关卡信息
 	// err = mazebarrierredis.GMDel(logger, uint64(userId))
 	// if err != nil {
 	// 	return
 	// }
 
-	// 清除等级经验通用数值
+	//清除等级经验通用数值
 	err = mazeuserlevelredis.GMDel(logger, userId)
 	if err != nil {
 		return

@@ -3,12 +3,12 @@ package mazeitemrpc
 import (
 	"maze_game_server/pb/server/MazeItemSvr"
 
-	"google.golang.org/protobuf/proto"
 	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fkconfig"
 	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fklog"
 	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fkrpc/stru"
 	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fkrpc/thrift_rpc"
 	"go.uber.org/zap"
+	"google.golang.org/protobuf/proto"
 )
 
 var itemRpc = thrift_rpc.AsyncRpc{}

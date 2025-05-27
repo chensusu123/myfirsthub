@@ -4,21 +4,8 @@ import (
 	"fmt"
 	"strings"
 
-	"google.golang.org/protobuf/proto"
-	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fklog"
-	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fknet"
-	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fkprometheus"
-	"maze_game_server/common/errors"
-	"maze_game_server/config/GMazeEquipPosLvSuiteV8Cfg"
-	"maze_game_server/config/GMazeEquipPosLvV8Cfg"
-	"maze_game_server/pb/common/Common"
-	"maze_game_server/pb/common/MazeCommon"
-	"maze_game_server/pb/common/MazeEquipPos"
-	"maze_game_server/pb/common/MazeGameEquip"
-	"maze_game_server/pb/server/MazeEquipCache"
-
-	"go.uber.org/zap"
 	"maze_game_server/common/constdef"
+	"maze_game_server/common/errors"
 	"maze_game_server/common/function/assemble"
 	"maze_game_server/common/function/excelutil"
 	"maze_game_server/common/function/gentradeno"
@@ -26,6 +13,8 @@ import (
 	"maze_game_server/common/function/maputil"
 	"maze_game_server/common/function/uniqueid"
 	"maze_game_server/common/structsdef"
+	"maze_game_server/config/GMazeEquipPosLvSuiteV8Cfg"
+	"maze_game_server/config/GMazeEquipPosLvV8Cfg"
 	"maze_game_server/excel/equipposexcel"
 	"maze_game_server/excel/toastmsgtipexcel"
 	"maze_game_server/io/kafka/equipposstrengrecordkafka"
@@ -33,21 +22,36 @@ import (
 	"maze_game_server/io/redis/mazeattrcalcnotifyqueue"
 	"maze_game_server/io/redis/mazebuffinforedis"
 	"maze_game_server/io/redis/mazeuserlevelredis"
+	"maze_game_server/lib/log"
 	"maze_game_server/module/assembleidpack"
 	"maze_game_server/module/calcassembleattr"
 	"maze_game_server/module/equippossuit"
+	"maze_game_server/pb/common/Common"
+	"maze_game_server/pb/common/MazeCommon"
+	"maze_game_server/pb/common/MazeEquipPos"
+	"maze_game_server/pb/common/MazeGameEquip"
+	"maze_game_server/pb/server/MazeEquipCache"
+
+	"github.com/lonng/nano/session"
+	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fklog"
+	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fkprometheus"
+	"go.uber.org/zap"
+	"google.golang.org/protobuf/proto"
 )
 
 // 装备位强化
-func OnEquipPosLvUpRQ(logger fknet.TCPContext, userId uint64, rqMsg proto.Message, rsMsg proto.Message) (err error) {
+func (e *Equip) OnEquipPosLvUpRQ_10425_10426(s *session.Session, rq *MazeEquipPos.MazeEquipPosLvUpRQ) (err error) {
 	defer fkprometheus.DebugPMT("OnEquipPosLvUpRQ")()
-	rq := rqMsg.(*MazeEquipPos.MazeEquipPosLvUpRQ)
-	rs := rsMsg.(*MazeEquipPos.MazeEquipPosLvUpRS)
+
+	logger := log.Clone("Equip", uint64(s.UID()), 0)
+	rs := &MazeEquipPos.MazeEquipPosLvUpRS{}
 
 	rs.ErrInfo = errors.NO_ERROR
 	rs.Header = rq.Header
 	rs.PosId = rq.PosId
 	rs.OutsideBarrier = rq.OutsideBarrier
+
+	userId := uint64(s.UID())
 
 	posId := rq.GetPosId()
 	rqCurLv := rq.GetLevel()
@@ -55,6 +59,7 @@ func OnEquipPosLvUpRQ(logger fknet.TCPContext, userId uint64, rqMsg proto.Messag
 
 	logger.InfoWF("OnEquipPosLvUpRQ start", zap.Any("rq", rq))
 	defer func() {
+		err = s.Response(rs)
 		logger.InfoWF("OnEquipPosLvUpRQ end", zap.Any("rs", rs))
 	}()
 

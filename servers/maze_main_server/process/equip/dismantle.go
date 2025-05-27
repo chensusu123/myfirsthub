@@ -2,14 +2,6 @@ package equip
 
 import (
 	"fmt"
-	"strings"
-
-	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fklog"
-	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fknet"
-	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fkprometheus"
-	"gitlab.ifreetalk.com/maze-plate/freetk/fkserver"
-	"go.uber.org/zap"
-	"google.golang.org/protobuf/proto"
 	"maze_game_server/common/constdef"
 	"maze_game_server/common/errors"
 	"maze_game_server/common/function/gentradeno"
@@ -20,14 +12,28 @@ import (
 	"maze_game_server/io/kafka/dollequipdismantlekafka"
 	"maze_game_server/io/redis/dollassemblesuitredis"
 	"maze_game_server/io/redis/mazebagequipredis"
+	"maze_game_server/lib/log"
 	"maze_game_server/pb/common/MazeGameEquip"
 	"maze_game_server/pb/server/MazeEquipSvr"
+	"strings"
+
+	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fklog"
+	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fkprometheus"
+	"go.uber.org/zap"
+	"google.golang.org/protobuf/proto"
+
+	"github.com/lonng/nano/session"
+	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fklog"
+	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fkprometheus"
+	"go.uber.org/zap"
+	"google.golang.org/protobuf/proto"
 )
 
-func OnDollEquipDismantleRQ(ctx fknet.TCPContext, shardingID uint64, rqMsg proto.Message, rsMsg proto.Message) (err error) {
+func (e *Equip) OnDollEquipDismantleRQ_10410_10411(s *session.Session, req *MazeGameEquip.MazeEquipDismantleRQ) (err error) {
 	defer fkprometheus.DebugPMT("OnDollEquipDismantleRQ")()
-	req := rqMsg.(*MazeGameEquip.MazeEquipDismantleRQ)
-	res := rsMsg.(*MazeGameEquip.MazeEquipDismantleRS)
+
+	logger := log.Clone("Equip", uint64(s.UID()), 0)
+	res := &MazeGameEquip.MazeEquipDismantleRS{}
 
 	res.ErrInfo = errors.NO_ERROR
 	res.Header = req.Header
@@ -35,13 +41,15 @@ func OnDollEquipDismantleRQ(ctx fknet.TCPContext, shardingID uint64, rqMsg proto
 	res.SelectGuid = req.SelectGuid
 	res.DismantleFrom = req.DismantleFrom
 	// res.DismantleAward = req.DismantleAward
-	userCtx := fkserver.NewUserContext(ctx.Context, shardingID, ctx.FKLogI)
+
+	userId := uint64(s.UID())
 
 	defer func() {
-		userCtx.InfoWF("OnDollEquipDismantleRQ end", zap.Any("res", res))
+		err = s.Response(res)
+		logger.InfoWF("OnDollEquipDismantleRQ end", zap.Any("res", res))
 	}()
 
-	userCtx.InfoWF("OnDollEquipDismantleRQ with", zap.Any("req", req))
+	logger.InfoWF("OnDollEquipDismantleRQ with", zap.Any("req", req))
 
 	if len(req.GetSelectGuid()) == 0 {
 		res.ErrInfo = errors.COMMON_ERROR_TIPS.Wrap("缺少选定的装备")
@@ -61,9 +69,9 @@ func OnDollEquipDismantleRQ(ctx fknet.TCPContext, shardingID uint64, rqMsg proto
 	}
 
 	// 获取身上的装备信息
-	assembleInfoMap, err := dollassemblesuitredis.GetAllDollAssembleSuit(userCtx, shardingID)
+	assembleInfoMap, err := dollassemblesuitredis.GetAllDollAssembleSuit(logger, userId)
 	if err != nil {
-		userCtx.ErrorWF("OnDollEquipDismantleRQ GetAllDollAssembleSuit fail", zap.Error(err))
+		logger.ErrorWF("OnDollEquipDismantleRQ GetAllDollAssembleSuit fail", zap.Error(err))
 		res.ErrInfo = errors.MODULE_ERROR.ToInfo()
 		return
 	}
@@ -79,9 +87,9 @@ func OnDollEquipDismantleRQ(ctx fknet.TCPContext, shardingID uint64, rqMsg proto
 		}
 	}
 
-	equipInfoMap, err := mazebagequipredis.GetAllEquipInfo(userCtx, shardingID)
+	equipInfoMap, err := mazebagequipredis.GetAllEquipInfo(logger, userId)
 	if err != nil {
-		userCtx.ErrorWF("OnDollEquipDismantleRQ GetAllEquipInfo fail", zap.Error(err))
+		logger.ErrorWF("OnDollEquipDismantleRQ GetAllEquipInfo fail", zap.Error(err))
 		res.ErrInfo = errors.MODULE_ERROR.ToInfo()
 		return
 	}
@@ -101,32 +109,32 @@ func OnDollEquipDismantleRQ(ctx fknet.TCPContext, shardingID uint64, rqMsg proto
 			continue
 		}
 		if !ok {
-			userCtx.WarnWF("OnDollEquipDismantleRQ not found equip", zap.Any("guid", equipGuid))
+			logger.WarnWF("OnDollEquipDismantleRQ not found equip", zap.Any("guid", equipGuid))
 			res.ErrInfo = errors.NewCodeError(constdef.DE_ERR_EQUIP_DISMANTLE_EQUIP_NOT_EXISTS, toastmsgtipexcel.GetToastMsgTip(2031, "选中的部分装备已经被分解")).ToInfo()
 			// res.ErrInfo = errors.NewCodeError(constdef.DE_ERR_EQUIP_DISMANTLE_EQUIP_NOT_EXISTS, "选中的部分装备已经被分解").ToInfo()
 			return
 		}
 
 		if _, ok := assembleGuid[equip.GetEquipGuid()]; ok { // 身上的装备不能分解
-			userCtx.ErrorWF("OnDollEquipDismantleRQ assemble equip", zap.Any("guid", equipGuid))
+			logger.ErrorWF("OnDollEquipDismantleRQ assemble equip", zap.Any("guid", equipGuid))
 			res.ErrInfo = errors.NewCodeError(constdef.DE_ERR_EQUIP_DISMANTLE_QUANLITY_WRONG, "").ToInfo()
 			return
 		}
 
-		userCtx.DebugWF("OnDollEquipDismantleRQ start dismantle equip", zap.Any("equipGuid", equip.GetEquipGuid()))
+		logger.DebugWF("OnDollEquipDismantleRQ start dismantle equip", zap.Any("equipGuid", equip.GetEquipGuid()))
 
 		// 获取装备可以出售获得的材料
 		var equipAward map[int32]int64
 
 		equipCfg := GMazeEquipInfoV8Cfg.Get(equip.GetEquipId())
 		if equipCfg == nil {
-			userCtx.ErrorWF("OnDollEquipDismantleRQ get equip cfg fail", zap.Any("equipId", equip.GetEquipId))
+			logger.ErrorWF("OnDollEquipDismantleRQ get equip cfg fail", zap.Any("equipId", equip.GetEquipId))
 			res.ErrInfo = errors.CONFIG_NOT_FOUND.ToInfo()
 			return
 		}
-		equipAward, err = getEquipDismantle(userCtx, equip.GetEquipGuid(), int64(equip.GetEquipId()), equipCfg)
+		equipAward, err = getEquipDismantle(logger, equip.GetEquipGuid(), int64(equip.GetEquipId()), equipCfg)
 		if err != nil {
-			userCtx.ErrorWF("OnDollEquipDismantleRQ get dismantle award fail", zap.Any("equipGuid", equip.GetEquipGuid()), zap.Error(err))
+			logger.ErrorWF("OnDollEquipDismantleRQ get dismantle award fail", zap.Any("equipGuid", equip.GetEquipGuid()), zap.Error(err))
 			res.ErrInfo = errors.CONFIG_NOT_FOUND.ToInfo()
 			return
 		}
@@ -142,10 +150,10 @@ func OnDollEquipDismantleRQ(ctx fknet.TCPContext, shardingID uint64, rqMsg proto
 		guidsBag = append(guidsBag, equip.GetEquipGuid())
 	}
 
-	userCtx.DebugWF("OnDollEquipDismantleRQ end dismantle equip", zap.Any("total", award))
+	logger.DebugWF("OnDollEquipDismantleRQ end dismantle equip", zap.Any("total", award))
 
 	if len(guidsBag) == 0 && req.GetDismantleFrom() != 4 {
-		userCtx.ErrorWF("OnDollEquipDismantleRQ guids empty")
+		logger.ErrorWF("OnDollEquipDismantleRQ guids empty")
 		res.ErrInfo = errors.MODULE_ERROR.ToInfo()
 		return
 	}
@@ -158,16 +166,16 @@ func OnDollEquipDismantleRQ(ctx fknet.TCPContext, shardingID uint64, rqMsg proto
 	tradeNo := uniqueid.GenUniqueIdUInt64()
 	// 分解装备
 	rqSale := &MazeEquipSvr.SvrMazeEquipSaleRQ{
-		UserId:     proto.Uint64(shardingID),
+		UserId:     proto.Uint64(userId),
 		EquipGuids: guidsBag,
 		TradeNum:   proto.Uint64(tradeNo),
 	}
 	rsSale := &MazeEquipSvr.SvrMazeEquipSaleRS{}
-	userCtx.DebugWF("OnDollEquipDismantleRQ SvrDollEquipSaleRS dump", zap.Any("rqSale", rqSale), zap.Any("rsSale", rsSale))
-	// err = dollequipbagrpc.MazeEquipSaleRQ(userCtx, rqSale, rsSale)
-	err = OnSvrDollEquipSaleRQ(userCtx, int64(shardingID), rqSale, rsSale)
+	logger.DebugWF("OnDollEquipDismantleRQ SvrDollEquipSaleRS dump", zap.Any("rqSale", rqSale), zap.Any("rsSale", rsSale))
+	// err = dollequipbagrpc.MazeEquipSaleRQ(logger, rqSale, rsSale)
+	err = OnSvrDollEquipSaleRQ(logger, int64(userId), rqSale, rsSale)
 	if err != nil {
-		userCtx.ErrorWF("OnDollEquipDismantleRQ SvrDollEquipSaleRS fail", zap.Error(err), zap.Any("rq", rqSale))
+		logger.ErrorWF("OnDollEquipDismantleRQ SvrDollEquipSaleRS fail", zap.Error(err), zap.Any("rq", rqSale))
 		res.ErrInfo = errors.MODULE_ERROR.ToInfo()
 		return
 	}
@@ -176,26 +184,26 @@ func OnDollEquipDismantleRQ(ctx fknet.TCPContext, shardingID uint64, rqMsg proto
 			res.ErrInfo = errors.NewCodeError(constdef.DE_ERR_EQUIP_DISMANTLE_EQUIP_NOT_EXISTS, "装备不存在").ToInfo()
 			return
 		}
-		userCtx.ErrorWF("OnDollEquipDismantleRQ SvrDollEquipSaleRS checkRs fail", zap.Any("rs", rsSale), zap.Any("rq", rqSale))
+		logger.ErrorWF("OnDollEquipDismantleRQ SvrDollEquipSaleRS checkRs fail", zap.Any("rs", rsSale), zap.Any("rq", rqSale))
 		res.ErrInfo = errors.COMMON_ERROR_TIPS.Wrap(string(rsSale.GetErrInfo().GetErrMsg()))
 		return
 	}
 
 	record := &dollequipdismantlekafka.MazeGameEquipDismantleRecord{
-		UserId:   shardingID,
+		UserId:   userId,
 		TradeNum: tradeNo,
 		IsFail:   0,
 	}
 
 	if len(awardItems) > 0 && req.GetDismantleFrom() != 4 {
 		// 699	UN_CGK_COMMON_BILL_TYPE_699	迷宫分解装备
-		errInfo := gentradeno.AddItemEx(userCtx, shardingID, 699, tradeNo, req.GetHeader(), awardItems...)
+		errInfo := gentradeno.AddItemEx(logger, userId, 699, tradeNo, req.GetHeader(), awardItems...)
 		if errInfo != nil {
-			userCtx.ErrorWF("OnDollEquipDismantleRQ AddItemEx fail", zap.Any("errInfo", errInfo), zap.Any("rq", rqSale))
+			logger.ErrorWF("OnDollEquipDismantleRQ AddItemEx fail", zap.Any("errInfo", errInfo), zap.Any("rq", rqSale))
 		}
 	}
 
-	DismantleRecordPush(userCtx, record, guidsBag, []int64{}, awardBag, map[int32]int64{}, equipGuid2EquipId)
+	DismantleRecordPush(logger, record, guidsBag, []int64{}, awardBag, map[int32]int64{}, equipGuid2EquipId)
 
 	return
 }

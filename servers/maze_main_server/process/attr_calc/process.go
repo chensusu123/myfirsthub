@@ -1,24 +1,31 @@
 package attr_calc
 
 import (
-	"maze_game_server/lib/net/websocket_service"
-	"maze_game_server/pb/common/MazePropertyPanel"
+	"github.com/lonng/nano/component"
 )
 
-// func RegRpcHandler() {
-// 	// 人偶属性预览
-// 	thrift_service.RegisterTwowaySimple(100000, &MazeAttrCalcSvr.MazeAttrPreviewRQ{},
-// 		100001, &MazeAttrCalcSvr.MazeAttrPreviewRS{}, OnMazeAttrPreviewRQ)
-//
-// 	// 人偶属性成对预览
-// 	thrift_service.RegisterTwowaySimple(100002, &MazeAttrCalcSvr.MazeAttrPairPreviewRQ{},
-// 		100003, &MazeAttrCalcSvr.MazeAttrPairPreviewRS{}, OnMazeAttrPairPreviewRQ)
-// }
+func RegRpcHandler() {
+	// // 人偶属性预览
+	// thrift_service.RegisterTwowaySimple(100000, &MazeAttrCalcSvr.MazeAttrPreviewRQ{},
+	// 	100001, &MazeAttrCalcSvr.MazeAttrPreviewRS{}, OnMazeAttrPreviewRQ)
+
+	// // 人偶属性成对预览
+	// thrift_service.RegisterTwowaySimple(100002, &MazeAttrCalcSvr.MazeAttrPairPreviewRQ{},
+	// 	100003, &MazeAttrCalcSvr.MazeAttrPairPreviewRS{}, OnMazeAttrPairPreviewRQ)
+}
+
+type Property struct {
+	component.Base
+}
+
+func NewProperty() *Property {
+	return &Property{}
+}
 
 func RegTcpHandler() {
-	// 查询属性面板
-	_ = websocket_service.RegProcSimple(10427, &MazePropertyPanel.QueryMazePropertyPanelRQ{},
-		10428, &MazePropertyPanel.QueryMazePropertyPanelRS{}, OnQueryPropertyPanelRQ)
+	// // 查询属性面板
+	// _ = websocket_service.RegProcSimple(10427, &MazePropertyPanel.QueryMazePropertyPanelRQ{},
+	// 	10428, &MazePropertyPanel.QueryMazePropertyPanelRS{}, OnQueryPropertyPanelRQ)
 }
 
 func RegConsumeHandler() {

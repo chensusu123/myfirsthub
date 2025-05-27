@@ -11,21 +11,22 @@ import (
 	"maze_game_server/config/GMazeItemsV8Cfg"
 	"maze_game_server/io/kafka/dollmazefoekafka"
 	"maze_game_server/io/mysql/flowrecord"
+	"maze_game_server/lib/log"
 	"maze_game_server/pb/common/MazeCommon"
 	"maze_game_server/pb/common/MazeGame"
 	"maze_game_server/pb/server/MazeEquipSvr"
 
-	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fknet"
+	"github.com/lonng/nano/session"
 	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fkprometheus"
 	"go.uber.org/zap"
 	"google.golang.org/protobuf/proto"
 )
 
-func OnBarrierMonsterDeathRQ(logger fknet.TCPContext, shardingID uint64, rqMsg proto.Message, rsMsg proto.Message) (err error) {
+func (g *Game) OnBarrierMonsterDeathRQ_10498_10499(s *session.Session, req *MazeGame.BarrierMonsterDeathRQ) (err error) {
 	defer fkprometheus.InfoPMT("OnBarrierMonsterDeathRQ")()
 
-	req := rqMsg.(*MazeGame.BarrierMonsterDeathRQ)
-	res := rsMsg.(*MazeGame.BarrierMonsterDeathRS)
+	logger := log.Clone("Game", uint64(s.UID()), 0)
+	res := &MazeGame.BarrierMonsterDeathRS{}
 
 	logger.InfoWF("OnBarrierMonsterDeathRQ start", zap.Any("req", req))
 	defer func() {
@@ -38,7 +39,7 @@ func OnBarrierMonsterDeathRQ(logger fknet.TCPContext, shardingID uint64, rqMsg p
 	res.MonsterId = req.MonsterId
 	res.OpData = req.OpData
 
-	userId := shardingID
+	userId := uint64(s.UID())
 
 	foeCfg := GMazeFoeV8Cfg.Get(int32(req.GetMonsterId()))
 	if foeCfg == nil {

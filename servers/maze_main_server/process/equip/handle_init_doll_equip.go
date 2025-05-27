@@ -7,22 +7,13 @@
 package equip
 
 import (
-	"time"
-
+	"maze_game_server/common/constdef"
 	"maze_game_server/common/errors"
+	"maze_game_server/common/function/uniqueid"
+	"maze_game_server/common/structsdef"
 	"maze_game_server/config/GMazeConfigV8Cfg"
 	"maze_game_server/config/GMazeEquipConfigV8Cfg"
 	"maze_game_server/config/GMazeEquipInfoV8Cfg"
-	"maze_game_server/pb/common/MazeGameEquip"
-	"maze_game_server/pb/server/MazeEquipCache"
-	"maze_game_server/pb/server/MazeEquipSvr"
-
-	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fklog"
-	"google.golang.org/protobuf/proto"
-
-	"maze_game_server/common/constdef"
-	"maze_game_server/common/function/uniqueid"
-	"maze_game_server/common/structsdef"
 	"maze_game_server/io/kafka/dollequipassmeblekakfa"
 	"maze_game_server/io/redis/dollassembleredis"
 	"maze_game_server/io/redis/dollassemblesuitredis"
@@ -34,10 +25,16 @@ import (
 	"maze_game_server/module/dollassembleinfo"
 	"maze_game_server/module/effectequip"
 	"maze_game_server/module/mazebuffchgrrecordapi"
+	"maze_game_server/pb/common/MazeGameEquip"
+	"maze_game_server/pb/server/MazeEquipCache"
+	"maze_game_server/pb/server/MazeEquipSvr"
 	"maze_game_server/servers/maze_main_server/process/equip/demconstdef"
 	"maze_game_server/servers/maze_main_server/process/equip/module"
+	"time"
 
+	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fklog"
 	"go.uber.org/zap"
+	"google.golang.org/protobuf/proto"
 )
 
 // redis + 内存缓存

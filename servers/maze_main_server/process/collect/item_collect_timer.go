@@ -1,16 +1,16 @@
 package collect
 
 import (
+	"maze_game_server/common/errors"
+	"maze_game_server/pb/server/SeaTaskSvr"
 	"time"
 
-	"google.golang.org/protobuf/proto"
 	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fklog"
 	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fknet"
 	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fkprometheus"
 	"gitlab.ifreetalk.com/maze-plate/freetk/fkserver"
 	"go.uber.org/zap"
-	"maze_game_server/common/errors"
-	"maze_game_server/pb/server/SeaTaskSvr"
+	"google.golang.org/protobuf/proto"
 )
 
 func OnTimeOut(ctx fknet.TCPContext, shardingID uint64, request proto.Message, response proto.Message) (err error) {

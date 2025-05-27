@@ -1,9 +1,10 @@
 package mustarrive
 
 import (
-	"google.golang.org/protobuf/proto"
+	"maze_game_server/usecase/online"
+
 	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fklog"
-	"maze_game_server/lib/net/websocket_service"
+	"google.golang.org/protobuf/proto"
 )
 
 func SendArrivePacket(logger fklog.FKLogI, userID int64, packetType uint16, pack proto.Message) error {
@@ -17,5 +18,6 @@ func SendArrivePacket(logger fklog.FKLogI, userID int64, packetType uint16, pack
 	// logger.InfoWF("SendArrivePacket", zap.Any("userID", userID), zap.Uint16("packetType", packetType))
 	// return websocket_service.SendBytes(logger, uint64(userID), packetType, data)
 
-	return websocket_service.SendPacket(logger, uint64(userID), packetType, pack)
+	// return websocket_service.SendPacket(logger, uint64(userID), packetType, pack)
+	return online.Push(logger, uint64(userID), packetType, pack)
 }

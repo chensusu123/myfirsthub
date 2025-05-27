@@ -4,23 +4,26 @@
 package rob
 
 import (
-	"google.golang.org/protobuf/proto"
-	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fknet"
+	"maze_game_server/common/errors"
+	"maze_game_server/lib/log"
+	"maze_game_server/pb/common/MazeRobGuaJi"
+
+	"github.com/lonng/nano/session"
 	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fkprometheus"
 	"go.uber.org/zap"
-	"maze_game_server/common/errors"
-	"maze_game_server/pb/common/MazeRobGuaJi"
 )
 
-func OnMazeRobGuaJiRQ(ctx fknet.TCPContext, uid uint64, rqMsg proto.Message, rsMsg proto.Message) (err error) {
-	req := rqMsg.(*MazeRobGuaJi.MazeRobGuaJiRQ)
-	res := rsMsg.(*MazeRobGuaJi.MazeRobGuaJiRS)
+func (*Rob) OnMazeRobGuaJiRQ_10490_10491(s *session.Session, req *MazeRobGuaJi.MazeRobGuaJiRQ) (err error) {
+
+	logger := log.Clone("Rob", uint64(s.UID()), 0)
+	res := &MazeRobGuaJi.MazeRobGuaJiRS{}
 	res.ErrInfo = errors.NO_ERROR
 	res.Header = req.Header
 
 	defer fkprometheus.DebugPMT("OnMazeRobGuaJiRQ")()
 	defer func() {
-		ctx.InfoWF("OnMazeRobGuaJiRQ end",
+		err = s.Response(res)
+		logger.InfoWF("OnMazeRobGuaJiRQ end",
 			zap.Any("req", req),
 			zap.Any("res", res),
 		)

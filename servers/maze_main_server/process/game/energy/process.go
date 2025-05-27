@@ -7,14 +7,21 @@
 package energy
 
 import (
-	"maze_game_server/lib/net/websocket_service"
-	"maze_game_server/pb/common/MazeEnergy"
+	"github.com/lonng/nano/component"
 )
 
+type Energy struct {
+	component.Base
+}
+
+func NewEnergy() *Energy {
+	return &Energy{}
+}
+
 func RegTcpHandler() {
-	// 迷宫体力查询
-	websocket_service.RegProcSimple(10469, &MazeEnergy.QueryMazeEnergyRQ{},
-		10470, &MazeEnergy.QueryMazeEnergyRS{}, OnQueryMazeEnergyRQ)
+	// // 迷宫体力查询
+	// websocket_service.RegProcSimple(10469, &MazeEnergy.QueryMazeEnergyRQ{},
+	// 	10470, &MazeEnergy.QueryMazeEnergyRS{}, OnQueryMazeEnergyRQ)
 
 }
 

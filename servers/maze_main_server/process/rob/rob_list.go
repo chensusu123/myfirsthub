@@ -4,13 +4,15 @@
 package rob
 
 import (
-	"google.golang.org/protobuf/proto"
-	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fknet"
-	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fkprometheus"
-	"go.uber.org/zap"
 	"maze_game_server/common/errors"
+	"maze_game_server/lib/log"
 	"maze_game_server/pb/common/MazeCommon"
 	"maze_game_server/pb/common/MazeRobGuaJi"
+
+	"github.com/lonng/nano/session"
+	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fkprometheus"
+	"go.uber.org/zap"
+	"google.golang.org/protobuf/proto"
 )
 
 /*
@@ -29,20 +31,26 @@ var (
 	}
 )
 
-func OnMazeRobGuaJiListRQ(ctx fknet.TCPContext, uid uint64, rqMsg proto.Message, rsMsg proto.Message) (err error) {
-	req := rqMsg.(*MazeRobGuaJi.MazeRobGuaJiListRQ)
-	res := rsMsg.(*MazeRobGuaJi.MazeRobGuaJiListRS)
+func (*Rob) OnMazeRobGuaJiListRQ_10488_10489(s *session.Session, req *MazeRobGuaJi.MazeRobGuaJiListRQ) (err error) {
+
+	logger := log.Clone("Rob", uint64(s.UID()), 0)
+	res := &MazeRobGuaJi.MazeRobGuaJiListRS{}
 	res.ErrInfo = errors.NO_ERROR
 	res.Header = req.Header
 
+	userId := uint64(s.UID())
+	_ = userId
+
 	defer fkprometheus.DebugPMT("OnMazeRobGuaJiListRQ")()
 	defer func() {
-		ctx.InfoWF("OnMazeRobGuaJiListRQ end",
+		err = s.Response(res)
+		logger.InfoWF("OnMazeRobGuaJiListRQ end",
 			zap.Any("req", req),
 			zap.Any("res", res),
 		)
 	}()
 
+	// TODO ID不对，接口如果继续用，则需要改
 	startID := uint64(9003200130205890)
 	count := uint64(5)
 	robUid := uint64(0)

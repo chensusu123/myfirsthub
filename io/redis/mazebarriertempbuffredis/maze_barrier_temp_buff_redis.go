@@ -3,8 +3,6 @@ package mazebarriertempbuffredis
 import (
 	"context"
 	"fmt"
-
-	"google.golang.org/protobuf/proto"
 	"maze_game_server/pb/server/MazeTempBuffSvr"
 
 	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fkconfig"
@@ -12,6 +10,7 @@ import (
 	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fkredis"
 	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fkredis/redis"
 	"go.uber.org/zap"
+	"google.golang.org/protobuf/proto"
 )
 
 var gRedis = &fkredis.FkRedis{}

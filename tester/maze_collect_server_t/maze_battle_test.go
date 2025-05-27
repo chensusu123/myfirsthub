@@ -5,12 +5,13 @@ import (
 	"fmt"
 	"testing"
 
-	"google.golang.org/protobuf/proto"
-	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fknet"
 	"maze_game_server/common/errors"
 	"maze_game_server/pb/common/Common"
 	"maze_game_server/pb/common/MazeCollect"
 	"maze_game_server/servers/maze_main_server/process/collect"
+
+	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fknet"
+	"google.golang.org/protobuf/proto"
 )
 
 func TestMazeCollectInfoQueryRQ(t *testing.T) {

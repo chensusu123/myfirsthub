@@ -1,22 +1,23 @@
 package buff
 
 import (
-	"time"
-
-	"google.golang.org/protobuf/proto"
-	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fklog"
-	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fknet"
-	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fkprometheus"
-	"go.uber.org/zap"
 	"maze_game_server/common/errors"
 	"maze_game_server/excel/mazebarriesv8config"
 	"maze_game_server/excel/mazeenergyaffixrandrulev8config"
 	"maze_game_server/excel/mazeenergyresetcostv8config"
 	"maze_game_server/io/redis/mazetempbuffredis"
+	"maze_game_server/lib/log"
 	"maze_game_server/module/itemmodule"
 	"maze_game_server/pb/common/MazeCommon"
 	"maze_game_server/pb/common/MazeTempBuff"
 	"maze_game_server/pb/server/MazeTempBuffSvr"
+	"time"
+
+	"github.com/lonng/nano/session"
+	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fklog"
+	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fkprometheus"
+	"go.uber.org/zap"
+	"google.golang.org/protobuf/proto"
 )
 
 /**
@@ -25,21 +26,24 @@ import (
  * @Description: 刷新迷宫可选buff列表
  */
 
-func RefreshOptionalMazeTempBuffListRQ(logger fknet.TCPContext, shardingID uint64, request, response proto.Message) error {
+func (b *Buff) RefreshOptionalMazeTempBuffListRQ_10439_10440(s *session.Session, req *MazeTempBuff.RefreshOptionalMazeTempBuffListRQ) (err error) {
 	defer fkprometheus.InfoPMT("RefreshOptionalMazeTempBuffListRQ")()
+
 	start := time.Now()
-	req := request.(*MazeTempBuff.RefreshOptionalMazeTempBuffListRQ)
-	res := response.(*MazeTempBuff.RefreshOptionalMazeTempBuffListRS)
+
+	logger := log.Clone("Buff", uint64(s.UID()), 0)
+	res := &MazeTempBuff.RefreshOptionalMazeTempBuffListRS{}
 	res.ErrInfo = errors.NO_ERROR
 	res.Header = req.Header
 	res.StageId = req.StageId
 	res.Level = req.Level
 	defer func() {
+		err = s.Response(res)
 		logger.InfoWF("RefreshOptionalMazeTempBuffListRQ end", zap.Any("req", req), zap.Any("res", res),
 			zap.Duration("costTime", time.Now().Sub(start)))
 	}()
 
-	userId, stageId, level, cost := shardingID, req.GetStageId(), req.GetLevel(), req.GetCost()
+	userId, stageId, level, cost := uint64(s.UID()), req.GetStageId(), req.GetLevel(), req.GetCost()
 	if userId == 0 || stageId == 0 || level == 0 {
 		logger.WarnWF("RefreshOptionalMazeTempBuffListRQ args error", zap.Any("req", req))
 		res.ErrInfo = errors.COMMON_ERROR_TIPS.Wrap("参数错误")

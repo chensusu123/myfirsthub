@@ -7,13 +7,14 @@
 package calcassembleattr
 
 import (
-	"google.golang.org/protobuf/proto"
-	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fklog"
-	"go.uber.org/zap"
 	"maze_game_server/config/GMazeEquipSuiteInfoV8Cfg"
 	"maze_game_server/excel/mazeequipconfigv8"
 	"maze_game_server/pb/server/MazeBuffData"
 	"maze_game_server/pb/server/MazeEquipCache"
+
+	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fklog"
+	"go.uber.org/zap"
+	"google.golang.org/protobuf/proto"
 )
 
 // 10410效果规则

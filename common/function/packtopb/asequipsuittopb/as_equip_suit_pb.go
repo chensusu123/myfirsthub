@@ -7,9 +7,10 @@
 package asequipsuittopb
 
 import (
-	"google.golang.org/protobuf/proto"
 	"maze_game_server/config/GMazeEquipSuiteAttrV8Cfg"
 	"maze_game_server/pb/common/MazeGameEquip"
+
+	"google.golang.org/protobuf/proto"
 )
 
 func PackAsEquipSuitInfo(suitKey int32) *MazeGameEquip.AsEquipSuitInfo {

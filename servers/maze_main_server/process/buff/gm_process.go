@@ -2,20 +2,19 @@ package buff
 
 import (
 	"fmt"
+	"maze_game_server/io/kafka/mazetempbuffchgmsg"
+	"maze_game_server/io/redis/mazetempbuffredis"
+	"maze_game_server/module/itemmodule"
+	"maze_game_server/pb/common/MazeCommon"
+	"maze_game_server/pb/server/MazeTempBuffSvr"
 	"net/http"
 	"sort"
 	"strings"
 
-	"maze_game_server/io/kafka/mazetempbuffchgmsg"
-	"maze_game_server/io/redis/mazetempbuffredis"
-	"maze_game_server/module/itemmodule"
-
-	"google.golang.org/protobuf/proto"
 	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fklog"
 	"gitlab.ifreetalk.com/maze-plate/freetk/fkutil"
 	"go.uber.org/zap"
-	"maze_game_server/pb/common/MazeCommon"
-	"maze_game_server/pb/server/MazeTempBuffSvr"
+	"google.golang.org/protobuf/proto"
 )
 
 /**
@@ -27,6 +26,7 @@ import (
 func SafeHttpRegister(logger fklog.FKLogI, pattern string, handler func(http.ResponseWriter, *http.Request)) {
 	http.HandleFunc(pattern, func(writer http.ResponseWriter, request *http.Request) {
 		defer fkutil.CaptureException()
+
 		logger.DebugWF("execute gm", zap.String("pattern", pattern), zap.Any("header", request.Header),
 			zap.Any("host", request.Host), zap.Any("remoteAddr", request.RemoteAddr))
 		// if !CheckGM.CheckGMOnline(context.Background(), logger, 10000, pattern, request.RemoteAddr) {

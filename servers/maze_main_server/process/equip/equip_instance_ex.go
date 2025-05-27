@@ -11,10 +11,6 @@ import (
 	"strings"
 	"time"
 
-	"google.golang.org/protobuf/proto"
-	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fklog"
-	"gitlab.ifreetalk.com/maze-plate/freetk/fkutil"
-	"go.uber.org/zap"
 	"maze_game_server/common/errors"
 	"maze_game_server/common/function/randfuncs"
 	"maze_game_server/config/GMazeEquipAffixLimitV8Cfg"
@@ -29,6 +25,11 @@ import (
 	"maze_game_server/pb/common/MazeGameEquip"
 	"maze_game_server/pb/server/MazeEquipCache"
 	"maze_game_server/pb/server/MazeEquipSvr"
+
+	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fklog"
+	"gitlab.ifreetalk.com/maze-plate/freetk/fkutil"
+	"go.uber.org/zap"
+	"google.golang.org/protobuf/proto"
 )
 
 // 用户参数外部

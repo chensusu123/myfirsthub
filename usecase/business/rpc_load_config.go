@@ -6,11 +6,11 @@ import (
 	"strings"
 	"time"
 
-	"google.golang.org/protobuf/proto"
 	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fkalert"
 	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fklog"
 	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fkprometheus"
 	"gitlab.ifreetalk.com/maze-plate/freetk/protodef/MysqlParam"
+	"google.golang.org/protobuf/proto"
 
 	"go.uber.org/zap"
 )

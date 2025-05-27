@@ -5,11 +5,12 @@ import (
 	"testing"
 	"time"
 
-	"google.golang.org/protobuf/proto"
-	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fknet"
 	"maze_game_server/pb/common/MazeCommon"
 	"maze_game_server/pb/common/MazeGame"
 	"maze_game_server/servers/maze_main_server/process/game"
+
+	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fknet"
+	"google.golang.org/protobuf/proto"
 )
 
 var gTestUser uint64 = 9003200130206333

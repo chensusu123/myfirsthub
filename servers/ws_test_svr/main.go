@@ -3,13 +3,14 @@ package main
 import (
 	"time"
 
-	"google.golang.org/protobuf/proto"
-	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fklog"
 	"maze_game_server/lib/net/raw_pkg"
 	"maze_game_server/lib/net/websocket_service"
 	"maze_game_server/pb/common/MazeGame"
 	"maze_game_server/pb/common/SysPackDef"
 	"maze_game_server/servers/maze_es/process"
+
+	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fklog"
+	"google.golang.org/protobuf/proto"
 )
 
 var gAddr = "127.0.0.1:9876"

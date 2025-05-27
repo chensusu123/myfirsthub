@@ -7,13 +7,14 @@ import (
 	"os/signal"
 	"time"
 
-	"github.com/gorilla/websocket"
-	"google.golang.org/protobuf/proto"
-	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fklog"
-	"go.uber.org/zap"
 	"maze_game_server/lib/net/raw_pkg"
 	"maze_game_server/pb/common/MazeGame"
 	"maze_game_server/pb/common/SysPackDef"
+
+	"github.com/gorilla/websocket"
+	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fklog"
+	"go.uber.org/zap"
+	"google.golang.org/protobuf/proto"
 )
 
 var gAddr = "127.0.0.1:9876"

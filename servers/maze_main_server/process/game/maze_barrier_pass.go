@@ -2,13 +2,6 @@ package game
 
 import (
 	"fmt"
-	"strings"
-	"time"
-
-	"google.golang.org/protobuf/proto"
-	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fknet"
-	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fkprometheus"
-	"go.uber.org/zap"
 	"maze_game_server/common/constdef"
 	"maze_game_server/common/errors"
 	"maze_game_server/common/function/addequip"
@@ -21,29 +14,39 @@ import (
 	"maze_game_server/io/kafka/mazeuserlevelkafka"
 	"maze_game_server/io/redis/mazechallengenumredis"
 	"maze_game_server/io/redis/mazeuserbarrierredis"
+	"maze_game_server/lib/log"
 	"maze_game_server/module/mazebarrier"
 	"maze_game_server/module/mazecommonvalue"
 	"maze_game_server/module/mazeuserinfo"
 	"maze_game_server/pb/common/MazeCommon"
 	"maze_game_server/pb/common/MazeGame"
 	"maze_game_server/pb/server/MazeEquipSvr"
+	"strings"
+	"time"
+
+	"github.com/lonng/nano/session"
+	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fkprometheus"
+	"go.uber.org/zap"
+	"google.golang.org/protobuf/proto"
 )
 
-func OnMazeBarrierPassRQ(logger fknet.TCPContext, shardingID uint64, rqMsg proto.Message, rsMsg proto.Message) (err error) {
-	fkprometheus.InfoPMT("OnMazeBarrierPassRQ")()
+func (g *Game) OnMazeBarrierPassRQ_10459_10460(s *session.Session, req *MazeGame.MazeBarrierPassRQ) (err error) {
+	defer fkprometheus.InfoPMT("OnMazeBarrierPassRQ")()
 
-	req := rqMsg.(*MazeGame.MazeBarrierPassRQ)
-	res := rsMsg.(*MazeGame.MazeBarrierPassRS)
+	logger := log.Clone("Game", uint64(s.UID()), 0)
+
+	res := &MazeGame.MazeBarrierPassRS{}
 
 	logger.InfoWF("OnMazeBarrierPassRQ start", zap.Any("req", req))
 	defer func() {
+		err = s.Response(res)
 		logger.InfoWF("OnMazeBarrierPassRQ end", zap.Any("res", res))
 	}()
 
 	res.Header = req.Header
 	res.ErrInfo = errors.NO_ERROR
 
-	userId := shardingID
+	userId := uint64(s.UID())
 
 	if req.GetBarrierId() <= 0 {
 		logger.ErrorWF("OnMazeBarrierPassRQ req barrier invalid", zap.Any("req", req))
@@ -136,10 +139,10 @@ func OnMazeBarrierPassRQ(logger fknet.TCPContext, shardingID uint64, rqMsg proto
 		}
 	}
 
-	// 成功通关需要 (1和2通过kafka清理)
-	// 1. 清除临时buff
-	// 2. 影响挂机生产
-	// 3. 清除客户端透传数据(通过切换关卡id 切换不同的key 目前没清)
+	//成功通关需要 (1和2通过kafka清理)
+	//1. 清除临时buff
+	//2. 影响挂机生产
+	//3. 清除客户端透传数据(通过切换关卡id 切换不同的key 目前没清)
 
 	// 死亡之后是否需要清空复活次数
 	userBarrier.RebornCount = proto.Int32(0)
@@ -178,7 +181,7 @@ func OnMazeBarrierPassRQ(logger fknet.TCPContext, shardingID uint64, rqMsg proto
 	if err != nil {
 		logger.ErrorWF("OnMazeBarrierPassRQ GetBarrierPassAwardWithFirst fail", zap.Error(err), zap.Any("barrier", req.GetBarrierId()))
 	} else {
-		// 696	UN_CGK_COMMON_BILL_TYPE_696	迷宫通关
+		//696	UN_CGK_COMMON_BILL_TYPE_696	迷宫通关
 		tradeNo := gentradeno.GetTradeNum()
 		if len(awardMap) > 0 {
 			awardItems := itemutil.Map2Common(awardMap)
@@ -198,7 +201,7 @@ func OnMazeBarrierPassRQ(logger fknet.TCPContext, shardingID uint64, rqMsg proto
 		}
 
 		if len(equipMap) > 0 {
-			// MAZE_EQUIP_PASS_AWARD = 9;//迷宫通关奖励 张登元
+			//MAZE_EQUIP_PASS_AWARD = 9;//迷宫通关奖励 张登元
 			rs, err := addequip.AddEquipToBag(logger, userId, int32(MazeEquipSvr.ENUM_EQUIP_BAG_OP_TYPE_MAZE_EQUIP_PASS_AWARD), tradeNo, equipMap)
 			if err != nil {
 				logger.ErrorWF("OnMazeBarrierPassRQ addEquipToBag fail", zap.Error(err), zap.Any("optype", int32(MazeEquipSvr.ENUM_EQUIP_BAG_OP_TYPE_MAZE_EQUIP_BOX_AWARD)),
