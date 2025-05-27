@@ -3,10 +3,6 @@ package game
 import (
 	"sort"
 
-	"google.golang.org/protobuf/proto"
-	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fklog"
-	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fkprometheus"
-	"go.uber.org/zap"
 	"maze_game_server/common/constdef"
 	"maze_game_server/common/errors"
 	"maze_game_server/config/GMazeActInfoV8Cfg"
@@ -21,6 +17,11 @@ import (
 	"maze_game_server/io/redis/mazebarriertempbuffredis"
 	"maze_game_server/io/redis/mazecalcattrredis"
 	"maze_game_server/pb/common/MazeAIBattle"
+
+	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fklog"
+	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fkprometheus"
+	"go.uber.org/zap"
+	"google.golang.org/protobuf/proto"
 )
 
 // 获取迷宫战斗数据
@@ -136,6 +137,10 @@ func GetFoeAreaInfos(logger fklog.FKLogI, userId uint64, force int64, barrierId 
 			areaFoeMap[cfg.Brush_area_id][foeId] = struct{}{}
 		}
 	}
+	logger.InfoWF("GetFoeAreaInfos area foes dumps",
+		zap.Int32("barrierId", barrierId),
+		zap.Any("areaFoeMap", areaFoeMap),
+	)
 	for areaId, foeMap := range areaFoeMap {
 		areaInfo := &MazeAIBattle.MazeAIAreaInfo{
 			AreaId: proto.Int32(areaId),
@@ -147,6 +152,10 @@ func GetFoeAreaInfos(logger fklog.FKLogI, userId uint64, force int64, barrierId 
 				logger.ErrorWF("GetMazeBattleData GetMazeAIMonsterConfig err", zap.Any("foeId", foeId))
 				return nil, err
 			}
+			logger.InfoWF("GetFoeAreaInfos GetMazeAIMonsterConfig dumps",
+				zap.Int32("foeId", foeId),
+				zap.Any("monsterConfigInfo", monsterConfigInfo),
+			)
 			areaInfo.MonsterConfigInfos = append(areaInfo.MonsterConfigInfos, monsterConfigInfo)
 		}
 		areaInfos = append(areaInfos, areaInfo)
