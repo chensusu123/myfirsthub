@@ -18,7 +18,7 @@ require (
 	github.com/lonng/nano v0.5.1
 	github.com/samber/slog-zap/v2 v2.6.2
 	github.com/xuri/excelize/v2 v2.9.0
-	gitlab.ifreetalk.com/maze-plate/freetk v1.0.1-0.20250527112550-f4a32d49b430
+	gitlab.ifreetalk.com/maze-plate/freetk v1.0.1-0.20250527132703-48b28ae4ac90
 	go.uber.org/atomic v1.9.0
 	go.uber.org/zap v1.27.0
 	google.golang.org/protobuf v1.33.0
