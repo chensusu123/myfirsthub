@@ -2,7 +2,6 @@ package main
 
 import (
 	"maze_game_server/servers/maze_main_server/process"
-	"maze_game_server/usecase/business"
 	"maze_game_server/usecase/tasktimer"
 
 	"gitlab.ifreetalk.com/maze-plate/freetk/fkserver"
@@ -14,7 +13,7 @@ func main() {
 	// process.RegisterHandler()
 
 	process.RegisterHandler()
-	fkserver.AddBusiness(&business.GCustomBusiness)
+	// fkserver.AddBusiness(&business.GCustomBusiness)
 	fkserver.AddBusiness(tasktimer.GTaskTimerBusiness)
 	fkserver.Run()
 }
