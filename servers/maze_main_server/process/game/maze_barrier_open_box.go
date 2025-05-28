@@ -51,12 +51,14 @@ func OnBarrierOpenBoxRQ(logger fknet.TCPContext, shardingID uint64, rqMsg proto.
 	}
 
 	// 宝箱掉落装备
-	if len(boxCfg.Award_equip) > 0 {
-		tradeNo := gentradeno.GetTradeNum()
-		equip := make(map[int32]int32)
-		for _, v := range boxCfg.Award_equip {
+	tradeNo := gentradeno.GetTradeNum()
+	equip := make(map[int32]int32)
+	for _, v := range boxCfg.Award_equip {
+		if v > 0 {
 			equip[v] += 1
 		}
+	}
+	if len(equip) > 0 {
 		_, err = addequip.AddEquipToBagWithOpdata(logger, userId, int32(MazeEquipSvr.ENUM_EQUIP_BAG_OP_TYPE_MAZE_EQUIP_BOX_AWARD), req.GetOpData(), tradeNo, equip)
 		if err != nil {
 			logger.ErrorWF("OnBarrierOpenBoxRQ addEquipToBag fail", zap.Error(err), zap.Any("optype", int32(MazeEquipSvr.ENUM_EQUIP_BAG_OP_TYPE_MAZE_EQUIP_BOX_AWARD)),
