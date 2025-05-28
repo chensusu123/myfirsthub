@@ -74,7 +74,10 @@ def create_email_accounts(email_prefix, count, env):
         # 取最后 7 位数，不足 7 位左侧补 0
         email_num_part = str(last_id)[-7:].zfill(7)
         email = f"{email_prefix}{email_num_part}@v8.com"
-        password = ''.join(random.choices(string.digits, k=6))
+        # 生成首位不为 0 的 6 位数字密码
+        first_digit = random.choice(string.digits[1:])
+        rest_digits = ''.join(random.choices(string.digits, k=5))
+        password = first_digit + rest_digits
 
         # 计算密码的 MD5 值
         md5_password = hashlib.md5(password.encode('utf-8')).hexdigest()
