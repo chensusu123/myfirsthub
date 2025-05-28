@@ -20,13 +20,13 @@ import (
 	equiprpc "maze_game_server/servers/maze_main_server/process/equip"
 	itemrpc "maze_game_server/servers/maze_main_server/process/item"
 
-	"google.golang.org/protobuf/proto"
 	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fklog"
 	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fknet"
 	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fkprometheus"
 	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fkrpc"
 	"gitlab.ifreetalk.com/maze-plate/freetk/fkutil/saferand"
 	"go.uber.org/zap"
+	"google.golang.org/protobuf/proto"
 )
 
 func RegTcpHandler() {
@@ -240,7 +240,7 @@ func OnMazeEquipMixRQ(ctx fknet.TCPContext, uid uint64, rqMsg proto.Message, rsM
 
 	equipRes := &MazeEquipSvr.SvrAddMazeEquipRS{}
 	rpcCtx := fkrpc.RPCContext{ctx, ctx}
-	err = equiprpc.OnSvrAddMazeEquipRQ(rpcCtx, int64(uid), equipReq, equipRes)
+	err = equiprpc.OnSvrAddMazeEquipRQ(rpcCtx, int64(uid), equipReq, equipRes, "")
 	if err != nil {
 		ctx.ErrorWF("OnMazeEquipMixRQ add equip err",
 			zap.Uint64("tradeNo", tradeNo),

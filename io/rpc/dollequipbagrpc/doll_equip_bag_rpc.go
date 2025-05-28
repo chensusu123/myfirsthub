@@ -5,12 +5,13 @@ import (
 
 	"maze_game_server/pb/server/MazeEquipSvr"
 
-	"google.golang.org/protobuf/proto"
+	"maze_game_server/common/errors"
+	"maze_game_server/servers/maze_main_server/process/equip"
+
 	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fklog"
 	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fkrpc/thrift_rpc"
 	"go.uber.org/zap"
-	"maze_game_server/common/errors"
-	"maze_game_server/servers/maze_main_server/process/equip"
+	"google.golang.org/protobuf/proto"
 )
 
 var gRpcClient = thrift_rpc.AsyncRpc{}
@@ -22,7 +23,7 @@ func init() {
 // 添加装备
 func MazeBagAddRQ(logger fklog.FKLogI, req *MazeEquipSvr.SvrAddMazeEquipRQ, res *MazeEquipSvr.SvrAddMazeEquipRS) error {
 	logger.InfoWF("MazeBagAddRQ start", zap.Any("req", req))
-	err := equip.OnSvrAddMazeEquipRQ(logger, int64(req.GetUserId()), req, res)
+	err := equip.OnSvrAddMazeEquipRQ(logger, int64(req.GetUserId()), req, res, "")
 	if err != nil {
 		logger.ErrorWF("MazeBagAddRQ OnSvrAddMazeEquipRQ failed", zap.Any("req", req), zap.Error(err))
 		return err
@@ -32,23 +33,21 @@ func MazeBagAddRQ(logger fklog.FKLogI, req *MazeEquipSvr.SvrAddMazeEquipRQ, res 
 		logger.ErrorWF("MazeBagAddRQ res failed", zap.Any("req", req), zap.Error(err))
 	}
 	return err
-	now := time.Now()
-	response, err := gRpcClient.DealTwowayMessage(131421, req, req.GetUserId())
-	err = gRpcClient.CheckReplyType(response, err, 131422)
-	if err != nil {
-		logger.ErrorWF("MazeBagAddRQ check res failed", zap.Any("req", req), zap.Error(err))
-		return err
-	}
+}
 
-	err = proto.Unmarshal(response.GetContent(), res)
+// 添加装备
+func MazeBagAddRQWithOpData(logger fklog.FKLogI, req *MazeEquipSvr.SvrAddMazeEquipRQ, res *MazeEquipSvr.SvrAddMazeEquipRS, opData string) error {
+	logger.InfoWF("MazeBagAddRQWithOpData start", zap.Any("req", req))
+	err := equip.OnSvrAddMazeEquipRQ(logger, int64(req.GetUserId()), req, res, opData)
 	if err != nil {
-		logger.ErrorWF("MazeBagAddRQ unmarshal failed", zap.Any("req", req), zap.Error(err))
+		logger.ErrorWF("MazeBagAddRQWithOpData OnSvrAddMazeEquipRQ failed", zap.Any("req", req), zap.Error(err))
 		return err
 	}
-	logger.InfoWF("MazeBagAddRQ recv rs",
-		zap.Duration("cost", time.Since(now)),
-		zap.Any("req", req), zap.Any("rs", res))
-	return nil
+	if res.GetErrInfo() != nil && res.GetErrInfo().GetErrCode() != errors.NO_ERROR_CODE {
+		err = errors.New(string(res.GetErrInfo().ErrMsg))
+		logger.ErrorWF("MazeBagAddRQWithOpData res failed", zap.Any("req", req), zap.Error(err))
+	}
+	return err
 }
 
 // 更换装备rpc

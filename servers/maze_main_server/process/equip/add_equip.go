@@ -1,26 +1,12 @@
 package equip
 
 import (
-	"fmt"
-	"sort"
-	"sync"
-	"time"
-
-	"maze_game_server/pb/server/MazeEquipCache"
-
-	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fkprometheus"
-	"maze_game_server/config/GMazeEquipAttrStageV8Cfg"
-	"maze_game_server/config/GMazeEquipInfoV8Cfg"
-	"maze_game_server/pb/server/MazeEquipSvr"
-
 	"context"
-
-	"google.golang.org/protobuf/proto"
-	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fklog"
-	"gitlab.ifreetalk.com/maze-plate/freetk/fkserver"
-	"go.uber.org/zap"
+	"fmt"
 	"maze_game_server/common/errors"
 	"maze_game_server/common/function/packtopb"
+	"maze_game_server/config/GMazeEquipAttrStageV8Cfg"
+	"maze_game_server/config/GMazeEquipInfoV8Cfg"
 	"maze_game_server/excel/mazeequipaffixrandpoolv8"
 	"maze_game_server/excel/mazeequipconfigv8"
 	"maze_game_server/io/kafka/mazeequipbagrecord"
@@ -29,9 +15,20 @@ import (
 	"maze_game_server/io/redis/mazeequipguidredis"
 	"maze_game_server/module/bagmodule"
 	"maze_game_server/pb/common/MazeGameEquip"
+	"maze_game_server/pb/server/MazeEquipCache"
+	"maze_game_server/pb/server/MazeEquipSvr"
+	"sort"
+	"sync"
+	"time"
+
+	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fklog"
+	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fkprometheus"
+	"gitlab.ifreetalk.com/maze-plate/freetk/fkserver"
+	"go.uber.org/zap"
+	"google.golang.org/protobuf/proto"
 )
 
-func OnSvrAddMazeEquipRQ(ctx fklog.FKLogI, shardingID int64, rqMsg proto.Message, rsMsg proto.Message) (err error) {
+func OnSvrAddMazeEquipRQ(ctx fklog.FKLogI, shardingID int64, rqMsg proto.Message, rsMsg proto.Message, opData string) (err error) {
 	defer fkprometheus.DebugPMT("OnSvrAddMazeEquipRQ")()
 	userCtx := fkserver.NewUserContext(context.TODO(), uint64(shardingID), ctx)
 	req := rqMsg.(*MazeEquipSvr.SvrAddMazeEquipRQ)
@@ -216,7 +213,7 @@ func OnSvrAddMazeEquipRQ(ctx fklog.FKLogI, shardingID int64, rqMsg proto.Message
 	})
 	res.EquipList = equipSvrList
 	if len(bagEquipCliList) > 0 {
-		SendMazeBagEquipChgIDEx(userCtx, userCtx.UserID, bagEquipCliList, nil, nil, req.GetOpType())
+		SendMazeBagEquipChgIDEx(userCtx, userCtx.UserID, bagEquipCliList, nil, nil, req.GetOpType(), opData)
 	}
 	return
 }

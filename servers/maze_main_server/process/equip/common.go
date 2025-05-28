@@ -1,11 +1,6 @@
 package equip
 
 import (
-	"time"
-
-	"google.golang.org/protobuf/proto"
-	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fklog"
-	"go.uber.org/zap"
 	"maze_game_server/common/constdef"
 	"maze_game_server/common/errors"
 	"maze_game_server/common/function/grouplock"
@@ -15,6 +10,11 @@ import (
 	"maze_game_server/pb/common/MessageType"
 	"maze_game_server/pb/server/MazeEquipSvr"
 	"maze_game_server/usecase/mustarrive"
+	"time"
+
+	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fklog"
+	"go.uber.org/zap"
+	"google.golang.org/protobuf/proto"
 )
 
 var globalLock = grouplock.NewGroupLock(10240)
@@ -49,7 +49,7 @@ func GetToken() int64 {
 //	return 50
 // }
 
-func SendMazeBagEquipChgIDEx(logger fklog.FKLogI, userId uint64, addList, delList, chgList []*MazeGameEquip.MazeEquipInfo, opType int32) {
+func SendMazeBagEquipChgIDEx(logger fklog.FKLogI, userId uint64, addList, delList, chgList []*MazeGameEquip.MazeEquipInfo, opType int32, opData string) {
 	var mask int32
 	if len(addList) > 0 {
 		mask |= constdef.EquipChgTypeAdd
@@ -72,6 +72,7 @@ func SendMazeBagEquipChgIDEx(logger fklog.FKLogI, userId uint64, addList, delLis
 		Token:            proto.Int64(GetToken()),
 		ChgType:          proto.Int32(mask),
 		NeedRefreshForce: proto.Int32(1),
+		OpData:           proto.String(opData),
 	}
 	if opType == int32(MazeEquipSvr.ENUM_EQUIP_BAG_OP_TYPE_MAZE_DRESS_EQUIP) {
 		req.NeedRefreshForce = proto.Int32(0)

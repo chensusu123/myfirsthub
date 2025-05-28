@@ -9,8 +9,6 @@ package equip
 import (
 	"time"
 
-	"google.golang.org/protobuf/proto"
-	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fklog"
 	"maze_game_server/common/errors"
 	"maze_game_server/config/GMazeConfigV8Cfg"
 	"maze_game_server/config/GMazeEquipConfigV8Cfg"
@@ -19,7 +17,9 @@ import (
 	"maze_game_server/pb/server/MazeEquipCache"
 	"maze_game_server/pb/server/MazeEquipSvr"
 
-	"go.uber.org/zap"
+	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fklog"
+	"google.golang.org/protobuf/proto"
+
 	"maze_game_server/common/constdef"
 	"maze_game_server/common/function/uniqueid"
 	"maze_game_server/common/structsdef"
@@ -36,6 +36,8 @@ import (
 	"maze_game_server/module/mazebuffchgrrecordapi"
 	"maze_game_server/servers/maze_main_server/process/equip/demconstdef"
 	"maze_game_server/servers/maze_main_server/process/equip/module"
+
+	"go.uber.org/zap"
 )
 
 // redis + 内存缓存
@@ -208,7 +210,7 @@ func addInitEquipToBag(logger fklog.FKLogI, userId uint64, equips map[int32]int6
 
 	rsAdd := &MazeEquipSvr.SvrAddMazeEquipRS{}
 	// err = dollequipbagrpc.MazeBagAddRQ(logger, rqAdd, rsAdd)
-	err = OnSvrAddMazeEquipRQ(logger, int64(userId), rqAdd, rsAdd)
+	err = OnSvrAddMazeEquipRQ(logger, int64(userId), rqAdd, rsAdd, "")
 	if err != nil {
 		logger.ErrorWF("addInitEquipToBag MazeBagAddRQ fail", zap.Error(err), zap.Any("req", rqAdd), zap.Any("rs", rsAdd))
 	} else {

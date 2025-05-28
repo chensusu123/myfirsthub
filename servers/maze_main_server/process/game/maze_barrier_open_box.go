@@ -32,7 +32,7 @@ func OnBarrierOpenBoxRQ(logger fknet.TCPContext, shardingID uint64, rqMsg proto.
 	res.ErrInfo = errors.NO_ERROR
 	res.BarrierId = req.BarrierId
 	res.BoxId = req.BoxId
-	res.MapDataUid = req.MapDataUid
+	res.OpData = req.OpData
 
 	userId := shardingID
 
@@ -57,7 +57,7 @@ func OnBarrierOpenBoxRQ(logger fknet.TCPContext, shardingID uint64, rqMsg proto.
 		for _, v := range boxCfg.Award_equip {
 			equip[v] += 1
 		}
-		_, err = addequip.AddEquipToBag(logger, userId, int32(MazeEquipSvr.ENUM_EQUIP_BAG_OP_TYPE_MAZE_EQUIP_BOX_AWARD), tradeNo, equip)
+		_, err = addequip.AddEquipToBagWithOpdata(logger, userId, int32(MazeEquipSvr.ENUM_EQUIP_BAG_OP_TYPE_MAZE_EQUIP_BOX_AWARD), req.GetOpData(), tradeNo, equip)
 		if err != nil {
 			logger.ErrorWF("OnBarrierOpenBoxRQ addEquipToBag fail", zap.Error(err), zap.Any("optype", int32(MazeEquipSvr.ENUM_EQUIP_BAG_OP_TYPE_MAZE_EQUIP_BOX_AWARD)),
 				zap.Any("tradeNo", tradeNo), zap.Any("addEquip", equip))

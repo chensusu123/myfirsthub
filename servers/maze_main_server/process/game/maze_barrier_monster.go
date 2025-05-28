@@ -30,7 +30,7 @@ func OnBarrierMonsterDeathRQ(logger fknet.TCPContext, shardingID uint64, rqMsg p
 	res.ErrInfo = errors.NO_ERROR
 	res.BarrierId = req.BarrierId
 	res.MonsterId = req.MonsterId
-	res.MapDataUid = req.MapDataUid
+	res.OpData = req.OpData
 
 	userId := shardingID
 
@@ -48,7 +48,7 @@ func OnBarrierMonsterDeathRQ(logger fknet.TCPContext, shardingID uint64, rqMsg p
 		for _, v := range foeCfg.Drop_equip {
 			equip[v] += 1
 		}
-		_, err = addequip.AddEquipToBag(logger, userId, int32(MazeEquipSvr.ENUM_EQUIP_BAG_OP_TYPE_MAZE_EQUIP_MONSTER_DEATH_AWARD), tradeNo, equip)
+		_, err = addequip.AddEquipToBagWithOpdata(logger, userId, int32(MazeEquipSvr.ENUM_EQUIP_BAG_OP_TYPE_MAZE_EQUIP_MONSTER_DEATH_AWARD), req.GetOpData(), tradeNo, equip)
 		if err != nil {
 			logger.ErrorWF("OnBarrierMonsterDeathRQ addEquipToBag fail", zap.Error(err), zap.Any("optype", int32(MazeEquipSvr.ENUM_EQUIP_BAG_OP_TYPE_MAZE_EQUIP_FOE)),
 				zap.Any("tradeNo", tradeNo), zap.Any("addEquip", equip))

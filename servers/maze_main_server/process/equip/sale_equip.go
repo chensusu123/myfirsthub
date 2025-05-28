@@ -2,10 +2,6 @@ package equip
 
 import (
 	"context"
-	"google.golang.org/protobuf/proto"
-	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fklog"
-	"gitlab.ifreetalk.com/maze-plate/freetk/fkserver"
-	"go.uber.org/zap"
 	"maze_game_server/common/errors"
 	"maze_game_server/common/function/packtopb"
 	"maze_game_server/io/kafka/mazeequipbagrecord"
@@ -13,6 +9,11 @@ import (
 	"maze_game_server/pb/common/MazeGameEquip"
 	"maze_game_server/pb/server/MazeEquipCache"
 	"maze_game_server/pb/server/MazeEquipSvr"
+
+	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fklog"
+	"gitlab.ifreetalk.com/maze-plate/freetk/fkserver"
+	"go.uber.org/zap"
+	"google.golang.org/protobuf/proto"
 )
 
 func OnSvrDollEquipSaleRQ(ctx fklog.FKLogI, shardingID int64, rqMsg proto.Message, rsMsg proto.Message) (err error) {
@@ -62,7 +63,7 @@ func OnSvrDollEquipSaleRQ(ctx fklog.FKLogI, shardingID int64, rqMsg proto.Messag
 	}
 	PushMazeEquipBagLogEx(agent, agent.UserID, nil, equipList, req.GetTradeNum(), 5, mazeequipbagrecord.MazeDelEquip, 0, 0)
 	if len(equipCliList) > 0 {
-		SendMazeBagEquipChgIDEx(agent, agent.UserID, nil, equipCliList, nil, int32(MazeEquipSvr.ENUM_EQUIP_BAG_OP_TYPE_MAZE_EQUIP_SALE))
+		SendMazeBagEquipChgIDEx(agent, agent.UserID, nil, equipCliList, nil, int32(MazeEquipSvr.ENUM_EQUIP_BAG_OP_TYPE_MAZE_EQUIP_SALE), "")
 	}
 	return
 }
