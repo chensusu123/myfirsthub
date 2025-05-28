@@ -40,6 +40,7 @@ type MazeFoeV8ConfigRow struct {
 	Attack_speed_pro             int32           `json:"attack_speed_pro"`             // 怪物攻击速度系数（>10000加速 ,<10000减速
 	Be_attack_recovery_speed_pro int32           `json:"be_attack_recovery_speed_pro"` // 受击回复动作播放速度系数（>10000加速 ,<10000减速
 	Tough_deplete                int32           `json:"tough_deplete"`                // 韧性被打空时释放技能
+	Search_for_scope             int32           `json:"search_for_scope"`             // 寻敌范围调整值（默认10米）
 }
 
 // MazeFoeV8Config from maze_foe_v8【迷宫-敌人信息】.xlsx maze_foe_v8
@@ -772,6 +773,20 @@ func (*gMazeFoeV8Parser) Parse(logger fklog.FKLogI, data []string, row interface
 		}
 		config.Tough_deplete = int32(tmp)
 	}
+
+	// parse column 26 search_for_scope : 寻敌范围调整值（默认10米）
+	if data[26] != "" {
+		tmp, err = strconv.ParseInt(data[26], 10, 64)
+		if err != nil {
+			err = errors.New("parse field search_for_scope 寻敌范围调整值（默认10米） to int32 failed")
+			logger.ErrorWF("parse field search_for_scope 寻敌范围调整值（默认10米） to int32 failed.",
+				zap.String("xlsx", "maze_foe_v8【迷宫-敌人信息】.xlsx"), zap.String("sheet", "maze_foe_v8"),
+				zap.String("parse_data", data[26]),
+				zap.Error(err))
+			return
+		}
+		config.Search_for_scope = int32(tmp)
+	}
 	return
 }
 
@@ -802,6 +817,7 @@ var gMazeFoeV8Fields = []string{
 	"attack_speed_pro",
 	"be_attack_recovery_speed_pro",
 	"tough_deplete",
+	"search_for_scope",
 }
 
 // LoadDataManual load data for test
