@@ -4,11 +4,6 @@ import (
 	"math/rand"
 	"time"
 
-	"google.golang.org/protobuf/proto"
-	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fklog"
-	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fknet"
-	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fkprometheus"
-	"go.uber.org/zap"
 	"maze_game_server/common/errors"
 	"maze_game_server/excel/mazebarriesv8config"
 	"maze_game_server/excel/mazeconfigv8config"
@@ -23,6 +18,12 @@ import (
 	"maze_game_server/pb/common/MazeTempBuff"
 	"maze_game_server/pb/common/MessageType"
 	"maze_game_server/pb/server/MazeTempBuffSvr"
+
+	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fklog"
+	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fknet"
+	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fkprometheus"
+	"go.uber.org/zap"
+	"google.golang.org/protobuf/proto"
 )
 
 /**
@@ -139,7 +140,7 @@ func getOptionalBuffList(logger fklog.FKLogI, userId uint64, stageId, level, buf
 			return checkErr
 		}
 	} else if buffType == int32(MazeTempBuff.Type_USE_ITEM) {
-		checkErr := checkUseItemLevelSelectBuff(logger, stageConfig.Energy_id, buffInfo)
+		checkErr := checkUseItemLevelSelectBuff(logger, level, stageConfig.Energy_id, buffInfo)
 		if checkErr != nil && checkErr.GetErrCode() != errors.NO_ERROR_CODE {
 			return checkErr
 		}
@@ -200,8 +201,8 @@ func checkUpLevelSelectBuff(logger fklog.FKLogI, level, energyID int32, buffInfo
 	return nil
 }
 
-func checkUseItemLevelSelectBuff(logger fklog.FKLogI, energyID int32, buffInfo *MazeTempBuffSvr.TempBuffInfo) *MessageType.ErrorInfo {
-	configId := mazeenergylevelv8config.GetKey(energyID, 1)
+func checkUseItemLevelSelectBuff(logger fklog.FKLogI, level, energyID int32, buffInfo *MazeTempBuffSvr.TempBuffInfo) *MessageType.ErrorInfo {
+	configId := mazeenergylevelv8config.GetKey(energyID, level)
 	config := mazeenergylevelv8config.GetEnergyLevelConfig(configId)
 	if config == nil {
 		logger.WarnWF("checkUseItemLevelSelectBuff level config unknown", zap.Int32("configId", configId))
@@ -209,7 +210,7 @@ func checkUseItemLevelSelectBuff(logger fklog.FKLogI, energyID int32, buffInfo *
 	}
 	var count int32
 	for _, info := range buffInfo.GetSelectedBuff() {
-		if info.GetType() == int32(MazeTempBuff.Type_USE_ITEM) {
+		if info.GetLevel() == level && info.GetType() == int32(MazeTempBuff.Type_USE_ITEM) {
 			count++
 		}
 	}
