@@ -31,6 +31,7 @@ func (g *Game) OnBarrierMonsterDeathRQ_10498_10499(s *session.Session, req *Maze
 
 	logger.InfoWF("OnBarrierMonsterDeathRQ start", zap.Any("req", req))
 	defer func() {
+		err = s.Response(res)
 		logger.InfoWF("OnBarrierMonsterDeathRQ end", zap.Any("res", res))
 	}()
 
