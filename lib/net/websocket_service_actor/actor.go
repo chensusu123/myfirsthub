@@ -5,14 +5,15 @@ import (
 	"log/slog"
 	"time"
 
+	"maze_game_server/lib/net/raw_pkg"
+
 	"github.com/asynkron/protoactor-go/actor"
 	"github.com/cloudwego/hertz/pkg/app"
 	"github.com/hertz-contrib/websocket"
-	"google.golang.org/protobuf/proto"
 	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fklog"
 	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fknet"
 	"go.uber.org/zap"
-	"maze_game_server/lib/net/raw_pkg"
+	"google.golang.org/protobuf/proto"
 )
 
 type WsWriteActor struct {
@@ -82,14 +83,20 @@ func (a *WsWriteActor) Receive(ctx actor.Context) {
 func serveActorWs(ctx *app.RequestContext, logger fklog.FKLogI, actorSystem *actor.ActorSystem, connMgrPID *actor.PID, isJson bool) {
 	err := upgrader.Upgrade(ctx, func(conn *websocket.Conn) {
 		clientLogger := logger.Clone(fmt.Sprintf("client-addr:%s:%v", conn.RemoteAddr().String(), isJson))
-		clientLogger.InfoWF("serveActorJsonWs client connected", zap.Any("addr", conn.RemoteAddr().String()), zap.Bool("isJson", isJson))
+		addr := conn.RemoteAddr().String()
+
 		client := &Client{conn: conn, send: make(chan []byte, 1024), FkTags: fknet.NewFkTags(), sessionId: hub.MakeSession()}
 		client.SetTag("mySelf", client)
 		client.SetTag("mySelfSession", client.sessionId)
 		client.FKLogI = clientLogger
 		client.isJson = isJson
+		clientLogger.InfoWF("serveActorJsonWs client connected", zap.Any("addr", addr), zap.Bool("isJson", isJson),
+			zap.Any("sessionId", client.sessionId))
 		defer conn.Close()
-
+		defer func() {
+			clientLogger.InfoWF("serveActorJsonWs client disconnected", zap.Any("addr", addr),
+				zap.Bool("isJson", isJson), zap.Any("sessionId", client.sessionId))
+		}()
 		props := actor.PropsFromProducer(func() actor.Actor {
 			return &WsWriteActor{conn: conn, isJson: isJson, sessionId: client.sessionId}
 		})
