@@ -1,6 +1,7 @@
 package main
 
 import (
+	"maze_game_server/io/mysql"
 	"maze_game_server/lib/net/polarismessvc"
 	"maze_game_server/servers/maze_main_server/process"
 	"maze_game_server/usecase/business"
@@ -34,5 +35,8 @@ func main() {
 	}
 	// fkserver.AddBusiness(&business.GCustomBusiness)
 	fkserver.AddBusiness(tasktimer.GTaskTimerBusiness)
+	// 初始化mysql
+	mysql.InitMysql()
+	
 	fkserver.Run()
 }

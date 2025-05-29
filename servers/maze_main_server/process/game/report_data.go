@@ -1,9 +1,9 @@
 package game
 
 import (
-	"google.golang.org/protobuf/proto"
 	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fknet"
 	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fkprometheus"
+	"google.golang.org/protobuf/proto"
 	"maze_game_server/common/constdef"
 	"maze_game_server/common/errors"
 	"maze_game_server/io/kafka/mazemoneykafka"
@@ -98,33 +98,34 @@ func OnReportDataRQ(logger fknet.TCPContext, shardingID uint64, rqMsg proto.Mess
 	}
 
 	if reportInfo.GetReportMask()&2 == 2 {
-		// 上报金币
-
-		// oldCount, err2 := mazemoney.GetUserMoney(logger, userId)
-		// if err2 != nil {
-		// 	logger.ErrorWF("ReportDataRQ GetUserMoney fail", zap.Error(err2))
-		// 	res.ErrInfo = errors.MODULE_ERROR.ToInfo()
-		// 	return
-		// }
+		var oldCoin int64
+		oldCoin, _, err = mazemoney.GetUserMoney(logger, userId)
+		if err != nil {
+			logger.ErrorWF("MazeCommonValueQueryRQ GetUserMoney fail", zap.Error(err))
+			res.ErrInfo = errors.MODULE_ERROR.ToInfo()
+		}
 
 		// rpc不支持set 他们也需要加锁 目前先自己直接设置
 		err = mazemoney.SetUserMoney(logger, userId, reportInfo.GetMoneyCount())
 		if err != nil {
 			logger.ErrorWF("ReportDataRQ SetMoney fail", zap.Error(err))
-			// res.ErrInfo = errors.MODULE_ERROR.ToInfo()
-			// return
+			res.ErrInfo = errors.MODULE_ERROR.ToInfo()
+			return
 		}
 
-		record := &mazemoneykafka.MazeMoneyRecord{
-			UserId:        userId,
-			OldMoneyId:    constdef.MazeCommonItemCoin,
-			OldMoneyCount: 0,
-			NewMoneyId:    constdef.MazeCommonItemCoin,
-			NewMoneyCount: reportInfo.GetMoneyCount(),
-			TradeNo:       int64(0),
-			ChgReason:     0,
+		// 上报金币
+		if oldCoin != reportInfo.GetMoneyCount() {
+			record := &mazemoneykafka.MazeMoneyRecord{
+				UserId:        userId,
+				OldMoneyId:    constdef.MazeCommonItemCoin,
+				OldMoneyCount: oldCoin,
+				NewMoneyId:    constdef.MazeCommonItemCoin,
+				NewMoneyCount: reportInfo.GetMoneyCount(),
+				TradeNo:       int64(0),
+				ChgReason:     0,
+			}
+			mazemoneykafka.PushMazeMoneyRecord(logger, record)
 		}
-		mazemoneykafka.PushMazeMoneyRecord(logger, record)
 	}
 
 	if reportInfo.GetReportMask()&4 == 4 {

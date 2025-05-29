@@ -3,6 +3,7 @@ package process
 import (
 	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fklog"
 	"gitlab.ifreetalk.com/maze-plate/freetk/fkserver/web_service"
+	"maze_game_server/io/mysql/flowrecord"
 	"maze_game_server/lib/net/websocket_service"
 	"maze_game_server/servers/maze_main_server/process/attr_calc"
 	"maze_game_server/servers/maze_main_server/process/auth"
@@ -77,6 +78,9 @@ func RegisterHandler() {
 		// attr_calc.RegConsumeHandler()
 		// kafka转发队列 废弃
 		// kafka_dispatch.RegConsumeHandler()
+		
+		// 流水队列
+		flowrecord.RegConsumeHandler()
 	}
 
 	// 注册Web接口

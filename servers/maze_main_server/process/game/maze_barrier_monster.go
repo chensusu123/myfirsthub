@@ -1,12 +1,16 @@
 package game
 
 import (
+	"encoding/json"
 	"fmt"
 	"maze_game_server/common/errors"
 	"maze_game_server/common/function/addequip"
 	"maze_game_server/common/function/gentradeno"
+	"maze_game_server/common/function/maputil"
 	"maze_game_server/config/GMazeFoeV8Cfg"
 	"maze_game_server/config/GMazeItemsV8Cfg"
+	"maze_game_server/io/kafka/dollmazefoekafka"
+	"maze_game_server/io/mysql/flowrecord"
 	"maze_game_server/pb/common/MazeCommon"
 	"maze_game_server/pb/common/MazeGame"
 	"maze_game_server/pb/server/MazeEquipSvr"
@@ -90,6 +94,20 @@ func OnBarrierMonsterDeathRQ(logger fknet.TCPContext, shardingID uint64, rqMsg p
 	}
 	// 通关值
 	res.Kongfu = proto.Int32(foeCfg.Kongfu)
+
+	// 打怪流水记录
+	record := &dollmazefoekafka.DollMazeFoeRecord{
+		UserId:   userId,
+		Barrier:  req.GetBarrierId(),
+		MasterId: req.GetMonsterId(),
+		Equips:   maputil.MapToString32(equip),
+	}
+	awards, err := json.Marshal(res.Awards)
+	if err != nil {
+		logger.ErrorWF("OnBarrierMonsterDeathRQ json marshal fail", zap.Error(err), zap.Any("res", res))
+	}
+	record.AwardList = string(awards)
+	flowrecord.SaveFoeRecord(logger, record)
 
 	return
 }

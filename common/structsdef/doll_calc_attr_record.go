@@ -18,6 +18,7 @@ type MazeGameAttrChgRecord struct {
 	ChgDesc    string `json:"chg_desc"`     //原因描述
 	CreateTime int64  `json:"create_time"`  //时间戳 ms
 	Extra      string `json:"extra"`        // 扩展信息
+	ServerId   int32  `json:"server_id"`
 }
 
 // 武力属性变化流水

@@ -4,12 +4,12 @@ import (
 	"fmt"
 	"strings"
 
-	"google.golang.org/protobuf/proto"
 	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fklog"
 	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fknet"
 	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fkprometheus"
 	"gitlab.ifreetalk.com/maze-plate/freetk/fkserver"
 	"go.uber.org/zap"
+	"google.golang.org/protobuf/proto"
 	"maze_game_server/common/constdef"
 	"maze_game_server/common/errors"
 	"maze_game_server/common/function/gentradeno"
@@ -181,11 +181,11 @@ func OnDollEquipDismantleRQ(ctx fknet.TCPContext, shardingID uint64, rqMsg proto
 		return
 	}
 
-	// record := &dollequipdismantlekafka.MazeGameEquipDismantleRecord{
-	// 	UserId:   shardingID,
-	// 	TradeNum: tradeNo,
-	// 	IsFail:   0,
-	// }
+	record := &dollequipdismantlekafka.MazeGameEquipDismantleRecord{
+		UserId:   shardingID,
+		TradeNum: tradeNo,
+		IsFail:   0,
+	}
 
 	if len(awardItems) > 0 && req.GetDismantleFrom() != 4 {
 		// 699	UN_CGK_COMMON_BILL_TYPE_699	迷宫分解装备
@@ -195,7 +195,7 @@ func OnDollEquipDismantleRQ(ctx fknet.TCPContext, shardingID uint64, rqMsg proto
 		}
 	}
 
-	// DismantleRecordPush(userCtx, record, guidsBag, []int64{}, awardBag, map[int32]int64{}, equipGuid2EquipId)
+	DismantleRecordPush(userCtx, record, guidsBag, []int64{}, awardBag, map[int32]int64{}, equipGuid2EquipId)
 
 	return
 }

@@ -23,6 +23,8 @@ type DollMazeFoeRecord struct {
 	EquipPoints int32  `json:"equip_points"` // 本次打怪后的当前装备积分
 	GroupID     uint32 `json:"group_id"`     // 组id
 	CreateTime  int64  `json:"create_time"`  // 操作时间
+	MasterId    int64  `json:"master_id"`    // 怪物id
+	ServerId    int32  `json:"server_id"`
 }
 
 // var gKafka = &fkafka.KafkaProducer{}

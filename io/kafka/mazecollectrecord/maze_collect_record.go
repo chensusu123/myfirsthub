@@ -35,6 +35,7 @@ type MazeCollectChgRecord struct {
 	RetCode       int64  `json:"ret_code"`       //0:成功  其他失败
 	GroupID       uint32 `json:"group_id"`       // 组id
 	CreateTime    int64  `json:"create_time"`    // 操作时间
+	ServerId      int32  `json:"server_id"`
 }
 
 // var gKafka = &fkafka.KafkaProducer{}
