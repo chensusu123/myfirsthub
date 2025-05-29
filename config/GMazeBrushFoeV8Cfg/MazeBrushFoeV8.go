@@ -27,6 +27,7 @@ type MazeBrushFoeV8ConfigRow struct {
 	Iskill_all                   int32   `json:"iskill_all"`                   // 是否需要杀完上波怪再刷本波
 	Index                        int32   `json:"index"`                        // 战斗区域id
 	Brushing_monsters_coordinate []int32 `json:"Brushing_monsters_coordinate"` // 区域刷怪坐标列表（横百分段值,竖百分段值）
+	Brushing_monsters_position   []int32 `json:"Brushing_monsters_position"`   // 区域刷怪点位列表
 	Front_group_order            []int32 `json:"front_group_order"`            // 立即刷怪前置条件波次
 }
 
@@ -473,17 +474,36 @@ func (*gMazeBrushFoeV8Parser) Parse(logger fklog.FKLogI, data []string, row inte
 		}
 	}
 
-	// parse column 13 front_group_order : 立即刷怪前置条件波次
+	// parse column 13 Brushing_monsters_position : 区域刷怪点位列表
 	if data[13] != "" {
 
 		vals := strings.Split(data[13], ",")
 		for k, v := range vals {
 			tmp, err = strconv.ParseInt(v, 10, 64)
 			if err != nil {
+				err = errors.New("parse array field Brushing_monsters_position 区域刷怪点位列表 to []int32 failed")
+				logger.ErrorWF("parse array field Brushing_monsters_position 区域刷怪点位列表 to []int32 failed.",
+					zap.String("xlsx", "maze_brush_foe_v8【迷宫-刷怪相关时间数量类型】.xlsx"), zap.String("sheet", "maze_brush_foe_v8"),
+					// zap.String("field_data",data[13]),
+					zap.String("parse_data", v), zap.Int("index", k),
+					zap.Error(err))
+				return
+			}
+			config.Brushing_monsters_position = append(config.Brushing_monsters_position, int32(tmp))
+		}
+	}
+
+	// parse column 14 front_group_order : 立即刷怪前置条件波次
+	if data[14] != "" {
+
+		vals := strings.Split(data[14], ",")
+		for k, v := range vals {
+			tmp, err = strconv.ParseInt(v, 10, 64)
+			if err != nil {
 				err = errors.New("parse array field front_group_order 立即刷怪前置条件波次 to []int32 failed")
 				logger.ErrorWF("parse array field front_group_order 立即刷怪前置条件波次 to []int32 failed.",
 					zap.String("xlsx", "maze_brush_foe_v8【迷宫-刷怪相关时间数量类型】.xlsx"), zap.String("sheet", "maze_brush_foe_v8"),
-					// zap.String("field_data",data[13]),
+					// zap.String("field_data",data[14]),
 					zap.String("parse_data", v), zap.Int("index", k),
 					zap.Error(err))
 				return
@@ -508,6 +528,7 @@ var gMazeBrushFoeV8Fields = []string{
 	"iskill_all",
 	"index",
 	"Brushing_monsters_coordinate",
+	"Brushing_monsters_position",
 	"front_group_order",
 }
 
