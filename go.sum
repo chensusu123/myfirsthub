@@ -259,6 +259,8 @@ gitlab.ifreetalk.com/maze-plate/extra v1.0.1-0.20250401060651-722653168d37 h1:ly
 gitlab.ifreetalk.com/maze-plate/extra v1.0.1-0.20250401060651-722653168d37/go.mod h1:ZHwfNF+727RvJctXbXHW/8kdkKBMIyUNHgUdwjqZ9E0=
 gitlab.ifreetalk.com/maze-plate/freetk v1.0.1-0.20250528093911-b81ec54f9379 h1:pATAR/P1PtWGgz/xP+utIo62WFLLPLO8I0t23llq/vQ=
 gitlab.ifreetalk.com/maze-plate/freetk v1.0.1-0.20250528093911-b81ec54f9379/go.mod h1:BsKRvBioRzBNxRihEuo0giUa+1y0278UaQi7kmI+Szo=
+gitlab.ifreetalk.com/maze-plate/freetk v1.0.1-0.20250529075031-3526f8cf8937 h1:b8JNWMcHDskGbHLh77TKlSMcU189O7/XrVoYjsKn5ic=
+gitlab.ifreetalk.com/maze-plate/freetk v1.0.1-0.20250529075031-3526f8cf8937/go.mod h1:BsKRvBioRzBNxRihEuo0giUa+1y0278UaQi7kmI+Szo=
 go.opentelemetry.io/otel v1.21.0 h1:hzLeKBZEL7Okw2mGzZ0cc4k/A7Fta0uoPgaJCr8fsFc=
 go.opentelemetry.io/otel v1.21.0/go.mod h1:QZzNPQPm1zLX4gZK4cMi+71eaorMSGT3A4znnUvNNEo=
 go.opentelemetry.io/otel/exporters/prometheus v0.44.0 h1:08qeJgaPC0YEBu2PQMbqU3rogTlyzpjhCI2b58Yn00w=

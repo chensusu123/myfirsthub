@@ -8,9 +8,10 @@ import (
 	"sync"
 	"time"
 
+	"maze_game_server/lib/net/raw_pkg"
+
 	"github.com/asynkron/protoactor-go/actor"
 	jsoniter "github.com/json-iterator/go"
-	"google.golang.org/protobuf/proto"
 	"gitlab.ifreetalk.com/maze-plate/freetk/common/fkfmt"
 	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore"
 	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fkconfig"
@@ -22,7 +23,7 @@ import (
 	"gitlab.ifreetalk.com/maze-plate/freetk/fkutil"
 	"go.uber.org/atomic"
 	"go.uber.org/zap"
-	"maze_game_server/lib/net/raw_pkg"
+	"google.golang.org/protobuf/proto"
 )
 
 var json = jsoniter.ConfigCompatibleWithStandardLibrary
@@ -107,6 +108,7 @@ func (ts *tTCPRawService) OnStart(logger fklog.FKLogI, config fkcore.FkConfigerI
 		logger.ErrorWF("websocket-service start tcp server failed.", zap.Error(err))
 		return
 	}
+
 	logger.InfoWF("websocket-service start success.")
 	return
 }

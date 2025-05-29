@@ -7,10 +7,6 @@ import (
 	"net/http"
 	"time"
 
-	"github.com/gorilla/schema"
-	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fklog"
-	"gitlab.ifreetalk.com/maze-plate/freetk/fkutil"
-	"go.uber.org/zap"
 	"maze_game_server/common/function/gm"
 	"maze_game_server/config/GMazeBarriesV8Cfg"
 	"maze_game_server/io/kafka/mazeuserlevelkafka"
@@ -20,11 +16,15 @@ import (
 	"maze_game_server/module/mazecommonvalue"
 	"maze_game_server/module/mazeuserinfo"
 	"maze_game_server/servers/maze_main_server/process/gm/cmdbattledata"
+
+	"github.com/gorilla/schema"
+	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fklog"
+	"gitlab.ifreetalk.com/maze-plate/freetk/fkserver/config_manager"
+	"gitlab.ifreetalk.com/maze-plate/freetk/fkutil"
+	"go.uber.org/zap"
 )
 
-var (
-	form = schema.NewDecoder()
-)
+var form = schema.NewDecoder()
 
 func RegGm(logger fklog.FKLogI) {
 	cmdbattledata.RegBattleDataGm(logger)
@@ -196,8 +196,29 @@ func RegGm(logger fklog.FKLogI) {
 		generateUser.ErrorCode = 0
 		generateUser.ErrorMsg = "success"
 	})
+
+	gm.SafeHttpRegister(logger, "/showSheet", func(writer http.ResponseWriter, request *http.Request) {
+		logger.SetLogId(time.Now().UnixNano())
+		showSheet := &ShowSheet{}
+		defer func() {
+			jsonData, err := json.Marshal(showSheet)
+			if err != nil {
+				writer.Write([]byte(err.Error()))
+				return
+			}
+			writer.Write(jsonData)
+		}()
+		showSheet.Data = config_manager.ShowSheet()
+		showSheet.ErrorCode = 0
+		showSheet.ErrorMsg = "success"
+	})
 }
 
+type ShowSheet struct {
+	ErrorCode uint64                          `json:"errorCode"`
+	ErrorMsg  string                          `json:"errorMsg"`
+	Data      []config_manager.ConfigShowItem `json:"data"`
+}
 type GenerateUser struct {
 	ErrorCode uint64 `json:"errorCode"`
 	ErrorMsg  string `json:"errorMsg"`
