@@ -5,7 +5,6 @@ import (
 	"maze_game_server/usecase/business"
 	"maze_game_server/usecase/tasktimer"
 
-	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fkconfig"
 	"gitlab.ifreetalk.com/maze-plate/freetk/fkserver"
 	"gitlab.ifreetalk.com/maze-plate/freetk/fkserver/config_manager/loadconfigapi"
 )
@@ -16,13 +15,16 @@ func main() {
 	// process.RegisterHandler()
 
 	process.RegisterHandler()
-	if fkconfig.EnvVal.IsLocalDev {
-		fkserver.AddBusiness(&business.GCustomBusiness)
-		loadconfigapi.SetLoadConfigFunc(business.GCustomBusiness.LoadCacheConfig)
-		loadconfigapi.SetInitConfigCacheFunc(business.GCustomBusiness.Init)
-	} else {
-		loadconfigapi.InitConfigRpcClient()
-	}
+	// if fkconfig.EnvVal.IsLocalDev {
+	// 	fkserver.AddBusiness(&business.GCustomBusiness)
+	// 	loadconfigapi.SetLoadConfigFunc(business.GCustomBusiness.LoadCacheConfig)
+	// 	loadconfigapi.SetInitConfigCacheFunc(business.GCustomBusiness.Init)
+	// } else {
+	// 	loadconfigapi.InitConfigRpcClient()
+	// }
+	fkserver.AddBusiness(&business.GCustomBusiness)
+	loadconfigapi.SetLoadConfigFunc(business.GCustomBusiness.LoadCacheConfig)
+	loadconfigapi.SetInitConfigCacheFunc(business.GCustomBusiness.Init)
 	// fkserver.AddBusiness(&business.GCustomBusiness)
 	fkserver.AddBusiness(tasktimer.GTaskTimerBusiness)
 	fkserver.Run()
