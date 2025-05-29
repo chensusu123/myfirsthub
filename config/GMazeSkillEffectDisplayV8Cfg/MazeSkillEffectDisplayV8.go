@@ -1,22 +1,20 @@
 package GMazeSkillEffectDisplayV8Cfg
 
-
 import (
+	"errors"
+	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fklog"
+	"gitlab.ifreetalk.com/maze-plate/freetk/fkserver/config_manager"
+	"go.uber.org/zap"
+	"strconv"
 	"sync"
 	"sync/atomic"
 	"unsafe"
-	"strconv"
-	"errors"
-	"gitlab.ifreetalk.com/maze-plate/freetk/fkserver/config_manager"
-	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fklog"
-	"go.uber.org/zap"
 )
-
 
 // MazeSkillEffectDisplayV8ConfigRow from maze_skill_effect_display_v8【迷宫-技能-效果展示信息】.xlsx maze_skill_effect_display_v8
 type MazeSkillEffectDisplayV8ConfigRow struct {
-    Effect_group       int32  `json:"effect_group"` // effect组id
-    Buff_list_name       string  `json:"buff_list_name"` // buff列表里的效果名称
+	Effect_group   int32  `json:"effect_group"`   // effect组id
+	Buff_list_name string `json:"buff_list_name"` // buff列表里的效果名称
 }
 
 // MazeSkillEffectDisplayV8Config from maze_skill_effect_display_v8【迷宫-技能-效果展示信息】.xlsx maze_skill_effect_display_v8
@@ -52,7 +50,7 @@ func (c *MazeSkillEffectDisplayV8Config) Get(configId int32) *MazeSkillEffectDis
 }
 
 // GetAllMazeSkillEffectDisplayV8Config get all config slice
-func (c *MazeSkillEffectDisplayV8Config)  GetAllMazeSkillEffectDisplayV8Config () (res []*MazeSkillEffectDisplayV8ConfigRow) {
+func (c *MazeSkillEffectDisplayV8Config) GetAllMazeSkillEffectDisplayV8Config() (res []*MazeSkillEffectDisplayV8ConfigRow) {
 	// c.lock.RLock()
 	// defer c.lock.RUnlock()
 	for _, val := range c.ConfigRows {
@@ -62,7 +60,7 @@ func (c *MazeSkillEffectDisplayV8Config)  GetAllMazeSkillEffectDisplayV8Config (
 }
 
 // GetAll get all config slice
-func (c *MazeSkillEffectDisplayV8Config)  GetAll() (res []*MazeSkillEffectDisplayV8ConfigRow) {
+func (c *MazeSkillEffectDisplayV8Config) GetAll() (res []*MazeSkillEffectDisplayV8ConfigRow) {
 	// c.lock.RLock()
 	// defer c.lock.RUnlock()
 	for _, val := range c.ConfigRows {
@@ -71,9 +69,8 @@ func (c *MazeSkillEffectDisplayV8Config)  GetAll() (res []*MazeSkillEffectDispla
 	return
 }
 
-
-// global config pointer 
-var gConfigData *MazeSkillEffectDisplayV8Config 
+// global config pointer
+var gConfigData *MazeSkillEffectDisplayV8Config
 
 // GetMazeSkillEffectDisplayV8Config pkg func. get one config by configId
 func GetMazeSkillEffectDisplayV8Config(configId int32) *MazeSkillEffectDisplayV8ConfigRow {
@@ -86,8 +83,8 @@ func Get(configId int32) *MazeSkillEffectDisplayV8ConfigRow {
 }
 
 // GetAllMazeSkillEffectDisplayV8Config pkg func. get all config slice
-func GetAllMazeSkillEffectDisplayV8Config () []*MazeSkillEffectDisplayV8ConfigRow {
-	return gConfigData.GetAllMazeSkillEffectDisplayV8Config ()
+func GetAllMazeSkillEffectDisplayV8Config() []*MazeSkillEffectDisplayV8ConfigRow {
+	return gConfigData.GetAllMazeSkillEffectDisplayV8Config()
 }
 
 // GetAll pkg func. get all config slice
@@ -96,17 +93,17 @@ func GetAll() []*MazeSkillEffectDisplayV8ConfigRow {
 }
 
 // ConfigRows get raw map data
-func ConfigRows() map[int32]*MazeSkillEffectDisplayV8ConfigRow{
+func ConfigRows() map[int32]*MazeSkillEffectDisplayV8ConfigRow {
 	return gConfigData.ConfigRows
 }
 
 // GetConfigDesc get config desc for lod,debug etc.
-func GetConfigDesc() string{
+func GetConfigDesc() string {
 	return "MazeSkillEffectDisplayV8ConfigRow from maze_skill_effect_display_v8【迷宫-技能-效果展示信息】.xlsx maze_skill_effect_display_v8"
 }
 
 // GetRawValue get raw data
-func GetRawValue() *MazeSkillEffectDisplayV8Config{
+func GetRawValue() *MazeSkillEffectDisplayV8Config {
 	return gConfigData
 }
 
@@ -116,10 +113,10 @@ func SheetName() string {
 }
 
 func init() {
-	// reg config auto load 
-	config_manager.RegAutoConfig("maze_skill_effect_display_v8.json", 
+	// reg config auto load
+	config_manager.RegAutoConfig("maze_skill_effect_display_v8.json",
 		"maze_skill_effect_display_v8【迷宫-技能-效果展示信息】.xlsx", "maze_skill_effect_display_v8",
-	 	&gMazeSkillEffectDisplayV8Parser{}, &gMazeSkillEffectDisplayV8Loader{})
+		&gMazeSkillEffectDisplayV8Parser{}, &gMazeSkillEffectDisplayV8Loader{})
 }
 
 // data update call back
@@ -147,32 +144,35 @@ var cfgCheckCallBack sync.Map //map[string]func(*MazeSkillEffectDisplayV8Config)
 // doConfigCheckCallback do config check callback
 func doConfigCheckCallback(c *MazeSkillEffectDisplayV8Config) (err error) {
 	cfgCheckCallBack.Range(func(key, value interface{}) bool {
-		err := value.(func(*MazeSkillEffectDisplayV8Config)error)(c)
+		err := value.(func(*MazeSkillEffectDisplayV8Config) error)(c)
 		return err == nil
 	})
-	return 
+	return
 }
 
 // RegisterLoadedCallBack reg config update func.
-func RegisterConfigCheck(key string, f func(*MazeSkillEffectDisplayV8Config)error) {
+func RegisterConfigCheck(key string, f func(*MazeSkillEffectDisplayV8Config) error) {
 	cfgCheckCallBack.Store(key, f)
 }
 
 // implete ConfigLoader interface
 type gMazeSkillEffectDisplayV8Loader struct {
 }
+
 // NewContainer new data container pointer
-func (*gMazeSkillEffectDisplayV8Loader) NewContainer() interface{}{
+func (*gMazeSkillEffectDisplayV8Loader) NewContainer() interface{} {
 	return newConfig()
 }
+
 // Check check new config data ptr
-func (*gMazeSkillEffectDisplayV8Loader) Check(newPtr interface{})error{
+func (*gMazeSkillEffectDisplayV8Loader) Check(newPtr interface{}) error {
 	// set global ptr
 	cfgData := newPtr.(*MazeSkillEffectDisplayV8Config)
 	return doConfigCheckCallback(cfgData)
 }
+
 // Swap swap global config data ptr
-func (*gMazeSkillEffectDisplayV8Loader) Swap(newPtr interface{}){
+func (*gMazeSkillEffectDisplayV8Loader) Swap(newPtr interface{}) {
 	// convert pointer
 	cache := newPtr.(*MazeSkillEffectDisplayV8Config)
 	// update second edit
@@ -180,45 +180,48 @@ func (*gMazeSkillEffectDisplayV8Loader) Swap(newPtr interface{}){
 	// set global ptr
 	atomic.StorePointer((*unsafe.Pointer)(unsafe.Pointer(&gConfigData)), unsafe.Pointer(cache))
 }
+
 // Add append config item to map,save result
-func (*gMazeSkillEffectDisplayV8Loader) Add(logger fklog.FKLogI,container interface{}, ri interface{})(err error) {
-	row,ok := ri.(*MazeSkillEffectDisplayV8ConfigRow)
+func (*gMazeSkillEffectDisplayV8Loader) Add(logger fklog.FKLogI, container interface{}, ri interface{}) (err error) {
+	row, ok := ri.(*MazeSkillEffectDisplayV8ConfigRow)
 	if !ok {
 		err = errors.New("invalid type. not *MazeSkillEffectDisplayV8ConfigRow")
 		logger.ErrorWF("invalid type. not *MazeSkillEffectDisplayV8ConfigRow", zap.String("xlsx", "maze_skill_effect_display_v8【迷宫-技能-效果展示信息】.xlsx"),
 			zap.String("sheet", "maze_skill_effect_display_v8"))
-		return 
+		return
 	}
-	config,ok := container.(*MazeSkillEffectDisplayV8Config)
+	config, ok := container.(*MazeSkillEffectDisplayV8Config)
 	if !ok {
 		err = errors.New("invalid type. not *MazeSkillEffectDisplayV8Config")
 		logger.ErrorWF("invalid type. not *MazeSkillEffectDisplayV8Config", zap.String("xlsx", "maze_skill_effect_display_v8【迷宫-技能-效果展示信息】.xlsx"),
 			zap.String("sheet", "maze_skill_effect_display_v8"))
-		return 
+		return
 	}
 	config.ConfigRows[row.Effect_group] = row
 	return
 }
+
 // GetValue get real map value for json parse
-func (*gMazeSkillEffectDisplayV8Loader) GetValue(logger fklog.FKLogI,container interface{})(real interface{},err error) {
-	config,ok := container.(*MazeSkillEffectDisplayV8Config)
+func (*gMazeSkillEffectDisplayV8Loader) GetValue(logger fklog.FKLogI, container interface{}) (real interface{}, err error) {
+	config, ok := container.(*MazeSkillEffectDisplayV8Config)
 	if !ok {
 		err = errors.New("invalid type. not *MazeSkillEffectDisplayV8Config")
 		logger.ErrorWF("invalid type. not *MazeSkillEffectDisplayV8Config", zap.String("xlsx", "maze_skill_effect_display_v8【迷宫-技能-效果展示信息】.xlsx"),
 			zap.String("sheet", "maze_skill_effect_display_v8"))
-		return 
+		return
 	}
 	real = &config.ConfigRows
 	return
 }
+
 // Range range all data for json append data parse.
-func (*gMazeSkillEffectDisplayV8Loader) Range(logger fklog.FKLogI, container interface{}, rf func(row interface{}) error) (err error){
-	config,ok := container.(*MazeSkillEffectDisplayV8Config)
+func (*gMazeSkillEffectDisplayV8Loader) Range(logger fklog.FKLogI, container interface{}, rf func(row interface{}) error) (err error) {
+	config, ok := container.(*MazeSkillEffectDisplayV8Config)
 	if !ok {
 		err = errors.New("invalid type. not *MazeSkillEffectDisplayV8Config")
 		logger.ErrorWF("invalid type. not *MazeSkillEffectDisplayV8Config", zap.String("xlsx", "maze_skill_effect_display_v8【迷宫-技能-效果展示信息】.xlsx"),
 			zap.String("sheet", "maze_skill_effect_display_v8"))
-		return 
+		return
 	}
 	for _, row := range config.ConfigRows {
 		err = rf(row)
@@ -229,10 +232,10 @@ func (*gMazeSkillEffectDisplayV8Loader) Range(logger fklog.FKLogI, container int
 	return
 }
 
-
 // implete ConfigParser interface
 type gMazeSkillEffectDisplayV8Parser struct {
 }
+
 // New new config row data
 func (*gMazeSkillEffectDisplayV8Parser) New() interface{} {
 	return &MazeSkillEffectDisplayV8ConfigRow{}
@@ -242,43 +245,44 @@ func (*gMazeSkillEffectDisplayV8Parser) New() interface{} {
 func (*gMazeSkillEffectDisplayV8Parser) Fields() []string {
 	return gMazeSkillEffectDisplayV8Fields
 }
+
 // Parse parse raw data to row data
-func (*gMazeSkillEffectDisplayV8Parser) Parse(logger fklog.FKLogI,data []string, row interface{}) (err error) {
+func (*gMazeSkillEffectDisplayV8Parser) Parse(logger fklog.FKLogI, data []string, row interface{}) (err error) {
 	// convert row type
-	config,ok := row.(*MazeSkillEffectDisplayV8ConfigRow)
+	config, ok := row.(*MazeSkillEffectDisplayV8ConfigRow)
 	if !ok {
 		err = errors.New("invalid type. not *MazeSkillEffectDisplayV8ConfigRow")
 		logger.ErrorWF("invalid type. not *MazeSkillEffectDisplayV8ConfigRow", zap.String("xlsx", "maze_skill_effect_display_v8【迷宫-技能-效果展示信息】.xlsx"),
 			zap.String("sheet", "maze_skill_effect_display_v8"))
-		return 
+		return
 	}
 	// compare length
 	if len(data) != len(gMazeSkillEffectDisplayV8Fields) {
 		err = errors.New("fields count not match.")
-		logger.ErrorWF("invalid type. not *map[int32]*MazeSkillEffectDisplayV8ConfigRow", 
+		logger.ErrorWF("invalid type. not *map[int32]*MazeSkillEffectDisplayV8ConfigRow",
 			zap.String("xlsx", "maze_skill_effect_display_v8【迷宫-技能-效果展示信息】.xlsx"),
-			zap.String("sheet", "maze_skill_effect_display_v8"), zap.Int("need_count",len(gMazeSkillEffectDisplayV8Fields)), 
-			zap.Int("had_count",len(data)))
+			zap.String("sheet", "maze_skill_effect_display_v8"), zap.Int("need_count", len(gMazeSkillEffectDisplayV8Fields)),
+			zap.Int("had_count", len(data)))
 		return
 	}
 
 	var tmp int64
 
-	// parse column 0 effect_group : effect组id 
+	// parse column 0 effect_group : effect组id
 	if data[0] != "" {
-		tmp,err = strconv.ParseInt(data[0],10,64)
+		tmp, err = strconv.ParseInt(data[0], 10, 64)
 		if err != nil {
 			err = errors.New("parse field effect_group effect组id to int32 failed")
-			logger.ErrorWF("parse field effect_group effect组id to int32 failed.", 
-				zap.String("xlsx", "maze_skill_effect_display_v8【迷宫-技能-效果展示信息】.xlsx"), zap.String("sheet", "maze_skill_effect_display_v8"), 
-				zap.String("parse_data",data[0]), 
+			logger.ErrorWF("parse field effect_group effect组id to int32 failed.",
+				zap.String("xlsx", "maze_skill_effect_display_v8【迷宫-技能-效果展示信息】.xlsx"), zap.String("sheet", "maze_skill_effect_display_v8"),
+				zap.String("parse_data", data[0]),
 				zap.Error(err))
 			return
 		}
 		config.Effect_group = int32(tmp)
 	}
 
-	// parse column 1 buff_list_name : buff列表里的效果名称 
+	// parse column 1 buff_list_name : buff列表里的效果名称
 	if data[1] != "" {
 		config.Buff_list_name = data[1]
 	}
@@ -286,16 +290,16 @@ func (*gMazeSkillEffectDisplayV8Parser) Parse(logger fklog.FKLogI,data []string,
 }
 
 var gMazeSkillEffectDisplayV8Fields = []string{
-    "effect_group",
-    "buff_list_name",
+	"effect_group",
+	"buff_list_name",
 }
 
 // LoadDataManual load data for test
-func LoadDataManual(logger fklog.FKLogI, load func(file, sheet string, fields []string) ([][]string,error)) (err error) {
+func LoadDataManual(logger fklog.FKLogI, load func(file, sheet string, fields []string) ([][]string, error)) (err error) {
 	parser := &gMazeSkillEffectDisplayV8Parser{}
 	loader := &gMazeSkillEffectDisplayV8Loader{}
 	var data [][]string
-	data,err = load("maze_skill_effect_display_v8【迷宫-技能-效果展示信息】.xlsx", "maze_skill_effect_display_v8", gMazeSkillEffectDisplayV8Fields)
+	data, err = load("maze_skill_effect_display_v8【迷宫-技能-效果展示信息】.xlsx", "maze_skill_effect_display_v8", gMazeSkillEffectDisplayV8Fields)
 	if err != nil {
 		logger.ErrorWF("load maze_skill_effect_display_v8【迷宫-技能-效果展示信息】.xlsx maze_skill_effect_display_v8 data failed.", zap.Error(err))
 		return
