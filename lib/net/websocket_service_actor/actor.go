@@ -90,12 +90,14 @@ func serveActorWs(ctx *app.RequestContext, logger fklog.FKLogI, actorSystem *act
 		client.SetTag("mySelfSession", client.sessionId)
 		client.FKLogI = clientLogger
 		client.isJson = isJson
+		clientSession := client.sessionId
+
 		clientLogger.InfoWF("serveActorJsonWs client connected", zap.Any("addr", addr), zap.Bool("isJson", isJson),
-			zap.Any("sessionId", client.sessionId))
+			zap.Any("sessionId", clientSession))
 		defer conn.Close()
 		defer func() {
 			clientLogger.InfoWF("serveActorJsonWs client disconnected", zap.Any("addr", addr),
-				zap.Bool("isJson", isJson), zap.Any("sessionId", client.sessionId))
+				zap.Bool("isJson", isJson), zap.Any("sessionId", clientSession))
 		}()
 		props := actor.PropsFromProducer(func() actor.Actor {
 			return &WsWriteActor{conn: conn, isJson: isJson, sessionId: client.sessionId}
@@ -129,7 +131,7 @@ func serveActorWs(ctx *app.RequestContext, logger fklog.FKLogI, actorSystem *act
 		for {
 			_, msgBytes, err := conn.ReadMessage()
 			if err != nil {
-				clientLogger.ErrorWF("serveActorJsonWs read error", zap.Error(err))
+				clientLogger.ErrorWF("serveActorJsonWs read error", zap.Error(err), zap.Any("sessionId", clientSession))
 				break
 			}
 			actorSystem.Root.Send(clientPID, msgBytes)
