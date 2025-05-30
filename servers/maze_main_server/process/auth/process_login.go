@@ -3,13 +3,14 @@ package auth
 import (
 	"time"
 
-	"google.golang.org/protobuf/proto"
-	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fknet"
-	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fkprometheus"
 	"maze_game_server/common/errors"
 	"maze_game_server/io/redis/UnionIDBindRedis"
 	"maze_game_server/io/redis/useridredis"
 	"maze_game_server/pb/common/UserLogin"
+
+	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fknet"
+	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fkprometheus"
+	"google.golang.org/protobuf/proto"
 
 	"go.uber.org/zap"
 )
@@ -22,6 +23,9 @@ func OnLoginRQ(ctx fknet.TCPContext, shardingID uint64, rqMsg proto.Message, rsM
 
 	logger := ctx
 	res.Session = req.Session
+	res.ClientTime = req.ClientTime
+	res.ServerTime = proto.Int64(time.Now().UnixMilli())
+
 	defer func() {
 		logger.InfoWF("OnLoginRQ end", zap.Any("req", req), zap.Any("res", res))
 	}()
@@ -65,7 +69,6 @@ func OnLoginRQ(ctx fknet.TCPContext, shardingID uint64, rqMsg proto.Message, rsM
 	// 认证成功设置用户ID, 底层会处理
 
 	ctx.SetTag("userID", userID)
-	res.ServerTime = proto.Int64(time.Now().UnixMilli())
 
 	time.AfterFunc(time.Second*2, func() {
 		SendArrivePacket(logger, int64(userID), 111, &UserLogin.UserLiveRs{
