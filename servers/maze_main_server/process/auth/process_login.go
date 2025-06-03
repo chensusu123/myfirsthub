@@ -10,6 +10,7 @@ import (
 
 	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fknet"
 	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fkprometheus"
+	"gitlab.ifreetalk.com/maze-plate/freetk/fkserver/config_manager"
 	"google.golang.org/protobuf/proto"
 
 	"go.uber.org/zap"
@@ -92,5 +93,29 @@ func OnLiveRQ(ctx fknet.TCPContext, shardingID uint64, rqMsg proto.Message, rsMs
 
 	res.Error = errors.NO_ERROR
 	res.ServerTime = proto.Int64(time.Now().UnixMilli())
+	return nil
+}
+
+func OnConfigDataMd5Rq(ctx fknet.TCPContext, shardingID uint64, rqMsg proto.Message, rsMsg proto.Message) (err error) {
+	fkprometheus.InfoPMT("OnConfigDataMd5Rq")()
+
+	req := rqMsg.(*UserLogin.ConfigDataMd5Rq)
+	res := rsMsg.(*UserLogin.ConfigDataMd5Rs)
+
+	logger := ctx
+
+	defer func() {
+		logger.InfoWF("OnConfigDataMd5Rq end", zap.Any("req", req), zap.Any("res", res))
+	}()
+
+	res.Error = errors.NO_ERROR
+	cfg := config_manager.ShowSheet()
+	for _, v := range cfg {
+		res.Items = append(res.Items, &UserLogin.ConfigDataItem{
+			FileName:  proto.String(v.XlsxFile),
+			Md5:       proto.String(v.Md5),
+			SheetName: proto.String(v.XlsxSheet),
+		})
+	}
 	return nil
 }
