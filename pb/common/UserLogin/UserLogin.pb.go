@@ -658,6 +658,164 @@ func (x *UserLiveRs) GetServerTime() int64 {
 	return 0
 }
 
+/// 10500 UN_TCP_PACK_CLI_CONFIG_DATA_MD5_RQ 数值md5获取RQ
+type ConfigDataMd5Rq struct {
+	state         protoimpl.MessageState
+	sizeCache     protoimpl.SizeCache
+	unknownFields protoimpl.UnknownFields
+}
+
+func (x *ConfigDataMd5Rq) Reset() {
+	*x = ConfigDataMd5Rq{}
+	if protoimpl.UnsafeEnabled {
+		mi := &file_common_UserLogin_proto_msgTypes[7]
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		ms.StoreMessageInfo(mi)
+	}
+}
+
+func (x *ConfigDataMd5Rq) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*ConfigDataMd5Rq) ProtoMessage() {}
+
+func (x *ConfigDataMd5Rq) ProtoReflect() protoreflect.Message {
+	mi := &file_common_UserLogin_proto_msgTypes[7]
+	if protoimpl.UnsafeEnabled && x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use ConfigDataMd5Rq.ProtoReflect.Descriptor instead.
+func (*ConfigDataMd5Rq) Descriptor() ([]byte, []int) {
+	return file_common_UserLogin_proto_rawDescGZIP(), []int{7}
+}
+
+type ConfigDataItem struct {
+	state         protoimpl.MessageState
+	sizeCache     protoimpl.SizeCache
+	unknownFields protoimpl.UnknownFields
+
+	FileName  *string `protobuf:"bytes,1,opt,name=file_name,json=fileName" json:"file_name,omitempty"`
+	SheetName *string `protobuf:"bytes,2,opt,name=sheet_name,json=sheetName" json:"sheet_name,omitempty"`
+	Md5       *string `protobuf:"bytes,3,opt,name=md5" json:"md5,omitempty"`
+}
+
+func (x *ConfigDataItem) Reset() {
+	*x = ConfigDataItem{}
+	if protoimpl.UnsafeEnabled {
+		mi := &file_common_UserLogin_proto_msgTypes[8]
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		ms.StoreMessageInfo(mi)
+	}
+}
+
+func (x *ConfigDataItem) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*ConfigDataItem) ProtoMessage() {}
+
+func (x *ConfigDataItem) ProtoReflect() protoreflect.Message {
+	mi := &file_common_UserLogin_proto_msgTypes[8]
+	if protoimpl.UnsafeEnabled && x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use ConfigDataItem.ProtoReflect.Descriptor instead.
+func (*ConfigDataItem) Descriptor() ([]byte, []int) {
+	return file_common_UserLogin_proto_rawDescGZIP(), []int{8}
+}
+
+func (x *ConfigDataItem) GetFileName() string {
+	if x != nil && x.FileName != nil {
+		return *x.FileName
+	}
+	return ""
+}
+
+func (x *ConfigDataItem) GetSheetName() string {
+	if x != nil && x.SheetName != nil {
+		return *x.SheetName
+	}
+	return ""
+}
+
+func (x *ConfigDataItem) GetMd5() string {
+	if x != nil && x.Md5 != nil {
+		return *x.Md5
+	}
+	return ""
+}
+
+/// 10501 UN_TCP_PACK_CLI_CONFIG_DATA_MD5_RS 数值md5获取RS
+type ConfigDataMd5Rs struct {
+	state         protoimpl.MessageState
+	sizeCache     protoimpl.SizeCache
+	unknownFields protoimpl.UnknownFields
+
+	Error *MessageType.ErrorInfo `protobuf:"bytes,1,opt,name=error" json:"error,omitempty"`
+	Items []*ConfigDataItem      `protobuf:"bytes,2,rep,name=items" json:"items,omitempty"`
+}
+
+func (x *ConfigDataMd5Rs) Reset() {
+	*x = ConfigDataMd5Rs{}
+	if protoimpl.UnsafeEnabled {
+		mi := &file_common_UserLogin_proto_msgTypes[9]
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		ms.StoreMessageInfo(mi)
+	}
+}
+
+func (x *ConfigDataMd5Rs) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*ConfigDataMd5Rs) ProtoMessage() {}
+
+func (x *ConfigDataMd5Rs) ProtoReflect() protoreflect.Message {
+	mi := &file_common_UserLogin_proto_msgTypes[9]
+	if protoimpl.UnsafeEnabled && x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use ConfigDataMd5Rs.ProtoReflect.Descriptor instead.
+func (*ConfigDataMd5Rs) Descriptor() ([]byte, []int) {
+	return file_common_UserLogin_proto_rawDescGZIP(), []int{9}
+}
+
+func (x *ConfigDataMd5Rs) GetError() *MessageType.ErrorInfo {
+	if x != nil {
+		return x.Error
+	}
+	return nil
+}
+
+func (x *ConfigDataMd5Rs) GetItems() []*ConfigDataItem {
+	if x != nil {
+		return x.Items
+	}
+	return nil
+}
+
 var File_common_UserLogin_proto protoreflect.FileDescriptor
 
 var file_common_UserLogin_proto_rawDesc = []byte{
@@ -759,11 +917,25 @@ var file_common_UserLogin_proto_rawDesc = []byte{
 	0x65, 0x6e, 0x74, 0x5f, 0x74, 0x69, 0x6d, 0x65, 0x18, 0x04, 0x20, 0x01, 0x28, 0x03, 0x52, 0x0a,
 	0x63, 0x6c, 0x69, 0x65, 0x6e, 0x74, 0x54, 0x69, 0x6d, 0x65, 0x12, 0x1f, 0x0a, 0x0b, 0x73, 0x65,
 	0x72, 0x76, 0x65, 0x72, 0x5f, 0x74, 0x69, 0x6d, 0x65, 0x18, 0x05, 0x20, 0x01, 0x28, 0x03, 0x52,
-	0x0a, 0x73, 0x65, 0x72, 0x76, 0x65, 0x72, 0x54, 0x69, 0x6d, 0x65, 0x42, 0x35, 0x5a, 0x24, 0x6d,
-	0x61, 0x7a, 0x65, 0x5f, 0x67, 0x61, 0x6d, 0x65, 0x5f, 0x73, 0x65, 0x72, 0x76, 0x65, 0x72, 0x2f,
-	0x70, 0x62, 0x2f, 0x63, 0x6f, 0x6d, 0x6d, 0x6f, 0x6e, 0x2f, 0x55, 0x73, 0x65, 0x72, 0x4c, 0x6f,
-	0x67, 0x69, 0x6e, 0xaa, 0x02, 0x0c, 0x50, 0x62, 0x2e, 0x55, 0x73, 0x65, 0x72, 0x4c, 0x6f, 0x67,
-	0x69, 0x6e,
+	0x0a, 0x73, 0x65, 0x72, 0x76, 0x65, 0x72, 0x54, 0x69, 0x6d, 0x65, 0x22, 0x11, 0x0a, 0x0f, 0x43,
+	0x6f, 0x6e, 0x66, 0x69, 0x67, 0x44, 0x61, 0x74, 0x61, 0x4d, 0x64, 0x35, 0x52, 0x71, 0x22, 0x5e,
+	0x0a, 0x0e, 0x43, 0x6f, 0x6e, 0x66, 0x69, 0x67, 0x44, 0x61, 0x74, 0x61, 0x49, 0x74, 0x65, 0x6d,
+	0x12, 0x1b, 0x0a, 0x09, 0x66, 0x69, 0x6c, 0x65, 0x5f, 0x6e, 0x61, 0x6d, 0x65, 0x18, 0x01, 0x20,
+	0x01, 0x28, 0x09, 0x52, 0x08, 0x66, 0x69, 0x6c, 0x65, 0x4e, 0x61, 0x6d, 0x65, 0x12, 0x1d, 0x0a,
+	0x0a, 0x73, 0x68, 0x65, 0x65, 0x74, 0x5f, 0x6e, 0x61, 0x6d, 0x65, 0x18, 0x02, 0x20, 0x01, 0x28,
+	0x09, 0x52, 0x09, 0x73, 0x68, 0x65, 0x65, 0x74, 0x4e, 0x61, 0x6d, 0x65, 0x12, 0x10, 0x0a, 0x03,
+	0x6d, 0x64, 0x35, 0x18, 0x03, 0x20, 0x01, 0x28, 0x09, 0x52, 0x03, 0x6d, 0x64, 0x35, 0x22, 0x70,
+	0x0a, 0x0f, 0x43, 0x6f, 0x6e, 0x66, 0x69, 0x67, 0x44, 0x61, 0x74, 0x61, 0x4d, 0x64, 0x35, 0x52,
+	0x73, 0x12, 0x2c, 0x0a, 0x05, 0x65, 0x72, 0x72, 0x6f, 0x72, 0x18, 0x01, 0x20, 0x01, 0x28, 0x0b,
+	0x32, 0x16, 0x2e, 0x4d, 0x65, 0x73, 0x73, 0x61, 0x67, 0x65, 0x54, 0x79, 0x70, 0x65, 0x2e, 0x45,
+	0x72, 0x72, 0x6f, 0x72, 0x49, 0x6e, 0x66, 0x6f, 0x52, 0x05, 0x65, 0x72, 0x72, 0x6f, 0x72, 0x12,
+	0x2f, 0x0a, 0x05, 0x69, 0x74, 0x65, 0x6d, 0x73, 0x18, 0x02, 0x20, 0x03, 0x28, 0x0b, 0x32, 0x19,
+	0x2e, 0x55, 0x73, 0x65, 0x72, 0x4c, 0x6f, 0x67, 0x69, 0x6e, 0x2e, 0x43, 0x6f, 0x6e, 0x66, 0x69,
+	0x67, 0x44, 0x61, 0x74, 0x61, 0x49, 0x74, 0x65, 0x6d, 0x52, 0x05, 0x69, 0x74, 0x65, 0x6d, 0x73,
+	0x42, 0x35, 0x5a, 0x24, 0x6d, 0x61, 0x7a, 0x65, 0x5f, 0x67, 0x61, 0x6d, 0x65, 0x5f, 0x73, 0x65,
+	0x72, 0x76, 0x65, 0x72, 0x2f, 0x70, 0x62, 0x2f, 0x63, 0x6f, 0x6d, 0x6d, 0x6f, 0x6e, 0x2f, 0x55,
+	0x73, 0x65, 0x72, 0x4c, 0x6f, 0x67, 0x69, 0x6e, 0xaa, 0x02, 0x0c, 0x50, 0x62, 0x2e, 0x55, 0x73,
+	0x65, 0x72, 0x4c, 0x6f, 0x67, 0x69, 0x6e,
 }
 
 var (
@@ -778,7 +950,7 @@ func file_common_UserLogin_proto_rawDescGZIP() []byte {
 	return file_common_UserLogin_proto_rawDescData
 }
 
-var file_common_UserLogin_proto_msgTypes = make([]protoimpl.MessageInfo, 7)
+var file_common_UserLogin_proto_msgTypes = make([]protoimpl.MessageInfo, 10)
 var file_common_UserLogin_proto_goTypes = []interface{}{
 	(*UserLoginRq)(nil),           // 0: UserLogin.UserLoginRq
 	(*UserLoginRs)(nil),           // 1: UserLogin.UserLoginRs
@@ -787,18 +959,23 @@ var file_common_UserLogin_proto_goTypes = []interface{}{
 	(*MazeGameInfo)(nil),          // 4: UserLogin.MazeGameInfo
 	(*UserLiveRq)(nil),            // 5: UserLogin.UserLiveRq
 	(*UserLiveRs)(nil),            // 6: UserLogin.UserLiveRs
-	(*MessageType.ErrorInfo)(nil), // 7: MessageType.ErrorInfo
+	(*ConfigDataMd5Rq)(nil),       // 7: UserLogin.ConfigDataMd5Rq
+	(*ConfigDataItem)(nil),        // 8: UserLogin.ConfigDataItem
+	(*ConfigDataMd5Rs)(nil),       // 9: UserLogin.ConfigDataMd5Rs
+	(*MessageType.ErrorInfo)(nil), // 10: MessageType.ErrorInfo
 }
 var file_common_UserLogin_proto_depIdxs = []int32{
-	7, // 0: UserLogin.UserLoginRs.error:type_name -> MessageType.ErrorInfo
-	2, // 1: UserLogin.UserLoginRs.tipsDialog:type_name -> UserLogin.TipsDialogInfo
-	4, // 2: UserLogin.AuthInfoToClient.maze:type_name -> UserLogin.MazeGameInfo
-	7, // 3: UserLogin.UserLiveRs.error:type_name -> MessageType.ErrorInfo
-	4, // [4:4] is the sub-list for method output_type
-	4, // [4:4] is the sub-list for method input_type
-	4, // [4:4] is the sub-list for extension type_name
-	4, // [4:4] is the sub-list for extension extendee
-	0, // [0:4] is the sub-list for field type_name
+	10, // 0: UserLogin.UserLoginRs.error:type_name -> MessageType.ErrorInfo
+	2,  // 1: UserLogin.UserLoginRs.tipsDialog:type_name -> UserLogin.TipsDialogInfo
+	4,  // 2: UserLogin.AuthInfoToClient.maze:type_name -> UserLogin.MazeGameInfo
+	10, // 3: UserLogin.UserLiveRs.error:type_name -> MessageType.ErrorInfo
+	10, // 4: UserLogin.ConfigDataMd5Rs.error:type_name -> MessageType.ErrorInfo
+	8,  // 5: UserLogin.ConfigDataMd5Rs.items:type_name -> UserLogin.ConfigDataItem
+	6,  // [6:6] is the sub-list for method output_type
+	6,  // [6:6] is the sub-list for method input_type
+	6,  // [6:6] is the sub-list for extension type_name
+	6,  // [6:6] is the sub-list for extension extendee
+	0,  // [0:6] is the sub-list for field type_name
 }
 
 func init() { file_common_UserLogin_proto_init() }
@@ -891,6 +1068,42 @@ func file_common_UserLogin_proto_init() {
 				return nil
 			}
 		}
+		file_common_UserLogin_proto_msgTypes[7].Exporter = func(v interface{}, i int) interface{} {
+			switch v := v.(*ConfigDataMd5Rq); i {
+			case 0:
+				return &v.state
+			case 1:
+				return &v.sizeCache
+			case 2:
+				return &v.unknownFields
+			default:
+				return nil
+			}
+		}
+		file_common_UserLogin_proto_msgTypes[8].Exporter = func(v interface{}, i int) interface{} {
+			switch v := v.(*ConfigDataItem); i {
+			case 0:
+				return &v.state
+			case 1:
+				return &v.sizeCache
+			case 2:
+				return &v.unknownFields
+			default:
+				return nil
+			}
+		}
+		file_common_UserLogin_proto_msgTypes[9].Exporter = func(v interface{}, i int) interface{} {
+			switch v := v.(*ConfigDataMd5Rs); i {
+			case 0:
+				return &v.state
+			case 1:
+				return &v.sizeCache
+			case 2:
+				return &v.unknownFields
+			default:
+				return nil
+			}
+		}
 	}
 	type x struct{}
 	out := protoimpl.TypeBuilder{
@@ -898,7 +1111,7 @@ func file_common_UserLogin_proto_init() {
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
 			RawDescriptor: file_common_UserLogin_proto_rawDesc,
 			NumEnums:      0,
-			NumMessages:   7,
+			NumMessages:   10,
 			NumExtensions: 0,
 			NumServices:   0,
 		},
