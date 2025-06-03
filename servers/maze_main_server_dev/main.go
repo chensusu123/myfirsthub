@@ -25,7 +25,10 @@ func main() {
 		loadconfigapi.SetInitConfigCacheFunc(business.GCustomBusiness.Init)
 	} else {
 		mockio.SetNaming(naming.NewClientSuite("./conf.d/polaris.yaml"))
-		loadconfigapi.InitConfigRpcClient()
+		// loadconfigapi.InitConfigRpcClient()
+		fkserver.AddBusiness(&business.GCustomBusiness)
+		loadconfigapi.SetLoadConfigFunc(business.GCustomBusiness.LoadCacheConfig)
+		loadconfigapi.SetInitConfigCacheFunc(business.GCustomBusiness.Init)
 		polarismessSvc := polarismessvc.NewPolarismesSvc()
 		fkserver.AddBusiness(polarismessSvc)
 	}
