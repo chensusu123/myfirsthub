@@ -273,7 +273,7 @@ func (x *AlterUserInfoRQ) GetAlterInfo() *UserInfo {
 }
 
 //## 10484 UN_TCP_PACK_CLI_ALTER_USER_INFO_RS
-// 修改用户资料应答包
+// 修改用户资料应答包 注释
 type AlterUserInfoRS struct {
 	state         protoimpl.MessageState
 	sizeCache     protoimpl.SizeCache
