@@ -5,9 +5,7 @@ import (
 	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fkredis"
 )
 
-var (
-	gRedis = &fkredis.FkRedis{}
-)
+var gRedis = &fkredis.FkRedis{}
 
 func init() {
 	// 21637 maze:assemble:info:u:%llu 迷宫游戏装配数据存储

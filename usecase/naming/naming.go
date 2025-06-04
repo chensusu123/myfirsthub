@@ -25,40 +25,48 @@ func NewClientSuite(cfgName string) *ClientSuite {
 	}
 }
 
-func (n *ClientSuite) GetServer(typeID int32, groupID int32) []string {
+func (n *ClientSuite) GetServer(svrName string, groupID int32) ([]string, error) {
 	if n.Resolver == nil {
-		return []string{}
+		return []string{}, nil
 	}
-	x, err := n.Resolver.Resolve(context.Background(), "minigame-test:config_data.rpc")
+	desc := fmt.Sprintf("%s:%s", "minigame-test", svrName)
+	x, err := n.Resolver.Resolve(context.Background(), desc)
 	if err != nil {
 		n.ErrorWF("GetServer error", zap.Error(err))
-		return []string{}
+		return []string{}, nil
 	}
 	for _, v := range x.Instances {
 		n.InfoWF("GetServer ", zap.Any("server", v.Address()))
-		return []string{v.Address().String()}
+		return []string{v.Address().String()}, nil
 	}
 	// n.InfoWF("GetServer", zap.Any("server", x))
-	return []string{}
+	return []string{}, nil
 }
 
-func (n *ClientSuite) GetDB(typeID int32, groupID int32) string {
-	n.InfoWF("GetDB", zap.Any("typeID", typeID), zap.Any("groupID", groupID))
+func (n *ClientSuite) GetDB(dbName string, groupID int32) (string, error) {
+	n.InfoWF("GetDB", zap.Any("dbName", dbName), zap.Any("groupID", groupID))
 	if n.Resolver == nil {
-		return ""
+		return "", nil
 	}
-	x, err := n.Resolver.Resolve(context.Background(), "minigame-test:maze_main_server.redis")
+	desc := fmt.Sprintf("%s:%s", "minigame-test", dbName)
+	x, err := n.Resolver.Resolve(context.Background(), desc)
 	if err != nil {
 		n.ErrorWF("GetDB resolve error", zap.Error(err))
-		return ""
+		return "", nil
 	}
 
 	for _, v := range x.Instances {
-		n.InfoWF("GetDB ", zap.Any("server", v.Address()))
-		return v.Address().String()
+		n.InfoWF("GetDB ", zap.Any("dbName", dbName), zap.Any("server", v.Address()))
+		return v.Address().String(), nil
 	}
 	// n.InfoWF("GetDB ", zap.Any("server", x))
-	return ""
+	return "", nil
+}
+
+func (n *ClientSuite) GetDBUserAndPassword(dbName string, groupID int32) (string, string, error) {
+	n.InfoWF("GetDBUserAndPassword", zap.Any("dbName", dbName), zap.Any("groupID", groupID))
+
+	return "majiange", "162>wind", nil
 }
 
 func (n *ClientSuite) Init() error {

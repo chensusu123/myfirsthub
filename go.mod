@@ -19,7 +19,7 @@ require (
 	github.com/polarismesh/polaris-go v1.6.1
 	github.com/samber/slog-zap/v2 v2.6.2
 	github.com/xuri/excelize/v2 v2.9.0
-	gitlab.ifreetalk.com/maze-plate/freetk v1.0.1-0.20250529135724-e17b8f2fbc29
+	gitlab.ifreetalk.com/maze-plate/freetk v1.0.1-0.20250604025518-fb76515028f3
 	go.uber.org/atomic v1.11.0
 	go.uber.org/zap v1.27.0
 	google.golang.org/protobuf v1.33.0
