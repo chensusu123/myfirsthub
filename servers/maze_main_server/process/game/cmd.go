@@ -4,16 +4,11 @@ import (
 	"strings"
 	"time"
 
-	"google.golang.org/protobuf/proto"
-	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fklog"
-	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fknet"
-	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fkprometheus"
-	"gitlab.ifreetalk.com/maze-plate/freetk/fkserver"
-	"gitlab.ifreetalk.com/maze-plate/freetk/fkutil"
 	"maze_game_server/common/constdef"
 	"maze_game_server/common/errors"
 	"maze_game_server/common/function/uniqueid"
 	"maze_game_server/io/redis/mazebarriermoneyredis"
+	"maze_game_server/io/redis/mazeboxredis"
 	"maze_game_server/io/redis/mazechallengenumredis"
 	"maze_game_server/io/redis/mazecollectredis"
 	"maze_game_server/io/redis/mazeequipgetnumredis"
@@ -23,6 +18,13 @@ import (
 	"maze_game_server/pb/common/MazeGame"
 	"maze_game_server/pb/server/MazeEnergySvr"
 	"maze_game_server/servers/maze_main_server/process/game/energy"
+
+	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fklog"
+	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fknet"
+	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fkprometheus"
+	"gitlab.ifreetalk.com/maze-plate/freetk/fkserver"
+	"gitlab.ifreetalk.com/maze-plate/freetk/fkutil"
+	"google.golang.org/protobuf/proto"
 
 	"go.uber.org/zap"
 )
@@ -145,6 +147,10 @@ func ParseCmd(logger fklog.FKLogI, uid uint64, cmdCode int32, cmd string, sessio
 			params[datas[0]] = datas[1]
 		}
 		logger.InfoWF("ParseCmd ClearBarrier dump params", zap.Any("params", params))
+		err = mazeboxredis.ClearOpenBoxTime(logger, fkutil.ToUint64(params["user"]))
+		if err != nil {
+			logger.ErrorWF("ParseCmd ClearOpenBoxTime fail", zap.Error(err), zap.Uint64("userID", fkutil.ToUint64(params["user"])))
+		}
 		err = ClearBarrier(logger, fkutil.ToUint64(params["user"]))
 		return
 	case 1005:
