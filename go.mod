@@ -16,6 +16,7 @@ require (
 	github.com/hertz-contrib/websocket v0.2.0
 	github.com/json-iterator/go v1.1.12
 	github.com/lonng/nano v0.5.1
+	github.com/polarismesh/polaris-go v1.6.1
 	github.com/samber/slog-zap/v2 v2.6.2
 	github.com/xuri/excelize/v2 v2.9.0
 	gitlab.ifreetalk.com/maze-plate/freetk v1.0.1-0.20250529135724-e17b8f2fbc29
@@ -58,7 +59,6 @@ require (
 	github.com/opentracing/opentracing-go v1.2.0 // indirect
 	github.com/orcaman/concurrent-map v1.0.0 // indirect
 	github.com/pkg/errors v0.9.1 // indirect
-	github.com/polarismesh/polaris-go v1.6.1 // indirect
 	github.com/polarismesh/specification v1.5.5-alpha.1 // indirect
 	github.com/prometheus/client_golang v1.17.0 // indirect
 	github.com/prometheus/client_model v0.5.0 // indirect
