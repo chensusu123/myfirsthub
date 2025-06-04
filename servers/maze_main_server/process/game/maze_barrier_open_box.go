@@ -7,6 +7,7 @@ import (
 	"maze_game_server/common/function/gentradeno"
 	"maze_game_server/config/GMazeBoxV8Cfg"
 	"maze_game_server/config/GMazeItemsV8Cfg"
+	"maze_game_server/io/redis/mazeboxredis"
 	"maze_game_server/pb/common/MazeCommon"
 	"maze_game_server/pb/common/MazeGame"
 	"maze_game_server/pb/server/MazeEquipSvr"
@@ -52,10 +53,29 @@ func OnBarrierOpenBoxRQ(logger fknet.TCPContext, shardingID uint64, rqMsg proto.
 		return
 	}
 
+	opened, err := mazeboxredis.IsOpenedBox(logger, userId, int32(req.GetBoxId()))
+	if err != nil {
+		logger.ErrorWF("OnBarrierOpenBoxRQ IsOpenedBox fail", zap.Error(err), zap.Any("boxId", req.GetBoxId()), zap.Any("barrierId", req.GetBarrierId()))
+		res.ErrInfo = errors.COMMON_ERROR_TIPS.Wrap("宝箱打开失败")
+		return
+	}
+
+	var (
+		awardEquip []int32
+		dropItem   map[int32]int64
+	)
+	if opened > 0 {
+		awardEquip = boxCfg.Award_equip
+		dropItem = boxCfg.Drop_item
+	} else {
+		awardEquip = boxCfg.Award_equip_first
+		dropItem = boxCfg.Drop_item_first
+	}
+
 	// 宝箱掉落装备
 	tradeNo := gentradeno.GetTradeNum()
 	equip := make(map[int32]int32)
-	for _, v := range boxCfg.Award_equip {
+	for _, v := range awardEquip {
 		if v > 0 {
 			equip[v] += 1
 		}
@@ -70,7 +90,7 @@ func OnBarrierOpenBoxRQ(logger fknet.TCPContext, shardingID uint64, rqMsg proto.
 
 	var bagItems []*MazeCommon.MazeItem
 	// 增加掉落物品返回
-	for itemID, count := range boxCfg.Drop_item {
+	for itemID, count := range dropItem {
 		if itemID > 0 {
 			itemCfg := GMazeItemsV8Cfg.Get(itemID)
 			if itemCfg == nil {
@@ -94,12 +114,18 @@ func OnBarrierOpenBoxRQ(logger fknet.TCPContext, shardingID uint64, rqMsg proto.
 	if len(bagItems) > 0 {
 		errInfo := gentradeno.AddItemEx(logger, userId, 697, tradeNo, req.GetHeader(), bagItems...)
 		if errInfo != nil {
-			logger.ErrorWF("OnMazeBarrierPassRQ AddItemEx fail", zap.Any("errInfo", errInfo), zap.Any("bagItems", bagItems))
+			logger.ErrorWF("OnBarrierOpenBoxRQ AddItemEx fail", zap.Any("errInfo", errInfo), zap.Any("bagItems", bagItems))
 		}
 	}
 
 	// 通关值
 	res.Kongfu = proto.Int32(boxCfg.Add_kongfu)
+
+	// 标记宝箱已打开过
+	err = mazeboxredis.SetOpenBoxTime(logger, userId, int32(req.GetBoxId()))
+	if err != nil {
+		logger.ErrorWF("OnBarrierOpenBoxRQ SetOpenBoxTime fail", zap.Error(err), zap.Any("boxId", req.GetBoxId()), zap.Any("barrierId", req.GetBarrierId()))
+	}
 
 	return nil
 }
