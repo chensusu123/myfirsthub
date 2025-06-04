@@ -1,10 +1,12 @@
 package game
 
 import (
+	"fmt"
 	"maze_game_server/common/errors"
 	"maze_game_server/common/function/addequip"
 	"maze_game_server/common/function/gentradeno"
 	"maze_game_server/config/GMazeBoxV8Cfg"
+	"maze_game_server/config/GMazeItemsV8Cfg"
 	"maze_game_server/pb/common/MazeCommon"
 	"maze_game_server/pb/common/MazeGame"
 	"maze_game_server/pb/server/MazeEquipSvr"
@@ -66,12 +68,36 @@ func OnBarrierOpenBoxRQ(logger fknet.TCPContext, shardingID uint64, rqMsg proto.
 		}
 	}
 
+	var bagItems []*MazeCommon.MazeItem
 	// 增加掉落物品返回
 	for itemID, count := range boxCfg.Drop_item {
 		if itemID > 0 {
-			res.Awards = append(res.Awards, &MazeCommon.MazeItem{ItemId: proto.Int32(itemID), Count: proto.Int64(count)})
+			itemCfg := GMazeItemsV8Cfg.Get(itemID)
+			if itemCfg == nil {
+				logger.ErrorWF("OnBarrierOpenBoxRQ item not found", zap.Error(fmt.Errorf("item: %d not found", itemID)), zap.Any("boxId", req.GetBoxId()))
+			} else {
+				res.Awards = append(res.Awards, &MazeCommon.MazeItem{
+					ItemId: proto.Int32(itemID),
+					Count:  proto.Int64(count),
+				})
+				// 背包道具
+				if itemCfg.Is_bag == 3 {
+					bagItems = append(bagItems, &MazeCommon.MazeItem{
+						ItemId: proto.Int32(itemID),
+						Count:  proto.Int64(count),
+					})
+				}
+			}
 		}
 	}
+	// 处理需要加入背包的道具
+	if len(bagItems) > 0 {
+		errInfo := gentradeno.AddItemEx(logger, userId, 697, tradeNo, req.GetHeader(), bagItems...)
+		if errInfo != nil {
+			logger.ErrorWF("OnMazeBarrierPassRQ AddItemEx fail", zap.Any("errInfo", errInfo), zap.Any("bagItems", bagItems))
+		}
+	}
+
 	// 通关值
 	res.Kongfu = proto.Int32(boxCfg.Add_kongfu)
 
