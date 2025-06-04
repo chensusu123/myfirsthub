@@ -5,14 +5,11 @@ import (
 	"maze_game_server/io/redis/UnionIDBindRedis"
 	"maze_game_server/io/redis/useridredis"
 	"maze_game_server/lib/log"
+	"maze_game_server/lib/nano/session"
 	"maze_game_server/pb/common/UserLogin"
 	"maze_game_server/usecase/online"
 	"time"
 
-	"maze_game_server/lib/nano/session"
-
-	"gitlab.ifreetalk.com/maze-plate/extra/protobuf/proto"
-	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fknet"
 	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fkprometheus"
 	"gitlab.ifreetalk.com/maze-plate/freetk/fkserver/config_manager"
 	"go.uber.org/zap"
@@ -103,15 +100,14 @@ func (a *Auth) OnLiveRQ_10494_10495(s *session.Session, req *UserLogin.UserLiveR
 	return nil
 }
 
-func OnConfigDataMd5Rq(ctx fknet.TCPContext, shardingID uint64, rqMsg proto.Message, rsMsg proto.Message) (err error) {
-	fkprometheus.InfoPMT("OnConfigDataMd5Rq")()
+func (a *Auth) OnConfigDataMd5Rq_10500_10501(s *session.Session, req *UserLogin.ConfigDataMd5Rq) (err error) {
+	defer fkprometheus.InfoPMT("OnConfigDataMd5Rq")()
 
-	req := rqMsg.(*UserLogin.ConfigDataMd5Rq)
-	res := rsMsg.(*UserLogin.ConfigDataMd5Rs)
-
-	logger := ctx
+	logger := log.Clone("Auth", uint64(s.UID()), 0)
+	res := &UserLogin.ConfigDataMd5Rs{}
 
 	defer func() {
+		err = s.Response(res)
 		logger.InfoWF("OnConfigDataMd5Rq end", zap.Any("req", req), zap.Any("res", res))
 	}()
 
