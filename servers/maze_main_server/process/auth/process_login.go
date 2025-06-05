@@ -1,6 +1,8 @@
 package auth
 
 import (
+	"time"
+
 	"maze_game_server/common/errors"
 	"maze_game_server/io/redis/UnionIDBindRedis"
 	"maze_game_server/io/redis/useridredis"
@@ -8,7 +10,6 @@ import (
 	"maze_game_server/lib/nano/session"
 	"maze_game_server/pb/common/UserLogin"
 	"maze_game_server/usecase/online"
-	"time"
 
 	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fkprometheus"
 	"gitlab.ifreetalk.com/maze-plate/freetk/fkserver/config_manager"
@@ -113,12 +114,16 @@ func (a *Auth) OnConfigDataMd5Rq_10500_10501(s *session.Session, req *UserLogin.
 
 	res.Error = errors.NO_ERROR
 	cfg := config_manager.ShowSheet()
+	var serverGitVersion string
 	for _, v := range cfg {
 		res.Items = append(res.Items, &UserLogin.ConfigDataItem{
 			FileName:  proto.String(v.XlsxFile),
 			Md5:       proto.String(v.Md5),
 			SheetName: proto.String(v.XlsxSheet),
 		})
+		serverGitVersion = v.GitVersion
 	}
+
+	res.Result = proto.Bool(serverGitVersion == req.GetConfigVersion())
 	return nil
 }
