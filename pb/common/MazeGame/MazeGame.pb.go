@@ -217,8 +217,8 @@ type BattleEventType int32
 
 const (
 	BattleEventType_UNKNOWN         BattleEventType = 0 // 默认值
-	BattleEventType_ATTACK_MONSTER  BattleEventType = 1 // 攻击怪物上报
-	BattleEventType_BE_ATTACKED     BattleEventType = 2 // 怪物被攻击上报
+	BattleEventType_ATTACK_MONSTER  BattleEventType = 1 // 人攻击怪物上报
+	BattleEventType_BE_ATTACKED     BattleEventType = 2 // 怪物攻击人上报
 	BattleEventType_MONSTER_DEAD    BattleEventType = 3 // 怪物死亡上报
 	BattleEventType_REFRESH_MONSTER BattleEventType = 4 // 怪物刷新
 	BattleEventType_TRIGGER_TRAP    BattleEventType = 5 // 触发机关
