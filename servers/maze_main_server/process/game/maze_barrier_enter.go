@@ -7,6 +7,7 @@ import (
 	"maze_game_server/config/GMazeActionCountV8Cfg"
 	"maze_game_server/config/GMazeBarriesV8Cfg"
 	"maze_game_server/config/GMazeLevelV8Cfg"
+	"maze_game_server/io/redis/mazebarriereventredis"
 	"maze_game_server/io/redis/mazebarriertempbuffredis"
 	"maze_game_server/io/redis/mazechallengenumredis"
 	"maze_game_server/io/redis/mazeuserbarrierredis"
@@ -223,6 +224,11 @@ func (g *Game) OnMazeBarrierEnterRQ_10447_10448(s *session.Session, req *MazeGam
 		Diamond:    proto.Int64(diamond),
 		EquipPoint: proto.Int64(int64(shopInfo.EquipPoints)),
 		Energy:     proto.Int32(curEnergy),
+	}
+
+	err = mazebarriereventredis.EnterBarrier(logger, userId, req.GetBarrierId())
+	if err != nil {
+		logger.ErrorWF("OnMazeBarrierEnterRQ EnterBarrier fail", zap.Error(err))
 	}
 
 	return nil

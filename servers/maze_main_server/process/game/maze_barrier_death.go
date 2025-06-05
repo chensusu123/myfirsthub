@@ -6,6 +6,7 @@ import (
 	"maze_game_server/common/errors"
 	"maze_game_server/io/kafka/mazebarrieruserkafka"
 	"maze_game_server/io/kafka/mazeuserlevelkafka"
+	"maze_game_server/io/redis/mazebarriereventredis"
 	"maze_game_server/io/redis/mazeuserbarrierredis"
 	"maze_game_server/lib/log"
 	"maze_game_server/lib/nano/session"
@@ -110,6 +111,11 @@ func (g *Game) OnMazeBarrierDeathRQ_10449_10450(s *session.Session, req *MazeGam
 		logger.ErrorWF("OnMazeBarrierDeathRQ SetUserBarrierInfo fail", zap.Error(err))
 		res.ErrInfo = errors.MODULE_ERROR.ToInfo()
 		return
+	}
+
+	err = mazebarriereventredis.LeaveBarrier(logger, userId, req.GetBarrierId(), false)
+	if err != nil {
+		logger.ErrorWF("OnMazeBarrierPassRQ LeaveBarrier fail", zap.Error(err))
 	}
 
 	if req.GetFoeExp() > 0 {
