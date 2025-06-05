@@ -21,7 +21,7 @@ const (
 	_ = protoimpl.EnforceVersion(protoimpl.MaxVersion - 20)
 )
 
-/// 10492	UN_TCP_PACK_CLI_LOGIN_SYS_RQ	登录系统包RQ//
+//## 10492	UN_TCP_PACK_CLI_LOGIN_SYS_RQ	登录系统包RQ//
 type UserLoginRq struct {
 	state         protoimpl.MessageState
 	sizeCache     protoimpl.SizeCache
@@ -197,7 +197,7 @@ func (x *UserLoginRq) GetClientTime() int64 {
 	return 0
 }
 
-/// 10493	UN_TCP_PACK_CLI_LOGIN_SYS_RS	登录系统包RS
+//## 10493	UN_TCP_PACK_CLI_LOGIN_SYS_RS	登录系统包RS
 type UserLoginRs struct {
 	state         protoimpl.MessageState
 	sizeCache     protoimpl.SizeCache
@@ -482,7 +482,7 @@ func (x *MazeGameInfo) GetStage() int32 {
 	return 0
 }
 
-/// 10494	UN_TCP_PACK_CLI_LIVE_SYS_RQ	心跳系统包RQ
+//## 10494	UN_TCP_PACK_CLI_LIVE_SYS_RQ	心跳系统包RQ
 type UserLiveRq struct {
 	state         protoimpl.MessageState
 	sizeCache     protoimpl.SizeCache
@@ -578,7 +578,7 @@ func (x *UserLiveRq) GetCustormVersion() string {
 	return ""
 }
 
-/// 10495	UN_TCP_PACK_CLI_LIVE_SYS_RS	心跳系统包RS
+//## 10495	UN_TCP_PACK_CLI_LIVE_SYS_RS	心跳系统包RS
 type UserLiveRs struct {
 	state         protoimpl.MessageState
 	sizeCache     protoimpl.SizeCache
@@ -658,7 +658,7 @@ func (x *UserLiveRs) GetServerTime() int64 {
 	return 0
 }
 
-/// 10500 UN_TCP_PACK_CLI_CONFIG_DATA_MD5_RQ 数值md5获取RQ
+//## 10500 UN_TCP_PACK_CLI_CONFIG_DATA_MD5_RQ 数值md5获取RQ
 type ConfigDataMd5Rq struct {
 	state         protoimpl.MessageState
 	sizeCache     protoimpl.SizeCache
@@ -760,7 +760,7 @@ func (x *ConfigDataItem) GetMd5() string {
 	return ""
 }
 
-/// 10501 UN_TCP_PACK_CLI_CONFIG_DATA_MD5_RS 数值md5获取RS
+//## 10501 UN_TCP_PACK_CLI_CONFIG_DATA_MD5_RS 数值md5获取RS
 type ConfigDataMd5Rs struct {
 	state         protoimpl.MessageState
 	sizeCache     protoimpl.SizeCache
