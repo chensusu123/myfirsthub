@@ -221,3 +221,15 @@ func GetEffectAttrValue(attrValue int32, attrValueVariableId map[int32]int32, us
 	}
 	return int64(effectAttrValue)
 }
+
+func GetAttrValue(attrValue int32, attrValueVariableId map[int32]int32, userAttrMap map[int32]int64) int64 {
+	effectAttrValue := attrValue
+	for k, v := range attrValueVariableId {
+		if v == 1 {
+			effectAttrValue += int32(userAttrMap[k])
+		} else if v == 2 {
+			effectAttrValue -= int32(userAttrMap[k])
+		}
+	}
+	return int64(effectAttrValue)
+}

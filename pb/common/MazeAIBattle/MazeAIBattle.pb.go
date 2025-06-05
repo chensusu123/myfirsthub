@@ -857,12 +857,15 @@ type MazeAIAutoSkillInfo struct {
 	sizeCache     protoimpl.SizeCache
 	unknownFields protoimpl.UnknownFields
 
-	SkillId        *int32                   `protobuf:"varint,1,opt,name=skill_id,json=skillId" json:"skill_id,omitempty"`                        //技能ID
-	AttrId         *int32                   `protobuf:"varint,2,opt,name=attr_id,json=attrId" json:"attr_id,omitempty"`                           //属性id(区分唯一的)
-	BaseHitrate    *int32                   `protobuf:"varint,3,opt,name=base_hitrate,json=baseHitrate" json:"base_hitrate,omitempty"`            // 基础命中率（万分比）
-	TriggerCount   *int32                   `protobuf:"varint,4,opt,name=trigger_count,json=triggerCount" json:"trigger_count,omitempty"`         // 触发次数
-	TriggerSkillId []int32                  `protobuf:"varint,5,rep,name=trigger_skill_id,json=triggerSkillId" json:"trigger_skill_id,omitempty"` //触发技能id
-	ValueList      []*MazeAIEffectValueInfo `protobuf:"bytes,6,rep,name=value_list,json=valueList" json:"value_list,omitempty"`                   //参数一 五六...
+	SkillId         *int32                `protobuf:"varint,1,opt,name=skill_id,json=skillId" json:"skill_id,omitempty"`                        //技能ID
+	BaseHitrate     *int32                `protobuf:"varint,2,opt,name=base_hitrate,json=baseHitrate" json:"base_hitrate,omitempty"`            // 基础命中率（万分比） release_ratio
+	TriggerCount    *int32                `protobuf:"varint,3,opt,name=trigger_count,json=triggerCount" json:"trigger_count,omitempty"`         // 触发次数 release_num
+	TriggerSkillId  []int32               `protobuf:"varint,4,rep,name=trigger_skill_id,json=triggerSkillId" json:"trigger_skill_id,omitempty"` //触发技能id skill_id
+	ProtectCd       *int32                `protobuf:"varint,5,opt,name=protect_cd,json=protectCd" json:"protect_cd,omitempty"`                  //保护cd auto_release_protect_cd
+	LimitCount      *int32                `protobuf:"varint,6,opt,name=limit_count,json=limitCount" json:"limit_count,omitempty"`               //限制次数 mMax_release_limit
+	TriggerType     *int32                `protobuf:"varint,7,opt,name=trigger_type,json=triggerType" json:"trigger_type,omitempty"`            //触发时机 release_time
+	Condition       *string               `protobuf:"bytes,8,opt,name=condition" json:"condition,omitempty"`                                    //条件 release_condition
+	ConditionConfig []*MazeSkillCondition `protobuf:"bytes,9,rep,name=condition_config,json=conditionConfig" json:"condition_config,omitempty"` //配置
 }
 
 func (x *MazeAIAutoSkillInfo) Reset() {
@@ -904,13 +907,6 @@ func (x *MazeAIAutoSkillInfo) GetSkillId() int32 {
 	return 0
 }
 
-func (x *MazeAIAutoSkillInfo) GetAttrId() int32 {
-	if x != nil && x.AttrId != nil {
-		return *x.AttrId
-	}
-	return 0
-}
-
 func (x *MazeAIAutoSkillInfo) GetBaseHitrate() int32 {
 	if x != nil && x.BaseHitrate != nil {
 		return *x.BaseHitrate
@@ -932,11 +928,111 @@ func (x *MazeAIAutoSkillInfo) GetTriggerSkillId() []int32 {
 	return nil
 }
 
-func (x *MazeAIAutoSkillInfo) GetValueList() []*MazeAIEffectValueInfo {
+func (x *MazeAIAutoSkillInfo) GetProtectCd() int32 {
+	if x != nil && x.ProtectCd != nil {
+		return *x.ProtectCd
+	}
+	return 0
+}
+
+func (x *MazeAIAutoSkillInfo) GetLimitCount() int32 {
+	if x != nil && x.LimitCount != nil {
+		return *x.LimitCount
+	}
+	return 0
+}
+
+func (x *MazeAIAutoSkillInfo) GetTriggerType() int32 {
+	if x != nil && x.TriggerType != nil {
+		return *x.TriggerType
+	}
+	return 0
+}
+
+func (x *MazeAIAutoSkillInfo) GetCondition() string {
+	if x != nil && x.Condition != nil {
+		return *x.Condition
+	}
+	return ""
+}
+
+func (x *MazeAIAutoSkillInfo) GetConditionConfig() []*MazeSkillCondition {
 	if x != nil {
-		return x.ValueList
+		return x.ConditionConfig
 	}
 	return nil
+}
+
+// 条件
+type MazeSkillCondition struct {
+	state         protoimpl.MessageState
+	sizeCache     protoimpl.SizeCache
+	unknownFields protoimpl.UnknownFields
+
+	ConditionId *int32 `protobuf:"varint,1,opt,name=condition_id,json=conditionId" json:"condition_id,omitempty"` //条件ID
+	Type        *int32 `protobuf:"varint,2,opt,name=type" json:"type,omitempty"`                                  //类型
+	Symbol      *int32 `protobuf:"varint,3,opt,name=symbol" json:"symbol,omitempty"`                              //符号
+	Value       *int32 `protobuf:"varint,4,opt,name=value" json:"value,omitempty"`                                //参数
+}
+
+func (x *MazeSkillCondition) Reset() {
+	*x = MazeSkillCondition{}
+	if protoimpl.UnsafeEnabled {
+		mi := &file_common_MazeAIBattle_proto_msgTypes[9]
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		ms.StoreMessageInfo(mi)
+	}
+}
+
+func (x *MazeSkillCondition) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*MazeSkillCondition) ProtoMessage() {}
+
+func (x *MazeSkillCondition) ProtoReflect() protoreflect.Message {
+	mi := &file_common_MazeAIBattle_proto_msgTypes[9]
+	if protoimpl.UnsafeEnabled && x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use MazeSkillCondition.ProtoReflect.Descriptor instead.
+func (*MazeSkillCondition) Descriptor() ([]byte, []int) {
+	return file_common_MazeAIBattle_proto_rawDescGZIP(), []int{9}
+}
+
+func (x *MazeSkillCondition) GetConditionId() int32 {
+	if x != nil && x.ConditionId != nil {
+		return *x.ConditionId
+	}
+	return 0
+}
+
+func (x *MazeSkillCondition) GetType() int32 {
+	if x != nil && x.Type != nil {
+		return *x.Type
+	}
+	return 0
+}
+
+func (x *MazeSkillCondition) GetSymbol() int32 {
+	if x != nil && x.Symbol != nil {
+		return *x.Symbol
+	}
+	return 0
+}
+
+func (x *MazeSkillCondition) GetValue() int32 {
+	if x != nil && x.Value != nil {
+		return *x.Value
+	}
+	return 0
 }
 
 // 技能信息
@@ -947,31 +1043,29 @@ type MazeAISkillInfo struct {
 
 	SkillId                      *int32                         `protobuf:"varint,1,opt,name=skill_id,json=skillId" json:"skill_id,omitempty"`                                                                       //技能ID
 	SkillGroup                   *int32                         `protobuf:"varint,2,opt,name=skill_group,json=skillGroup" json:"skill_group,omitempty"`                                                              //技能组
-	CampType                     *int32                         `protobuf:"varint,3,opt,name=camp_type,json=campType" json:"camp_type,omitempty"`                                                                    //阵营类型 1友方 2 敌方
-	TargetType                   *int32                         `protobuf:"varint,4,opt,name=target_type,json=targetType" json:"target_type,omitempty"`                                                              //目标类型  1目标单体 2 自身单体 3 目标范围 4自身范围
-	RangeRadius                  *int32                         `protobuf:"varint,5,opt,name=range_radius,json=rangeRadius" json:"range_radius,omitempty"`                                                           //范围半径 如果target_type是3和4范围的话，半径
-	ReleaseDistance              *int32                         `protobuf:"varint,6,opt,name=release_distance,json=releaseDistance" json:"release_distance,omitempty"`                                               //释放距离
-	ReleaseCd                    *int32                         `protobuf:"varint,7,opt,name=release_cd,json=releaseCd" json:"release_cd,omitempty"`                                                                 //触发cd
-	TargetMaxCount               *int32                         `protobuf:"varint,8,opt,name=target_max_count,json=targetMaxCount" json:"target_max_count,omitempty"`                                                //最大数量
-	CanReleaseState              []int32                        `protobuf:"varint,9,rep,name=can_release_state,json=canReleaseState" json:"can_release_state,omitempty"`                                             //可释放状态
-	CanReleaseTargetState        []int32                        `protobuf:"varint,10,rep,name=can_release_target_state,json=canReleaseTargetState" json:"can_release_target_state,omitempty"`                        //可释放的目标状态
-	MainTargetDamageRate         *int32                         `protobuf:"varint,11,opt,name=main_target_damage_rate,json=mainTargetDamageRate" json:"main_target_damage_rate,omitempty"`                           //主目标伤害系数
-	SecondTargetDamageRate       *int32                         `protobuf:"varint,12,opt,name=second_target_damage_rate,json=secondTargetDamageRate" json:"second_target_damage_rate,omitempty"`                     //从目标伤害系数
-	RateSourceList               []*MazeAISkillEffectRateSource `protobuf:"bytes,13,rep,name=rate_source_list,json=rateSourceList" json:"rate_source_list,omitempty"`                                                //技能效果同组几率映射
-	SkillMappingActionId         []int32                        `protobuf:"varint,14,rep,name=skill_mapping_action_id,json=skillMappingActionId" json:"skill_mapping_action_id,omitempty"`                           //技能映射动作
-	SkillDamageFixed             *int32                         `protobuf:"varint,15,opt,name=skill_damage_fixed,json=skillDamageFixed" json:"skill_damage_fixed,omitempty"`                                         // 主目标技能伤害固定值
-	SkillEffectSelf              []*MazeAISkillEffectConfigInfo `protobuf:"bytes,16,rep,name=skill_effect_self,json=skillEffectSelf" json:"skill_effect_self,omitempty"`                                             //我得技能效果列表
-	SkillEffectOther             []*MazeAISkillEffectConfigInfo `protobuf:"bytes,17,rep,name=skill_effect_other,json=skillEffectOther" json:"skill_effect_other,omitempty"`                                          //对方技能效果列表
-	Level                        *int32                         `protobuf:"varint,18,opt,name=level" json:"level,omitempty"`                                                                                         //武力等级
-	SkillType                    *int32                         `protobuf:"varint,19,opt,name=skill_type,json=skillType" json:"skill_type,omitempty"`                                                                //技能类型
-	SkillMappingEffectId         *int32                         `protobuf:"varint,20,opt,name=skill_mapping_effect_id,json=skillMappingEffectId" json:"skill_mapping_effect_id,omitempty"`                           //技能映射特效
-	SecondTargetSkillDamageFixed *int32                         `protobuf:"varint,21,opt,name=second_target_skill_damage_fixed,json=secondTargetSkillDamageFixed" json:"second_target_skill_damage_fixed,omitempty"` // 非主目标技能伤害固定值
+	TriggerType                  *int32                         `protobuf:"varint,3,opt,name=trigger_type,json=triggerType" json:"trigger_type,omitempty"`                                                           //触发时机
+	Level                        *int32                         `protobuf:"varint,4,opt,name=level" json:"level,omitempty"`                                                                                          //武力等级
+	ReleaseDistance              *int32                         `protobuf:"varint,5,opt,name=release_distance,json=releaseDistance" json:"release_distance,omitempty"`                                               //释放距离
+	TargetMaxCount               *int32                         `protobuf:"varint,6,opt,name=target_max_count,json=targetMaxCount" json:"target_max_count,omitempty"`                                                //最大数量
+	MainTargetDamageRate         *int32                         `protobuf:"varint,7,opt,name=main_target_damage_rate,json=mainTargetDamageRate" json:"main_target_damage_rate,omitempty"`                            //主目标伤害系数
+	SecondTargetDamageRate       *int32                         `protobuf:"varint,8,opt,name=second_target_damage_rate,json=secondTargetDamageRate" json:"second_target_damage_rate,omitempty"`                      //从目标伤害系数
+	SkillMappingActionId         []int32                        `protobuf:"varint,9,rep,name=skill_mapping_action_id,json=skillMappingActionId" json:"skill_mapping_action_id,omitempty"`                            //技能映射动作
+	SkillMappingEffectId         *int32                         `protobuf:"varint,10,opt,name=skill_mapping_effect_id,json=skillMappingEffectId" json:"skill_mapping_effect_id,omitempty"`                           //技能映射特效
+	SkillDamageFixed             *int32                         `protobuf:"varint,11,opt,name=skill_damage_fixed,json=skillDamageFixed" json:"skill_damage_fixed,omitempty"`                                         // 主目标技能伤害固定值
+	SecondTargetSkillDamageFixed *int32                         `protobuf:"varint,12,opt,name=second_target_skill_damage_fixed,json=secondTargetSkillDamageFixed" json:"second_target_skill_damage_fixed,omitempty"` // 非主目标技能伤害固定值
+	IsNoTarget                   *int32                         `protobuf:"varint,13,opt,name=is_no_target,json=isNoTarget" json:"is_no_target,omitempty"`                                                           // 是否允许无目标释放（0-不允许 1-允许）
+	DamageElement                []int32                        `protobuf:"varint,14,rep,name=damage_element,json=damageElement" json:"damage_element,omitempty"`                                                    // 参与计算的伤害类型  0-物理、1-冰、2-火、3-毒、4-电
+	ReleaseCd                    *int32                         `protobuf:"varint,20,opt,name=release_cd,json=releaseCd" json:"release_cd,omitempty"`                                                                //触发cd (待定删不删)
+	SkillType                    *int32                         `protobuf:"varint,21,opt,name=skill_type,json=skillType" json:"skill_type,omitempty"`                                                                //技能类型  (待定删不删) type
+	RangeRadius                  *int32                         `protobuf:"varint,22,opt,name=range_radius,json=rangeRadius" json:"range_radius,omitempty"`                                                          //范围半径 如果target_type是3和4范围的话，半径  (待定删不删)
+	SkillEffectSelf              []*MazeAISkillEffectConfigInfo `protobuf:"bytes,101,rep,name=skill_effect_self,json=skillEffectSelf" json:"skill_effect_self,omitempty"`                                            //我得技能效果列表
+	SkillEffectOther             []*MazeAISkillEffectConfigInfo `protobuf:"bytes,102,rep,name=skill_effect_other,json=skillEffectOther" json:"skill_effect_other,omitempty"`                                         //对方技能效果列表
 }
 
 func (x *MazeAISkillInfo) Reset() {
 	*x = MazeAISkillInfo{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_common_MazeAIBattle_proto_msgTypes[9]
+		mi := &file_common_MazeAIBattle_proto_msgTypes[10]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -984,7 +1078,7 @@ func (x *MazeAISkillInfo) String() string {
 func (*MazeAISkillInfo) ProtoMessage() {}
 
 func (x *MazeAISkillInfo) ProtoReflect() protoreflect.Message {
-	mi := &file_common_MazeAIBattle_proto_msgTypes[9]
+	mi := &file_common_MazeAIBattle_proto_msgTypes[10]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -997,7 +1091,7 @@ func (x *MazeAISkillInfo) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use MazeAISkillInfo.ProtoReflect.Descriptor instead.
 func (*MazeAISkillInfo) Descriptor() ([]byte, []int) {
-	return file_common_MazeAIBattle_proto_rawDescGZIP(), []int{9}
+	return file_common_MazeAIBattle_proto_rawDescGZIP(), []int{10}
 }
 
 func (x *MazeAISkillInfo) GetSkillId() int32 {
@@ -1014,23 +1108,16 @@ func (x *MazeAISkillInfo) GetSkillGroup() int32 {
 	return 0
 }
 
-func (x *MazeAISkillInfo) GetCampType() int32 {
-	if x != nil && x.CampType != nil {
-		return *x.CampType
+func (x *MazeAISkillInfo) GetTriggerType() int32 {
+	if x != nil && x.TriggerType != nil {
+		return *x.TriggerType
 	}
 	return 0
 }
 
-func (x *MazeAISkillInfo) GetTargetType() int32 {
-	if x != nil && x.TargetType != nil {
-		return *x.TargetType
-	}
-	return 0
-}
-
-func (x *MazeAISkillInfo) GetRangeRadius() int32 {
-	if x != nil && x.RangeRadius != nil {
-		return *x.RangeRadius
+func (x *MazeAISkillInfo) GetLevel() int32 {
+	if x != nil && x.Level != nil {
+		return *x.Level
 	}
 	return 0
 }
@@ -1042,32 +1129,11 @@ func (x *MazeAISkillInfo) GetReleaseDistance() int32 {
 	return 0
 }
 
-func (x *MazeAISkillInfo) GetReleaseCd() int32 {
-	if x != nil && x.ReleaseCd != nil {
-		return *x.ReleaseCd
-	}
-	return 0
-}
-
 func (x *MazeAISkillInfo) GetTargetMaxCount() int32 {
 	if x != nil && x.TargetMaxCount != nil {
 		return *x.TargetMaxCount
 	}
 	return 0
-}
-
-func (x *MazeAISkillInfo) GetCanReleaseState() []int32 {
-	if x != nil {
-		return x.CanReleaseState
-	}
-	return nil
-}
-
-func (x *MazeAISkillInfo) GetCanReleaseTargetState() []int32 {
-	if x != nil {
-		return x.CanReleaseTargetState
-	}
-	return nil
 }
 
 func (x *MazeAISkillInfo) GetMainTargetDamageRate() int32 {
@@ -1084,13 +1150,6 @@ func (x *MazeAISkillInfo) GetSecondTargetDamageRate() int32 {
 	return 0
 }
 
-func (x *MazeAISkillInfo) GetRateSourceList() []*MazeAISkillEffectRateSource {
-	if x != nil {
-		return x.RateSourceList
-	}
-	return nil
-}
-
 func (x *MazeAISkillInfo) GetSkillMappingActionId() []int32 {
 	if x != nil {
 		return x.SkillMappingActionId
@@ -1098,9 +1157,58 @@ func (x *MazeAISkillInfo) GetSkillMappingActionId() []int32 {
 	return nil
 }
 
+func (x *MazeAISkillInfo) GetSkillMappingEffectId() int32 {
+	if x != nil && x.SkillMappingEffectId != nil {
+		return *x.SkillMappingEffectId
+	}
+	return 0
+}
+
 func (x *MazeAISkillInfo) GetSkillDamageFixed() int32 {
 	if x != nil && x.SkillDamageFixed != nil {
 		return *x.SkillDamageFixed
+	}
+	return 0
+}
+
+func (x *MazeAISkillInfo) GetSecondTargetSkillDamageFixed() int32 {
+	if x != nil && x.SecondTargetSkillDamageFixed != nil {
+		return *x.SecondTargetSkillDamageFixed
+	}
+	return 0
+}
+
+func (x *MazeAISkillInfo) GetIsNoTarget() int32 {
+	if x != nil && x.IsNoTarget != nil {
+		return *x.IsNoTarget
+	}
+	return 0
+}
+
+func (x *MazeAISkillInfo) GetDamageElement() []int32 {
+	if x != nil {
+		return x.DamageElement
+	}
+	return nil
+}
+
+func (x *MazeAISkillInfo) GetReleaseCd() int32 {
+	if x != nil && x.ReleaseCd != nil {
+		return *x.ReleaseCd
+	}
+	return 0
+}
+
+func (x *MazeAISkillInfo) GetSkillType() int32 {
+	if x != nil && x.SkillType != nil {
+		return *x.SkillType
+	}
+	return 0
+}
+
+func (x *MazeAISkillInfo) GetRangeRadius() int32 {
+	if x != nil && x.RangeRadius != nil {
+		return *x.RangeRadius
 	}
 	return 0
 }
@@ -1119,34 +1227,6 @@ func (x *MazeAISkillInfo) GetSkillEffectOther() []*MazeAISkillEffectConfigInfo {
 	return nil
 }
 
-func (x *MazeAISkillInfo) GetLevel() int32 {
-	if x != nil && x.Level != nil {
-		return *x.Level
-	}
-	return 0
-}
-
-func (x *MazeAISkillInfo) GetSkillType() int32 {
-	if x != nil && x.SkillType != nil {
-		return *x.SkillType
-	}
-	return 0
-}
-
-func (x *MazeAISkillInfo) GetSkillMappingEffectId() int32 {
-	if x != nil && x.SkillMappingEffectId != nil {
-		return *x.SkillMappingEffectId
-	}
-	return 0
-}
-
-func (x *MazeAISkillInfo) GetSecondTargetSkillDamageFixed() int32 {
-	if x != nil && x.SecondTargetSkillDamageFixed != nil {
-		return *x.SecondTargetSkillDamageFixed
-	}
-	return 0
-}
-
 type MazeAISkillEffectRateSource struct {
 	state         protoimpl.MessageState
 	sizeCache     protoimpl.SizeCache
@@ -1159,7 +1239,7 @@ type MazeAISkillEffectRateSource struct {
 func (x *MazeAISkillEffectRateSource) Reset() {
 	*x = MazeAISkillEffectRateSource{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_common_MazeAIBattle_proto_msgTypes[10]
+		mi := &file_common_MazeAIBattle_proto_msgTypes[11]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -1172,7 +1252,7 @@ func (x *MazeAISkillEffectRateSource) String() string {
 func (*MazeAISkillEffectRateSource) ProtoMessage() {}
 
 func (x *MazeAISkillEffectRateSource) ProtoReflect() protoreflect.Message {
-	mi := &file_common_MazeAIBattle_proto_msgTypes[10]
+	mi := &file_common_MazeAIBattle_proto_msgTypes[11]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1185,7 +1265,7 @@ func (x *MazeAISkillEffectRateSource) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use MazeAISkillEffectRateSource.ProtoReflect.Descriptor instead.
 func (*MazeAISkillEffectRateSource) Descriptor() ([]byte, []int) {
-	return file_common_MazeAIBattle_proto_rawDescGZIP(), []int{10}
+	return file_common_MazeAIBattle_proto_rawDescGZIP(), []int{11}
 }
 
 func (x *MazeAISkillEffectRateSource) GetSourceId() int32 {
@@ -1215,7 +1295,7 @@ type MazeAIEffectTypeInfo struct {
 func (x *MazeAIEffectTypeInfo) Reset() {
 	*x = MazeAIEffectTypeInfo{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_common_MazeAIBattle_proto_msgTypes[11]
+		mi := &file_common_MazeAIBattle_proto_msgTypes[12]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -1228,7 +1308,7 @@ func (x *MazeAIEffectTypeInfo) String() string {
 func (*MazeAIEffectTypeInfo) ProtoMessage() {}
 
 func (x *MazeAIEffectTypeInfo) ProtoReflect() protoreflect.Message {
-	mi := &file_common_MazeAIBattle_proto_msgTypes[11]
+	mi := &file_common_MazeAIBattle_proto_msgTypes[12]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1241,7 +1321,7 @@ func (x *MazeAIEffectTypeInfo) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use MazeAIEffectTypeInfo.ProtoReflect.Descriptor instead.
 func (*MazeAIEffectTypeInfo) Descriptor() ([]byte, []int) {
-	return file_common_MazeAIBattle_proto_rawDescGZIP(), []int{11}
+	return file_common_MazeAIBattle_proto_rawDescGZIP(), []int{12}
 }
 
 func (x *MazeAIEffectTypeInfo) GetEffectType() int32 {
@@ -1286,7 +1366,7 @@ type MazeAISkillEffectConfigInfo struct {
 func (x *MazeAISkillEffectConfigInfo) Reset() {
 	*x = MazeAISkillEffectConfigInfo{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_common_MazeAIBattle_proto_msgTypes[12]
+		mi := &file_common_MazeAIBattle_proto_msgTypes[13]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -1299,7 +1379,7 @@ func (x *MazeAISkillEffectConfigInfo) String() string {
 func (*MazeAISkillEffectConfigInfo) ProtoMessage() {}
 
 func (x *MazeAISkillEffectConfigInfo) ProtoReflect() protoreflect.Message {
-	mi := &file_common_MazeAIBattle_proto_msgTypes[12]
+	mi := &file_common_MazeAIBattle_proto_msgTypes[13]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1312,7 +1392,7 @@ func (x *MazeAISkillEffectConfigInfo) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use MazeAISkillEffectConfigInfo.ProtoReflect.Descriptor instead.
 func (*MazeAISkillEffectConfigInfo) Descriptor() ([]byte, []int) {
-	return file_common_MazeAIBattle_proto_rawDescGZIP(), []int{12}
+	return file_common_MazeAIBattle_proto_rawDescGZIP(), []int{13}
 }
 
 func (x *MazeAISkillEffectConfigInfo) GetEffectId() int32 {
@@ -1399,7 +1479,7 @@ type MazeAIEffectValueInfo struct {
 func (x *MazeAIEffectValueInfo) Reset() {
 	*x = MazeAIEffectValueInfo{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_common_MazeAIBattle_proto_msgTypes[13]
+		mi := &file_common_MazeAIBattle_proto_msgTypes[14]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -1412,7 +1492,7 @@ func (x *MazeAIEffectValueInfo) String() string {
 func (*MazeAIEffectValueInfo) ProtoMessage() {}
 
 func (x *MazeAIEffectValueInfo) ProtoReflect() protoreflect.Message {
-	mi := &file_common_MazeAIBattle_proto_msgTypes[13]
+	mi := &file_common_MazeAIBattle_proto_msgTypes[14]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1425,7 +1505,7 @@ func (x *MazeAIEffectValueInfo) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use MazeAIEffectValueInfo.ProtoReflect.Descriptor instead.
 func (*MazeAIEffectValueInfo) Descriptor() ([]byte, []int) {
-	return file_common_MazeAIBattle_proto_rawDescGZIP(), []int{13}
+	return file_common_MazeAIBattle_proto_rawDescGZIP(), []int{14}
 }
 
 func (x *MazeAIEffectValueInfo) GetValue() int64 {
@@ -1467,7 +1547,7 @@ type MazeAIAttackValue struct {
 func (x *MazeAIAttackValue) Reset() {
 	*x = MazeAIAttackValue{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_common_MazeAIBattle_proto_msgTypes[14]
+		mi := &file_common_MazeAIBattle_proto_msgTypes[15]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -1480,7 +1560,7 @@ func (x *MazeAIAttackValue) String() string {
 func (*MazeAIAttackValue) ProtoMessage() {}
 
 func (x *MazeAIAttackValue) ProtoReflect() protoreflect.Message {
-	mi := &file_common_MazeAIBattle_proto_msgTypes[14]
+	mi := &file_common_MazeAIBattle_proto_msgTypes[15]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1493,7 +1573,7 @@ func (x *MazeAIAttackValue) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use MazeAIAttackValue.ProtoReflect.Descriptor instead.
 func (*MazeAIAttackValue) Descriptor() ([]byte, []int) {
-	return file_common_MazeAIBattle_proto_rawDescGZIP(), []int{14}
+	return file_common_MazeAIBattle_proto_rawDescGZIP(), []int{15}
 }
 
 func (x *MazeAIAttackValue) GetConfigId() int32 {
@@ -1567,7 +1647,7 @@ type MazeSkillConfigInfo struct {
 func (x *MazeSkillConfigInfo) Reset() {
 	*x = MazeSkillConfigInfo{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_common_MazeAIBattle_proto_msgTypes[15]
+		mi := &file_common_MazeAIBattle_proto_msgTypes[16]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -1580,7 +1660,7 @@ func (x *MazeSkillConfigInfo) String() string {
 func (*MazeSkillConfigInfo) ProtoMessage() {}
 
 func (x *MazeSkillConfigInfo) ProtoReflect() protoreflect.Message {
-	mi := &file_common_MazeAIBattle_proto_msgTypes[15]
+	mi := &file_common_MazeAIBattle_proto_msgTypes[16]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1593,7 +1673,7 @@ func (x *MazeSkillConfigInfo) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use MazeSkillConfigInfo.ProtoReflect.Descriptor instead.
 func (*MazeSkillConfigInfo) Descriptor() ([]byte, []int) {
-	return file_common_MazeAIBattle_proto_rawDescGZIP(), []int{15}
+	return file_common_MazeAIBattle_proto_rawDescGZIP(), []int{16}
 }
 
 func (x *MazeSkillConfigInfo) GetSkillId() int32 {
@@ -1641,7 +1721,7 @@ type MazeAIActAttackValue struct {
 func (x *MazeAIActAttackValue) Reset() {
 	*x = MazeAIActAttackValue{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_common_MazeAIBattle_proto_msgTypes[16]
+		mi := &file_common_MazeAIBattle_proto_msgTypes[17]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -1654,7 +1734,7 @@ func (x *MazeAIActAttackValue) String() string {
 func (*MazeAIActAttackValue) ProtoMessage() {}
 
 func (x *MazeAIActAttackValue) ProtoReflect() protoreflect.Message {
-	mi := &file_common_MazeAIBattle_proto_msgTypes[16]
+	mi := &file_common_MazeAIBattle_proto_msgTypes[17]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1667,7 +1747,7 @@ func (x *MazeAIActAttackValue) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use MazeAIActAttackValue.ProtoReflect.Descriptor instead.
 func (*MazeAIActAttackValue) Descriptor() ([]byte, []int) {
-	return file_common_MazeAIBattle_proto_rawDescGZIP(), []int{16}
+	return file_common_MazeAIBattle_proto_rawDescGZIP(), []int{17}
 }
 
 func (x *MazeAIActAttackValue) GetActId() int32 {
@@ -1724,7 +1804,7 @@ type ActDamageRatioInfo struct {
 func (x *ActDamageRatioInfo) Reset() {
 	*x = ActDamageRatioInfo{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_common_MazeAIBattle_proto_msgTypes[17]
+		mi := &file_common_MazeAIBattle_proto_msgTypes[18]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -1737,7 +1817,7 @@ func (x *ActDamageRatioInfo) String() string {
 func (*ActDamageRatioInfo) ProtoMessage() {}
 
 func (x *ActDamageRatioInfo) ProtoReflect() protoreflect.Message {
-	mi := &file_common_MazeAIBattle_proto_msgTypes[17]
+	mi := &file_common_MazeAIBattle_proto_msgTypes[18]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1750,7 +1830,7 @@ func (x *ActDamageRatioInfo) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use ActDamageRatioInfo.ProtoReflect.Descriptor instead.
 func (*ActDamageRatioInfo) Descriptor() ([]byte, []int) {
-	return file_common_MazeAIBattle_proto_rawDescGZIP(), []int{17}
+	return file_common_MazeAIBattle_proto_rawDescGZIP(), []int{18}
 }
 
 func (x *ActDamageRatioInfo) GetIndex() int32 {
@@ -1781,7 +1861,7 @@ type MazeAIUseDrugRQ struct {
 func (x *MazeAIUseDrugRQ) Reset() {
 	*x = MazeAIUseDrugRQ{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_common_MazeAIBattle_proto_msgTypes[18]
+		mi := &file_common_MazeAIBattle_proto_msgTypes[19]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -1794,7 +1874,7 @@ func (x *MazeAIUseDrugRQ) String() string {
 func (*MazeAIUseDrugRQ) ProtoMessage() {}
 
 func (x *MazeAIUseDrugRQ) ProtoReflect() protoreflect.Message {
-	mi := &file_common_MazeAIBattle_proto_msgTypes[18]
+	mi := &file_common_MazeAIBattle_proto_msgTypes[19]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1807,7 +1887,7 @@ func (x *MazeAIUseDrugRQ) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use MazeAIUseDrugRQ.ProtoReflect.Descriptor instead.
 func (*MazeAIUseDrugRQ) Descriptor() ([]byte, []int) {
-	return file_common_MazeAIBattle_proto_rawDescGZIP(), []int{18}
+	return file_common_MazeAIBattle_proto_rawDescGZIP(), []int{19}
 }
 
 func (x *MazeAIUseDrugRQ) GetHeader() *Common.PacketHeader {
@@ -1840,7 +1920,7 @@ type MazeAIUseDrugRS struct {
 func (x *MazeAIUseDrugRS) Reset() {
 	*x = MazeAIUseDrugRS{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_common_MazeAIBattle_proto_msgTypes[19]
+		mi := &file_common_MazeAIBattle_proto_msgTypes[20]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -1853,7 +1933,7 @@ func (x *MazeAIUseDrugRS) String() string {
 func (*MazeAIUseDrugRS) ProtoMessage() {}
 
 func (x *MazeAIUseDrugRS) ProtoReflect() protoreflect.Message {
-	mi := &file_common_MazeAIBattle_proto_msgTypes[19]
+	mi := &file_common_MazeAIBattle_proto_msgTypes[20]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1866,7 +1946,7 @@ func (x *MazeAIUseDrugRS) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use MazeAIUseDrugRS.ProtoReflect.Descriptor instead.
 func (*MazeAIUseDrugRS) Descriptor() ([]byte, []int) {
-	return file_common_MazeAIBattle_proto_rawDescGZIP(), []int{19}
+	return file_common_MazeAIBattle_proto_rawDescGZIP(), []int{20}
 }
 
 func (x *MazeAIUseDrugRS) GetErrInfo() *MessageType.ErrorInfo {
@@ -1912,7 +1992,7 @@ type MazeAIReportInfo struct {
 func (x *MazeAIReportInfo) Reset() {
 	*x = MazeAIReportInfo{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_common_MazeAIBattle_proto_msgTypes[20]
+		mi := &file_common_MazeAIBattle_proto_msgTypes[21]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -1925,7 +2005,7 @@ func (x *MazeAIReportInfo) String() string {
 func (*MazeAIReportInfo) ProtoMessage() {}
 
 func (x *MazeAIReportInfo) ProtoReflect() protoreflect.Message {
-	mi := &file_common_MazeAIBattle_proto_msgTypes[20]
+	mi := &file_common_MazeAIBattle_proto_msgTypes[21]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1938,7 +2018,7 @@ func (x *MazeAIReportInfo) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use MazeAIReportInfo.ProtoReflect.Descriptor instead.
 func (*MazeAIReportInfo) Descriptor() ([]byte, []int) {
-	return file_common_MazeAIBattle_proto_rawDescGZIP(), []int{20}
+	return file_common_MazeAIBattle_proto_rawDescGZIP(), []int{21}
 }
 
 func (x *MazeAIReportInfo) GetUserHp() int64 {
@@ -1981,7 +2061,7 @@ type ReportAreaMonsterInfo struct {
 func (x *ReportAreaMonsterInfo) Reset() {
 	*x = ReportAreaMonsterInfo{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_common_MazeAIBattle_proto_msgTypes[21]
+		mi := &file_common_MazeAIBattle_proto_msgTypes[22]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -1994,7 +2074,7 @@ func (x *ReportAreaMonsterInfo) String() string {
 func (*ReportAreaMonsterInfo) ProtoMessage() {}
 
 func (x *ReportAreaMonsterInfo) ProtoReflect() protoreflect.Message {
-	mi := &file_common_MazeAIBattle_proto_msgTypes[21]
+	mi := &file_common_MazeAIBattle_proto_msgTypes[22]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -2007,7 +2087,7 @@ func (x *ReportAreaMonsterInfo) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use ReportAreaMonsterInfo.ProtoReflect.Descriptor instead.
 func (*ReportAreaMonsterInfo) Descriptor() ([]byte, []int) {
-	return file_common_MazeAIBattle_proto_rawDescGZIP(), []int{21}
+	return file_common_MazeAIBattle_proto_rawDescGZIP(), []int{22}
 }
 
 func (x *ReportAreaMonsterInfo) GetAreaId() int32 {
@@ -2036,7 +2116,7 @@ type ReportMonsterInfo struct {
 func (x *ReportMonsterInfo) Reset() {
 	*x = ReportMonsterInfo{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_common_MazeAIBattle_proto_msgTypes[22]
+		mi := &file_common_MazeAIBattle_proto_msgTypes[23]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -2049,7 +2129,7 @@ func (x *ReportMonsterInfo) String() string {
 func (*ReportMonsterInfo) ProtoMessage() {}
 
 func (x *ReportMonsterInfo) ProtoReflect() protoreflect.Message {
-	mi := &file_common_MazeAIBattle_proto_msgTypes[22]
+	mi := &file_common_MazeAIBattle_proto_msgTypes[23]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -2062,7 +2142,7 @@ func (x *ReportMonsterInfo) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use ReportMonsterInfo.ProtoReflect.Descriptor instead.
 func (*ReportMonsterInfo) Descriptor() ([]byte, []int) {
-	return file_common_MazeAIBattle_proto_rawDescGZIP(), []int{22}
+	return file_common_MazeAIBattle_proto_rawDescGZIP(), []int{23}
 }
 
 func (x *ReportMonsterInfo) GetConfigId() int32 {
@@ -2091,7 +2171,7 @@ type MazeItemUseInfo struct {
 func (x *MazeItemUseInfo) Reset() {
 	*x = MazeItemUseInfo{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_common_MazeAIBattle_proto_msgTypes[23]
+		mi := &file_common_MazeAIBattle_proto_msgTypes[24]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -2104,7 +2184,7 @@ func (x *MazeItemUseInfo) String() string {
 func (*MazeItemUseInfo) ProtoMessage() {}
 
 func (x *MazeItemUseInfo) ProtoReflect() protoreflect.Message {
-	mi := &file_common_MazeAIBattle_proto_msgTypes[23]
+	mi := &file_common_MazeAIBattle_proto_msgTypes[24]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -2117,7 +2197,7 @@ func (x *MazeItemUseInfo) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use MazeItemUseInfo.ProtoReflect.Descriptor instead.
 func (*MazeItemUseInfo) Descriptor() ([]byte, []int) {
-	return file_common_MazeAIBattle_proto_rawDescGZIP(), []int{23}
+	return file_common_MazeAIBattle_proto_rawDescGZIP(), []int{24}
 }
 
 func (x *MazeItemUseInfo) GetItemId() int32 {
@@ -2147,7 +2227,7 @@ type MazeBarrierInfoChangeID struct {
 func (x *MazeBarrierInfoChangeID) Reset() {
 	*x = MazeBarrierInfoChangeID{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_common_MazeAIBattle_proto_msgTypes[24]
+		mi := &file_common_MazeAIBattle_proto_msgTypes[25]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -2160,7 +2240,7 @@ func (x *MazeBarrierInfoChangeID) String() string {
 func (*MazeBarrierInfoChangeID) ProtoMessage() {}
 
 func (x *MazeBarrierInfoChangeID) ProtoReflect() protoreflect.Message {
-	mi := &file_common_MazeAIBattle_proto_msgTypes[24]
+	mi := &file_common_MazeAIBattle_proto_msgTypes[25]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -2173,7 +2253,7 @@ func (x *MazeBarrierInfoChangeID) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use MazeBarrierInfoChangeID.ProtoReflect.Descriptor instead.
 func (*MazeBarrierInfoChangeID) Descriptor() ([]byte, []int) {
-	return file_common_MazeAIBattle_proto_rawDescGZIP(), []int{24}
+	return file_common_MazeAIBattle_proto_rawDescGZIP(), []int{25}
 }
 
 func (x *MazeBarrierInfoChangeID) GetMazeBarrierInfo() *MazeBarrierInfo {
@@ -2200,7 +2280,7 @@ type MazeBarrierInfo struct {
 func (x *MazeBarrierInfo) Reset() {
 	*x = MazeBarrierInfo{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_common_MazeAIBattle_proto_msgTypes[25]
+		mi := &file_common_MazeAIBattle_proto_msgTypes[26]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -2213,7 +2293,7 @@ func (x *MazeBarrierInfo) String() string {
 func (*MazeBarrierInfo) ProtoMessage() {}
 
 func (x *MazeBarrierInfo) ProtoReflect() protoreflect.Message {
-	mi := &file_common_MazeAIBattle_proto_msgTypes[25]
+	mi := &file_common_MazeAIBattle_proto_msgTypes[26]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -2226,7 +2306,7 @@ func (x *MazeBarrierInfo) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use MazeBarrierInfo.ProtoReflect.Descriptor instead.
 func (*MazeBarrierInfo) Descriptor() ([]byte, []int) {
-	return file_common_MazeAIBattle_proto_rawDescGZIP(), []int{25}
+	return file_common_MazeAIBattle_proto_rawDescGZIP(), []int{26}
 }
 
 func (x *MazeBarrierInfo) GetBarrierId() int32 {
@@ -2373,89 +2453,95 @@ var file_common_MazeAIBattle_proto_rawDesc = []byte{
 	0x21, 0x2e, 0x4d, 0x61, 0x7a, 0x65, 0x41, 0x49, 0x42, 0x61, 0x74, 0x74, 0x6c, 0x65, 0x2e, 0x4d,
 	0x61, 0x7a, 0x65, 0x41, 0x49, 0x41, 0x75, 0x74, 0x6f, 0x53, 0x6b, 0x69, 0x6c, 0x6c, 0x49, 0x6e,
 	0x66, 0x6f, 0x52, 0x11, 0x61, 0x75, 0x74, 0x6f, 0x53, 0x6b, 0x69, 0x6c, 0x6c, 0x49, 0x6e, 0x66,
-	0x6f, 0x4c, 0x69, 0x73, 0x74, 0x22, 0xff, 0x01, 0x0a, 0x13, 0x4d, 0x61, 0x7a, 0x65, 0x41, 0x49,
+	0x6f, 0x4c, 0x69, 0x73, 0x74, 0x22, 0xf0, 0x02, 0x0a, 0x13, 0x4d, 0x61, 0x7a, 0x65, 0x41, 0x49,
 	0x41, 0x75, 0x74, 0x6f, 0x53, 0x6b, 0x69, 0x6c, 0x6c, 0x49, 0x6e, 0x66, 0x6f, 0x12, 0x19, 0x0a,
 	0x08, 0x73, 0x6b, 0x69, 0x6c, 0x6c, 0x5f, 0x69, 0x64, 0x18, 0x01, 0x20, 0x01, 0x28, 0x05, 0x52,
-	0x07, 0x73, 0x6b, 0x69, 0x6c, 0x6c, 0x49, 0x64, 0x12, 0x17, 0x0a, 0x07, 0x61, 0x74, 0x74, 0x72,
-	0x5f, 0x69, 0x64, 0x18, 0x02, 0x20, 0x01, 0x28, 0x05, 0x52, 0x06, 0x61, 0x74, 0x74, 0x72, 0x49,
-	0x64, 0x12, 0x21, 0x0a, 0x0c, 0x62, 0x61, 0x73, 0x65, 0x5f, 0x68, 0x69, 0x74, 0x72, 0x61, 0x74,
-	0x65, 0x18, 0x03, 0x20, 0x01, 0x28, 0x05, 0x52, 0x0b, 0x62, 0x61, 0x73, 0x65, 0x48, 0x69, 0x74,
-	0x72, 0x61, 0x74, 0x65, 0x12, 0x23, 0x0a, 0x0d, 0x74, 0x72, 0x69, 0x67, 0x67, 0x65, 0x72, 0x5f,
-	0x63, 0x6f, 0x75, 0x6e, 0x74, 0x18, 0x04, 0x20, 0x01, 0x28, 0x05, 0x52, 0x0c, 0x74, 0x72, 0x69,
-	0x67, 0x67, 0x65, 0x72, 0x43, 0x6f, 0x75, 0x6e, 0x74, 0x12, 0x28, 0x0a, 0x10, 0x74, 0x72, 0x69,
-	0x67, 0x67, 0x65, 0x72, 0x5f, 0x73, 0x6b, 0x69, 0x6c, 0x6c, 0x5f, 0x69, 0x64, 0x18, 0x05, 0x20,
-	0x03, 0x28, 0x05, 0x52, 0x0e, 0x74, 0x72, 0x69, 0x67, 0x67, 0x65, 0x72, 0x53, 0x6b, 0x69, 0x6c,
-	0x6c, 0x49, 0x64, 0x12, 0x42, 0x0a, 0x0a, 0x76, 0x61, 0x6c, 0x75, 0x65, 0x5f, 0x6c, 0x69, 0x73,
-	0x74, 0x18, 0x06, 0x20, 0x03, 0x28, 0x0b, 0x32, 0x23, 0x2e, 0x4d, 0x61, 0x7a, 0x65, 0x41, 0x49,
-	0x42, 0x61, 0x74, 0x74, 0x6c, 0x65, 0x2e, 0x4d, 0x61, 0x7a, 0x65, 0x41, 0x49, 0x45, 0x66, 0x66,
-	0x65, 0x63, 0x74, 0x56, 0x61, 0x6c, 0x75, 0x65, 0x49, 0x6e, 0x66, 0x6f, 0x52, 0x09, 0x76, 0x61,
-	0x6c, 0x75, 0x65, 0x4c, 0x69, 0x73, 0x74, 0x22, 0x97, 0x08, 0x0a, 0x0f, 0x4d, 0x61, 0x7a, 0x65,
-	0x41, 0x49, 0x53, 0x6b, 0x69, 0x6c, 0x6c, 0x49, 0x6e, 0x66, 0x6f, 0x12, 0x19, 0x0a, 0x08, 0x73,
-	0x6b, 0x69, 0x6c, 0x6c, 0x5f, 0x69, 0x64, 0x18, 0x01, 0x20, 0x01, 0x28, 0x05, 0x52, 0x07, 0x73,
-	0x6b, 0x69, 0x6c, 0x6c, 0x49, 0x64, 0x12, 0x1f, 0x0a, 0x0b, 0x73, 0x6b, 0x69, 0x6c, 0x6c, 0x5f,
-	0x67, 0x72, 0x6f, 0x75, 0x70, 0x18, 0x02, 0x20, 0x01, 0x28, 0x05, 0x52, 0x0a, 0x73, 0x6b, 0x69,
-	0x6c, 0x6c, 0x47, 0x72, 0x6f, 0x75, 0x70, 0x12, 0x1b, 0x0a, 0x09, 0x63, 0x61, 0x6d, 0x70, 0x5f,
-	0x74, 0x79, 0x70, 0x65, 0x18, 0x03, 0x20, 0x01, 0x28, 0x05, 0x52, 0x08, 0x63, 0x61, 0x6d, 0x70,
-	0x54, 0x79, 0x70, 0x65, 0x12, 0x1f, 0x0a, 0x0b, 0x74, 0x61, 0x72, 0x67, 0x65, 0x74, 0x5f, 0x74,
-	0x79, 0x70, 0x65, 0x18, 0x04, 0x20, 0x01, 0x28, 0x05, 0x52, 0x0a, 0x74, 0x61, 0x72, 0x67, 0x65,
-	0x74, 0x54, 0x79, 0x70, 0x65, 0x12, 0x21, 0x0a, 0x0c, 0x72, 0x61, 0x6e, 0x67, 0x65, 0x5f, 0x72,
-	0x61, 0x64, 0x69, 0x75, 0x73, 0x18, 0x05, 0x20, 0x01, 0x28, 0x05, 0x52, 0x0b, 0x72, 0x61, 0x6e,
-	0x67, 0x65, 0x52, 0x61, 0x64, 0x69, 0x75, 0x73, 0x12, 0x29, 0x0a, 0x10, 0x72, 0x65, 0x6c, 0x65,
-	0x61, 0x73, 0x65, 0x5f, 0x64, 0x69, 0x73, 0x74, 0x61, 0x6e, 0x63, 0x65, 0x18, 0x06, 0x20, 0x01,
-	0x28, 0x05, 0x52, 0x0f, 0x72, 0x65, 0x6c, 0x65, 0x61, 0x73, 0x65, 0x44, 0x69, 0x73, 0x74, 0x61,
-	0x6e, 0x63, 0x65, 0x12, 0x1d, 0x0a, 0x0a, 0x72, 0x65, 0x6c, 0x65, 0x61, 0x73, 0x65, 0x5f, 0x63,
-	0x64, 0x18, 0x07, 0x20, 0x01, 0x28, 0x05, 0x52, 0x09, 0x72, 0x65, 0x6c, 0x65, 0x61, 0x73, 0x65,
-	0x43, 0x64, 0x12, 0x28, 0x0a, 0x10, 0x74, 0x61, 0x72, 0x67, 0x65, 0x74, 0x5f, 0x6d, 0x61, 0x78,
-	0x5f, 0x63, 0x6f, 0x75, 0x6e, 0x74, 0x18, 0x08, 0x20, 0x01, 0x28, 0x05, 0x52, 0x0e, 0x74, 0x61,
-	0x72, 0x67, 0x65, 0x74, 0x4d, 0x61, 0x78, 0x43, 0x6f, 0x75, 0x6e, 0x74, 0x12, 0x2a, 0x0a, 0x11,
-	0x63, 0x61, 0x6e, 0x5f, 0x72, 0x65, 0x6c, 0x65, 0x61, 0x73, 0x65, 0x5f, 0x73, 0x74, 0x61, 0x74,
-	0x65, 0x18, 0x09, 0x20, 0x03, 0x28, 0x05, 0x52, 0x0f, 0x63, 0x61, 0x6e, 0x52, 0x65, 0x6c, 0x65,
-	0x61, 0x73, 0x65, 0x53, 0x74, 0x61, 0x74, 0x65, 0x12, 0x37, 0x0a, 0x18, 0x63, 0x61, 0x6e, 0x5f,
-	0x72, 0x65, 0x6c, 0x65, 0x61, 0x73, 0x65, 0x5f, 0x74, 0x61, 0x72, 0x67, 0x65, 0x74, 0x5f, 0x73,
-	0x74, 0x61, 0x74, 0x65, 0x18, 0x0a, 0x20, 0x03, 0x28, 0x05, 0x52, 0x15, 0x63, 0x61, 0x6e, 0x52,
-	0x65, 0x6c, 0x65, 0x61, 0x73, 0x65, 0x54, 0x61, 0x72, 0x67, 0x65, 0x74, 0x53, 0x74, 0x61, 0x74,
-	0x65, 0x12, 0x35, 0x0a, 0x17, 0x6d, 0x61, 0x69, 0x6e, 0x5f, 0x74, 0x61, 0x72, 0x67, 0x65, 0x74,
-	0x5f, 0x64, 0x61, 0x6d, 0x61, 0x67, 0x65, 0x5f, 0x72, 0x61, 0x74, 0x65, 0x18, 0x0b, 0x20, 0x01,
+	0x07, 0x73, 0x6b, 0x69, 0x6c, 0x6c, 0x49, 0x64, 0x12, 0x21, 0x0a, 0x0c, 0x62, 0x61, 0x73, 0x65,
+	0x5f, 0x68, 0x69, 0x74, 0x72, 0x61, 0x74, 0x65, 0x18, 0x02, 0x20, 0x01, 0x28, 0x05, 0x52, 0x0b,
+	0x62, 0x61, 0x73, 0x65, 0x48, 0x69, 0x74, 0x72, 0x61, 0x74, 0x65, 0x12, 0x23, 0x0a, 0x0d, 0x74,
+	0x72, 0x69, 0x67, 0x67, 0x65, 0x72, 0x5f, 0x63, 0x6f, 0x75, 0x6e, 0x74, 0x18, 0x03, 0x20, 0x01,
+	0x28, 0x05, 0x52, 0x0c, 0x74, 0x72, 0x69, 0x67, 0x67, 0x65, 0x72, 0x43, 0x6f, 0x75, 0x6e, 0x74,
+	0x12, 0x28, 0x0a, 0x10, 0x74, 0x72, 0x69, 0x67, 0x67, 0x65, 0x72, 0x5f, 0x73, 0x6b, 0x69, 0x6c,
+	0x6c, 0x5f, 0x69, 0x64, 0x18, 0x04, 0x20, 0x03, 0x28, 0x05, 0x52, 0x0e, 0x74, 0x72, 0x69, 0x67,
+	0x67, 0x65, 0x72, 0x53, 0x6b, 0x69, 0x6c, 0x6c, 0x49, 0x64, 0x12, 0x1d, 0x0a, 0x0a, 0x70, 0x72,
+	0x6f, 0x74, 0x65, 0x63, 0x74, 0x5f, 0x63, 0x64, 0x18, 0x05, 0x20, 0x01, 0x28, 0x05, 0x52, 0x09,
+	0x70, 0x72, 0x6f, 0x74, 0x65, 0x63, 0x74, 0x43, 0x64, 0x12, 0x1f, 0x0a, 0x0b, 0x6c, 0x69, 0x6d,
+	0x69, 0x74, 0x5f, 0x63, 0x6f, 0x75, 0x6e, 0x74, 0x18, 0x06, 0x20, 0x01, 0x28, 0x05, 0x52, 0x0a,
+	0x6c, 0x69, 0x6d, 0x69, 0x74, 0x43, 0x6f, 0x75, 0x6e, 0x74, 0x12, 0x21, 0x0a, 0x0c, 0x74, 0x72,
+	0x69, 0x67, 0x67, 0x65, 0x72, 0x5f, 0x74, 0x79, 0x70, 0x65, 0x18, 0x07, 0x20, 0x01, 0x28, 0x05,
+	0x52, 0x0b, 0x74, 0x72, 0x69, 0x67, 0x67, 0x65, 0x72, 0x54, 0x79, 0x70, 0x65, 0x12, 0x1c, 0x0a,
+	0x09, 0x63, 0x6f, 0x6e, 0x64, 0x69, 0x74, 0x69, 0x6f, 0x6e, 0x18, 0x08, 0x20, 0x01, 0x28, 0x09,
+	0x52, 0x09, 0x63, 0x6f, 0x6e, 0x64, 0x69, 0x74, 0x69, 0x6f, 0x6e, 0x12, 0x4b, 0x0a, 0x10, 0x63,
+	0x6f, 0x6e, 0x64, 0x69, 0x74, 0x69, 0x6f, 0x6e, 0x5f, 0x63, 0x6f, 0x6e, 0x66, 0x69, 0x67, 0x18,
+	0x09, 0x20, 0x03, 0x28, 0x0b, 0x32, 0x20, 0x2e, 0x4d, 0x61, 0x7a, 0x65, 0x41, 0x49, 0x42, 0x61,
+	0x74, 0x74, 0x6c, 0x65, 0x2e, 0x4d, 0x61, 0x7a, 0x65, 0x53, 0x6b, 0x69, 0x6c, 0x6c, 0x43, 0x6f,
+	0x6e, 0x64, 0x69, 0x74, 0x69, 0x6f, 0x6e, 0x52, 0x0f, 0x63, 0x6f, 0x6e, 0x64, 0x69, 0x74, 0x69,
+	0x6f, 0x6e, 0x43, 0x6f, 0x6e, 0x66, 0x69, 0x67, 0x22, 0x79, 0x0a, 0x12, 0x4d, 0x61, 0x7a, 0x65,
+	0x53, 0x6b, 0x69, 0x6c, 0x6c, 0x43, 0x6f, 0x6e, 0x64, 0x69, 0x74, 0x69, 0x6f, 0x6e, 0x12, 0x21,
+	0x0a, 0x0c, 0x63, 0x6f, 0x6e, 0x64, 0x69, 0x74, 0x69, 0x6f, 0x6e, 0x5f, 0x69, 0x64, 0x18, 0x01,
+	0x20, 0x01, 0x28, 0x05, 0x52, 0x0b, 0x63, 0x6f, 0x6e, 0x64, 0x69, 0x74, 0x69, 0x6f, 0x6e, 0x49,
+	0x64, 0x12, 0x12, 0x0a, 0x04, 0x74, 0x79, 0x70, 0x65, 0x18, 0x02, 0x20, 0x01, 0x28, 0x05, 0x52,
+	0x04, 0x74, 0x79, 0x70, 0x65, 0x12, 0x16, 0x0a, 0x06, 0x73, 0x79, 0x6d, 0x62, 0x6f, 0x6c, 0x18,
+	0x03, 0x20, 0x01, 0x28, 0x05, 0x52, 0x06, 0x73, 0x79, 0x6d, 0x62, 0x6f, 0x6c, 0x12, 0x14, 0x0a,
+	0x05, 0x76, 0x61, 0x6c, 0x75, 0x65, 0x18, 0x04, 0x20, 0x01, 0x28, 0x05, 0x52, 0x05, 0x76, 0x61,
+	0x6c, 0x75, 0x65, 0x22, 0x8b, 0x07, 0x0a, 0x0f, 0x4d, 0x61, 0x7a, 0x65, 0x41, 0x49, 0x53, 0x6b,
+	0x69, 0x6c, 0x6c, 0x49, 0x6e, 0x66, 0x6f, 0x12, 0x19, 0x0a, 0x08, 0x73, 0x6b, 0x69, 0x6c, 0x6c,
+	0x5f, 0x69, 0x64, 0x18, 0x01, 0x20, 0x01, 0x28, 0x05, 0x52, 0x07, 0x73, 0x6b, 0x69, 0x6c, 0x6c,
+	0x49, 0x64, 0x12, 0x1f, 0x0a, 0x0b, 0x73, 0x6b, 0x69, 0x6c, 0x6c, 0x5f, 0x67, 0x72, 0x6f, 0x75,
+	0x70, 0x18, 0x02, 0x20, 0x01, 0x28, 0x05, 0x52, 0x0a, 0x73, 0x6b, 0x69, 0x6c, 0x6c, 0x47, 0x72,
+	0x6f, 0x75, 0x70, 0x12, 0x21, 0x0a, 0x0c, 0x74, 0x72, 0x69, 0x67, 0x67, 0x65, 0x72, 0x5f, 0x74,
+	0x79, 0x70, 0x65, 0x18, 0x03, 0x20, 0x01, 0x28, 0x05, 0x52, 0x0b, 0x74, 0x72, 0x69, 0x67, 0x67,
+	0x65, 0x72, 0x54, 0x79, 0x70, 0x65, 0x12, 0x14, 0x0a, 0x05, 0x6c, 0x65, 0x76, 0x65, 0x6c, 0x18,
+	0x04, 0x20, 0x01, 0x28, 0x05, 0x52, 0x05, 0x6c, 0x65, 0x76, 0x65, 0x6c, 0x12, 0x29, 0x0a, 0x10,
+	0x72, 0x65, 0x6c, 0x65, 0x61, 0x73, 0x65, 0x5f, 0x64, 0x69, 0x73, 0x74, 0x61, 0x6e, 0x63, 0x65,
+	0x18, 0x05, 0x20, 0x01, 0x28, 0x05, 0x52, 0x0f, 0x72, 0x65, 0x6c, 0x65, 0x61, 0x73, 0x65, 0x44,
+	0x69, 0x73, 0x74, 0x61, 0x6e, 0x63, 0x65, 0x12, 0x28, 0x0a, 0x10, 0x74, 0x61, 0x72, 0x67, 0x65,
+	0x74, 0x5f, 0x6d, 0x61, 0x78, 0x5f, 0x63, 0x6f, 0x75, 0x6e, 0x74, 0x18, 0x06, 0x20, 0x01, 0x28,
+	0x05, 0x52, 0x0e, 0x74, 0x61, 0x72, 0x67, 0x65, 0x74, 0x4d, 0x61, 0x78, 0x43, 0x6f, 0x75, 0x6e,
+	0x74, 0x12, 0x35, 0x0a, 0x17, 0x6d, 0x61, 0x69, 0x6e, 0x5f, 0x74, 0x61, 0x72, 0x67, 0x65, 0x74,
+	0x5f, 0x64, 0x61, 0x6d, 0x61, 0x67, 0x65, 0x5f, 0x72, 0x61, 0x74, 0x65, 0x18, 0x07, 0x20, 0x01,
 	0x28, 0x05, 0x52, 0x14, 0x6d, 0x61, 0x69, 0x6e, 0x54, 0x61, 0x72, 0x67, 0x65, 0x74, 0x44, 0x61,
 	0x6d, 0x61, 0x67, 0x65, 0x52, 0x61, 0x74, 0x65, 0x12, 0x39, 0x0a, 0x19, 0x73, 0x65, 0x63, 0x6f,
 	0x6e, 0x64, 0x5f, 0x74, 0x61, 0x72, 0x67, 0x65, 0x74, 0x5f, 0x64, 0x61, 0x6d, 0x61, 0x67, 0x65,
-	0x5f, 0x72, 0x61, 0x74, 0x65, 0x18, 0x0c, 0x20, 0x01, 0x28, 0x05, 0x52, 0x16, 0x73, 0x65, 0x63,
+	0x5f, 0x72, 0x61, 0x74, 0x65, 0x18, 0x08, 0x20, 0x01, 0x28, 0x05, 0x52, 0x16, 0x73, 0x65, 0x63,
 	0x6f, 0x6e, 0x64, 0x54, 0x61, 0x72, 0x67, 0x65, 0x74, 0x44, 0x61, 0x6d, 0x61, 0x67, 0x65, 0x52,
-	0x61, 0x74, 0x65, 0x12, 0x53, 0x0a, 0x10, 0x72, 0x61, 0x74, 0x65, 0x5f, 0x73, 0x6f, 0x75, 0x72,
-	0x63, 0x65, 0x5f, 0x6c, 0x69, 0x73, 0x74, 0x18, 0x0d, 0x20, 0x03, 0x28, 0x0b, 0x32, 0x29, 0x2e,
-	0x4d, 0x61, 0x7a, 0x65, 0x41, 0x49, 0x42, 0x61, 0x74, 0x74, 0x6c, 0x65, 0x2e, 0x4d, 0x61, 0x7a,
-	0x65, 0x41, 0x49, 0x53, 0x6b, 0x69, 0x6c, 0x6c, 0x45, 0x66, 0x66, 0x65, 0x63, 0x74, 0x52, 0x61,
-	0x74, 0x65, 0x53, 0x6f, 0x75, 0x72, 0x63, 0x65, 0x52, 0x0e, 0x72, 0x61, 0x74, 0x65, 0x53, 0x6f,
-	0x75, 0x72, 0x63, 0x65, 0x4c, 0x69, 0x73, 0x74, 0x12, 0x35, 0x0a, 0x17, 0x73, 0x6b, 0x69, 0x6c,
-	0x6c, 0x5f, 0x6d, 0x61, 0x70, 0x70, 0x69, 0x6e, 0x67, 0x5f, 0x61, 0x63, 0x74, 0x69, 0x6f, 0x6e,
-	0x5f, 0x69, 0x64, 0x18, 0x0e, 0x20, 0x03, 0x28, 0x05, 0x52, 0x14, 0x73, 0x6b, 0x69, 0x6c, 0x6c,
-	0x4d, 0x61, 0x70, 0x70, 0x69, 0x6e, 0x67, 0x41, 0x63, 0x74, 0x69, 0x6f, 0x6e, 0x49, 0x64, 0x12,
-	0x2c, 0x0a, 0x12, 0x73, 0x6b, 0x69, 0x6c, 0x6c, 0x5f, 0x64, 0x61, 0x6d, 0x61, 0x67, 0x65, 0x5f,
-	0x66, 0x69, 0x78, 0x65, 0x64, 0x18, 0x0f, 0x20, 0x01, 0x28, 0x05, 0x52, 0x10, 0x73, 0x6b, 0x69,
-	0x6c, 0x6c, 0x44, 0x61, 0x6d, 0x61, 0x67, 0x65, 0x46, 0x69, 0x78, 0x65, 0x64, 0x12, 0x55, 0x0a,
-	0x11, 0x73, 0x6b, 0x69, 0x6c, 0x6c, 0x5f, 0x65, 0x66, 0x66, 0x65, 0x63, 0x74, 0x5f, 0x73, 0x65,
-	0x6c, 0x66, 0x18, 0x10, 0x20, 0x03, 0x28, 0x0b, 0x32, 0x29, 0x2e, 0x4d, 0x61, 0x7a, 0x65, 0x41,
-	0x49, 0x42, 0x61, 0x74, 0x74, 0x6c, 0x65, 0x2e, 0x4d, 0x61, 0x7a, 0x65, 0x41, 0x49, 0x53, 0x6b,
-	0x69, 0x6c, 0x6c, 0x45, 0x66, 0x66, 0x65, 0x63, 0x74, 0x43, 0x6f, 0x6e, 0x66, 0x69, 0x67, 0x49,
-	0x6e, 0x66, 0x6f, 0x52, 0x0f, 0x73, 0x6b, 0x69, 0x6c, 0x6c, 0x45, 0x66, 0x66, 0x65, 0x63, 0x74,
-	0x53, 0x65, 0x6c, 0x66, 0x12, 0x57, 0x0a, 0x12, 0x73, 0x6b, 0x69, 0x6c, 0x6c, 0x5f, 0x65, 0x66,
-	0x66, 0x65, 0x63, 0x74, 0x5f, 0x6f, 0x74, 0x68, 0x65, 0x72, 0x18, 0x11, 0x20, 0x03, 0x28, 0x0b,
-	0x32, 0x29, 0x2e, 0x4d, 0x61, 0x7a, 0x65, 0x41, 0x49, 0x42, 0x61, 0x74, 0x74, 0x6c, 0x65, 0x2e,
-	0x4d, 0x61, 0x7a, 0x65, 0x41, 0x49, 0x53, 0x6b, 0x69, 0x6c, 0x6c, 0x45, 0x66, 0x66, 0x65, 0x63,
-	0x74, 0x43, 0x6f, 0x6e, 0x66, 0x69, 0x67, 0x49, 0x6e, 0x66, 0x6f, 0x52, 0x10, 0x73, 0x6b, 0x69,
-	0x6c, 0x6c, 0x45, 0x66, 0x66, 0x65, 0x63, 0x74, 0x4f, 0x74, 0x68, 0x65, 0x72, 0x12, 0x14, 0x0a,
-	0x05, 0x6c, 0x65, 0x76, 0x65, 0x6c, 0x18, 0x12, 0x20, 0x01, 0x28, 0x05, 0x52, 0x05, 0x6c, 0x65,
-	0x76, 0x65, 0x6c, 0x12, 0x1d, 0x0a, 0x0a, 0x73, 0x6b, 0x69, 0x6c, 0x6c, 0x5f, 0x74, 0x79, 0x70,
-	0x65, 0x18, 0x13, 0x20, 0x01, 0x28, 0x05, 0x52, 0x09, 0x73, 0x6b, 0x69, 0x6c, 0x6c, 0x54, 0x79,
-	0x70, 0x65, 0x12, 0x35, 0x0a, 0x17, 0x73, 0x6b, 0x69, 0x6c, 0x6c, 0x5f, 0x6d, 0x61, 0x70, 0x70,
-	0x69, 0x6e, 0x67, 0x5f, 0x65, 0x66, 0x66, 0x65, 0x63, 0x74, 0x5f, 0x69, 0x64, 0x18, 0x14, 0x20,
-	0x01, 0x28, 0x05, 0x52, 0x14, 0x73, 0x6b, 0x69, 0x6c, 0x6c, 0x4d, 0x61, 0x70, 0x70, 0x69, 0x6e,
-	0x67, 0x45, 0x66, 0x66, 0x65, 0x63, 0x74, 0x49, 0x64, 0x12, 0x46, 0x0a, 0x20, 0x73, 0x65, 0x63,
-	0x6f, 0x6e, 0x64, 0x5f, 0x74, 0x61, 0x72, 0x67, 0x65, 0x74, 0x5f, 0x73, 0x6b, 0x69, 0x6c, 0x6c,
-	0x5f, 0x64, 0x61, 0x6d, 0x61, 0x67, 0x65, 0x5f, 0x66, 0x69, 0x78, 0x65, 0x64, 0x18, 0x15, 0x20,
-	0x01, 0x28, 0x05, 0x52, 0x1c, 0x73, 0x65, 0x63, 0x6f, 0x6e, 0x64, 0x54, 0x61, 0x72, 0x67, 0x65,
-	0x74, 0x53, 0x6b, 0x69, 0x6c, 0x6c, 0x44, 0x61, 0x6d, 0x61, 0x67, 0x65, 0x46, 0x69, 0x78, 0x65,
-	0x64, 0x22, 0x57, 0x0a, 0x1b, 0x4d, 0x61, 0x7a, 0x65, 0x41, 0x49, 0x53, 0x6b, 0x69, 0x6c, 0x6c,
+	0x61, 0x74, 0x65, 0x12, 0x35, 0x0a, 0x17, 0x73, 0x6b, 0x69, 0x6c, 0x6c, 0x5f, 0x6d, 0x61, 0x70,
+	0x70, 0x69, 0x6e, 0x67, 0x5f, 0x61, 0x63, 0x74, 0x69, 0x6f, 0x6e, 0x5f, 0x69, 0x64, 0x18, 0x09,
+	0x20, 0x03, 0x28, 0x05, 0x52, 0x14, 0x73, 0x6b, 0x69, 0x6c, 0x6c, 0x4d, 0x61, 0x70, 0x70, 0x69,
+	0x6e, 0x67, 0x41, 0x63, 0x74, 0x69, 0x6f, 0x6e, 0x49, 0x64, 0x12, 0x35, 0x0a, 0x17, 0x73, 0x6b,
+	0x69, 0x6c, 0x6c, 0x5f, 0x6d, 0x61, 0x70, 0x70, 0x69, 0x6e, 0x67, 0x5f, 0x65, 0x66, 0x66, 0x65,
+	0x63, 0x74, 0x5f, 0x69, 0x64, 0x18, 0x0a, 0x20, 0x01, 0x28, 0x05, 0x52, 0x14, 0x73, 0x6b, 0x69,
+	0x6c, 0x6c, 0x4d, 0x61, 0x70, 0x70, 0x69, 0x6e, 0x67, 0x45, 0x66, 0x66, 0x65, 0x63, 0x74, 0x49,
+	0x64, 0x12, 0x2c, 0x0a, 0x12, 0x73, 0x6b, 0x69, 0x6c, 0x6c, 0x5f, 0x64, 0x61, 0x6d, 0x61, 0x67,
+	0x65, 0x5f, 0x66, 0x69, 0x78, 0x65, 0x64, 0x18, 0x0b, 0x20, 0x01, 0x28, 0x05, 0x52, 0x10, 0x73,
+	0x6b, 0x69, 0x6c, 0x6c, 0x44, 0x61, 0x6d, 0x61, 0x67, 0x65, 0x46, 0x69, 0x78, 0x65, 0x64, 0x12,
+	0x46, 0x0a, 0x20, 0x73, 0x65, 0x63, 0x6f, 0x6e, 0x64, 0x5f, 0x74, 0x61, 0x72, 0x67, 0x65, 0x74,
+	0x5f, 0x73, 0x6b, 0x69, 0x6c, 0x6c, 0x5f, 0x64, 0x61, 0x6d, 0x61, 0x67, 0x65, 0x5f, 0x66, 0x69,
+	0x78, 0x65, 0x64, 0x18, 0x0c, 0x20, 0x01, 0x28, 0x05, 0x52, 0x1c, 0x73, 0x65, 0x63, 0x6f, 0x6e,
+	0x64, 0x54, 0x61, 0x72, 0x67, 0x65, 0x74, 0x53, 0x6b, 0x69, 0x6c, 0x6c, 0x44, 0x61, 0x6d, 0x61,
+	0x67, 0x65, 0x46, 0x69, 0x78, 0x65, 0x64, 0x12, 0x20, 0x0a, 0x0c, 0x69, 0x73, 0x5f, 0x6e, 0x6f,
+	0x5f, 0x74, 0x61, 0x72, 0x67, 0x65, 0x74, 0x18, 0x0d, 0x20, 0x01, 0x28, 0x05, 0x52, 0x0a, 0x69,
+	0x73, 0x4e, 0x6f, 0x54, 0x61, 0x72, 0x67, 0x65, 0x74, 0x12, 0x25, 0x0a, 0x0e, 0x64, 0x61, 0x6d,
+	0x61, 0x67, 0x65, 0x5f, 0x65, 0x6c, 0x65, 0x6d, 0x65, 0x6e, 0x74, 0x18, 0x0e, 0x20, 0x03, 0x28,
+	0x05, 0x52, 0x0d, 0x64, 0x61, 0x6d, 0x61, 0x67, 0x65, 0x45, 0x6c, 0x65, 0x6d, 0x65, 0x6e, 0x74,
+	0x12, 0x1d, 0x0a, 0x0a, 0x72, 0x65, 0x6c, 0x65, 0x61, 0x73, 0x65, 0x5f, 0x63, 0x64, 0x18, 0x14,
+	0x20, 0x01, 0x28, 0x05, 0x52, 0x09, 0x72, 0x65, 0x6c, 0x65, 0x61, 0x73, 0x65, 0x43, 0x64, 0x12,
+	0x1d, 0x0a, 0x0a, 0x73, 0x6b, 0x69, 0x6c, 0x6c, 0x5f, 0x74, 0x79, 0x70, 0x65, 0x18, 0x15, 0x20,
+	0x01, 0x28, 0x05, 0x52, 0x09, 0x73, 0x6b, 0x69, 0x6c, 0x6c, 0x54, 0x79, 0x70, 0x65, 0x12, 0x21,
+	0x0a, 0x0c, 0x72, 0x61, 0x6e, 0x67, 0x65, 0x5f, 0x72, 0x61, 0x64, 0x69, 0x75, 0x73, 0x18, 0x16,
+	0x20, 0x01, 0x28, 0x05, 0x52, 0x0b, 0x72, 0x61, 0x6e, 0x67, 0x65, 0x52, 0x61, 0x64, 0x69, 0x75,
+	0x73, 0x12, 0x55, 0x0a, 0x11, 0x73, 0x6b, 0x69, 0x6c, 0x6c, 0x5f, 0x65, 0x66, 0x66, 0x65, 0x63,
+	0x74, 0x5f, 0x73, 0x65, 0x6c, 0x66, 0x18, 0x65, 0x20, 0x03, 0x28, 0x0b, 0x32, 0x29, 0x2e, 0x4d,
+	0x61, 0x7a, 0x65, 0x41, 0x49, 0x42, 0x61, 0x74, 0x74, 0x6c, 0x65, 0x2e, 0x4d, 0x61, 0x7a, 0x65,
+	0x41, 0x49, 0x53, 0x6b, 0x69, 0x6c, 0x6c, 0x45, 0x66, 0x66, 0x65, 0x63, 0x74, 0x43, 0x6f, 0x6e,
+	0x66, 0x69, 0x67, 0x49, 0x6e, 0x66, 0x6f, 0x52, 0x0f, 0x73, 0x6b, 0x69, 0x6c, 0x6c, 0x45, 0x66,
+	0x66, 0x65, 0x63, 0x74, 0x53, 0x65, 0x6c, 0x66, 0x12, 0x57, 0x0a, 0x12, 0x73, 0x6b, 0x69, 0x6c,
+	0x6c, 0x5f, 0x65, 0x66, 0x66, 0x65, 0x63, 0x74, 0x5f, 0x6f, 0x74, 0x68, 0x65, 0x72, 0x18, 0x66,
+	0x20, 0x03, 0x28, 0x0b, 0x32, 0x29, 0x2e, 0x4d, 0x61, 0x7a, 0x65, 0x41, 0x49, 0x42, 0x61, 0x74,
+	0x74, 0x6c, 0x65, 0x2e, 0x4d, 0x61, 0x7a, 0x65, 0x41, 0x49, 0x53, 0x6b, 0x69, 0x6c, 0x6c, 0x45,
+	0x66, 0x66, 0x65, 0x63, 0x74, 0x43, 0x6f, 0x6e, 0x66, 0x69, 0x67, 0x49, 0x6e, 0x66, 0x6f, 0x52,
+	0x10, 0x73, 0x6b, 0x69, 0x6c, 0x6c, 0x45, 0x66, 0x66, 0x65, 0x63, 0x74, 0x4f, 0x74, 0x68, 0x65,
+	0x72, 0x22, 0x57, 0x0a, 0x1b, 0x4d, 0x61, 0x7a, 0x65, 0x41, 0x49, 0x53, 0x6b, 0x69, 0x6c, 0x6c,
 	0x45, 0x66, 0x66, 0x65, 0x63, 0x74, 0x52, 0x61, 0x74, 0x65, 0x53, 0x6f, 0x75, 0x72, 0x63, 0x65,
 	0x12, 0x1b, 0x0a, 0x09, 0x73, 0x6f, 0x75, 0x72, 0x63, 0x65, 0x5f, 0x69, 0x64, 0x18, 0x01, 0x20,
 	0x01, 0x28, 0x05, 0x52, 0x08, 0x73, 0x6f, 0x75, 0x72, 0x63, 0x65, 0x49, 0x64, 0x12, 0x1b, 0x0a,
@@ -2830,7 +2916,7 @@ func file_common_MazeAIBattle_proto_rawDescGZIP() []byte {
 }
 
 var file_common_MazeAIBattle_proto_enumTypes = make([]protoimpl.EnumInfo, 1)
-var file_common_MazeAIBattle_proto_msgTypes = make([]protoimpl.MessageInfo, 26)
+var file_common_MazeAIBattle_proto_msgTypes = make([]protoimpl.MessageInfo, 27)
 var file_common_MazeAIBattle_proto_goTypes = []interface{}{
 	(MAZE_AI_ATTR_TYPE)(0),              // 0: MazeAIBattle.MAZE_AI_ATTR_TYPE
 	(*MazeAIAreaInfo)(nil),              // 1: MazeAIBattle.MazeAIAreaInfo
@@ -2842,26 +2928,27 @@ var file_common_MazeAIBattle_proto_goTypes = []interface{}{
 	(*MazeAIAttrInfo)(nil),              // 7: MazeAIBattle.MazeAIAttrInfo
 	(*MazeAISkillTotalInfo)(nil),        // 8: MazeAIBattle.MazeAISkillTotalInfo
 	(*MazeAIAutoSkillInfo)(nil),         // 9: MazeAIBattle.MazeAIAutoSkillInfo
-	(*MazeAISkillInfo)(nil),             // 10: MazeAIBattle.MazeAISkillInfo
-	(*MazeAISkillEffectRateSource)(nil), // 11: MazeAIBattle.MazeAISkillEffectRateSource
-	(*MazeAIEffectTypeInfo)(nil),        // 12: MazeAIBattle.MazeAIEffectTypeInfo
-	(*MazeAISkillEffectConfigInfo)(nil), // 13: MazeAIBattle.MazeAISkillEffectConfigInfo
-	(*MazeAIEffectValueInfo)(nil),       // 14: MazeAIBattle.MazeAIEffectValueInfo
-	(*MazeAIAttackValue)(nil),           // 15: MazeAIBattle.MazeAIAttackValue
-	(*MazeSkillConfigInfo)(nil),         // 16: MazeAIBattle.MazeSkillConfigInfo
-	(*MazeAIActAttackValue)(nil),        // 17: MazeAIBattle.MazeAIActAttackValue
-	(*ActDamageRatioInfo)(nil),          // 18: MazeAIBattle.ActDamageRatioInfo
-	(*MazeAIUseDrugRQ)(nil),             // 19: MazeAIBattle.MazeAIUseDrugRQ
-	(*MazeAIUseDrugRS)(nil),             // 20: MazeAIBattle.MazeAIUseDrugRS
-	(*MazeAIReportInfo)(nil),            // 21: MazeAIBattle.MazeAIReportInfo
-	(*ReportAreaMonsterInfo)(nil),       // 22: MazeAIBattle.ReportAreaMonsterInfo
-	(*ReportMonsterInfo)(nil),           // 23: MazeAIBattle.ReportMonsterInfo
-	(*MazeItemUseInfo)(nil),             // 24: MazeAIBattle.MazeItemUseInfo
-	(*MazeBarrierInfoChangeID)(nil),     // 25: MazeAIBattle.MazeBarrierInfoChangeID
-	(*MazeBarrierInfo)(nil),             // 26: MazeAIBattle.MazeBarrierInfo
-	(*Common.PacketHeader)(nil),         // 27: Common.PacketHeader
-	(*MessageType.ErrorInfo)(nil),       // 28: MessageType.ErrorInfo
-	(*MazeCommon.MazeCount)(nil),        // 29: MazeCommon.MazeCount
+	(*MazeSkillCondition)(nil),          // 10: MazeAIBattle.MazeSkillCondition
+	(*MazeAISkillInfo)(nil),             // 11: MazeAIBattle.MazeAISkillInfo
+	(*MazeAISkillEffectRateSource)(nil), // 12: MazeAIBattle.MazeAISkillEffectRateSource
+	(*MazeAIEffectTypeInfo)(nil),        // 13: MazeAIBattle.MazeAIEffectTypeInfo
+	(*MazeAISkillEffectConfigInfo)(nil), // 14: MazeAIBattle.MazeAISkillEffectConfigInfo
+	(*MazeAIEffectValueInfo)(nil),       // 15: MazeAIBattle.MazeAIEffectValueInfo
+	(*MazeAIAttackValue)(nil),           // 16: MazeAIBattle.MazeAIAttackValue
+	(*MazeSkillConfigInfo)(nil),         // 17: MazeAIBattle.MazeSkillConfigInfo
+	(*MazeAIActAttackValue)(nil),        // 18: MazeAIBattle.MazeAIActAttackValue
+	(*ActDamageRatioInfo)(nil),          // 19: MazeAIBattle.ActDamageRatioInfo
+	(*MazeAIUseDrugRQ)(nil),             // 20: MazeAIBattle.MazeAIUseDrugRQ
+	(*MazeAIUseDrugRS)(nil),             // 21: MazeAIBattle.MazeAIUseDrugRS
+	(*MazeAIReportInfo)(nil),            // 22: MazeAIBattle.MazeAIReportInfo
+	(*ReportAreaMonsterInfo)(nil),       // 23: MazeAIBattle.ReportAreaMonsterInfo
+	(*ReportMonsterInfo)(nil),           // 24: MazeAIBattle.ReportMonsterInfo
+	(*MazeItemUseInfo)(nil),             // 25: MazeAIBattle.MazeItemUseInfo
+	(*MazeBarrierInfoChangeID)(nil),     // 26: MazeAIBattle.MazeBarrierInfoChangeID
+	(*MazeBarrierInfo)(nil),             // 27: MazeAIBattle.MazeBarrierInfo
+	(*Common.PacketHeader)(nil),         // 28: Common.PacketHeader
+	(*MessageType.ErrorInfo)(nil),       // 29: MessageType.ErrorInfo
+	(*MazeCommon.MazeCount)(nil),        // 30: MazeCommon.MazeCount
 }
 var file_common_MazeAIBattle_proto_depIdxs = []int32{
 	6,  // 0: MazeAIBattle.MazeAIAreaInfo.monster_config_infos:type_name -> MazeAIBattle.MazeAIMonsterConfigInfo
@@ -2869,40 +2956,39 @@ var file_common_MazeAIBattle_proto_depIdxs = []int32{
 	3,  // 2: MazeAIBattle.MazeAIBrushAreaConfigInfo.foe_pool:type_name -> MazeAIBattle.BrushFoePoolInfo
 	5,  // 3: MazeAIBattle.MazeAIRoleConfigInfo.user_attr_info:type_name -> MazeAIBattle.MazeAIUserAttrInfo
 	8,  // 4: MazeAIBattle.MazeAIRoleConfigInfo.UserSkillInfo:type_name -> MazeAIBattle.MazeAISkillTotalInfo
-	17, // 5: MazeAIBattle.MazeAIRoleConfigInfo.act_damage_config:type_name -> MazeAIBattle.MazeAIActAttackValue
+	18, // 5: MazeAIBattle.MazeAIRoleConfigInfo.act_damage_config:type_name -> MazeAIBattle.MazeAIActAttackValue
 	7,  // 6: MazeAIBattle.MazeAIUserAttrInfo.attr_info:type_name -> MazeAIBattle.MazeAIAttrInfo
-	15, // 7: MazeAIBattle.MazeAIMonsterConfigInfo.attack_value:type_name -> MazeAIBattle.MazeAIAttackValue
+	16, // 7: MazeAIBattle.MazeAIMonsterConfigInfo.attack_value:type_name -> MazeAIBattle.MazeAIAttackValue
 	7,  // 8: MazeAIBattle.MazeAIMonsterConfigInfo.attr_info:type_name -> MazeAIBattle.MazeAIAttrInfo
 	8,  // 9: MazeAIBattle.MazeAIMonsterConfigInfo.skill_total_info:type_name -> MazeAIBattle.MazeAISkillTotalInfo
-	10, // 10: MazeAIBattle.MazeAISkillTotalInfo.skill_info_list:type_name -> MazeAIBattle.MazeAISkillInfo
+	11, // 10: MazeAIBattle.MazeAISkillTotalInfo.skill_info_list:type_name -> MazeAIBattle.MazeAISkillInfo
 	9,  // 11: MazeAIBattle.MazeAISkillTotalInfo.auto_skill_info_list:type_name -> MazeAIBattle.MazeAIAutoSkillInfo
-	14, // 12: MazeAIBattle.MazeAIAutoSkillInfo.value_list:type_name -> MazeAIBattle.MazeAIEffectValueInfo
-	11, // 13: MazeAIBattle.MazeAISkillInfo.rate_source_list:type_name -> MazeAIBattle.MazeAISkillEffectRateSource
-	13, // 14: MazeAIBattle.MazeAISkillInfo.skill_effect_self:type_name -> MazeAIBattle.MazeAISkillEffectConfigInfo
-	13, // 15: MazeAIBattle.MazeAISkillInfo.skill_effect_other:type_name -> MazeAIBattle.MazeAISkillEffectConfigInfo
-	14, // 16: MazeAIBattle.MazeAISkillEffectConfigInfo.value_list:type_name -> MazeAIBattle.MazeAIEffectValueInfo
-	17, // 17: MazeAIBattle.MazeAIAttackValue.act_damage_config:type_name -> MazeAIBattle.MazeAIActAttackValue
-	17, // 18: MazeAIBattle.MazeSkillConfigInfo.act_damage_config:type_name -> MazeAIBattle.MazeAIActAttackValue
-	18, // 19: MazeAIBattle.MazeAIActAttackValue.act_damage_ratios:type_name -> MazeAIBattle.ActDamageRatioInfo
-	7,  // 20: MazeAIBattle.ActDamageRatioInfo.damage_ratio:type_name -> MazeAIBattle.MazeAIAttrInfo
-	27, // 21: MazeAIBattle.MazeAIUseDrugRQ.header:type_name -> Common.PacketHeader
-	28, // 22: MazeAIBattle.MazeAIUseDrugRS.err_info:type_name -> MessageType.ErrorInfo
-	27, // 23: MazeAIBattle.MazeAIUseDrugRS.header:type_name -> Common.PacketHeader
-	10, // 24: MazeAIBattle.MazeAIUseDrugRS.skill_info:type_name -> MazeAIBattle.MazeAISkillInfo
-	22, // 25: MazeAIBattle.MazeAIReportInfo.area_monster_info:type_name -> MazeAIBattle.ReportAreaMonsterInfo
-	29, // 26: MazeAIBattle.MazeAIReportInfo.reborn_info:type_name -> MazeCommon.MazeCount
-	23, // 27: MazeAIBattle.ReportAreaMonsterInfo.kill_monster_info:type_name -> MazeAIBattle.ReportMonsterInfo
-	26, // 28: MazeAIBattle.MazeBarrierInfoChangeID.maze_barrier_info:type_name -> MazeAIBattle.MazeBarrierInfo
-	1,  // 29: MazeAIBattle.MazeBarrierInfo.area_infos:type_name -> MazeAIBattle.MazeAIAreaInfo
-	4,  // 30: MazeAIBattle.MazeBarrierInfo.role_config_info:type_name -> MazeAIBattle.MazeAIRoleConfigInfo
-	6,  // 31: MazeAIBattle.MazeBarrierInfo.elite_monster_infos:type_name -> MazeAIBattle.MazeAIMonsterConfigInfo
-	16, // 32: MazeAIBattle.MazeBarrierInfo.skill_config_infos:type_name -> MazeAIBattle.MazeSkillConfigInfo
-	24, // 33: MazeAIBattle.MazeBarrierInfo.item_use_infos:type_name -> MazeAIBattle.MazeItemUseInfo
-	34, // [34:34] is the sub-list for method output_type
-	34, // [34:34] is the sub-list for method input_type
-	34, // [34:34] is the sub-list for extension type_name
-	34, // [34:34] is the sub-list for extension extendee
-	0,  // [0:34] is the sub-list for field type_name
+	10, // 12: MazeAIBattle.MazeAIAutoSkillInfo.condition_config:type_name -> MazeAIBattle.MazeSkillCondition
+	14, // 13: MazeAIBattle.MazeAISkillInfo.skill_effect_self:type_name -> MazeAIBattle.MazeAISkillEffectConfigInfo
+	14, // 14: MazeAIBattle.MazeAISkillInfo.skill_effect_other:type_name -> MazeAIBattle.MazeAISkillEffectConfigInfo
+	15, // 15: MazeAIBattle.MazeAISkillEffectConfigInfo.value_list:type_name -> MazeAIBattle.MazeAIEffectValueInfo
+	18, // 16: MazeAIBattle.MazeAIAttackValue.act_damage_config:type_name -> MazeAIBattle.MazeAIActAttackValue
+	18, // 17: MazeAIBattle.MazeSkillConfigInfo.act_damage_config:type_name -> MazeAIBattle.MazeAIActAttackValue
+	19, // 18: MazeAIBattle.MazeAIActAttackValue.act_damage_ratios:type_name -> MazeAIBattle.ActDamageRatioInfo
+	7,  // 19: MazeAIBattle.ActDamageRatioInfo.damage_ratio:type_name -> MazeAIBattle.MazeAIAttrInfo
+	28, // 20: MazeAIBattle.MazeAIUseDrugRQ.header:type_name -> Common.PacketHeader
+	29, // 21: MazeAIBattle.MazeAIUseDrugRS.err_info:type_name -> MessageType.ErrorInfo
+	28, // 22: MazeAIBattle.MazeAIUseDrugRS.header:type_name -> Common.PacketHeader
+	11, // 23: MazeAIBattle.MazeAIUseDrugRS.skill_info:type_name -> MazeAIBattle.MazeAISkillInfo
+	23, // 24: MazeAIBattle.MazeAIReportInfo.area_monster_info:type_name -> MazeAIBattle.ReportAreaMonsterInfo
+	30, // 25: MazeAIBattle.MazeAIReportInfo.reborn_info:type_name -> MazeCommon.MazeCount
+	24, // 26: MazeAIBattle.ReportAreaMonsterInfo.kill_monster_info:type_name -> MazeAIBattle.ReportMonsterInfo
+	27, // 27: MazeAIBattle.MazeBarrierInfoChangeID.maze_barrier_info:type_name -> MazeAIBattle.MazeBarrierInfo
+	1,  // 28: MazeAIBattle.MazeBarrierInfo.area_infos:type_name -> MazeAIBattle.MazeAIAreaInfo
+	4,  // 29: MazeAIBattle.MazeBarrierInfo.role_config_info:type_name -> MazeAIBattle.MazeAIRoleConfigInfo
+	6,  // 30: MazeAIBattle.MazeBarrierInfo.elite_monster_infos:type_name -> MazeAIBattle.MazeAIMonsterConfigInfo
+	17, // 31: MazeAIBattle.MazeBarrierInfo.skill_config_infos:type_name -> MazeAIBattle.MazeSkillConfigInfo
+	25, // 32: MazeAIBattle.MazeBarrierInfo.item_use_infos:type_name -> MazeAIBattle.MazeItemUseInfo
+	33, // [33:33] is the sub-list for method output_type
+	33, // [33:33] is the sub-list for method input_type
+	33, // [33:33] is the sub-list for extension type_name
+	33, // [33:33] is the sub-list for extension extendee
+	0,  // [0:33] is the sub-list for field type_name
 }
 
 func init() { file_common_MazeAIBattle_proto_init() }
@@ -3020,7 +3106,7 @@ func file_common_MazeAIBattle_proto_init() {
 			}
 		}
 		file_common_MazeAIBattle_proto_msgTypes[9].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*MazeAISkillInfo); i {
+			switch v := v.(*MazeSkillCondition); i {
 			case 0:
 				return &v.state
 			case 1:
@@ -3032,7 +3118,7 @@ func file_common_MazeAIBattle_proto_init() {
 			}
 		}
 		file_common_MazeAIBattle_proto_msgTypes[10].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*MazeAISkillEffectRateSource); i {
+			switch v := v.(*MazeAISkillInfo); i {
 			case 0:
 				return &v.state
 			case 1:
@@ -3044,7 +3130,7 @@ func file_common_MazeAIBattle_proto_init() {
 			}
 		}
 		file_common_MazeAIBattle_proto_msgTypes[11].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*MazeAIEffectTypeInfo); i {
+			switch v := v.(*MazeAISkillEffectRateSource); i {
 			case 0:
 				return &v.state
 			case 1:
@@ -3056,7 +3142,7 @@ func file_common_MazeAIBattle_proto_init() {
 			}
 		}
 		file_common_MazeAIBattle_proto_msgTypes[12].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*MazeAISkillEffectConfigInfo); i {
+			switch v := v.(*MazeAIEffectTypeInfo); i {
 			case 0:
 				return &v.state
 			case 1:
@@ -3068,7 +3154,7 @@ func file_common_MazeAIBattle_proto_init() {
 			}
 		}
 		file_common_MazeAIBattle_proto_msgTypes[13].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*MazeAIEffectValueInfo); i {
+			switch v := v.(*MazeAISkillEffectConfigInfo); i {
 			case 0:
 				return &v.state
 			case 1:
@@ -3080,7 +3166,7 @@ func file_common_MazeAIBattle_proto_init() {
 			}
 		}
 		file_common_MazeAIBattle_proto_msgTypes[14].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*MazeAIAttackValue); i {
+			switch v := v.(*MazeAIEffectValueInfo); i {
 			case 0:
 				return &v.state
 			case 1:
@@ -3092,7 +3178,7 @@ func file_common_MazeAIBattle_proto_init() {
 			}
 		}
 		file_common_MazeAIBattle_proto_msgTypes[15].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*MazeSkillConfigInfo); i {
+			switch v := v.(*MazeAIAttackValue); i {
 			case 0:
 				return &v.state
 			case 1:
@@ -3104,7 +3190,7 @@ func file_common_MazeAIBattle_proto_init() {
 			}
 		}
 		file_common_MazeAIBattle_proto_msgTypes[16].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*MazeAIActAttackValue); i {
+			switch v := v.(*MazeSkillConfigInfo); i {
 			case 0:
 				return &v.state
 			case 1:
@@ -3116,7 +3202,7 @@ func file_common_MazeAIBattle_proto_init() {
 			}
 		}
 		file_common_MazeAIBattle_proto_msgTypes[17].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*ActDamageRatioInfo); i {
+			switch v := v.(*MazeAIActAttackValue); i {
 			case 0:
 				return &v.state
 			case 1:
@@ -3128,7 +3214,7 @@ func file_common_MazeAIBattle_proto_init() {
 			}
 		}
 		file_common_MazeAIBattle_proto_msgTypes[18].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*MazeAIUseDrugRQ); i {
+			switch v := v.(*ActDamageRatioInfo); i {
 			case 0:
 				return &v.state
 			case 1:
@@ -3140,7 +3226,7 @@ func file_common_MazeAIBattle_proto_init() {
 			}
 		}
 		file_common_MazeAIBattle_proto_msgTypes[19].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*MazeAIUseDrugRS); i {
+			switch v := v.(*MazeAIUseDrugRQ); i {
 			case 0:
 				return &v.state
 			case 1:
@@ -3152,7 +3238,7 @@ func file_common_MazeAIBattle_proto_init() {
 			}
 		}
 		file_common_MazeAIBattle_proto_msgTypes[20].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*MazeAIReportInfo); i {
+			switch v := v.(*MazeAIUseDrugRS); i {
 			case 0:
 				return &v.state
 			case 1:
@@ -3164,7 +3250,7 @@ func file_common_MazeAIBattle_proto_init() {
 			}
 		}
 		file_common_MazeAIBattle_proto_msgTypes[21].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*ReportAreaMonsterInfo); i {
+			switch v := v.(*MazeAIReportInfo); i {
 			case 0:
 				return &v.state
 			case 1:
@@ -3176,7 +3262,7 @@ func file_common_MazeAIBattle_proto_init() {
 			}
 		}
 		file_common_MazeAIBattle_proto_msgTypes[22].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*ReportMonsterInfo); i {
+			switch v := v.(*ReportAreaMonsterInfo); i {
 			case 0:
 				return &v.state
 			case 1:
@@ -3188,7 +3274,7 @@ func file_common_MazeAIBattle_proto_init() {
 			}
 		}
 		file_common_MazeAIBattle_proto_msgTypes[23].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*MazeItemUseInfo); i {
+			switch v := v.(*ReportMonsterInfo); i {
 			case 0:
 				return &v.state
 			case 1:
@@ -3200,7 +3286,7 @@ func file_common_MazeAIBattle_proto_init() {
 			}
 		}
 		file_common_MazeAIBattle_proto_msgTypes[24].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*MazeBarrierInfoChangeID); i {
+			switch v := v.(*MazeItemUseInfo); i {
 			case 0:
 				return &v.state
 			case 1:
@@ -3212,6 +3298,18 @@ func file_common_MazeAIBattle_proto_init() {
 			}
 		}
 		file_common_MazeAIBattle_proto_msgTypes[25].Exporter = func(v interface{}, i int) interface{} {
+			switch v := v.(*MazeBarrierInfoChangeID); i {
+			case 0:
+				return &v.state
+			case 1:
+				return &v.sizeCache
+			case 2:
+				return &v.unknownFields
+			default:
+				return nil
+			}
+		}
+		file_common_MazeAIBattle_proto_msgTypes[26].Exporter = func(v interface{}, i int) interface{} {
 			switch v := v.(*MazeBarrierInfo); i {
 			case 0:
 				return &v.state
@@ -3230,7 +3328,7 @@ func file_common_MazeAIBattle_proto_init() {
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
 			RawDescriptor: file_common_MazeAIBattle_proto_rawDesc,
 			NumEnums:      1,
-			NumMessages:   26,
+			NumMessages:   27,
 			NumExtensions: 0,
 			NumServices:   0,
 		},

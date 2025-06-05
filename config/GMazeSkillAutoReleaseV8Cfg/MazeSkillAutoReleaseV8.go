@@ -14,28 +14,18 @@ import (
 
 // MazeSkillAutoReleaseV8ConfigRow from maze_skill_auto_release_v8【迷宫-技能-自动释放技能】.xlsx maze_skill_auto_release_v8
 type MazeSkillAutoReleaseV8ConfigRow struct {
-	Order                    int32           `json:"order"`                    // auto_skill_id
-	Attr                     int32           `json:"attr"`                     // 逻辑属性id
-	Attr_value_1_variable_id map[int32]int32 `json:"attr_value_1_variable_id"` // 参数1关联的变量id
-	Attr_value_1_type        int32           `json:"attr_value_1_type"`        // 参数1数值类型
-	Attr_value_1             int32           `json:"attr_value_1"`             // 参数1
-	Attr_value_2_variable_id map[int32]int32 `json:"attr_value_2_variable_id"` // 触发几率关联的变量id
-	Attr_value_2_type        int32           `json:"attr_value_2_type"`        // 触发几率数值类型
-	Attr_value_2             int32           `json:"attr_value_2"`             // 触发几率
-	Attr_value_3_variable_id map[int32]int32 `json:"attr_value_3_variable_id"` // 释放次数关联的变量id
-	Attr_value_3_type        int32           `json:"attr_value_3_type"`        // 释放次数数值类型
-	Attr_value_3             int32           `json:"attr_value_3"`             // 释放次数
-	Attr_value_4             []int32         `json:"attr_value_4"`             // 参数4
-	Last_time_variable_id    map[int32]int32 `json:"last_time_variable_id"`    // 持续时长（毫秒）关联的变量id
-	Last_time                int32           `json:"last_time"`                // 持续时长（毫秒）
-	Base_hitrate_variable_id map[int32]int32 `json:"base_hitrate_variable_id"` // 基础命中率变量
-	Base_hitrate             int32           `json:"base_hitrate"`             // 基础命中率（万分比）
-	Attr_value_7_variable_id map[int32]int32 `json:"attr_value_7_variable_id"` // 参数7关联的变量id
-	Attr_value_7_type        int32           `json:"attr_value_7_type"`        // 参数7数值类型
-	Attr_value_7             int32           `json:"attr_value_7"`             // 参数7
-	Attr_value_8_variable_id map[int32]int32 `json:"attr_value_8_variable_id"` // 参数8关联的变量id
-	Attr_value_8_type        int32           `json:"attr_value_8_type"`        // 参数8数值类型
-	Attr_value_8             int32           `json:"attr_value_8"`             // 参数8
+	Order                            int32           `json:"order"`                            // 自动
+	Release_time                     int32           `json:"release_time"`                     // 自动释放时机
+	Release_condition                string          `json:"release_condition"`                // 自动释放条件
+	Max_release_limit_variable       map[int32]int32 `json:"max_release_limit_variable"`       // 变量属性id：变化方式（1-基础值+value,2=基础值-value）
+	Max_release_limit                int32           `json:"max_release_limit"`                // 每次挑战最大触发次数（0表示无限制）
+	Auto_release_protect_cd_variable map[int32]int32 `json:"auto_release_protect_cd_variable"` // 变量属性id：变化方式（1-基础值+value,2=基础值-value）
+	Auto_release_protect_cd          int32           `json:"auto_release_protect_cd"`          // 参数-重复触发保护-自动释放冷却时间（毫秒）
+	Release_ratio_variable           map[int32]int32 `json:"release_ratio_variable"`           // 变量属性id：变化方式（1-基础值+value,2=基础值-value）
+	Release_ratio                    int32           `json:"release_ratio"`                    // 参数-释放几率
+	Release_num_variable             map[int32]int32 `json:"release_num_variable"`             // 变量属性id：变化方式（1-基础值+value,2=基础值-value）
+	Release_num                      int32           `json:"release_num"`                      // 参数-释放次数
+	Skill_id                         []int32         `json:"skill_id"`                         // 参数-释放的技能id
 }
 
 // MazeSkillAutoReleaseV8Config from maze_skill_auto_release_v8【迷宫-技能-自动释放技能】.xlsx maze_skill_auto_release_v8
@@ -289,12 +279,12 @@ func (*gMazeSkillAutoReleaseV8Parser) Parse(logger fklog.FKLogI, data []string, 
 
 	var tmp int64
 
-	// parse column 0 order : auto_skill_id
+	// parse column 0 order : 自动
 	if data[0] != "" {
 		tmp, err = strconv.ParseInt(data[0], 10, 64)
 		if err != nil {
-			err = errors.New("parse field order auto_skill_id to int32 failed")
-			logger.ErrorWF("parse field order auto_skill_id to int32 failed.",
+			err = errors.New("parse field order 自动 to int32 failed")
+			logger.ErrorWF("parse field order 自动 to int32 failed.",
 				zap.String("xlsx", "maze_skill_auto_release_v8【迷宫-技能-自动释放技能】.xlsx"), zap.String("sheet", "maze_skill_auto_release_v8"),
 				zap.String("parse_data", data[0]),
 				zap.Error(err))
@@ -303,35 +293,40 @@ func (*gMazeSkillAutoReleaseV8Parser) Parse(logger fklog.FKLogI, data []string, 
 		config.Order = int32(tmp)
 	}
 
-	// parse column 1 attr : 逻辑属性id
+	// parse column 1 release_time : 自动释放时机
 	if data[1] != "" {
 		tmp, err = strconv.ParseInt(data[1], 10, 64)
 		if err != nil {
-			err = errors.New("parse field attr 逻辑属性id to int32 failed")
-			logger.ErrorWF("parse field attr 逻辑属性id to int32 failed.",
+			err = errors.New("parse field release_time 自动释放时机 to int32 failed")
+			logger.ErrorWF("parse field release_time 自动释放时机 to int32 failed.",
 				zap.String("xlsx", "maze_skill_auto_release_v8【迷宫-技能-自动释放技能】.xlsx"), zap.String("sheet", "maze_skill_auto_release_v8"),
 				zap.String("parse_data", data[1]),
 				zap.Error(err))
 			return
 		}
-		config.Attr = int32(tmp)
+		config.Release_time = int32(tmp)
 	}
 
-	// parse column 2 attr_value_1_variable_id : 参数1关联的变量id
+	// parse column 2 release_condition : 自动释放条件
 	if data[2] != "" {
+		config.Release_condition = data[2]
+	}
 
-		config.Attr_value_1_variable_id = make(map[int32]int32)
+	// parse column 3 max_release_limit_variable : 变量属性id：变化方式（1-基础值+value,2=基础值-value）
+	if data[3] != "" {
+
+		config.Max_release_limit_variable = make(map[int32]int32)
 		var key int32
 		var value int32
-		vals := strings.Split(data[2], "_")
+		vals := strings.Split(data[3], "_")
 		for k, val := range vals {
 			items := strings.Split(val, ":")
 			tmp, err = strconv.ParseInt(items[0], 10, 64)
 			if err != nil {
-				err = errors.New("parse map field attr_value_1_variable_id 参数1关联的变量id to key int32 failed")
-				logger.ErrorWF("parse map field attr_value_1_variable_id 参数1关联的变量id to key int32 failed.",
+				err = errors.New("parse map field max_release_limit_variable 变量属性id：变化方式（1-基础值+value,2=基础值-value） to key int32 failed")
+				logger.ErrorWF("parse map field max_release_limit_variable 变量属性id：变化方式（1-基础值+value,2=基础值-value） to key int32 failed.",
 					zap.String("xlsx", "maze_skill_auto_release_v8【迷宫-技能-自动释放技能】.xlsx"), zap.String("sheet", "maze_skill_auto_release_v8"),
-					// zap.String("field_data",data[2]),
+					// zap.String("field_data",data[3]),
 					zap.String("item_data", val), zap.Int("index", k),
 					zap.String("parse_data", items[0]),
 					zap.Error(err))
@@ -340,52 +335,38 @@ func (*gMazeSkillAutoReleaseV8Parser) Parse(logger fklog.FKLogI, data []string, 
 			key = int32(tmp)
 			tmp, err = strconv.ParseInt(items[1], 10, 64)
 			if err != nil {
-				err = errors.New("parse map field attr_value_1_variable_id 参数1关联的变量id to value int32 failed")
-				logger.ErrorWF("parse map field attr_value_1_variable_id 参数1关联的变量id to value int32 failed.",
+				err = errors.New("parse map field max_release_limit_variable 变量属性id：变化方式（1-基础值+value,2=基础值-value） to value int32 failed")
+				logger.ErrorWF("parse map field max_release_limit_variable 变量属性id：变化方式（1-基础值+value,2=基础值-value） to value int32 failed.",
 					zap.String("xlsx", "maze_skill_auto_release_v8【迷宫-技能-自动释放技能】.xlsx"), zap.String("sheet", "maze_skill_auto_release_v8"),
-					// zap.String("field_data",data[2]),
+					// zap.String("field_data",data[3]),
 					zap.String("item_data", val), zap.Int("index", k),
 					zap.String("parse_data", items[1]),
 					zap.Error(err))
 				return
 			}
 			value = int32(tmp)
-			config.Attr_value_1_variable_id[key] = value
+			config.Max_release_limit_variable[key] = value
 		}
 	}
 
-	// parse column 3 attr_value_1_type : 参数1数值类型
-	if data[3] != "" {
-		tmp, err = strconv.ParseInt(data[3], 10, 64)
-		if err != nil {
-			err = errors.New("parse field attr_value_1_type 参数1数值类型 to int32 failed")
-			logger.ErrorWF("parse field attr_value_1_type 参数1数值类型 to int32 failed.",
-				zap.String("xlsx", "maze_skill_auto_release_v8【迷宫-技能-自动释放技能】.xlsx"), zap.String("sheet", "maze_skill_auto_release_v8"),
-				zap.String("parse_data", data[3]),
-				zap.Error(err))
-			return
-		}
-		config.Attr_value_1_type = int32(tmp)
-	}
-
-	// parse column 4 attr_value_1 : 参数1
+	// parse column 4 max_release_limit : 每次挑战最大触发次数（0表示无限制）
 	if data[4] != "" {
 		tmp, err = strconv.ParseInt(data[4], 10, 64)
 		if err != nil {
-			err = errors.New("parse field attr_value_1 参数1 to int32 failed")
-			logger.ErrorWF("parse field attr_value_1 参数1 to int32 failed.",
+			err = errors.New("parse field max_release_limit 每次挑战最大触发次数（0表示无限制） to int32 failed")
+			logger.ErrorWF("parse field max_release_limit 每次挑战最大触发次数（0表示无限制） to int32 failed.",
 				zap.String("xlsx", "maze_skill_auto_release_v8【迷宫-技能-自动释放技能】.xlsx"), zap.String("sheet", "maze_skill_auto_release_v8"),
 				zap.String("parse_data", data[4]),
 				zap.Error(err))
 			return
 		}
-		config.Attr_value_1 = int32(tmp)
+		config.Max_release_limit = int32(tmp)
 	}
 
-	// parse column 5 attr_value_2_variable_id : 触发几率关联的变量id
+	// parse column 5 auto_release_protect_cd_variable : 变量属性id：变化方式（1-基础值+value,2=基础值-value）
 	if data[5] != "" {
 
-		config.Attr_value_2_variable_id = make(map[int32]int32)
+		config.Auto_release_protect_cd_variable = make(map[int32]int32)
 		var key int32
 		var value int32
 		vals := strings.Split(data[5], "_")
@@ -393,8 +374,8 @@ func (*gMazeSkillAutoReleaseV8Parser) Parse(logger fklog.FKLogI, data []string, 
 			items := strings.Split(val, ":")
 			tmp, err = strconv.ParseInt(items[0], 10, 64)
 			if err != nil {
-				err = errors.New("parse map field attr_value_2_variable_id 触发几率关联的变量id to key int32 failed")
-				logger.ErrorWF("parse map field attr_value_2_variable_id 触发几率关联的变量id to key int32 failed.",
+				err = errors.New("parse map field auto_release_protect_cd_variable 变量属性id：变化方式（1-基础值+value,2=基础值-value） to key int32 failed")
+				logger.ErrorWF("parse map field auto_release_protect_cd_variable 变量属性id：变化方式（1-基础值+value,2=基础值-value） to key int32 failed.",
 					zap.String("xlsx", "maze_skill_auto_release_v8【迷宫-技能-自动释放技能】.xlsx"), zap.String("sheet", "maze_skill_auto_release_v8"),
 					// zap.String("field_data",data[5]),
 					zap.String("item_data", val), zap.Int("index", k),
@@ -405,8 +386,8 @@ func (*gMazeSkillAutoReleaseV8Parser) Parse(logger fklog.FKLogI, data []string, 
 			key = int32(tmp)
 			tmp, err = strconv.ParseInt(items[1], 10, 64)
 			if err != nil {
-				err = errors.New("parse map field attr_value_2_variable_id 触发几率关联的变量id to value int32 failed")
-				logger.ErrorWF("parse map field attr_value_2_variable_id 触发几率关联的变量id to value int32 failed.",
+				err = errors.New("parse map field auto_release_protect_cd_variable 变量属性id：变化方式（1-基础值+value,2=基础值-value） to value int32 failed")
+				logger.ErrorWF("parse map field auto_release_protect_cd_variable 变量属性id：变化方式（1-基础值+value,2=基础值-value） to value int32 failed.",
 					zap.String("xlsx", "maze_skill_auto_release_v8【迷宫-技能-自动释放技能】.xlsx"), zap.String("sheet", "maze_skill_auto_release_v8"),
 					// zap.String("field_data",data[5]),
 					zap.String("item_data", val), zap.Int("index", k),
@@ -415,53 +396,39 @@ func (*gMazeSkillAutoReleaseV8Parser) Parse(logger fklog.FKLogI, data []string, 
 				return
 			}
 			value = int32(tmp)
-			config.Attr_value_2_variable_id[key] = value
+			config.Auto_release_protect_cd_variable[key] = value
 		}
 	}
 
-	// parse column 6 attr_value_2_type : 触发几率数值类型
+	// parse column 6 auto_release_protect_cd : 参数-重复触发保护-自动释放冷却时间（毫秒）
 	if data[6] != "" {
 		tmp, err = strconv.ParseInt(data[6], 10, 64)
 		if err != nil {
-			err = errors.New("parse field attr_value_2_type 触发几率数值类型 to int32 failed")
-			logger.ErrorWF("parse field attr_value_2_type 触发几率数值类型 to int32 failed.",
+			err = errors.New("parse field auto_release_protect_cd 参数-重复触发保护-自动释放冷却时间（毫秒） to int32 failed")
+			logger.ErrorWF("parse field auto_release_protect_cd 参数-重复触发保护-自动释放冷却时间（毫秒） to int32 failed.",
 				zap.String("xlsx", "maze_skill_auto_release_v8【迷宫-技能-自动释放技能】.xlsx"), zap.String("sheet", "maze_skill_auto_release_v8"),
 				zap.String("parse_data", data[6]),
 				zap.Error(err))
 			return
 		}
-		config.Attr_value_2_type = int32(tmp)
+		config.Auto_release_protect_cd = int32(tmp)
 	}
 
-	// parse column 7 attr_value_2 : 触发几率
+	// parse column 7 release_ratio_variable : 变量属性id：变化方式（1-基础值+value,2=基础值-value）
 	if data[7] != "" {
-		tmp, err = strconv.ParseInt(data[7], 10, 64)
-		if err != nil {
-			err = errors.New("parse field attr_value_2 触发几率 to int32 failed")
-			logger.ErrorWF("parse field attr_value_2 触发几率 to int32 failed.",
-				zap.String("xlsx", "maze_skill_auto_release_v8【迷宫-技能-自动释放技能】.xlsx"), zap.String("sheet", "maze_skill_auto_release_v8"),
-				zap.String("parse_data", data[7]),
-				zap.Error(err))
-			return
-		}
-		config.Attr_value_2 = int32(tmp)
-	}
 
-	// parse column 8 attr_value_3_variable_id : 释放次数关联的变量id
-	if data[8] != "" {
-
-		config.Attr_value_3_variable_id = make(map[int32]int32)
+		config.Release_ratio_variable = make(map[int32]int32)
 		var key int32
 		var value int32
-		vals := strings.Split(data[8], "_")
+		vals := strings.Split(data[7], "_")
 		for k, val := range vals {
 			items := strings.Split(val, ":")
 			tmp, err = strconv.ParseInt(items[0], 10, 64)
 			if err != nil {
-				err = errors.New("parse map field attr_value_3_variable_id 释放次数关联的变量id to key int32 failed")
-				logger.ErrorWF("parse map field attr_value_3_variable_id 释放次数关联的变量id to key int32 failed.",
+				err = errors.New("parse map field release_ratio_variable 变量属性id：变化方式（1-基础值+value,2=基础值-value） to key int32 failed")
+				logger.ErrorWF("parse map field release_ratio_variable 变量属性id：变化方式（1-基础值+value,2=基础值-value） to key int32 failed.",
 					zap.String("xlsx", "maze_skill_auto_release_v8【迷宫-技能-自动释放技能】.xlsx"), zap.String("sheet", "maze_skill_auto_release_v8"),
-					// zap.String("field_data",data[8]),
+					// zap.String("field_data",data[7]),
 					zap.String("item_data", val), zap.Int("index", k),
 					zap.String("parse_data", items[0]),
 					zap.Error(err))
@@ -470,324 +437,119 @@ func (*gMazeSkillAutoReleaseV8Parser) Parse(logger fklog.FKLogI, data []string, 
 			key = int32(tmp)
 			tmp, err = strconv.ParseInt(items[1], 10, 64)
 			if err != nil {
-				err = errors.New("parse map field attr_value_3_variable_id 释放次数关联的变量id to value int32 failed")
-				logger.ErrorWF("parse map field attr_value_3_variable_id 释放次数关联的变量id to value int32 failed.",
+				err = errors.New("parse map field release_ratio_variable 变量属性id：变化方式（1-基础值+value,2=基础值-value） to value int32 failed")
+				logger.ErrorWF("parse map field release_ratio_variable 变量属性id：变化方式（1-基础值+value,2=基础值-value） to value int32 failed.",
 					zap.String("xlsx", "maze_skill_auto_release_v8【迷宫-技能-自动释放技能】.xlsx"), zap.String("sheet", "maze_skill_auto_release_v8"),
-					// zap.String("field_data",data[8]),
+					// zap.String("field_data",data[7]),
 					zap.String("item_data", val), zap.Int("index", k),
 					zap.String("parse_data", items[1]),
 					zap.Error(err))
 				return
 			}
 			value = int32(tmp)
-			config.Attr_value_3_variable_id[key] = value
+			config.Release_ratio_variable[key] = value
 		}
 	}
 
-	// parse column 9 attr_value_3_type : 释放次数数值类型
-	if data[9] != "" {
-		tmp, err = strconv.ParseInt(data[9], 10, 64)
+	// parse column 8 release_ratio : 参数-释放几率
+	if data[8] != "" {
+		tmp, err = strconv.ParseInt(data[8], 10, 64)
 		if err != nil {
-			err = errors.New("parse field attr_value_3_type 释放次数数值类型 to int32 failed")
-			logger.ErrorWF("parse field attr_value_3_type 释放次数数值类型 to int32 failed.",
+			err = errors.New("parse field release_ratio 参数-释放几率 to int32 failed")
+			logger.ErrorWF("parse field release_ratio 参数-释放几率 to int32 failed.",
 				zap.String("xlsx", "maze_skill_auto_release_v8【迷宫-技能-自动释放技能】.xlsx"), zap.String("sheet", "maze_skill_auto_release_v8"),
-				zap.String("parse_data", data[9]),
+				zap.String("parse_data", data[8]),
 				zap.Error(err))
 			return
 		}
-		config.Attr_value_3_type = int32(tmp)
+		config.Release_ratio = int32(tmp)
 	}
 
-	// parse column 10 attr_value_3 : 释放次数
+	// parse column 9 release_num_variable : 变量属性id：变化方式（1-基础值+value,2=基础值-value）
+	if data[9] != "" {
+
+		config.Release_num_variable = make(map[int32]int32)
+		var key int32
+		var value int32
+		vals := strings.Split(data[9], "_")
+		for k, val := range vals {
+			items := strings.Split(val, ":")
+			tmp, err = strconv.ParseInt(items[0], 10, 64)
+			if err != nil {
+				err = errors.New("parse map field release_num_variable 变量属性id：变化方式（1-基础值+value,2=基础值-value） to key int32 failed")
+				logger.ErrorWF("parse map field release_num_variable 变量属性id：变化方式（1-基础值+value,2=基础值-value） to key int32 failed.",
+					zap.String("xlsx", "maze_skill_auto_release_v8【迷宫-技能-自动释放技能】.xlsx"), zap.String("sheet", "maze_skill_auto_release_v8"),
+					// zap.String("field_data",data[9]),
+					zap.String("item_data", val), zap.Int("index", k),
+					zap.String("parse_data", items[0]),
+					zap.Error(err))
+				return
+			}
+			key = int32(tmp)
+			tmp, err = strconv.ParseInt(items[1], 10, 64)
+			if err != nil {
+				err = errors.New("parse map field release_num_variable 变量属性id：变化方式（1-基础值+value,2=基础值-value） to value int32 failed")
+				logger.ErrorWF("parse map field release_num_variable 变量属性id：变化方式（1-基础值+value,2=基础值-value） to value int32 failed.",
+					zap.String("xlsx", "maze_skill_auto_release_v8【迷宫-技能-自动释放技能】.xlsx"), zap.String("sheet", "maze_skill_auto_release_v8"),
+					// zap.String("field_data",data[9]),
+					zap.String("item_data", val), zap.Int("index", k),
+					zap.String("parse_data", items[1]),
+					zap.Error(err))
+				return
+			}
+			value = int32(tmp)
+			config.Release_num_variable[key] = value
+		}
+	}
+
+	// parse column 10 release_num : 参数-释放次数
 	if data[10] != "" {
 		tmp, err = strconv.ParseInt(data[10], 10, 64)
 		if err != nil {
-			err = errors.New("parse field attr_value_3 释放次数 to int32 failed")
-			logger.ErrorWF("parse field attr_value_3 释放次数 to int32 failed.",
+			err = errors.New("parse field release_num 参数-释放次数 to int32 failed")
+			logger.ErrorWF("parse field release_num 参数-释放次数 to int32 failed.",
 				zap.String("xlsx", "maze_skill_auto_release_v8【迷宫-技能-自动释放技能】.xlsx"), zap.String("sheet", "maze_skill_auto_release_v8"),
 				zap.String("parse_data", data[10]),
 				zap.Error(err))
 			return
 		}
-		config.Attr_value_3 = int32(tmp)
+		config.Release_num = int32(tmp)
 	}
 
-	// parse column 11 attr_value_4 : 参数4
+	// parse column 11 skill_id : 参数-释放的技能id
 	if data[11] != "" {
 
 		vals := strings.Split(data[11], ",")
 		for k, v := range vals {
 			tmp, err = strconv.ParseInt(v, 10, 64)
 			if err != nil {
-				err = errors.New("parse array field attr_value_4 参数4 to []int32 failed")
-				logger.ErrorWF("parse array field attr_value_4 参数4 to []int32 failed.",
+				err = errors.New("parse array field skill_id 参数-释放的技能id to []int32 failed")
+				logger.ErrorWF("parse array field skill_id 参数-释放的技能id to []int32 failed.",
 					zap.String("xlsx", "maze_skill_auto_release_v8【迷宫-技能-自动释放技能】.xlsx"), zap.String("sheet", "maze_skill_auto_release_v8"),
 					// zap.String("field_data",data[11]),
 					zap.String("parse_data", v), zap.Int("index", k),
 					zap.Error(err))
 				return
 			}
-			config.Attr_value_4 = append(config.Attr_value_4, int32(tmp))
+			config.Skill_id = append(config.Skill_id, int32(tmp))
 		}
-	}
-
-	// parse column 12 last_time_variable_id : 持续时长（毫秒）关联的变量id
-	if data[12] != "" {
-
-		config.Last_time_variable_id = make(map[int32]int32)
-		var key int32
-		var value int32
-		vals := strings.Split(data[12], "_")
-		for k, val := range vals {
-			items := strings.Split(val, ":")
-			tmp, err = strconv.ParseInt(items[0], 10, 64)
-			if err != nil {
-				err = errors.New("parse map field last_time_variable_id 持续时长（毫秒）关联的变量id to key int32 failed")
-				logger.ErrorWF("parse map field last_time_variable_id 持续时长（毫秒）关联的变量id to key int32 failed.",
-					zap.String("xlsx", "maze_skill_auto_release_v8【迷宫-技能-自动释放技能】.xlsx"), zap.String("sheet", "maze_skill_auto_release_v8"),
-					// zap.String("field_data",data[12]),
-					zap.String("item_data", val), zap.Int("index", k),
-					zap.String("parse_data", items[0]),
-					zap.Error(err))
-				return
-			}
-			key = int32(tmp)
-			tmp, err = strconv.ParseInt(items[1], 10, 64)
-			if err != nil {
-				err = errors.New("parse map field last_time_variable_id 持续时长（毫秒）关联的变量id to value int32 failed")
-				logger.ErrorWF("parse map field last_time_variable_id 持续时长（毫秒）关联的变量id to value int32 failed.",
-					zap.String("xlsx", "maze_skill_auto_release_v8【迷宫-技能-自动释放技能】.xlsx"), zap.String("sheet", "maze_skill_auto_release_v8"),
-					// zap.String("field_data",data[12]),
-					zap.String("item_data", val), zap.Int("index", k),
-					zap.String("parse_data", items[1]),
-					zap.Error(err))
-				return
-			}
-			value = int32(tmp)
-			config.Last_time_variable_id[key] = value
-		}
-	}
-
-	// parse column 13 last_time : 持续时长（毫秒）
-	if data[13] != "" {
-		tmp, err = strconv.ParseInt(data[13], 10, 64)
-		if err != nil {
-			err = errors.New("parse field last_time 持续时长（毫秒） to int32 failed")
-			logger.ErrorWF("parse field last_time 持续时长（毫秒） to int32 failed.",
-				zap.String("xlsx", "maze_skill_auto_release_v8【迷宫-技能-自动释放技能】.xlsx"), zap.String("sheet", "maze_skill_auto_release_v8"),
-				zap.String("parse_data", data[13]),
-				zap.Error(err))
-			return
-		}
-		config.Last_time = int32(tmp)
-	}
-
-	// parse column 14 base_hitrate_variable_id : 基础命中率变量
-	if data[14] != "" {
-
-		config.Base_hitrate_variable_id = make(map[int32]int32)
-		var key int32
-		var value int32
-		vals := strings.Split(data[14], "_")
-		for k, val := range vals {
-			items := strings.Split(val, ":")
-			tmp, err = strconv.ParseInt(items[0], 10, 64)
-			if err != nil {
-				err = errors.New("parse map field base_hitrate_variable_id 基础命中率变量 to key int32 failed")
-				logger.ErrorWF("parse map field base_hitrate_variable_id 基础命中率变量 to key int32 failed.",
-					zap.String("xlsx", "maze_skill_auto_release_v8【迷宫-技能-自动释放技能】.xlsx"), zap.String("sheet", "maze_skill_auto_release_v8"),
-					// zap.String("field_data",data[14]),
-					zap.String("item_data", val), zap.Int("index", k),
-					zap.String("parse_data", items[0]),
-					zap.Error(err))
-				return
-			}
-			key = int32(tmp)
-			tmp, err = strconv.ParseInt(items[1], 10, 64)
-			if err != nil {
-				err = errors.New("parse map field base_hitrate_variable_id 基础命中率变量 to value int32 failed")
-				logger.ErrorWF("parse map field base_hitrate_variable_id 基础命中率变量 to value int32 failed.",
-					zap.String("xlsx", "maze_skill_auto_release_v8【迷宫-技能-自动释放技能】.xlsx"), zap.String("sheet", "maze_skill_auto_release_v8"),
-					// zap.String("field_data",data[14]),
-					zap.String("item_data", val), zap.Int("index", k),
-					zap.String("parse_data", items[1]),
-					zap.Error(err))
-				return
-			}
-			value = int32(tmp)
-			config.Base_hitrate_variable_id[key] = value
-		}
-	}
-
-	// parse column 15 base_hitrate : 基础命中率（万分比）
-	if data[15] != "" {
-		tmp, err = strconv.ParseInt(data[15], 10, 64)
-		if err != nil {
-			err = errors.New("parse field base_hitrate 基础命中率（万分比） to int32 failed")
-			logger.ErrorWF("parse field base_hitrate 基础命中率（万分比） to int32 failed.",
-				zap.String("xlsx", "maze_skill_auto_release_v8【迷宫-技能-自动释放技能】.xlsx"), zap.String("sheet", "maze_skill_auto_release_v8"),
-				zap.String("parse_data", data[15]),
-				zap.Error(err))
-			return
-		}
-		config.Base_hitrate = int32(tmp)
-	}
-
-	// parse column 16 attr_value_7_variable_id : 参数7关联的变量id
-	if data[16] != "" {
-
-		config.Attr_value_7_variable_id = make(map[int32]int32)
-		var key int32
-		var value int32
-		vals := strings.Split(data[16], "_")
-		for k, val := range vals {
-			items := strings.Split(val, ":")
-			tmp, err = strconv.ParseInt(items[0], 10, 64)
-			if err != nil {
-				err = errors.New("parse map field attr_value_7_variable_id 参数7关联的变量id to key int32 failed")
-				logger.ErrorWF("parse map field attr_value_7_variable_id 参数7关联的变量id to key int32 failed.",
-					zap.String("xlsx", "maze_skill_auto_release_v8【迷宫-技能-自动释放技能】.xlsx"), zap.String("sheet", "maze_skill_auto_release_v8"),
-					// zap.String("field_data",data[16]),
-					zap.String("item_data", val), zap.Int("index", k),
-					zap.String("parse_data", items[0]),
-					zap.Error(err))
-				return
-			}
-			key = int32(tmp)
-			tmp, err = strconv.ParseInt(items[1], 10, 64)
-			if err != nil {
-				err = errors.New("parse map field attr_value_7_variable_id 参数7关联的变量id to value int32 failed")
-				logger.ErrorWF("parse map field attr_value_7_variable_id 参数7关联的变量id to value int32 failed.",
-					zap.String("xlsx", "maze_skill_auto_release_v8【迷宫-技能-自动释放技能】.xlsx"), zap.String("sheet", "maze_skill_auto_release_v8"),
-					// zap.String("field_data",data[16]),
-					zap.String("item_data", val), zap.Int("index", k),
-					zap.String("parse_data", items[1]),
-					zap.Error(err))
-				return
-			}
-			value = int32(tmp)
-			config.Attr_value_7_variable_id[key] = value
-		}
-	}
-
-	// parse column 17 attr_value_7_type : 参数7数值类型
-	if data[17] != "" {
-		tmp, err = strconv.ParseInt(data[17], 10, 64)
-		if err != nil {
-			err = errors.New("parse field attr_value_7_type 参数7数值类型 to int32 failed")
-			logger.ErrorWF("parse field attr_value_7_type 参数7数值类型 to int32 failed.",
-				zap.String("xlsx", "maze_skill_auto_release_v8【迷宫-技能-自动释放技能】.xlsx"), zap.String("sheet", "maze_skill_auto_release_v8"),
-				zap.String("parse_data", data[17]),
-				zap.Error(err))
-			return
-		}
-		config.Attr_value_7_type = int32(tmp)
-	}
-
-	// parse column 18 attr_value_7 : 参数7
-	if data[18] != "" {
-		tmp, err = strconv.ParseInt(data[18], 10, 64)
-		if err != nil {
-			err = errors.New("parse field attr_value_7 参数7 to int32 failed")
-			logger.ErrorWF("parse field attr_value_7 参数7 to int32 failed.",
-				zap.String("xlsx", "maze_skill_auto_release_v8【迷宫-技能-自动释放技能】.xlsx"), zap.String("sheet", "maze_skill_auto_release_v8"),
-				zap.String("parse_data", data[18]),
-				zap.Error(err))
-			return
-		}
-		config.Attr_value_7 = int32(tmp)
-	}
-
-	// parse column 19 attr_value_8_variable_id : 参数8关联的变量id
-	if data[19] != "" {
-
-		config.Attr_value_8_variable_id = make(map[int32]int32)
-		var key int32
-		var value int32
-		vals := strings.Split(data[19], "_")
-		for k, val := range vals {
-			items := strings.Split(val, ":")
-			tmp, err = strconv.ParseInt(items[0], 10, 64)
-			if err != nil {
-				err = errors.New("parse map field attr_value_8_variable_id 参数8关联的变量id to key int32 failed")
-				logger.ErrorWF("parse map field attr_value_8_variable_id 参数8关联的变量id to key int32 failed.",
-					zap.String("xlsx", "maze_skill_auto_release_v8【迷宫-技能-自动释放技能】.xlsx"), zap.String("sheet", "maze_skill_auto_release_v8"),
-					// zap.String("field_data",data[19]),
-					zap.String("item_data", val), zap.Int("index", k),
-					zap.String("parse_data", items[0]),
-					zap.Error(err))
-				return
-			}
-			key = int32(tmp)
-			tmp, err = strconv.ParseInt(items[1], 10, 64)
-			if err != nil {
-				err = errors.New("parse map field attr_value_8_variable_id 参数8关联的变量id to value int32 failed")
-				logger.ErrorWF("parse map field attr_value_8_variable_id 参数8关联的变量id to value int32 failed.",
-					zap.String("xlsx", "maze_skill_auto_release_v8【迷宫-技能-自动释放技能】.xlsx"), zap.String("sheet", "maze_skill_auto_release_v8"),
-					// zap.String("field_data",data[19]),
-					zap.String("item_data", val), zap.Int("index", k),
-					zap.String("parse_data", items[1]),
-					zap.Error(err))
-				return
-			}
-			value = int32(tmp)
-			config.Attr_value_8_variable_id[key] = value
-		}
-	}
-
-	// parse column 20 attr_value_8_type : 参数8数值类型
-	if data[20] != "" {
-		tmp, err = strconv.ParseInt(data[20], 10, 64)
-		if err != nil {
-			err = errors.New("parse field attr_value_8_type 参数8数值类型 to int32 failed")
-			logger.ErrorWF("parse field attr_value_8_type 参数8数值类型 to int32 failed.",
-				zap.String("xlsx", "maze_skill_auto_release_v8【迷宫-技能-自动释放技能】.xlsx"), zap.String("sheet", "maze_skill_auto_release_v8"),
-				zap.String("parse_data", data[20]),
-				zap.Error(err))
-			return
-		}
-		config.Attr_value_8_type = int32(tmp)
-	}
-
-	// parse column 21 attr_value_8 : 参数8
-	if data[21] != "" {
-		tmp, err = strconv.ParseInt(data[21], 10, 64)
-		if err != nil {
-			err = errors.New("parse field attr_value_8 参数8 to int32 failed")
-			logger.ErrorWF("parse field attr_value_8 参数8 to int32 failed.",
-				zap.String("xlsx", "maze_skill_auto_release_v8【迷宫-技能-自动释放技能】.xlsx"), zap.String("sheet", "maze_skill_auto_release_v8"),
-				zap.String("parse_data", data[21]),
-				zap.Error(err))
-			return
-		}
-		config.Attr_value_8 = int32(tmp)
 	}
 	return
 }
 
 var gMazeSkillAutoReleaseV8Fields = []string{
 	"order",
-	"attr",
-	"attr_value_1_variable_id",
-	"attr_value_1_type",
-	"attr_value_1",
-	"attr_value_2_variable_id",
-	"attr_value_2_type",
-	"attr_value_2",
-	"attr_value_3_variable_id",
-	"attr_value_3_type",
-	"attr_value_3",
-	"attr_value_4",
-	"last_time_variable_id",
-	"last_time",
-	"base_hitrate_variable_id",
-	"base_hitrate",
-	"attr_value_7_variable_id",
-	"attr_value_7_type",
-	"attr_value_7",
-	"attr_value_8_variable_id",
-	"attr_value_8_type",
-	"attr_value_8",
+	"release_time",
+	"release_condition",
+	"max_release_limit_variable",
+	"max_release_limit",
+	"auto_release_protect_cd_variable",
+	"auto_release_protect_cd",
+	"release_ratio_variable",
+	"release_ratio",
+	"release_num_variable",
+	"release_num",
+	"skill_id",
 }
 
 // LoadDataManual load data for test

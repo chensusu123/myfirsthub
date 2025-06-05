@@ -9,16 +9,19 @@ import (
 	"maze_game_server/config/GMazeBrushFoeV8Cfg"
 	"maze_game_server/config/GMazeFoeV8Cfg"
 	"maze_game_server/config/GMazeSkillActV8Cfg"
+	"maze_game_server/config/GMazeSkillAutoConditionV8Cfg"
 	"maze_game_server/config/GMazeSkillAutoReleaseV8Cfg"
 	"maze_game_server/config/GMazeSkillInfoV8Cfg"
 	"maze_game_server/config/GMazeSkilleffectV8Cfg"
 	"maze_game_server/io/redis/mazebarriertempbuffredis"
 	"maze_game_server/io/redis/mazecalcattrredis"
 	"maze_game_server/pb/common/MazeAIBattle"
+	"regexp"
 	"sort"
 
 	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fklog"
 	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fkprometheus"
+	"gitlab.ifreetalk.com/maze-plate/freetk/fkutil"
 	"go.uber.org/zap"
 	"google.golang.org/protobuf/proto"
 )
@@ -397,16 +400,17 @@ func GetUserBattleSkillInfo(logger fklog.FKLogI, skillId int32, attrMap map[int3
 	}
 	// todo 缺少触发cd
 	skillInfo := &MazeAIBattle.MazeAISkillInfo{
-		SkillId:                      proto.Int32(skillCfg.Id),
-		SkillGroup:                   proto.Int32(skillCfg.Group),
-		CampType:                     proto.Int32(skillCfg.Target_type),
-		TargetType:                   proto.Int32(skillCfg.Scope_type),
-		RangeRadius:                  proto.Int32(skillCfg.Scope_param1),
-		ReleaseDistance:              proto.Int32(skillCfg.Distance_max),
-		ReleaseCd:                    proto.Int32(0),
-		TargetMaxCount:               proto.Int32(skillCfg.Target_num),
-		CanReleaseState:              skillCfg.Is_allow,
-		CanReleaseTargetState:        skillCfg.Is_target,
+		SkillId:    proto.Int32(skillCfg.Id),
+		SkillGroup: proto.Int32(skillCfg.Group),
+		// TriggerType: proto.Int32(), // TODO 待配置表补充
+		// CampType:                     proto.Int32(skillCfg.Target_type),
+		// TargetType:                   proto.Int32(skillCfg.Scope_type),
+		RangeRadius:     proto.Int32(skillCfg.Scope_param1),
+		ReleaseDistance: proto.Int32(skillCfg.Distance_max),
+		ReleaseCd:       proto.Int32(0),
+		TargetMaxCount:  proto.Int32(skillCfg.Target_num),
+		// CanReleaseState:              skillCfg.Is_allow,
+		// CanReleaseTargetState:        skillCfg.Is_target,
 		MainTargetDamageRate:         proto.Int32(skillCfg.Main_target_damage),
 		SecondTargetDamageRate:       proto.Int32(skillCfg.Second_target_damage),
 		SkillDamageFixed:             proto.Int32(skillCfg.Main_target_damage_fix),
@@ -415,16 +419,18 @@ func GetUserBattleSkillInfo(logger fklog.FKLogI, skillId int32, attrMap map[int3
 		SkillType:                    proto.Int32(skillCfg.Type),
 		SkillMappingEffectId:         proto.Int32(skillActCfg.Effect_id),
 		SecondTargetSkillDamageFixed: proto.Int32(skillCfg.Second_target_damage_fix),
+		IsNoTarget:                   proto.Int32(skillCfg.Is_no_target),
+		DamageElement:                skillCfg.Damage_element,
 	}
-	for k, v := range skillCfg.Target_effect_pro {
-		if k == 0 {
-			continue
-		}
-		skillInfo.RateSourceList = append(skillInfo.RateSourceList, &MazeAIBattle.MazeAISkillEffectRateSource{
-			SourceId: proto.Int32(k),
-			TargetId: proto.Int32(v),
-		})
-	}
+	// for k, v := range skillCfg.Target_effect_pro {
+	// 	if k == 0 {
+	// 		continue
+	// 	}
+	// 	skillInfo.RateSourceList = append(skillInfo.RateSourceList, &MazeAIBattle.MazeAISkillEffectRateSource{
+	// 		SourceId: proto.Int32(k),
+	// 		TargetId: proto.Int32(v),
+	// 	})
+	// }
 	for _, effectId := range skillCfg.Target_effect {
 		if effectId == 0 {
 			continue
@@ -517,16 +523,17 @@ func GetFoeBattleSkillInfo(logger fklog.FKLogI, skillId int32, attrMap map[int32
 	}
 	// todo 缺少触发cd
 	skillInfo := &MazeAIBattle.MazeAISkillInfo{
-		SkillId:                      proto.Int32(skillCfg.Id),
-		SkillGroup:                   proto.Int32(skillCfg.Group),
-		CampType:                     proto.Int32(skillCfg.Target_type),
-		TargetType:                   proto.Int32(skillCfg.Scope_type),
-		RangeRadius:                  proto.Int32(skillCfg.Scope_param1),
-		ReleaseDistance:              proto.Int32(skillCfg.Distance_max),
-		ReleaseCd:                    proto.Int32(0),
-		TargetMaxCount:               proto.Int32(skillCfg.Target_num),
-		CanReleaseState:              skillCfg.Is_allow,
-		CanReleaseTargetState:        skillCfg.Is_target,
+		SkillId:    proto.Int32(skillCfg.Id),
+		SkillGroup: proto.Int32(skillCfg.Group),
+		// TriggerType: proto.Int32(), // TODO 待配置表补充
+		// CampType:                     proto.Int32(skillCfg.Target_type),
+		// TargetType:                   proto.Int32(skillCfg.Scope_type),
+		RangeRadius:     proto.Int32(skillCfg.Scope_param1),
+		ReleaseDistance: proto.Int32(skillCfg.Distance_max),
+		ReleaseCd:       proto.Int32(0),
+		TargetMaxCount:  proto.Int32(skillCfg.Target_num),
+		// CanReleaseState:              skillCfg.Is_allow,
+		// CanReleaseTargetState:        skillCfg.Is_target,
 		MainTargetDamageRate:         proto.Int32(skillCfg.Main_target_damage),
 		SecondTargetDamageRate:       proto.Int32(skillCfg.Second_target_damage),
 		SkillDamageFixed:             proto.Int32(skillCfg.Main_target_damage_fix),
@@ -535,16 +542,18 @@ func GetFoeBattleSkillInfo(logger fklog.FKLogI, skillId int32, attrMap map[int32
 		SkillType:                    proto.Int32(skillCfg.Type),
 		SkillMappingEffectId:         proto.Int32(skillActCfg.Effect_id),
 		SecondTargetSkillDamageFixed: proto.Int32(skillCfg.Second_target_damage_fix),
+		IsNoTarget:                   proto.Int32(skillCfg.Is_no_target),
+		DamageElement:                skillCfg.Damage_element,
 	}
-	for k, v := range skillCfg.Target_effect_pro {
-		if k == 0 {
-			continue
-		}
-		skillInfo.RateSourceList = append(skillInfo.RateSourceList, &MazeAIBattle.MazeAISkillEffectRateSource{
-			SourceId: proto.Int32(k),
-			TargetId: proto.Int32(v),
-		})
-	}
+	// for k, v := range skillCfg.Target_effect_pro {
+	// 	if k == 0 {
+	// 		continue
+	// 	}
+	// 	skillInfo.RateSourceList = append(skillInfo.RateSourceList, &MazeAIBattle.MazeAISkillEffectRateSource{
+	// 		SourceId: proto.Int32(k),
+	// 		TargetId: proto.Int32(v),
+	// 	})
+	// }
 	for _, effectId := range skillCfg.Target_effect {
 		if effectId == 0 {
 			continue
@@ -681,24 +690,50 @@ func GetMazeAIAutoSkillInfo(logger fklog.FKLogI, skillId int32, attrMap map[int3
 		return nil, errors.New("配置不存在")
 	}
 	skillConfigInfo := &MazeAIBattle.MazeAIAutoSkillInfo{
-		SkillId:        proto.Int32(skillId),
-		AttrId:         proto.Int32(skillAutoCfg.Attr),
-		BaseHitrate:    proto.Int32(int32(GetEffectAttrValue(skillAutoCfg.Attr_value_2, skillAutoCfg.Attr_value_2_variable_id, attrMap))),
-		TriggerCount:   proto.Int32(int32(GetEffectAttrValue(skillAutoCfg.Attr_value_3, skillAutoCfg.Attr_value_3_variable_id, attrMap))),
-		TriggerSkillId: skillAutoCfg.Attr_value_4,
+		SkillId:      proto.Int32(skillId),
+		BaseHitrate:  proto.Int32(int32(GetAttrValue(skillAutoCfg.Release_ratio, skillAutoCfg.Release_ratio_variable, attrMap))),
+		TriggerCount: proto.Int32(int32(GetAttrValue(skillAutoCfg.Release_num, skillAutoCfg.Release_num_variable, attrMap))),
+		ProtectCd:    proto.Int32(int32(GetAttrValue(skillAutoCfg.Auto_release_protect_cd, skillAutoCfg.Auto_release_protect_cd_variable, attrMap))),
+		LimitCount:   proto.Int32(int32(GetAttrValue(skillAutoCfg.Max_release_limit, skillAutoCfg.Max_release_limit_variable, attrMap))),
+		TriggerType:  proto.Int32(skillAutoCfg.Release_time),
+		Condition:    proto.String(skillAutoCfg.Release_condition),
 	}
-	skillConfigInfo.ValueList = append(skillConfigInfo.ValueList, &MazeAIBattle.MazeAIEffectValueInfo{
-		Value:     proto.Int64(GetEffectAttrValue(skillAutoCfg.Attr_value_1, skillAutoCfg.Attr_value_1_variable_id, attrMap)),
-		ValueType: proto.Int32(skillAutoCfg.Attr_value_1_type),
-		Index:     proto.Int32(1),
-	})
-	skillConfigInfo.ValueList = append(skillConfigInfo.ValueList, &MazeAIBattle.MazeAIEffectValueInfo{
-		Value:     proto.Int64(GetEffectAttrValue(skillAutoCfg.Attr_value_8, skillAutoCfg.Attr_value_8_variable_id, attrMap)),
-		ValueType: proto.Int32(skillAutoCfg.Attr_value_8_type),
-		Index:     proto.Int32(8),
-	})
+	// 触发技能列表
+	for _, triggerSkillId := range skillAutoCfg.Skill_id {
+		skillConfigInfo.TriggerSkillId = append(skillConfigInfo.TriggerSkillId, triggerSkillId)
+	}
+	// 技能条件
+	conditionIDs, err := filterConditionIDs(skillAutoCfg.Release_condition)
+	if err != nil {
+		logger.ErrorWF("GetMazeAIAutoSkillInfo filterConditionIDs err", zap.Error(err), zap.Any("skillId", skillId))
+		return nil, errors.New("配置错误")
+	}
+	for _, conditionID := range conditionIDs {
+		condition, err := GetMazeSkillConditionInfo(logger, conditionID, attrMap)
+		if err != nil {
+			logger.ErrorWF("GetMazeAIAutoSkillInfo GetMazeSkillConditionInfo err", zap.Error(err), zap.Any("skillId", skillId), zap.Any("conditionID", conditionID))
+			return nil, err
+		}
+		skillConfigInfo.ConditionConfig = append(skillConfigInfo.ConditionConfig, condition)
+	}
 	return skillConfigInfo, nil
 }
+
+func GetMazeSkillConditionInfo(logger fklog.FKLogI, conditionID int32, attrMap map[int32]int64) (*MazeAIBattle.MazeSkillCondition, error) {
+	cfg := GMazeSkillAutoConditionV8Cfg.Get(conditionID)
+	if cfg == nil {
+		logger.ErrorWF("GetMazeSkillConditionInfo GMazeSkillAutoConditionV8Cfg err", zap.Any("conditionID", conditionID))
+		return nil, errors.New("配置不存在")
+	}
+	condition := &MazeAIBattle.MazeSkillCondition{
+		ConditionId: proto.Int32(conditionID),
+		Type:        proto.Int32(cfg.Type),
+		Symbol:      proto.Int32(cfg.Symbol),
+		Value:       proto.Int32(int32(GetAttrValue(cfg.Value, cfg.Value_variable, attrMap))),
+	}
+	return condition, nil
+}
+
 func CalcUserStiffRatio(cfg *GMazeFoeV8Cfg.MazeFoeV8ConfigRow, force int64) (ratio int64) {
 	if cfg == nil {
 		return 0
@@ -722,4 +757,19 @@ func CalcUserStiffRatio(cfg *GMazeFoeV8Cfg.MazeFoeV8ConfigRow, force int64) (rat
 		return int64(cfg.Tough_borke_raitio[keys[len(keys)-1]])
 	}
 	return 0
+}
+
+var (
+	regexpnum = regexp.MustCompile(`[1-9][0-9]+`)
+)
+
+// filterConditionIDs 用来提取条件字符串中的所有技能条件ID
+func filterConditionIDs(condition string) (conditionIDs []int32, err error) {
+	if condition == "" {
+		return nil, nil
+	}
+	for _, v := range regexpnum.FindAllString(condition, -1) {
+		conditionIDs = append(conditionIDs, fkutil.ToInt32(v))
+	}
+	return
 }
