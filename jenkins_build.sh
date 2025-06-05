@@ -75,7 +75,7 @@ fi
 GOOS=linux GOARCH=amd64 go build -o $EXE_NAME
 if [ $OS == 'linux' ]; then
     # linux 导出依赖配置
-    ./$EXE_NAME -e
+    #./$EXE_NAME -e
 fi
 
 # 创建配置文件目录
