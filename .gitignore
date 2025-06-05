@@ -12,3 +12,4 @@ servers/maze_main_server_dev/logs
 servers/maze_main_server_dev/extern.conf
 servers/maze_main_server_dev/status.txt
 servers/maze_main_server_dev/polaris
+servers/maze_main_server/bin

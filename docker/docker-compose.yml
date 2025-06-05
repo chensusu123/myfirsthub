@@ -1,0 +1,39 @@
+services:
+  app:
+    image: alpine:latest
+    #container_name: maze-server
+    depends_on:
+      - redis
+      - mysql
+    volumes:
+      - ../servers/maze_main_server/bin/maze-server:/app/app
+      - ../servers/maze_main_server/conf.d:/app/conf.d
+      - ../servers/maze_main_server/logs:/app/logs
+      - ../docker/entrypoint.sh:/entrypoint.sh
+    working_dir: /app
+    entrypoint: ["/entrypoint.sh"]
+    command: ["./app"]
+    ports:
+      - "5997:5997"
+      - "5998:5998"
+      - "5999:5999"
+    networks:
+      - app-net
+    env_file:
+      - ../docker/.env
+  redis:
+    image: redis:7
+    networks:
+      - app-net
+
+  mysql:
+    image: mysql:8.0
+    environment:
+      MYSQL_ROOT_PASSWORD: mysql
+      MYSQL_DATABASE: maze
+    networks:
+      - app-net
+
+networks:
+  app-net:
+    driver: bridge
