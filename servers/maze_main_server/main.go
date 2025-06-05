@@ -12,6 +12,7 @@ import (
 	"gitlab.ifreetalk.com/maze-plate/freetk/fkserver"
 	"gitlab.ifreetalk.com/maze-plate/freetk/fkserver/config_manager/loadconfigapi"
 	"gitlab.ifreetalk.com/maze-plate/freetk/mockio"
+	namingI "gitlab.ifreetalk.com/maze-plate/freetk/pkg/naming"
 )
 
 // 19987	UN_CGK_SVR_TYPE_MAZE_MAIN_SERVER 小程序版迷宫主服务
@@ -22,12 +23,14 @@ func main() {
 
 	fkserver.AppServer.AddBasicService(&process.NanoInitService{})
 
+	var namingSvc namingI.NamingI
 	if fkconfig.EnvVal.IsLocalDev {
 		fkserver.AddBusiness(&business.GCustomBusiness)
 		loadconfigapi.SetLoadConfigFunc(business.GCustomBusiness.LoadCacheConfig)
 		loadconfigapi.SetInitConfigCacheFunc(business.GCustomBusiness.Init)
 	} else {
-		mockio.SetNaming(naming.NewClientSuite("./conf.d/polaris.yaml"))
+		namingSvc = naming.NewClientSuite("./conf.d/polaris.yaml")
+		mockio.SetNaming(namingSvc)
 		// loadconfigapi.InitConfigRpcClient()
 		fkserver.AddBusiness(&business.GCustomBusiness)
 		loadconfigapi.SetLoadConfigFunc(business.GCustomBusiness.LoadCacheConfig)
@@ -39,7 +42,7 @@ func main() {
 	// fkserver.AddBusiness(&business.GCustomBusiness)
 	fkserver.AddBusiness(tasktimer.GTaskTimerBusiness)
 	// 初始化mysql
-	mysql.InitMysql()
+	mysql.InitMysql(namingSvc)
 
 	fkserver.Run()
 }

@@ -3,8 +3,9 @@ package test
 import (
 	"database/sql"
 	"fmt"
-	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fklog"
-	"go.uber.org/zap"
+	"testing"
+	"time"
+
 	"maze_game_server/common/structsdef"
 	"maze_game_server/io/kafka/dollequipassmeblekakfa"
 	"maze_game_server/io/kafka/dollequipdismantlekafka"
@@ -19,16 +20,18 @@ import (
 	"maze_game_server/io/kafka/mazeuserlevelkafka"
 	"maze_game_server/io/mysql"
 	"maze_game_server/io/mysql/flowrecord"
-	"testing"
-	"time"
+
+	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fklog"
+	"go.uber.org/zap"
 )
 
 var gTestLogger fklog.FKLogI
 
 func init() {
 	gTestLogger = fklog.AppLogger().Clone("maze_main_server_t")
-	mysql.InitMysql()
+	mysql.InitMysql(nil)
 }
+
 func TestUserLevelRecord(t *testing.T) {
 	gTestLogger = fklog.AppLogger().Clone("maze_main_server_t")
 	record := &mazeuserlevelkafka.MazeUserLevelRecord{

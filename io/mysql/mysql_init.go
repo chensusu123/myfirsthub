@@ -3,13 +3,15 @@ package mysql
 import (
 	"database/sql"
 	"fmt"
+	"sync"
+	"time"
+
 	"gitlab.ifreetalk.com/maze-plate/freetk/common/fkfmt"
 	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fkconfig"
 	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fkini"
 	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fklog"
 	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fkmysql"
-	"sync"
-	"time"
+	"gitlab.ifreetalk.com/maze-plate/freetk/pkg/naming"
 )
 
 type mysqlConfig struct {
@@ -38,7 +40,7 @@ func readConfig() (*fkini.IniConfig, error) {
 }
 
 // 初始化mysql
-func InitMysql() {
+func InitMysql(naming naming.NamingI) {
 	if fkconfig.EnvVal.IsLocalDev == true {
 		c, err := readConfig()
 		if err != nil {
@@ -53,19 +55,27 @@ func InitMysql() {
 		}
 		return
 	}
+
+	const (
+		DBServiceName = "aze_main_server.mysql"
+	)
+	if naming == nil {
+		fkfmt.Println("naming is nil")
+		return
+	}
 	var err error
-	mysqlCfg.Address, err = fkconfig.GetEnv("MYSQL_ADDRESS")
+	mysqlCfg.Address, err = naming.GetDB(DBServiceName, int32(fkconfig.EnvVal.GroupID))
+	// mysqlCfg.Address, err = fkconfig.GetEnv("MYSQL_ADDRESS")
 	if err != nil {
 		fkfmt.Println("MYSQL_ADDRESS env not set ")
 	}
-	mysqlCfg.DbUser, err = fkconfig.GetEnv("MYSQL_USER")
+	dbUser, dbPwd, err := naming.GetDBUserAndPassword(DBServiceName, int32(fkconfig.EnvVal.GroupID))
+	// mysqlCfg.DbUser, err = fkconfig.GetEnv("MYSQL_USER")
 	if err != nil {
 		fkfmt.Println("MYSQL_USER env not set ")
 	}
-	mysqlCfg.Pwd, err = fkconfig.GetEnv("MYSQL_PWD")
-	if err != nil {
-		fkfmt.Println("MYSQL_PWD env not set ")
-	}
+	mysqlCfg.DbUser = dbUser
+	mysqlCfg.Pwd = dbPwd
 }
 
 // 获取分表名字
@@ -160,8 +170,8 @@ func closeOldMysqlDb(baseDbName string) {
 		return // 没有这个连接池，不需要关闭
 	}
 	entry := val.(*DBEntry)
-	//entry.mu.Lock()
-	//defer entry.mu.Unlock()
+	// entry.mu.Lock()
+	// defer entry.mu.Unlock()
 	if entry.db == nil {
 		return
 	}
