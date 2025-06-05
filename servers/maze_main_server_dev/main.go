@@ -40,6 +40,11 @@ func main() {
 	}
 
 	fkserver.AddBusiness(tasktimer.GTaskTimerBusiness)
-	mysql.InitMysql(namingSvc)
+	if fkconfig.EnvVal.IsLocalDev {
+		mysql.InitMysql(nil)
+	} else {
+		mysql.InitMysql(namingSvc)
+	}
+
 	fkserver.Run()
 }

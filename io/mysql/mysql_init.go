@@ -40,7 +40,7 @@ func readConfig() (*fkini.IniConfig, error) {
 }
 
 // 初始化mysql
-func InitMysql(naming naming.NamingI) {
+func InitMysql(namingSvr naming.NamingI) {
 	if fkconfig.EnvVal.IsLocalDev == true {
 		c, err := readConfig()
 		if err != nil {
@@ -59,17 +59,17 @@ func InitMysql(naming naming.NamingI) {
 	const (
 		DBServiceName = "aze_main_server.mysql"
 	)
-	if naming == nil {
+	if namingSvr == nil {
 		fkfmt.Println("naming is nil")
 		return
 	}
 	var err error
-	mysqlCfg.Address, err = naming.GetDB(DBServiceName, int32(fkconfig.EnvVal.GroupID))
+	mysqlCfg.Address, err = namingSvr.GetDB(DBServiceName, int32(fkconfig.EnvVal.GroupID))
 	// mysqlCfg.Address, err = fkconfig.GetEnv("MYSQL_ADDRESS")
 	if err != nil {
 		fkfmt.Println("MYSQL_ADDRESS env not set ")
 	}
-	dbUser, dbPwd, err := naming.GetDBUserAndPassword(DBServiceName, int32(fkconfig.EnvVal.GroupID))
+	dbUser, dbPwd, err := namingSvr.GetDBUserAndPassword(DBServiceName, int32(fkconfig.EnvVal.GroupID))
 	// mysqlCfg.DbUser, err = fkconfig.GetEnv("MYSQL_USER")
 	if err != nil {
 		fkfmt.Println("MYSQL_USER env not set ")
