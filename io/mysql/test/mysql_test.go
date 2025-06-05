@@ -29,7 +29,7 @@ var gTestLogger fklog.FKLogI
 
 func init() {
 	gTestLogger = fklog.AppLogger().Clone("maze_main_server_t")
-	mysql.InitMysql(nil)
+	mysql.InitMysql()
 }
 
 func TestUserLevelRecord(t *testing.T) {
