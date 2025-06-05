@@ -25,11 +25,14 @@ func main() {
 
 	var namingSvc namingI.NamingI
 	if fkconfig.EnvVal.IsLocalDev {
+		mysql.InitMysql()
 		fkserver.AddBusiness(&business.GCustomBusiness)
 		loadconfigapi.SetLoadConfigFunc(business.GCustomBusiness.LoadCacheConfig)
 		loadconfigapi.SetInitConfigCacheFunc(business.GCustomBusiness.Init)
 	} else {
-		namingSvc = naming.NewClientSuite("./conf.d/polaris.yaml")
+		namingSvc = naming.NewClientSuite("./conf.d/polaris.yaml", []naming.InitFunc{
+			mysql.InitMysqlEx,
+		})
 		mockio.SetNaming(namingSvc)
 		// loadconfigapi.InitConfigRpcClient()
 		fkserver.AddBusiness(&business.GCustomBusiness)
@@ -40,11 +43,6 @@ func main() {
 	}
 
 	fkserver.AddBusiness(tasktimer.GTaskTimerBusiness)
-	if fkconfig.EnvVal.IsLocalDev {
-		mysql.InitMysqlEx(nil)
-	} else {
-		mysql.InitMysqlEx(namingSvc)
-	}
 
 	fkserver.Run()
 }

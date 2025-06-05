@@ -7,6 +7,7 @@ import (
 	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fkconfig"
 	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fklog"
 	"gitlab.ifreetalk.com/maze-plate/freetk/pkg/discovery"
+	namingI "gitlab.ifreetalk.com/maze-plate/freetk/pkg/naming"
 	"go.uber.org/zap"
 )
 
@@ -17,11 +18,15 @@ type ClientSuite struct {
 	DstNameSpace string             // dest namespace for service discovery
 	Resolver     discovery.Resolver // service discovery component
 	// report service call result for circuitbreak
+	InitFunList []InitFunc
 }
 
-func NewClientSuite(cfgName string) *ClientSuite {
+type InitFunc func(namingI.NamingI) error
+
+func NewClientSuite(cfgName string, initFuncList []InitFunc) *ClientSuite {
 	return &ClientSuite{
-		CfgName: cfgName,
+		CfgName:     cfgName,
+		InitFunList: initFuncList,
 	}
 }
 
@@ -84,5 +89,11 @@ func (n *ClientSuite) Init() error {
 	n.Resolver = r
 	logger := fklog.AppLogger().Clone("")
 	n.FKLogI = logger
+	for _, f := range n.InitFunList {
+		err = f(n)
+		if err != nil {
+			return err
+		}
+	}
 	return nil
 }

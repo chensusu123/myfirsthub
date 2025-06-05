@@ -2,6 +2,7 @@ package mysql
 
 import (
 	"database/sql"
+	"errors"
 	"fmt"
 	"sync"
 	"time"
@@ -176,40 +177,27 @@ func closeOldMysqlDb(baseDbName string) {
 }
 
 // 初始化mysql
-func InitMysqlEx(namingSvr naming.NamingI) {
-	if fkconfig.EnvVal.IsLocalDev == true {
-		c, err := readConfig()
-		if err != nil {
-			fkfmt.Println("init mysql failed.", err)
-			return
-		}
-
-		err = c.LoadConfig(mysqlCfg, "mysql", 0)
-		if err != nil {
-			fkfmt.Println("init failed.", err)
-			return
-		}
-		return
-	}
-
+func InitMysqlEx(namingSvr naming.NamingI) error {
 	const (
 		DBServiceName = "aze_main_server.mysql"
 	)
 	if namingSvr == nil {
 		fkfmt.Println("naming is nil")
-		return
+		return errors.New("naming is nil")
 	}
 	var err error
 	mysqlCfg.Address, err = namingSvr.GetDB(DBServiceName, int32(fkconfig.EnvVal.GroupID))
-	// mysqlCfg.Address, err = fkconfig.GetEnv("MYSQL_ADDRESS")
 	if err != nil {
 		fkfmt.Println("MYSQL_ADDRESS env not set ")
+		return err
 	}
 	dbUser, dbPwd, err := namingSvr.GetDBUserAndPassword(DBServiceName, int32(fkconfig.EnvVal.GroupID))
 	// mysqlCfg.DbUser, err = fkconfig.GetEnv("MYSQL_USER")
 	if err != nil {
 		fkfmt.Println("MYSQL_USER env not set ")
+		return err
 	}
 	mysqlCfg.DbUser = dbUser
 	mysqlCfg.Pwd = dbPwd
+	return nil
 }

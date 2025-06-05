@@ -29,7 +29,8 @@ func main() {
 		loadconfigapi.SetLoadConfigFunc(business.GCustomBusiness.LoadCacheConfig)
 		loadconfigapi.SetInitConfigCacheFunc(business.GCustomBusiness.Init)
 	} else {
-		namingSvc = naming.NewClientSuite("./conf.d/polaris.yaml")
+		namingSvc = naming.NewClientSuite("./conf.d/polaris.yaml", nil)
+
 		mockio.SetNaming(namingSvc)
 		// loadconfigapi.InitConfigRpcClient()
 		fkserver.AddBusiness(&business.GCustomBusiness)
@@ -38,11 +39,9 @@ func main() {
 		polarismessSvc := polarismessvc.NewPolarismesSvc()
 		fkserver.AddBusiness(polarismessSvc)
 	}
-
+	mysql.InitMysql()
 	// fkserver.AddBusiness(&business.GCustomBusiness)
 	fkserver.AddBusiness(tasktimer.GTaskTimerBusiness)
 	// 初始化mysql
-	mysql.InitMysql()
-
 	fkserver.Run()
 }
