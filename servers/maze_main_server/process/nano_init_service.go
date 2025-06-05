@@ -26,7 +26,7 @@ func (ns *NanoInitService) OnInit(logger fklog.FKLogI, config fkconfig.FkConfige
 	comps, routes := Components()
 	ns.nlisten = func() {
 		nano.Listen(":5998",
-			nano.WithDebugMode(),
+			// nano.WithDebugMode(),
 
 			// 启用WebSocket协议
 			nano.WithIsWebsocket(true),
