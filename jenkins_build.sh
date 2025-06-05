@@ -83,7 +83,7 @@ fi
 if [ ! -d conf.d ]; then
     mkdir conf.d
 fi
-
+touch extern.conf
 # 打包
 tar -zcvf ${WORKSPACE_DIR}/${RELEASE_NAME} ./${EXE_NAME} ./extern.conf conf.d
 
