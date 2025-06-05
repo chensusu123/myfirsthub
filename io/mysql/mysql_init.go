@@ -179,7 +179,7 @@ func closeOldMysqlDb(baseDbName string) {
 // 初始化mysql
 func InitMysqlEx(namingSvr naming.NamingI) error {
 	const (
-		DBServiceName = "aze_main_server.mysql"
+		DBServiceName = "maze_main_server.mysql"
 	)
 	if namingSvr == nil {
 		fkfmt.Println("naming is nil")
