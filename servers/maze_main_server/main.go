@@ -42,11 +42,7 @@ func main() {
 	// fkserver.AddBusiness(&business.GCustomBusiness)
 	fkserver.AddBusiness(tasktimer.GTaskTimerBusiness)
 	// 初始化mysql
-	if fkconfig.EnvVal.IsLocalDev {
-		mysql.InitMysql(nil)
-	} else {
-		mysql.InitMysql(namingSvc)
-	}
+	mysql.InitMysql()
 
 	fkserver.Run()
 }
