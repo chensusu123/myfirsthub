@@ -179,11 +179,22 @@ func (pr *polarisResolver) Name() string {
 	return "Polaris"
 }
 
+// isMatchMetadata check if the metadata is matched.
+func isMatchMetadata(v string, v2 string) bool {
+	vList := strings.Split(v2, ",")
+	for _, vvv := range vList {
+		if vvv == v {
+			return true
+		}
+	}
+	return false
+}
+
 // isFilterInstances check if the instance is filtered by metadata.
 func (pr *polarisResolver) isFilterInstances(metadata map[string]string) bool {
 	for k, v := range pr.o.DstMetadata {
 		if vv, ok := metadata[k]; ok {
-			if vv != v {
+			if !isMatchMetadata(v, vv) {
 				return true
 			}
 		} else {

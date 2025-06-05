@@ -7,6 +7,8 @@ import (
 	"maze_game_server/usecase/naming"
 	"maze_game_server/usecase/tasktimer"
 
+	_ "maze_game_server/io/mysql_t"
+
 	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fkconfig"
 	"gitlab.ifreetalk.com/maze-plate/freetk/fkserver"
 	"gitlab.ifreetalk.com/maze-plate/freetk/fkserver/config_manager/loadconfigapi"
