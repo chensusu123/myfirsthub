@@ -6,7 +6,12 @@ import (
 )
 
 func init() {
-	fkconfig.RegisterNameNode("AccountToPaipaiUnionIDMysql", 2221, a)
+	fkconfig.RegisterNameNode("designateNameMysql", 2221, designateName)
+	fkconfig.RegisterNameNode("defaultNameMysql", 2221, defaultName)
 }
 
-var a = &fkmysql.MysqlDB{}
+var designateName = &fkmysql.MysqlDB{
+	ServiceName: "test.mysql",
+}
+
+var defaultName = &fkmysql.MysqlDB{}
