@@ -50,7 +50,7 @@ type BizCfg struct {
 type BizFlow struct {
 }
 
-func (flow *BizFlow) Init(cfg *cfg.CfgCenter) error {
+func (flow *BizFlow) Init(cfg cfg.CfgSvr) error {
 	bizCfg := &BizCfg{}
 	err := cfg.LoadConfig("BizCfg", bizCfg)
 	if err != nil {

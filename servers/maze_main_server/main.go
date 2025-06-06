@@ -24,8 +24,7 @@ func main() {
 	process.RegisterHandler()
 
 	fkserver.AppServer.AddBasicService(&process.NanoInitService{})
-	var cfgCenter = cfg2.CfgCenter{}
-	err := cfgCenter.Init()
+	var cfgSvr, err = cfg2.Cfg.GetConfigSvr()
 	if err != nil {
 		panic("init config err:" + err.Error())
 	}
@@ -34,7 +33,7 @@ func main() {
 
 	if fkconfig.EnvVal.IsLocalDev {
 		myBiz := mysql.BizFlow{}
-		err = myBiz.Init(&cfgCenter)
+		err = myBiz.Init(cfgSvr)
 		if err != nil {
 			panic("mysql init err:" + err.Error())
 		}

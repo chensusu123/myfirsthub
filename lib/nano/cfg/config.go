@@ -1,25 +1,23 @@
 package cfg
 
-type CfgCenter struct {
+type CfgSvr interface {
+	Init() error
+	GetConfig() interface{}
+	LoadConfig(string, interface{}) error
+	LoadParam(string, interface{}) error
 }
 
-func (c *CfgCenter) Init() error {
-	return nil
+type emptySvr struct{}
+
+func (*emptySvr) Init() error                          { return nil }
+func (*emptySvr) GetConfig() interface{}               { return nil }
+func (*emptySvr) LoadConfig(string, interface{}) error { return nil }
+func (*emptySvr) LoadParam(string, interface{}) error  { return nil }
+
+type CfgCenter struct{}
+
+func (c *CfgCenter) GetConfigSvr() (CfgSvr, error) {
+	return &emptySvr{}, nil
 }
 
-func (c *CfgCenter) GetConfig(name string) (string, error) {
-	return "", nil
-}
-
-func (c *CfgCenter) LoadConfig(key string, info interface{}) error {
-	return nil
-}
-
-func (c *CfgCenter) LoadParam(key string, valueRef interface{}) error {
-	return nil
-}
-
-// 由其他模块实现这个功能
-//func (c *CfgCenter) Watch(key string, call func(valueRef interface{})) error {
-//	return nil
-//}
+var Cfg *CfgCenter
