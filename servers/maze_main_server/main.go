@@ -38,7 +38,6 @@ func main() {
 		if err != nil {
 			panic("mysql init err:" + err.Error())
 		}
-		mysql.InitMysql()
 		namingSvc = localnaming.NewLocalNaming("./conf.d/config.ini", []namingI.InitCfgFunc{
 			mysql.InitMysqlEx,
 		})
