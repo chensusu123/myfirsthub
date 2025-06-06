@@ -13,6 +13,7 @@ import (
 
 // GitVersionV8ConfigRow from git_version_v8【配表版本号】.xlsx git_version_v8
 type GitVersionV8ConfigRow struct {
+	ID          int32  `json:"ID"`          // 序号
 	Git_version string `json:"git_version"` // 版本
 	Update_time string `json:"update_time"` // 更新时间
 }
@@ -197,7 +198,7 @@ func (*gGitVersionV8Loader) Add(logger fklog.FKLogI, container interface{}, ri i
 			zap.String("sheet", "git_version_v8"))
 		return
 	}
-	config.ConfigRows[row.Git_version] = row
+	config.ConfigRows[row.ID] = row
 	return
 }
 
@@ -266,19 +267,36 @@ func (*gGitVersionV8Parser) Parse(logger fklog.FKLogI, data []string, row interf
 		return
 	}
 
-	// parse column 0 git_version : 版本
+	var tmp int64
+
+	// parse column 0 ID : 序号
 	if data[0] != "" {
-		config.Git_version = data[0]
+		tmp, err = strconv.ParseInt(data[0], 10, 64)
+		if err != nil {
+			err = errors.New("parse field ID 序号 to int32 failed")
+			logger.ErrorWF("parse field ID 序号 to int32 failed.",
+				zap.String("xlsx", "git_version_v8【配表版本号】.xlsx"), zap.String("sheet", "git_version_v8"),
+				zap.String("parse_data", data[0]),
+				zap.Error(err))
+			return
+		}
+		config.ID = int32(tmp)
 	}
 
-	// parse column 1 update_time : 更新时间
+	// parse column 1 git_version : 版本
 	if data[1] != "" {
-		config.Update_time = data[1]
+		config.Git_version = data[1]
+	}
+
+	// parse column 2 update_time : 更新时间
+	if data[2] != "" {
+		config.Update_time = data[2]
 	}
 	return
 }
 
 var gGitVersionV8Fields = []string{
+	"ID",
 	"git_version",
 	"update_time",
 }
