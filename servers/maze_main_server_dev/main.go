@@ -76,7 +76,7 @@ func main() {
 	if err != nil {
 		panic("mysql init err:" + err.Error())
 	}
-
+	fkserver.AppServer.AddBasicService(&process.NanoInitService{})
 	fkserver.AddBusiness(tasktimer.GTaskTimerBusiness)
 
 	fkserver.Run()
