@@ -18,12 +18,10 @@ type ClientSuite struct {
 	DstNameSpace string             // dest namespace for service discovery
 	Resolver     discovery.Resolver // service discovery component
 	// report service call result for circuitbreak
-	InitFunList []InitFunc
+	InitFunList []namingI.InitCfgFunc
 }
 
-type InitFunc func(namingI.NamingI) error
-
-func NewClientSuite(cfgName string, initFuncList []InitFunc) *ClientSuite {
+func NewClientSuite(cfgName string, initFuncList []namingI.InitCfgFunc) *ClientSuite {
 	return &ClientSuite{
 		CfgName:     cfgName,
 		InitFunList: initFuncList,

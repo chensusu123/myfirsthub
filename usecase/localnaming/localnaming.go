@@ -14,13 +14,11 @@ import (
 type LocalNaming struct {
 	cfgName     string
 	cfg         *fkini.IniConfig
-	InitFunList []InitFunc
+	InitFunList []namingI.InitCfgFunc
 	fklog.FKLogI
 }
 
-type InitFunc func(namingI.NamingI) error
-
-func NewLocalNaming(cfgName string, initFuncList []InitFunc) *LocalNaming {
+func NewLocalNaming(cfgName string, initFuncList []namingI.InitCfgFunc) *LocalNaming {
 	return &LocalNaming{
 		cfgName:     cfgName,
 		InitFunList: initFuncList,

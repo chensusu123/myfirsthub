@@ -594,6 +594,8 @@ gitlab.ifreetalk.com/maze-plate/extra v1.0.1-0.20250401060651-722653168d37 h1:ly
 gitlab.ifreetalk.com/maze-plate/extra v1.0.1-0.20250401060651-722653168d37/go.mod h1:ZHwfNF+727RvJctXbXHW/8kdkKBMIyUNHgUdwjqZ9E0=
 gitlab.ifreetalk.com/maze-plate/freetk v1.0.1-0.20250605035228-5d22f962d0a6 h1:crkE4g9U+qz65EMFbXto+hq/id23Ta0dkHz6Q0ygQgk=
 gitlab.ifreetalk.com/maze-plate/freetk v1.0.1-0.20250605035228-5d22f962d0a6/go.mod h1:rViJQ3ggF7ELI+fdoCU0IJULg2NrFoKuTW60WEK6il4=
+gitlab.ifreetalk.com/maze-plate/freetk v1.0.1-0.20250606072408-e1f0c37879ac h1:+dq8DjhOhDoU01hP1rKA7AUaU/kuX4aP8CW4xWVVHi4=
+gitlab.ifreetalk.com/maze-plate/freetk v1.0.1-0.20250606072408-e1f0c37879ac/go.mod h1:rViJQ3ggF7ELI+fdoCU0IJULg2NrFoKuTW60WEK6il4=
 go.opencensus.io v0.21.0/go.mod h1:mSImk1erAIZhrmZN+AvHh14ztQfjbGwt4TtuofqLduU=
 go.opencensus.io v0.22.0/go.mod h1:+kGneAE2xo2IficOXnaByMWTGM9T73dGwxeWcUqIpI8=
 go.opencensus.io v0.22.2/go.mod h1:yxeiOL68Rb0Xd1ddK5vPZ/oVn4vY4Ynel7k9FzqtOIw=

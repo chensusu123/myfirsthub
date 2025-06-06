@@ -24,7 +24,7 @@ require (
 	github.com/urfave/cli v1.22.16
 	github.com/xuri/excelize/v2 v2.9.0
 	gitlab.ifreetalk.com/maze-plate/extra v1.0.1-0.20250401060651-722653168d37
-	gitlab.ifreetalk.com/maze-plate/freetk v1.0.1-0.20250605035228-5d22f962d0a6
+	gitlab.ifreetalk.com/maze-plate/freetk v1.0.1-0.20250606072408-e1f0c37879ac
 	go.uber.org/atomic v1.11.0
 	go.uber.org/zap v1.27.0
 	google.golang.org/grpc v1.64.0

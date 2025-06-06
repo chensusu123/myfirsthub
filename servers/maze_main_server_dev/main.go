@@ -26,7 +26,7 @@ func main() {
 
 	var namingSvc namingI.NamingI
 	if fkconfig.EnvVal.IsLocalDev {
-		namingSvc = localnaming.NewLocalNaming("./conf.d/config.ini", []localnaming.InitFunc{
+		namingSvc = localnaming.NewLocalNaming("./conf.d/config.ini", []namingI.InitCfgFunc{
 			mysql.InitMysqlEx,
 		})
 		mockio.SetNaming(namingSvc)
@@ -34,7 +34,7 @@ func main() {
 		loadconfigapi.SetLoadConfigFunc(business.GCustomBusiness.LoadCacheConfig)
 		loadconfigapi.SetInitConfigCacheFunc(business.GCustomBusiness.Init)
 	} else {
-		namingSvc = naming.NewClientSuite("./conf.d/polaris.yaml", []naming.InitFunc{
+		namingSvc = naming.NewClientSuite("./conf.d/polaris.yaml", []namingI.InitCfgFunc{
 			mysql.InitMysqlEx,
 		})
 		mockio.SetNaming(namingSvc)
