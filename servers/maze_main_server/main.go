@@ -1,6 +1,9 @@
 package main
 
 import (
+	"fmt"
+	"os"
+
 	"maze_game_server/io/mysql"
 	cfg2 "maze_game_server/lib/nano/cfg"
 	"maze_game_server/lib/net/polarismessvc"
@@ -19,51 +22,59 @@ import (
 	namingI "gitlab.ifreetalk.com/maze-plate/freetk/pkg/naming"
 )
 
+func GetEnv(name string) (string, error) {
+	val, exists := os.LookupEnv(name)
+	if !exists {
+		return "", fmt.Errorf("environment %s not set", name)
+	}
+	return val, nil
+}
+
 // 19987	UN_CGK_SVR_TYPE_MAZE_MAIN_SERVER 小程序版迷宫主服务
 func main() {
 	fkserver.SetMonitorName(fkserver.GroupNameGO, fkserver.ProjectNamePPWD, "maze_main_server")
 
 	process.RegisterHandler()
 
-	fkserver.AppServer.AddBasicService(&process.NanoInitService{})
-	// cfgSvr, err := cfg2.Cfg.GetConfigSvr()
-	// if err != nil {
-	// 	panic("init config err:" + err.Error())
-	// }
-
 	var err error
 	var namingSvc namingI.NamingI
 
 	var cfgSvr cfg2.CfgSvr
-	if fkconfig.EnvVal.IsLocalDev {
+
+	envMode, err := GetEnv("mode")
+	switch envMode {
+	case "dev":
+		fkconfig.EnvVal.IsLocalDev = true
 		cfgSvr = localconfig.New("./conf.d/localconfig.yaml")
 		namingSvc = localnaming.NewLocalNaming("./conf.d/config.ini", []namingI.InitCfgFunc{
 			mysql.InitMysqlEx,
 		})
-		mockio.SetNaming(namingSvc)
-		fkserver.AddBusiness(&business.GCustomBusiness)
-		loadconfigapi.SetLoadConfigFunc(business.GCustomBusiness.LoadCacheConfig)
-		loadconfigapi.SetInitConfigCacheFunc(business.GCustomBusiness.Init)
-	} else {
+	case "docker":
+		fkconfig.EnvVal.IsLocalDev = true
+		cfgSvr = localconfig.New("./conf.d/dockerconfig.yaml")
+		namingSvc = localnaming.NewLocalNaming("./conf.d/config.ini", []namingI.InitCfgFunc{
+			mysql.InitMysqlEx,
+		})
+	default:
 		cfgSvr = cmdbconfig.New("./conf.d/polaris.yaml")
 		namingSvc = naming.NewClientSuite("./conf.d/polaris.yaml", []namingI.InitCfgFunc{
 			mysql.InitMysqlEx,
 		})
-		mockio.SetNaming(namingSvc)
-		// loadconfigapi.InitConfigRpcClient()
-		fkserver.AddBusiness(&business.GCustomBusiness)
-		loadconfigapi.SetLoadConfigFunc(business.GCustomBusiness.LoadCacheConfig)
-		loadconfigapi.SetInitConfigCacheFunc(business.GCustomBusiness.Init)
 		polarismessSvc := polarismessvc.NewPolarismesSvc()
 		fkserver.AddBusiness(polarismessSvc)
 	}
+
+	mockio.SetNaming(namingSvc)
+	fkserver.AddBusiness(&business.GCustomBusiness)
+	loadconfigapi.SetLoadConfigFunc(business.GCustomBusiness.LoadCacheConfig)
+	loadconfigapi.SetInitConfigCacheFunc(business.GCustomBusiness.Init)
 
 	myBiz := mysql.BizFlow{}
 	err = myBiz.Init(cfgSvr)
 	if err != nil {
 		panic("mysql init err:" + err.Error())
 	}
-
+	fkserver.AppServer.AddBasicService(&process.NanoInitService{})
 	// fkserver.AddBusiness(&business.GCustomBusiness)
 	fkserver.AddBusiness(tasktimer.GTaskTimerBusiness)
 	// 初始化mysql
