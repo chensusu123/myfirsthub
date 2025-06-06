@@ -41,7 +41,7 @@ func readConfig() (*fkini.IniConfig, error) {
 }
 
 // 初始化mysql
-func InitMysql() {
+func InitMysqlBack() {
 	if fkconfig.EnvVal.IsLocalDev == true {
 		c, err := readConfig()
 		if err != nil {

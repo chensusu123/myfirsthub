@@ -4,6 +4,7 @@ import (
 	"maze_game_server/lib/net/polarismessvc"
 	"maze_game_server/servers/maze_main_server/process"
 	"maze_game_server/usecase/business"
+	"maze_game_server/usecase/localnaming"
 	"maze_game_server/usecase/naming"
 	"maze_game_server/usecase/tasktimer"
 
@@ -25,7 +26,10 @@ func main() {
 
 	var namingSvc namingI.NamingI
 	if fkconfig.EnvVal.IsLocalDev {
-		mysql.InitMysql()
+		namingSvc = localnaming.NewLocalNaming("./conf.d/config.ini", []localnaming.InitFunc{
+			mysql.InitMysqlEx,
+		})
+		mockio.SetNaming(namingSvc)
 		fkserver.AddBusiness(&business.GCustomBusiness)
 		loadconfigapi.SetLoadConfigFunc(business.GCustomBusiness.LoadCacheConfig)
 		loadconfigapi.SetInitConfigCacheFunc(business.GCustomBusiness.Init)
