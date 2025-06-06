@@ -4,6 +4,7 @@ import (
 	"database/sql"
 	"errors"
 	"fmt"
+	"maze_game_server/lib/nano/cfg"
 	"sync"
 	"time"
 
@@ -38,6 +39,28 @@ func readConfig() (*fkini.IniConfig, error) {
 		return nil, err
 	}
 	return iniCfg, nil
+}
+
+type BizCfg struct {
+	Addr   string `yaml:"addr"`
+	DbUser string `yaml:"db_user"`
+	Pwd    string `yaml:"pwd"`
+	DbName string `yaml:"db_name"`
+}
+type BizFlow struct {
+}
+
+func (flow *BizFlow) Init(cfg *cfg.CfgCenter) error {
+	bizCfg := &BizCfg{}
+	err := cfg.LoadConfig("BizCfg", bizCfg)
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
+func (flow *BizFlow) InitWithBiz(biz *BizCfg) error {
+	return nil
 }
 
 // 初始化mysql

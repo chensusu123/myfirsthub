@@ -2,6 +2,7 @@ package main
 
 import (
 	"maze_game_server/io/mysql"
+	cfg2 "maze_game_server/lib/nano/cfg"
 	"maze_game_server/lib/net/polarismessvc"
 	"maze_game_server/servers/maze_main_server/process"
 	"maze_game_server/usecase/business"
@@ -23,10 +24,21 @@ func main() {
 	process.RegisterHandler()
 
 	fkserver.AppServer.AddBasicService(&process.NanoInitService{})
+	var cfgCenter = cfg2.CfgCenter{}
+	err := cfgCenter.Init()
+	if err != nil {
+		panic("init config err:" + err.Error())
+	}
 
 	var namingSvc namingI.NamingI
 
 	if fkconfig.EnvVal.IsLocalDev {
+		myBiz := mysql.BizFlow{}
+		err = myBiz.Init(&cfgCenter)
+		if err != nil {
+			panic("mysql init err:" + err.Error())
+		}
+		mysql.InitMysql()
 		namingSvc = localnaming.NewLocalNaming("./conf.d/config.ini", []namingI.InitCfgFunc{
 			mysql.InitMysqlEx,
 		})
