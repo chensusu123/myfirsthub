@@ -4,9 +4,10 @@ import (
 	"database/sql"
 	"errors"
 	"fmt"
-	"maze_game_server/lib/nano/cfg"
 	"sync"
 	"time"
+
+	"maze_game_server/lib/nano/cfg"
 
 	"gitlab.ifreetalk.com/maze-plate/freetk/common/fkfmt"
 	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fkconfig"
@@ -42,20 +43,22 @@ func readConfig() (*fkini.IniConfig, error) {
 }
 
 type BizCfg struct {
-	Addr   string `yaml:"addr"`
-	DbUser string `yaml:"db_user"`
-	Pwd    string `yaml:"pwd"`
-	DbName string `yaml:"db_name"`
+	Addr      string `yaml:"addr"`
+	DbUser    string `yaml:"db_user"`
+	Pwd       string `yaml:"pwd"`
+	DbName    string `yaml:"db_name"`
+	TableName string `yaml:"table_name"`
 }
-type BizFlow struct {
-}
+type BizFlow struct{}
 
 func (flow *BizFlow) Init(cfg cfg.CfgSvr) error {
 	bizCfg := &BizCfg{}
-	err := cfg.LoadConfig("BizCfg", bizCfg)
+	cfgInfo, err := cfg.LoadConfig("BizCfg", bizCfg)
+	fkfmt.Println("load config", "BizCfg", cfgInfo, err)
 	if err != nil {
 		return err
 	}
+	_ = cfgInfo
 	return nil
 }
 

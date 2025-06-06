@@ -6,6 +6,8 @@ import (
 	"maze_game_server/lib/net/polarismessvc"
 	"maze_game_server/servers/maze_main_server/process"
 	"maze_game_server/usecase/business"
+	"maze_game_server/usecase/cmdbconfig"
+	"maze_game_server/usecase/localconfig"
 	"maze_game_server/usecase/localnaming"
 	"maze_game_server/usecase/naming"
 	"maze_game_server/usecase/tasktimer"
@@ -24,19 +26,17 @@ func main() {
 	process.RegisterHandler()
 
 	fkserver.AppServer.AddBasicService(&process.NanoInitService{})
-	var cfgSvr, err = cfg2.Cfg.GetConfigSvr()
-	if err != nil {
-		panic("init config err:" + err.Error())
-	}
+	// cfgSvr, err := cfg2.Cfg.GetConfigSvr()
+	// if err != nil {
+	// 	panic("init config err:" + err.Error())
+	// }
 
+	var err error
 	var namingSvc namingI.NamingI
 
+	var cfgSvr cfg2.CfgSvr
 	if fkconfig.EnvVal.IsLocalDev {
-		myBiz := mysql.BizFlow{}
-		err = myBiz.Init(cfgSvr)
-		if err != nil {
-			panic("mysql init err:" + err.Error())
-		}
+		cfgSvr = localconfig.New("./conf.d/localconfig.yaml")
 		namingSvc = localnaming.NewLocalNaming("./conf.d/config.ini", []namingI.InitCfgFunc{
 			mysql.InitMysqlEx,
 		})
@@ -45,6 +45,7 @@ func main() {
 		loadconfigapi.SetLoadConfigFunc(business.GCustomBusiness.LoadCacheConfig)
 		loadconfigapi.SetInitConfigCacheFunc(business.GCustomBusiness.Init)
 	} else {
+		cfgSvr = cmdbconfig.New("./conf.d/polaris.yaml")
 		namingSvc = naming.NewClientSuite("./conf.d/polaris.yaml", []namingI.InitCfgFunc{
 			mysql.InitMysqlEx,
 		})
@@ -55,6 +56,12 @@ func main() {
 		loadconfigapi.SetInitConfigCacheFunc(business.GCustomBusiness.Init)
 		polarismessSvc := polarismessvc.NewPolarismesSvc()
 		fkserver.AddBusiness(polarismessSvc)
+	}
+
+	myBiz := mysql.BizFlow{}
+	err = myBiz.Init(cfgSvr)
+	if err != nil {
+		panic("mysql init err:" + err.Error())
 	}
 
 	// fkserver.AddBusiness(&business.GCustomBusiness)

@@ -1,0 +1,15 @@
+BizCfg:
+  addr: "127.0.0.1:3306"
+  db_user: "root"
+  pwd: "mysql"
+  db_name: "maze"
+  table_name: "test"
+Redis:
+  addr: "127.0.0.1:6379"
+  pwd: "Redis_Pwd"
+Mysql:
+  addr: "127.0.0.1:3306"
+  db_user: "root"
+  pwd: "mysql"
+  db_name: "maze"
+  table_name: "test"
