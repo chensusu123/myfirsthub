@@ -34,21 +34,21 @@ const (
 )
 
 type MazeGameEquipAssembleRecord struct {
-	UserId     uint64 `json:"user_id"`      // 用户Id
-	GroupId    uint32 `json:"group_id"`     // 分组ID  当时服务分片所属分组
-	EquipPos   int32  `json:"equip_pos"`    // 装备位ID
-	OpType     int32  `json:"op_type"`      // 穿戴装备/更换装备/卸下装备
-	NewEquipId int32  `json:"new_equip_id"` // 穿戴装备配置ID
-	NewGuid    uint64 `json:"new_guid"`     // 穿戴装备guid
-	OldEquipId int32  `json:"old_equip_id"` // 卸下装备配置ID
-	OldGuid    uint64 `json:"old_guid"`     // 卸下装备guid
-	OldFElem   string `json:"old_f_elem"`   // 变化前激活信息
-	NewFElem   string `json:"new_f_elem"`   // 变化后激活信息
-	RetCode    int32  `json:"ret_code"`     // 0:成功  其他失败
-	CodeMask   int32  `json:"code_mask"`    // 业务掩码
-	TransID    uint64 `json:"trans_id"`     // 事务Id
-	OpTime     int64  `json:"op_time"`      // 流水时间戳
-	ServerId   int32  `json:"server_id"`
+	UserId     uint64 `json:"user_id" gorm:"column:user_id"`           // 用户Id
+	GroupId    uint32 `json:"group_id" gorm:"column:group_id"`         // 分组ID  当时服务分片所属分组
+	EquipPos   int32  `json:"equip_pos" gorm:"column:equip_pos"`       // 装备位ID
+	OpType     int32  `json:"op_type" gorm:"column:op_type"`           // 穿戴装备/更换装备/卸下装备
+	NewEquipId int32  `json:"new_equip_id" gorm:"column:new_equip_id"` // 穿戴装备配置ID
+	NewGuid    uint64 `json:"new_guid" gorm:"column:new_guid"`         // 穿戴装备guid
+	OldEquipId int32  `json:"old_equip_id" gorm:"column:old_equip_id"` // 卸下装备配置ID
+	OldGuid    uint64 `json:"old_guid" gorm:"column:old_guid"`         // 卸下装备guid
+	OldFElem   string `json:"old_f_elem" gorm:"column:old_f_elem"`     // 变化前激活信息
+	NewFElem   string `json:"new_f_elem" gorm:"column:new_f_elem"`     // 变化后激活信息
+	RetCode    int32  `json:"ret_code" gorm:"column:ret_code"`         // 0:成功  其他失败
+	CodeMask   int32  `json:"code_mask" gorm:"column:code_mask"`       // 业务掩码
+	TransID    uint64 `json:"trans_id" gorm:"column:trans_id"`         // 事务Id
+	OpTime     int64  `json:"op_time" gorm:"column:create_time"`       // 流水时间戳
+	ServerId   int32  `json:"server_id" gorm:"column:server_id"`
 }
 
 func SendMazeGameEquipAssembleRecord(logger fklog.FKLogI, record *MazeGameEquipAssembleRecord) error {

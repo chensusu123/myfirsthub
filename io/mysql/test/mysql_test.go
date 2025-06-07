@@ -1,8 +1,10 @@
 package test
 
 import (
-	"database/sql"
-	"fmt"
+	"gorm.io/gorm"
+	"os"
+
+	"maze_game_server/usecase/localconfig"
 	"testing"
 	"time"
 
@@ -29,7 +31,13 @@ var gTestLogger fklog.FKLogI
 
 func init() {
 	gTestLogger = fklog.AppLogger().Clone("maze_main_server_t")
-	mysql.InitMysql()
+	os.Setenv("mode", "dev")
+	cfgSvr := localconfig.New("./conf.d/localconfig.yaml")
+	myBiz := mysql.BizFlow{}
+	err := myBiz.Init(cfgSvr)
+	if err != nil {
+		panic("mysql init err:" + err.Error())
+	}
 }
 
 func TestUserLevelRecord(t *testing.T) {
@@ -249,23 +257,20 @@ func TestSweepRecord(t *testing.T) {
 func TestSharding(t *testing.T) {
 	gTestLogger = fklog.AppLogger().Clone("maze_main_server_t")
 
-	db, err := mysql.GetMysqlDb("db_maze_user_level_record_202506")
+	db, err := mysql.GetMysqlDb()
 	if err != nil {
 		t.Errorf("mysql.GetMysqlDb err: %v", err)
 	}
 	InsertTest(db, "t_maze_user_level_record_3")
 
-	db, err = mysql.GetMysqlDb("db_maze_user_level_record_202507")
+	db, err = mysql.GetMysqlDb()
 	if err != nil {
 		t.Errorf("mysql.GetMysqlDb err: %v", err)
 	}
 	InsertTest(db, "t_maze_user_level_record_3")
 }
 
-func InsertTest(db *sql.DB, tableName string) {
-	sqlStr := fmt.Sprintf("INSERT INTO %s (`user_id`, `old_level`, `old_total_exp`, `new_level`, `new_total_exp`, `group_id`, `create_time`, `server_id`) VALUES (?,?,?,?,?,?,?,?)",
-		tableName,
-	)
+func InsertTest(db *gorm.DB, tableName string) {
 	record := &mazeuserlevelkafka.MazeUserLevelRecord{
 		UserId:      1010101010,
 		OldLevel:    1,
@@ -275,10 +280,9 @@ func InsertTest(db *sql.DB, tableName string) {
 		GroupID:     1,
 		CreateTime:  time.Now().UnixMilli(),
 	}
-	_, err := db.Exec(sqlStr,
-		record.UserId, record.OldLevel, record.OldTotalExp, record.NewLevel, record.NewTotalExp, record.GroupID, record.CreateTime, record.ServerId)
-	if err != nil {
-		gTestLogger.ErrorWF("SaveUserLevelRecord fail", zap.Error(err), zap.Any("flowrecord", record))
+	res := db.Table(mysql.GetFullyQualifiedTableName(flowrecord.MazeUserLevelRecordTableName)).Create(record)
+	if res.Error != nil {
+		gTestLogger.ErrorWF("SaveUserLevelRecord fail", zap.Error(res.Error), zap.Any("flowrecord", record))
 		return
 	}
 	gTestLogger.InfoWF("SaveUserLevelRecord succ", zap.Any("flowrecord", record))

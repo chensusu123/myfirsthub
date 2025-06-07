@@ -21,15 +21,15 @@ const (
 
 // 装备分解流水
 type MazeGameEquipDismantleRecord struct {
-	UserId     uint64 `json:"user_id"`     // 用户id
-	EquipGuids string `json:"equip_guids"` // 装备guid列表
-	TradeNum   uint64 `json:"trade_num"`   // 交易单号
-	Award      string `json:"award"`       // 分解获得的材料
-	OpType     int32  `json:"op_type"`     // 分解的操作来源
-	IsFail     int32  `json:"is_fail"`     // 操作是否失败 0-成功 1-失败
-	GroupID    uint32 `json:"group_id"`    // 组id
-	CreateTime int64  `json:"create_time"` // 操作时间
-	ServerId   int32  `json:"server_id"`
+	UserId     uint64 `json:"user_id" gorm:"column:user_id"`         // 用户id
+	EquipGuids string `json:"equip_guids" gorm:"column:equip_guids"` // 装备guid列表
+	TradeNum   uint64 `json:"trade_num" gorm:"column:trade_num"`     // 交易单号
+	Award      string `json:"award" gorm:"column:award"`             // 分解获得的材料
+	OpType     int32  `json:"op_type" gorm:"column:op_type"`         // 分解的操作来源
+	IsFail     int32  `json:"is_fail" gorm:"column:is_fail"`         // 操作是否失败 0-成功 1-失败
+	GroupID    uint32 `json:"group_id" gorm:"column:group_id"`       // 组id
+	CreateTime int64  `json:"create_time" gorm:"column:create_time"` // 操作时间
+	ServerId   int32  `json:"server_id" gorm:"column:server_id"`
 }
 
 // var gKafka = &fkafka.KafkaProducer{}
