@@ -123,7 +123,8 @@ func (a *Auth) OnConfigDataMd5Rq_10500_10501(s *session.Session, req *UserLogin.
 		})
 		serverGitVersion = v.GitVersion
 	}
-
+	res.ConfigVersion = req.ConfigVersion
+	res.ServerConfigVersion = proto.String(serverGitVersion)
 	res.Result = proto.Bool(serverGitVersion == req.GetConfigVersion())
 	return nil
 }
