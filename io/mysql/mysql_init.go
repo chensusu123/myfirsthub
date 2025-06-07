@@ -15,7 +15,6 @@ import (
 	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fklog"
 	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fkmysql"
 	"gitlab.ifreetalk.com/maze-plate/freetk/pkg/naming"
-	"go.uber.org/zap"
 )
 
 type mysqlConfig struct {
@@ -112,9 +111,6 @@ func GetShardingTableName(baseTable string) string {
 
 // 获取分库名字
 func GetShardingDbName(baseDb string) string {
-	fklog.AppLogger().Clone("").InfoWF("GetShardingDbName", zap.Any("baseDb", baseDb),
-		zap.Any("EnvVal", fkconfig.EnvVal),
-		zap.Any("mysqlCfg", mysqlCfg))
 	if fkconfig.EnvVal.IsLocalDev == true {
 		return mysqlCfg.DbName
 	}
