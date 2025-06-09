@@ -29,6 +29,7 @@ type MazeBrushFoeV8ConfigRow struct {
 	Brushing_monsters_coordinate []int32 `json:"Brushing_monsters_coordinate"` // 区域刷怪坐标列表（横百分段值,竖百分段值）
 	Brushing_monsters_position   []int32 `json:"Brushing_monsters_position"`   // 区域刷怪点位列表
 	Front_group_order            []int32 `json:"front_group_order"`            // 立即刷怪前置条件波次
+	Is_def_show                  int32   `json:"is_def_show"`                  // 是否需要默认显示
 }
 
 // MazeBrushFoeV8Config from maze_brush_foe_v8【迷宫-刷怪相关时间数量类型】.xlsx maze_brush_foe_v8
@@ -511,6 +512,20 @@ func (*gMazeBrushFoeV8Parser) Parse(logger fklog.FKLogI, data []string, row inte
 			config.Front_group_order = append(config.Front_group_order, int32(tmp))
 		}
 	}
+
+	// parse column 15 is_def_show : 是否需要默认显示
+	if data[15] != "" {
+		tmp, err = strconv.ParseInt(data[15], 10, 64)
+		if err != nil {
+			err = errors.New("parse field is_def_show 是否需要默认显示 to int32 failed")
+			logger.ErrorWF("parse field is_def_show 是否需要默认显示 to int32 failed.",
+				zap.String("xlsx", "maze_brush_foe_v8【迷宫-刷怪相关时间数量类型】.xlsx"), zap.String("sheet", "maze_brush_foe_v8"),
+				zap.String("parse_data", data[15]),
+				zap.Error(err))
+			return
+		}
+		config.Is_def_show = int32(tmp)
+	}
 	return
 }
 
@@ -530,6 +545,7 @@ var gMazeBrushFoeV8Fields = []string{
 	"Brushing_monsters_coordinate",
 	"Brushing_monsters_position",
 	"front_group_order",
+	"is_def_show",
 }
 
 // LoadDataManual load data for test
