@@ -10,6 +10,9 @@ GOOS=linux GOARCH=amd64 CGO_ENABLED=0 go build -o ../servers/maze_main_server/bi
 
 echo "[OK] Build succeeded: ./bin/maze-server"
 
+dos2unix ../docker/entrypoint.sh
+
+
 echo "[INFO] Building Docker image..."
 docker-compose  -f ../docker/docker-compose.yml up
 
