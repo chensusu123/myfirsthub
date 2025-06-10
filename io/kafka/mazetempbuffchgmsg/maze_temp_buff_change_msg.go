@@ -23,14 +23,15 @@ type AttrChgInfo struct {
 
 // 迷宫临时buff变化通知
 type MazeTempBuffChangeMsg struct {
-	UserId     uint64         `json:"user_id"`     // 用户Id
-	GroupId    uint32         `json:"group_id"`    // 分组Id
-	StageId    int32          `json:"stage_id"`    // 关卡id
-	ChgAttrs   []*AttrChgInfo `json:"chg_attrs"`   // 变化的属性
-	ChgType    int32          `json:"chg_type"`    // 变化类型
-	ChgDesc    string         `json:"chg_desc"`    // 原因描述
-	CreateTime int64          `json:"create_time"` // 时间戳 ms
-	ServerId   int32          `json:"server_id"`
+	UserId      uint64         `json:"user_id" gorm:"column:user_id"`         // 用户Id
+	GroupId     uint32         `json:"group_id" gorm:"column:group_id"`       // 分组Id
+	StageId     int32          `json:"stage_id" gorm:"column:stage_id"`       // 关卡id
+	ChgAttrs    []*AttrChgInfo `json:"chg_attrs" gorm:"-"`                    // 变化的属性
+	ChgAttrsStr string         `gorm:"column:chg_attrs"`                      // 变化的属性 ChgAttrs的json格式，数据库存储字段
+	ChgType     int32          `json:"chg_type" gorm:"column:chg_type"`       // 变化类型
+	ChgDesc     string         `json:"chg_desc" gorm:"column:chg_desc"`       // 原因描述
+	CreateTime  int64          `json:"create_time" gorm:"column:create_time"` // 时间戳 ms
+	ServerId    int32          `json:"server_id" gorm:"column:server_id"`
 }
 
 var d = dispatcher.NewDispatcher[*MazeTempBuffChangeMsg]()

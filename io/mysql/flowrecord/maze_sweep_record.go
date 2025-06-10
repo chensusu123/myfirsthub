@@ -1,7 +1,6 @@
 package flowrecord
 
 import (
-	"fmt"
 	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fklog"
 	"go.uber.org/zap"
 	"maze_game_server/io/kafka/mazebarrieruserkafka"
@@ -15,18 +14,14 @@ func SaveSweepRecord(logger fklog.FKLogI, record *mazebarrieruserkafka.MazeBarri
 		// 只要扫荡的记录，其他不处理
 		return
 	}
-	db, err := mysql.GetMysqlDb(MazeSweepRecordTableName)
+	db, err := mysql.GetMysqlDb()
 	if err != nil {
 		logger.ErrorWF("GetMysqlDb fail", zap.Error(err), zap.Any("MazeSweepRecordTableName:", MazeSweepRecordTableName))
 		return
 	}
-	tableName := mysql.GetShardingTableName(MazeSweepRecordTableName)
-	sqlStr := fmt.Sprintf("INSERT INTO %s (`user_id`, `barrier`, `awards`, `group_id`, `create_time`, `server_id`) VALUES (?,?,?,?,?,?)",
-		tableName,
-	)
-	_, err = db.Exec(sqlStr,
-		record.UserId, record.Barrier, record.Awards, record.GroupID, record.CreateTime, record.ServerId)
-	if err != nil {
+
+	res := db.Table(mysql.GetFullyQualifiedTableName(MazeSweepRecordTableName)).Create(record)
+	if res.Error != nil {
 		logger.ErrorWF("SaveSweepRecord fail", zap.Error(err), zap.Any("flowrecord", record))
 		return
 	}

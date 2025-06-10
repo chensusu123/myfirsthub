@@ -15,7 +15,6 @@ import (
 	"maze_game_server/usecase/naming"
 	"maze_game_server/usecase/tasktimer"
 
-	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fkconfig"
 	"gitlab.ifreetalk.com/maze-plate/freetk/fkserver"
 	"gitlab.ifreetalk.com/maze-plate/freetk/fkserver/config_manager/loadconfigapi"
 	"gitlab.ifreetalk.com/maze-plate/freetk/mockio"
@@ -44,13 +43,11 @@ func main() {
 	envMode, err := GetEnv("mode")
 	switch envMode {
 	case "dev":
-		fkconfig.EnvVal.IsLocalDev = true
 		cfgSvr = localconfig.New("./conf.d/localconfig.yaml")
 		namingSvc = localnaming.NewLocalNaming("./conf.d/config.ini", []namingI.InitCfgFunc{
 			mysql.InitMysqlEx,
 		})
 	case "docker":
-		fkconfig.EnvVal.IsLocalDev = true
 		cfgSvr = localconfig.New("./conf.d/dockerconfig.yaml")
 		namingSvc = localnaming.NewLocalNaming("./conf.d/config.ini", []namingI.InitCfgFunc{
 			mysql.InitMysqlEx,
@@ -77,6 +74,5 @@ func main() {
 	fkserver.AppServer.AddBasicService(&process.NanoInitService{})
 	// fkserver.AddBusiness(&business.GCustomBusiness)
 	fkserver.AddBusiness(tasktimer.GTaskTimerBusiness)
-	// 初始化mysql
 	fkserver.Run()
 }

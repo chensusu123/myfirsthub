@@ -13,18 +13,18 @@ import (
 
 // 用户打怪变化流水
 type DollMazeFoeRecord struct {
-	UserId      uint64 `json:"user_id"`      // 用户id
-	Barrier     int32  `json:"barrier"`      // 关卡id
-	Area        int32  `json:"area"`         // 区域id
-	Level       int32  `json:"level"`        // 用户等级
-	FoeList     string `json:"foe_list"`     // 上报的打败的怪物列表
-	AwardList   string `json:"award_list"`   // 打怪获得的奖励 1银子 2装备积分 3经验
-	Equips      string `json:"equips"`       // 打怪获得的装备
-	EquipPoints int32  `json:"equip_points"` // 本次打怪后的当前装备积分
-	GroupID     uint32 `json:"group_id"`     // 组id
-	CreateTime  int64  `json:"create_time"`  // 操作时间
-	MasterId    int64  `json:"master_id"`    // 怪物id
-	ServerId    int32  `json:"server_id"`
+	UserId      uint64 `json:"user_id" gorm:"column:user_id"`           // 用户id
+	Barrier     int32  `json:"barrier" gorm:"column:barrier"`           // 关卡id
+	Area        int32  `json:"area" gorm:"column:area"`                 // 区域id
+	Level       int32  `json:"level" gorm:"column:level"`               // 用户等级
+	FoeList     string `json:"foe_list" gorm:"-"`                       // 上报的打败的怪物列表
+	AwardList   string `json:"award_list" gorm:"column:award_list"`     // 打怪获得的奖励 1银子 2装备积分 3经验
+	Equips      string `json:"equips" gorm:"column:equips"`             // 打怪获得的装备
+	EquipPoints int32  `json:"equip_points" gorm:"column:equip_points"` // 本次打怪后的当前装备积分
+	GroupID     uint32 `json:"group_id" gorm:"column:group_id"`         // 组id
+	CreateTime  int64  `json:"create_time" gorm:"column:create_time"`   // 操作时间
+	MasterId    int64  `json:"master_id" gorm:"column:master_id"`       // 怪物id
+	ServerId    int32  `json:"server_id" gorm:"column:server_id"`
 }
 
 // var gKafka = &fkafka.KafkaProducer{}
