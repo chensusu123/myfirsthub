@@ -1,8 +1,6 @@
 module maze_game_server
 
-go 1.21.0
-
-toolchain go1.24.2
+go 1.24.2
 
 require (
 	github.com/BurntSushi/toml v1.5.0
@@ -26,7 +24,7 @@ require (
 	github.com/spf13/cast v1.9.2
 	github.com/urfave/cli v1.22.16
 	github.com/xuri/excelize/v2 v2.9.0
-	gitlab.ifreetalk.com/maze-plate/freetk v1.0.1-0.20250607032140-3b9e26f8e50c
+	gitlab.ifreetalk.com/maze-plate/freetk v1.0.1-0.20250610060852-166ec48b02d8
 	go.uber.org/atomic v1.11.0
 	go.uber.org/zap v1.27.0
 	google.golang.org/grpc v1.64.0
@@ -93,6 +91,8 @@ require (
 	github.com/xuri/efp v0.0.0-20240408161823-9ad904a10d6d // indirect
 	github.com/xuri/nfp v0.0.0-20240318013403-ab9948c2c4a7 // indirect
 	gitlab.ifreetalk.com/maze-plate/extra v1.0.1-0.20250401060651-722653168d37 // indirect
+	gitlab.ifreetalk.com/nano-ecosystem/fklog v0.0.0-20250609141356-5698d091b098 // indirect
+	gitlab.ifreetalk.com/nano-ecosystem/nlog v0.0.0-20250610033129-1bd30dd7580d // indirect
 	go.opentelemetry.io/otel v1.24.0 // indirect
 	go.opentelemetry.io/otel/exporters/prometheus v0.44.0 // indirect
 	go.opentelemetry.io/otel/metric v1.24.0 // indirect

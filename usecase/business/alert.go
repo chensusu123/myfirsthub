@@ -3,7 +3,6 @@ package business
 import (
 	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fkalert"
 	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fkconfig"
-	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fkmonitor"
 )
 
 const (
@@ -36,4 +35,4 @@ func init() {
 }
 
 // var monitorLoadRPC = fkmonitor.DefaultTimeCheckMonitor("RPC.LoadSuccess", "RPC.LoadFailed")
-var monitorLoadFile = fkmonitor.DefaultTimeMonitor("FileMonitor.ParseExcel")
+// var monitorLoadFile = fkmonitor.DefaultTimeMonitor("FileMonitor.ParseExcel")
