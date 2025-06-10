@@ -19,6 +19,7 @@ import (
 	"gitlab.ifreetalk.com/maze-plate/freetk/fkserver/config_manager/loadconfigapi"
 	"gitlab.ifreetalk.com/maze-plate/freetk/mockio"
 	namingI "gitlab.ifreetalk.com/maze-plate/freetk/pkg/naming"
+	"maze_game_server/io/redis/redisconfig"
 )
 
 func GetEnv(name string) (string, error) {
@@ -71,6 +72,8 @@ func main() {
 	if err != nil {
 		panic("mysql init err:" + err.Error())
 	}
+	redisService := redisconfig.NewRedisService(cfgSvr)
+	fkserver.AddBusiness(redisService)
 	fkserver.AppServer.AddBasicService(&process.NanoInitService{})
 	// fkserver.AddBusiness(&business.GCustomBusiness)
 	fkserver.AddBusiness(tasktimer.GTaskTimerBusiness)
