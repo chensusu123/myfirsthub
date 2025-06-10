@@ -62,3 +62,11 @@ func Push(logger fklog.FKLogI, userID uint64, packetType uint16, v interface{}) 
 	}
 	return s.(*session.Session).ResponseMID(codec.ToMessageID(uint32(time.Now().Unix()), 0, packetType), v)
 }
+
+// Scan
+func Scan(fn func(id int64, s *session.Session)) {
+	monitor.sessions.Range(func(key, value interface{}) bool {
+		fn(key.(int64), value.(*session.Session))
+		return true
+	})
+}
