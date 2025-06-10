@@ -14,7 +14,6 @@ import (
 	"maze_game_server/usecase/tasktimer"
 
 	"maze_game_server/io/mysql"
-	_ "maze_game_server/io/mysql_t"
 	cfg2 "maze_game_server/lib/nano/cfg"
 
 	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fkconfig"
