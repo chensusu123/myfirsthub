@@ -184,8 +184,8 @@ func (tb *tCustomBusiness) OnEnd(logger fklog.FKLogI, file string) {
 // MonitorFileModify 监听文件变动
 func (tb *tCustomBusiness) OnChange(logger fklog.FKLogI, file string, data []byte) error {
 	// 监控解析excel文件时间
-	endf := monitorLoadFile.Start()
-	defer endf()
+	// endf := monitorLoadFile.Start()
+	// defer endf()
 
 	cfgVersion := tb.gitCfgVersion.Load()
 	xlsxFile, err := excelize.OpenFile(file)

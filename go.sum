@@ -605,8 +605,12 @@ github.com/yuin/goldmark v1.3.5/go.mod h1:mwnBkeHKe2W/ZEtQ+71ViKU8L12m81fl3OWwC1
 github.com/yuin/goldmark v1.4.13/go.mod h1:6yULJ656Px+3vBD8DxQVa3kxgyrAnzto9xy5taEt/CY=
 gitlab.ifreetalk.com/maze-plate/extra v1.0.1-0.20250401060651-722653168d37 h1:lyB5pFQppuBFwhWaEaJN54c9dNnKVjoJoS9ZMezSfhc=
 gitlab.ifreetalk.com/maze-plate/extra v1.0.1-0.20250401060651-722653168d37/go.mod h1:ZHwfNF+727RvJctXbXHW/8kdkKBMIyUNHgUdwjqZ9E0=
-gitlab.ifreetalk.com/maze-plate/freetk v1.0.1-0.20250607032140-3b9e26f8e50c h1:ingX/g7aWNbzeuKL24jT3Vtj2UqzlUCWgKmxGjuHw6w=
-gitlab.ifreetalk.com/maze-plate/freetk v1.0.1-0.20250607032140-3b9e26f8e50c/go.mod h1:rViJQ3ggF7ELI+fdoCU0IJULg2NrFoKuTW60WEK6il4=
+gitlab.ifreetalk.com/maze-plate/freetk v1.0.1-0.20250610060852-166ec48b02d8 h1:2X2jrJnjwfsQ8gkue6yblgctGZunHjCLfDtVS7L6UGc=
+gitlab.ifreetalk.com/maze-plate/freetk v1.0.1-0.20250610060852-166ec48b02d8/go.mod h1:T2p3wstXiCIgmJAwd6XLV+plKV0u5IW5BuEYFdztbtw=
+gitlab.ifreetalk.com/nano-ecosystem/fklog v0.0.0-20250609141356-5698d091b098 h1:+ik01IEoU0Yxq6IXKKzrL5TONX8QX9rx9pbyNajEYcM=
+gitlab.ifreetalk.com/nano-ecosystem/fklog v0.0.0-20250609141356-5698d091b098/go.mod h1:EBlTAtJ7j+E85oFKb2G1hAjAVxTVUWvYTObbK2HlaY4=
+gitlab.ifreetalk.com/nano-ecosystem/nlog v0.0.0-20250610033129-1bd30dd7580d h1:em+1BgKFU6ZvEvgra1UFUwI2G35C5hPoFQCx4hZpMYs=
+gitlab.ifreetalk.com/nano-ecosystem/nlog v0.0.0-20250610033129-1bd30dd7580d/go.mod h1:afctc1nzS/SmluhZpZPBJ/yvAKFVPFZfvJQfrdy9jSY=
 go.opencensus.io v0.21.0/go.mod h1:mSImk1erAIZhrmZN+AvHh14ztQfjbGwt4TtuofqLduU=
 go.opencensus.io v0.22.0/go.mod h1:+kGneAE2xo2IficOXnaByMWTGM9T73dGwxeWcUqIpI8=
 go.opencensus.io v0.22.2/go.mod h1:yxeiOL68Rb0Xd1ddK5vPZ/oVn4vY4Ynel7k9FzqtOIw=
