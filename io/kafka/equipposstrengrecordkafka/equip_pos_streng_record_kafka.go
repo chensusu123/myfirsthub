@@ -13,20 +13,20 @@ import (
 
 // 装备位强化流水
 type EquipPosLevelUpRecord struct {
-	UserId       uint64 `json:"user_id"`
-	GroupId      uint32 `json:"group_id"`
-	OpTime       int64  `json:"op_time"` // 毫秒时间戳
-	PosId        int32  `json:"pos_id"`
-	OldPosLv     int32  `json:"old_pos_lv"`      // 强化前装备位等级
-	NewPosLv     int32  `json:"new_pos_lv"`      // 强化后装备位等级
-	OldPosSuitId int32  `json:"old_pos_suit_id"` // 强化前装备位套装id
-	NewPosSuitId int32  `json:"new_pos_suit_id"` // 强化后装备位套装id
+	UserId       uint64 `json:"user_id" gorm:"column:user_id"`
+	GroupId      uint32 `json:"group_id" gorm:"column:group_id"`
+	OpTime       int64  `json:"op_time" gorm:"column:create_time"` // 毫秒时间戳
+	PosId        int32  `json:"pos_id" gorm:"column:pos_id"`
+	OldPosLv     int32  `json:"old_pos_lv" gorm:"column:old_pos_lv"`           // 强化前装备位等级
+	NewPosLv     int32  `json:"new_pos_lv" gorm:"column:new_pos_lv"`           // 强化后装备位等级
+	OldPosSuitId int32  `json:"old_pos_suit_id" gorm:"column:old_pos_suit_id"` // 强化前装备位套装id
+	NewPosSuitId int32  `json:"new_pos_suit_id" gorm:"column:new_pos_suit_id"` // 强化后装备位套装id
 	// OldPkLv      int32  `json:"old_pk_lv"`       // 强化前pk段位
 	// NewPkLv      int32  `json:"new_pk_lv"`       // 强化后pk段位
-	TradeNo   uint64 `json:"trade_no"`   // 扣物品流水号
-	CostItems string `json:"cost_items"` // 扣物品
-	Result    int32  `json:"result"`     // 结果 0:成功 1:强化失败 2:存储武力值属性失败 3:存储非武力值属性失败
-	ServerId  int32  `json:"server_id"`
+	TradeNo   uint64 `json:"trade_no" gorm:"column:trade_no"`     // 扣物品流水号
+	CostItems string `json:"cost_items" gorm:"column:cost_items"` // 扣物品
+	Result    int32  `json:"result" gorm:"column:result"`         // 结果 0:成功 1:强化失败 2:存储武力值属性失败 3:存储非武力值属性失败
+	ServerId  int32  `json:"server_id" gorm:"column:server_id"`
 }
 
 // var logCli = &fkafka.KafkaProducer{}

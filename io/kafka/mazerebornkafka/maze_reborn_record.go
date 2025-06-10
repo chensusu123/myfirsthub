@@ -13,13 +13,13 @@ import (
 
 // 用户复活流水
 type MazeRebornRecord struct {
-	UserId      uint64 `json:"user_id"`      // 用户id
-	Barrier     int32  `json:"barrier"`      // 关卡id
-	RebornCount int64  `json:"reborn_count"` // 复活次数 第n次复活
-	RebornCost  string `json:"reborn_cost"`  // 复活的消耗
-	GroupID     uint32 `json:"group_id"`     // 组id
-	CreateTime  int64  `json:"create_time"`  // 操作时间
-	ServerId    int32  `json:"server_id"`
+	UserId      uint64 `json:"user_id" gorm:"column:user_id"`           // 用户id
+	Barrier     int32  `json:"barrier" gorm:"column:barrier"`           // 关卡id
+	RebornCount int64  `json:"reborn_count" gorm:"column:reborn_count"` // 复活次数 第n次复活
+	RebornCost  string `json:"reborn_cost" gorm:"column:reborn_cost"`   // 复活的消耗
+	GroupID     uint32 `json:"group_id" gorm:"column:group_id"`         // 组id
+	CreateTime  int64  `json:"create_time" gorm:"column:create_time"`   // 操作时间
+	ServerId    int32  `json:"server_id" gorm:"column:server_id"`
 }
 
 // var gKafka = &fkafka.KafkaProducer{}

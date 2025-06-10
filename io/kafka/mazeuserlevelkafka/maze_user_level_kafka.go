@@ -14,14 +14,14 @@ var json = jsoniter.ConfigCompatibleWithStandardLibrary
 
 // 用户等级变化流水
 type MazeUserLevelRecord struct {
-	UserId      uint64 `json:"user_id"`       // 用户id
-	OldLevel    int32  `json:"old_level"`     // 旧等级
-	OldTotalExp int64  `json:"old_total_exp"` // 旧经验总值
-	NewLevel    int32  `json:"new_level"`     // 新等级
-	NewTotalExp int32  `json:"new_total_exp"` // 新经验总值
-	GroupID     uint32 `json:"group_id"`      // 组id
-	CreateTime  int64  `json:"create_time"`   // 操作时间 毫秒
-	ServerId    int32  `json:"server_id"`
+	UserId      uint64 `json:"user_id" gorm:"column:user_id"`             // 用户id
+	OldLevel    int32  `json:"old_level" gorm:"column:old_level"`         // 旧等级
+	OldTotalExp int64  `json:"old_total_exp" gorm:"column:old_total_exp"` // 旧经验总值
+	NewLevel    int32  `json:"new_level" gorm:"column:new_level"`         // 新等级
+	NewTotalExp int32  `json:"new_total_exp" gorm:"column:new_total_exp"` // 新经验总值
+	GroupID     uint32 `json:"group_id" gorm:"column:group_id"`           // 组id
+	CreateTime  int64  `json:"create_time" gorm:"column:create_time"`     // 操作时间 毫秒
+	ServerId    int32  `json:"server_id" gorm:"column:server_id"`
 }
 
 // var gKafka = &fkafka.KafkaProducer{}

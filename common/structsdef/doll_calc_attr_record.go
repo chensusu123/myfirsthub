@@ -7,18 +7,18 @@
 package structsdef
 
 type MazeGameAttrChgRecord struct {
-	UserId     uint64 `json:"user_id"`      //用户Id
-	GroupId    uint32 `json:"group_id"`     //分组Id
-	AttrId     int32  `json:"attr_id"`      //属性ID
-	AttrType   int32  `json:"attr_type"`    //属性类型
-	NewVal     int64  `json:"new_val"`      //新值
-	OldVal     int64  `json:"old_val"`      //旧值
-	ChgType    int32  `json:"chg_type"`     //变化类型
-	ChgSubType int32  `json:"chg_sub_type"` //变化子类型
-	ChgDesc    string `json:"chg_desc"`     //原因描述
-	CreateTime int64  `json:"create_time"`  //时间戳 ms
-	Extra      string `json:"extra"`        // 扩展信息
-	ServerId   int32  `json:"server_id"`
+	UserId     uint64 `json:"user_id" gorm:"column:user_id"`           //用户Id
+	GroupId    uint32 `json:"group_id" gorm:"column:group_id"`         //分组Id
+	AttrId     int32  `json:"attr_id" gorm:"column:attr_id"`           //属性ID
+	AttrType   int32  `json:"attr_type" gorm:"column:attr_type"`       //属性类型
+	NewVal     int64  `json:"new_val" gorm:"column:new_val"`           //新值
+	OldVal     int64  `json:"old_val" gorm:"column:old_val"`           //旧值
+	ChgType    int32  `json:"chg_type" gorm:"column:chg_type"`         //变化类型
+	ChgSubType int32  `json:"chg_sub_type" gorm:"column:chg_sub_type"` //变化子类型
+	ChgDesc    string `json:"chg_desc" gorm:"column:chg_desc"`         //原因描述
+	CreateTime int64  `json:"create_time" gorm:"column:create_time"`   //时间戳 ms
+	Extra      string `json:"extra" gorm:"column:extra"`               // 扩展信息
+	ServerId   int32  `json:"server_id" gorm:"column:server_id"`
 }
 
 // 武力属性变化流水

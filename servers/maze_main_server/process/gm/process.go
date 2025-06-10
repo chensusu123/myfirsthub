@@ -13,9 +13,11 @@ import (
 	"maze_game_server/io/redis/UnionIDBindRedis"
 	"maze_game_server/io/redis/mazefixedbarrierredis"
 	"maze_game_server/io/redis/useridredis"
+	"maze_game_server/lib/nano/session"
 	"maze_game_server/module/mazecommonvalue"
 	"maze_game_server/module/mazeuserinfo"
 	"maze_game_server/servers/maze_main_server/process/gm/cmdbattledata"
+	"maze_game_server/usecase/online"
 
 	"github.com/gorilla/schema"
 	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fklog"
@@ -211,6 +213,20 @@ func RegGm(logger fklog.FKLogI) {
 		showSheet.Data = config_manager.ShowSheet()
 		showSheet.ErrorCode = 0
 		showSheet.ErrorMsg = "success"
+	})
+
+	gm.SafeHttpRegister(logger, "/online", func(writer http.ResponseWriter, request *http.Request) {
+		logger.SetLogId(time.Now().UnixNano())
+		fmt.Fprintf(writer, "会话ID 用户ID 客户端地址\n")
+		online.Scan(func(id int64, s *session.Session) {
+			s.RLock()
+			defer s.RUnlock()
+			if userID := s.UID(); userID <= 0 {
+				fmt.Fprintf(writer, "%d 验证中 %s\n", s.ID(), s.RemoteAddr().String())
+			} else {
+				fmt.Fprintf(writer, "%d %d %s\n", s.ID(), userID, s.RemoteAddr().String())
+			}
+		})
 	})
 }
 
