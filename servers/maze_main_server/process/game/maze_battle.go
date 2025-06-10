@@ -421,6 +421,7 @@ func GetUserBattleSkillInfo(logger fklog.FKLogI, skillId int32, attrMap map[int3
 		SecondTargetSkillDamageFixed: proto.Int32(skillCfg.Second_target_damage_fix),
 		IsNoTarget:                   proto.Int32(skillCfg.Is_no_target),
 		DamageElement:                skillCfg.Damage_element,
+		DamageType:                   proto.Int32(skillCfg.Damage_type),
 	}
 	// for k, v := range skillCfg.Target_effect_pro {
 	// 	if k == 0 {
@@ -544,6 +545,7 @@ func GetFoeBattleSkillInfo(logger fklog.FKLogI, skillId int32, attrMap map[int32
 		SecondTargetSkillDamageFixed: proto.Int32(skillCfg.Second_target_damage_fix),
 		IsNoTarget:                   proto.Int32(skillCfg.Is_no_target),
 		DamageElement:                skillCfg.Damage_element,
+		DamageType:                   proto.Int32(skillCfg.Damage_type),
 	}
 	// for k, v := range skillCfg.Target_effect_pro {
 	// 	if k == 0 {
