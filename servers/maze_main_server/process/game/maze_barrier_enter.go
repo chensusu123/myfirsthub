@@ -21,6 +21,7 @@ import (
 	"maze_game_server/pb/common/MazeGame"
 	"maze_game_server/pb/server/MazeEnergySvr"
 	"maze_game_server/servers/maze_main_server/process/game/energy"
+	"maze_game_server/servers/maze_main_server/process/game/events"
 	"time"
 
 	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fklog"
@@ -231,6 +232,8 @@ func (g *Game) OnMazeBarrierEnterRQ_10447_10448(s *session.Session, req *MazeGam
 		logger.ErrorWF("OnMazeBarrierEnterRQ EnterBarrier fail", zap.Error(err))
 	}
 
+	// 触发进入关卡事件
+	events.OnEnterBarrier(logger, userId, 0, time.Now().UnixMilli(), &MazeGame.BattleEventEnterBarrier{BarrierId: proto.Int32(req.GetBarrierId())})
 	return nil
 }
 

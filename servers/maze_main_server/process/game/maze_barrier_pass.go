@@ -23,6 +23,7 @@ import (
 	"maze_game_server/pb/common/MazeCommon"
 	"maze_game_server/pb/common/MazeGame"
 	"maze_game_server/pb/server/MazeEquipSvr"
+	"maze_game_server/servers/maze_main_server/process/game/events"
 	"strings"
 	"time"
 
@@ -229,6 +230,9 @@ func (g *Game) OnMazeBarrierPassRQ_10459_10460(s *session.Session, req *MazeGame
 	if err != nil {
 		logger.ErrorWF("OnMazeBarrierPassRQ LeaveBarrier fail", zap.Error(err))
 	}
+
+	// 触发离开关卡事件
+	events.OnLeaveBarrier(logger, userId, 0, time.Now().UnixMilli(), &MazeGame.BattleEventLeaveBarrier{BarrierId: proto.Int32(req.GetBarrierId()), Result: MazeGame.BarrierResult_PASS.Enum()})
 
 	logger.InfoWF("OnMazeBarrierPassRQ award dump", zap.Any("exp", req.GetFoeExp()), zap.Any("awardItem", awardMap), zap.Any("awardEquip", equipMap))
 
