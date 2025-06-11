@@ -25,18 +25,18 @@ const (
 type Type int32
 
 const (
-	Type_ACK  Type = 1 // 已读
+	Type_READ Type = 1 // 已读
 	Type_TEXT Type = 2 // 文本
 )
 
 // Enum value maps for Type.
 var (
 	Type_name = map[int32]string{
-		1: "ACK",
+		1: "READ",
 		2: "TEXT",
 	}
 	Type_value = map[string]int32{
-		"ACK":  1,
+		"READ": 1,
 		"TEXT": 2,
 	}
 )
@@ -83,10 +83,10 @@ type ChatMessage struct {
 	sizeCache     protoimpl.SizeCache
 	unknownFields protoimpl.UnknownFields
 
-	Id      *int64  `protobuf:"varint,1,opt,name=id" json:"id,omitempty"`                        // 消息ID
-	Type    *Type   `protobuf:"varint,2,opt,name=type,enum=MazeChat.Type" json:"type,omitempty"` // 消息类型
-	Content *string `protobuf:"bytes,3,opt,name=content" json:"content,omitempty"`               // 消息内容
-	TimeMs  *int64  `protobuf:"varint,4,opt,name=time_ms,json=timeMs" json:"time_ms,omitempty"`  // 发送时间
+	MessageId *int64  `protobuf:"varint,1,opt,name=message_id,json=messageId" json:"message_id,omitempty"` // 消息ID
+	Type      *Type   `protobuf:"varint,2,opt,name=type,enum=MazeChat.Type" json:"type,omitempty"`         // 消息类型
+	Content   *string `protobuf:"bytes,3,opt,name=content" json:"content,omitempty"`                       // 消息内容
+	TimeMs    *int64  `protobuf:"varint,4,opt,name=time_ms,json=timeMs" json:"time_ms,omitempty"`          // 发送时间
 }
 
 func (x *ChatMessage) Reset() {
@@ -121,9 +121,9 @@ func (*ChatMessage) Descriptor() ([]byte, []int) {
 	return file_common_MazeChat_proto_rawDescGZIP(), []int{0}
 }
 
-func (x *ChatMessage) GetId() int64 {
-	if x != nil && x.Id != nil {
-		return *x.Id
+func (x *ChatMessage) GetMessageId() int64 {
+	if x != nil && x.MessageId != nil {
+		return *x.MessageId
 	}
 	return 0
 }
@@ -132,7 +132,7 @@ func (x *ChatMessage) GetType() Type {
 	if x != nil && x.Type != nil {
 		return *x.Type
 	}
-	return Type_ACK
+	return Type_READ
 }
 
 func (x *ChatMessage) GetContent() string {
@@ -352,6 +352,120 @@ func (x *PushChatMessageID) GetMessage() *ChatMessage {
 	return nil
 }
 
+//## 10505	UN_TCP_PACK_CLI_RECEIPT_CHAT_MESSAGE_RQ
+// 回执私聊消息请求RQ
+type ReplyChatMessageRQ struct {
+	state         protoimpl.MessageState
+	sizeCache     protoimpl.SizeCache
+	unknownFields protoimpl.UnknownFields
+
+	Header    *Common.PacketHeader `protobuf:"bytes,1,opt,name=header" json:"header,omitempty"`
+	MessageId *int64               `protobuf:"varint,2,opt,name=message_id,json=messageId" json:"message_id,omitempty"`
+}
+
+func (x *ReplyChatMessageRQ) Reset() {
+	*x = ReplyChatMessageRQ{}
+	if protoimpl.UnsafeEnabled {
+		mi := &file_common_MazeChat_proto_msgTypes[4]
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		ms.StoreMessageInfo(mi)
+	}
+}
+
+func (x *ReplyChatMessageRQ) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*ReplyChatMessageRQ) ProtoMessage() {}
+
+func (x *ReplyChatMessageRQ) ProtoReflect() protoreflect.Message {
+	mi := &file_common_MazeChat_proto_msgTypes[4]
+	if protoimpl.UnsafeEnabled && x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use ReplyChatMessageRQ.ProtoReflect.Descriptor instead.
+func (*ReplyChatMessageRQ) Descriptor() ([]byte, []int) {
+	return file_common_MazeChat_proto_rawDescGZIP(), []int{4}
+}
+
+func (x *ReplyChatMessageRQ) GetHeader() *Common.PacketHeader {
+	if x != nil {
+		return x.Header
+	}
+	return nil
+}
+
+func (x *ReplyChatMessageRQ) GetMessageId() int64 {
+	if x != nil && x.MessageId != nil {
+		return *x.MessageId
+	}
+	return 0
+}
+
+//## 10506	UN_TCP_PACK_CLI_RECEIPT_CHAT_MESSAGE_RS
+// 回执私聊消息响应RS
+type ReplyChatMessageRS struct {
+	state         protoimpl.MessageState
+	sizeCache     protoimpl.SizeCache
+	unknownFields protoimpl.UnknownFields
+
+	Header  *Common.PacketHeader   `protobuf:"bytes,1,opt,name=header" json:"header,omitempty"`
+	ErrInfo *MessageType.ErrorInfo `protobuf:"bytes,2,opt,name=err_info,json=errInfo" json:"err_info,omitempty"`
+}
+
+func (x *ReplyChatMessageRS) Reset() {
+	*x = ReplyChatMessageRS{}
+	if protoimpl.UnsafeEnabled {
+		mi := &file_common_MazeChat_proto_msgTypes[5]
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		ms.StoreMessageInfo(mi)
+	}
+}
+
+func (x *ReplyChatMessageRS) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*ReplyChatMessageRS) ProtoMessage() {}
+
+func (x *ReplyChatMessageRS) ProtoReflect() protoreflect.Message {
+	mi := &file_common_MazeChat_proto_msgTypes[5]
+	if protoimpl.UnsafeEnabled && x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use ReplyChatMessageRS.ProtoReflect.Descriptor instead.
+func (*ReplyChatMessageRS) Descriptor() ([]byte, []int) {
+	return file_common_MazeChat_proto_rawDescGZIP(), []int{5}
+}
+
+func (x *ReplyChatMessageRS) GetHeader() *Common.PacketHeader {
+	if x != nil {
+		return x.Header
+	}
+	return nil
+}
+
+func (x *ReplyChatMessageRS) GetErrInfo() *MessageType.ErrorInfo {
+	if x != nil {
+		return x.ErrInfo
+	}
+	return nil
+}
+
 var File_common_MazeChat_proto protoreflect.FileDescriptor
 
 var file_common_MazeChat_proto_rawDesc = []byte{
@@ -360,8 +474,9 @@ var file_common_MazeChat_proto_rawDesc = []byte{
 	0x74, 0x1a, 0x18, 0x63, 0x6f, 0x6d, 0x6d, 0x6f, 0x6e, 0x2f, 0x4d, 0x65, 0x73, 0x73, 0x61, 0x67,
 	0x65, 0x54, 0x79, 0x70, 0x65, 0x2e, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x1a, 0x13, 0x63, 0x6f, 0x6d,
 	0x6d, 0x6f, 0x6e, 0x2f, 0x43, 0x6f, 0x6d, 0x6d, 0x6f, 0x6e, 0x2e, 0x70, 0x72, 0x6f, 0x74, 0x6f,
-	0x22, 0x74, 0x0a, 0x0b, 0x43, 0x68, 0x61, 0x74, 0x4d, 0x65, 0x73, 0x73, 0x61, 0x67, 0x65, 0x12,
-	0x0e, 0x0a, 0x02, 0x69, 0x64, 0x18, 0x01, 0x20, 0x01, 0x28, 0x03, 0x52, 0x02, 0x69, 0x64, 0x12,
+	0x22, 0x83, 0x01, 0x0a, 0x0b, 0x43, 0x68, 0x61, 0x74, 0x4d, 0x65, 0x73, 0x73, 0x61, 0x67, 0x65,
+	0x12, 0x1d, 0x0a, 0x0a, 0x6d, 0x65, 0x73, 0x73, 0x61, 0x67, 0x65, 0x5f, 0x69, 0x64, 0x18, 0x01,
+	0x20, 0x01, 0x28, 0x03, 0x52, 0x09, 0x6d, 0x65, 0x73, 0x73, 0x61, 0x67, 0x65, 0x49, 0x64, 0x12,
 	0x22, 0x0a, 0x04, 0x74, 0x79, 0x70, 0x65, 0x18, 0x02, 0x20, 0x01, 0x28, 0x0e, 0x32, 0x0e, 0x2e,
 	0x4d, 0x61, 0x7a, 0x65, 0x43, 0x68, 0x61, 0x74, 0x2e, 0x54, 0x79, 0x70, 0x65, 0x52, 0x04, 0x74,
 	0x79, 0x70, 0x65, 0x12, 0x18, 0x0a, 0x07, 0x63, 0x6f, 0x6e, 0x74, 0x65, 0x6e, 0x74, 0x18, 0x03,
@@ -393,12 +508,26 @@ var file_common_MazeChat_proto_rawDesc = []byte{
 	0x01, 0x28, 0x04, 0x52, 0x06, 0x72, 0x65, 0x63, 0x76, 0x49, 0x64, 0x12, 0x2f, 0x0a, 0x07, 0x6d,
 	0x65, 0x73, 0x73, 0x61, 0x67, 0x65, 0x18, 0x03, 0x20, 0x01, 0x28, 0x0b, 0x32, 0x15, 0x2e, 0x4d,
 	0x61, 0x7a, 0x65, 0x43, 0x68, 0x61, 0x74, 0x2e, 0x43, 0x68, 0x61, 0x74, 0x4d, 0x65, 0x73, 0x73,
-	0x61, 0x67, 0x65, 0x52, 0x07, 0x6d, 0x65, 0x73, 0x73, 0x61, 0x67, 0x65, 0x2a, 0x19, 0x0a, 0x04,
-	0x54, 0x79, 0x70, 0x65, 0x12, 0x07, 0x0a, 0x03, 0x41, 0x43, 0x4b, 0x10, 0x01, 0x12, 0x08, 0x0a,
-	0x04, 0x54, 0x45, 0x58, 0x54, 0x10, 0x02, 0x42, 0x33, 0x5a, 0x23, 0x6d, 0x61, 0x7a, 0x65, 0x5f,
-	0x67, 0x61, 0x6d, 0x65, 0x5f, 0x73, 0x65, 0x72, 0x76, 0x65, 0x72, 0x2f, 0x70, 0x62, 0x2f, 0x63,
-	0x6f, 0x6d, 0x6d, 0x6f, 0x6e, 0x2f, 0x4d, 0x61, 0x7a, 0x65, 0x43, 0x68, 0x61, 0x74, 0xaa, 0x02,
-	0x0b, 0x50, 0x62, 0x2e, 0x4d, 0x61, 0x7a, 0x65, 0x43, 0x68, 0x61, 0x74,
+	0x61, 0x67, 0x65, 0x52, 0x07, 0x6d, 0x65, 0x73, 0x73, 0x61, 0x67, 0x65, 0x22, 0x61, 0x0a, 0x12,
+	0x52, 0x65, 0x70, 0x6c, 0x79, 0x43, 0x68, 0x61, 0x74, 0x4d, 0x65, 0x73, 0x73, 0x61, 0x67, 0x65,
+	0x52, 0x51, 0x12, 0x2c, 0x0a, 0x06, 0x68, 0x65, 0x61, 0x64, 0x65, 0x72, 0x18, 0x01, 0x20, 0x01,
+	0x28, 0x0b, 0x32, 0x14, 0x2e, 0x43, 0x6f, 0x6d, 0x6d, 0x6f, 0x6e, 0x2e, 0x50, 0x61, 0x63, 0x6b,
+	0x65, 0x74, 0x48, 0x65, 0x61, 0x64, 0x65, 0x72, 0x52, 0x06, 0x68, 0x65, 0x61, 0x64, 0x65, 0x72,
+	0x12, 0x1d, 0x0a, 0x0a, 0x6d, 0x65, 0x73, 0x73, 0x61, 0x67, 0x65, 0x5f, 0x69, 0x64, 0x18, 0x02,
+	0x20, 0x01, 0x28, 0x03, 0x52, 0x09, 0x6d, 0x65, 0x73, 0x73, 0x61, 0x67, 0x65, 0x49, 0x64, 0x22,
+	0x75, 0x0a, 0x12, 0x52, 0x65, 0x70, 0x6c, 0x79, 0x43, 0x68, 0x61, 0x74, 0x4d, 0x65, 0x73, 0x73,
+	0x61, 0x67, 0x65, 0x52, 0x53, 0x12, 0x2c, 0x0a, 0x06, 0x68, 0x65, 0x61, 0x64, 0x65, 0x72, 0x18,
+	0x01, 0x20, 0x01, 0x28, 0x0b, 0x32, 0x14, 0x2e, 0x43, 0x6f, 0x6d, 0x6d, 0x6f, 0x6e, 0x2e, 0x50,
+	0x61, 0x63, 0x6b, 0x65, 0x74, 0x48, 0x65, 0x61, 0x64, 0x65, 0x72, 0x52, 0x06, 0x68, 0x65, 0x61,
+	0x64, 0x65, 0x72, 0x12, 0x31, 0x0a, 0x08, 0x65, 0x72, 0x72, 0x5f, 0x69, 0x6e, 0x66, 0x6f, 0x18,
+	0x02, 0x20, 0x01, 0x28, 0x0b, 0x32, 0x16, 0x2e, 0x4d, 0x65, 0x73, 0x73, 0x61, 0x67, 0x65, 0x54,
+	0x79, 0x70, 0x65, 0x2e, 0x45, 0x72, 0x72, 0x6f, 0x72, 0x49, 0x6e, 0x66, 0x6f, 0x52, 0x07, 0x65,
+	0x72, 0x72, 0x49, 0x6e, 0x66, 0x6f, 0x2a, 0x1a, 0x0a, 0x04, 0x54, 0x79, 0x70, 0x65, 0x12, 0x08,
+	0x0a, 0x04, 0x52, 0x45, 0x41, 0x44, 0x10, 0x01, 0x12, 0x08, 0x0a, 0x04, 0x54, 0x45, 0x58, 0x54,
+	0x10, 0x02, 0x42, 0x33, 0x5a, 0x23, 0x6d, 0x61, 0x7a, 0x65, 0x5f, 0x67, 0x61, 0x6d, 0x65, 0x5f,
+	0x73, 0x65, 0x72, 0x76, 0x65, 0x72, 0x2f, 0x70, 0x62, 0x2f, 0x63, 0x6f, 0x6d, 0x6d, 0x6f, 0x6e,
+	0x2f, 0x4d, 0x61, 0x7a, 0x65, 0x43, 0x68, 0x61, 0x74, 0xaa, 0x02, 0x0b, 0x50, 0x62, 0x2e, 0x4d,
+	0x61, 0x7a, 0x65, 0x43, 0x68, 0x61, 0x74,
 }
 
 var (
@@ -414,28 +543,33 @@ func file_common_MazeChat_proto_rawDescGZIP() []byte {
 }
 
 var file_common_MazeChat_proto_enumTypes = make([]protoimpl.EnumInfo, 1)
-var file_common_MazeChat_proto_msgTypes = make([]protoimpl.MessageInfo, 4)
+var file_common_MazeChat_proto_msgTypes = make([]protoimpl.MessageInfo, 6)
 var file_common_MazeChat_proto_goTypes = []interface{}{
 	(Type)(0),                     // 0: MazeChat.Type
 	(*ChatMessage)(nil),           // 1: MazeChat.ChatMessage
 	(*SendChatMessageRQ)(nil),     // 2: MazeChat.SendChatMessageRQ
 	(*SendChatMessageRS)(nil),     // 3: MazeChat.SendChatMessageRS
 	(*PushChatMessageID)(nil),     // 4: MazeChat.PushChatMessageID
-	(*Common.PacketHeader)(nil),   // 5: Common.PacketHeader
-	(*MessageType.ErrorInfo)(nil), // 6: MessageType.ErrorInfo
+	(*ReplyChatMessageRQ)(nil),    // 5: MazeChat.ReplyChatMessageRQ
+	(*ReplyChatMessageRS)(nil),    // 6: MazeChat.ReplyChatMessageRS
+	(*Common.PacketHeader)(nil),   // 7: Common.PacketHeader
+	(*MessageType.ErrorInfo)(nil), // 8: MessageType.ErrorInfo
 }
 var file_common_MazeChat_proto_depIdxs = []int32{
 	0, // 0: MazeChat.ChatMessage.type:type_name -> MazeChat.Type
-	5, // 1: MazeChat.SendChatMessageRQ.header:type_name -> Common.PacketHeader
+	7, // 1: MazeChat.SendChatMessageRQ.header:type_name -> Common.PacketHeader
 	1, // 2: MazeChat.SendChatMessageRQ.message:type_name -> MazeChat.ChatMessage
-	5, // 3: MazeChat.SendChatMessageRS.header:type_name -> Common.PacketHeader
-	6, // 4: MazeChat.SendChatMessageRS.err_info:type_name -> MessageType.ErrorInfo
+	7, // 3: MazeChat.SendChatMessageRS.header:type_name -> Common.PacketHeader
+	8, // 4: MazeChat.SendChatMessageRS.err_info:type_name -> MessageType.ErrorInfo
 	1, // 5: MazeChat.PushChatMessageID.message:type_name -> MazeChat.ChatMessage
-	6, // [6:6] is the sub-list for method output_type
-	6, // [6:6] is the sub-list for method input_type
-	6, // [6:6] is the sub-list for extension type_name
-	6, // [6:6] is the sub-list for extension extendee
-	0, // [0:6] is the sub-list for field type_name
+	7, // 6: MazeChat.ReplyChatMessageRQ.header:type_name -> Common.PacketHeader
+	7, // 7: MazeChat.ReplyChatMessageRS.header:type_name -> Common.PacketHeader
+	8, // 8: MazeChat.ReplyChatMessageRS.err_info:type_name -> MessageType.ErrorInfo
+	9, // [9:9] is the sub-list for method output_type
+	9, // [9:9] is the sub-list for method input_type
+	9, // [9:9] is the sub-list for extension type_name
+	9, // [9:9] is the sub-list for extension extendee
+	0, // [0:9] is the sub-list for field type_name
 }
 
 func init() { file_common_MazeChat_proto_init() }
@@ -492,6 +626,30 @@ func file_common_MazeChat_proto_init() {
 				return nil
 			}
 		}
+		file_common_MazeChat_proto_msgTypes[4].Exporter = func(v interface{}, i int) interface{} {
+			switch v := v.(*ReplyChatMessageRQ); i {
+			case 0:
+				return &v.state
+			case 1:
+				return &v.sizeCache
+			case 2:
+				return &v.unknownFields
+			default:
+				return nil
+			}
+		}
+		file_common_MazeChat_proto_msgTypes[5].Exporter = func(v interface{}, i int) interface{} {
+			switch v := v.(*ReplyChatMessageRS); i {
+			case 0:
+				return &v.state
+			case 1:
+				return &v.sizeCache
+			case 2:
+				return &v.unknownFields
+			default:
+				return nil
+			}
+		}
 	}
 	type x struct{}
 	out := protoimpl.TypeBuilder{
@@ -499,7 +657,7 @@ func file_common_MazeChat_proto_init() {
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
 			RawDescriptor: file_common_MazeChat_proto_rawDesc,
 			NumEnums:      1,
-			NumMessages:   4,
+			NumMessages:   6,
 			NumExtensions: 0,
 			NumServices:   0,
 		},
