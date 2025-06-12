@@ -22,7 +22,7 @@ import (
 )
 
 // OnQueryUserProfile 查询用户资料
-func OnQueryUserProfile(ctx fklog.FKLogI, shardingID int64, rqMsg proto.Message, rsMsg proto.Message, opData string) (err error) {
+func (p *Profile) OnQueryUserProfile_10481_10482(ctx fklog.FKLogI, shardingID int64, rqMsg proto.Message, rsMsg proto.Message, opData string) (err error) {
 	defer fkprometheus.DebugPMT("OnQueryUserProfile")()
 	userCtx := fkserver.NewUserContext(context.TODO(), uint64(shardingID), ctx)
 	req := rqMsg.(*UserProfile.QueryUserProfileRQ)
@@ -96,7 +96,7 @@ func queryUserProfile(logger fklog.FKLogI, userID uint64) (ret *UserProfile.User
 		ret = &UserProfile.UserProfile{
 			UserId:   proto.Uint64(dbProfile.UserID),
 			NickName: proto.String(dbProfile.Nickname),
-			IconUrl:  proto.Int32(int32(dbProfile.IconUrl)),
+			IconUrl:  proto.String(dbProfile.IconUrl),
 			Sex:      proto.Int32(int32(dbProfile.Sex)),
 		}
 
@@ -140,7 +140,7 @@ func initUserProfile(logger fklog.FKLogI, userID uint64) (ret *UserProfile.UserP
 	dbProfile := &userprofilemysql.UserProfile{
 		UserID:   userID,
 		Nickname: profile.GetNickName(),
-		IconUrl:  uint32(profile.GetIconUrl()),
+		IconUrl:  profile.GetIconUrl(),
 		Sex:      uint8(profile.GetSex()),
 	}
 	if err = userprofilemysql.Create(dbProfile); err != nil {
@@ -161,8 +161,8 @@ func initUserProfile(logger fklog.FKLogI, userID uint64) (ret *UserProfile.UserP
 // generateInitProfile 生成初始用户资料
 func generateInitProfile(logger fklog.FKLogI, userId uint64) *UserProfile.UserProfile {
 	// todo 应从配置读取
-	maleAvatars := []uint32{1001, 1002, 1003}
-	femaleAvatars := []uint32{2001, 2002, 2003}
+	maleAvatars := []string{"1001", "1002", "1003"}
+	femaleAvatars := []string{"2001", "2002", "2003"}
 	nicknamePrefix := []string{
 		"Shadow", "Blood", "Dark", "Iron", "Storm",
 		"Night", "Ghost", "Rage", "Frost", "Flame",
@@ -198,7 +198,7 @@ func generateInitProfile(logger fklog.FKLogI, userId uint64) *UserProfile.UserPr
 	initUser := &UserProfile.UserProfile{
 		UserId:   proto.Uint64(userId),
 		NickName: proto.String(nickname),
-		IconUrl:  proto.Int32(int32(avatar)),
+		IconUrl:  proto.String(avatar),
 		Sex:      proto.Int32(sex),
 	}
 	logger.DebugWF("generateInitProfile success", zap.Any("initUser", initUser))

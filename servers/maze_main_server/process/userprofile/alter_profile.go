@@ -18,7 +18,7 @@ import (
 )
 
 // OnAlterUserProfile 修改用户资料
-func OnAlterUserProfile(ctx fklog.FKLogI, shardingID int64, rqMsg proto.Message, rsMsg proto.Message, opData string) (err error) {
+func (p *Profile) OnAlterUserProfile_10483_10484(ctx fklog.FKLogI, shardingID int64, rqMsg proto.Message, rsMsg proto.Message, opData string) (err error) {
 	defer fkprometheus.DebugPMT("OnAlterUserProfile")()
 	userCtx := fkserver.NewUserContext(context.TODO(), uint64(shardingID), ctx)
 	req := rqMsg.(*UserProfile.AlterUserProfileRQ)
@@ -57,7 +57,7 @@ func OnAlterUserProfile(ctx fklog.FKLogI, shardingID int64, rqMsg proto.Message,
 	dbProfile := &userprofilemysql.UserProfile{
 		UserID:   userID,
 		Nickname: req.GetAlterProfile().GetNickName(),
-		IconUrl:  uint32(req.GetAlterProfile().GetIconUrl()),
+		IconUrl:  req.GetAlterProfile().GetIconUrl(),
 		Sex:      uint8(req.GetAlterProfile().GetSex()),
 	}
 	if err := userprofilemysql.Update(dbProfile); err != nil {

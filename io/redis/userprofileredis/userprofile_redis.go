@@ -11,14 +11,16 @@ import (
 	"maze_game_server/pb/common/UserProfile"
 
 	"github.com/go-redis/redis/v8"
+	"sync"
 	"maze_game_server/io/redis/redisconfig"
 )
 
 var db *redis.Client
+var once sync.Once
 
-func init() {
-	db = redisconfig.GetClient("UserProfileRedis") // 用户个人资料存储redis
-}
+// func init() {
+// 	db = redisconfig.GetClient("UserProfileRedis") // 用户个人资料存储redis
+// }
 
 const (
 	userProfileCacheKey = "user:profile:%d"
@@ -31,6 +33,9 @@ type UserProfileCache struct {
 }
 
 func GetKey(userID uint64) string {
+	once.Do(func() {
+		db = redisconfig.GetClient(redisconfig.DefaultRedisName)
+	})
 	return fmt.Sprintf(userProfileCacheKey, userID)
 }
 

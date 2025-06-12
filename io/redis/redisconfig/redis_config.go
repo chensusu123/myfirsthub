@@ -31,16 +31,15 @@ const (
 type RedisCfg struct {
 	Addr string `yaml:"addr"`
 	Pwd  string `yaml:"pwd"`
-	Db   int    `yaml:"Db"`
+	Db   int    `yaml:"db"`
 }
-
-// 新增全局变量
-var globalRedisService *RedisService
 
 func NewRedisService(config cfg2.CfgSvr) *RedisService {
 	return &RedisService{
-		cfg:  config,
-		name: "redis_service"}
+		cfg:       config,
+		name:      "redis_service",
+		instances: make(map[string]*redis.Client),
+	}
 }
 
 func (rs *RedisService) Name() string {
@@ -69,10 +68,9 @@ func (rs *RedisService) OnStart(logger fklog.FKLogI, config fkcore.FkConfigerI) 
 	}
 	redisCfg.Addr = c["addr"].(string)
 	redisCfg.Pwd = c["pwd"].(string)
-	redisCfg.Db = c["Db"].(int)
+	// redisCfg.Db = c["Db"].(int)
 	client, err := rs.InitRedis(redisCfg, DefaultRedisName)
 	rs.Client = client
-	globalRedisService = rs
 	logger.InfoWF("RedisService start success.", zap.Any("redisCfg", redisCfg), zap.Any("globalRedisService", globalRedisService))
 	return
 }

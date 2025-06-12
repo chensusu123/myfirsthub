@@ -6,23 +6,35 @@ import (
 	"gorm.io/gorm"
 	"time"
 	"maze_game_server/io/mysql"
+	"sync"
 )
 
 var db *gorm.DB
+var once sync.Once
 
-func init() {
-	var err error
-	db, err = mysql.GetMysqlDb()
-	if err != nil {
-		db.Logger.Error(nil, "userprofilemysql GetMysqlDb fail, err:%v", err)
-	}
+// func init() {
+// 	var err error
+// 	db, err = mysql.GetMysqlDb()
+// 	if err != nil {
+// 		db.Logger.Error(nil, "userprofilemysql GetMysqlDb fail, err:%v", err)
+// 	}
+// }
+
+func InitMysql() {
+	once.Do(func() {
+		var err error
+		db, err = mysql.GetMysqlDb()
+		if err != nil {
+			db.Logger.Error(nil, "userprofilemysql GetMysqlDb fail, err:%v", err)
+		}
+	})
 }
 
 // UserProfileMysql 用户资料表模型
 type UserProfile struct {
 	UserID    uint64    `gorm:"column:user_id;primaryKey"` // 用户ID
 	Nickname  string    `gorm:"column:nickname;size:32"`   // 昵称
-	IconUrl   uint32    `gorm:"column:iconUrl"`            // 头像ID
+	IconUrl   string    `gorm:"column:iconUrl"`            // 头像ID
 	Sex       uint8     `gorm:"column:sex"`                // 性别(0:未知,1:男,2:女)
 	CreatedAt time.Time `gorm:"column:created_at"`         // 创建时间
 	UpdatedAt time.Time `gorm:"column:updated_at"`         // 更新时间
