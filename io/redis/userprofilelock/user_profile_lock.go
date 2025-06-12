@@ -7,9 +7,9 @@ import (
 	"time"
 
 	"github.com/go-redis/redis/v8"
-	"maze_game_server/io/redis/redisconfig"
 	"context"
 	"sync"
+	"maze_game_server/usecase/redisconfig"
 )
 
 var (
@@ -24,7 +24,11 @@ const (
 
 func GetKey(userID uint64) string {
 	once.Do(func() {
-		db = redisconfig.GetClient(redisconfig.DefaultRedisName)
+		var err error
+		db, err = redisconfig.GetRedisService().GetClient()
+		if err != nil {
+			panic(err)
+		}
 	})
 	return fmt.Sprintf(profileLockKey, userID)
 }

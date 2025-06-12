@@ -9,12 +9,12 @@ import (
 	"maze_game_server/pb/common/UserProfile"
 	"github.com/stretchr/testify/assert"
 	"google.golang.org/protobuf/proto"
-	"maze_game_server/io/redis/redisconfig"
 	"maze_game_server/usecase/localconfig"
 	"fmt"
 	"maze_game_server/io/mysql/userprofilemysql"
 	_ "gitlab.ifreetalk.com/maze-plate/freetk/fktestutil/testlogger" // 初始化日志
 	"maze_game_server/io/mysql"
+	"maze_game_server/usecase/redisconfig"
 )
 
 var (
@@ -29,10 +29,15 @@ func TestMain(m *testing.M) {
 	// 	mysql.InitMysqlEx,
 	// })
 	// redis
-	err := redisconfig.InitGlobalRedis(logger, cfgSvr)
+	err := redisconfig.GetRedisService().Init(cfgSvr)
 	if err != nil {
 		panic("redis init err:" + err.Error())
 	}
+	err = redisconfig.GetRedisService().Start()
+	if err != nil {
+		panic("redis start err:" + err.Error())
+	}
+	defer redisconfig.GetRedisService().Stop()
 	// mysql
 	myBiz := mysql.BizFlow{}
 	err = myBiz.Init(cfgSvr)
