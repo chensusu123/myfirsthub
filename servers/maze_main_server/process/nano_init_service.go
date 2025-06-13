@@ -74,6 +74,7 @@ func (ns *NanoInitService) OnStop(logger fklog.FKLogI) error {
 	Info := &registry.Info{
 		Namespace:   fkconfig.EnvVal.Namespace,
 		ServiceName: fkconfig.EnvVal.AppName + ".ws",
+		Addr:        utils.NewNetAddr("tcp", ns.addr),
 	}
 
 	plateregistry.Registry().Deregister(Info)
