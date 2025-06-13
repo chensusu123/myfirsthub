@@ -27,14 +27,15 @@ func InitMysql() {
 		if err != nil {
 			db.Logger.Error(nil, "userprofilemysql GetMysqlDb fail, err:%v", err)
 		}
+		db = db.Table(GetTableName())
 	})
 }
 
 // UserProfileMysql 用户资料表模型
 type UserProfile struct {
 	UserID    uint64    `gorm:"column:user_id;primaryKey"` // 用户ID
-	Nickname  string    `gorm:"column:nickname;size:32"`   // 昵称
-	IconUrl   string    `gorm:"column:iconUrl"`            // 头像ID
+	NickName  string    `gorm:"column:nickname"`           // 昵称
+	IconUrl   string    `gorm:"column:icon_url"`           // 头像ID
 	Sex       uint8     `gorm:"column:sex"`                // 性别(0:未知,1:男,2:女)
 	CreatedAt time.Time `gorm:"column:created_at"`         // 创建时间
 	UpdatedAt time.Time `gorm:"column:updated_at"`         // 更新时间
@@ -47,6 +48,11 @@ func GetTableName() string {
 // UserProfileMysql 用户资料数据库
 type OpMysql struct {
 	db *gorm.DB
+}
+
+// GetDb
+func GetDB() *gorm.DB {
+	return db
 }
 
 // NewUserProfileMysql 构造函数

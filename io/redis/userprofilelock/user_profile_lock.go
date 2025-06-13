@@ -19,6 +19,7 @@ var (
 )
 
 const (
+	lockTime       = 5
 	profileLockKey = "maze:profile:init:lock:%d"
 )
 
@@ -41,7 +42,7 @@ func GetKey(userID uint64) string {
 func Lock(userID uint64) (bool, error) {
 	ctx := context.Background()
 	key := GetKey(userID)
-	return db.SetNX(ctx, key, "1", lockExpire).Result()
+	return db.SetNX(ctx, key, lockTime, lockExpire).Result()
 }
 
 // Unlock 释放初始化锁

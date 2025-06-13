@@ -5,6 +5,10 @@ package userprofile
 import (
 	"sync"
 	lru "github.com/hashicorp/golang-lru"
+	"maze_game_server/io/mysql/userprofilemysql"
+	"maze_game_server/pb/common/UserProfile"
+	"google.golang.org/protobuf/proto"
+	"time"
 )
 
 var (
@@ -21,4 +25,27 @@ func initCache() {
 			panic(err)
 		}
 	})
+}
+
+func convertToProfile(dbProfile *userprofilemysql.UserProfile) *UserProfile.UserProfile {
+	return &UserProfile.UserProfile{
+		UserId:   proto.Uint64(dbProfile.UserID),
+		NickName: proto.String(dbProfile.NickName),
+		IconUrl:  proto.String(dbProfile.IconUrl),
+		Sex:      proto.Int32(int32(dbProfile.Sex)),
+	}
+}
+
+func convertToDbProfile(profile *UserProfile.UserProfile, creatTime, updateTime time.Time) *userprofilemysql.UserProfile {
+	if profile == nil {
+		return nil
+	}
+	return &userprofilemysql.UserProfile{
+		UserID:    profile.GetUserId(),
+		NickName:  profile.GetNickName(),
+		IconUrl:   profile.GetIconUrl(),
+		Sex:       uint8(profile.GetSex()),
+		CreatedAt: creatTime,
+		UpdatedAt: updateTime,
+	}
 }

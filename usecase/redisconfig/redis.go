@@ -136,7 +136,7 @@ func (rs *RedisService) Stop() error {
 	// 关闭连接
 	err := rs.client.Close()
 	if err != nil {
-		log.Printf("Error closing Redis connection: %v\n", err)
+		log.Printf("Error closing Redis connection: %v \n", err)
 	} else {
 		log.Println("Redis connection closed successfully")
 	}

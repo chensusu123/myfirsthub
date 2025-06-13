@@ -96,7 +96,7 @@ func InitMysqlEx(namingSvr naming.NamingI) error {
 }
 
 func initGorm(cfg *BizCfg) error {
-	dsn := fmt.Sprintf("%s:%s@tcp(%s)/?charset=utf8mb4&parseTime=True&loc=Local", cfg.DbUser, cfg.Pwd, cfg.Addr)
+	dsn := fmt.Sprintf("%s:%s@tcp(%s)/%s?charset=utf8mb4&parseTime=True&loc=Local", cfg.DbUser, cfg.Pwd, cfg.Addr, cfg.DbName)
 	gormDB, err := gorm.Open(mysql.Open(dsn), &gorm.Config{})
 	if err != nil {
 		fkfmt.Println("init gorm fail ", err)

@@ -49,7 +49,7 @@ func SetCache(userID uint64, profile *UserProfile.UserProfile) error {
 	ctx := context.Background()
 	key := GetKey(userID)
 
-	jsonData, err := json.Marshal(profile)
+	jsonData, err := json.Marshal(profile) // todo 先用json存，后期考虑加密的话用proto打包
 	if err != nil {
 		return err
 	}

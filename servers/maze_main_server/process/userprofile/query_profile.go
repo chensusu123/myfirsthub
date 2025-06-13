@@ -5,11 +5,9 @@ package userprofile
 import (
 	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fklog"
 	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fkprometheus"
-	"gitlab.ifreetalk.com/maze-plate/freetk/fkserver"
 	"maze_game_server/common/errors"
 	"go.uber.org/zap"
 	"time"
-	"context"
 	"google.golang.org/protobuf/proto"
 	"maze_game_server/pb/common/UserProfile"
 	"maze_game_server/io/redis/userprofileredis"
@@ -24,25 +22,27 @@ import (
 // OnQueryUserProfile 查询用户资料
 func (p *Profile) OnQueryUserProfile_10481_10482(ctx fklog.FKLogI, shardingID int64, rqMsg proto.Message, rsMsg proto.Message, opData string) (err error) {
 	defer fkprometheus.DebugPMT("OnQueryUserProfile")()
-	userCtx := fkserver.NewUserContext(context.TODO(), uint64(shardingID), ctx)
 	req := rqMsg.(*UserProfile.QueryUserProfileRQ)
 	res := rsMsg.(*UserProfile.QueryUserProfileRS)
 	res.ErrInfo = errors.NO_ERROR
-	userCtx.WarnWF("OnQueryUserProfile with", zap.Any("rq", req))
+	ctx.WarnWF("OnQueryUserProfile with", zap.Any("rq", req))
 
 	addStartTime := time.Now()
 	defer func() {
 		costTime := time.Since(addStartTime).Seconds()
-		userCtx.WarnWF("OnQueryUserProfile end ", zap.Any("req", req), zap.Any("res", res), zap.Float64("costTime", costTime))
+		ctx.WarnWF("OnQueryUserProfile end ", zap.Any("req", req), zap.Any("res", res),
+			zap.String("errMsg", string(res.GetErrInfo().GetErrMsg())),
+			zap.Float64("costTime", costTime))
 	}()
 
 	// 检查rq
-	if len(req.GetUserId()) == 0 {
+	if len(req.GetUserId()) == 0 || shardingID <= 0 {
 		res.ErrInfo = errors.COMMON_ERROR_TIPS.Wrap("无效参数")
 		return
 	}
 	// 并发查询用户资料
 	var (
+		mu sync.Mutex
 		wg sync.WaitGroup
 	)
 	for _, v := range req.GetUserId() {
@@ -50,57 +50,60 @@ func (p *Profile) OnQueryUserProfile_10481_10482(ctx fklog.FKLogI, shardingID in
 		wg.Add(1)
 		go func() {
 			defer wg.Done()
-			ret, err := queryUserProfile(userCtx, userID)
+			ret, err := queryUserProfile(ctx, uint64(shardingID), userID)
 			if err != nil {
-				userCtx.ErrorWF("OnQueryUserProfile queryUserProfile failed", zap.Error(err))
+				ctx.ErrorWF("OnQueryUserProfile queryUserProfile failed", zap.Error(err))
 				return
 			}
+			mu.Lock()
 			res.UserProfile = append(res.UserProfile, ret)
+			mu.Unlock()
 		}()
 	}
+	wg.Wait()
 	return
 }
 
-func queryUserProfile(logger fklog.FKLogI, userID uint64) (ret *UserProfile.UserProfile, err error) {
+func queryUserProfile(logger fklog.FKLogI, shardingID, userID uint64) (ret *UserProfile.UserProfile, err error) {
 	if userID <= 0 {
 		err = fmt.Errorf("invalid userID")
 		logger.ErrorWF("queryUserProfile invalid userID", zap.Uint64("userID", userID))
 		return
 	}
-	// 1. 检查缓存
+
 	if val, ok := cache.Get(userID); ok {
 		ret = val.(*UserProfile.UserProfile)
+		logger.DebugWF("OnQueryUserProfile get from cache", zap.Uint64("userID", userID),
+			zap.Any("ret", ret))
 		return
 	}
 
-	// 2. 读取redis
 	ret, err = userprofileredis.GetCache(userID)
 	if err != nil {
 		logger.ErrorWF("queryUserProfile GetCache error", zap.Error(err))
 		return
 	}
 	if ret != nil {
-		// 更新本地缓存
 		cache.Add(userID, ret)
+		logger.DebugWF("OnQueryUserProfile update cache", zap.Uint64("userID", userID), zap.Any("ret", ret))
 		return
 	}
 
-	// 3. 查询数据库
+	// todo 缓存穿透？
 	dbProfile, err := userprofilemysql.GetByUserID(userID)
-	if err != nil && err != gorm.ErrRecordNotFound {
-		logger.ErrorWF("OnQueryUserProfile GetByUserID error", zap.Error(err))
-		return
+	if err != nil {
+		if err != gorm.ErrRecordNotFound {
+			logger.ErrorWF("OnQueryUserProfile GetByUserID error", zap.Error(err))
+			return
+		} else {
+			// 处理errNil
+			userprofilemysql.GetDB().Error = nil
+		}
 	}
 
-	if dbProfile != nil {
-		ret = &UserProfile.UserProfile{
-			UserId:   proto.Uint64(dbProfile.UserID),
-			NickName: proto.String(dbProfile.Nickname),
-			IconUrl:  proto.String(dbProfile.IconUrl),
-			Sex:      proto.Int32(int32(dbProfile.Sex)),
-		}
+	if dbProfile != nil && dbProfile.UserID > 0 {
+		ret = convertToProfile(dbProfile)
 
-		// 更新缓存
 		cache.Add(userID, ret)
 		if err = userprofileredis.SetCache(userID, ret); err != nil {
 			logger.ErrorWF("OnQueryUserProfile SetCache error", zap.Error(err))
@@ -108,21 +111,28 @@ func queryUserProfile(logger fklog.FKLogI, userID uint64) (ret *UserProfile.User
 		return
 	}
 
-	// 4. 初始化用户资料
+	if shardingID != userID {
+		logger.WarnWF("OnQueryUserProfile not register user", zap.Uint64("userID", userID), zap.Uint64("shardingID", shardingID))
+		return
+	}
+
 	return initUserProfile(logger, userID)
 }
 
-// initUserProfile 初始化用户资料
+// initUserProfile 初始化用户资料 保证数据最终一致
 func initUserProfile(logger fklog.FKLogI, userID uint64) (ret *UserProfile.UserProfile, err error) {
-	// 获取分布式锁
+	logger.DebugWF("initUserProfile start", zap.Uint64("userID", userID))
+	defer func() {
+		logger.DebugWF("initUserProfile end", zap.Uint64("userID", userID), zap.Any("ret", ret), zap.Error(err))
+	}()
 	locked, err := userprofilelock.Lock(userID)
 	if err != nil {
-		logger.ErrorWF("initUserProfile get lock failed", zap.Error(err))
+		logger.ErrorWF("initUserProfile get lock failed", zap.Uint64("userID", userID), zap.Error(err))
 		return
 	}
 	if !locked {
 		err = fmt.Errorf("服务器忙")
-		logger.WarnWF("initUserProfile lock already exists")
+		logger.WarnWF("initUserProfile lock already exists", zap.Uint64("userID", userID))
 		return
 	}
 	defer func() {
@@ -130,28 +140,51 @@ func initUserProfile(logger fklog.FKLogI, userID uint64) (ret *UserProfile.UserP
 	}()
 
 	if val, ok := cache.Get(userID); ok {
+		logger.DebugWF("initUserProfile get from cache", zap.Uint64("userID", userID),
+			zap.Any("ret", ret))
 		ret = val.(*UserProfile.UserProfile)
 		return
 	}
 
-	profile := generateInitProfile(logger, userID)
-
-	// 保存到数据库
-	dbProfile := &userprofilemysql.UserProfile{
-		UserID:   userID,
-		Nickname: profile.GetNickName(),
-		IconUrl:  profile.GetIconUrl(),
-		Sex:      uint8(profile.GetSex()),
-	}
-	if err = userprofilemysql.Create(dbProfile); err != nil {
-		logger.ErrorWF("initUserProfile create db profile failed", zap.Error(err))
+	mysqlDb := userprofilemysql.GetDB()
+	if mysqlDb == nil || mysqlDb.Error != nil {
+		err = fmt.Errorf("initUserProfile userprofilemysql.GetDB nil, user:%v", userID)
+		logger.ErrorWF("initUserProfile get db failed", zap.Uint64("userID", userID))
 		return
 	}
+	var profile *UserProfile.UserProfile
+	if err = mysqlDb.Transaction(func(tx *gorm.DB) error {
+		profile = generateInitProfile(logger, userID)
 
-	// 更新缓存
-	cache.Add(userID, profile)
-	if err := userprofileredis.SetCache(userID, profile); err != nil {
-		logger.ErrorWF("initUserProfile set cache failed", zap.Error(err))
+		dbProfile := &userprofilemysql.UserProfile{
+			UserID:    userID,
+			NickName:  profile.GetNickName(),
+			IconUrl:   profile.GetIconUrl(),
+			Sex:       uint8(profile.GetSex()),
+			CreatedAt: time.Now(),
+			UpdatedAt: time.Now(),
+		}
+		if err = tx.Create(dbProfile).Error; err != nil {
+			logger.ErrorWF("initUserProfile create db profile failed", zap.Uint64("userID", userID), zap.Error(err))
+			return err
+		}
+
+		cache.Add(userID, profile)
+		if err = userprofileredis.SetCache(userID, profile); err != nil {
+			tx.Rollback()
+			cache.Remove(userID)
+			logger.ErrorWF("initUserProfile set cache failed", zap.Uint64("userID", userID), zap.Error(err))
+			return err
+		}
+		return nil
+	}); err != nil {
+		logger.ErrorWF("initUserProfile tx failed", zap.Uint64("userID", userID), zap.Error(err))
+		cache.Remove(userID)
+		err = userprofileredis.DeleteCache(userID)
+		if err != nil {
+			logger.ErrorWF("initUserProfile DeleteCache failed", zap.Uint64("userID", userID), zap.Error(err))
+		}
+		return
 	}
 
 	ret = profile
