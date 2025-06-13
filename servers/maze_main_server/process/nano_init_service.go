@@ -71,10 +71,12 @@ func (ns *NanoInitService) OnStart(logger fklog.FKLogI, config fkconfig.FkConfig
 
 // OnStop implements fkcore.FKServiceI.
 func (ns *NanoInitService) OnStop(logger fklog.FKLogI) error {
+	tags := fkserver.GetRegistryMetadata()
 	Info := &registry.Info{
 		Namespace:   fkconfig.EnvVal.Namespace,
 		ServiceName: fkconfig.EnvVal.AppName + ".ws",
 		Addr:        utils.NewNetAddr("tcp", ns.addr),
+		Tags:        tags,
 	}
 
 	plateregistry.Registry().Deregister(Info)
