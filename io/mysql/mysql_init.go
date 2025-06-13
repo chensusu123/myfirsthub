@@ -1,50 +1,66 @@
 package mysql
 
 import (
+	"context"
 	"fmt"
+	"time"
+
+	"maze_game_server/lib/log"
+
 	"gitlab.ifreetalk.com/maze-plate/freetk/common/fkfmt"
+	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fkconfig"
+	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fklog"
+	"gitlab.ifreetalk.com/maze-plate/freetk/pkg/discovery"
+	"gitlab.ifreetalk.com/maze-plate/freetk/pkg/instanceutil"
 	"gitlab.ifreetalk.com/maze-plate/freetk/pkg/naming"
+	"go.uber.org/zap"
 	"gorm.io/driver/mysql"
 	"gorm.io/gorm"
 	"gorm.io/gorm/logger"
-	"maze_game_server/lib/log"
-	"maze_game_server/lib/nano/cfg"
-	"os"
-	"time"
 )
 
 type BizCfg struct {
-	Addr      string `yaml:"addr"`
-	DbUser    string `yaml:"db_user"`
-	Pwd       string `yaml:"pwd"`
-	DbName    string `yaml:"db_name"`
-	TableName string `yaml:"table_name"`
-	Mode      string `yaml:"mode"`
+	Addr       string `yaml:"addr"`
+	DbUser     string `yaml:"db_user"`
+	Pwd        string `yaml:"pwd"`
+	DbName     string `yaml:"db_name"`
+	TableName  string `yaml:"table_name"`
+	IsLocalDev bool   `yaml:"-"`
 }
-type BizFlow struct{}
+type BizFlow struct {
+	BizeName string
+}
+
+func (flow *BizFlow) Name() string {
+	return flow.BizeName
+}
 
 var (
 	bizCfg *BizCfg
 	db     *gorm.DB
 )
 
-func (flow *BizFlow) Init(cfg cfg.CfgSvr) error {
+func (flow *BizFlow) Init(resolver discovery.Resolver) error {
+	logger := fklog.AppLogger().Clone("BizFlow")
 	bizCfg = &BizCfg{}
-	mp, err := cfg.LoadConfig("BizCfg", bizCfg)
-	fkfmt.Println("load config", "BizCfg", mp, err)
+	mysqlInfo, err := resolver.Resolve(context.TODO(), fkconfig.EnvVal.Namespace+":"+flow.BizeName)
 	if err != nil {
+		logger.ErrorWF("BizFlow Init Resolve failed", zap.Any("err", err))
 		return err
 	}
-	c, ok := mp.(map[string]interface{})
-	if !ok {
-		fkfmt.Println("load config", "BizCfg", mp, err)
+	mysqlCfg, mysqlCfgErr := instanceutil.GetMysqlCfg(mysqlInfo.Instances)
+	logger.InfoWF("BizFlow Init  mysqlInfo show ", zap.Any("mysqlCfg", mysqlCfg), zap.Any("mysqlCfgErr", mysqlCfgErr))
+	if mysqlCfgErr != nil {
+		logger.ErrorWF("BizFlow Init GetMysqlCfg failed", zap.Any("mysqlCfgErr", mysqlCfgErr))
+		return mysqlCfgErr
 	}
-	bizCfg.Addr = c["addr"].(string)
-	bizCfg.DbUser = c["db_user"].(string)
-	bizCfg.Pwd = c["pwd"].(string)
-	bizCfg.DbName = c["db_name"].(string)
-	bizCfg.TableName = c["table_name"].(string)
-	bizCfg.Mode = os.Getenv("mode")
+
+	bizCfg.Addr = mysqlCfg.Addr
+	bizCfg.DbUser = mysqlCfg.DbUser
+	bizCfg.Pwd = mysqlCfg.Password
+	bizCfg.DbName = mysqlCfg.DbName
+
+	bizCfg.IsLocalDev = fkconfig.EnvVal.IsLocalDev
 	err = initGorm(bizCfg)
 	if err != nil {
 		return err
@@ -69,7 +85,7 @@ func GetMysqlDb() (*gorm.DB, error) {
 
 // 获取分表名字
 func getShardingTableName(baseTable string) string {
-	if bizCfg.Mode == "dev" || bizCfg.Mode == "docker" {
+	if bizCfg.IsLocalDev {
 		return fmt.Sprintf("`t_%s`", baseTable)
 	}
 	t := time.Now()
@@ -78,7 +94,7 @@ func getShardingTableName(baseTable string) string {
 
 // 获取分库名字
 func getShardingDbName(baseDb string) string {
-	if bizCfg.Mode == "dev" || bizCfg.Mode == "docker" {
+	if bizCfg.IsLocalDev {
 		return fmt.Sprintf("`%s`", bizCfg.DbName)
 	}
 	t := time.Now()
