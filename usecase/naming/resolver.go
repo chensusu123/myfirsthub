@@ -17,10 +17,10 @@ const (
 )
 
 // Resolver is extension interface of Kitex discovery.Resolver.
-type Resolver interface {
-	discovery.Resolver
-	Watcher(ctx context.Context, desc string) (discovery.Change, error)
-}
+// type Resolver interface {
+// 	discovery.Resolver
+// 	Watcher(ctx context.Context, desc string) (discovery.Change, error)
+// }
 
 // polarisResolver is a resolver using polaris.
 type polarisResolver struct {
@@ -30,7 +30,7 @@ type polarisResolver struct {
 }
 
 // NewPolarisResolver creates a polaris based resolver.
-func NewPolarisResolver(o ClientOptions, configFile ...string) (Resolver, error) {
+func NewPolarisResolver(o ClientOptions, configFile ...string) (discovery.Resolver, error) {
 	sdkCtx, err := GetPolarisConfig(configFile...)
 	if err != nil {
 		return nil, err

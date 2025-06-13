@@ -6,11 +6,13 @@ import (
 	"errors"
 	"time"
 
+	"maze_game_server/pb/server/SeaTaskSvr"
+	"maze_game_server/usecase/tasktimer/delay/redisdelay"
+
+	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/discoveryutil"
 	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fkconfig"
 	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fklog"
 	"go.uber.org/zap"
-	"maze_game_server/pb/server/SeaTaskSvr"
-	"maze_game_server/usecase/tasktimer/delay/redisdelay"
 )
 
 type TaskTimerBusiness struct {
@@ -28,7 +30,12 @@ func (tb *TaskTimerBusiness) OnInit(logger fklog.FKLogI, cfg fkconfig.FkConfiger
 	logger.InfoWF("TaskTimerBusiness OnInit")
 	loopLogger := logger.Clone("loop")
 
-	redisAddr := fkconfig.EnvVal.RedisAddr // 从环境变量中获取 Redis 地址
+	redisCfg, err := discoveryutil.GetRedisCfg(fkconfig.EnvVal.Namespace, "maze_main_server.redis")
+	if err != nil {
+		logger.ErrorWF("TaskTimerBusiness GetRedisCfg failed", zap.Error(err))
+		return err
+	}
+	redisAddr := redisCfg.Addr // 从环境变量中获取 Redis 地址
 	if redisAddr == "" {
 		redisAddr = "127.0.0.1:6379"
 		logger.WarnWF("Redis address not found in environment variables, using default address", zap.String("default_address", redisAddr))
