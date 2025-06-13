@@ -422,6 +422,13 @@ func GetUserBattleSkillInfo(logger fklog.FKLogI, skillId int32, attrMap map[int3
 		IsNoTarget:                   proto.Int32(skillCfg.Is_no_target),
 		DamageElement:                skillCfg.Damage_element,
 		DamageType:                   proto.Int32(skillCfg.Damage_type),
+		InitialCoolTime:              proto.Int32(skillCfg.Initial_cool_time),
+		PublicCoolTime:               proto.Int32(skillCfg.Public_cool_time),
+		SkillCoolTime:                proto.Int32(skillCfg.Skill_cool_time),
+		DistanceMin:                  proto.Int32(skillCfg.Distance_min),
+		IsBreak:                      proto.Int32(skillCfg.Is_break),
+		ScopeType:                    proto.Int32(skillCfg.Scope_type),
+		TargetType:                   proto.Int32(skillCfg.Target_type),
 	}
 	// for k, v := range skillCfg.Target_effect_pro {
 	// 	if k == 0 {
@@ -546,6 +553,13 @@ func GetFoeBattleSkillInfo(logger fklog.FKLogI, skillId int32, attrMap map[int32
 		IsNoTarget:                   proto.Int32(skillCfg.Is_no_target),
 		DamageElement:                skillCfg.Damage_element,
 		DamageType:                   proto.Int32(skillCfg.Damage_type),
+		InitialCoolTime:              proto.Int32(skillCfg.Initial_cool_time),
+		PublicCoolTime:               proto.Int32(skillCfg.Public_cool_time),
+		SkillCoolTime:                proto.Int32(skillCfg.Skill_cool_time),
+		DistanceMin:                  proto.Int32(skillCfg.Distance_min),
+		IsBreak:                      proto.Int32(skillCfg.Is_break),
+		ScopeType:                    proto.Int32(skillCfg.Scope_type),
+		TargetType:                   proto.Int32(skillCfg.Target_type),
 	}
 	// for k, v := range skillCfg.Target_effect_pro {
 	// 	if k == 0 {
