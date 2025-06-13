@@ -33,10 +33,10 @@ func main() {
 	loadconfigapi.SetLoadConfigFunc(business.GCustomBusiness.LoadCacheConfig)
 	loadconfigapi.SetInitConfigCacheFunc(business.GCustomBusiness.Init)
 
-	myBiz := &mysql.BizFlow{
-		BizeName: "BizCfg",
-	}
-	serverdepend.RegisterDepend("BizCfg", myBiz)
+	myBiz := mysql.NewBizFlow("BizCfg")
+	// 注册到服务依赖里面.初始化由框架进行调用
+	serverdepend.RegisterDepend(myBiz.Name(), myBiz)
+
 	fkserver.AppServer.AddBasicService(&process.NanoInitService{})
 	fkserver.AddBusiness(tasktimer.GTaskTimerBusiness)
 

@@ -28,11 +28,17 @@ type BizCfg struct {
 	IsLocalDev bool   `yaml:"-"`
 }
 type BizFlow struct {
-	BizeName string
+	bizeName string
+}
+
+func NewBizFlow(name string) *BizFlow {
+	return &BizFlow{
+		bizeName: name,
+	}
 }
 
 func (flow *BizFlow) Name() string {
-	return flow.BizeName
+	return flow.bizeName
 }
 
 var (
@@ -43,7 +49,7 @@ var (
 func (flow *BizFlow) Init(resolver discovery.Resolver) error {
 	logger := fklog.AppLogger().Clone("BizFlow")
 	bizCfg = &BizCfg{}
-	mysqlInfo, err := resolver.Resolve(context.TODO(), fkconfig.EnvVal.Namespace+":"+flow.BizeName)
+	mysqlInfo, err := resolver.Resolve(context.TODO(), fkconfig.EnvVal.Namespace+":"+flow.bizeName)
 	if err != nil {
 		logger.ErrorWF("BizFlow Init Resolve failed", zap.Any("err", err))
 		return err
