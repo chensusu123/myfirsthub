@@ -12,7 +12,7 @@ import (
 	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fklog"
 	"gitlab.ifreetalk.com/maze-plate/freetk/pkg/discovery"
 	"gitlab.ifreetalk.com/maze-plate/freetk/pkg/instanceutil"
-	"gitlab.ifreetalk.com/maze-plate/freetk/pkg/naming"
+	"gitlab.ifreetalk.com/maze-plate/freetk/plateregistry"
 	"go.uber.org/zap"
 	"gorm.io/driver/mysql"
 	"gorm.io/gorm"
@@ -49,13 +49,15 @@ var (
 func (flow *BizFlow) Init(resolver discovery.Resolver) error {
 	logger := fklog.AppLogger().Clone("BizFlow")
 	bizCfg = &BizCfg{}
-	mysqlInfo, err := resolver.Resolve(context.TODO(), fkconfig.EnvVal.Namespace+":"+flow.bizeName)
+	groupResolver := plateregistry.NewGroupResolver(resolver)
+	mysqlInfo, err := groupResolver.Resolve(context.TODO(), fkconfig.EnvVal.Namespace+":"+flow.bizeName)
 	if err != nil {
 		logger.ErrorWF("BizFlow Init Resolve failed", zap.Any("err", err))
 		return err
 	}
 	mysqlCfg, mysqlCfgErr := instanceutil.GetMysqlCfg(mysqlInfo.Instances)
-	logger.InfoWF("BizFlow Init  mysqlInfo show ", zap.Any("mysqlCfg", mysqlCfg), zap.Any("mysqlCfgErr", mysqlCfgErr))
+	logger.InfoWF("BizFlow Init  mysqlInfo GetMysqlCfg show ", zap.Any("mysqlCfg", mysqlCfg),
+		zap.Any("mysqlCfgErr", mysqlCfgErr), zap.Any("InstancesLen", len(mysqlInfo.Instances)))
 	if mysqlCfgErr != nil {
 		logger.ErrorWF("BizFlow Init GetMysqlCfg failed", zap.Any("mysqlCfgErr", mysqlCfgErr))
 		return mysqlCfgErr
@@ -110,11 +112,6 @@ func getShardingDbName(baseDb string) string {
 // 获取完全限定表名
 func GetFullyQualifiedTableName(baseName string) string {
 	return fmt.Sprintf("%s.%s", getShardingDbName(baseName), getShardingTableName(baseName))
-}
-
-// Deprecated:初始化mysql
-func InitMysqlEx(namingSvr naming.NamingI) error {
-	return nil
 }
 
 func initGorm(cfg *BizCfg) error {

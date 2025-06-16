@@ -24,7 +24,7 @@ require (
 	github.com/spf13/cast v1.9.2
 	github.com/urfave/cli v1.22.16
 	github.com/xuri/excelize/v2 v2.9.0
-	gitlab.ifreetalk.com/maze-plate/freetk v1.0.1-0.20250613120011-b9cd9b02643f
+	gitlab.ifreetalk.com/maze-plate/freetk v1.0.1-0.20250616135153-d0471a450f24
 	go.uber.org/atomic v1.11.0
 	go.uber.org/zap v1.27.0
 	google.golang.org/grpc v1.64.0
@@ -112,5 +112,3 @@ require (
 	gopkg.in/natefinch/lumberjack.v2 v2.2.1 // indirect
 	gopkg.in/yaml.v2 v2.4.0 // indirect
 )
-
-//replace gitlab.ifreetalk.com/maze-plate/freetk => /Users/majiange/data/dev/go_work/maze/maze-plate/freetk
