@@ -144,6 +144,55 @@ func (x *MazePayTokenRS) GetPayToken() string {
 	return ""
 }
 
+//## 10509
+// 推送发货成功
+type PushPaySuccessID struct {
+	state         protoimpl.MessageState
+	sizeCache     protoimpl.SizeCache
+	unknownFields protoimpl.UnknownFields
+
+	TradeNo *string `protobuf:"bytes,1,opt,name=trade_no,json=tradeNo" json:"trade_no,omitempty"` // 自己系统的订单id
+}
+
+func (x *PushPaySuccessID) Reset() {
+	*x = PushPaySuccessID{}
+	if protoimpl.UnsafeEnabled {
+		mi := &file_common_Pay_proto_msgTypes[2]
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		ms.StoreMessageInfo(mi)
+	}
+}
+
+func (x *PushPaySuccessID) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*PushPaySuccessID) ProtoMessage() {}
+
+func (x *PushPaySuccessID) ProtoReflect() protoreflect.Message {
+	mi := &file_common_Pay_proto_msgTypes[2]
+	if protoimpl.UnsafeEnabled && x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use PushPaySuccessID.ProtoReflect.Descriptor instead.
+func (*PushPaySuccessID) Descriptor() ([]byte, []int) {
+	return file_common_Pay_proto_rawDescGZIP(), []int{2}
+}
+
+func (x *PushPaySuccessID) GetTradeNo() string {
+	if x != nil && x.TradeNo != nil {
+		return *x.TradeNo
+	}
+	return ""
+}
+
 var File_common_Pay_proto protoreflect.FileDescriptor
 
 var file_common_Pay_proto_rawDesc = []byte{
@@ -166,10 +215,13 @@ var file_common_Pay_proto_rawDesc = []byte{
 	0x43, 0x6f, 0x6d, 0x6d, 0x6f, 0x6e, 0x2e, 0x50, 0x61, 0x63, 0x6b, 0x65, 0x74, 0x48, 0x65, 0x61,
 	0x64, 0x65, 0x72, 0x52, 0x06, 0x68, 0x65, 0x61, 0x64, 0x65, 0x72, 0x12, 0x1b, 0x0a, 0x09, 0x70,
 	0x61, 0x79, 0x5f, 0x74, 0x6f, 0x6b, 0x65, 0x6e, 0x18, 0x03, 0x20, 0x01, 0x28, 0x09, 0x52, 0x08,
-	0x70, 0x61, 0x79, 0x54, 0x6f, 0x6b, 0x65, 0x6e, 0x42, 0x31, 0x5a, 0x22, 0x6d, 0x61, 0x7a, 0x65,
-	0x5f, 0x67, 0x61, 0x6d, 0x65, 0x5f, 0x73, 0x65, 0x72, 0x76, 0x65, 0x72, 0x2f, 0x70, 0x62, 0x2f,
-	0x63, 0x6f, 0x6d, 0x6d, 0x6f, 0x6e, 0x2f, 0x4d, 0x61, 0x7a, 0x65, 0x50, 0x61, 0x79, 0xaa, 0x02,
-	0x0a, 0x50, 0x62, 0x2e, 0x4d, 0x61, 0x7a, 0x65, 0x50, 0x61, 0x79,
+	0x70, 0x61, 0x79, 0x54, 0x6f, 0x6b, 0x65, 0x6e, 0x22, 0x2d, 0x0a, 0x10, 0x50, 0x75, 0x73, 0x68,
+	0x50, 0x61, 0x79, 0x53, 0x75, 0x63, 0x63, 0x65, 0x73, 0x73, 0x49, 0x44, 0x12, 0x19, 0x0a, 0x08,
+	0x74, 0x72, 0x61, 0x64, 0x65, 0x5f, 0x6e, 0x6f, 0x18, 0x01, 0x20, 0x01, 0x28, 0x09, 0x52, 0x07,
+	0x74, 0x72, 0x61, 0x64, 0x65, 0x4e, 0x6f, 0x42, 0x31, 0x5a, 0x22, 0x6d, 0x61, 0x7a, 0x65, 0x5f,
+	0x67, 0x61, 0x6d, 0x65, 0x5f, 0x73, 0x65, 0x72, 0x76, 0x65, 0x72, 0x2f, 0x70, 0x62, 0x2f, 0x63,
+	0x6f, 0x6d, 0x6d, 0x6f, 0x6e, 0x2f, 0x4d, 0x61, 0x7a, 0x65, 0x50, 0x61, 0x79, 0xaa, 0x02, 0x0a,
+	0x50, 0x62, 0x2e, 0x4d, 0x61, 0x7a, 0x65, 0x50, 0x61, 0x79,
 }
 
 var (
@@ -184,17 +236,18 @@ func file_common_Pay_proto_rawDescGZIP() []byte {
 	return file_common_Pay_proto_rawDescData
 }
 
-var file_common_Pay_proto_msgTypes = make([]protoimpl.MessageInfo, 2)
+var file_common_Pay_proto_msgTypes = make([]protoimpl.MessageInfo, 3)
 var file_common_Pay_proto_goTypes = []interface{}{
 	(*MazePayTokenRQ)(nil),        // 0: MazePay.MazePayTokenRQ
 	(*MazePayTokenRS)(nil),        // 1: MazePay.MazePayTokenRS
-	(*Common.PacketHeader)(nil),   // 2: Common.PacketHeader
-	(*MessageType.ErrorInfo)(nil), // 3: MessageType.ErrorInfo
+	(*PushPaySuccessID)(nil),      // 2: MazePay.PushPaySuccessID
+	(*Common.PacketHeader)(nil),   // 3: Common.PacketHeader
+	(*MessageType.ErrorInfo)(nil), // 4: MessageType.ErrorInfo
 }
 var file_common_Pay_proto_depIdxs = []int32{
-	2, // 0: MazePay.MazePayTokenRQ.header:type_name -> Common.PacketHeader
-	3, // 1: MazePay.MazePayTokenRS.err_info:type_name -> MessageType.ErrorInfo
-	2, // 2: MazePay.MazePayTokenRS.header:type_name -> Common.PacketHeader
+	3, // 0: MazePay.MazePayTokenRQ.header:type_name -> Common.PacketHeader
+	4, // 1: MazePay.MazePayTokenRS.err_info:type_name -> MessageType.ErrorInfo
+	3, // 2: MazePay.MazePayTokenRS.header:type_name -> Common.PacketHeader
 	3, // [3:3] is the sub-list for method output_type
 	3, // [3:3] is the sub-list for method input_type
 	3, // [3:3] is the sub-list for extension type_name
@@ -232,6 +285,18 @@ func file_common_Pay_proto_init() {
 				return nil
 			}
 		}
+		file_common_Pay_proto_msgTypes[2].Exporter = func(v interface{}, i int) interface{} {
+			switch v := v.(*PushPaySuccessID); i {
+			case 0:
+				return &v.state
+			case 1:
+				return &v.sizeCache
+			case 2:
+				return &v.unknownFields
+			default:
+				return nil
+			}
+		}
 	}
 	type x struct{}
 	out := protoimpl.TypeBuilder{
@@ -239,7 +304,7 @@ func file_common_Pay_proto_init() {
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
 			RawDescriptor: file_common_Pay_proto_rawDesc,
 			NumEnums:      0,
-			NumMessages:   2,
+			NumMessages:   3,
 			NumExtensions: 0,
 			NumServices:   0,
 		},
