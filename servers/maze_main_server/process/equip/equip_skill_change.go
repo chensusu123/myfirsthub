@@ -327,15 +327,24 @@ func GetEquipSkillInfoChange(logger fklog.FKLogI, userID uint64, oldEquip, newEq
 		userAttrMap[buffInfo.GetBuffId()] += buffInfo.GetBuffValue()
 	}
 
+	ret = &MazeAIBattle.MazeUserSkillInfoChangeID{}
 	// 脱下的装备会删除技能
 	if oldEquip != nil {
 		equip := oldEquip.GetEquipInfo()
-		ret.DelSkillInfoList, changed, err = GetUserSkillTotalInfo(logger, userAttrMap, equip.GetBaseAttrs())
+		oldChanged := false
+		ret.DelSkillInfoList, oldChanged, err = GetUserSkillTotalInfo(logger, userAttrMap, equip.GetBaseAttrs())
+		if oldChanged {
+			changed = true
+		}
 	}
 	// 穿戴的装备会增加技能
 	if newEquip != nil {
 		equip := newEquip.GetEquipInfo()
-		ret.AddSkillInfoList, changed, err = GetUserSkillTotalInfo(logger, userAttrMap, equip.GetBaseAttrs())
+		newChanged := false
+		ret.AddSkillInfoList, newChanged, err = GetUserSkillTotalInfo(logger, userAttrMap, equip.GetBaseAttrs())
+		if newChanged {
+			changed = true
+		}
 	}
 	return ret, changed, nil
 }
