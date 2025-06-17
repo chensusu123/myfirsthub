@@ -14,6 +14,7 @@ import (
 	"maze_game_server/module/mazeuserinfo"
 	"maze_game_server/pb/common/MazeCommon"
 	"maze_game_server/pb/common/MazeGame"
+	"maze_game_server/servers/maze_main_server/process/game/events"
 	"time"
 
 	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fklog"
@@ -117,6 +118,9 @@ func (g *Game) OnMazeBarrierDeathRQ_10449_10450(s *session.Session, req *MazeGam
 	if err != nil {
 		logger.ErrorWF("OnMazeBarrierPassRQ LeaveBarrier fail", zap.Error(err))
 	}
+
+	// 触发离开关卡事件
+	events.OnLeaveBarrier(logger, userId, 0, time.Now().UnixMilli(), &MazeGame.BattleEventLeaveBarrier{BarrierId: proto.Int32(req.GetBarrierId()), Result: MazeGame.BarrierResult_DEATH.Enum()})
 
 	if req.GetFoeExp() > 0 {
 		res.BarrierAward = []*MazeCommon.MazeItem{&MazeCommon.MazeItem{ItemId: proto.Int32(constdef.MazeCommonItemExp), Count: proto.Int64(int64(req.GetFoeExp()))}}

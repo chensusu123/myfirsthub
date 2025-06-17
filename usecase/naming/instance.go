@@ -41,3 +41,7 @@ func (i *polarisKitexInstance) Tag(key string) (value string, exist bool) {
 	value, exist = i.kitexInstance.Tag(key)
 	return
 }
+
+func (i *polarisKitexInstance) Tags() map[string]string {
+	return i.kitexInstance.Tags()
+}

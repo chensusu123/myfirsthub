@@ -5,21 +5,13 @@ import (
 	"os"
 
 	"maze_game_server/io/mysql"
-	cfg2 "maze_game_server/lib/nano/cfg"
-	"maze_game_server/lib/net/polarismessvc"
 	"maze_game_server/servers/maze_main_server/process"
 	"maze_game_server/usecase/business"
-	"maze_game_server/usecase/cmdbconfig"
-	"maze_game_server/usecase/localconfig"
-	"maze_game_server/usecase/localnaming"
-	"maze_game_server/usecase/naming"
 	"maze_game_server/usecase/tasktimer"
 
+	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/serverdepend"
 	"gitlab.ifreetalk.com/maze-plate/freetk/fkserver"
 	"gitlab.ifreetalk.com/maze-plate/freetk/fkserver/config_manager/loadconfigapi"
-	"gitlab.ifreetalk.com/maze-plate/freetk/mockio"
-	namingI "gitlab.ifreetalk.com/maze-plate/freetk/pkg/naming"
-	"maze_game_server/usecase/redisconfig"
 )
 
 func GetEnv(name string) (string, error) {
@@ -36,51 +28,14 @@ func main() {
 
 	process.RegisterHandler()
 
-	var err error
-	var namingSvc namingI.NamingI
-
-	var cfgSvr cfg2.CfgSvr
-
-	envMode, err := GetEnv("mode")
-	switch envMode {
-	case "dev":
-		cfgSvr = localconfig.New("./conf.d/localconfig.yaml")
-		namingSvc = localnaming.NewLocalNaming("./conf.d/config.ini", []namingI.InitCfgFunc{
-			mysql.InitMysqlEx,
-		})
-	case "docker":
-		cfgSvr = localconfig.New("./conf.d/dockerconfig.yaml")
-		namingSvc = localnaming.NewLocalNaming("./conf.d/config.ini", []namingI.InitCfgFunc{
-			mysql.InitMysqlEx,
-		})
-	default:
-		cfgSvr = cmdbconfig.New("./conf.d/polaris.yaml")
-		namingSvc = naming.NewClientSuite("./conf.d/polaris.yaml", []namingI.InitCfgFunc{
-			mysql.InitMysqlEx,
-		})
-		polarismessSvc := polarismessvc.NewPolarismesSvc()
-		fkserver.AddBusiness(polarismessSvc)
-	}
-
-	mockio.SetNaming(namingSvc)
 	fkserver.AddBusiness(&business.GCustomBusiness)
 	loadconfigapi.SetLoadConfigFunc(business.GCustomBusiness.LoadCacheConfig)
 	loadconfigapi.SetInitConfigCacheFunc(business.GCustomBusiness.Init)
 
-	myBiz := mysql.BizFlow{}
-	err = myBiz.Init(cfgSvr)
-	if err != nil {
-		panic("mysql init err:" + err.Error())
-	}
-	err = redisconfig.GetRedisService().Init(cfgSvr)
-	if err != nil {
-		panic("redis init err:" + err.Error())
-	}
-	err = redisconfig.GetRedisService().Start()
-	if err != nil {
-		panic("redis start err:" + err.Error())
-	}
-	defer redisconfig.GetRedisService().Stop()
+	myBiz := mysql.NewBizFlow("BizCfg")
+	// 注册到服务依赖里面.初始化由框架进行调用
+	serverdepend.RegisterDepend(myBiz.Name(), myBiz)
+
 	fkserver.AppServer.AddBasicService(&process.NanoInitService{})
 	// fkserver.AddBusiness(&business.GCustomBusiness)
 	fkserver.AddBusiness(tasktimer.GTaskTimerBusiness)

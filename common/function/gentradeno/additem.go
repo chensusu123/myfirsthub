@@ -1,29 +1,24 @@
 package gentradeno
 
 import (
-	"fmt"
 	"strings"
 
 	"maze_game_server/common/errors"
-	"maze_game_server/common/function/monitor"
 	"maze_game_server/pb/common/Common"
 	"maze_game_server/pb/common/MazeCommon"
 	"maze_game_server/pb/common/MessageType"
 	"maze_game_server/pb/server/MazeItemSvr"
 	"maze_game_server/servers/maze_main_server/process/item"
 
-	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fkconfig"
 	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fklog"
 	"go.uber.org/zap"
 	"google.golang.org/protobuf/proto"
 )
 
-var (
-	AddGoodOpDescMap = map[int32]string{
-		631: "人偶版装备出售加黄金",
-		// 632: "人偶版装备铸造消耗",
-	}
-)
+var AddGoodOpDescMap = map[int32]string{
+	631: "人偶版装备出售加黄金",
+	// 632: "人偶版装备铸造消耗",
+}
 
 func AddItemEx(logger fklog.FKLogI, userId uint64, opType int32, tradeNo uint64, header *Common.PacketHeader, items ...*MazeCommon.MazeItem) (errInfo *MessageType.ErrorInfo) {
 	rq := &MazeItemSvr.AddItemRQ{
@@ -35,10 +30,10 @@ func AddItemEx(logger fklog.FKLogI, userId uint64, opType int32, tradeNo uint64,
 	rq.TradeNumber = proto.Uint64(tradeNo)
 
 	rs := &MazeItemSvr.AddItemRS{ErrInfo: errors.NO_ERROR}
-	monitorName := fmt.Sprintf("ItemsNewRpc.AddItemsRQ_%d", fkconfig.GetServerConfig().ServerTypeID)
-	m1 := monitor.GetMonitor(monitorName)
-	m1.StartV1()
-	defer m1.EndV1()
+	// monitorName := fmt.Sprintf("ItemsNewRpc.AddItemsRQ_%d", fkconfig.GetServerConfig().ServerTypeID)
+	// m1 := monitor.GetMonitor(monitorName)
+	// m1.StartV1()
+	// defer m1.EndV1()
 
 	// err := mazeitemrpc.AddItemsRQ(logger, rq, rs)
 	err := item.OnAddItemRQ(logger, rq, rs)

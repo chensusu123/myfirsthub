@@ -2,6 +2,7 @@ package game
 
 import (
 	"fmt"
+	"maze_game_server/common/constdef"
 	"maze_game_server/common/errors"
 	"maze_game_server/common/function/addequip"
 	"maze_game_server/common/function/gentradeno"
@@ -97,16 +98,24 @@ func (g *Game) OnBarrierOpenBoxRQ_10445_10446(s *session.Session, req *MazeGame.
 			if itemCfg == nil {
 				logger.ErrorWF("OnBarrierOpenBoxRQ item not found", zap.Error(fmt.Errorf("item: %d not found", itemID)), zap.Any("boxId", req.GetBoxId()))
 			} else {
-				res.Awards = append(res.Awards, &MazeCommon.MazeItem{
-					ItemId: proto.Int32(itemID),
-					Count:  proto.Int64(count),
-				})
-				// 背包道具
-				if itemCfg.Is_bag == 3 {
+				if itemID == constdef.MazeCommonItemCoin || // 金币
+					itemID == constdef.MazeCommonItemDiamond { // 钻石
 					bagItems = append(bagItems, &MazeCommon.MazeItem{
 						ItemId: proto.Int32(itemID),
 						Count:  proto.Int64(count),
 					})
+				} else {
+					res.Awards = append(res.Awards, &MazeCommon.MazeItem{
+						ItemId: proto.Int32(itemID),
+						Count:  proto.Int64(count),
+					})
+					// 背包道具
+					if itemCfg.Is_bag == 3 {
+						bagItems = append(bagItems, &MazeCommon.MazeItem{
+							ItemId: proto.Int32(itemID),
+							Count:  proto.Int64(count),
+						})
+					}
 				}
 			}
 		}

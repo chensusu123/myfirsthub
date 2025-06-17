@@ -8,7 +8,8 @@ import (
 
 	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fkconfig"
 	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fklog"
-	"gitlab.ifreetalk.com/maze-plate/freetk/fkserver/frontcache_service"
+
+	//"gitlab.ifreetalk.com/maze-plate/freetk/fkserver/frontcache_service"
 	"gitlab.ifreetalk.com/maze-plate/freetk/fktestutil/testio"
 )
 
@@ -28,7 +29,7 @@ func TestMain(m *testing.M) {
 
 	testio.IOLoad(12, "90038") // 加载N组的io配置
 
-	frontcache_service.PlugFCService()
+	// frontcache_service.PlugFCService()
 	fkconfig.EnvVal.AppName = "maze-temp-buff-server"
 	fkconfig.EnvVal.GroupID = 12
 	fkconfig.EnvVal.ServerID = 20005

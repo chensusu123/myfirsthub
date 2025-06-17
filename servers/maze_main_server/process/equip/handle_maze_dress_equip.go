@@ -274,6 +274,21 @@ func (ep *Equip) OnDressMazeEquipRQ_10418_10419(s *session.Session, req *MazeGam
 		recordType = dollequipassmeblekakfa.DollEquipAssembleOpReplace
 	}
 
+	// // 穿戴装备引起的技能信息变化包
+	// equipSkillInfoChange, changed, err := GetEquipSkillInfoChange(logger, userId, oldEquipPos, dressedEquip)
+	// if err != nil {
+	// 	logger.ErrorWF("OnDressMazeEquipRQ GetEquipSkillInfoChange fail",
+	// 		zap.Error(err),
+	// 		zap.Uint64("userId", userId),
+	// 		zap.Any("oldEquipPos", oldEquipPos),
+	// 		zap.Any("dressedEquip", dressedEquip),
+	// 	)
+	// } else if changed {
+	// 	defer func() {
+	// 		online.Push(logger, userId, 10510, equipSkillInfoChange)
+	// 	}()
+	// }
+
 	record := StartEquipAssmebleRecord(userId, pos, recordType, dressedEquip,
 		oldEquipPos, oldEffect)
 
