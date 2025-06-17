@@ -3,8 +3,10 @@ services:
     image: alpine:latest
     #container_name: maze-server
     depends_on:
-      - redis
-      - mysql
+      mysql:
+        condition: service_healthy   # ② 只有 MySQL 通过健康检查才启动
+      redis:
+          condition: service_started   # Redis 只需端口开放即可
     volumes:
       - ../servers/maze_main_server/bin/maze-server:/app/app
       - ../servers/maze_main_server/conf.d:/app/conf.d
@@ -33,6 +35,14 @@ services:
       MYSQL_DATABASE: maze
     networks:
       - app-net
+    volumes:
+      - ../scripts/maze_init.sql:/docker-entrypoint-initdb.d/1-init-schema.sql
+    healthcheck:
+      test: [ "CMD", "mysqladmin", "ping", "-h", "localhost", "-u", "root", "-pmysql", "--silent" ]
+      interval: 5s         # 每 5 秒检测一次
+      timeout: 3s
+      retries: 10          # 连续 10 次失败才视为 unhealthy
+      start_period: 20s    # 给 MySQL 初始化脚本一点时间
 
 networks:
   app-net:
