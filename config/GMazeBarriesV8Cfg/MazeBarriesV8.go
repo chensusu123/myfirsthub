@@ -32,9 +32,9 @@ type MazeBarriesV8ConfigRow struct {
 	Energy_affix_rand_rule     int32           `json:"energy_affix_rand_rule"`     // 能力词条随机规则
 	Rare_items_show            []int32         `json:"rare_items_show"`            // 展示为稀有的物品id
 	Drop_id                    []int32         `json:"drop_id"`                    // 掉落id
-	Attack_action1_need_kongfu map[int32]int32 `json:"attack_action1_need_kongfu"` // 普攻档位1刷怪区域：所需武力值
-	Attack_action2_need_kongfu map[int32]int32 `json:"attack_action2_need_kongfu"` // 普攻档位2刷怪区域：所需武力值
-	Attack_action3_need_kongfu map[int32]int32 `json:"attack_action3_need_kongfu"` // 普攻档位3刷怪区域：所需武力值
+	Attack_action1_need_kongfu map[int32]int64 `json:"attack_action1_need_kongfu"` // 普攻档位1刷怪区域：所需武力值
+	Attack_action2_need_kongfu map[int32]int64 `json:"attack_action2_need_kongfu"` // 普攻档位2刷怪区域：所需武力值
+	Attack_action3_need_kongfu map[int32]int64 `json:"attack_action3_need_kongfu"` // 普攻档位3刷怪区域：所需武力值
 }
 
 // MazeBarriesV8Config from maze_barries_v8【迷宫-关卡信息】.xlsx maze_barries_v8
@@ -554,9 +554,9 @@ func (*gMazeBarriesV8Parser) Parse(logger fklog.FKLogI, data []string, row inter
 	// parse column 18 attack_action1_need_kongfu : 普攻档位1刷怪区域：所需武力值
 	if data[18] != "" {
 
-		config.Attack_action1_need_kongfu = make(map[int32]int32)
+		config.Attack_action1_need_kongfu = make(map[int32]int64)
 		var key int32
-		var value int32
+		var value int64
 		vals := strings.Split(data[18], "_")
 		for k, val := range vals {
 			items := strings.Split(val, ":")
@@ -574,8 +574,8 @@ func (*gMazeBarriesV8Parser) Parse(logger fklog.FKLogI, data []string, row inter
 			key = int32(tmp)
 			tmp, err = strconv.ParseInt(items[1], 10, 64)
 			if err != nil {
-				err = errors.New("parse map field attack_action1_need_kongfu 普攻档位1刷怪区域：所需武力值 to value int32 failed")
-				logger.ErrorWF("parse map field attack_action1_need_kongfu 普攻档位1刷怪区域：所需武力值 to value int32 failed.",
+				err = errors.New("parse map field attack_action1_need_kongfu 普攻档位1刷怪区域：所需武力值 to value int64 failed")
+				logger.ErrorWF("parse map field attack_action1_need_kongfu 普攻档位1刷怪区域：所需武力值 to value int64 failed.",
 					zap.String("xlsx", "maze_barries_v8【迷宫-关卡信息】.xlsx"), zap.String("sheet", "maze_barries_v8"),
 					// zap.String("field_data",data[18]),
 					zap.String("item_data", val), zap.Int("index", k),
@@ -583,7 +583,7 @@ func (*gMazeBarriesV8Parser) Parse(logger fklog.FKLogI, data []string, row inter
 					zap.Error(err))
 				return
 			}
-			value = int32(tmp)
+			value = int64(tmp)
 			config.Attack_action1_need_kongfu[key] = value
 		}
 	}
@@ -591,9 +591,9 @@ func (*gMazeBarriesV8Parser) Parse(logger fklog.FKLogI, data []string, row inter
 	// parse column 19 attack_action2_need_kongfu : 普攻档位2刷怪区域：所需武力值
 	if data[19] != "" {
 
-		config.Attack_action2_need_kongfu = make(map[int32]int32)
+		config.Attack_action2_need_kongfu = make(map[int32]int64)
 		var key int32
-		var value int32
+		var value int64
 		vals := strings.Split(data[19], "_")
 		for k, val := range vals {
 			items := strings.Split(val, ":")
@@ -611,8 +611,8 @@ func (*gMazeBarriesV8Parser) Parse(logger fklog.FKLogI, data []string, row inter
 			key = int32(tmp)
 			tmp, err = strconv.ParseInt(items[1], 10, 64)
 			if err != nil {
-				err = errors.New("parse map field attack_action2_need_kongfu 普攻档位2刷怪区域：所需武力值 to value int32 failed")
-				logger.ErrorWF("parse map field attack_action2_need_kongfu 普攻档位2刷怪区域：所需武力值 to value int32 failed.",
+				err = errors.New("parse map field attack_action2_need_kongfu 普攻档位2刷怪区域：所需武力值 to value int64 failed")
+				logger.ErrorWF("parse map field attack_action2_need_kongfu 普攻档位2刷怪区域：所需武力值 to value int64 failed.",
 					zap.String("xlsx", "maze_barries_v8【迷宫-关卡信息】.xlsx"), zap.String("sheet", "maze_barries_v8"),
 					// zap.String("field_data",data[19]),
 					zap.String("item_data", val), zap.Int("index", k),
@@ -620,7 +620,7 @@ func (*gMazeBarriesV8Parser) Parse(logger fklog.FKLogI, data []string, row inter
 					zap.Error(err))
 				return
 			}
-			value = int32(tmp)
+			value = int64(tmp)
 			config.Attack_action2_need_kongfu[key] = value
 		}
 	}
@@ -628,9 +628,9 @@ func (*gMazeBarriesV8Parser) Parse(logger fklog.FKLogI, data []string, row inter
 	// parse column 20 attack_action3_need_kongfu : 普攻档位3刷怪区域：所需武力值
 	if data[20] != "" {
 
-		config.Attack_action3_need_kongfu = make(map[int32]int32)
+		config.Attack_action3_need_kongfu = make(map[int32]int64)
 		var key int32
-		var value int32
+		var value int64
 		vals := strings.Split(data[20], "_")
 		for k, val := range vals {
 			items := strings.Split(val, ":")
@@ -648,8 +648,8 @@ func (*gMazeBarriesV8Parser) Parse(logger fklog.FKLogI, data []string, row inter
 			key = int32(tmp)
 			tmp, err = strconv.ParseInt(items[1], 10, 64)
 			if err != nil {
-				err = errors.New("parse map field attack_action3_need_kongfu 普攻档位3刷怪区域：所需武力值 to value int32 failed")
-				logger.ErrorWF("parse map field attack_action3_need_kongfu 普攻档位3刷怪区域：所需武力值 to value int32 failed.",
+				err = errors.New("parse map field attack_action3_need_kongfu 普攻档位3刷怪区域：所需武力值 to value int64 failed")
+				logger.ErrorWF("parse map field attack_action3_need_kongfu 普攻档位3刷怪区域：所需武力值 to value int64 failed.",
 					zap.String("xlsx", "maze_barries_v8【迷宫-关卡信息】.xlsx"), zap.String("sheet", "maze_barries_v8"),
 					// zap.String("field_data",data[20]),
 					zap.String("item_data", val), zap.Int("index", k),
@@ -657,7 +657,7 @@ func (*gMazeBarriesV8Parser) Parse(logger fklog.FKLogI, data []string, row inter
 					zap.Error(err))
 				return
 			}
-			value = int32(tmp)
+			value = int64(tmp)
 			config.Attack_action3_need_kongfu[key] = value
 		}
 	}
