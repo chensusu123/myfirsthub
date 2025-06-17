@@ -29,6 +29,7 @@ type BizCfg struct {
 }
 type BizFlow struct {
 	bizeName string
+	resolver discovery.Resolver
 }
 
 func NewBizFlow(name string) *BizFlow {
@@ -46,21 +47,55 @@ var (
 	db     *gorm.DB
 )
 
+// 监控实例变化必须实现的接口
+func (flow *BizFlow) WatcherName() string {
+	return flow.bizeName
+}
+
+// 监控实例变化必须实现的接口
+func (flow *BizFlow) OnInstancesUpdate(change *discovery.Change) {
+	logger := fklog.AppLogger().Clone("BizFlow")
+	if change == nil {
+		logger.ErrorWF("OnInstancesUpdate change is nil")
+		return
+	}
+
+	if len(change.Result.Instances) > 0 {
+		for _, xx := range change.Result.Instances {
+			logger.InfoWF("BizFlow OnInstancesUpdate ",
+				zap.Any("Address", xx.Address().String()),
+				zap.Any("Tags", xx.Tags()), zap.Any("Vsersion", change.Result.Vsersion))
+		}
+	}
+}
+
+var _ discovery.InstancesListener = (*BizFlow)(nil)
+
 func (flow *BizFlow) Init(resolver discovery.Resolver) error {
 	logger := fklog.AppLogger().Clone("BizFlow")
 	bizCfg = &BizCfg{}
 	groupResolver := plateregistry.NewGroupResolver(resolver)
-	mysqlInfo, err := groupResolver.Resolve(context.TODO(), fkconfig.EnvVal.Namespace+":"+flow.bizeName)
+	flow.resolver = groupResolver
+	resolveName := fkconfig.EnvVal.Namespace + ":" + flow.bizeName
+
+	mysqlInfo, err := flow.resolver.Resolve(context.TODO(), resolveName)
 	if err != nil {
 		logger.ErrorWF("BizFlow Init Resolve failed", zap.Any("err", err))
 		return err
 	}
+
 	mysqlCfg, mysqlCfgErr := instanceutil.GetMysqlCfg(mysqlInfo.Instances)
 	logger.InfoWF("BizFlow Init  mysqlInfo GetMysqlCfg show ", zap.Any("mysqlCfg", mysqlCfg),
 		zap.Any("mysqlCfgErr", mysqlCfgErr), zap.Any("InstancesLen", len(mysqlInfo.Instances)))
 	if mysqlCfgErr != nil {
 		logger.ErrorWF("BizFlow Init GetMysqlCfg failed", zap.Any("mysqlCfgErr", mysqlCfgErr))
 		return mysqlCfgErr
+	}
+
+	// 监听实例变化
+	err = flow.resolver.Watcher(context.Background(), resolveName, flow)
+	if err != nil {
+		logger.ErrorWF("BizFlow Init Watcher failed", zap.Any("err", err))
 	}
 
 	bizCfg.Addr = mysqlCfg.Addr
