@@ -305,7 +305,8 @@ func (x *AlterUserProfileRS) GetUserProfile() *UserProfile {
 	return nil
 }
 
-// 查询操作头像jwt token请求包
+//## 10511 UN_TCP_PACK_CLI_QUERY_AVATAR_TOKEN_RQ
+// 查询头像jwttoken请求包
 type QueryAvatarTokenRQ struct {
 	state         protoimpl.MessageState
 	sizeCache     protoimpl.SizeCache
@@ -344,7 +345,8 @@ func (*QueryAvatarTokenRQ) Descriptor() ([]byte, []int) {
 	return file_common_UserProfile_proto_rawDescGZIP(), []int{5}
 }
 
-// 查询操作头像jwt token应答包
+//## 10512 UN_TCP_PACK_CLI_QUERY_AVATAR_TOKEN_RS
+// 查询头像jwttoken应答包
 type QueryAvatarTokenRS struct {
 	state         protoimpl.MessageState
 	sizeCache     protoimpl.SizeCache
