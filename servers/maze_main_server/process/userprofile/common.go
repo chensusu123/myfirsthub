@@ -1,51 +1,54 @@
-// @Author pangchenyang 2025/6/9 21:33:00
+// @Author pangchenyang 2025/6/17 11:53:00
 // @Desc: 
 package userprofile
 
 import (
-	"sync"
-	lru "github.com/hashicorp/golang-lru"
-	"maze_game_server/io/mysql/userprofilemysql"
-	"maze_game_server/pb/common/UserProfile"
-	"google.golang.org/protobuf/proto"
-	"time"
+	"fmt"
 )
 
-var (
-	cache *lru.Cache
-	// 初始化本地缓存
-	once sync.Once
+// 类型转换 mysql结构转为pb结构
+// func convertToProfile(dbProfile *userprofilemysql.UserProfile) *UserProfile.UserProfile {
+// 	return &UserProfile.UserProfile{
+// 		UserId:   proto.Uint64(dbProfile.UserID),
+// 		NickName: proto.String(dbProfile.NickName),
+// 		Avatar:   proto.String(dbProfile.Avatar),
+// 		Sex:      proto.Int32(int32(dbProfile.Sex)),
+// 	}
+// }
+//
+// // 类型转换 pb结构转为mysql结构
+// func convertToDbProfile(profile *UserProfile.UserProfile, creatTime, updateTime time.Time) *userprofilemysql.UserProfile {
+// 	if profile == nil {
+// 		return nil
+// 	}
+// 	return &userprofilemysql.UserProfile{
+// 		UserID:    profile.GetUserId(),
+// 		NickName:  profile.GetNickName(),
+// 		Avatar:    profile.GetAvatar(),
+// 		Sex:       uint8(profile.GetSex()),
+// 		CreatedAt: creatTime,
+// 		UpdatedAt: updateTime,
+// 	}
+// }
+
+const (
+	chgName = 1 + iota
+	chgAvatar
+	chgSex
 )
 
-func initCache() {
-	once.Do(func() {
-		var err error
-		cache, err = lru.New(10000) // 缓存1万个用户资料
-		if err != nil {
-			panic(err)
-		}
-	})
+var chgDescMap = map[int32]string{
+	1: "修改昵称",
+	2: "修改头像",
+	3: "修改性别",
 }
 
-func convertToProfile(dbProfile *userprofilemysql.UserProfile) *UserProfile.UserProfile {
-	return &UserProfile.UserProfile{
-		UserId:   proto.Uint64(dbProfile.UserID),
-		NickName: proto.String(dbProfile.NickName),
-		IconUrl:  proto.String(dbProfile.IconUrl),
-		Sex:      proto.Int32(int32(dbProfile.Sex)),
-	}
+var descMap = map[int32]string{
+	1: "昵称",
+	2: "头像",
+	3: "性别",
 }
 
-func convertToDbProfile(profile *UserProfile.UserProfile, creatTime, updateTime time.Time) *userprofilemysql.UserProfile {
-	if profile == nil {
-		return nil
-	}
-	return &userprofilemysql.UserProfile{
-		UserID:    profile.GetUserId(),
-		NickName:  profile.GetNickName(),
-		IconUrl:   profile.GetIconUrl(),
-		Sex:       uint8(profile.GetSex()),
-		CreatedAt: creatTime,
-		UpdatedAt: updateTime,
-	}
+func getAlterVal(chgType int32, val interface{}) string {
+	return fmt.Sprintf("%s:%s", descMap[chgType], val)
 }

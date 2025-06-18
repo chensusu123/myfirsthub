@@ -10,7 +10,6 @@ import (
 	"time"
 
 	"github.com/go-redis/redis/v8"
-	cfg2 "maze_game_server/lib/nano/cfg"
 	"fmt"
 )
 
@@ -34,7 +33,6 @@ type RedisService struct {
 	ctx            context.Context
 	cancel         context.CancelFunc
 	config         RedisConfig
-	cfg            cfg2.CfgSvr // todo 配置更新
 	client         *redis.Client
 	clientInstance map[string]redis.Client // key:clientName
 	initialized    bool
@@ -57,27 +55,16 @@ func GetRedisService() *RedisService {
 }
 
 // Init 初始化Redis配置
-func (rs *RedisService) Init(cfg cfg2.CfgSvr) error {
+func (rs *RedisService) Init(addr, pwd string) error {
 	rs.mutex.Lock()
 	defer rs.mutex.Unlock()
 
 	if rs.initialized {
 		return errors.New("redis service already initialized")
 	}
-	rs.cfg = cfg
 	var redisCfg = RedisConfig{}
-	ret, err := rs.cfg.LoadConfig(RedisConfigName, redisCfg)
-	if err != nil {
-		fmt.Println("redis service init failed, err:", err)
-		return err
-	}
-	c, ok := ret.(map[string]interface{})
-	if !ok {
-		fmt.Println("redis service init failed, err:", err)
-		return err
-	}
-	redisCfg.Addr = c["addr"].(string)
-	redisCfg.Password = c["pwd"].(string)
+	redisCfg.Addr = addr
+	redisCfg.Password = pwd
 
 	rs.config = redisCfg
 	rs.initialized = true
@@ -109,6 +96,8 @@ func (rs *RedisService) Start() error {
 		PoolSize:     rs.config.PoolSize,
 		MinIdleConns: rs.config.MinIdleConns,
 	})
+
+	fmt.Printf("Redis service started with config:%v redisService:%v \n", rs.config, rs)
 
 	_, err := rs.client.Ping(rs.ctx).Result()
 	if err != nil {

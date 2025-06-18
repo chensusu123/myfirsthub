@@ -12,10 +12,9 @@ import (
 	"context"
 	"google.golang.org/protobuf/proto"
 	"maze_game_server/pb/common/UserProfile"
-	"maze_game_server/io/mysql/userprofilemysql"
 	"maze_game_server/io/redis/userprofileredis"
 	"maze_game_server/io/redis/userprofilelock"
-	"gorm.io/gorm"
+	"maze_game_server/io/mysql/flowrecord"
 )
 
 // OnAlterUserProfile 修改用户资料
@@ -39,23 +38,8 @@ func (p *Profile) OnAlterUserProfile_10483_10484(ctx fklog.FKLogI, shardingID in
 	}
 
 	userID := uint64(shardingID)
-	dbProfile, err := userprofilemysql.GetByUserID(userID)
-	if err != nil {
-		if err == gorm.ErrRecordNotFound {
-			res.ErrInfo = errors.COMMON_ERROR_TIPS.Wrap("用户不存在")
-		} else {
-			res.ErrInfo = errors.COMMON_ERROR_TIPS.Wrap("获取用户资料失败")
-		}
-		return
-	}
-	if dbProfile.UserID != userID {
-		res.ErrInfo = errors.COMMON_ERROR_TIPS.Wrap("用户不存在")
-		return
-	}
 
-	// 修改用户资料
-	FixedProfile := alterProfile(req.GetAlterProfile(), dbProfile)
-
+	// lock
 	locked, err := userprofilelock.Lock(userID)
 	if err != nil {
 		userCtx.ErrorWF("OnAlterUserProfile get lock failed", zap.Error(err))
@@ -68,52 +52,58 @@ func (p *Profile) OnAlterUserProfile_10483_10484(ctx fklog.FKLogI, shardingID in
 	}
 	defer userprofilelock.Unlock(userID)
 
-	mysqlDB := userprofilemysql.GetDB()
-	if mysqlDB == nil || mysqlDB.Error != nil {
-		res.ErrInfo = errors.COMMON_ERROR_TIPS.Wrap("获取数据库失败")
-		userCtx.ErrorWF("OnAlterUserProfile userprofilemysql.GetDB nil")
+	dbProfile, err := userprofileredis.GetProfile(userID)
+	if err != nil {
+		res.ErrInfo = errors.COMMON_ERROR_TIPS.Wrap("获取用户资料失败")
 		return
 	}
-	err = mysqlDB.Transaction(func(tx *gorm.DB) error {
-		dbProfile = convertToDbProfile(FixedProfile, dbProfile.CreatedAt, time.Now())
-		if err = tx.Save(dbProfile).Error; err != nil {
-			userCtx.ErrorWF("OnAlterUserProfile update db profile failed", zap.Error(err))
-			return err
-		}
 
-		cache.Add(userID, req.GetAlterProfile())
+	var (
+		chgDesc, newVal, oldVal string
+	)
 
-		if err = userprofileredis.DeleteCache(userID); err != nil {
-			cache.Remove(userID)
-			tx.Rollback()
-			res.ErrInfo = errors.COMMON_ERROR_TIPS.Wrap("删除缓存失败")
-			userCtx.ErrorWF("OnAlterUserProfile delete cache failed", zap.Error(err))
-			return err
-		}
-		return nil
+	// 修改用户资料
+	FixedProfile := alterProfile(req.GetAlterProfile(), dbProfile, &chgDesc, &newVal, &oldVal)
+
+	// 修改资料流水
+	flowrecord.SaveAlterProfileRecord(userCtx, flowrecord.AlterProfileRecord{
+		UserId:     userID,
+		NewVal:     newVal,
+		OldVal:     oldVal,
+		ChgDesc:    chgDesc,
+		CreateTime: time.Now().UnixMilli(), // ms
 	})
 	res.UserProfile = FixedProfile
 
 	return nil
 }
 
-// notifyProfileChange 通知用户资料变更
-func notifyProfileChange(ctx fklog.FKLogI, userId uint64) {
-	// TODO: 实现通知逻辑，可以通过消息队列或其他方式通知相关服务
-}
-
-// 修改需要更改的资料
-func alterProfile(alterProfile *UserProfile.UserProfile,
-	dbProfile *userprofilemysql.UserProfile) *UserProfile.UserProfile {
-	ret := convertToProfile(dbProfile)
-	if alterProfile.GetNickName() != "" {
+// 修改需要更改的资料，支持用户资料为空时的初始化
+func alterProfile(alterProfile, dbProfile *UserProfile.UserProfile,
+	chgDesc *string, newVal *string, oldVal *string) *UserProfile.UserProfile {
+	ret := proto.Clone(dbProfile).(*UserProfile.UserProfile)
+	if alterProfile.GetNickName() != "" && alterProfile.GetNickName() != ret.GetNickName() {
 		ret.NickName = alterProfile.NickName
+		*chgDesc += chgDescMap[chgName]
+		*newVal += getAlterVal(chgName, alterProfile.GetNickName())
+		*oldVal += getAlterVal(chgName, ret.GetNickName())
 	}
-	if alterProfile.GetIconUrl() != "" {
-		ret.IconUrl = alterProfile.IconUrl
+	if alterProfile.GetAvatar() != "" {
+		ret.Avatar = alterProfile.Avatar
+		*chgDesc += chgDescMap[chgAvatar]
+		*newVal += getAlterVal(chgAvatar, alterProfile.GetAvatar())
+		*oldVal += getAlterVal(chgAvatar, ret.GetAvatar())
 	}
 	if alterProfile.GetSex() != 0 {
 		ret.Sex = alterProfile.Sex
+		*chgDesc += chgDescMap[chgSex]
+		*newVal += getAlterVal(chgSex, alterProfile.GetSex())
+		*oldVal += getAlterVal(chgSex, ret.GetSex())
 	}
 	return ret
+}
+
+// notifyProfileChange 通知用户资料变更
+func notifyProfileChange(ctx fklog.FKLogI, userId uint64) {
+	// TODO: 实现通知逻辑，可以通过消息队列或其他方式通知相关服务
 }

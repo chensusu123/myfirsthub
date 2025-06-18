@@ -6,7 +6,6 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
-	"time"
 
 	"maze_game_server/pb/common/UserProfile"
 
@@ -19,12 +18,11 @@ var db *redis.Client
 var once sync.Once
 
 const (
-	userProfileCacheKey = "user:profile:%d"
-	cacheExpiration     = 24 * time.Hour * 30 // 缓存30天
+	userProfileCacheKey = "user:profile:%d" // 永不过期 todo 需要优化
 )
 
-// UserProfileCache 用户资料缓存操作结构体
-type UserProfileCache struct {
+// OpUserProfile 用户资料
+type OpUserProfile struct {
 	rdb *redis.Client
 }
 
@@ -39,13 +37,13 @@ func GetKey(userID uint64) string {
 	return fmt.Sprintf(userProfileCacheKey, userID)
 }
 
-// NewUserProfileCache 构造函数
-func NewUserProfileCache(rdb *redis.Client) *UserProfileCache {
-	return &UserProfileCache{rdb: rdb}
+// NewOpUserProfile 构造函数
+func NewOpUserProfile(rdb *redis.Client) *OpUserProfile {
+	return &OpUserProfile{rdb: rdb}
 }
 
-// SetCache 设置用户资料缓存
-func SetCache(userID uint64, profile *UserProfile.UserProfile) error {
+// SetProfile 设置用户资料
+func SetProfile(userID uint64, profile *UserProfile.UserProfile) error {
 	ctx := context.Background()
 	key := GetKey(userID)
 
@@ -54,18 +52,18 @@ func SetCache(userID uint64, profile *UserProfile.UserProfile) error {
 		return err
 	}
 
-	return db.Set(ctx, key, jsonData, cacheExpiration).Err()
+	return db.Set(ctx, key, jsonData, 0).Err()
 }
 
-// GetCache 获取用户资料缓存
-func GetCache(userID uint64) (*UserProfile.UserProfile, error) {
+// GetProfile 获取用户资料
+func GetProfile(userID uint64) (*UserProfile.UserProfile, error) {
 	ctx := context.Background()
 	key := GetKey(userID)
 
 	data, err := db.Get(ctx, key).Bytes()
 	if err != nil {
 		if err == redis.Nil {
-			return nil, nil // 缓存不存在不返回错误
+			return nil, nil // 资料不存在不返回错误
 		}
 		return nil, err
 	}
@@ -78,15 +76,15 @@ func GetCache(userID uint64) (*UserProfile.UserProfile, error) {
 	return &profile, nil
 }
 
-// DeleteCache 删除用户资料缓存
-func DeleteCache(userID uint64) error {
+// DeleteProfile 删除用户资料 // todo 后续监听用户换服、移民、注销等事件
+func DeleteProfile(userID uint64) error {
 	ctx := context.Background()
 	key := GetKey(userID)
 	return db.Del(ctx, key).Err()
 }
 
-// BatchGetCache 批量获取用户资料缓存
-func BatchGetCache(userIDs []uint64) (map[uint64]*UserProfile.UserProfile, error) {
+// BatchGetProfile 批量获取用户资料
+func BatchGetProfile(userIDs []uint64) (map[uint64]*UserProfile.UserProfile, error) {
 	ctx := context.Background()
 	pipe := db.Pipeline()
 

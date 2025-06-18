@@ -11,8 +11,6 @@ import (
 	"google.golang.org/protobuf/proto"
 	"maze_game_server/pb/common/UserProfile"
 	"maze_game_server/io/redis/userprofileredis"
-	"maze_game_server/io/mysql/userprofilemysql"
-	"gorm.io/gorm"
 	"fmt"
 	"math/rand"
 	"sync"
@@ -78,48 +76,21 @@ func queryUserProfile(logger fklog.FKLogI, shardingID, userID uint64) (ret *User
 		return
 	}
 
-	ret, err = userprofileredis.GetCache(userID)
+	dbProfile, err := userprofileredis.GetProfile(userID)
 	if err != nil {
-		logger.ErrorWF("queryUserProfile GetCache error", zap.Error(err))
+		logger.ErrorWF("queryUserProfile GetCache error", zap.Uint64("userID", userID), zap.Error(err))
 		return
 	}
-	if ret != nil {
-		cache.Add(userID, ret)
-		logger.DebugWF("OnQueryUserProfile update cache", zap.Uint64("userID", userID), zap.Any("ret", ret))
-		return
-	}
-
-	// todo 缓存穿透？
-	dbProfile, err := userprofilemysql.GetByUserID(userID)
-	if err != nil {
-		if err != gorm.ErrRecordNotFound {
-			logger.ErrorWF("OnQueryUserProfile GetByUserID error", zap.Error(err))
-			return
-		} else {
-			// 处理errNil
-			userprofilemysql.GetDB().Error = nil
-		}
-	}
-
-	if dbProfile != nil && dbProfile.UserID > 0 {
-		ret = convertToProfile(dbProfile)
-
-		cache.Add(userID, ret)
-		if err = userprofileredis.SetCache(userID, ret); err != nil {
-			logger.ErrorWF("OnQueryUserProfile SetCache error", zap.Error(err))
-		}
-		return
-	}
-
-	if shardingID != userID {
-		logger.WarnWF("OnQueryUserProfile not register user", zap.Uint64("userID", userID), zap.Uint64("shardingID", shardingID))
+	if dbProfile == nil && shardingID != userID {
+		err = fmt.Errorf("查询未注册用户:%v", userID)
+		logger.WarnWF("OnQueryUserProfile query unregister user", zap.Uint64("userID", userID), zap.Uint64("shardingID", shardingID))
 		return
 	}
 
 	return initUserProfile(logger, userID)
 }
 
-// initUserProfile 初始化用户资料 保证数据最终一致
+// initUserProfile 初始化用户资料 加锁保证数据最终一致
 func initUserProfile(logger fklog.FKLogI, userID uint64) (ret *UserProfile.UserProfile, err error) {
 	logger.DebugWF("initUserProfile start", zap.Uint64("userID", userID))
 	defer func() {
@@ -146,46 +117,13 @@ func initUserProfile(logger fklog.FKLogI, userID uint64) (ret *UserProfile.UserP
 		return
 	}
 
-	mysqlDb := userprofilemysql.GetDB()
-	if mysqlDb == nil || mysqlDb.Error != nil {
-		err = fmt.Errorf("initUserProfile userprofilemysql.GetDB nil, user:%v", userID)
-		logger.ErrorWF("initUserProfile get db failed", zap.Uint64("userID", userID))
+	profile := generateInitProfile(logger, userID)
+
+	if err = userprofileredis.SetProfile(userID, profile); err != nil {
+		logger.ErrorWF("initUserProfile set cache failed", zap.Uint64("userID", userID), zap.Error(err))
 		return
 	}
-	var profile *UserProfile.UserProfile
-	if err = mysqlDb.Transaction(func(tx *gorm.DB) error {
-		profile = generateInitProfile(logger, userID)
-
-		dbProfile := &userprofilemysql.UserProfile{
-			UserID:    userID,
-			NickName:  profile.GetNickName(),
-			IconUrl:   profile.GetIconUrl(),
-			Sex:       uint8(profile.GetSex()),
-			CreatedAt: time.Now(),
-			UpdatedAt: time.Now(),
-		}
-		if err = tx.Create(dbProfile).Error; err != nil {
-			logger.ErrorWF("initUserProfile create db profile failed", zap.Uint64("userID", userID), zap.Error(err))
-			return err
-		}
-
-		cache.Add(userID, profile)
-		if err = userprofileredis.SetCache(userID, profile); err != nil {
-			tx.Rollback()
-			cache.Remove(userID)
-			logger.ErrorWF("initUserProfile set cache failed", zap.Uint64("userID", userID), zap.Error(err))
-			return err
-		}
-		return nil
-	}); err != nil {
-		logger.ErrorWF("initUserProfile tx failed", zap.Uint64("userID", userID), zap.Error(err))
-		cache.Remove(userID)
-		err = userprofileredis.DeleteCache(userID)
-		if err != nil {
-			logger.ErrorWF("initUserProfile DeleteCache failed", zap.Uint64("userID", userID), zap.Error(err))
-		}
-		return
-	}
+	cache.Add(userID, profile)
 
 	ret = profile
 	return
@@ -231,7 +169,7 @@ func generateInitProfile(logger fklog.FKLogI, userId uint64) *UserProfile.UserPr
 	initUser := &UserProfile.UserProfile{
 		UserId:   proto.Uint64(userId),
 		NickName: proto.String(nickname),
-		IconUrl:  proto.String(avatar),
+		Avatar:   proto.String(avatar),
 		Sex:      proto.Int32(sex),
 	}
 	logger.DebugWF("generateInitProfile success", zap.Any("initUser", initUser))

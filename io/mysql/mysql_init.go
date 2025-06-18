@@ -111,7 +111,14 @@ func (flow *BizFlow) Init(resolver discovery.Resolver) error {
 	return nil
 }
 
+// todo 单元测试调用
 func (flow *BizFlow) InitWithBiz(biz *BizCfg) error {
+	biz.IsLocalDev = true
+	err := initGorm(biz)
+	if err != nil {
+		return err
+	}
+	bizCfg = biz
 	return nil
 }
 
