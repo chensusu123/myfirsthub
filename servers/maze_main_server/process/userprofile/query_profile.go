@@ -15,6 +15,8 @@ import (
 	"math/rand"
 	"sync"
 	"maze_game_server/io/redis/userprofilelock"
+	"github.com/go-redis/redis/v8"
+	"maze_game_server/io/mysql/flowrecord"
 )
 
 // OnQueryUserProfile 查询用户资料
@@ -76,18 +78,29 @@ func queryUserProfile(logger fklog.FKLogI, shardingID, userID uint64) (ret *User
 		return
 	}
 
-	dbProfile, err := userprofileredis.GetProfile(userID)
+	ret, err = userprofileredis.GetProfile(userID)
 	if err != nil {
 		logger.ErrorWF("queryUserProfile GetCache error", zap.Uint64("userID", userID), zap.Error(err))
 		return
 	}
-	if dbProfile == nil && shardingID != userID {
-		err = fmt.Errorf("查询未注册用户:%v", userID)
-		logger.WarnWF("OnQueryUserProfile query unregister user", zap.Uint64("userID", userID), zap.Uint64("shardingID", shardingID))
-		return
+	if err == redis.Nil {
+		if shardingID != userID {
+			err = fmt.Errorf("查询未注册用户:%v", userID)
+			logger.WarnWF("OnQueryUserProfile query unregister user", zap.Uint64("userID", userID), zap.Uint64("shardingID", shardingID))
+			return
+		} else {
+			ret, err = initUserProfile(logger, userID)
+			if err != nil {
+				err = fmt.Errorf("初始化用户资料失败:%v", err)
+				logger.ErrorWF("queryUserProfile initUserProfile error", zap.Uint64("userID", userID), zap.Error(err))
+				return
+			}
+		}
+	} else {
+		// 更新缓存
+		cache.Add(userID, ret)
 	}
-
-	return initUserProfile(logger, userID)
+	return
 }
 
 // initUserProfile 初始化用户资料 加锁保证数据最终一致
@@ -106,9 +119,6 @@ func initUserProfile(logger fklog.FKLogI, userID uint64) (ret *UserProfile.UserP
 		logger.WarnWF("initUserProfile lock already exists", zap.Uint64("userID", userID))
 		return
 	}
-	defer func() {
-		_ = userprofilelock.Unlock(userID)
-	}()
 
 	if val, ok := cache.Get(userID); ok {
 		logger.DebugWF("initUserProfile get from cache", zap.Uint64("userID", userID),
@@ -117,15 +127,30 @@ func initUserProfile(logger fklog.FKLogI, userID uint64) (ret *UserProfile.UserP
 		return
 	}
 
-	profile := generateInitProfile(logger, userID)
+	newProfile := generateInitProfile(logger, userID)
 
-	if err = userprofileredis.SetProfile(userID, profile); err != nil {
+	var (
+		chgDesc, newVal, oldVal string
+	)
+
+	// 修改用户资料
+	ret = alterProfile(newProfile, nil, &chgDesc, &newVal, &oldVal)
+
+	if err = userprofileredis.SetProfile(userID, ret); err != nil {
 		logger.ErrorWF("initUserProfile set cache failed", zap.Uint64("userID", userID), zap.Error(err))
 		return
 	}
-	cache.Add(userID, profile)
-
-	ret = profile
+	cache.Add(userID, ret)
+	// 解锁
+	_ = userprofilelock.Unlock(userID)
+	// 修改资料流水
+	flowrecord.SaveAlterProfileRecord(logger, flowrecord.AlterProfileRecord{
+		UserId:     userID,
+		NewVal:     newVal,
+		OldVal:     oldVal,
+		ChgDesc:    chgDesc,
+		CreateTime: time.Now().UnixMilli(), // ms
+	})
 	return
 }
 

@@ -65,6 +65,10 @@ func (p *Profile) OnAlterUserProfile_10483_10484(ctx fklog.FKLogI, shardingID in
 	// 修改用户资料
 	FixedProfile := alterProfile(req.GetAlterProfile(), dbProfile, &chgDesc, &newVal, &oldVal)
 
+	// 更新缓存 todo 所有分片的缓存都要更新
+	cache.Add(userID, FixedProfile)
+	// todo 修改资料事件消息
+
 	// 修改资料流水
 	flowrecord.SaveAlterProfileRecord(userCtx, flowrecord.AlterProfileRecord{
 		UserId:     userID,
