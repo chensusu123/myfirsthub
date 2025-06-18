@@ -14,24 +14,27 @@ import (
 
 // MazeBarriesV8ConfigRow from maze_barries_v8【迷宫-关卡信息】.xlsx maze_barries_v8
 type MazeBarriesV8ConfigRow struct {
-	Order                  int32   `json:"order"`                  // 关卡id
-	Last_id                int32   `json:"last_id"`                // 上一关id
-	Next_id                int32   `json:"next_id"`                // 下一关id
-	Name                   string  `json:"name"`                   // 名称
-	Box_id                 int32   `json:"box_id"`                 // 通关奖励（每次通关都有）
-	Box_id_first           int32   `json:"box_id_first"`           // 首次通关奖励
-	Hp_vial                int32   `json:"hp_vial"`                // 血瓶id
-	Drop_vial_foe          []int32 `json:"drop_vial_foe"`          // 掉落血瓶的怪物数
-	Challenge_cost         int32   `json:"challenge_cost"`         // 挑战消耗次数
-	Mop_cost               int32   `json:"mop_cost"`               // 扫荡消耗体力
-	Drop_equip_lv_min      int32   `json:"drop_equip_lv_min"`      // 掉落装备等级，小
-	Drop_equip_lv_max      int32   `json:"drop_equip_lv_max"`      // 掉落装备等级,大
-	Energy_list            []int32 `json:"energy_list"`            // 能力等级队列（随机）
-	Initial_kongfu         int32   `json:"initial_kongfu"`         // 玩家初始武力值
-	Energy_id              int32   `json:"energy_id"`              // 当前关卡使用的能力id
-	Energy_affix_rand_rule int32   `json:"energy_affix_rand_rule"` // 能力词条随机规则
-	Rare_items_show        []int32 `json:"rare_items_show"`        // 展示为稀有的物品id
-	Drop_id                []int32 `json:"drop_id"`                // 掉落id
+	Order                      int32           `json:"order"`                      // 关卡id
+	Last_id                    int32           `json:"last_id"`                    // 上一关id
+	Next_id                    int32           `json:"next_id"`                    // 下一关id
+	Name                       string          `json:"name"`                       // 名称
+	Box_id                     int32           `json:"box_id"`                     // 通关奖励（每次通关都有）
+	Box_id_first               int32           `json:"box_id_first"`               // 首次通关奖励
+	Hp_vial                    int32           `json:"hp_vial"`                    // 血瓶id
+	Drop_vial_foe              []int32         `json:"drop_vial_foe"`              // 掉落血瓶的怪物数
+	Challenge_cost             int32           `json:"challenge_cost"`             // 挑战消耗次数
+	Mop_cost                   int32           `json:"mop_cost"`                   // 扫荡消耗体力
+	Drop_equip_lv_min          int32           `json:"drop_equip_lv_min"`          // 掉落装备等级，小
+	Drop_equip_lv_max          int32           `json:"drop_equip_lv_max"`          // 掉落装备等级,大
+	Energy_list                []int32         `json:"energy_list"`                // 能力等级队列（随机）
+	Initial_kongfu             int32           `json:"initial_kongfu"`             // 玩家初始武力值
+	Energy_id                  int32           `json:"energy_id"`                  // 当前关卡使用的能力id
+	Energy_affix_rand_rule     int32           `json:"energy_affix_rand_rule"`     // 能力词条随机规则
+	Rare_items_show            []int32         `json:"rare_items_show"`            // 展示为稀有的物品id
+	Drop_id                    []int32         `json:"drop_id"`                    // 掉落id
+	Attack_action1_need_kongfu map[int32]int64 `json:"attack_action1_need_kongfu"` // 普攻档位1刷怪区域：所需武力值
+	Attack_action2_need_kongfu map[int32]int64 `json:"attack_action2_need_kongfu"` // 普攻档位2刷怪区域：所需武力值
+	Attack_action3_need_kongfu map[int32]int64 `json:"attack_action3_need_kongfu"` // 普攻档位3刷怪区域：所需武力值
 }
 
 // MazeBarriesV8Config from maze_barries_v8【迷宫-关卡信息】.xlsx maze_barries_v8
@@ -547,6 +550,117 @@ func (*gMazeBarriesV8Parser) Parse(logger fklog.FKLogI, data []string, row inter
 			config.Drop_id = append(config.Drop_id, int32(tmp))
 		}
 	}
+
+	// parse column 18 attack_action1_need_kongfu : 普攻档位1刷怪区域：所需武力值
+	if data[18] != "" {
+
+		config.Attack_action1_need_kongfu = make(map[int32]int64)
+		var key int32
+		var value int64
+		vals := strings.Split(data[18], "_")
+		for k, val := range vals {
+			items := strings.Split(val, ":")
+			tmp, err = strconv.ParseInt(items[0], 10, 64)
+			if err != nil {
+				err = errors.New("parse map field attack_action1_need_kongfu 普攻档位1刷怪区域：所需武力值 to key int32 failed")
+				logger.ErrorWF("parse map field attack_action1_need_kongfu 普攻档位1刷怪区域：所需武力值 to key int32 failed.",
+					zap.String("xlsx", "maze_barries_v8【迷宫-关卡信息】.xlsx"), zap.String("sheet", "maze_barries_v8"),
+					// zap.String("field_data",data[18]),
+					zap.String("item_data", val), zap.Int("index", k),
+					zap.String("parse_data", items[0]),
+					zap.Error(err))
+				return
+			}
+			key = int32(tmp)
+			tmp, err = strconv.ParseInt(items[1], 10, 64)
+			if err != nil {
+				err = errors.New("parse map field attack_action1_need_kongfu 普攻档位1刷怪区域：所需武力值 to value int64 failed")
+				logger.ErrorWF("parse map field attack_action1_need_kongfu 普攻档位1刷怪区域：所需武力值 to value int64 failed.",
+					zap.String("xlsx", "maze_barries_v8【迷宫-关卡信息】.xlsx"), zap.String("sheet", "maze_barries_v8"),
+					// zap.String("field_data",data[18]),
+					zap.String("item_data", val), zap.Int("index", k),
+					zap.String("parse_data", items[1]),
+					zap.Error(err))
+				return
+			}
+			value = int64(tmp)
+			config.Attack_action1_need_kongfu[key] = value
+		}
+	}
+
+	// parse column 19 attack_action2_need_kongfu : 普攻档位2刷怪区域：所需武力值
+	if data[19] != "" {
+
+		config.Attack_action2_need_kongfu = make(map[int32]int64)
+		var key int32
+		var value int64
+		vals := strings.Split(data[19], "_")
+		for k, val := range vals {
+			items := strings.Split(val, ":")
+			tmp, err = strconv.ParseInt(items[0], 10, 64)
+			if err != nil {
+				err = errors.New("parse map field attack_action2_need_kongfu 普攻档位2刷怪区域：所需武力值 to key int32 failed")
+				logger.ErrorWF("parse map field attack_action2_need_kongfu 普攻档位2刷怪区域：所需武力值 to key int32 failed.",
+					zap.String("xlsx", "maze_barries_v8【迷宫-关卡信息】.xlsx"), zap.String("sheet", "maze_barries_v8"),
+					// zap.String("field_data",data[19]),
+					zap.String("item_data", val), zap.Int("index", k),
+					zap.String("parse_data", items[0]),
+					zap.Error(err))
+				return
+			}
+			key = int32(tmp)
+			tmp, err = strconv.ParseInt(items[1], 10, 64)
+			if err != nil {
+				err = errors.New("parse map field attack_action2_need_kongfu 普攻档位2刷怪区域：所需武力值 to value int64 failed")
+				logger.ErrorWF("parse map field attack_action2_need_kongfu 普攻档位2刷怪区域：所需武力值 to value int64 failed.",
+					zap.String("xlsx", "maze_barries_v8【迷宫-关卡信息】.xlsx"), zap.String("sheet", "maze_barries_v8"),
+					// zap.String("field_data",data[19]),
+					zap.String("item_data", val), zap.Int("index", k),
+					zap.String("parse_data", items[1]),
+					zap.Error(err))
+				return
+			}
+			value = int64(tmp)
+			config.Attack_action2_need_kongfu[key] = value
+		}
+	}
+
+	// parse column 20 attack_action3_need_kongfu : 普攻档位3刷怪区域：所需武力值
+	if data[20] != "" {
+
+		config.Attack_action3_need_kongfu = make(map[int32]int64)
+		var key int32
+		var value int64
+		vals := strings.Split(data[20], "_")
+		for k, val := range vals {
+			items := strings.Split(val, ":")
+			tmp, err = strconv.ParseInt(items[0], 10, 64)
+			if err != nil {
+				err = errors.New("parse map field attack_action3_need_kongfu 普攻档位3刷怪区域：所需武力值 to key int32 failed")
+				logger.ErrorWF("parse map field attack_action3_need_kongfu 普攻档位3刷怪区域：所需武力值 to key int32 failed.",
+					zap.String("xlsx", "maze_barries_v8【迷宫-关卡信息】.xlsx"), zap.String("sheet", "maze_barries_v8"),
+					// zap.String("field_data",data[20]),
+					zap.String("item_data", val), zap.Int("index", k),
+					zap.String("parse_data", items[0]),
+					zap.Error(err))
+				return
+			}
+			key = int32(tmp)
+			tmp, err = strconv.ParseInt(items[1], 10, 64)
+			if err != nil {
+				err = errors.New("parse map field attack_action3_need_kongfu 普攻档位3刷怪区域：所需武力值 to value int64 failed")
+				logger.ErrorWF("parse map field attack_action3_need_kongfu 普攻档位3刷怪区域：所需武力值 to value int64 failed.",
+					zap.String("xlsx", "maze_barries_v8【迷宫-关卡信息】.xlsx"), zap.String("sheet", "maze_barries_v8"),
+					// zap.String("field_data",data[20]),
+					zap.String("item_data", val), zap.Int("index", k),
+					zap.String("parse_data", items[1]),
+					zap.Error(err))
+				return
+			}
+			value = int64(tmp)
+			config.Attack_action3_need_kongfu[key] = value
+		}
+	}
 	return
 }
 
@@ -569,6 +683,9 @@ var gMazeBarriesV8Fields = []string{
 	"energy_affix_rand_rule",
 	"rare_items_show",
 	"drop_id",
+	"attack_action1_need_kongfu",
+	"attack_action2_need_kongfu",
+	"attack_action3_need_kongfu",
 }
 
 // LoadDataManual load data for test

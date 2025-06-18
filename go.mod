@@ -27,7 +27,7 @@ require (
 	github.com/stretchr/testify v1.10.0
 	github.com/urfave/cli v1.22.16
 	github.com/xuri/excelize/v2 v2.9.0
-	gitlab.ifreetalk.com/maze-plate/freetk v1.0.1-0.20250616135153-d0471a450f24
+	gitlab.ifreetalk.com/maze-plate/freetk v1.0.1-0.20250617124144-af04936af8bb
 	go.uber.org/atomic v1.11.0
 	go.uber.org/zap v1.27.0
 	google.golang.org/grpc v1.64.0

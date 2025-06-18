@@ -361,42 +361,46 @@ func GetUserBattleSkillInfo(logger fklog.FKLogI, skillId int32, attrMap map[int3
 		logger.ErrorWF("GetMazeAIMonsterConfig GMazeSkillInfoV8Cfg err", zap.Any("skillId", skillId))
 		return nil, nil, errors.New("配置不存在")
 	}
+	var (
+		actIDs           []int32
+		effectID         int32
+		actDamageConfigs = make([]*MazeAIBattle.MazeAIActAttackValue, 0)
+	)
 	skillActCfg := GMazeSkillActV8Cfg.Get(skillId)
-	if skillActCfg == nil {
-		logger.ErrorWF("GetMazeAIMonsterConfig GMazeSkillActV8Cfg err", zap.Any("skillId", skillId))
-		return nil, nil, errors.New("配置不存在")
-	}
-	actDamageConfigs := make([]*MazeAIBattle.MazeAIActAttackValue, 0)
-	if len(skillActCfg.Act_id) > 0 {
-		for _, actId := range skillActCfg.Act_id {
-			if actId == 0 {
-				continue
-			}
-			mazeActCfg := GMazeActInfoV8Cfg.Get(actId)
-			if mazeActCfg == nil {
-				logger.ErrorWF("GetMazeAIMonsterConfig GMazeActInfoV8Cfg err", zap.Any("skillId", skillId), zap.Any("actId", actId))
-				return nil, nil, errors.New("配置不存在")
-			}
-			actDamageConfig := &MazeAIBattle.MazeAIActAttackValue{
-				ActId:           proto.Int32(actId),
-				ToughBrokeValue: proto.Int32(mazeActCfg.Tough_broke_value),
-				ToughTempValue:  proto.Int32(mazeActCfg.Temp_tough),
-				InitSkillCd:     proto.Int32(skillCfg.Initial_cool_time),
-				SkillCd:         proto.Int32(skillCfg.Skill_cool_time),
-			}
-			actDamageConfigs = append(actDamageConfigs, actDamageConfig)
-			for k, v := range mazeActCfg.Attack_point_damage_ratio {
-				actDamageRatio := &MazeAIBattle.ActDamageRatioInfo{
-					Index: proto.Int32(k),
+	if skillActCfg != nil {
+		if len(skillActCfg.Act_id) > 0 {
+			for _, actId := range skillActCfg.Act_id {
+				if actId == 0 {
+					continue
 				}
-				actDamageRatio.DamageRatio = &MazeAIBattle.MazeAIAttrInfo{
-					UserValue:     proto.Int32(v),
-					UserValueType: proto.Int32(1),
+				mazeActCfg := GMazeActInfoV8Cfg.Get(actId)
+				if mazeActCfg == nil {
+					logger.ErrorWF("GetMazeAIMonsterConfig GMazeActInfoV8Cfg err", zap.Any("skillId", skillId), zap.Any("actId", actId))
+					return nil, nil, errors.New("配置不存在")
 				}
-				actDamageConfig.ActDamageRatios = append(actDamageConfig.ActDamageRatios, actDamageRatio)
-			}
+				actDamageConfig := &MazeAIBattle.MazeAIActAttackValue{
+					ActId:           proto.Int32(actId),
+					ToughBrokeValue: proto.Int32(mazeActCfg.Tough_broke_value),
+					ToughTempValue:  proto.Int32(mazeActCfg.Temp_tough),
+					InitSkillCd:     proto.Int32(skillCfg.Initial_cool_time),
+					SkillCd:         proto.Int32(skillCfg.Skill_cool_time),
+				}
+				actDamageConfigs = append(actDamageConfigs, actDamageConfig)
+				for k, v := range mazeActCfg.Attack_point_damage_ratio {
+					actDamageRatio := &MazeAIBattle.ActDamageRatioInfo{
+						Index: proto.Int32(k),
+					}
+					actDamageRatio.DamageRatio = &MazeAIBattle.MazeAIAttrInfo{
+						UserValue:     proto.Int32(v),
+						UserValueType: proto.Int32(1),
+					}
+					actDamageConfig.ActDamageRatios = append(actDamageConfig.ActDamageRatios, actDamageRatio)
+				}
 
+			}
 		}
+		actIDs = skillActCfg.Act_id
+		effectID = skillActCfg.Effect_id
 	}
 	// todo 缺少触发cd
 	skillInfo := &MazeAIBattle.MazeAISkillInfo{
@@ -414,10 +418,10 @@ func GetUserBattleSkillInfo(logger fklog.FKLogI, skillId int32, attrMap map[int3
 		MainTargetDamageRate:         proto.Int32(skillCfg.Main_target_damage),
 		SecondTargetDamageRate:       proto.Int32(skillCfg.Second_target_damage),
 		SkillDamageFixed:             proto.Int32(skillCfg.Main_target_damage_fix),
-		SkillMappingActionId:         skillActCfg.Act_id,
+		SkillMappingActionId:         actIDs,
 		Level:                        proto.Int32(skillCfg.Level),
 		SkillType:                    proto.Int32(skillCfg.Type),
-		SkillMappingEffectId:         proto.Int32(skillActCfg.Effect_id),
+		SkillMappingEffectId:         proto.Int32(effectID),
 		SecondTargetSkillDamageFixed: proto.Int32(skillCfg.Second_target_damage_fix),
 		IsNoTarget:                   proto.Int32(skillCfg.Is_no_target),
 		DamageElement:                skillCfg.Damage_element,
