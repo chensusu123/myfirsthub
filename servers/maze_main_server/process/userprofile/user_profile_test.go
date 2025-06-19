@@ -9,6 +9,7 @@ import (
 	"maze_game_server/pb/common/UserProfile"
 	"github.com/stretchr/testify/assert"
 	"google.golang.org/protobuf/proto"
+	"maze_game_server/lib/nano/session"
 )
 
 func TestOnQueryUserProfile(t *testing.T) {
@@ -48,12 +49,13 @@ func TestOnQueryUserProfile(t *testing.T) {
 			req := &UserProfile.QueryUserProfileRQ{
 				UserId: tt.userID,
 			}
-			res := &UserProfile.QueryUserProfileRS{}
-			err := testProfile.OnQueryUserProfile_10481_10482(logger, tt.shardingID, req, res, "")
+			s := &session.Session{}
+			s.Bind(tt.shardingID)
+			err := testProfile.OnQueryUserProfile_10481_10482(s, req)
 			if !assert.Equal(t, tt.wantErr, err) {
 				t.Errorf("TestOnQueryUserProfile failed, error = %v, wantErr %v", err, tt.wantErr)
 			} else {
-				t.Logf("TestOnQueryUserProfile success, res = %v", res)
+				t.Logf("TestOnQueryUserProfile success")
 			}
 
 		})
@@ -86,13 +88,14 @@ func TestOnAlterUserProfile(t *testing.T) {
 			req := &UserProfile.AlterUserProfileRQ{
 				AlterProfile: &tt.alterProfile,
 			}
-			res := &UserProfile.AlterUserProfileRS{}
 			shardingID := int64(tt.alterProfile.GetUserId())
-			err := testProfile.OnAlterUserProfile_10483_10484(logger, shardingID, req, res, "")
+			session := &session.Session{}
+			session.Bind(shardingID)
+			err := testProfile.OnAlterUserProfile_10483_10484(session, req)
 			if !assert.Equal(t, tt.wantErr, err) {
 				t.Errorf("TestOnAlterUserProfile failed, error = %v, wantErr %v", err, tt.wantErr)
 			} else {
-				t.Logf("TestOnAlterUserProfile success, res = %v", res)
+				t.Logf("TestOnAlterUserProfile success")
 			}
 		})
 	}

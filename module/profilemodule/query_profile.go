@@ -1,95 +1,74 @@
-// @Author pangchenyang 2025/6/9 21:33:00
+// @Author pangchenyang 2025/6/19 15:24:00
 // @Desc: 
-package userprofile
+package profilemodule
 
 import (
-	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fklog"
-	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fkprometheus"
-	"maze_game_server/common/errors"
-	"go.uber.org/zap"
-	"time"
-	"google.golang.org/protobuf/proto"
 	"maze_game_server/pb/common/UserProfile"
-	"maze_game_server/io/redis/userprofileredis"
-	"fmt"
-	"math/rand"
 	"sync"
+	"go.uber.org/zap"
+	"fmt"
+	"maze_game_server/io/redis/userprofileredis"
 	"maze_game_server/io/redis/userprofilelock"
-	"github.com/go-redis/redis/v8"
 	"maze_game_server/io/mysql/flowrecord"
+	"time"
+	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fklog"
+	"github.com/go-redis/redis/v8"
+	"math/rand"
+	"google.golang.org/protobuf/proto"
 )
 
-// OnQueryUserProfile 查询用户资料
-func (p *Profile) OnQueryUserProfile_10481_10482(ctx fklog.FKLogI, shardingID int64, rqMsg proto.Message, rsMsg proto.Message, opData string) (err error) {
-	defer fkprometheus.DebugPMT("OnQueryUserProfile")()
-	req := rqMsg.(*UserProfile.QueryUserProfileRQ)
-	res := rsMsg.(*UserProfile.QueryUserProfileRS)
-	res.ErrInfo = errors.NO_ERROR
-	ctx.WarnWF("OnQueryUserProfile with", zap.Any("rq", req))
-
-	addStartTime := time.Now()
-	defer func() {
-		costTime := time.Since(addStartTime).Seconds()
-		ctx.WarnWF("OnQueryUserProfile end ", zap.Any("req", req), zap.Any("res", res),
-			zap.String("errMsg", string(res.GetErrInfo().GetErrMsg())),
-			zap.Float64("costTime", costTime))
-	}()
-
-	// 检查rq
-	if len(req.GetUserId()) == 0 || shardingID <= 0 {
-		res.ErrInfo = errors.COMMON_ERROR_TIPS.Wrap("无效参数")
-		return
-	}
+func (m *UserProfileModule) QueryUserProfile(logger fklog.FKLogI, userID uint64, viewIDs []uint64) ([]*UserProfile.UserProfile, error) {
+	var profiles []*UserProfile.UserProfile
 	// 并发查询用户资料
 	var (
 		mu sync.Mutex
 		wg sync.WaitGroup
 	)
-	for _, v := range req.GetUserId() {
-		userID := v
+	for _, v := range viewIDs {
+		viewID := v
 		wg.Add(1)
 		go func() {
 			defer wg.Done()
-			ret, err := queryUserProfile(ctx, uint64(shardingID), userID)
+			ret, err := queryUserProfile(logger, userID, viewID)
 			if err != nil {
-				ctx.ErrorWF("OnQueryUserProfile queryUserProfile failed", zap.Error(err))
+				logger.ErrorWF("OnQueryUserProfile queryUserProfile failed", zap.Error(err))
 				return
 			}
 			mu.Lock()
-			res.UserProfile = append(res.UserProfile, ret)
+			profiles = append(profiles, ret)
 			mu.Unlock()
 		}()
 	}
 	wg.Wait()
-	return
+	return profiles, nil
 }
 
-func queryUserProfile(logger fklog.FKLogI, shardingID, userID uint64) (ret *UserProfile.UserProfile, err error) {
-	if userID <= 0 {
-		err = fmt.Errorf("invalid userID")
-		logger.ErrorWF("queryUserProfile invalid userID", zap.Uint64("userID", userID))
+func queryUserProfile(logger fklog.FKLogI, userID, viewID uint64) (ret *UserProfile.UserProfile, err error) {
+	if viewID <= 0 {
+		err = fmt.Errorf("invalid viewID")
+		logger.ErrorWF("queryUserProfile invalid userID", zap.Uint64("viewID", viewID))
 		return
 	}
 
-	if val, ok := cache.Get(userID); ok {
+	if val, ok := cache.Get(viewID); ok {
 		ret = val.(*UserProfile.UserProfile)
-		logger.DebugWF("OnQueryUserProfile get from cache", zap.Uint64("userID", userID),
+		logger.DebugWF("OnQueryUserProfile get from cache", zap.Uint64("viewID", viewID),
 			zap.Any("ret", ret))
 		return
 	}
 
-	ret, err = userprofileredis.GetProfile(userID)
+	ret, err = userprofileredis.GetProfile(viewID)
 	if err != nil {
-		logger.ErrorWF("queryUserProfile GetCache error", zap.Uint64("userID", userID), zap.Error(err))
+		logger.ErrorWF("queryUserProfile GetCache error", zap.Uint64("viewID", viewID), zap.Error(err))
 		return
 	}
 	if err == redis.Nil {
-		if shardingID != userID {
-			err = fmt.Errorf("查询未注册用户:%v", userID)
-			logger.WarnWF("OnQueryUserProfile query unregister user", zap.Uint64("userID", userID), zap.Uint64("shardingID", shardingID))
+		if userID != viewID {
+			err = fmt.Errorf("无效用户:%v", viewID)
+			logger.WarnWF("OnQueryUserProfile query unregister user", zap.Uint64("viewID", viewID), zap.Uint64("userID", userID))
 			return
 		} else {
-			ret, err = initUserProfile(logger, userID)
+			ret, err = initUserProfile(logger, viewID)
 			if err != nil {
 				err = fmt.Errorf("初始化用户资料失败:%v", err)
 				logger.ErrorWF("queryUserProfile initUserProfile error", zap.Uint64("userID", userID), zap.Error(err))
@@ -98,7 +77,7 @@ func queryUserProfile(logger fklog.FKLogI, shardingID, userID uint64) (ret *User
 		}
 	} else {
 		// 更新缓存
-		cache.Add(userID, ret)
+		cache.Add(viewID, ret)
 	}
 	return
 }

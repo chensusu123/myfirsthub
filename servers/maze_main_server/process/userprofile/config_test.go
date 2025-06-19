@@ -16,7 +16,7 @@ import (
 
 var (
 	logger      = fklog.AppLogger().Clone("user_profile_t")
-	testProfile *Profile
+	testProfile = NewUserProfile()
 )
 
 type fileResolver struct {
@@ -119,7 +119,6 @@ func TestMain(m *testing.M) {
 		panic("mysql init err:" + err.Error())
 	}
 	// local cache
-	initCache()
 	m.Run()
 	fmt.Println("TestMain end")
 	time.Sleep(time.Second * 2)

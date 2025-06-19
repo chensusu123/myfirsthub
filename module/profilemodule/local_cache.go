@@ -1,6 +1,6 @@
 // @Author pangchenyang 2025/6/9 21:33:00
 // @Desc: 
-package userprofile
+package profilemodule
 
 import (
 	"sync"
@@ -13,7 +13,7 @@ var (
 	once sync.Once
 )
 
-func initCache() {
+func initUserProfileCache() {
 	once.Do(func() {
 		var err error
 		cache, err = lru.New(10000) // 缓存1万个用户资料

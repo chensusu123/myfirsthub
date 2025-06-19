@@ -1,11 +1,16 @@
 // @Author pangchenyang 2025/6/17 10:19:00
 // @Desc: 
-package userprofile
+package profilemodule
 
 import (
 	"github.com/dgrijalva/jwt-go"
 	"time"
+	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fklog"
 )
+
+func (m *UserProfileModule) QueryAvatarToken(logger fklog.FKLogI) (string, error) {
+	return GenerateAvatarToken()
+}
 
 type CustomClaims struct {
 	jwt.StandardClaims
