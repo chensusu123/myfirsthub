@@ -1,6 +1,7 @@
 package buff
 
 import (
+	"fmt"
 	"math/rand"
 	"maze_game_server/common/errors"
 	"maze_game_server/excel/mazebarriesv8config"
@@ -415,7 +416,7 @@ func getOptionBuffWeightInfo(buffId int32, buffMap map[int32]int32) (*WeightInfo
 	// 检查选择数量
 	optionalCount := buffConfig.Use_num_max - buffMap[buffId]
 	if optionalCount <= 0 {
-		return nil, errors.New("词条配置权重为0")
+		return nil, fmt.Errorf("最大选择数量: %d", buffConfig.Use_num_max)
 	}
 
 	// 检查条件
