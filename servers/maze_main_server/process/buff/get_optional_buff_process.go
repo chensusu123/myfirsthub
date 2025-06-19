@@ -371,7 +371,7 @@ func filterBuffList(buffInfo *MazeTempBuffSvr.TempBuffInfo, optionalMap map[int3
 			continue
 		}
 
-		buffWeight := getOptionBuffWeightInfo(buffId, buffMap)
+		buffWeight, _ := getOptionBuffWeightInfo(buffId, buffMap)
 		if buffWeight == nil {
 			continue
 		}
@@ -389,7 +389,7 @@ func filterBuffList(buffInfo *MazeTempBuffSvr.TempBuffInfo, optionalMap map[int3
 			continue
 		}
 
-		buffWeight := getOptionBuffWeightInfo(buffId, buffMap)
+		buffWeight, _ := getOptionBuffWeightInfo(buffId, buffMap)
 		if buffWeight == nil {
 			continue
 		}
@@ -402,20 +402,20 @@ func filterBuffList(buffInfo *MazeTempBuffSvr.TempBuffInfo, optionalMap map[int3
 }
 
 // 获取可选buff的权重信息
-func getOptionBuffWeightInfo(buffId int32, buffMap map[int32]int32) *WeightInfo {
+func getOptionBuffWeightInfo(buffId int32, buffMap map[int32]int32) (*WeightInfo, error) {
 	buffConfig := mazeenergyaffixlvv8config.GetAffixConfig(buffId)
 	if buffConfig == nil {
-		return nil
+		return nil, errors.New("能力词条配置不存在")
 	}
 
 	if buffConfig.Weight == 0 {
-		return nil
+		return nil, errors.New("词条配置权重为0")
 	}
 
 	// 检查选择数量
 	optionalCount := buffConfig.Use_num_max - buffMap[buffId]
 	if optionalCount <= 0 {
-		return nil
+		return nil, errors.New("词条配置权重为0")
 	}
 
 	// 检查条件
@@ -426,14 +426,14 @@ func getOptionBuffWeightInfo(buffId int32, buffMap map[int32]int32) *WeightInfo 
 
 		isOk := checkFrontCondition(frontId, buffMap)
 		if !isOk {
-			return nil
+			return nil, errors.New("前置条件不满足")
 		}
 	}
 
 	return &WeightInfo{
 		Id:     buffId,
 		Weight: optionalCount * buffConfig.Weight,
-	}
+	}, nil
 }
 
 // 检查前置条件

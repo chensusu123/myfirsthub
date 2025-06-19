@@ -89,13 +89,17 @@ func InitGM(logger fklog.FKLogI) {
 			buffMap[info.GetBuffId()] += 1
 		}
 
+		var errs []string
 		var successList, failedList []string
 		for _, buffId := range buffList {
-			buffWeight := getOptionBuffWeightInfo(buffId, buffMap)
-			if buffWeight == nil {
+			buffWeight, err := getOptionBuffWeightInfo(buffId, buffMap)
+			if err != nil {
 				failedList = append(failedList, fmt.Sprintf("%d", buffId))
+				errs = append(errs, err.Error())
 				continue
 			}
+
+			_ = buffWeight
 
 			buffInfo.SelectedBuff = append(buffInfo.SelectedBuff, &MazeTempBuffSvr.SelectedBuffInfo{
 				BuffId: proto.Int32(buffId),
@@ -106,7 +110,7 @@ func InitGM(logger fklog.FKLogI) {
 
 		if len(successList) == 0 {
 			logger.WarnWF("setMazeTempBuff optionalList is nil")
-			_, _ = writer.Write([]byte("not have optional buff, failed buff:" + strings.Join(failedList, ",")))
+			_, _ = writer.Write([]byte("not have optional buff, failed buff:" + strings.Join(failedList, ",") + " errs:" + strings.Join(errs, ",")))
 			return
 		}
 
