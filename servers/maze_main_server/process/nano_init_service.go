@@ -8,6 +8,7 @@ import (
 
 	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fkconfig"
 	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fklog"
+	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/services"
 	"gitlab.ifreetalk.com/maze-plate/freetk/fkserver"
 	"gitlab.ifreetalk.com/maze-plate/freetk/fkserver/appconfig"
 	"gitlab.ifreetalk.com/maze-plate/freetk/pkg/registry"
@@ -17,10 +18,11 @@ import (
 )
 
 type NanoInitService struct {
-	addr      string
-	nlisten   func()
-	appName   string
-	namespace string
+	addr        string
+	nlisten     func()
+	appName     string
+	namespace   string
+	serviceName string
 }
 
 // Name implements fkcore.FKServiceI.
@@ -34,9 +36,18 @@ func (ns *NanoInitService) OnInit(logger fklog.FKLogI, config fkconfig.FkConfige
 
 	// Nano组件与路由
 	comps, routes := Components()
-	listenAddr := ":5998"
+
+	ns.appName = appConfig.Server.App
+	ns.namespace = appConfig.Global.Namespace
+	ns.serviceName = ns.appName + ".ws"
+
+	svrCfg := services.Config(ns.serviceName)
+	if svrCfg != nil {
+		ns.addr = svrCfg.Address
+	}
+
 	ns.nlisten = func() {
-		nano.Listen(listenAddr,
+		nano.Listen(ns.addr,
 			// nano.WithDebugMode(),
 
 			// 启用WebSocket协议
@@ -53,9 +64,12 @@ func (ns *NanoInitService) OnInit(logger fklog.FKLogI, config fkconfig.FkConfige
 			nano.WithComponents(comps),
 		)
 	}
-	ns.addr = appConfig.Global.LocalIP + listenAddr
-	ns.appName = appConfig.Server.App
-	ns.namespace = appConfig.Global.Namespace
+	logger.InfoWF("nano init service listen", zap.Any("svrCfg", svrCfg),
+		zap.Any("appName", ns.appName),
+		zap.Any("serviceName", ns.serviceName),
+		zap.Any("namespace", ns.namespace),
+		zap.Any("DefaultClientConfig", services.DefaultClientConfig()),
+	)
 	return
 }
 
@@ -66,7 +80,7 @@ func (ns *NanoInitService) OnStart(logger fklog.FKLogI, config fkconfig.FkConfig
 
 	Info := &registry.Info{
 		Namespace:   ns.namespace,
-		ServiceName: ns.appName + ".ws",
+		ServiceName: ns.serviceName,
 		Addr:        utils.NewNetAddr("tcp", ns.addr),
 		Tags:        tags,
 	}
@@ -81,7 +95,7 @@ func (ns *NanoInitService) OnStop(logger fklog.FKLogI) error {
 	tags := fkserver.GetRegistryMetadata()
 	Info := &registry.Info{
 		Namespace:   ns.namespace,
-		ServiceName: ns.appName + ".ws",
+		ServiceName: ns.serviceName,
 		Addr:        utils.NewNetAddr("tcp", ns.addr),
 		Tags:        tags,
 	}

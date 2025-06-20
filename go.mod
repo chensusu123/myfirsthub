@@ -24,7 +24,7 @@ require (
 	github.com/spf13/cast v1.9.2
 	github.com/urfave/cli v1.22.16
 	github.com/xuri/excelize/v2 v2.9.0
-	gitlab.ifreetalk.com/maze-plate/freetk v1.0.1-0.20250620064402-f423f6f911da
+	gitlab.ifreetalk.com/maze-plate/freetk v1.0.1-0.20250620111344-6d9c237c1797
 	go.uber.org/atomic v1.11.0
 	go.uber.org/zap v1.27.0
 	google.golang.org/grpc v1.64.0

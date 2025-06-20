@@ -9,45 +9,30 @@ global: # global config.
   k8s_node_hostname: ${K8S_NODE_HOSTNAME} # k8s node hostname.
   cpu_num: ${K8S_REQUEST_CPU} # cpu number.
 server: # server configuration.
-  app: ${APPNAME} # business application name.
+  #app: ${APPNAME} # business application name.
+  app: maze-main-server-dev
   server: ${APPNAME} # service process name.
   service: # business service configuration，can have multiple.
-    - name: trpc.test.helloworld.Greeter1 # the route name of the service.
-      port: 8000 # the service listening port, can use the placeholder ${port}.
+    - name: maze-main-server-dev.ws # the route name of the service.
+      port: 5998 # the service listening port, can use the placeholder ${port}.
       network: tcp # the service listening network type,  tcp or udp.
-      protocol: trpc # application layer protocol, trpc or http.
-      timeout: 1000 # maximum request processing time in milliseconds.
-      idletime: 300000 # connection idle time in milliseconds.
-      registry: polaris # The service registration method used when the service starts.
-    - name: trpc.test.helloworld.Greeter2 # the route name of the service.
-      port: 8080 # the service listening port, can use the placeholder ${port}.
+      protocol: websocket # application layer protocol, trpc or http.
+    - name: maze-main-server-dev.web # the route name of the service.
+      port: 5999 # the service listening port, can use the placeholder ${port}.
       network: tcp # the service listening network type,  tcp or udp.
       protocol: http # application layer protocol, trpc or http.
-      timeout: 1000 # maximum request processing time in milliseconds.
-      idletime: 300000 # connection idle time in milliseconds.
-      registry: polaris # The service registration method used when the service starts.
-      max_routines: 1000
-      namespace: Development
-    - name: trpc.test.helloworld.Greeter3 # the route name of the service.
-      port: 8090 # the service listening port, can use the placeholder ${port}.
-      network: tcp # the service listening network type,  tcp or udp.
-      protocol: http # application layer protocol, trpc or http.
-      timeout: 1000 # maximum request processing time in milliseconds.
-      idletime: 300000 # connection idle time in milliseconds.
 client: # configuration for client calls.
   timeout: 1000 # maximum request processing time for all backends.
   service: # configuration for a single backend.
-    - name: trpc.test.helloworld.Greeter1 # backend service name.
-      namespace: Development # backend service environment.
+    - name: maze_main_server.mysql # backend service name.
       network: tcp # backend service network type, tcp or udp, configuration takes precedence.
-      protocol: trpc # application layer protocol, trpc or http.
-      timeout: 800 # maximum request processing time in milliseconds.
-    - name: trpc.test.helloworld.Greeter2 # backend service name.
-      namespace: Production # backend service environment.
+      protocol: mysql # application layer protocol, trpc or http.
+    - name: maze_main_server.redis # backend service name.
       network: tcp # backend service network type, tcp or udp, configuration takes precedence.
-      protocol: http # application layer protocol, trpc or http.
-      timeout: 2000 # maximum request processing time in milliseconds.
-
+      protocol: redis # application layer protocol, trpc or http.
+    - name: BizCfg # backend service name.
+      network: tcp # backend service network type, tcp or udp, configuration takes precedence.
+      protocol: mysql # application layer protocol, trpc or http.
 # 日志配置 (对应 LogConfig 结构体)
 log:
   log_level: "debug" # 日志级别 (debug/info/warn/error)
