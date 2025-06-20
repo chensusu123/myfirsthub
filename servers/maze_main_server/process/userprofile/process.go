@@ -11,7 +11,6 @@ import (
 	"maze_game_server/common/errors"
 	"maze_game_server/lib/log"
 	"go.uber.org/zap"
-	"time"
 	"google.golang.org/protobuf/proto"
 )
 
@@ -32,16 +31,13 @@ func (p *Profile) OnQueryUserProfile_10481_10482(s *session.Session, req *UserPr
 	logger := log.Clone("profile", userID, 0)
 	logger.WarnWF("OnQueryUserProfile with", zap.Any("rq", req))
 
-	addStartTime := time.Now()
 	defer func() {
 		err = s.Response(res)
 		if err != nil {
 			logger.ErrorWF("OnQueryUserProfile Response failed", zap.Error(err))
 		}
-		costTime := time.Since(addStartTime).Seconds()
 		logger.WarnWF("OnQueryUserProfile end ", zap.Any("req", req), zap.Any("res", res),
-			zap.String("errMsg", string(res.GetErrInfo().GetErrMsg())),
-			zap.Float64("costTime", costTime))
+			zap.String("errMsg", string(res.GetErrInfo().GetErrMsg())))
 	}()
 
 	// 检查rq
@@ -66,14 +62,13 @@ func (p *Profile) OnAlterUserProfile_10483_10484(s *session.Session, req *UserPr
 	logger := log.Clone("profile", userID, 0)
 	logger.WarnWF("OnAlterUserProfile with", zap.Any("rq", req))
 
-	addStartTime := time.Now()
 	defer func() {
 		err = s.Response(res)
 		if err != nil {
 			logger.ErrorWF("OnAlterUserProfile Response failed", zap.Error(err))
 		}
-		costTime := time.Since(addStartTime).Seconds()
-		logger.WarnWF("OnAlterUserProfile end ", zap.Any("req", req), zap.Any("res", res), zap.String("errMsg", string(res.GetErrInfo().GetErrMsg())), zap.Float64("costTime", costTime))
+		logger.WarnWF("OnAlterUserProfile end ", zap.Any("req", req), zap.Any("res", res),
+			zap.String("errMsg", string(res.GetErrInfo().GetErrMsg())))
 	}()
 
 	if req.GetAlterProfile() == nil || req.GetAlterProfile().GetUserId() != userID || userID <= 0 {
