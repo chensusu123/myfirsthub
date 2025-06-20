@@ -6,10 +6,16 @@ import (
 	"github.com/dgrijalva/jwt-go"
 	"time"
 	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fklog"
+	"go.uber.org/zap"
 )
 
-func (m *UserProfileModule) QueryAvatarToken(logger fklog.FKLogI) (string, error) {
-	return GenerateAvatarToken()
+func CreateAvatarToken(logger fklog.FKLogI) (string, error) {
+	token, err := GenerateAvatarToken()
+	if err != nil {
+		logger.ErrorWF("CreateAvatarToken failed", zap.Error(err))
+		return "", err
+	}
+	return token, nil
 }
 
 type CustomClaims struct {

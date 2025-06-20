@@ -4,8 +4,6 @@ package profilemodule
 
 import (
 	"maze_game_server/pb/common/UserProfile"
-	"maze_game_server/io/redis/userprofilelock"
-	"go.uber.org/zap"
 	"maze_game_server/io/redis/userprofileredis"
 	"maze_game_server/io/mysql/flowrecord"
 	"time"
@@ -15,24 +13,12 @@ import (
 	"fmt"
 )
 
-func (m *UserProfileModule) AlterUserProfile(logger fklog.FKLogI, data *UserProfile.UserProfile) (*UserProfile.UserProfile, error) {
+func UpdateUserProfile(logger fklog.FKLogI, data *UserProfile.UserProfile) (*UserProfile.UserProfile, error) {
 	if data == nil || data.GetUserId() <= 0 {
 		return nil, errors.New("无效的修改信息")
 	}
 	userID := data.GetUserId()
 	var ret = &UserProfile.UserProfile{}
-	// lock
-	locked, err := userprofilelock.Lock(userID)
-	if err != nil {
-		logger.ErrorWF("OnAlterUserProfile get lock failed", zap.Error(err))
-		return ret, err
-	}
-	if !locked {
-		logger.WarnWF("OnAlterUserProfile lock already exists")
-		err = errors.New("服务器忙")
-		return ret, err
-	}
-	defer userprofilelock.Unlock(userID)
 
 	dbProfile, err := userprofileredis.GetProfile(userID)
 	if err != nil {
@@ -45,9 +31,6 @@ func (m *UserProfileModule) AlterUserProfile(logger fklog.FKLogI, data *UserProf
 
 	// 修改用户资料
 	alterRet := alterProfile(data, dbProfile, &chgDesc, &newVal, &oldVal)
-
-	// 更新缓存
-	cache.Add(userID, alterRet)
 
 	// 修改资料流水
 	flowrecord.SaveAlterProfileRecord(logger, flowrecord.AlterProfileRecord{

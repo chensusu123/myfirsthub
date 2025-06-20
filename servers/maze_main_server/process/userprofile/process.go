@@ -17,15 +17,10 @@ import (
 
 type Profile struct {
 	component.Base
-	module profilemodule.ProfileModule
 }
 
 func NewUserProfile() *Profile {
-	// 初始化module
-	profilemodule.InitModule()
-	return &Profile{
-		module: profilemodule.NewProfileModule(),
-	}
+	return &Profile{}
 }
 
 // OnQueryUserProfile 查询用户资料
@@ -50,11 +45,11 @@ func (p *Profile) OnQueryUserProfile_10481_10482(s *session.Session, req *UserPr
 	}()
 
 	// 检查rq
-	if len(req.GetUserId()) == 0 || userID <= 0 {
+	if len(req.GetUserList()) == 0 || userID <= 0 {
 		res.ErrInfo = errors.COMMON_ERROR_TIPS.Wrap("无效参数")
 		return
 	}
-	res.UserProfile, err = p.module.QueryUserProfile(logger, userID, req.GetUserId())
+	res.UserProfile, err = profilemodule.MGetUserProfile(logger, userID, req.GetUserList())
 	if err != nil {
 		res.ErrInfo = errors.COMMON_ERROR_TIPS.Wrap(err.Error())
 		return
@@ -86,7 +81,7 @@ func (p *Profile) OnAlterUserProfile_10483_10484(s *session.Session, req *UserPr
 		return
 	}
 
-	res.UserProfile, err = p.module.AlterUserProfile(logger, req.GetAlterProfile())
+	res.UserProfile, err = profilemodule.UpdateUserProfile(logger, req.GetAlterProfile())
 	if err != nil {
 		res.ErrInfo = errors.COMMON_ERROR_TIPS.Wrap(err.Error())
 		return
@@ -119,7 +114,7 @@ func (p *Profile) OnQueryAvatarToken_10511_10512(s *session.Session, req *UserPr
 		return
 	}
 	// 生成token
-	token, err := p.module.QueryAvatarToken(logger)
+	token, err := profilemodule.CreateAvatarToken(logger)
 	if err != nil {
 		res.ErrInfo = errors.COMMON_ERROR_TIPS.Wrap(err.Error())
 		return

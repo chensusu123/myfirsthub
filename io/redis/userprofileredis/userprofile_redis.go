@@ -84,35 +84,31 @@ func DeleteProfile(userID uint64) error {
 }
 
 // BatchGetProfile 批量获取用户资料
-func BatchGetProfile(userIDs []uint64) (map[uint64]*UserProfile.UserProfile, error) {
+func BatchGetProfile(userIDs []uint64) ([]*UserProfile.UserProfile, error) {
 	ctx := context.Background()
-	pipe := db.Pipeline()
 
-	cmds := make([]*redis.StringCmd, len(userIDs))
+	keys := make([]string, len(userIDs))
 	for i, userID := range userIDs {
-		key := GetKey(userID)
-		cmds[i] = pipe.Get(ctx, key)
+		keys[i] = GetKey(userID)
 	}
 
-	if _, err := pipe.Exec(ctx); err != nil && err != redis.Nil {
+	values, err := db.MGet(ctx, keys...).Result()
+	if err != nil {
 		return nil, err
 	}
 
-	result := make(map[uint64]*UserProfile.UserProfile)
-	for i, cmd := range cmds {
-		data, err := cmd.Bytes()
-		if err != nil {
-			if err == redis.Nil {
-				continue
-			}
-			return nil, err
+	result := make([]*UserProfile.UserProfile, len(userIDs))
+
+	for _, value := range values {
+		if value == nil {
+			continue
 		}
 
-		var profile UserProfile.UserProfile
-		if err := json.Unmarshal(data, &profile); err != nil {
+		var profile *UserProfile.UserProfile
+		if err := json.Unmarshal([]byte(value.(string)), &profile); err != nil {
 			return nil, err
 		}
-		result[userIDs[i]] = &profile
+		result = append(result, profile)
 	}
 
 	return result, nil
