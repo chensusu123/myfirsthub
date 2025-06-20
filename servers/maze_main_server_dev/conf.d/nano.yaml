@@ -9,15 +9,14 @@ global: # global config.
   k8s_node_hostname: ${K8S_NODE_HOSTNAME} # k8s node hostname.
   cpu_num: ${K8S_REQUEST_CPU} # cpu number.
 server: # server configuration.
-  #app: ${APPNAME} # business application name.
-  app: maze-main-server-dev
+  app: ${APPNAME} # business application name.
   server: ${APPNAME} # service process name.
   service: # business service configuration，can have multiple.
-    - name: maze-main-server-dev.ws # the route name of the service.
+    - name: ${APPNAME}.ws # the route name of the service.
       port: 5998 # the service listening port, can use the placeholder ${port}.
       network: tcp # the service listening network type,  tcp or udp.
       protocol: websocket # application layer protocol, trpc or http.
-    - name: maze-main-server-dev.web # the route name of the service.
+    - name: ${APPNAME}.web # the route name of the service.
       port: 5999 # the service listening port, can use the placeholder ${port}.
       network: tcp # the service listening network type,  tcp or udp.
       protocol: http # application layer protocol, trpc or http.
