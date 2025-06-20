@@ -75,8 +75,8 @@ func (flow *BizFlow) Init(resolver discovery.Resolver) error {
 	appConfig := appconfig.GlobalConfig()
 	logger := fklog.AppLogger().Clone("BizFlow")
 	bizCfg = &BizCfg{}
-	groupResolver := plateregistry.NewGroupResolver(resolver)
-	flow.resolver = groupResolver
+	sectionResolver := plateregistry.NewSectionResolver(resolver, appConfig.Global.SectionID)
+	flow.resolver = sectionResolver
 	resolveName := appConfig.Global.Namespace + ":" + flow.bizeName
 
 	mysqlInfo, err := flow.resolver.Resolve(context.TODO(), resolveName)
