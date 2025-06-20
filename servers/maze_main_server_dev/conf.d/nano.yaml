@@ -13,8 +13,6 @@ server: # server configuration.
   server: ${APPNAME} # service process name.
   service: # business service configuration，can have multiple.
     - name: trpc.test.helloworld.Greeter1 # the route name of the service.
-      ip: 127.0.0.1 # the service listening ip address, can use the placeholder ${ip}, choose one of ip and nic, priority ip.
-      nic: en10 # the service listening network card address, if configures ip, you don't need to configure it.
       port: 8000 # the service listening port, can use the placeholder ${port}.
       network: tcp # the service listening network type,  tcp or udp.
       protocol: trpc # application layer protocol, trpc or http.
@@ -22,7 +20,6 @@ server: # server configuration.
       idletime: 300000 # connection idle time in milliseconds.
       registry: polaris # The service registration method used when the service starts.
     - name: trpc.test.helloworld.Greeter2 # the route name of the service.
-      nic: en10 # the service listening network card address, if configures ip, you don't need to configure it.
       port: 8080 # the service listening port, can use the placeholder ${port}.
       network: tcp # the service listening network type,  tcp or udp.
       protocol: http # application layer protocol, trpc or http.
@@ -32,8 +29,6 @@ server: # server configuration.
       max_routines: 1000
       namespace: Development
     - name: trpc.test.helloworld.Greeter3 # the route name of the service.
-      ip: 127.0.0.1 # the service listening ip address, can use the placeholder ${ip}, choose one of ip and nic, priority ip.
-      nic: en10 # the service listening network card address, if configures ip, you don't need to configure it.
       port: 8090 # the service listening port, can use the placeholder ${port}.
       network: tcp # the service listening network type,  tcp or udp.
       protocol: http # application layer protocol, trpc or http.
