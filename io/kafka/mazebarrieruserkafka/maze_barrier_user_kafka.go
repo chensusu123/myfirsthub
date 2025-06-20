@@ -3,9 +3,9 @@ package mazebarrieruserkafka
 import (
 	"time"
 
-	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fkconfig"
-	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fklog"
 	"maze_game_server/io/dispatcher"
+
+	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fklog"
 )
 
 const (
@@ -37,7 +37,7 @@ func init() {
 
 func PushMazeBarrierUserRecord(agent fklog.FKLogI, record *MazeBarrierUserGameRecord) error {
 	record.CreateTime = time.Now().UnixNano() / 1e6
-	record.GroupID = fkconfig.EnvVal.GroupID
+	// record.GroupID = fkconfig.EnvVal.GroupID
 	// cnt, err := json.Marshal(record)
 	// if err != nil {
 	// 	return err

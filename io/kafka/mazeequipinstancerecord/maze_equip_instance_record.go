@@ -3,10 +3,10 @@ package mazeequipinstancerecord
 import (
 	"time"
 
-	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fkconfig"
+	"maze_game_server/io/dispatcher"
+
 	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fklog"
 	"go.uber.org/zap"
-	"maze_game_server/io/dispatcher"
 )
 
 // var json = jsoniter.ConfigCompatibleWithStandardLibrary
@@ -18,23 +18,23 @@ const (
 
 // 装备实例化流水
 type MazeGameEquipInstanceRecord struct {
-	UserId         uint64 `json:"user_id"`          //用户id
+	UserId         uint64 `json:"user_id"`          // 用户id
 	OpType         int32  `json:"op_type"`          // 业务类型 挂机/锻造/购买
-	TradeNum       uint64 `json:"trade_num"`        //交易单号
-	EquipId        int32  `json:"equip_id"`         //装备配置id
-	EquipGuid      int64  `json:"equip_guid"`       //装备guid
-	TotalScore     int32  `json:"total_score"`      //累计分数
-	SentencesLibId int32  `json:"sentences_lib_id"` //装备词条库ID
-	BaseAttrs      string `json:"base_attrs"`       //基础属性列表
-	ChgType        int32  `json:"chg_type"`         //变化原因 1 添加 2 删除 3 更新 4自动出售 5开始洗练 6 洗练确认
-	IsFail         int32  `json:"is_fail"`          //操作是否失败 0-成功 1-失败
+	TradeNum       uint64 `json:"trade_num"`        // 交易单号
+	EquipId        int32  `json:"equip_id"`         // 装备配置id
+	EquipGuid      int64  `json:"equip_guid"`       // 装备guid
+	TotalScore     int32  `json:"total_score"`      // 累计分数
+	SentencesLibId int32  `json:"sentences_lib_id"` // 装备词条库ID
+	BaseAttrs      string `json:"base_attrs"`       // 基础属性列表
+	ChgType        int32  `json:"chg_type"`         // 变化原因 1 添加 2 删除 3 更新 4自动出售 5开始洗练 6 洗练确认
+	IsFail         int32  `json:"is_fail"`          // 操作是否失败 0-成功 1-失败
 	GroupID        uint32 `json:"group_id"`         // 组id
 	CreateTime     int64  `json:"create_time"`      // 操作时间
 	StageFactor    int32  `json:"stage_factor"`     // 档位系数
-	Conditions     string `json:"conditions"`       //指定条件
-	RuleId         int32  `json:"rule_id"`          //特色规则id
-	SuitId         int32  `json:"suit_id"`          //套装id
-	EquipSubType   int32  `json:"equip_sub_type"`   //装备子类型
+	Conditions     string `json:"conditions"`       // 指定条件
+	RuleId         int32  `json:"rule_id"`          // 特色规则id
+	SuitId         int32  `json:"suit_id"`          // 套装id
+	EquipSubType   int32  `json:"equip_sub_type"`   // 装备子类型
 }
 
 // var equipInstanceChgQueue = &fkafka.KafkaProducer{}
@@ -52,7 +52,7 @@ func Watch(fn func(logger fklog.FKLogI, msg *MazeGameEquipInstanceRecord)) {
 
 func PushMazeGameEquipInstanceRecord(agent fklog.FKLogI, data *MazeGameEquipInstanceRecord) (err error) {
 	data.CreateTime = time.Now().UnixNano() / 1000000
-	data.GroupID = fkconfig.EnvVal.GroupID
+	// data.GroupID = fkconfig.EnvVal.GroupID
 	// cnt, err := json.Marshal(data)
 	// if err != nil {
 	// 	return err

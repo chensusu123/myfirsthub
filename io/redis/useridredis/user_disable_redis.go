@@ -2,12 +2,13 @@ package useridredis
 
 import (
 	"context"
-	"fmt"
+	"strconv"
 
 	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fkconfig"
 	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fklog"
 	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fkredis"
 	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fkredis/redis"
+	"gitlab.ifreetalk.com/maze-plate/freetk/fkserver/appconfig"
 	"go.uber.org/zap"
 )
 
@@ -17,25 +18,19 @@ func init() {
 	_ = fkconfig.RegisterNameNode("useridredis", 17545, gRedis)
 }
 
-var gRegionID = uint64(1)
+var gRegionID = 0
 
 const maxUserID = 10000000
 
-func SetRegionID(regionID uint64) {
-	gRegionID = regionID
-}
-
-func getKey(userId uint64) string {
-	return fmt.Sprintf("uid:generate", userId)
-}
-
 // 获取用户信息是否封禁
 func Generate(logger fklog.FKLogI) uint64 {
-	groupID := fkconfig.EnvVal.GroupID
-	if groupID == 5 {
-		gRegionID = uint64(1)
-	} else {
-		gRegionID = uint64(groupID)
+	if gRegionID == 0 {
+		tmpVal, err := strconv.ParseUint(appconfig.GlobalConfig().Global.SectionID, 10, 32)
+		if err != nil {
+			gRegionID = 1
+		} else {
+			gRegionID = int(tmpVal)
+		}
 	}
 
 	key := "uid:generate"

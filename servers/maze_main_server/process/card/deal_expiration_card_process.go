@@ -6,9 +6,9 @@ import (
 
 	"maze_game_server/io/redis/mazecardlistgroupredis"
 
-	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fkconfig"
 	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fkconfig/param"
 	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fklog"
+	"gitlab.ifreetalk.com/maze-plate/freetk/fkserver/appconfig"
 	"go.uber.org/zap"
 )
 
@@ -19,8 +19,9 @@ func init() {
 }
 
 func DealExpirationCardProcess(ctx context.Context, index int, logger fklog.FKLogI) error {
+	shardingID := appconfig.GlobalConfig().Global.ShardingID
 	go func(ctx context.Context, logger fklog.FKLogI) {
-		if fkconfig.EnvVal.SharedID != 1 {
+		if shardingID != 1 {
 			return
 		}
 		lg := logger.Clone("")

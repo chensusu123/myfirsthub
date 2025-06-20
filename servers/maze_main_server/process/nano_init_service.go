@@ -9,6 +9,7 @@ import (
 	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fkconfig"
 	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fklog"
 	"gitlab.ifreetalk.com/maze-plate/freetk/fkserver"
+	"gitlab.ifreetalk.com/maze-plate/freetk/fkserver/appconfig"
 	"gitlab.ifreetalk.com/maze-plate/freetk/pkg/registry"
 	"gitlab.ifreetalk.com/maze-plate/freetk/pkg/utils"
 	"gitlab.ifreetalk.com/maze-plate/freetk/plateregistry"
@@ -16,8 +17,10 @@ import (
 )
 
 type NanoInitService struct {
-	addr    string
-	nlisten func()
+	addr      string
+	nlisten   func()
+	appName   string
+	namespace string
 }
 
 // Name implements fkcore.FKServiceI.
@@ -27,6 +30,8 @@ func (ns *NanoInitService) Name() string {
 
 // OnInit implements fkcore.FKServiceI.
 func (ns *NanoInitService) OnInit(logger fklog.FKLogI, config fkconfig.FkConfigerI) (err error) {
+	appConfig := appconfig.GlobalConfig()
+
 	// Nano组件与路由
 	comps, routes := Components()
 	listenAddr := ":5998"
@@ -48,7 +53,9 @@ func (ns *NanoInitService) OnInit(logger fklog.FKLogI, config fkconfig.FkConfige
 			nano.WithComponents(comps),
 		)
 	}
-	ns.addr = fkconfig.EnvVal.LocalIP + listenAddr
+	ns.addr = appConfig.Global.LocalIP + listenAddr
+	ns.appName = appConfig.Server.App
+	ns.namespace = appConfig.Global.Namespace
 	return
 }
 
@@ -58,8 +65,8 @@ func (ns *NanoInitService) OnStart(logger fklog.FKLogI, config fkconfig.FkConfig
 	tags := fkserver.GetRegistryMetadata()
 
 	Info := &registry.Info{
-		Namespace:   fkconfig.EnvVal.Namespace,
-		ServiceName: fkconfig.EnvVal.AppName + ".ws",
+		Namespace:   ns.namespace,
+		ServiceName: ns.appName + ".ws",
 		Addr:        utils.NewNetAddr("tcp", ns.addr),
 		Tags:        tags,
 	}
@@ -73,8 +80,8 @@ func (ns *NanoInitService) OnStart(logger fklog.FKLogI, config fkconfig.FkConfig
 func (ns *NanoInitService) OnStop(logger fklog.FKLogI) error {
 	tags := fkserver.GetRegistryMetadata()
 	Info := &registry.Info{
-		Namespace:   fkconfig.EnvVal.Namespace,
-		ServiceName: fkconfig.EnvVal.AppName + ".ws",
+		Namespace:   ns.namespace,
+		ServiceName: ns.appName + ".ws",
 		Addr:        utils.NewNetAddr("tcp", ns.addr),
 		Tags:        tags,
 	}

@@ -3,7 +3,8 @@ package card
 import (
 	"context"
 	"encoding/json"
-	"fmt"
+	"time"
+
 	"maze_game_server/common/constdef"
 	"maze_game_server/common/structsdef"
 	"maze_game_server/excel/mazeconfigv8config"
@@ -13,11 +14,10 @@ import (
 	"maze_game_server/io/redis/userriddlemonthlyredis"
 	"maze_game_server/pb/common/MazeCard"
 	"maze_game_server/pb/server/MazeBuffData"
-	"time"
 
-	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fkconfig"
 	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fklog"
 	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fkprometheus"
+	"gitlab.ifreetalk.com/maze-plate/freetk/fkserver/appconfig"
 	"go.uber.org/zap"
 	"google.golang.org/protobuf/proto"
 )
@@ -85,7 +85,7 @@ func AddMazeCard(logger fklog.FKLogI, userId uint64, expirationTime int64) error
 		// 推送属性变化通知
 		msg := &structsdef.MazeCalcAttrNotifyMsg{
 			UserId:     userId,
-			FromServer: fmt.Sprintf("%d %s", fkconfig.EnvVal.ServerType, fkconfig.EnvVal.AppName),
+			FromServer: appconfig.GlobalConfig().GetServerName(),
 			BuffSrc:    constdef.MazeBuffSrcMonthCard,
 			ChgType:    constdef.MazeBuffChgTypeCardOpen,
 		}
@@ -123,7 +123,7 @@ func DeleteMazeCard(logger fklog.FKLogI, userId uint64) error {
 	// 推送属性变化通知
 	msg := &structsdef.MazeCalcAttrNotifyMsg{
 		UserId:     userId,
-		FromServer: fmt.Sprintf("%d %s", fkconfig.EnvVal.ServerType, fkconfig.EnvVal.AppName),
+		FromServer: appconfig.GlobalConfig().GetServerName(),
 		BuffSrc:    constdef.MazeBuffSrcMonthCard,
 		ChgType:    constdef.MazeBuffChgTypeCardExpiration,
 	}

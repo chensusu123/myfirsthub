@@ -7,11 +7,11 @@ import (
 
 	"maze_game_server/pb/server/MazeEquipCache"
 
-	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fkconfig"
-	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fklog"
-	"go.uber.org/zap"
 	"maze_game_server/io/kafka/mazeequipbagrecord"
 	"maze_game_server/io/kafka/mazeequipinstancerecord"
+
+	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fklog"
+	"go.uber.org/zap"
 )
 
 type MazeGameEquipInstanceRecord struct {
@@ -59,8 +59,8 @@ func PushMazeEquipBagLog(logger fklog.FKLogI, userId uint64, addEquipList, delEq
 		DelEquipGuids: strings.Join(delEquipGuidStr, ","),
 		OpType:        opType,
 		IsFail:        isFail,
-		GroupID:       fkconfig.EnvVal.GroupID,
-		CreateTime:    time.Now().UnixNano() / 1000000,
+		// GroupID:       fkconfig.EnvVal.GroupID,
+		CreateTime: time.Now().UnixNano() / 1000000,
 	}
 	if err := mazeequipbagrecord.PushMazeGameEquipBagRecord(logger, record); err != nil {
 		logger.ErrorWF("PushMazeEquipBagLog PushMazeGameEquipBagRecord err", zap.Error(err))

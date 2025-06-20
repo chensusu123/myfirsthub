@@ -3,12 +3,12 @@ package equipposstrengrecordkafka
 import (
 	"time"
 
-	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fkconfig"
-	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fklog"
-	"go.uber.org/zap"
 	"maze_game_server/common/function/itemutil"
 	"maze_game_server/io/dispatcher"
 	"maze_game_server/pb/common/MazeCommon"
+
+	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fklog"
+	"go.uber.org/zap"
 )
 
 // 装备位强化流水
@@ -50,10 +50,11 @@ func Watch(fn func(logger fklog.FKLogI, msg *EquipPosLevelUpRecord)) {
 // }
 
 func PushEquipPosStrengRecord(logger fklog.FKLogI, userId uint64, posId,
-	oldPosLv, newPosLv, oldPosSuitId, newPosSuitId int32, tradeNo uint64, items []*MazeCommon.MazeItem, result, mask int32) error {
+	oldPosLv, newPosLv, oldPosSuitId, newPosSuitId int32, tradeNo uint64, items []*MazeCommon.MazeItem, result, mask int32,
+) error {
 	data := &EquipPosLevelUpRecord{
-		UserId:       userId,
-		GroupId:      fkconfig.EnvVal.GroupID,
+		UserId: userId,
+		// GroupId:      fkconfig.EnvVal.GroupID,
 		OpTime:       time.Now().UnixMilli(),
 		PosId:        posId,
 		OldPosLv:     oldPosLv,

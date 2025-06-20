@@ -3,10 +3,10 @@ package mazetempbuffchgmsg
 import (
 	"time"
 
-	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fkconfig"
+	"maze_game_server/io/dispatcher"
+
 	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fklog"
 	"go.uber.org/zap"
-	"maze_game_server/io/dispatcher"
 )
 
 /**
@@ -44,7 +44,7 @@ func init() {
 }
 
 func PushTempBuffChangeMsg(logger fklog.FKLogI, msg *MazeTempBuffChangeMsg) error {
-	msg.GroupId = fkconfig.EnvVal.GroupID
+	// msg.GroupId = fkconfig.EnvVal.GroupID
 	if msg.CreateTime == 0 {
 		msg.CreateTime = time.Now().UnixNano() / 1000000
 	}

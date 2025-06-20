@@ -8,8 +8,8 @@ import (
 	"maze_game_server/lib/log"
 
 	"gitlab.ifreetalk.com/maze-plate/freetk/common/fkfmt"
-	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fkconfig"
 	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fklog"
+	"gitlab.ifreetalk.com/maze-plate/freetk/fkserver/appconfig"
 	"gitlab.ifreetalk.com/maze-plate/freetk/pkg/discovery"
 	"gitlab.ifreetalk.com/maze-plate/freetk/pkg/instanceutil"
 	"gitlab.ifreetalk.com/maze-plate/freetk/plateregistry"
@@ -72,11 +72,12 @@ func (flow *BizFlow) OnInstancesUpdate(change *discovery.Change) {
 var _ discovery.InstancesListener = (*BizFlow)(nil)
 
 func (flow *BizFlow) Init(resolver discovery.Resolver) error {
+	appConfig := appconfig.GlobalConfig()
 	logger := fklog.AppLogger().Clone("BizFlow")
 	bizCfg = &BizCfg{}
 	groupResolver := plateregistry.NewGroupResolver(resolver)
 	flow.resolver = groupResolver
-	resolveName := fkconfig.EnvVal.Namespace + ":" + flow.bizeName
+	resolveName := appConfig.Global.Namespace + ":" + flow.bizeName
 
 	mysqlInfo, err := flow.resolver.Resolve(context.TODO(), resolveName)
 	if err != nil {
@@ -103,7 +104,7 @@ func (flow *BizFlow) Init(resolver discovery.Resolver) error {
 	bizCfg.Pwd = mysqlCfg.Password
 	bizCfg.DbName = mysqlCfg.DbName
 
-	bizCfg.IsLocalDev = fkconfig.EnvVal.IsLocalDev
+	bizCfg.IsLocalDev = appConfig.Global.IsLocalDev
 	err = initGorm(bizCfg)
 	if err != nil {
 		return err

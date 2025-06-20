@@ -1,0 +1,62 @@
+global: # global config.
+  namespace: ${NAMESPACE} # environment type, two types: production and development.
+  local_ip: ${POD_LOCAL_IP}
+  container_name: ${APP_CONTAINER_NAME} # container name.
+  hostname: ${HOSTNAME} # service process name.
+  env: ${ENVIRONMENT} # environment type, two types: production and development.
+  project_group: ${PROJECT_GROUP} # project group name.
+  section_id: ${SERVER_ID} # server id.
+  k8s_node_hostname: ${K8S_NODE_HOSTNAME} # k8s node hostname.
+  cpu_num: ${K8S_REQUEST_CPU} # cpu number.
+server: # server configuration.
+  app: ${APPNAME} # business application name.
+  server: ${APPNAME} # service process name.
+  service: # business service configuration，can have multiple.
+    - name: trpc.test.helloworld.Greeter1 # the route name of the service.
+      ip: 127.0.0.1 # the service listening ip address, can use the placeholder ${ip}, choose one of ip and nic, priority ip.
+      nic: en10 # the service listening network card address, if configures ip, you don't need to configure it.
+      port: 8000 # the service listening port, can use the placeholder ${port}.
+      network: tcp # the service listening network type,  tcp or udp.
+      protocol: trpc # application layer protocol, trpc or http.
+      timeout: 1000 # maximum request processing time in milliseconds.
+      idletime: 300000 # connection idle time in milliseconds.
+      registry: polaris # The service registration method used when the service starts.
+    - name: trpc.test.helloworld.Greeter2 # the route name of the service.
+      nic: en10 # the service listening network card address, if configures ip, you don't need to configure it.
+      port: 8080 # the service listening port, can use the placeholder ${port}.
+      network: tcp # the service listening network type,  tcp or udp.
+      protocol: http # application layer protocol, trpc or http.
+      timeout: 1000 # maximum request processing time in milliseconds.
+      idletime: 300000 # connection idle time in milliseconds.
+      registry: polaris # The service registration method used when the service starts.
+      max_routines: 1000
+      namespace: Development
+    - name: trpc.test.helloworld.Greeter3 # the route name of the service.
+      ip: 127.0.0.1 # the service listening ip address, can use the placeholder ${ip}, choose one of ip and nic, priority ip.
+      nic: en10 # the service listening network card address, if configures ip, you don't need to configure it.
+      port: 8090 # the service listening port, can use the placeholder ${port}.
+      network: tcp # the service listening network type,  tcp or udp.
+      protocol: http # application layer protocol, trpc or http.
+      timeout: 1000 # maximum request processing time in milliseconds.
+      idletime: 300000 # connection idle time in milliseconds.
+client: # configuration for client calls.
+  timeout: 1000 # maximum request processing time for all backends.
+  service: # configuration for a single backend.
+    - name: trpc.test.helloworld.Greeter1 # backend service name.
+      namespace: Development # backend service environment.
+      network: tcp # backend service network type, tcp or udp, configuration takes precedence.
+      protocol: trpc # application layer protocol, trpc or http.
+      timeout: 800 # maximum request processing time in milliseconds.
+    - name: trpc.test.helloworld.Greeter2 # backend service name.
+      namespace: Production # backend service environment.
+      network: tcp # backend service network type, tcp or udp, configuration takes precedence.
+      protocol: http # application layer protocol, trpc or http.
+      timeout: 2000 # maximum request processing time in milliseconds.
+
+# 日志配置 (对应 LogConfig 结构体)
+log:
+  log_level: "debug" # 日志级别 (debug/info/warn/error)
+  use_new_rule: true # true 使用时间分隔日志 false 按照以前文件大小分隔日志
+  minute: 30 # 1-60分钟 使用时间分隔日志的单位
+  with_caller: true # 是否记录调用者信息
+  max_age: 8 # 日志最大保存天数，不写默认0，无删除操作

@@ -3,11 +3,11 @@ package mazeuserlevelkafka
 import (
 	"time"
 
+	"maze_game_server/io/dispatcher"
+
 	jsoniter "github.com/json-iterator/go"
-	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fkconfig"
 	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fklog"
 	"go.uber.org/zap"
-	"maze_game_server/io/dispatcher"
 )
 
 var json = jsoniter.ConfigCompatibleWithStandardLibrary
@@ -33,7 +33,7 @@ func init() {
 
 func PushMazeLevelRecord(agent fklog.FKLogI, record *MazeUserLevelRecord) error {
 	record.CreateTime = time.Now().UnixNano() / 1e6
-	record.GroupID = fkconfig.EnvVal.GroupID
+	// record.GroupID = fkconfig.EnvVal.GroupID
 	// cnt, err := json.Marshal(record)
 	// if err != nil {
 	// 	return err

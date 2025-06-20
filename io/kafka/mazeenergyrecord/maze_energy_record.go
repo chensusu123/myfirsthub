@@ -9,10 +9,10 @@ package mazeenergyrecord
 import (
 	"time"
 
-	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fkconfig"
+	"maze_game_server/io/dispatcher"
+
 	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fklog"
 	"go.uber.org/zap"
-	"maze_game_server/io/dispatcher"
 )
 
 // var json = jsoniter.ConfigCompatibleWithStandardLibrary
@@ -52,7 +52,7 @@ func Watch(fn func(logger fklog.FKLogI, msg *MazeEnergyChgRecord)) {
 
 func SendMazeEnergyChgRecord(agent fklog.FKLogI, record *MazeEnergyChgRecord) error {
 	record.CreateTime = time.Now().UnixNano() / 1e6
-	record.GroupID = fkconfig.EnvVal.GroupID
+	// record.GroupID = fkconfig.EnvVal.GroupID
 	// data, err := json.Marshal(record)
 	// if err != nil {
 	// return err

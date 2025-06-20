@@ -9,11 +9,11 @@ package mazeattrchgrecord
 import (
 	"time"
 
-	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fkconfig"
-	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fklog"
-	"go.uber.org/zap"
 	"maze_game_server/common/structsdef"
 	"maze_game_server/io/dispatcher"
+
+	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fklog"
+	"go.uber.org/zap"
 )
 
 // var kp = &fkafka.KafkaProducer{}
@@ -31,7 +31,7 @@ func Watch(fn func(logger fklog.FKLogI, msg *structsdef.MazeGameAttrChgRecord)) 
 }
 
 func SendMazeGameAttrChgRecord(logger fklog.FKLogI, record *structsdef.MazeGameAttrChgRecord) error {
-	record.GroupId = fkconfig.EnvVal.GroupID
+	// record.GroupId = fkconfig.EnvVal.GroupID
 	if record.CreateTime == 0 {
 		record.CreateTime = time.Now().UnixNano() / 1000000
 	}

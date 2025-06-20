@@ -3,10 +3,10 @@ package dollequipdismantlekafka
 import (
 	"time"
 
-	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fkconfig"
+	"maze_game_server/io/dispatcher"
+
 	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fklog"
 	"go.uber.org/zap"
-	"maze_game_server/io/dispatcher"
 )
 
 const (
@@ -47,7 +47,7 @@ func Watch(fn func(logger fklog.FKLogI, msg *MazeGameEquipDismantleRecord)) {
 
 func PushDollEquipDismantleRecord(agent fklog.FKLogI, record *MazeGameEquipDismantleRecord) error {
 	record.CreateTime = time.Now().Unix()
-	record.GroupID = fkconfig.EnvVal.GroupID
+	// record.GroupID = fkconfig.EnvVal.GroupID
 	// cnt, err := json.Marshal(record)
 	// if err != nil {
 	// 	return err

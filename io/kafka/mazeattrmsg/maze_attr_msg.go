@@ -9,10 +9,10 @@ package mazeattrmsg
 import (
 	"time"
 
-	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fkconfig"
-	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fklog"
 	"maze_game_server/common/structsdef"
 	"maze_game_server/io/dispatcher"
+
+	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fklog"
 )
 
 // var kp = &fkafka.KafkaProducer{}
@@ -26,7 +26,7 @@ func init() {
 }
 
 func SendMazeAttrChgNotify(logger fklog.FKLogI, msg *structsdef.DollAttrChgNotify) error {
-	msg.GroupId = fkconfig.EnvVal.GroupID
+	// msg.GroupId = fkconfig.EnvVal.GroupID
 	if msg.CreateTime == 0 {
 		msg.CreateTime = time.Now().UnixNano() / 1000000
 	}

@@ -3,10 +3,10 @@ package dollequipassmeblekakfa
 import (
 	"time"
 
-	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fkconfig"
+	"maze_game_server/io/dispatcher"
+
 	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fklog"
 	"go.uber.org/zap"
-	"maze_game_server/io/dispatcher"
 )
 
 var d = dispatcher.NewDispatcher[*MazeGameEquipAssembleRecord]()
@@ -52,7 +52,7 @@ type MazeGameEquipAssembleRecord struct {
 }
 
 func SendMazeGameEquipAssembleRecord(logger fklog.FKLogI, record *MazeGameEquipAssembleRecord) error {
-	record.GroupId = fkconfig.EnvVal.GroupID
+	// record.GroupId = fkconfig.EnvVal.GroupID
 	record.OpTime = time.Now().UnixNano() / 1000000
 	// jbs, e := json.Marshal(record)
 	// if e != nil {
