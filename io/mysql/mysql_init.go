@@ -90,23 +90,24 @@ func (flow *BizFlow) Init(resolver discovery.Resolver) error {
 		logger.ErrorWF("BizFlow Init Resolve failed, Instances is empty")
 		return errors.New("BizFlow Init Resolve failed, Instances is empty")
 	}
-	// mysqlCfg, mysqlCfgErr := instanceutil.GetMysqlCfg(mysqlInfo.Instances)
+
 	addr := mysqlInfo.Instances[0].Address().String()
-	xx := configuration.GetDatabase(flow.bizeName)
-	if xx == nil {
+
+	dataBaseInfo := configuration.GetDatabase(flow.bizeName)
+	if dataBaseInfo == nil {
 		logger.ErrorWF("BizFlow  GetDatabase failed")
 		return errors.New("BizFlow GetDatabase failed")
-
 	}
 
-	dbCfg, ok := xx.Get().(*datastruct.MysqlDBCfg)
+	dbCfg, ok := dataBaseInfo.Get().(*datastruct.MysqlDBCfg)
 	if !ok {
 		logger.ErrorWF("BizFlow  GetDatabase failed")
 		return errors.New("BizFlow GetDatabase failed")
 	}
 
 	logger.InfoWF("BizFlow Init  mysqlInfo GetMysqlCfg show ",
-		zap.Any("addr", addr), zap.Any("InstancesLen", len(mysqlInfo.Instances)))
+		zap.Any("addr", addr), zap.Any("InstancesLen",
+			len(mysqlInfo.Instances)), zap.Any("dbCfg", dbCfg))
 
 	// 监听实例变化
 	err = flow.resolver.Watcher(context.Background(), resolveName, flow)
