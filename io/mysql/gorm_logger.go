@@ -2,8 +2,9 @@ package mysql
 
 import (
 	"context"
-	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fklog"
 	"time"
+
+	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fklog"
 
 	"go.uber.org/zap"
 	"gorm.io/gorm/logger"
@@ -61,7 +62,7 @@ func (l *GormLogger) Trace(ctx context.Context, begin time.Time, fc func() (stri
 			zap.String("sql", sql),
 			zap.Int64("rows", rows),
 			zap.Duration("elapsed", elapsed),
-			//zap.String("file", utils.FileWithLineNum()),
+			// zap.String("file", utils.FileWithLineNum()),
 			zap.Error(err),
 		)
 	case elapsed > l.SlowThreshold && l.SlowThreshold != 0 && l.LogLevel >= logger.Warn:
@@ -69,14 +70,14 @@ func (l *GormLogger) Trace(ctx context.Context, begin time.Time, fc func() (stri
 			zap.String("sql", sql),
 			zap.Int64("rows", rows),
 			zap.Duration("elapsed", elapsed),
-			//zap.String("file", utils.FileWithLineNum()),
+			// zap.String("file", utils.FileWithLineNum()),
 		)
 	case l.LogLevel >= logger.Info:
 		l.Logger.WarnWF("SQL executed",
 			zap.String("sql", sql),
 			zap.Int64("rows", rows),
 			zap.Duration("elapsed", elapsed),
-			//zap.String("file", utils.FileWithLineNum()),
+			// zap.String("file", utils.FileWithLineNum()),
 		)
 	}
 }

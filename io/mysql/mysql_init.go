@@ -2,16 +2,18 @@ package mysql
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"time"
 
 	"maze_game_server/lib/log"
 
 	"gitlab.ifreetalk.com/maze-plate/freetk/common/fkfmt"
+	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/configuration"
+	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/datastruct"
 	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fklog"
 	"gitlab.ifreetalk.com/maze-plate/freetk/fkserver/appconfig"
 	"gitlab.ifreetalk.com/maze-plate/freetk/pkg/discovery"
-	"gitlab.ifreetalk.com/maze-plate/freetk/pkg/instanceutil"
 	"gitlab.ifreetalk.com/maze-plate/freetk/plateregistry"
 	"go.uber.org/zap"
 	"gorm.io/driver/mysql"
@@ -84,14 +86,27 @@ func (flow *BizFlow) Init(resolver discovery.Resolver) error {
 		logger.ErrorWF("BizFlow Init Resolve failed", zap.Any("err", err))
 		return err
 	}
-
-	mysqlCfg, mysqlCfgErr := instanceutil.GetMysqlCfg(mysqlInfo.Instances)
-	logger.InfoWF("BizFlow Init  mysqlInfo GetMysqlCfg show ", zap.Any("mysqlCfg", mysqlCfg),
-		zap.Any("mysqlCfgErr", mysqlCfgErr), zap.Any("InstancesLen", len(mysqlInfo.Instances)))
-	if mysqlCfgErr != nil {
-		logger.ErrorWF("BizFlow Init GetMysqlCfg failed", zap.Any("mysqlCfgErr", mysqlCfgErr))
-		return mysqlCfgErr
+	if len(mysqlInfo.Instances) == 0 {
+		logger.ErrorWF("BizFlow Init Resolve failed, Instances is empty")
+		return errors.New("BizFlow Init Resolve failed, Instances is empty")
 	}
+	// mysqlCfg, mysqlCfgErr := instanceutil.GetMysqlCfg(mysqlInfo.Instances)
+	addr := mysqlInfo.Instances[0].Address().String()
+	xx := configuration.GetDatabase(flow.bizeName)
+	if xx == nil {
+		logger.ErrorWF("BizFlow  GetDatabase failed")
+		return errors.New("BizFlow GetDatabase failed")
+
+	}
+
+	dbCfg, ok := xx.Get().(*datastruct.MysqlDBCfg)
+	if !ok {
+		logger.ErrorWF("BizFlow  GetDatabase failed")
+		return errors.New("BizFlow GetDatabase failed")
+	}
+
+	logger.InfoWF("BizFlow Init  mysqlInfo GetMysqlCfg show ",
+		zap.Any("addr", addr), zap.Any("InstancesLen", len(mysqlInfo.Instances)))
 
 	// 监听实例变化
 	err = flow.resolver.Watcher(context.Background(), resolveName, flow)
@@ -99,12 +114,13 @@ func (flow *BizFlow) Init(resolver discovery.Resolver) error {
 		logger.ErrorWF("BizFlow Init Watcher failed", zap.Any("err", err))
 	}
 
-	bizCfg.Addr = mysqlCfg.Addr
-	bizCfg.DbUser = mysqlCfg.DbUser
-	bizCfg.Pwd = mysqlCfg.Password
-	bizCfg.DbName = mysqlCfg.DbName
+	bizCfg.Addr = addr
+	bizCfg.DbUser = dbCfg.User
+	bizCfg.Pwd = dbCfg.Password
+	bizCfg.DbName = dbCfg.DB
 
 	bizCfg.IsLocalDev = appConfig.Global.IsLocalDev
+
 	err = initGorm(bizCfg)
 	if err != nil {
 		return err
