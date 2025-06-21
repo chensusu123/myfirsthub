@@ -8,6 +8,7 @@ import (
 	"maze_game_server/usecase/business"
 	"maze_game_server/usecase/tasktimer"
 
+	"maze_game_server/io/gormdemo"
 	"maze_game_server/io/mysql"
 
 	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/serverdepend"
@@ -35,7 +36,10 @@ func main() {
 
 	myBiz := mysql.NewBizFlow("BizCfg")
 	// 注册到服务依赖里面.初始化由框架进行调用
-	serverdepend.RegisterDepend(myBiz.Name(), myBiz)
+
+	myGorm := gormdemo.NewGormDemo("BizCfg", "GormDemo")
+	serverdepend.RegisterDepend(myGorm)
+	serverdepend.RegisterDepend(myBiz)
 
 	fkserver.AppServer.AddBasicService(&process.NanoInitService{})
 	fkserver.AddBusiness(tasktimer.GTaskTimerBusiness)

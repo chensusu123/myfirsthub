@@ -34,7 +34,7 @@ func main() {
 
 	myBiz := mysql.NewBizFlow("BizCfg")
 	// 注册到服务依赖里面.初始化由框架进行调用
-	serverdepend.RegisterDepend(myBiz.Name(), myBiz)
+	serverdepend.RegisterDepend(myBiz)
 
 	fkserver.AppServer.AddBasicService(&process.NanoInitService{})
 	// fkserver.AddBusiness(&business.GCustomBusiness)
