@@ -2,10 +2,15 @@ package buff
 
 import (
 	"fmt"
+	"maze_game_server/common/constdef"
+	"maze_game_server/common/structsdef"
 	"maze_game_server/io/kafka/mazetempbuffchgmsg"
+	"maze_game_server/io/redis/mazeattrcalcnotifyqueue"
+	"maze_game_server/io/redis/mazebuffinforedis"
 	"maze_game_server/io/redis/mazetempbuffredis"
 	"maze_game_server/module/itemmodule"
 	"maze_game_server/pb/common/MazeCommon"
+	"maze_game_server/pb/server/MazeBuffData"
 	"maze_game_server/pb/server/MazeTempBuffSvr"
 	"net/http"
 	"sort"
@@ -148,6 +153,39 @@ func InitGM(logger fklog.FKLogI) {
 		if len(failedList) > 0 {
 			_, _ = writer.Write([]byte("failed buff:" + strings.Join(failedList, ",")))
 		}
+
+		// buff中心
+		forceAttr, err := GetSelectBuffForceAttr(buffInfo.TotalBuff)
+		if err != nil {
+			logger.ErrorWF("setMazeTempBuff GetSelectBuffForceAttr failed", zap.Error(err))
+			_, _ = writer.Write([]byte("\n更新人物属性失败:" + err.Error()))
+			return
+		}
+		attrDb := &MazeBuffData.MazeBuffDb{
+			MazeRealBuffs: PackMazeBuff(forceAttr),
+			// MazeShowBuffs: PackMazeBuff(showBuff), // todo 现在暂时没有展示武力值
+		}
+
+		err = mazebuffinforedis.SaveMazeBuffInfo(logger, userId, constdef.MazeBuffSrcSelectBuffForce, attrDb)
+		if err != nil {
+			logger.ErrorWF("setMazeTempBuff SaveMazeBuffInfo failed", zap.Uint64("userId", userId), zap.Error(err))
+			_, _ = writer.Write([]byte("\n更新人物属性失败:" + err.Error()))
+			return
+		}
+
+		// 推送属性计算消息
+		calcAttrNotify := &structsdef.MazeCalcAttrNotifyMsg{
+			UserId: userId,
+			// FromServer: fmt.Sprintf("%d %s", fkconfig.EnvVal.ServerType, fkconfig.EnvVal.AppName),
+			ChgType: constdef.MazeBuffChgForceValue,
+			Session: "buff",
+			BuffSrc: constdef.MazeBuffSrcSelectBuffForce,
+		}
+		err = mazeattrcalcnotifyqueue.SendMazeAttrCalcNotify(logger, calcAttrNotify)
+		if err != nil {
+			_, _ = writer.Write([]byte("\n更新人物属性失败:" + err.Error()))
+		}
+		return
 	})
 
 	SafeHttpRegister(logger, "/addRefreshCost", func(writer http.ResponseWriter, request *http.Request) {

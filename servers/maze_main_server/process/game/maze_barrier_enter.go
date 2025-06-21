@@ -9,6 +9,7 @@ import (
 	"maze_game_server/config/GMazeLevelV8Cfg"
 	"maze_game_server/io/redis/mazebarriereventredis"
 	"maze_game_server/io/redis/mazebarriertempbuffredis"
+	"maze_game_server/io/redis/mazebuffinforedis"
 	"maze_game_server/io/redis/mazechallengenumredis"
 	"maze_game_server/io/redis/mazeuserbarrierredis"
 	"maze_game_server/lib/log"
@@ -77,6 +78,7 @@ func (g *Game) OnMazeBarrierEnterRQ_10447_10448(s *session.Session, req *MazeGam
 
 	//进入清临时buff
 	mazebarriertempbuffredis.ClearBarrierTempBuff(logger, userId, req.GetBarrierId())
+	mazebuffinforedis.DelMazeBuffBySrc(logger, userId, constdef.MazeBuffSrcSelectBuffForce)
 
 	mazeBattleInfo, err3 := GetMazeBattleData(logger, userId, req.GetBarrierId())
 	if err3 != nil {
