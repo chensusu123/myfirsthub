@@ -34,7 +34,7 @@ func main() {
 	loadconfigapi.SetLoadConfigFunc(business.GCustomBusiness.LoadCacheConfig)
 	loadconfigapi.SetInitConfigCacheFunc(business.GCustomBusiness.Init)
 
-	myBiz := mysql.NewBizFlow("BizCfg")
+	myBiz := mysql.NewBizGorm("BizCfg", "BizGorm")
 	// 注册到服务依赖里面.初始化由框架进行调用
 
 	myGorm := gormdemo.NewGormDemo("BizCfg", "GormDemo")

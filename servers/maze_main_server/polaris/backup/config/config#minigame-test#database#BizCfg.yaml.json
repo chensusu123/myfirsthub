@@ -1,0 +1,1 @@
+{"Namespace":"minigame-test","FileGroup":"database","FileName":"BizCfg.yaml","SourceContent":"user: majiange\ndb: test\npassword: 162\u003ewind\nsharding_type: 0\nsharding_count: 1","Version":1,"Md5":"db12953e02c60eff728c249e28cfeec2","Encrypted":false,"PublicKey":"","Tags":null,"NotExist":false,"Mode":0,"Persistent":{"Encoding":"","Path":"","PostCmd":""}}

@@ -22,16 +22,6 @@ server: # server configuration.
       protocol: http # application layer protocol, trpc or http.
 client: # configuration for client calls.
   timeout: 1000 # maximum request processing time for all backends.
-  service: # configuration for a single backend.
-    - name: maze_main_server.mysql # backend service name.
-      network: tcp # backend service network type, tcp or udp, configuration takes precedence.
-      protocol: mysql # application layer protocol, trpc or http.
-    - name: maze_main_server.redis # backend service name.
-      network: tcp # backend service network type, tcp or udp, configuration takes precedence.
-      protocol: redis # application layer protocol, trpc or http.
-    - name: BizCfg # backend service name.
-      network: tcp # backend service network type, tcp or udp, configuration takes precedence.
-      protocol: mysql # application layer protocol, trpc or http.
 # 日志配置 (对应 LogConfig 结构体)
 log:
   log_level: "debug" # 日志级别 (debug/info/warn/error)
