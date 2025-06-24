@@ -2,19 +2,22 @@ package collect
 
 import (
 	"fmt"
+	"gitlab.ifreetalk.com/maze-plate/freetk/fkutil"
 	"maze_game_server/common/constdef"
 	"maze_game_server/common/errors"
 	"maze_game_server/common/function/settimer"
 	"maze_game_server/config/GMazeBarriesOnHookV8Cfg"
 	"maze_game_server/io/kafka/mazecollectrecord"
 	"maze_game_server/io/redis/mazecollectredis"
+	"maze_game_server/module/mazecollect"
 	"maze_game_server/module/mazeuserinfo"
+	"maze_game_server/pb/common/MazeCollect"
 	"maze_game_server/pb/server/MazeCollectCache"
+	"maze_game_server/usecase/mustarrive"
 	"strings"
 	"time"
 
 	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fklog"
-	"gitlab.ifreetalk.com/maze-plate/freetk/fkutil"
 	"go.uber.org/zap"
 	"google.golang.org/protobuf/proto"
 )
@@ -67,13 +70,15 @@ func ItemCollectCallback(logger fklog.FKLogI, userId uint64, bs []byte) error {
 	//}
 
 	// 是否已经初始化
-	collectInfo, err := mazecollectredis.GetCollectInfo(logger, userId)
-	if err != nil {
-		logger.ErrorWF("ItemCollectCallback GetCollectInfo error",
-			zap.Any("userId", userId),
-			zap.Error(err))
-		return err
-	}
+	//collectInfo, err := mazecollectredis.GetCollectInfo(logger, userId)
+	//if err != nil {
+	//	logger.ErrorWF("ItemCollectCallback GetCollectInfo error",
+	//		zap.Any("userId", userId),
+	//		zap.Error(err))
+	//	return err
+	//}
+	cInfo := mazecollect.NewCollectInfo(logger, userId)
+	collectInfo := cInfo.GetCollectInfo()
 	if collectInfo == nil {
 		logger.ErrorWF("ItemCollectCallback collectInfo not exist",
 			zap.Any("userId", userId),
@@ -200,7 +205,11 @@ func ItemCollect(logger fklog.FKLogI, userId uint64, collectInfo *MazeCollectCac
 		return
 	}
 
-	PushDollMazeCollectInfoLog(logger, userId, collectInfo, lastTime, collectTimes, mazecollectrecord.MazeCollectTimeOut, 0, nil, 0)
+	err = PushDollMazeCollectInfoLog(logger, userId, collectInfo, lastTime, collectTimes, mazecollectrecord.MazeCollectTimeOut, 0, nil, 0)
+	if err != nil {
+		logger.ErrorWF("ItemCollect PushDollMazeCollectInfoLog err", zap.Any("collectInfo", collectInfo), zap.Error(err))
+		return
+	}
 	return
 }
 
@@ -229,4 +238,34 @@ func SetCollectTimer(logger fklog.FKLogI, userId uint64, info *MazeCollectCache.
 		zap.Any("msg", msg), zap.Int64("expireAt", expireAt),
 		zap.Int64("lastTime", lastTime), zap.Int64("endTime", endTime))
 	return
+}
+
+func NewCollectAfter(logger fklog.FKLogI, userId uint64, collectInfo *MazeCollectCache.MazeCollectInfo) {
+	// 设置下一周期定时器
+	err := SetCollectTimer(logger, userId, collectInfo)
+	if err != nil {
+		logger.ErrorWF("NewCollectAfter SetCollectTimer err", zap.Any("collectInfo", collectInfo), zap.Error(err))
+		return
+	}
+	err = PushDollMazeCollectInfoLog(logger, userId, collectInfo, collectInfo.GetLastTime(), 0, mazecollectrecord.MazeCollectInit, 0, nil, 0)
+	if err != nil {
+		logger.ErrorWF("NewCollectAfter PushDollMazeCollectInfoLog err", zap.Any("collectInfo", collectInfo), zap.Error(err))
+		return
+	}
+
+	pack := &MazeCollect.MazeCollectOpenID{
+		FreshTime: proto.Int64(GetFreshTime(collectInfo)),
+	}
+	mazeCollectInfoPb, err := MazeCollectToCliPB(logger, collectInfo, collectInfo.GetBarrierId())
+	if err != nil {
+		logger.ErrorWF("NewCollectAfter MazeCollectToCliPB err", zap.Any("collectInfo", collectInfo), zap.Error(err))
+		return
+	}
+	pack.MazeCollectInfo = mazeCollectInfoPb
+	err = mustarrive.SendArrivePacket(logger, int64(userId), 10480, pack)
+	if err != nil {
+		logger.ErrorWF("NewCollectAfter SendArrivePacket", zap.Any("pack", pack), zap.Error(err))
+		return
+	}
+	logger.InfoWF("NewCollectAfter SendArrivePacket", zap.Any("pack", pack))
 }

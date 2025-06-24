@@ -2,9 +2,9 @@ package collect
 
 import (
 	"maze_game_server/common/errors"
-	"maze_game_server/io/redis/mazecollectredis"
 	"maze_game_server/lib/log"
 	"maze_game_server/lib/nano/session"
+	"maze_game_server/module/mazecollect"
 	"maze_game_server/module/mazeuserinfo"
 	"maze_game_server/pb/common/MazeCollect"
 
@@ -37,29 +37,40 @@ func (c *Collect) OnMazeCollectInfoQueryRQ_10465_10466(s *session.Session, req *
 	}
 
 	// 道具产出信息
-	collectInfo, err := mazecollectredis.GetCollectInfo(logger, userId)
-	if err != nil {
-		logger.ErrorWF("OnMazeCollectInfoQueryRQ GetCollectInfo", zap.Error(err))
-		res.ErrInfo = errors.MODULE_ERROR.ToInfo()
-		return
-	}
+	//collectInfo, err := mazecollectredis.GetCollectInfo(logger, userId)
+	//if err != nil {
+	//	logger.ErrorWF("OnMazeCollectInfoQueryRQ GetCollectInfo", zap.Error(err))
+	//	res.ErrInfo = errors.MODULE_ERROR.ToInfo()
+	//	return
+	//}
+	cInfo := mazecollect.NewCollectInfo(logger, userId)
+	collectInfo := cInfo.GetCollectInfo()
+
 	if collectInfo == nil {
 		if userInfo.PassBarrier <= 0 {
 			return nil
 		}
-		err = InitMazeCollectLand(logger, userId, userInfo.PassBarrier)
+		//err = InitMazeCollectLand(logger, userId, userInfo.PassBarrier)
+		err, collectInfo = cInfo.NewMazeCollectInfo(userInfo.PassBarrier)
 		if err != nil {
 			logger.ErrorWF("OnMazeCollectInfoQueryRQ InitMazeCollectLand", zap.Error(err))
 			res.ErrInfo = errors.MODULE_ERROR.ToInfo()
 			return err
 		}
+		NewCollectAfter(logger, userId, collectInfo)
 		// 道具产出信息
-		collectInfo, err = mazecollectredis.GetCollectInfo(logger, userId)
-		if err != nil {
-			logger.ErrorWF("OnMazeCollectInfoQueryRQ GetCollectInfo", zap.Error(err))
-			res.ErrInfo = errors.MODULE_ERROR.ToInfo()
-			return err
-		}
+		//collectInfo, err = mazecollectredis.GetCollectInfo(logger, userId)
+		//if err != nil {
+		//	logger.ErrorWF("OnMazeCollectInfoQueryRQ GetCollectInfo", zap.Error(err))
+		//	res.ErrInfo = errors.MODULE_ERROR.ToInfo()
+		//	return err
+		//}
+		//collectInfo = mazecollect.GetCollectInfo(logger, userId)
+		//if collectInfo == nil {
+		//	logger.ErrorWF("OnMazeCollectInfoQueryRQ GetCollectInfo is nil")
+		//	res.ErrInfo = errors.MODULE_ERROR.ToInfo()
+		//	return err
+		//}
 	}
 	if collectInfo == nil {
 		return nil

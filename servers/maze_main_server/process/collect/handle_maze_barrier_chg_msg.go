@@ -4,8 +4,8 @@ import (
 	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fklog"
 	"go.uber.org/zap"
 	"maze_game_server/io/kafka/mazebarrieruserkafka"
-	"maze_game_server/io/redis/mazecollectredis"
 	"maze_game_server/module/funcopencheck"
+	"maze_game_server/module/mazecollect"
 	"maze_game_server/module/mazeuserinfo"
 )
 
@@ -31,12 +31,15 @@ func HandleMazeBarrierMsg(logger fklog.FKLogI, msg *MazeBarrierUserGameRecord) {
 		return
 	}
 	// 道具产出信息
-	collectInfo, err := mazecollectredis.GetCollectInfo(logger, userId)
-	if err != nil {
-		logger.ErrorWF("HandleMazeBarrierMsg GetCollectInfo", zap.Error(err))
-		return
-	}
-	if collectInfo != nil {
+	//collectInfo, err := mazecollectredis.GetCollectInfo(logger, userId)
+	//if err != nil {
+	//	logger.ErrorWF("HandleMazeBarrierMsg GetCollectInfo ", zap.Error(err)))
+	//	return
+	//}
+	cInfo := mazecollect.NewCollectInfo(logger, userId)
+	collectInfo := cInfo.GetCollectInfo()
+	if collectInfo == nil {
+		logger.ErrorWF("HandleMazeBarrierMsg GetCollectInfo is nil")
 		return
 	}
 	userInfo, err := mazeuserinfo.GetUserInfoV2(logger, userId)
@@ -52,10 +55,14 @@ func HandleMazeBarrierMsg(logger fklog.FKLogI, msg *MazeBarrierUserGameRecord) {
 	if !result.IsOpen {
 		return
 	}
-	err = InitMazeCollectLand(logger, userId, userInfo.PassBarrier)
+	//err = InitMazeCollectLand(logger, userId, userInfo.PassBarrier)
+	err, collectInfo = cInfo.NewMazeCollectInfo(userInfo.PassBarrier)
 	if err != nil {
 		logger.ErrorWF("HandleMazeBarrierMsg InitMazeCollectLand", zap.Error(err))
 		return
 	}
+
+	NewCollectAfter(logger, userId, collectInfo)
+
 	return
 }
