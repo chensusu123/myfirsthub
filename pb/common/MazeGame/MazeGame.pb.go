@@ -1005,6 +1005,8 @@ func (x *MazeStorageInfo) GetStorageItemInfo() []byte {
 	return nil
 }
 
+//## 10513	UN_TCP_PACK_CLI_SYNC_MAZE_STORAGE_IOFO_RQ
+// 小程序版本迷宫进关卡进度存储RQ
 type SyncMazeStorageInfoRQ struct {
 	state         protoimpl.MessageState
 	sizeCache     protoimpl.SizeCache
@@ -1060,6 +1062,8 @@ func (x *SyncMazeStorageInfoRQ) GetStorageInfo() *MazeStorageInfo {
 	return nil
 }
 
+//## 10514		UN_TCP_PACK_CLI_SYNC_MAZE_STORAGE_IOFO_RS
+// 小程序版本迷宫进关卡进度存储RS
 type SyncMazeStorageInfoRS struct {
 	state         protoimpl.MessageState
 	sizeCache     protoimpl.SizeCache
