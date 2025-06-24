@@ -215,6 +215,13 @@ func GetUserBattleSkillInfo(logger fklog.FKLogI, skillId int32, attrMap map[int3
 		SkillEffectSelf.IntervalTime = proto.Int32(int32(GetEffectAttrValue(effectCfg.Attr_value_8, effectCfg.Attr_value_8_variable_id, attrMap)))
 		skillInfo.SkillEffectSelf = append(skillInfo.SkillEffectSelf, SkillEffectSelf)
 	}
+
+	skillInfo.ReleaseCondition = proto.Int32(skillCfg.Release_condition)
+	skillInfo.BeforeSelfSkill = skillCfg.Before_self_skill
+	skillInfo.BeforeTargetSkill = skillCfg.Before_target_skill
+	skillInfo.AfterSelfSkill = skillCfg.After_self_skill
+	skillInfo.AfterTargetSkill = skillCfg.After_target_skill
+
 	return skillInfo, actDamageConfigs, nil
 }
 
