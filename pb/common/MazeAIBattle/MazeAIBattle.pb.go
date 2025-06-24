@@ -2455,7 +2455,7 @@ func (x *MazeBarrierInfo) GetItemUseInfos() []*MazeItemUseInfo {
 	return nil
 }
 
-// ## 10510	UN_TCP_PACK_CLI_MAZE_USER_SKILL_INFO_CHANGE_ID
+//## 10510	UN_TCP_PACK_CLI_MAZE_USER_SKILL_INFO_CHANGE_ID
 // 用户技能信息变化ID包
 type MazeUserSkillInfoChangeID struct {
 	state         protoimpl.MessageState
