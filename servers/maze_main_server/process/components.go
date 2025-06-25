@@ -15,6 +15,7 @@ import (
 	"maze_game_server/servers/maze_main_server/process/game/sweep"
 	"maze_game_server/servers/maze_main_server/process/interact"
 	"maze_game_server/servers/maze_main_server/process/item"
+	"maze_game_server/servers/maze_main_server/process/pay"
 	"maze_game_server/servers/maze_main_server/process/rob"
 )
 
@@ -41,6 +42,7 @@ func Components() (comps *component.Components, routes *codec.Routes) {
 		reg(card.NewCard())          // 月卡
 		reg(rob.NewRob())            // 掠夺
 		reg(interact.NewInteract())  // 交互
+		reg(pay.NewPay())            // 支付
 	}
 
 	return

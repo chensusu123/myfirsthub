@@ -11,6 +11,7 @@ require (
 	github.com/fsnotify/fsnotify v1.5.4
 	github.com/go-redis/redis v6.15.9+incompatible
 	github.com/gogo/protobuf v1.3.2
+	github.com/golang-jwt/jwt/v5 v5.2.2
 	github.com/gomodule/redigo v1.8.9
 	github.com/google/uuid v1.6.0
 	github.com/gorilla/schema v1.4.1
