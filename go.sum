@@ -624,6 +624,10 @@ gitlab.ifreetalk.com/maze-plate/extra v1.0.1-0.20250401060651-722653168d37 h1:ly
 gitlab.ifreetalk.com/maze-plate/extra v1.0.1-0.20250401060651-722653168d37/go.mod h1:ZHwfNF+727RvJctXbXHW/8kdkKBMIyUNHgUdwjqZ9E0=
 gitlab.ifreetalk.com/maze-plate/freetk v1.0.1-0.20250624140919-36677eb1fbfa h1:fhp1E9iPJjo6dua+3utzsbbc42BMagUho91/zs+MR8s=
 gitlab.ifreetalk.com/maze-plate/freetk v1.0.1-0.20250624140919-36677eb1fbfa/go.mod h1:DmS5T4S9MlBtVydqg9LVRDHcaMRauk598TFQq9h09XE=
+gitlab.ifreetalk.com/maze-plate/freetk v1.0.1-0.20250625081043-b46f8a4cbd1e h1:iLe2Tq2BENrX3WL70NIy2VcLna8laakheHvldJErPug=
+gitlab.ifreetalk.com/maze-plate/freetk v1.0.1-0.20250625081043-b46f8a4cbd1e/go.mod h1:DmS5T4S9MlBtVydqg9LVRDHcaMRauk598TFQq9h09XE=
+gitlab.ifreetalk.com/maze-plate/freetk v1.0.1-0.20250625082321-8cccdb2516ca h1:Qr9jfyeS/lUuu9Uecy+WNL7gHJUFdaSxxmvLnL2rH+w=
+gitlab.ifreetalk.com/maze-plate/freetk v1.0.1-0.20250625082321-8cccdb2516ca/go.mod h1:DmS5T4S9MlBtVydqg9LVRDHcaMRauk598TFQq9h09XE=
 gitlab.ifreetalk.com/nano-ecosystem/fklog v0.0.0-20250609141356-5698d091b098 h1:+ik01IEoU0Yxq6IXKKzrL5TONX8QX9rx9pbyNajEYcM=
 gitlab.ifreetalk.com/nano-ecosystem/fklog v0.0.0-20250609141356-5698d091b098/go.mod h1:EBlTAtJ7j+E85oFKb2G1hAjAVxTVUWvYTObbK2HlaY4=
 gitlab.ifreetalk.com/nano-ecosystem/nlog v0.0.0-20250621054907-e3e89b67b4be h1:zY2uCLvgs+SG7coTJufhHYl4hb5BM7VlCs/2hHb3IYQ=
