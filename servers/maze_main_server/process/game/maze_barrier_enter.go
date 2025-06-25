@@ -12,6 +12,7 @@ import (
 	"maze_game_server/io/redis/mazebuffinforedis"
 	"maze_game_server/io/redis/mazechallengenumredis"
 	"maze_game_server/io/redis/mazeuserbarrierredis"
+	"maze_game_server/io/redis/syncmazestorageinforedis"
 	"maze_game_server/lib/log"
 	"maze_game_server/lib/nano/session"
 	"maze_game_server/module/calequipsequence"
@@ -76,9 +77,18 @@ func (g *Game) OnMazeBarrierEnterRQ_10447_10448(s *session.Session, req *MazeGam
 	//	res.Energy = proto.Int32(userInfo.Energy)
 	var isNewBarrier bool
 
-	//进入清临时buff
-	mazebarriertempbuffredis.ClearBarrierTempBuff(logger, userId, req.GetBarrierId())
-	mazebuffinforedis.DelMazeBuffBySrc(logger, userId, constdef.MazeBuffSrcSelectBuffForce)
+	// 默认是从存档进入
+	storageInfo, err := syncmazestorageinforedis.GetSyncMazeStorageInfo(userId, userInfo.Barrier)
+	if err != nil {
+		logger.ErrorWF("OnMazeBarrierEnterRQ GetSyncMazeStorageInfo fail", zap.Error(err))
+		return
+	}
+	res.StorageInfo = storageInfo
+	if storageInfo == nil {
+		//进入清临时buff
+		mazebarriertempbuffredis.ClearBarrierTempBuff(logger, userId, req.GetBarrierId())
+		mazebuffinforedis.DelMazeBuffBySrc(logger, userId, constdef.MazeBuffSrcSelectBuffForce)
+	}
 
 	mazeBattleInfo, err3 := GetMazeBattleData(logger, userId, req.GetBarrierId())
 	if err3 != nil {
