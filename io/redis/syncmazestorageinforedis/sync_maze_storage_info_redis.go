@@ -49,6 +49,9 @@ func GetSyncMazeStorageInfo(userId uint64, barrierId int32) (info *MazeGame.Maze
 	if err != nil {
 		return
 	}
+	if res == nil {
+		return nil, nil
+	}
 
 	info = &MazeGame.MazeStorageInfo{}
 	for k, v := range res {
