@@ -14,10 +14,10 @@ import (
 	"maze_game_server/config/GMazeSkillAutoConditionV8Cfg"
 	"maze_game_server/config/GMazeSkillInfoV8Cfg"
 	"maze_game_server/config/GMazeSkilleffectV8Cfg"
-	"maze_game_server/io/redis/mazebarriertempbuffredis"
 	"maze_game_server/io/redis/mazeboxredis"
 	"maze_game_server/io/redis/mazecalcattrredis"
 	"maze_game_server/pb/common/MazeAIBattle"
+	"maze_game_server/services/tempbuffservice"
 	"regexp"
 	"sort"
 
@@ -46,13 +46,13 @@ func GetMazeBattleData(logger fklog.FKLogI, userId uint64, barrierId int32) (maz
 		return nil, err
 	}
 
-	tempBuffInfo, err := mazebarriertempbuffredis.GetBarrierTempBuff(logger, userId, barrierId)
+	tempBuffInfo, err := tempbuffservice.GlobalTempBuffService.GetTempBuffInfo(logger, userId, barrierId)
 	if err != nil {
 		logger.ErrorWF("GetMazeBattleData GetBarrierTempBuff err", zap.Error(err))
 		return nil, err
 	}
 	for _, buffInfo := range tempBuffInfo.TotalBuff {
-		userAttrMap[buffInfo.GetBuffId()] += buffInfo.GetBuffValue()
+		userAttrMap[buffInfo.BuffId] += buffInfo.BuffValue
 	}
 
 	userStiffRatio := userAttrMap[constdef.MazeAttr3000101]

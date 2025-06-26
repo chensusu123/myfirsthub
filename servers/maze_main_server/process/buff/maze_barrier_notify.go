@@ -7,7 +7,7 @@ import (
 	"maze_game_server/io/kafka/mazebarrieruserkafka"
 	"maze_game_server/io/redis/mazeattrcalcnotifyqueue"
 	"maze_game_server/io/redis/mazebuffinforedis"
-	"maze_game_server/io/redis/mazetempbuffredis"
+	"maze_game_server/services/tempbuffservice"
 
 	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fklog"
 )
@@ -48,6 +48,6 @@ func MazeBarrierNotifyProcess(logger fklog.FKLogI, msg *MazeBarrierUserGameRecor
 		BuffSrc: constdef.MazeBuffSrcSelectBuffForce,
 	}
 	mazeattrcalcnotifyqueue.SendMazeAttrCalcNotify(logger, calcAttrNotify)
-	_ = mazetempbuffredis.DelMazeTempBuff(logger, msg.UserId, msg.Barrier)
+	_ = tempbuffservice.GlobalTempBuffService.DelTempBuff(logger, msg.UserId, msg.Barrier)
 	return
 }

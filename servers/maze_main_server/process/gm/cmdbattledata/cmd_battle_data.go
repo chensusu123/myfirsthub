@@ -10,6 +10,7 @@ import (
 	"bytes"
 	"encoding/json"
 	"fmt"
+	"maze_game_server/services/tempbuffservice"
 	"net/http"
 	"time"
 
@@ -18,8 +19,6 @@ import (
 	"go.uber.org/zap"
 	"maze_game_server/common/function/gm"
 	"maze_game_server/config/GMazeAttributeV8Cfg"
-	"maze_game_server/io/redis/mazebarriertempbuffredis"
-
 	"maze_game_server/servers/maze_main_server/process/game"
 )
 
@@ -44,7 +43,7 @@ func RegBattleDataGm(logger fklog.FKLogI) {
 		em, _ := json.Marshal(battleData.GetEliteMonsterInfos())
 		bs.WriteString(fmt.Sprintf("精英怪数据:%s\n", string(em)))
 
-		tempBuffInfo, err := mazebarriertempbuffredis.GetBarrierTempBuff(logger, userId, barrierId)
+		tempBuffInfo, err := tempbuffservice.GlobalTempBuffService.GetTempBuffInfo(logger, userId, barrierId)
 		if err != nil {
 			logger.ErrorWF("DumpBattleData GetBarrierTempBuff err", zap.Error(err))
 		} else {

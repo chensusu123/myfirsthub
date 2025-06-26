@@ -7,11 +7,11 @@ import (
 	"maze_game_server/config/GMazeSkillAutoConditionV8Cfg"
 	"maze_game_server/config/GMazeSkillInfoV8Cfg"
 	"maze_game_server/config/GMazeSkilleffectV8Cfg"
-	"maze_game_server/io/redis/mazebarriertempbuffredis"
 	"maze_game_server/io/redis/mazecalcattrredis"
 	"maze_game_server/module/mazeuserinfo"
 	"maze_game_server/pb/common/MazeAIBattle"
 	"maze_game_server/pb/server/MazeEquipCache"
+	"maze_game_server/services/tempbuffservice"
 	"regexp"
 
 	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fklog"
@@ -478,13 +478,13 @@ func GetEquipSkillInfoChange(logger fklog.FKLogI, userID uint64, oldEquip, newEq
 		return nil, false, err
 	}
 
-	tempBuffInfo, err := mazebarriertempbuffredis.GetBarrierTempBuff(logger, userID, userInfo.Barrier)
+	tempBuffInfo, err := tempbuffservice.GlobalTempBuffService.GetTempBuffInfo(logger, userID, userInfo.Barrier)
 	if err != nil {
 		logger.ErrorWF("GetMazeBattleData GetBarrierTempBuff err", zap.Error(err))
 		return nil, false, err
 	}
 	for _, buffInfo := range tempBuffInfo.TotalBuff {
-		userAttrMap[buffInfo.GetBuffId()] += buffInfo.GetBuffValue()
+		userAttrMap[buffInfo.BuffId] += buffInfo.BuffValue
 	}
 
 	ret = &MazeAIBattle.MazeUserSkillInfoChangeID{}

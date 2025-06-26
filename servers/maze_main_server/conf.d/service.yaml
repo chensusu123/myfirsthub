@@ -29,4 +29,6 @@ service:
       password: redis
   - name: user.section.redis
     add: "127.0.0.1:6379"
+  - name: temp.buff.redis
+    add: "127.0.0.1:6379"
 

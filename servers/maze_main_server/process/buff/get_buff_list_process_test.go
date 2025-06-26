@@ -1,16 +1,7 @@
 package buff
 
 import (
-	"fmt"
-	"math/rand"
-	"testing"
-	"time"
-
-	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fkconfig"
 	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fklog"
-
-	//"gitlab.ifreetalk.com/maze-plate/freetk/fkserver/frontcache_service"
-	"gitlab.ifreetalk.com/maze-plate/freetk/fktestutil/testio"
 )
 
 /**
@@ -21,22 +12,22 @@ import (
 
 var gTestLogger fklog.FKLogI
 
-func TestMain(m *testing.M) {
-	fmt.Println("begin")
-	// initLog()
-	rand.Seed(time.Now().UnixNano())
-	gTestLogger = fklog.AppLogger().Clone("test_maze_temp_buff")
-
-	testio.IOLoad(12, "90038") // 加载N组的io配置
-
-	// frontcache_service.PlugFCService()
-	fkconfig.EnvVal.AppName = "maze-temp-buff-server"
-	fkconfig.EnvVal.GroupID = 12
-	fkconfig.EnvVal.ServerID = 20005
-	m.Run()
-
-	fmt.Println("end")
-}
+//func TestMain(m *testing.M) {
+//	fmt.Println("begin")
+//	// initLog()
+//	rand.Seed(time.Now().UnixNano())
+//	gTestLogger = fklog.AppLogger().Clone("test_maze_temp_buff")
+//
+//	testio.IOLoad(12, "90038") // 加载N组的io配置
+//
+//	// frontcache_service.PlugFCService()
+//	fkconfig.EnvVal.AppName = "maze-temp-buff-server"
+//	fkconfig.EnvVal.GroupID = 12
+//	fkconfig.EnvVal.ServerID = 20005
+//	m.Run()
+//
+//	fmt.Println("end")
+//}
 
 func initLog() {
 	logConfig := fklog.LogConfig{
