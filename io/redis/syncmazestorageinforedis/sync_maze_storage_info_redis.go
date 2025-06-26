@@ -46,11 +46,11 @@ func SaveSyncMazeStorageInfo(userId uint64, barrierId int32, field string, data 
 func GetSyncMazeStorageInfo(userId uint64, barrierId int32) (info *MazeGame.MazeStorageInfo, err error) {
 	key := fmt.Sprintf(redisKey, userId, barrierId)
 	res, err := redis.StringMap(gRedis.Do(context.TODO(), "hgetall", key))
-	if err == redis.ErrNil {
+	if err != nil {
 		return
 	}
-	if res == nil {
-		return nil, nil
+	if len(res) == 0 {
+		return
 	}
 
 	info = &MazeGame.MazeStorageInfo{}
