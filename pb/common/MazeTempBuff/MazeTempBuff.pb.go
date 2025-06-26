@@ -845,6 +845,128 @@ func (x *RefreshOptionalMazeTempBuffListRS) GetOptionalBuffInfo() *OptionalBuffI
 	return nil
 }
 
+//## 10523	UN_TCP_PACK_CLI_CLEAR_TEMP_BUFF_RQ
+// 立即清除所有的临时buff请求包
+type ClearTempBuffRQ struct {
+	state         protoimpl.MessageState
+	sizeCache     protoimpl.SizeCache
+	unknownFields protoimpl.UnknownFields
+
+	Header  *Common.PacketHeader `protobuf:"bytes,1,opt,name=header" json:"header,omitempty"`
+	StageId *int32               `protobuf:"varint,2,opt,name=stage_id,json=stageId" json:"stage_id,omitempty"` // 关卡id
+}
+
+func (x *ClearTempBuffRQ) Reset() {
+	*x = ClearTempBuffRQ{}
+	if protoimpl.UnsafeEnabled {
+		mi := &file_common_MazeTempBuff_proto_msgTypes[10]
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		ms.StoreMessageInfo(mi)
+	}
+}
+
+func (x *ClearTempBuffRQ) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*ClearTempBuffRQ) ProtoMessage() {}
+
+func (x *ClearTempBuffRQ) ProtoReflect() protoreflect.Message {
+	mi := &file_common_MazeTempBuff_proto_msgTypes[10]
+	if protoimpl.UnsafeEnabled && x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use ClearTempBuffRQ.ProtoReflect.Descriptor instead.
+func (*ClearTempBuffRQ) Descriptor() ([]byte, []int) {
+	return file_common_MazeTempBuff_proto_rawDescGZIP(), []int{10}
+}
+
+func (x *ClearTempBuffRQ) GetHeader() *Common.PacketHeader {
+	if x != nil {
+		return x.Header
+	}
+	return nil
+}
+
+func (x *ClearTempBuffRQ) GetStageId() int32 {
+	if x != nil && x.StageId != nil {
+		return *x.StageId
+	}
+	return 0
+}
+
+//## 10524	UN_TCP_PACK_CLI_CLEAR_TEMP_BUFF_RS
+// 立即清除所有的临时buff应答包
+type ClearTempBuffRS struct {
+	state         protoimpl.MessageState
+	sizeCache     protoimpl.SizeCache
+	unknownFields protoimpl.UnknownFields
+
+	ErrInfo *MessageType.ErrorInfo `protobuf:"bytes,1,opt,name=err_info,json=errInfo" json:"err_info,omitempty"`
+	Header  *Common.PacketHeader   `protobuf:"bytes,2,opt,name=header" json:"header,omitempty"`
+	StageId *int32                 `protobuf:"varint,3,opt,name=stage_id,json=stageId" json:"stage_id,omitempty"` // 关卡id
+}
+
+func (x *ClearTempBuffRS) Reset() {
+	*x = ClearTempBuffRS{}
+	if protoimpl.UnsafeEnabled {
+		mi := &file_common_MazeTempBuff_proto_msgTypes[11]
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		ms.StoreMessageInfo(mi)
+	}
+}
+
+func (x *ClearTempBuffRS) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*ClearTempBuffRS) ProtoMessage() {}
+
+func (x *ClearTempBuffRS) ProtoReflect() protoreflect.Message {
+	mi := &file_common_MazeTempBuff_proto_msgTypes[11]
+	if protoimpl.UnsafeEnabled && x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use ClearTempBuffRS.ProtoReflect.Descriptor instead.
+func (*ClearTempBuffRS) Descriptor() ([]byte, []int) {
+	return file_common_MazeTempBuff_proto_rawDescGZIP(), []int{11}
+}
+
+func (x *ClearTempBuffRS) GetErrInfo() *MessageType.ErrorInfo {
+	if x != nil {
+		return x.ErrInfo
+	}
+	return nil
+}
+
+func (x *ClearTempBuffRS) GetHeader() *Common.PacketHeader {
+	if x != nil {
+		return x.Header
+	}
+	return nil
+}
+
+func (x *ClearTempBuffRS) GetStageId() int32 {
+	if x != nil && x.StageId != nil {
+		return *x.StageId
+	}
+	return 0
+}
+
 var File_common_MazeTempBuff_proto protoreflect.FileDescriptor
 
 var file_common_MazeTempBuff_proto_rawDesc = []byte{
@@ -980,13 +1102,28 @@ var file_common_MazeTempBuff_proto_rawDesc = []byte{
 	0x18, 0x05, 0x20, 0x01, 0x28, 0x0b, 0x32, 0x1e, 0x2e, 0x4d, 0x61, 0x7a, 0x65, 0x54, 0x65, 0x6d,
 	0x70, 0x42, 0x75, 0x66, 0x66, 0x2e, 0x4f, 0x70, 0x74, 0x69, 0x6f, 0x6e, 0x61, 0x6c, 0x42, 0x75,
 	0x66, 0x66, 0x49, 0x6e, 0x66, 0x6f, 0x52, 0x10, 0x6f, 0x70, 0x74, 0x69, 0x6f, 0x6e, 0x61, 0x6c,
-	0x42, 0x75, 0x66, 0x66, 0x49, 0x6e, 0x66, 0x6f, 0x2a, 0x22, 0x0a, 0x04, 0x54, 0x79, 0x70, 0x65,
-	0x12, 0x0c, 0x0a, 0x08, 0x55, 0x50, 0x5f, 0x4c, 0x45, 0x56, 0x45, 0x4c, 0x10, 0x01, 0x12, 0x0c,
-	0x0a, 0x08, 0x55, 0x53, 0x45, 0x5f, 0x49, 0x54, 0x45, 0x4d, 0x10, 0x02, 0x42, 0x3b, 0x5a, 0x27,
-	0x6d, 0x61, 0x7a, 0x65, 0x5f, 0x67, 0x61, 0x6d, 0x65, 0x5f, 0x73, 0x65, 0x72, 0x76, 0x65, 0x72,
-	0x2f, 0x70, 0x62, 0x2f, 0x63, 0x6f, 0x6d, 0x6d, 0x6f, 0x6e, 0x2f, 0x4d, 0x61, 0x7a, 0x65, 0x54,
-	0x65, 0x6d, 0x70, 0x42, 0x75, 0x66, 0x66, 0xaa, 0x02, 0x0f, 0x50, 0x62, 0x2e, 0x4d, 0x61, 0x7a,
-	0x65, 0x54, 0x65, 0x6d, 0x70, 0x42, 0x75, 0x66, 0x66,
+	0x42, 0x75, 0x66, 0x66, 0x49, 0x6e, 0x66, 0x6f, 0x22, 0x5a, 0x0a, 0x0f, 0x43, 0x6c, 0x65, 0x61,
+	0x72, 0x54, 0x65, 0x6d, 0x70, 0x42, 0x75, 0x66, 0x66, 0x52, 0x51, 0x12, 0x2c, 0x0a, 0x06, 0x68,
+	0x65, 0x61, 0x64, 0x65, 0x72, 0x18, 0x01, 0x20, 0x01, 0x28, 0x0b, 0x32, 0x14, 0x2e, 0x43, 0x6f,
+	0x6d, 0x6d, 0x6f, 0x6e, 0x2e, 0x50, 0x61, 0x63, 0x6b, 0x65, 0x74, 0x48, 0x65, 0x61, 0x64, 0x65,
+	0x72, 0x52, 0x06, 0x68, 0x65, 0x61, 0x64, 0x65, 0x72, 0x12, 0x19, 0x0a, 0x08, 0x73, 0x74, 0x61,
+	0x67, 0x65, 0x5f, 0x69, 0x64, 0x18, 0x02, 0x20, 0x01, 0x28, 0x05, 0x52, 0x07, 0x73, 0x74, 0x61,
+	0x67, 0x65, 0x49, 0x64, 0x22, 0x8d, 0x01, 0x0a, 0x0f, 0x43, 0x6c, 0x65, 0x61, 0x72, 0x54, 0x65,
+	0x6d, 0x70, 0x42, 0x75, 0x66, 0x66, 0x52, 0x53, 0x12, 0x31, 0x0a, 0x08, 0x65, 0x72, 0x72, 0x5f,
+	0x69, 0x6e, 0x66, 0x6f, 0x18, 0x01, 0x20, 0x01, 0x28, 0x0b, 0x32, 0x16, 0x2e, 0x4d, 0x65, 0x73,
+	0x73, 0x61, 0x67, 0x65, 0x54, 0x79, 0x70, 0x65, 0x2e, 0x45, 0x72, 0x72, 0x6f, 0x72, 0x49, 0x6e,
+	0x66, 0x6f, 0x52, 0x07, 0x65, 0x72, 0x72, 0x49, 0x6e, 0x66, 0x6f, 0x12, 0x2c, 0x0a, 0x06, 0x68,
+	0x65, 0x61, 0x64, 0x65, 0x72, 0x18, 0x02, 0x20, 0x01, 0x28, 0x0b, 0x32, 0x14, 0x2e, 0x43, 0x6f,
+	0x6d, 0x6d, 0x6f, 0x6e, 0x2e, 0x50, 0x61, 0x63, 0x6b, 0x65, 0x74, 0x48, 0x65, 0x61, 0x64, 0x65,
+	0x72, 0x52, 0x06, 0x68, 0x65, 0x61, 0x64, 0x65, 0x72, 0x12, 0x19, 0x0a, 0x08, 0x73, 0x74, 0x61,
+	0x67, 0x65, 0x5f, 0x69, 0x64, 0x18, 0x03, 0x20, 0x01, 0x28, 0x05, 0x52, 0x07, 0x73, 0x74, 0x61,
+	0x67, 0x65, 0x49, 0x64, 0x2a, 0x22, 0x0a, 0x04, 0x54, 0x79, 0x70, 0x65, 0x12, 0x0c, 0x0a, 0x08,
+	0x55, 0x50, 0x5f, 0x4c, 0x45, 0x56, 0x45, 0x4c, 0x10, 0x01, 0x12, 0x0c, 0x0a, 0x08, 0x55, 0x53,
+	0x45, 0x5f, 0x49, 0x54, 0x45, 0x4d, 0x10, 0x02, 0x42, 0x3b, 0x5a, 0x27, 0x6d, 0x61, 0x7a, 0x65,
+	0x5f, 0x67, 0x61, 0x6d, 0x65, 0x5f, 0x73, 0x65, 0x72, 0x76, 0x65, 0x72, 0x2f, 0x70, 0x62, 0x2f,
+	0x63, 0x6f, 0x6d, 0x6d, 0x6f, 0x6e, 0x2f, 0x4d, 0x61, 0x7a, 0x65, 0x54, 0x65, 0x6d, 0x70, 0x42,
+	0x75, 0x66, 0x66, 0xaa, 0x02, 0x0f, 0x50, 0x62, 0x2e, 0x4d, 0x61, 0x7a, 0x65, 0x54, 0x65, 0x6d,
+	0x70, 0x42, 0x75, 0x66, 0x66,
 }
 
 var (
@@ -1002,7 +1139,7 @@ func file_common_MazeTempBuff_proto_rawDescGZIP() []byte {
 }
 
 var file_common_MazeTempBuff_proto_enumTypes = make([]protoimpl.EnumInfo, 1)
-var file_common_MazeTempBuff_proto_msgTypes = make([]protoimpl.MessageInfo, 10)
+var file_common_MazeTempBuff_proto_msgTypes = make([]protoimpl.MessageInfo, 12)
 var file_common_MazeTempBuff_proto_goTypes = []interface{}{
 	(Type)(0),                                 // 0: MazeTempBuff.Type
 	(*GetMazeTempBuffListRQ)(nil),             // 1: MazeTempBuff.GetMazeTempBuffListRQ
@@ -1015,39 +1152,44 @@ var file_common_MazeTempBuff_proto_goTypes = []interface{}{
 	(*SelectMazeTempBuffRS)(nil),              // 8: MazeTempBuff.SelectMazeTempBuffRS
 	(*RefreshOptionalMazeTempBuffListRQ)(nil), // 9: MazeTempBuff.RefreshOptionalMazeTempBuffListRQ
 	(*RefreshOptionalMazeTempBuffListRS)(nil), // 10: MazeTempBuff.RefreshOptionalMazeTempBuffListRS
-	(*Common.PacketHeader)(nil),               // 11: Common.PacketHeader
-	(*MessageType.ErrorInfo)(nil),             // 12: MessageType.ErrorInfo
-	(*MazeCommon.MazeItem)(nil),               // 13: MazeCommon.MazeItem
+	(*ClearTempBuffRQ)(nil),                   // 11: MazeTempBuff.ClearTempBuffRQ
+	(*ClearTempBuffRS)(nil),                   // 12: MazeTempBuff.ClearTempBuffRS
+	(*Common.PacketHeader)(nil),               // 13: Common.PacketHeader
+	(*MessageType.ErrorInfo)(nil),             // 14: MessageType.ErrorInfo
+	(*MazeCommon.MazeItem)(nil),               // 15: MazeCommon.MazeItem
 }
 var file_common_MazeTempBuff_proto_depIdxs = []int32{
-	11, // 0: MazeTempBuff.GetMazeTempBuffListRQ.header:type_name -> Common.PacketHeader
-	12, // 1: MazeTempBuff.GetMazeTempBuffListRS.err_info:type_name -> MessageType.ErrorInfo
-	11, // 2: MazeTempBuff.GetMazeTempBuffListRS.header:type_name -> Common.PacketHeader
+	13, // 0: MazeTempBuff.GetMazeTempBuffListRQ.header:type_name -> Common.PacketHeader
+	14, // 1: MazeTempBuff.GetMazeTempBuffListRS.err_info:type_name -> MessageType.ErrorInfo
+	13, // 2: MazeTempBuff.GetMazeTempBuffListRS.header:type_name -> Common.PacketHeader
 	3,  // 3: MazeTempBuff.GetMazeTempBuffListRS.buff_list:type_name -> MazeTempBuff.MazeBuffInfo
-	11, // 4: MazeTempBuff.GetOptionalMazeTempBuffListRQ.header:type_name -> Common.PacketHeader
+	13, // 4: MazeTempBuff.GetOptionalMazeTempBuffListRQ.header:type_name -> Common.PacketHeader
 	0,  // 5: MazeTempBuff.GetOptionalMazeTempBuffListRQ.type:type_name -> MazeTempBuff.Type
-	12, // 6: MazeTempBuff.GetOptionalMazeTempBuffListRS.err_info:type_name -> MessageType.ErrorInfo
-	11, // 7: MazeTempBuff.GetOptionalMazeTempBuffListRS.header:type_name -> Common.PacketHeader
+	14, // 6: MazeTempBuff.GetOptionalMazeTempBuffListRS.err_info:type_name -> MessageType.ErrorInfo
+	13, // 7: MazeTempBuff.GetOptionalMazeTempBuffListRS.header:type_name -> Common.PacketHeader
 	6,  // 8: MazeTempBuff.GetOptionalMazeTempBuffListRS.optional_buff_info:type_name -> MazeTempBuff.OptionalBuffInfo
 	0,  // 9: MazeTempBuff.GetOptionalMazeTempBuffListRS.type:type_name -> MazeTempBuff.Type
 	3,  // 10: MazeTempBuff.OptionalBuffInfo.select_buff_list:type_name -> MazeTempBuff.MazeBuffInfo
-	13, // 11: MazeTempBuff.OptionalBuffInfo.cost:type_name -> MazeCommon.MazeItem
-	11, // 12: MazeTempBuff.SelectMazeTempBuffRQ.header:type_name -> Common.PacketHeader
+	15, // 11: MazeTempBuff.OptionalBuffInfo.cost:type_name -> MazeCommon.MazeItem
+	13, // 12: MazeTempBuff.SelectMazeTempBuffRQ.header:type_name -> Common.PacketHeader
 	0,  // 13: MazeTempBuff.SelectMazeTempBuffRQ.type:type_name -> MazeTempBuff.Type
-	12, // 14: MazeTempBuff.SelectMazeTempBuffRS.err_info:type_name -> MessageType.ErrorInfo
-	11, // 15: MazeTempBuff.SelectMazeTempBuffRS.header:type_name -> Common.PacketHeader
+	14, // 14: MazeTempBuff.SelectMazeTempBuffRS.err_info:type_name -> MessageType.ErrorInfo
+	13, // 15: MazeTempBuff.SelectMazeTempBuffRS.header:type_name -> Common.PacketHeader
 	3,  // 16: MazeTempBuff.SelectMazeTempBuffRS.buff_list:type_name -> MazeTempBuff.MazeBuffInfo
 	0,  // 17: MazeTempBuff.SelectMazeTempBuffRS.type:type_name -> MazeTempBuff.Type
-	11, // 18: MazeTempBuff.RefreshOptionalMazeTempBuffListRQ.header:type_name -> Common.PacketHeader
-	13, // 19: MazeTempBuff.RefreshOptionalMazeTempBuffListRQ.cost:type_name -> MazeCommon.MazeItem
-	12, // 20: MazeTempBuff.RefreshOptionalMazeTempBuffListRS.err_info:type_name -> MessageType.ErrorInfo
-	11, // 21: MazeTempBuff.RefreshOptionalMazeTempBuffListRS.header:type_name -> Common.PacketHeader
+	13, // 18: MazeTempBuff.RefreshOptionalMazeTempBuffListRQ.header:type_name -> Common.PacketHeader
+	15, // 19: MazeTempBuff.RefreshOptionalMazeTempBuffListRQ.cost:type_name -> MazeCommon.MazeItem
+	14, // 20: MazeTempBuff.RefreshOptionalMazeTempBuffListRS.err_info:type_name -> MessageType.ErrorInfo
+	13, // 21: MazeTempBuff.RefreshOptionalMazeTempBuffListRS.header:type_name -> Common.PacketHeader
 	6,  // 22: MazeTempBuff.RefreshOptionalMazeTempBuffListRS.optional_buff_info:type_name -> MazeTempBuff.OptionalBuffInfo
-	23, // [23:23] is the sub-list for method output_type
-	23, // [23:23] is the sub-list for method input_type
-	23, // [23:23] is the sub-list for extension type_name
-	23, // [23:23] is the sub-list for extension extendee
-	0,  // [0:23] is the sub-list for field type_name
+	13, // 23: MazeTempBuff.ClearTempBuffRQ.header:type_name -> Common.PacketHeader
+	14, // 24: MazeTempBuff.ClearTempBuffRS.err_info:type_name -> MessageType.ErrorInfo
+	13, // 25: MazeTempBuff.ClearTempBuffRS.header:type_name -> Common.PacketHeader
+	26, // [26:26] is the sub-list for method output_type
+	26, // [26:26] is the sub-list for method input_type
+	26, // [26:26] is the sub-list for extension type_name
+	26, // [26:26] is the sub-list for extension extendee
+	0,  // [0:26] is the sub-list for field type_name
 }
 
 func init() { file_common_MazeTempBuff_proto_init() }
@@ -1176,6 +1318,30 @@ func file_common_MazeTempBuff_proto_init() {
 				return nil
 			}
 		}
+		file_common_MazeTempBuff_proto_msgTypes[10].Exporter = func(v interface{}, i int) interface{} {
+			switch v := v.(*ClearTempBuffRQ); i {
+			case 0:
+				return &v.state
+			case 1:
+				return &v.sizeCache
+			case 2:
+				return &v.unknownFields
+			default:
+				return nil
+			}
+		}
+		file_common_MazeTempBuff_proto_msgTypes[11].Exporter = func(v interface{}, i int) interface{} {
+			switch v := v.(*ClearTempBuffRS); i {
+			case 0:
+				return &v.state
+			case 1:
+				return &v.sizeCache
+			case 2:
+				return &v.unknownFields
+			default:
+				return nil
+			}
+		}
 	}
 	type x struct{}
 	out := protoimpl.TypeBuilder{
@@ -1183,7 +1349,7 @@ func file_common_MazeTempBuff_proto_init() {
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
 			RawDescriptor: file_common_MazeTempBuff_proto_rawDesc,
 			NumEnums:      1,
-			NumMessages:   10,
+			NumMessages:   12,
 			NumExtensions: 0,
 			NumServices:   0,
 		},
