@@ -37,14 +37,15 @@ func (b *Buff) RefreshOptionalMazeTempBuffListRQ_10439_10440(s *session.Session,
 	res.Header = req.Header
 	res.StageId = req.StageId
 	res.Level = req.Level
+	res.AreaId = req.AreaId
 	defer func() {
 		err = s.Response(res)
 		logger.InfoWF("RefreshOptionalMazeTempBuffListRQ end", zap.Any("req", req), zap.Any("res", res),
 			zap.Duration("costTime", time.Now().Sub(start)))
 	}()
 
-	userId, stageId, level, cost := uint64(s.UID()), req.GetStageId(), req.GetLevel(), req.GetCost()
-	if userId == 0 || stageId == 0 || level == 0 {
+	userId, stageId, level, cost, areaId := uint64(s.UID()), req.GetStageId(), req.GetLevel(), req.GetCost(), req.GetAreaId()
+	if userId == 0 || stageId == 0 || level == 0 || areaId == 0 {
 		logger.WarnWF("RefreshOptionalMazeTempBuffListRQ args error", zap.Any("req", req))
 		res.ErrInfo = errors.COMMON_ERROR_TIPS.Wrap("参数错误")
 		return nil
@@ -99,7 +100,7 @@ func (b *Buff) RefreshOptionalMazeTempBuffListRQ_10439_10440(s *session.Session,
 	}
 
 	// 刷新可选buff
-	err = refreshOptionalBuff(logger, userId, stageId, level, buffInfo)
+	err = refreshOptionalBuff(logger, userId, stageId, level, areaId, buffInfo)
 	if err != nil {
 		logger.ErrorWF("RefreshOptionalMazeTempBuffListRQ refreshOptionalBuff failed", zap.Error(err))
 		res.ErrInfo = errors.COMMON_ERROR_TIPS.Wrap("刷新buff失败")
@@ -135,7 +136,7 @@ func checkCost(costMap map[int32]int64, costList []*MazeCommon.MazeItem) bool {
 	return true
 }
 
-func refreshOptionalBuff(logger fklog.FKLogI, userId uint64, stageId, level int32,
+func refreshOptionalBuff(logger fklog.FKLogI, userId uint64, stageId, level int32, areaId int32,
 	buffInfo *MazeTempBuffSvr.TempBuffInfo) (err error) {
 	stageConfig := mazebarriesv8config.GetStageConfig(stageId)
 	if stageConfig == nil {
@@ -145,7 +146,13 @@ func refreshOptionalBuff(logger fklog.FKLogI, userId uint64, stageId, level int3
 
 	buffInfo.BuffSequence.RefreshCount = proto.Int32(buffInfo.GetBuffSequence().GetRefreshCount() + 1)
 	// 生成可选的buff列表
-	configId := mazeenergyaffixrandrulev8config.GetKey(stageConfig.Energy_affix_rand_rule, level)
+	ruleId, ok := stageConfig.Energy_affix_rand_rule[areaId]
+	if !ok || ruleId == 0 {
+		logger.WarnWF("getOptionalBuffList stage config unknown", zap.Int32("stageId", stageId),
+			zap.Int32("areaId", areaId))
+		return errors.New("没有找到能力随机规则")
+	}
+	configId := mazeenergyaffixrandrulev8config.GetKey(ruleId, level)
 	buffInfo.BuffSequence.SelectBuffList, err = createOptionalBuffList(logger, buffInfo, configId)
 	if err != nil {
 		logger.ErrorWF("refreshOptionalBuff createOptionalBuffList failed", zap.Error(err))

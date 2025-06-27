@@ -45,14 +45,15 @@ func (b *Buff) GetOptionalMazeTempBuffListRQ_10435_10436(s *session.Session, req
 	res.StageId = req.StageId
 	res.Level = req.Level
 	res.Type = req.Type
+	res.AreaId = req.AreaId
 	defer func() {
 		err = s.Response(res)
 		logger.InfoWF("GetOptionalMazeTempBuffListRQ end", zap.Any("req", req), zap.Any("res", res),
 			zap.Duration("costTime", time.Now().Sub(start)))
 	}()
 
-	userId, stageId, level, buffType := uint64(s.UID()), req.GetStageId(), req.GetLevel(), int32(req.GetType())
-	if userId == 0 || stageId == 0 || level == 0 {
+	userId, stageId, level, buffType, areaId := uint64(s.UID()), req.GetStageId(), req.GetLevel(), int32(req.GetType()), req.GetAreaId()
+	if userId == 0 || stageId == 0 || level == 0 || areaId == 0 || buffType == 0 {
 		logger.WarnWF("GetOptionalMazeTempBuffListRQ args error", zap.Any("req", req))
 		res.ErrInfo = errors.COMMON_ERROR_TIPS.Wrap("参数错误")
 		return nil
@@ -83,7 +84,7 @@ func (b *Buff) GetOptionalMazeTempBuffListRQ_10435_10436(s *session.Session, req
 
 	if len(buffInfo.GetBuffSequence().GetSelectBuffList()) == 0 {
 		// 生成可选buff列表
-		errInfo := getOptionalBuffList(logger, userId, stageId, level, buffType, buffInfo)
+		errInfo := getOptionalBuffList(logger, userId, stageId, level, buffType, areaId, buffInfo)
 		if errInfo != nil {
 			logger.ErrorWF("GetOptionalMazeTempBuffListRQ getOptionalBuffList", zap.Int32("stageId", stageId),
 				zap.Any("info", buffInfo), zap.Any("errInfo", errInfo))
@@ -115,7 +116,7 @@ func (b *Buff) GetOptionalMazeTempBuffListRQ_10435_10436(s *session.Session, req
 }
 
 // 获取可选buff列表
-func getOptionalBuffList(logger fklog.FKLogI, userId uint64, stageId, level, buffType int32,
+func getOptionalBuffList(logger fklog.FKLogI, userId uint64, stageId, level, buffType, areaId int32,
 	buffInfo *MazeTempBuffSvr.TempBuffInfo) *MessageType.ErrorInfo {
 	if level < buffInfo.GetBuffSequence().GetIndex() {
 		logger.WarnWF("getOptionalBuffList level already select", zap.Int32("level", level),
@@ -138,13 +139,19 @@ func getOptionalBuffList(logger fklog.FKLogI, userId uint64, stageId, level, buf
 	// 	return errors.COMMON_ERROR_TIPS.Wrap("当前等级无法选择buff")
 	// }
 
+	energyId, ok := stageConfig.Energy_id[areaId]
+	if !ok || energyId <= 0 {
+		logger.WarnWF("getOptionalBuffList energyId unknown", zap.Bool("findEnergyId", ok), zap.Int32("areaId", areaId))
+		return errors.COMMON_ERROR_TIPS.Wrap("找不到当前区域能力配置")
+	}
+
 	if buffType == int32(MazeTempBuff.Type_UP_LEVEL) {
-		checkErr := checkUpLevelSelectBuff(logger, level, stageConfig.Energy_id, buffInfo)
+		checkErr := checkUpLevelSelectBuff(logger, level, energyId, buffInfo)
 		if checkErr != nil && checkErr.GetErrCode() != errors.NO_ERROR_CODE {
 			return checkErr
 		}
 	} else if buffType == int32(MazeTempBuff.Type_USE_ITEM) {
-		checkErr := checkUseItemLevelSelectBuff(logger, level, stageConfig.Energy_id, buffInfo)
+		checkErr := checkUseItemLevelSelectBuff(logger, level, energyId, buffInfo)
 		if checkErr != nil && checkErr.GetErrCode() != errors.NO_ERROR_CODE {
 			return checkErr
 		}
@@ -165,7 +172,13 @@ func getOptionalBuffList(logger fklog.FKLogI, userId uint64, stageId, level, buf
 
 	buffInfo.BuffSequence.Index = proto.Int32(level)
 	// 生成可选的buff列表
-	configId := mazeenergyaffixrandrulev8config.GetKey(stageConfig.Energy_affix_rand_rule, level)
+	ruleId, ok := stageConfig.Energy_affix_rand_rule[areaId]
+	if !ok || ruleId <= 0 {
+		logger.ErrorWF("getOptionalBuffList stageConfig.Energy_affix_rand_rule not found",
+			zap.Int32("stageId", stageId), zap.Int32("level", level), zap.Int32("areaId", areaId))
+		return errors.COMMON_ERROR_TIPS.Wrap("找不到当前区域能力随机规则")
+	}
+	configId := mazeenergyaffixrandrulev8config.GetKey(ruleId, level)
 	buffList, err := createOptionalBuffList(logger, buffInfo, configId)
 	if err != nil {
 		logger.ErrorWF("getOptionalBuffList createOptionalBuffList failed", zap.Error(err))
