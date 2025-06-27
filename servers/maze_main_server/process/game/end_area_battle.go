@@ -46,6 +46,12 @@ func (g *Game) OnEndAreaBattleRQ_10525_10526(s *session.Session, req *MazeGame.E
 		logger.ErrorWF("OnEndAreaBattleRQ GetMazeTempBuff failed", zap.Error(err), zap.Any("req", req))
 		return
 	}
+
+	if tempBuffInfo == nil {
+		logger.InfoWF("OnEndAreaBattleRQ user tempBuffInfo is nil", zap.Any("req", req))
+		return
+	}
+
 	err = mazetempbuffredis.DelMazeTempBuff(logger, userId, req.GetStageId())
 	if err != nil {
 		logger.ErrorWF("OnEndAreaBattleRQ DelMazeTempBuff failed", zap.Error(err), zap.Any("req", req))
@@ -90,7 +96,7 @@ func (g *Game) OnEndAreaBattleRQ_10525_10526(s *session.Session, req *MazeGame.E
 func GetTempBuffSkillInfoChange(logger fklog.FKLogI, userID uint64, tempBuffInfo *MazeTempBuffSvr.TempBuffInfo) (ret *MazeAIBattle.MazeUserSkillInfoChangeID, changed bool, err error) {
 	userAttrMap, err := GetUserAttrMap(logger, userID)
 	if err != nil {
-		logger.ErrorWF("GetMazeBattleData GetUserAttrMap err", zap.Error(err))
+		logger.ErrorWF("OnEndAreaBattleRQ GetUserAttrMap err", zap.Error(err))
 		return nil, false, err
 	}
 
