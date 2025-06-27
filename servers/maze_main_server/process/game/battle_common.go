@@ -9,6 +9,7 @@ import (
 	"maze_game_server/io/redis/mazecalcattrredis"
 	"maze_game_server/pb/common/MazeAIBattle"
 	"maze_game_server/usecase/mustarrive"
+	"maze_game_server/usecase/online"
 
 	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fklog"
 	"go.uber.org/zap"
@@ -36,6 +37,7 @@ func GetUserAttrMap(logger fklog.FKLogI, userId uint64) (map[int32]int64, error)
 	}
 	return attrMap, nil
 }
+
 func GetUserBattleAttr(logger fklog.FKLogI, userId uint64, userAttrMap map[int32]int64) (map[int32]*MazeAIBattle.MazeAIAttrInfo, error) {
 	attrTypeMap := GetAttrType()
 	attrMap := make(map[int32]*MazeAIBattle.MazeAIAttrInfo, 0)
@@ -207,7 +209,7 @@ func SendMazeBarrierChgPack(logger fklog.FKLogI, userId uint64, mazeBattleInfo *
 		MazeBarrierInfo: mazeBattleInfo,
 	}
 	logger.InfoWF("SendMazeBarrierChgPack send client with", zap.Uint64("userId", userId), zap.Any("moneyPack", moneyPack))
-	return mustarrive.SendArrivePacket(logger, int64(userId), 10485, moneyPack)
+	return online.Push(logger, uint64(userId), 10485, moneyPack)
 }
 
 func GetEffectAttrValue(attrValue int32, attrValueVariableId map[int32]int32, userAttrMap map[int32]int64) int64 {

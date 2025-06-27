@@ -14,6 +14,7 @@ import (
 	"maze_game_server/pb/common/MazeCollect"
 	"maze_game_server/pb/server/MazeCollectCache"
 	"maze_game_server/usecase/mustarrive"
+	"maze_game_server/usecase/online"
 	"strings"
 	"time"
 
@@ -262,7 +263,7 @@ func NewCollectAfter(logger fklog.FKLogI, userId uint64, collectInfo *MazeCollec
 		return
 	}
 	pack.MazeCollectInfo = mazeCollectInfoPb
-	err = mustarrive.SendArrivePacket(logger, int64(userId), 10480, pack)
+	err = online.Push(logger, uint64(userId), 10480, pack)
 	if err != nil {
 		logger.ErrorWF("NewCollectAfter SendArrivePacket", zap.Any("pack", pack), zap.Error(err))
 		return
