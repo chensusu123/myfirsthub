@@ -222,9 +222,9 @@ func GetSelectBuffForceAttr(buffInfo []*MazeTempBuffSvr.TotalBuffInfo) (forceAtt
 			err = fmt.Errorf("GetSelectBuffForceAttr GetMazeAttributeFormulaV8Cfg nil, attrID: %d", v.GetBuffId())
 			return
 		}
-		if cfg.Type == forceAttrType {
-			forceAttr[cfg.Id] += v.GetBuffValue()
-		}
+		// if cfg.Type == forceAttrType {
+		forceAttr[cfg.Id] += v.GetBuffValue()
+		// }
 	}
 	return
 }
