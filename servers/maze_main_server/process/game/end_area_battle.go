@@ -33,6 +33,8 @@ func (g *Game) OnEndAreaBattleRQ_10525_10526(s *session.Session, req *MazeGame.E
 
 	res.Header = req.Header
 	res.ErrInfo = errors.NO_ERROR
+	return err
+	//temp block logic error
 
 	userId := uint64(s.UID())
 
