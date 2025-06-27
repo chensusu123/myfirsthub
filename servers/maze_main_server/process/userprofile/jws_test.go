@@ -1,18 +1,18 @@
 // @Author pangchenyang 2025/6/17 10:59:00
-// @Desc: 
+// @Desc:
 package userprofile
 
 import (
-	"testing"
-	"maze_game_server/pb/common/UserProfile"
-	"maze_game_server/lib/nano/session"
-	"github.com/stretchr/testify/assert"
 	"encoding/base64"
-	"google.golang.org/protobuf/proto"
 	"math/rand"
-	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fklog"
+	"maze_game_server/lib/nano/session"
+	"maze_game_server/pb/common/UserProfile"
+	"testing"
 	"time"
-	"maze_game_server/module/profilemodule"
+
+	"github.com/stretchr/testify/assert"
+	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fklog"
+	"google.golang.org/protobuf/proto"
 )
 
 func TestOnQueryAvatarToken(t *testing.T) {
@@ -53,15 +53,15 @@ func TestOnQueryAvatarToken(t *testing.T) {
 }
 
 func TestGenerateAvatarToken(t *testing.T) {
-	token, err := profilemodule.GenerateAvatarToken()
+	token, err := GenerateAvatarToken()
 	if err != nil {
 		t.Errorf("GenerateAvatarToken error: %v", err)
 		return
 	}
-	_, err = profilemodule.VerifyWithCustomClaims(token)
+	_, err = VerifyWithCustomClaims(token)
 	t.Logf("VerifyWithCustomClaims err: %v", err)
 	time.Sleep(time.Second * 2)
-	_, err = profilemodule.VerifyWithCustomClaims(token)
+	_, err = VerifyWithCustomClaims(token)
 	t.Logf("VerifyWithCustomClaims err: %v", err)
 }
 

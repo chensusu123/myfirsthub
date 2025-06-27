@@ -1,17 +1,18 @@
 // @Author pangchenyang 2025/6/17 14:40:00
-// @Desc: 
+// @Desc:
 package userprofile
 
 import (
-	"testing"
 	"fmt"
-	_ "gitlab.ifreetalk.com/maze-plate/freetk/fktestutil/testlogger" // 初始化日志
-	"time"
-	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fklog"
-	"os"
-	"gopkg.in/yaml.v3"
-	"maze_game_server/usecase/redisconfig"
 	"maze_game_server/io/mysql"
+	"maze_game_server/usecase/redisconfig"
+	"os"
+	"testing"
+	"time"
+
+	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fklog"
+	_ "gitlab.ifreetalk.com/maze-plate/freetk/fktestutil/testlogger" // 初始化日志
+	"gopkg.in/yaml.v3"
 )
 
 var (

@@ -1,11 +1,10 @@
-// @Author pangchenyang 2025/6/17 10:19:00
-// @Desc: 
-package profilemodule
+package userprofile
 
 import (
-	"github.com/dgrijalva/jwt-go"
 	"time"
-	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fklog"
+
+	"github.com/dgrijalva/jwt-go"
+	"gitlab.ifreetalk.com/nano-ecosystem/fklog"
 	"go.uber.org/zap"
 )
 

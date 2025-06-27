@@ -1,16 +1,39 @@
 // @Author pangchenyang 2025/6/11 21:55:00
-// @Desc: 
+// @Desc:
 package userprofile
 
 import (
-	"testing"
-	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fklog"
-	"time"
-	"maze_game_server/pb/common/UserProfile"
-	"github.com/stretchr/testify/assert"
-	"google.golang.org/protobuf/proto"
+	"maze_game_server/io/redis/userprofileredis"
 	"maze_game_server/lib/nano/session"
+	"maze_game_server/pb/common/UserProfile"
+	"os"
+	"testing"
+	"time"
+
+	"github.com/stretchr/testify/assert"
+	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fklog"
+	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/serverdepend"
+	"gitlab.ifreetalk.com/maze-plate/freetk/fkserver"
+	"google.golang.org/protobuf/proto"
 )
+
+func init() {
+	// 设置start.sh中的环境变量
+	os.Setenv("mode", "dev")
+	os.Setenv("HOSTNAME", "maze-main-server-c0-g4-0")
+	os.Setenv("S_GROUP_ID", "4")
+	os.Setenv("MAZE_REDIS_ADDR_4", "10.101.110.231:9005")
+	os.Setenv("LOCAL_DEV", "true")
+
+	// 建立客户端
+	db := userprofileredis.NewRedisDemo("maze_main_server.redis", "redis")
+	serverdepend.RegisterDepend(db)
+
+	go func() {
+		fkserver.Run()
+	}()
+	time.Sleep(time.Second * 2)
+}
 
 func TestOnQueryUserProfile(t *testing.T) {
 	logger = fklog.AppLogger().Clone("query_user_profile_t")
@@ -46,9 +69,7 @@ func TestOnQueryUserProfile(t *testing.T) {
 
 	for _, tt := range cases {
 		t.Run(tt.name, func(t *testing.T) {
-			req := &UserProfile.QueryUserProfileRQ{
-				UserId: tt.userID,
-			}
+			req := &UserProfile.QueryUserProfileRQ{}
 			s := &session.Session{}
 			s.Bind(tt.shardingID)
 			err := testProfile.OnQueryUserProfile_10481_10482(s, req)

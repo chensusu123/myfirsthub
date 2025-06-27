@@ -4,7 +4,8 @@ import (
 	"fmt"
 	"os"
 
-	"maze_game_server/io/mysql"
+	"maze_game_server/io/mysql/flowrecord"
+	"maze_game_server/io/redis/userprofileredis"
 	"maze_game_server/servers/maze_main_server/process"
 	"maze_game_server/usecase/business"
 	"maze_game_server/usecase/tasktimer"
@@ -32,12 +33,21 @@ func main() {
 	loadconfigapi.SetLoadConfigFunc(business.GCustomBusiness.LoadCacheConfig)
 	loadconfigapi.SetInitConfigCacheFunc(business.GCustomBusiness.Init)
 
-	myBiz := mysql.NewBizFlow("BizCfg")
+	// myBiz := mysql.NewBizFlow("BizCfg")
 	// 注册到服务依赖里面.初始化由框架进行调用
-	serverdepend.RegisterDepend(myBiz.Name(), myBiz)
+	// serverdepend.RegisterDepend(myBiz.Name(), myBiz)
 
-	fkserver.AppServer.AddBasicService(&process.NanoInitService{})
+	// fkserver.AppServer.AddBasicService(&process.NanoInitService{})
 	// fkserver.AddBusiness(&business.GCustomBusiness)
 	fkserver.AddBusiness(tasktimer.GTaskTimerBusiness)
+
+	// 注册redis
+	profileRedis := userprofileredis.NewRedisDemo("maze_main_server.redis", "user_profile_redis")
+	serverdepend.RegisterDepend(profileRedis)
+
+	// 注册mysql
+	flowMysql := flowrecord.NewMysqlAlterProfileRecord("BizCfg", "user_profile_flow_mysql")
+	serverdepend.RegisterDepend(flowMysql)
+
 	fkserver.Run()
 }
