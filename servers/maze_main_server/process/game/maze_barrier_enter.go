@@ -4,9 +4,11 @@ import (
 	"maze_game_server/common/constdef"
 	"maze_game_server/common/errors"
 	"maze_game_server/common/function/gentradeno"
+	"maze_game_server/common/structsdef"
 	"maze_game_server/config/GMazeActionCountV8Cfg"
 	"maze_game_server/config/GMazeBarriesV8Cfg"
 	"maze_game_server/config/GMazeLevelV8Cfg"
+	"maze_game_server/io/redis/mazeattrcalcnotifyqueue"
 	"maze_game_server/io/redis/mazebarriereventredis"
 	"maze_game_server/io/redis/mazebarriertempbuffredis"
 	"maze_game_server/io/redis/mazebuffinforedis"
@@ -85,9 +87,17 @@ func (g *Game) OnMazeBarrierEnterRQ_10447_10448(s *session.Session, req *MazeGam
 	}
 	res.StorageInfo = storageInfo
 	if storageInfo == nil {
-		//进入清临时buff
+		// 进入清临时buff
 		mazebarriertempbuffredis.ClearBarrierTempBuff(logger, userId, req.GetBarrierId())
 		mazebuffinforedis.DelMazeBuffBySrc(logger, userId, constdef.MazeBuffSrcSelectBuffForce)
+		// 推送属性计算消息
+		calcAttrNotify := &structsdef.MazeCalcAttrNotifyMsg{
+			UserId:  userId,
+			ChgType: constdef.MazeBuffChgForceValue,
+			Session: "buff",
+			BuffSrc: constdef.MazeBuffSrcSelectBuffForce,
+		}
+		mazeattrcalcnotifyqueue.SendMazeAttrCalcNotify(logger, calcAttrNotify)
 	}
 
 	mazeBattleInfo, err3 := GetMazeBattleData(logger, userId, req.GetBarrierId())
