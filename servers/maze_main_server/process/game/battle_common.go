@@ -8,7 +8,6 @@ import (
 	"maze_game_server/config/GMazeAttributeV8Cfg"
 	"maze_game_server/io/redis/mazecalcattrredis"
 	"maze_game_server/pb/common/MazeAIBattle"
-	"maze_game_server/usecase/mustarrive"
 	"maze_game_server/usecase/online"
 
 	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fklog"
