@@ -3,6 +3,7 @@ package process
 import (
 	"maze_game_server/lib/codec"
 	"maze_game_server/lib/nano/component"
+	"maze_game_server/servers/maze_main_server/process/alliance"
 	"maze_game_server/servers/maze_main_server/process/attr_calc"
 	"maze_game_server/servers/maze_main_server/process/auth"
 	"maze_game_server/servers/maze_main_server/process/buff"
@@ -10,6 +11,7 @@ import (
 	"maze_game_server/servers/maze_main_server/process/collect"
 	"maze_game_server/servers/maze_main_server/process/equip"
 	"maze_game_server/servers/maze_main_server/process/equip_gm"
+	"maze_game_server/servers/maze_main_server/process/family"
 	"maze_game_server/servers/maze_main_server/process/game"
 	"maze_game_server/servers/maze_main_server/process/game/energy"
 	"maze_game_server/servers/maze_main_server/process/game/sweep"
@@ -43,6 +45,8 @@ func Components() (comps *component.Components, routes *codec.Routes) {
 		reg(rob.NewRob())            // 掠夺
 		reg(interact.NewInteract())  // 交互
 		reg(pay.NewPay())            // 支付
+		reg(family.NewFamily())      // 家族组件
+		reg(alliance.NewAlliance())  // 联盟组件
 	}
 
 	return
