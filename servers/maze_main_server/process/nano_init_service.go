@@ -60,7 +60,7 @@ func (ns *NanoInitService) OnInit(logger fklog.FKLogI, config fkconfig.FkConfige
 				// 以下Serializer与PacketCodec作用于局部
 				codec.NewEsPacketCodec(routes, codec.WithSerializer(codec.NewProtobufSerializer())),
 			),
-			nano.WithSessionMonitor(online.SessionMonitor()),
+			nano.WithSessionMonitor(online.SessionMonitor(logger)),
 			nano.WithComponents(comps),
 		)
 	}

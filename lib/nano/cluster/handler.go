@@ -219,6 +219,8 @@ func (h *LocalHandler) handle(conn net.Conn, pcodec frame.PacketCodec) {
 		env.SessionMonitor.OnCreate(agent.session)
 	}
 
+	var lastErr error
+
 	// startup write goroutine
 	go agent.write()
 
@@ -252,7 +254,7 @@ func (h *LocalHandler) handle(conn net.Conn, pcodec frame.PacketCodec) {
 		}
 
 		if env.SessionMonitor != nil {
-			env.SessionMonitor.OnClose(agent.session)
+			env.SessionMonitor.OnClose(agent.session, lastErr)
 		}
 
 		agent.Close()
@@ -266,6 +268,7 @@ func (h *LocalHandler) handle(conn net.Conn, pcodec frame.PacketCodec) {
 	for {
 		n, err := conn.Read(buf)
 		if err != nil {
+			lastErr = err
 			log.Println(fmt.Sprintf("Read message error: %s, session will be closed immediately", err.Error()))
 			return
 		}
@@ -276,6 +279,7 @@ func (h *LocalHandler) handle(conn net.Conn, pcodec frame.PacketCodec) {
 
 			msgs, err := agent.pcodec.Decode(buf[:n])
 			if err != nil {
+				lastErr = err
 				log.Println(err.Error())
 
 				// process message decoded
@@ -293,11 +297,13 @@ func (h *LocalHandler) handle(conn net.Conn, pcodec frame.PacketCodec) {
 			// TODO(warning): decoder use slice for performance, packet data should be copy before next Decode
 			packets, err := agent.decoder.Decode(buf[:n])
 			if err != nil {
+				lastErr = err
 				log.Println(err.Error())
 
 				// process packets decoded
 				for _, p := range packets {
 					if err := h.processPacket(agent, p); err != nil {
+						lastErr = err
 						log.Println(err.Error())
 						return
 					}
@@ -308,6 +314,7 @@ func (h *LocalHandler) handle(conn net.Conn, pcodec frame.PacketCodec) {
 			// process all packets
 			for _, p := range packets {
 				if err := h.processPacket(agent, p); err != nil {
+					lastErr = err
 					log.Println(err.Error())
 					return
 				}

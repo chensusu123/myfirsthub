@@ -245,11 +245,19 @@ func (a *agent) setStatus(state int32) {
 func (a *agent) write() {
 	ticker := time.NewTicker(env.Heartbeat)
 	chWrite := make(chan []byte, agentWriteBacklog)
+
+	var lastErr error
+
 	// clean func
 	defer func() {
 		ticker.Stop()
 		close(a.chSend)
 		close(chWrite)
+
+		if env.SessionMonitor != nil {
+			env.SessionMonitor.OnClose(a.session, lastErr)
+		}
+
 		a.Close()
 		if env.Debug {
 			log.Println(fmt.Sprintf("Session write goroutine exit, SessionID=%d, UID=%d", a.session.ID(), a.session.UID()))
@@ -271,6 +279,7 @@ func (a *agent) write() {
 		case data := <-chWrite:
 			// close agent while low-level conn broken
 			if _, err := a.conn.Write(data); err != nil {
+				lastErr = err
 				log.Println(err.Error())
 				return
 			}
@@ -278,6 +287,7 @@ func (a *agent) write() {
 		case data := <-a.chSend:
 			payload, err := message.Serialize(data.payload, a.serializer)
 			if err != nil {
+				lastErr = err
 				switch data.typ {
 				case message.Push:
 					log.Println(fmt.Sprintf("Push: %s error: %s", data.route, err.Error()))
@@ -299,6 +309,7 @@ func (a *agent) write() {
 			if pipe := a.pipeline; pipe != nil {
 				err := pipe.Outbound().Process(a.session, m)
 				if err != nil {
+					lastErr = err
 					log.Println("broken pipeline", err.Error())
 					break
 				}
@@ -309,12 +320,14 @@ func (a *agent) write() {
 			if a.pcodec != nil {
 				p, err = a.pcodec.Encode(m)
 				if err != nil {
+					lastErr = err
 					log.Println(err.Error())
 					break
 				}
 			} else {
 				em, err := m.Encode()
 				if err != nil {
+					lastErr = err
 					log.Println(err.Error())
 					break
 				}
@@ -322,6 +335,7 @@ func (a *agent) write() {
 				// packet encode
 				p, err = codec.Encode(packet.Data, em)
 				if err != nil {
+					lastErr = err
 					log.Println(err)
 					break
 				}
