@@ -136,7 +136,12 @@ func (c *EsPacketCodec) Encode(msg *frame.Message) (data []byte, err error) {
 	stru.Data = msg.Data
 	stru.SetTeaflag()
 	// Encode
-	return stru.Pack()
+	data, err = stru.Pack()
+	if err == nil {
+		fmt.Printf("packet %d len %d\n", stru.PackType, len(data))
+	}
+
+	return
 }
 
 func ToMessageID(sessionID uint32, rqTime uint64, rsID uint16) (messageID uint64) {
