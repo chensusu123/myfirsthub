@@ -250,7 +250,7 @@ func (a *agent) write() {
 	chWrite := make(chan []byte, agentWriteBacklog)
 
 	// Logger
-	var logger = fklog.AppLogger().Clone("nano")
+	logger := fklog.AppLogger().Clone("nano")
 	var lastErr error
 
 	// clean func
@@ -283,10 +283,17 @@ func (a *agent) write() {
 
 		case data := <-chWrite:
 			// close agent while low-level conn broken
-			if _, err := a.conn.Write(data); err != nil {
+			if wCount, err := a.conn.Write(data); err != nil {
 				lastErr = err
 				log.Println(err.Error())
+				logger.ErrorWF("nano write packet failed",
+					zap.Int("data_len", len(data)),
+					zap.Int("write_count", wCount), zap.Error(err))
 				return
+			} else {
+				logger.InfoWF("nano write packet",
+					zap.Int("data_len", len(data)),
+					zap.Int("write_count", wCount))
 			}
 
 		case data := <-a.chSend:
