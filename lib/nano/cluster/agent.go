@@ -38,6 +38,9 @@ import (
 	"maze_game_server/lib/nano/scheduler"
 	"maze_game_server/lib/nano/serialize"
 	"maze_game_server/lib/nano/session"
+
+	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fklog"
+	"go.uber.org/zap"
 )
 
 const (
@@ -246,6 +249,8 @@ func (a *agent) write() {
 	ticker := time.NewTicker(env.Heartbeat)
 	chWrite := make(chan []byte, agentWriteBacklog)
 
+	// Logger
+	var logger = fklog.AppLogger().Clone("nano")
 	var lastErr error
 
 	// clean func
@@ -318,6 +323,8 @@ func (a *agent) write() {
 			var p []byte
 
 			if a.pcodec != nil {
+				logger.InfoWF("nano process packet stop", zap.Uint64("ID", m.ID), zap.String("route", m.Route), zap.Int("rs_data_len", len(m.Data)))
+
 				p, err = a.pcodec.Encode(m)
 				if err != nil {
 					lastErr = err

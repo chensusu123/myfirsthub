@@ -115,8 +115,6 @@ func (c *EsPacketCodec) Decode(data []byte) (msgs []*frame.Message, err error) {
 			continue
 		}
 
-		fmt.Printf("packet %d len %d\n", stru.PackType, len(packet))
-
 		msgs = append(msgs, &frame.Message{
 			Type:  frame.Request,
 			ID:    toMessageID(stru.SessionID, stru.EsRqTime, target.rsID),
@@ -136,12 +134,7 @@ func (c *EsPacketCodec) Encode(msg *frame.Message) (data []byte, err error) {
 	stru.Data = msg.Data
 	stru.SetTeaflag()
 	// Encode
-	data, err = stru.Pack()
-	if err == nil {
-		fmt.Printf("packet %d len %d\n", stru.PackType, len(data))
-	}
-
-	return
+	return stru.Pack()
 }
 
 func ToMessageID(sessionID uint32, rqTime uint64, rsID uint16) (messageID uint64) {

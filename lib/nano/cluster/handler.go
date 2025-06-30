@@ -46,6 +46,8 @@ import (
 	"maze_game_server/lib/nano/session"
 
 	"github.com/gorilla/websocket"
+	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fklog"
+	"go.uber.org/zap"
 )
 
 var (
@@ -213,6 +215,9 @@ func (h *LocalHandler) handle(conn net.Conn, pcodec frame.PacketCodec) {
 	// create a client agent and startup write gorontine
 	agent := newAgent(conn, h.pipeline, pcodec, h.remoteProcess)
 
+	// Logger
+	logger := fklog.AppLogger().Clone("nano")
+
 	h.currentNode.storeSession(agent.session)
 
 	if env.SessionMonitor != nil {
@@ -284,6 +289,7 @@ func (h *LocalHandler) handle(conn net.Conn, pcodec frame.PacketCodec) {
 
 				// process message decoded
 				for _, m := range msgs {
+					logger.InfoWF("nano process packet start", zap.Uint64("ID", m.ID), zap.String("route", m.Route), zap.Int("rq_data_len", len(m.Data)))
 					h.processMessage(agent, m)
 				}
 				return
@@ -291,6 +297,7 @@ func (h *LocalHandler) handle(conn net.Conn, pcodec frame.PacketCodec) {
 
 			// process all message
 			for _, m := range msgs {
+				logger.InfoWF("nano process packet start", zap.Uint64("ID", m.ID), zap.String("route", m.Route), zap.Int("rq_data_len", len(m.Data)))
 				h.processMessage(agent, m)
 			}
 		} else {
