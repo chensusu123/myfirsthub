@@ -53,7 +53,7 @@ func (b *Buff) GetOptionalMazeTempBuffListRQ_10435_10436(s *session.Session, req
 	}()
 
 	userId, stageId, level, buffType, areaId := uint64(s.UID()), req.GetStageId(), req.GetLevel(), int32(req.GetType()), req.GetAreaId()
-	if userId == 0 || stageId == 0 || level == 0 || areaId == 0 || buffType == 0 {
+	if userId == 0 || stageId == 0 || level == 0 {
 		logger.WarnWF("GetOptionalMazeTempBuffListRQ args error", zap.Any("req", req))
 		res.ErrInfo = errors.COMMON_ERROR_TIPS.Wrap("参数错误")
 		return nil
@@ -63,7 +63,11 @@ func (b *Buff) GetOptionalMazeTempBuffListRQ_10435_10436(s *session.Session, req
 		res.ErrInfo = errors.COMMON_ERROR_TIPS.Wrap("buff类型参数错误")
 		return nil
 	}
-
+	if buffType == int32(MazeTempBuff.Type_UP_LEVEL) && areaId == 0 {
+		logger.WarnWF("GetOptionalMazeTempBuffListRQ areaId error", zap.Any("req", req))
+		res.ErrInfo = errors.COMMON_ERROR_TIPS.Wrap("areaId参数错误")
+		return nil
+	}
 	// todo 检查用户是不是小程序用户
 
 	buffInfo, err := mazetempbuffredis.GetMazeTempBuff(logger, userId, stageId)
