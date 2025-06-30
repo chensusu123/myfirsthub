@@ -99,7 +99,7 @@ func (c *JsonPacketCodec) Decode(data []byte) (msgs []*frame.Message, err error)
 
 		target, found := c.rts[stru.PackType]
 		if !found {
-			fmt.Printf("packet %d not supported", stru.PackType)
+			fmt.Printf("packet %d not supported\n", stru.PackType)
 			continue
 		}
 

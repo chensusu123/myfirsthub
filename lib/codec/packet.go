@@ -111,9 +111,11 @@ func (c *EsPacketCodec) Decode(data []byte) (msgs []*frame.Message, err error) {
 
 		target, found := c.rts[stru.PackType]
 		if !found {
-			fmt.Printf("packet %d not supported", stru.PackType)
+			fmt.Printf("packet %d not supported\n", stru.PackType)
 			continue
 		}
+
+		fmt.Printf("packet %d len %d\n", stru.PackType, len(packet))
 
 		msgs = append(msgs, &frame.Message{
 			Type:  frame.Request,
