@@ -282,27 +282,40 @@ func (h *LocalHandler) handle(conn net.Conn, pcodec frame.PacketCodec) {
 			// Must working
 			agent.setStatus(statusWorking)
 
-			msgs, err := agent.pcodec.Decode(buf[:n])
+			msgs, packets, err := agent.pcodec.Decode(buf[:n])
 			if err != nil {
 				lastErr = err
 				log.Println(err.Error())
 
 				// process message decoded
-				for _, m := range msgs {
+				for index, m := range msgs {
 					logger.InfoWF("nano process packet start", zap.Uint64("ID", m.ID),
 						zap.String("remote_addr", agent.conn.RemoteAddr().String()),
-						zap.String("route", m.Route), zap.Int("rq_data_len", len(m.Data)))
+						zap.String("route", m.Route),
+						zap.Uint16("PackLen", packets[index].PackLen),
+						zap.Uint16("PackType", packets[index].PackType),
+						zap.Uint32("SessionID", packets[index].SessionID),
+						zap.Uint64("RqTime", packets[index].EsRqTime),
+						zap.Uint8("CompressType", packets[index].CompressType),
+						zap.Int("rq_data_len", len(m.Data)),
+					)
 					h.processMessage(agent, m)
 				}
 				return
 			}
 
 			// process all message
-			for _, m := range msgs {
+			for index, m := range msgs {
 				logger.InfoWF("nano process packet start", zap.Uint64("ID", m.ID),
 					zap.String("route", m.Route),
 					zap.String("remote_addr", agent.conn.RemoteAddr().String()),
-					zap.Int("rq_data_len", len(m.Data)))
+					zap.Uint16("PackLen", packets[index].PackLen),
+					zap.Uint16("PackType", packets[index].PackType),
+					zap.Uint32("SessionID", packets[index].SessionID),
+					zap.Uint64("RqTime", packets[index].EsRqTime),
+					zap.Uint8("CompressType", packets[index].CompressType),
+					zap.Int("rq_data_len", len(m.Data)),
+				)
 				h.processMessage(agent, m)
 			}
 		} else {

@@ -1,6 +1,7 @@
 package frame
 
 import (
+	"maze_game_server/lib/codec/raw_pkg"
 	"maze_game_server/lib/nano/internal/message"
 	"maze_game_server/lib/nano/serialize"
 )
@@ -21,7 +22,7 @@ type PacketProcessor interface {
 	Encode(*Message) ([]byte, error)
 
 	// Decode is used to decode a custom packet protocol.
-	Decode([]byte) ([]*Message, error)
+	Decode([]byte) ([]*Message, []*raw_pkg.StruSvrEsRawBaseHead, error)
 }
 
 type PacketCodec interface {

@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"fmt"
 	"io"
+	"maze_game_server/lib/codec/raw_pkg"
 	"maze_game_server/lib/nano/component"
 	"maze_game_server/lib/nano/frame"
 	"maze_game_server/lib/nano/serialize"
@@ -81,7 +82,7 @@ func (c *JsonPacketCodec) Serializer() serialize.Serializer {
 }
 
 // Decode implements frame.PacketProcessor.
-func (c *JsonPacketCodec) Decode(data []byte) (msgs []*frame.Message, err error) {
+func (c *JsonPacketCodec) Decode(data []byte) (msgs []*frame.Message, packets []*raw_pkg.StruSvrEsRawBaseHead, err error) {
 	c.buf.Write(data)
 	// JSON stream decoder
 	stream := jsoniter.NewDecoder(c.buf)
@@ -108,6 +109,13 @@ func (c *JsonPacketCodec) Decode(data []byte) (msgs []*frame.Message, err error)
 			ID:    toMessageID(stru.SessionID, stru.EsRqTime, target.rsID),
 			Route: target.handler,
 			Data:  []byte(stru.Data),
+		})
+
+		packets = append(packets, &raw_pkg.StruSvrEsRawBaseHead{
+			PackType:  stru.PackType,
+			SessionID: stru.SessionID,
+			EsRqTime:  stru.EsRqTime,
+			Data:      []byte(stru.Data),
 		})
 	}
 

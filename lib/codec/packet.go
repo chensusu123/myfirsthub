@@ -72,7 +72,7 @@ func (c *EsPacketCodec) Serializer() serialize.Serializer {
 }
 
 // Decode implements frame.PacketProcessor.
-func (c *EsPacketCodec) Decode(data []byte) (msgs []*frame.Message, err error) {
+func (c *EsPacketCodec) Decode(data []byte) (msgs []*frame.Message, packets []*raw_pkg.StruSvrEsRawBaseHead, err error) {
 	c.buf.Write(data)
 
 	twoBytes := [2]byte{}
@@ -121,6 +121,8 @@ func (c *EsPacketCodec) Decode(data []byte) (msgs []*frame.Message, err error) {
 			Route: target.handler,
 			Data:  stru.Data,
 		})
+
+		packets = append(packets, &stru)
 	}
 
 	return
