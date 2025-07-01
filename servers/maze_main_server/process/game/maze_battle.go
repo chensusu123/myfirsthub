@@ -66,20 +66,22 @@ func GetMazeBattleData(logger fklog.FKLogI, userId uint64, barrierId int32) (maz
 		return nil, err
 	}
 	mazeBattleInfo.RoleConfigInfo = userAttrInfo
-	for _, cfg := range GMazeFoeV8Cfg.GetAll() {
-		if cfg.In_barries_id != barrierId {
-			continue
-		}
-		if cfg.Foe_type == 1 {
-			continue
-		}
-		eliteMonsterConfig, err := GetMazeAIMonsterConfig(logger, userId, force, cfg.Order, userStiffRatio)
-		if err != nil {
-			logger.ErrorWF("GetMazeBattleData GetMazeAIMonsterConfig err", zap.Any("foeId", cfg.Order))
-			return nil, err
-		}
-		mazeBattleInfo.EliteMonsterInfos = append(mazeBattleInfo.EliteMonsterInfos, eliteMonsterConfig)
-	}
+
+	// 精简包结构：客户端已经不使用服务器回包的精英怪数据
+	// for _, cfg := range GMazeFoeV8Cfg.GetAll() {
+	// 	if cfg.In_barries_id != barrierId {
+	// 		continue
+	// 	}
+	// 	if cfg.Foe_type == 1 {
+	// 		continue
+	// 	}
+	// 	eliteMonsterConfig, err := GetMazeAIMonsterConfig(logger, userId, force, cfg.Order, userStiffRatio)
+	// 	if err != nil {
+	// 		logger.ErrorWF("GetMazeBattleData GetMazeAIMonsterConfig err", zap.Any("foeId", cfg.Order))
+	// 		return nil, err
+	// 	}
+	// 	mazeBattleInfo.EliteMonsterInfos = append(mazeBattleInfo.EliteMonsterInfos, eliteMonsterConfig)
+	// }
 
 	foeSkillMap := make(map[int32]struct{})
 	for _, areaInfo := range mazeBattleInfo.AreaInfos {
@@ -89,11 +91,11 @@ func GetMazeBattleData(logger fklog.FKLogI, userId uint64, barrierId int32) (maz
 			}
 		}
 	}
-	for _, eliteInfo := range mazeBattleInfo.EliteMonsterInfos {
-		for _, skillInfo := range eliteInfo.GetSkillTotalInfo().GetSkillInfoList() {
-			foeSkillMap[skillInfo.GetSkillId()] = struct{}{}
-		}
-	}
+	// for _, eliteInfo := range mazeBattleInfo.EliteMonsterInfos {
+	// 	for _, skillInfo := range eliteInfo.GetSkillTotalInfo().GetSkillInfoList() {
+	// 		foeSkillMap[skillInfo.GetSkillId()] = struct{}{}
+	// 	}
+	// }
 	for skillId := range foeSkillMap {
 		skillConfigInfo, err := GetFoeSkillConfigInfo(logger, skillId)
 		if err != nil {
