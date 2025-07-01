@@ -289,7 +289,9 @@ func (h *LocalHandler) handle(conn net.Conn, pcodec frame.PacketCodec) {
 
 				// process message decoded
 				for _, m := range msgs {
-					logger.InfoWF("nano process packet start", zap.Uint64("ID", m.ID), zap.String("route", m.Route), zap.Int("rq_data_len", len(m.Data)))
+					logger.InfoWF("nano process packet start", zap.Uint64("ID", m.ID),
+						zap.String("remote_addr", agent.conn.RemoteAddr().String()),
+						zap.String("route", m.Route), zap.Int("rq_data_len", len(m.Data)))
 					h.processMessage(agent, m)
 				}
 				return
@@ -297,7 +299,10 @@ func (h *LocalHandler) handle(conn net.Conn, pcodec frame.PacketCodec) {
 
 			// process all message
 			for _, m := range msgs {
-				logger.InfoWF("nano process packet start", zap.Uint64("ID", m.ID), zap.String("route", m.Route), zap.Int("rq_data_len", len(m.Data)))
+				logger.InfoWF("nano process packet start", zap.Uint64("ID", m.ID),
+					zap.String("route", m.Route),
+					zap.String("remote_addr", agent.conn.RemoteAddr().String()),
+					zap.Int("rq_data_len", len(m.Data)))
 				h.processMessage(agent, m)
 			}
 		} else {
@@ -422,7 +427,7 @@ func (h *LocalHandler) remoteProcess(session *session.Session, msg *message.Mess
 		log.Println(err)
 		return
 	}
-	var data = msg.Data
+	data := msg.Data
 	if !noCopy && len(msg.Data) > 0 {
 		data = make([]byte, len(msg.Data))
 		copy(data, msg.Data)
@@ -500,7 +505,7 @@ func (h *LocalHandler) localProcess(handler *component.Handler, lastMid uint64, 
 		}
 	}
 
-	var payload = msg.Data
+	payload := msg.Data
 	var data interface{}
 	if handler.IsRawArg {
 		data = payload

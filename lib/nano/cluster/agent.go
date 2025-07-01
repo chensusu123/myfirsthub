@@ -288,11 +288,13 @@ func (a *agent) write() {
 				log.Println(err.Error())
 				logger.ErrorWF("nano write packet failed",
 					zap.Int("data_len", len(data)),
+					zap.String("remote_addr", a.conn.RemoteAddr().String()),
 					zap.Int("write_count", wCount), zap.Error(err))
 				return
 			} else {
 				logger.InfoWF("nano write packet",
 					zap.Int("data_len", len(data)),
+					zap.String("remote_addr", a.conn.RemoteAddr().String()),
 					zap.Int("write_count", wCount))
 			}
 
@@ -330,7 +332,11 @@ func (a *agent) write() {
 			var p []byte
 
 			if a.pcodec != nil {
-				logger.InfoWF("nano process packet stop", zap.Uint64("ID", m.ID), zap.String("route", m.Route), zap.Int("rs_data_len", len(m.Data)))
+				logger.InfoWF("nano process packet stop",
+					zap.Uint64("ID", m.ID),
+					zap.String("route", m.Route),
+					zap.String("remote_addr", a.conn.RemoteAddr().String()),
+					zap.Int("rs_data_len", len(m.Data)))
 
 				p, err = a.pcodec.Encode(m)
 				if err != nil {
