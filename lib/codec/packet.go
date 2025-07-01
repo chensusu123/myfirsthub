@@ -96,8 +96,10 @@ func (c *EsPacketCodec) Decode(data []byte) (msgs []*frame.Message, packets []*r
 
 		if c.buf.Len() < packetLen-2 {
 			// 当数据包不完整时，回退2个字节包长度，下一次使用
-			c.buf.UnreadByte()
-			c.buf.UnreadByte()
+			remain := c.buf.Bytes()
+			c.buf.Reset()
+			c.buf.Write(twoBytes[:])
+			c.buf.Write(remain)
 			break
 		}
 
