@@ -14,22 +14,22 @@ import (
 
 // MazeBrushFoeV8ConfigRow from maze_brush_foe_v8【迷宫-刷怪相关时间数量类型】.xlsx maze_brush_foe_v8
 type MazeBrushFoeV8ConfigRow struct {
-	Id                           int32   `json:"id"`                           // 序号
-	Barries_id                   int32   `json:"barries_id"`                   // 关卡id
-	Brush_area_id                int32   `json:"brush_area_id"`                // 刷怪区域id
-	Group_id                     int32   `json:"group_id"`                     // 波
-	In_group_order               int32   `json:"in_group_order"`               // 一波内刷新顺序
-	Interval_time                int32   `json:"interval_time"`                // 每波刷新时间（毫秒）
-	Display_wave_id              int32   `json:"display_wave_id"`              // 页面展示的波次
-	Monsters_id                  []int32 `json:"monsters_id"`                  // 怪物id列表
-	Wave_kongfu                  int32   `json:"wave_kongfu"`                  // 每波增加的武力值
-	Min_brushtime                int32   `json:"min_brushtime"`                // 每波保底刷怪时间（毫秒）
-	Iskill_all                   int32   `json:"iskill_all"`                   // 是否需要杀完上波怪再刷本波
-	Index                        int32   `json:"index"`                        // 战斗区域id
-	Brushing_monsters_coordinate []int32 `json:"Brushing_monsters_coordinate"` // 区域刷怪坐标列表（横百分段值,竖百分段值）
-	Brushing_monsters_position   []int32 `json:"Brushing_monsters_position"`   // 区域刷怪点位列表
-	Front_group_order            []int32 `json:"front_group_order"`            // 立即刷怪前置条件波次
-	Is_def_show                  int32   `json:"is_def_show"`                  // 是否需要默认显示
+	Id                                  int32   `json:"id"`                                  // 序号
+	Barries_id                          int32   `json:"barries_id"`                          // 关卡id
+	Brush_area_id                       int32   `json:"brush_area_id"`                       // 刷怪区域id
+	Group_id                            int32   `json:"group_id"`                            // 波
+	In_group_order                      int32   `json:"in_group_order"`                      // 一波内刷新顺序
+	Interval_time                       int32   `json:"interval_time"`                       // 每波刷新时间（毫秒）
+	Display_wave_id                     int32   `json:"display_wave_id"`                     // 页面展示的波次
+	Monsters_id                         []int32 `json:"monsters_id"`                         // 怪物id列表
+	Wave_kongfu                         int32   `json:"wave_kongfu"`                         // 每波增加的武力值
+	Min_brushtime                       int32   `json:"min_brushtime"`                       // 每波保底刷怪时间（毫秒）
+	Iskill_all                          int32   `json:"iskill_all"`                          // 是否需要杀完上波怪再刷本波
+	Index                               int32   `json:"index"`                               // 战斗区域id
+	Brushing_monsters_coordinate        []int32 `json:"Brushing_monsters_coordinate"`        // 区域刷怪坐标列表（横百分段值,竖百分段值）
+	Brushing_monsters_position          []int32 `json:"Brushing_monsters_position"`          // 区域刷怪点坐标（横百分段值,竖百分段值）,范围
+	Brushing_monsters_relative_position []int32 `json:"Brushing_monsters_relative_position"` // 相对刷怪点（角度0~360,距离,范围）
+	Is_def_show                         int32   `json:"is_def_show"`                         // 是否需要默认显示
 }
 
 // MazeBrushFoeV8Config from maze_brush_foe_v8【迷宫-刷怪相关时间数量类型】.xlsx maze_brush_foe_v8
@@ -475,15 +475,15 @@ func (*gMazeBrushFoeV8Parser) Parse(logger fklog.FKLogI, data []string, row inte
 		}
 	}
 
-	// parse column 13 Brushing_monsters_position : 区域刷怪点位列表
+	// parse column 13 Brushing_monsters_position : 区域刷怪点坐标（横百分段值,竖百分段值）,范围
 	if data[13] != "" {
 
 		vals := strings.Split(data[13], ",")
 		for k, v := range vals {
 			tmp, err = strconv.ParseInt(v, 10, 64)
 			if err != nil {
-				err = errors.New("parse array field Brushing_monsters_position 区域刷怪点位列表 to []int32 failed")
-				logger.ErrorWF("parse array field Brushing_monsters_position 区域刷怪点位列表 to []int32 failed.",
+				err = errors.New("parse array field Brushing_monsters_position 区域刷怪点坐标（横百分段值,竖百分段值）,范围 to []int32 failed")
+				logger.ErrorWF("parse array field Brushing_monsters_position 区域刷怪点坐标（横百分段值,竖百分段值）,范围 to []int32 failed.",
 					zap.String("xlsx", "maze_brush_foe_v8【迷宫-刷怪相关时间数量类型】.xlsx"), zap.String("sheet", "maze_brush_foe_v8"),
 					// zap.String("field_data",data[13]),
 					zap.String("parse_data", v), zap.Int("index", k),
@@ -494,22 +494,22 @@ func (*gMazeBrushFoeV8Parser) Parse(logger fklog.FKLogI, data []string, row inte
 		}
 	}
 
-	// parse column 14 front_group_order : 立即刷怪前置条件波次
+	// parse column 14 Brushing_monsters_relative_position : 相对刷怪点（角度0~360,距离,范围）
 	if data[14] != "" {
 
 		vals := strings.Split(data[14], ",")
 		for k, v := range vals {
 			tmp, err = strconv.ParseInt(v, 10, 64)
 			if err != nil {
-				err = errors.New("parse array field front_group_order 立即刷怪前置条件波次 to []int32 failed")
-				logger.ErrorWF("parse array field front_group_order 立即刷怪前置条件波次 to []int32 failed.",
+				err = errors.New("parse array field Brushing_monsters_relative_position 相对刷怪点（角度0~360,距离,范围） to []int32 failed")
+				logger.ErrorWF("parse array field Brushing_monsters_relative_position 相对刷怪点（角度0~360,距离,范围） to []int32 failed.",
 					zap.String("xlsx", "maze_brush_foe_v8【迷宫-刷怪相关时间数量类型】.xlsx"), zap.String("sheet", "maze_brush_foe_v8"),
 					// zap.String("field_data",data[14]),
 					zap.String("parse_data", v), zap.Int("index", k),
 					zap.Error(err))
 				return
 			}
-			config.Front_group_order = append(config.Front_group_order, int32(tmp))
+			config.Brushing_monsters_relative_position = append(config.Brushing_monsters_relative_position, int32(tmp))
 		}
 	}
 
@@ -544,7 +544,7 @@ var gMazeBrushFoeV8Fields = []string{
 	"index",
 	"Brushing_monsters_coordinate",
 	"Brushing_monsters_position",
-	"front_group_order",
+	"Brushing_monsters_relative_position",
 	"is_def_show",
 }
 
