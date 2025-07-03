@@ -387,6 +387,14 @@ func GetUserBattleSkillInfo(logger fklog.FKLogI, skillId int32, attrMap map[int3
 					InitSkillCd:     proto.Int32(skillCfg.Initial_cool_time),
 					SkillCd:         proto.Int32(skillCfg.Skill_cool_time),
 				}
+				// 打击点索引:击退距离
+				for index, value := range mazeActCfg.Attack_back_range {
+					attackBackRange := &MazeAIBattle.MazeAttackBackRange{
+						Index:           proto.Int32(index),
+						AttackBackRange: proto.Int32(value),
+					}
+					actDamageConfig.AttackBackRange = append(actDamageConfig.AttackBackRange, attackBackRange)
+				}
 				actDamageConfigs = append(actDamageConfigs, actDamageConfig)
 				for k, v := range mazeActCfg.Attack_point_damage_ratio {
 					actDamageRatio := &MazeAIBattle.ActDamageRatioInfo{
@@ -708,6 +716,14 @@ func GetFoeSkillConfigInfo(logger fklog.FKLogI, skillId int32) (*MazeAIBattle.Ma
 				ActId:           proto.Int32(actId),
 				ToughBrokeValue: proto.Int32(mazeActCfg.Tough_broke_value),
 				ToughTempValue:  proto.Int32(mazeActCfg.Temp_tough),
+			}
+			// 打击点索引:击退距离
+			for index, value := range mazeActCfg.Attack_back_range {
+				attackBackRange := &MazeAIBattle.MazeAttackBackRange{
+					Index:           proto.Int32(index),
+					AttackBackRange: proto.Int32(value),
+				}
+				actDamageConfig.AttackBackRange = append(actDamageConfig.AttackBackRange, attackBackRange)
 			}
 			actDamageConfigs = append(actDamageConfigs, actDamageConfig)
 			for k, v := range mazeActCfg.Attack_point_damage_ratio {
