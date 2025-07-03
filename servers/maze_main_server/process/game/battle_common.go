@@ -267,3 +267,27 @@ func GetAttrValue(attrValue int32, attrValueVariableId map[int32]int32, userAttr
 	}
 	return int64(effectAttrValue)
 }
+
+func GetElementAttrValue(attrValue int32, attrValueVariableId []int32, userAttrMap map[int32]int64) (attrValues []int32) {
+	for _, v := range attrValueVariableId {
+		if v == 0 { // 属性ID为0则给默认值
+			attrValues = append(attrValues, attrValue)
+		} else {
+			if userAttrMap[v] <= 0 {
+				attrValues = append(attrValues, 0)
+			} else {
+				rate := int32(float64(attrValue) * float64(userAttrMap[v]) / 10000.0) // 原值 x (属性值 / 10000)
+				attrValues = append(attrValues, rate)
+			}
+		}
+	}
+	return attrValues
+}
+
+// FillElementAttrValue 用默认值填充各元素属性值
+func FillElementAttrValue(attrValue int32, count int) (attrValues []int32) {
+	for i := 0; i < count; i++ {
+		attrValues = append(attrValues, attrValue)
+	}
+	return
+}

@@ -129,6 +129,8 @@ func GetUserBattleSkillInfo(logger fklog.FKLogI, skillId int32, attrMap map[int3
 		IsBreak:                      proto.Int32(skillCfg.Is_break),
 		ScopeType:                    proto.Int32(skillCfg.Scope_type),
 		TargetType:                   proto.Int32(skillCfg.Target_type),
+		MainTargetDamageRates:        GetElementAttrValue(skillCfg.Main_target_damage, skillCfg.Damage_element_adjust, attrMap),
+		SecondTargetDamageRates:      GetElementAttrValue(skillCfg.Second_target_damage, skillCfg.Damage_element_adjust, attrMap),
 	}
 	// for k, v := range skillCfg.Target_effect_pro {
 	// 	if k == 0 {
@@ -157,6 +159,7 @@ func GetUserBattleSkillInfo(logger fklog.FKLogI, skillId int32, attrMap map[int3
 			CoolDown:      proto.Int32(effectCfg.Cool_down),
 			AttrId:        proto.Int32(effectCfg.Attr),
 			Value_4:       effectCfg.Attr_value_4,
+			MaxLayer:      proto.Int32(int32(GetEffectAttrValue(effectCfg.Attr_value_7, effectCfg.Attr_value_7_variable_id, attrMap))),
 		}
 
 		skillEffectOther.ValueList = append(skillEffectOther.ValueList, &MazeAIBattle.MazeAIEffectValueInfo{
@@ -196,6 +199,7 @@ func GetUserBattleSkillInfo(logger fklog.FKLogI, skillId int32, attrMap map[int3
 			CoolDown:      proto.Int32(effectCfg.Cool_down),
 			AttrId:        proto.Int32(effectCfg.Attr),
 			Value_4:       effectCfg.Attr_value_4,
+			MaxLayer:      proto.Int32(int32(GetEffectAttrValue(effectCfg.Attr_value_7, effectCfg.Attr_value_7_variable_id, attrMap))),
 		}
 		SkillEffectSelf.ValueList = append(SkillEffectSelf.ValueList, &MazeAIBattle.MazeAIEffectValueInfo{
 			Value:     proto.Int64(GetEffectAttrValue(effectCfg.Attr_value, effectCfg.Attr_value_variable_id, attrMap)),
@@ -298,6 +302,30 @@ func GetAttrValue(attrValue int32, attrValueVariableId map[int32]int32, userAttr
 		}
 	}
 	return int64(effectAttrValue)
+}
+
+func GetElementAttrValue(attrValue int32, attrValueVariableId []int32, userAttrMap map[int32]int64) (attrValues []int32) {
+	for _, v := range attrValueVariableId {
+		if v == 0 { // 属性ID为0则给默认值
+			attrValues = append(attrValues, attrValue)
+		} else {
+			if userAttrMap[v] <= 0 {
+				attrValues = append(attrValues, 0)
+			} else {
+				rate := int32(float64(attrValue) * float64(userAttrMap[v]) / 10000.0) // 原值 x (属性值 / 10000)
+				attrValues = append(attrValues, rate)
+			}
+		}
+	}
+	return attrValues
+}
+
+// FillElementAttrValue 用默认值填充各元素属性值
+func FillElementAttrValue(attrValue int32, count int) (attrValues []int32) {
+	for i := 0; i < count; i++ {
+		attrValues = append(attrValues, attrValue)
+	}
+	return
 }
 
 var (

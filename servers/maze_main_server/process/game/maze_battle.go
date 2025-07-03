@@ -435,6 +435,8 @@ func GetUserBattleSkillInfo(logger fklog.FKLogI, skillId int32, attrMap map[int3
 		IsBreak:                      proto.Int32(skillCfg.Is_break),
 		ScopeType:                    proto.Int32(skillCfg.Scope_type),
 		TargetType:                   proto.Int32(skillCfg.Target_type),
+		MainTargetDamageRates:        GetElementAttrValue(skillCfg.Main_target_damage, skillCfg.Damage_element_adjust, attrMap),
+		SecondTargetDamageRates:      GetElementAttrValue(skillCfg.Second_target_damage, skillCfg.Damage_element_adjust, attrMap),
 	}
 	// for k, v := range skillCfg.Target_effect_pro {
 	// 	if k == 0 {
@@ -463,6 +465,7 @@ func GetUserBattleSkillInfo(logger fklog.FKLogI, skillId int32, attrMap map[int3
 			CoolDown:      proto.Int32(effectCfg.Cool_down),
 			AttrId:        proto.Int32(effectCfg.Attr),
 			Value_4:       effectCfg.Attr_value_4,
+			MaxLayer:      proto.Int32(int32(GetEffectAttrValue(effectCfg.Attr_value_7, effectCfg.Attr_value_7_variable_id, attrMap))),
 		}
 
 		skillEffectOther.ValueList = append(skillEffectOther.ValueList, &MazeAIBattle.MazeAIEffectValueInfo{
@@ -502,6 +505,7 @@ func GetUserBattleSkillInfo(logger fklog.FKLogI, skillId int32, attrMap map[int3
 			CoolDown:      proto.Int32(effectCfg.Cool_down),
 			AttrId:        proto.Int32(effectCfg.Attr),
 			Value_4:       effectCfg.Attr_value_4,
+			MaxLayer:      proto.Int32(int32(GetEffectAttrValue(effectCfg.Attr_value_7, effectCfg.Attr_value_7_variable_id, attrMap))),
 		}
 		SkillEffectSelf.ValueList = append(SkillEffectSelf.ValueList, &MazeAIBattle.MazeAIEffectValueInfo{
 			Value:     proto.Int64(GetEffectAttrValue(effectCfg.Attr_value, effectCfg.Attr_value_variable_id, attrMap)),
@@ -573,6 +577,8 @@ func GetFoeBattleSkillInfo(logger fklog.FKLogI, skillId int32, attrMap map[int32
 		IsBreak:                      proto.Int32(skillCfg.Is_break),
 		ScopeType:                    proto.Int32(skillCfg.Scope_type),
 		TargetType:                   proto.Int32(skillCfg.Target_type),
+		MainTargetDamageRates:        FillElementAttrValue(skillCfg.Main_target_damage, 5),
+		SecondTargetDamageRates:      FillElementAttrValue(skillCfg.Second_target_damage, 5),
 	}
 	// for k, v := range skillCfg.Target_effect_pro {
 	// 	if k == 0 {
@@ -601,6 +607,7 @@ func GetFoeBattleSkillInfo(logger fklog.FKLogI, skillId int32, attrMap map[int32
 			CoolDown:      proto.Int32(effectCfg.Cool_down),
 			AttrId:        proto.Int32(effectCfg.Attr),
 			Value_4:       effectCfg.Attr_value_4,
+			MaxLayer:      proto.Int32(int32(GetEffectAttrValue(effectCfg.Attr_value_7, effectCfg.Attr_value_7_variable_id, attrMap))),
 		}
 
 		skillEffectOther.ValueList = append(skillEffectOther.ValueList, &MazeAIBattle.MazeAIEffectValueInfo{
@@ -640,6 +647,7 @@ func GetFoeBattleSkillInfo(logger fklog.FKLogI, skillId int32, attrMap map[int32
 			CoolDown:      proto.Int32(effectCfg.Cool_down),
 			AttrId:        proto.Int32(effectCfg.Attr),
 			Value_4:       effectCfg.Attr_value_4,
+			MaxLayer:      proto.Int32(int32(GetEffectAttrValue(effectCfg.Attr_value_7, effectCfg.Attr_value_7_variable_id, attrMap))),
 		}
 		SkillEffectSelf.ValueList = append(SkillEffectSelf.ValueList, &MazeAIBattle.MazeAIEffectValueInfo{
 			Value:     proto.Int64(GetEffectAttrValue(effectCfg.Attr_value, effectCfg.Attr_value_variable_id, attrMap)),
