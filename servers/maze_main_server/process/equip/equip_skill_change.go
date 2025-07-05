@@ -229,10 +229,10 @@ func GetUserBattleSkillInfo(logger fklog.FKLogI, skillId int32, attrMap map[int3
 	}
 
 	skillInfo.ReleaseCondition = proto.Int32(skillCfg.Release_condition)
-	skillInfo.BeforeSelfSkill = skillCfg.Before_self_skill
-	skillInfo.BeforeTargetSkill = skillCfg.Before_target_skill
-	skillInfo.AfterSelfSkill = skillCfg.After_self_skill
-	skillInfo.AfterTargetSkill = skillCfg.After_target_skill
+	skillInfo.BeforeSelfSkill = FilterSliceZeroValue(skillCfg.Before_self_skill)
+	skillInfo.BeforeTargetSkill = FilterSliceZeroValue(skillCfg.Before_target_skill)
+	skillInfo.AfterSelfSkill = FilterSliceZeroValue(skillCfg.After_self_skill)
+	skillInfo.AfterTargetSkill = FilterSliceZeroValue(skillCfg.After_target_skill)
 
 	return skillInfo, actDamageConfigs, nil
 }
@@ -334,6 +334,13 @@ func FillElementAttrValue(attrValue int32, count int) (attrValues []int32) {
 		attrValues = append(attrValues, attrValue)
 	}
 	return
+}
+
+func FilterSliceZeroValue[T int | int32 | int64](values []T) []T {
+	if len(values) == 1 && values[0] == 0 {
+		return make([]T, 0)
+	}
+	return values
 }
 
 var (

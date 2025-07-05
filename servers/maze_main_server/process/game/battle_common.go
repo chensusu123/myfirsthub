@@ -291,3 +291,10 @@ func FillElementAttrValue(attrValue int32, count int) (attrValues []int32) {
 	}
 	return
 }
+
+func FilterSliceZeroValue[T int | int32 | int64](values []T) []T {
+	if len(values) == 1 && values[0] == 0 {
+		return make([]T, 0)
+	}
+	return values
+}
