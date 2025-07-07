@@ -63,6 +63,9 @@ func CalUserSweepBarrierAward(logger fklog.FKLogI, uid uint64, barrierId int32, 
 		for _, foe := range cfg.Monsters_id {
 			foeCountMap[foe] += 1
 		}
+		for foe, num := range cfg.Monsterslist_ids_and_nums {
+			foeCountMap[foe] += num
+		}
 	}
 
 	moneyExtra, err := mazecommonvalue.GetMoneyExtraAdditionEquip(logger, uid)
