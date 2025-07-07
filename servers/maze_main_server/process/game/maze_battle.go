@@ -192,6 +192,7 @@ func GetMazeAIMonsterConfig(logger fklog.FKLogI, userId uint64, force int64, foe
 		UserStiffRatio: proto.Int64(CalcUserStiffRatio(foeCfg, force)),
 	}
 	monsterConfigInfo.AttackValue = attackValue
+	monsterConfigInfo.AttackedBackRange = proto.Int32(foeCfg.Attacked_back_range)
 	monsterConfigInfo.AttrInfo = make([]*MazeAIBattle.MazeAIAttrInfo, 0)
 	monsterConfigInfo.AttrInfo = append(monsterConfigInfo.AttrInfo, &MazeAIBattle.MazeAIAttrInfo{
 		Type:          proto.Int32(int32(MazeAIBattle.MAZE_AI_ATTR_TYPE_ROLE_ATK_VALUE)),
