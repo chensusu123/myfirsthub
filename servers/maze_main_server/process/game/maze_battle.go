@@ -140,7 +140,7 @@ func GetFoeAreaInfos(logger fklog.FKLogI, userId uint64, force int64, barrierId 
 		for _, foeId := range cfg.Monsters_id {
 			areaFoeMap[cfg.Brush_area_id][foeId] = struct{}{}
 		}
-		for foeId, num := range cfg.Monsterslist_ids_and_nums {
+		for foeId, _ := range cfg.Monsterslist_ids_and_nums {
 			areaFoeMap[cfg.Brush_area_id][foeId] = struct{}{}
 		}
 	}
