@@ -23,7 +23,7 @@ type MazeBrushFoeV8ConfigRow struct {
 	Display_wave_id                     int32           `json:"display_wave_id"`                     // 页面展示的波次
 	Monsters_id                         []int32         `json:"monsters_id"`                         // 怪物id列表
 	Monsterslist_ids_and_nums           map[int32]int32 `json:"monsterslist_ids_and_nums"`           // 【新刷怪】怪物id以及数量列表
-	Interval_times_and_nums             map[int32]int32 `json:"interval_times_and_nums"`             // 【新刷怪】时间间隔以及数量列表
+	Interval_times_and_nums             []int32         `json:"interval_times_and_nums"`             // 【新刷怪】时间间隔以及数量列表
 	Wave_kongfu                         int32           `json:"wave_kongfu"`                         // 每波增加的武力值
 	Min_brushtime                       int32           `json:"min_brushtime"`                       // 每波保底刷怪时间（毫秒）
 	Iskill_all                          int32           `json:"iskill_all"`                          // 是否需要杀完上波怪再刷本波
@@ -443,37 +443,19 @@ func (*gMazeBrushFoeV8Parser) Parse(logger fklog.FKLogI, data []string, row inte
 	// parse column 9 interval_times_and_nums : 【新刷怪】时间间隔以及数量列表
 	if data[9] != "" {
 
-		config.Interval_times_and_nums = make(map[int32]int32)
-		var key int32
-		var value int32
-		vals := strings.Split(data[9], "_")
-		for k, val := range vals {
-			items := strings.Split(val, ":")
-			tmp, err = strconv.ParseInt(items[0], 10, 64)
+		vals := strings.Split(data[9], ",")
+		for k, v := range vals {
+			tmp, err = strconv.ParseInt(v, 10, 64)
 			if err != nil {
-				err = errors.New("parse map field interval_times_and_nums 【新刷怪】时间间隔以及数量列表 to key int32 failed")
-				logger.ErrorWF("parse map field interval_times_and_nums 【新刷怪】时间间隔以及数量列表 to key int32 failed.",
+				err = errors.New("parse array field interval_times_and_nums 【新刷怪】时间间隔以及数量列表 to []int32 failed")
+				logger.ErrorWF("parse array field interval_times_and_nums 【新刷怪】时间间隔以及数量列表 to []int32 failed.",
 					zap.String("xlsx", "maze_brush_foe_v8【迷宫-刷怪相关时间数量类型】.xlsx"), zap.String("sheet", "maze_brush_foe_v8"),
 					// zap.String("field_data",data[9]),
-					zap.String("item_data", val), zap.Int("index", k),
-					zap.String("parse_data", items[0]),
+					zap.String("parse_data", v), zap.Int("index", k),
 					zap.Error(err))
 				return
 			}
-			key = int32(tmp)
-			tmp, err = strconv.ParseInt(items[1], 10, 64)
-			if err != nil {
-				err = errors.New("parse map field interval_times_and_nums 【新刷怪】时间间隔以及数量列表 to value int32 failed")
-				logger.ErrorWF("parse map field interval_times_and_nums 【新刷怪】时间间隔以及数量列表 to value int32 failed.",
-					zap.String("xlsx", "maze_brush_foe_v8【迷宫-刷怪相关时间数量类型】.xlsx"), zap.String("sheet", "maze_brush_foe_v8"),
-					// zap.String("field_data",data[9]),
-					zap.String("item_data", val), zap.Int("index", k),
-					zap.String("parse_data", items[1]),
-					zap.Error(err))
-				return
-			}
-			value = int32(tmp)
-			config.Interval_times_and_nums[key] = value
+			config.Interval_times_and_nums = append(config.Interval_times_and_nums, int32(tmp))
 		}
 	}
 
