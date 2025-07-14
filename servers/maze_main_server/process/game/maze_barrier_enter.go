@@ -71,11 +71,12 @@ func (g *Game) OnMazeBarrierEnterRQ_10447_10448(s *session.Session, req *MazeGam
 		return
 	}
 
-	if req.GetBarrierId() < userInfo.Barrier {
-		logger.ErrorWF("OnMazeBarrierEnterRQ req barrier lt pass barrier", zap.Any("req", req), zap.Int32("save", userInfo.Barrier))
-		res.ErrInfo = errors.COMMON_ERROR_TIPS.Wrap("该关卡id小于存储的关卡id")
-		return
-	}
+	// TODO 客户端需要进入任意关卡
+	// if req.GetBarrierId() < userInfo.Barrier {
+	// 	logger.ErrorWF("OnMazeBarrierEnterRQ req barrier lt pass barrier", zap.Any("req", req), zap.Int32("save", userInfo.Barrier))
+	// 	res.ErrInfo = errors.COMMON_ERROR_TIPS.Wrap("该关卡id小于存储的关卡id")
+	// 	return
+	// }
 
 	//	res.Energy = proto.Int32(userInfo.Energy)
 	var isNewBarrier bool
