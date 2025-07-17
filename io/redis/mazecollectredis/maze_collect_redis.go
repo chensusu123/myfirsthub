@@ -14,6 +14,7 @@ import (
 )
 
 var gRedis = &fkredis.FkRedis{}
+var collectKsy = "maze:collect:info:%d"
 
 const field = 1
 
@@ -27,13 +28,13 @@ func SetCollectInfo(logger fklog.FKLogI, uid uint64, info *MazeCollectCache.Maze
 	if err != nil {
 		return
 	}
-	_, err = gRedis.Do(context.TODO(), "set", fmt.Sprintf("maze:collect:info:%d", uid), bts)
+	_, err = gRedis.Do(context.TODO(), "set", fmt.Sprintf(collectKsy, uid), bts)
 	logger.InfoWF("SetCollectInfo", zap.Uint64("userId", uid), zap.Any("info", info))
 	return
 }
 
 func GetCollectInfo(logger fklog.FKLogI, uid uint64) (info *MazeCollectCache.MazeCollectInfo, err error) {
-	bts, err := redis.Bytes(gRedis.Do(context.TODO(), "get", fmt.Sprintf("maze:collect:info:%d", uid)))
+	bts, err := redis.Bytes(gRedis.Do(context.TODO(), "get", fmt.Sprintf(collectKsy, uid)))
 	if err != nil {
 		if err == redis.ErrNil {
 			return nil, nil
@@ -47,7 +48,7 @@ func GetCollectInfo(logger fklog.FKLogI, uid uint64) (info *MazeCollectCache.Maz
 }
 
 func GMDel(logger fklog.FKLogI, userId uint64) (err error) {
-	key := fmt.Sprintf("maze:collect:info:%d", userId)
+	key := fmt.Sprintf(collectKsy, userId)
 	_, err = redis.Int64(gRedis.Do(context.TODO(), "del", key))
 	if err != nil {
 		logger.ErrorWF("GMDel fail", zap.String("key", key), zap.Error(err))

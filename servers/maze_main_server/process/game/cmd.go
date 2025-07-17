@@ -12,8 +12,10 @@ import (
 	"maze_game_server/io/redis/mazeshopseqredis"
 	"maze_game_server/io/redis/mazeuserbarrierredis"
 	"maze_game_server/io/redis/mazeuserlevelredis"
+	"maze_game_server/io/redis/syncmazestorageinforedis"
 	"maze_game_server/lib/log"
 	"maze_game_server/lib/nano/session"
+	"maze_game_server/module/mazeuserinfo"
 	"maze_game_server/pb/common/MazeGame"
 	"maze_game_server/pb/server/MazeEnergySvr"
 	"maze_game_server/servers/maze_main_server/process/game/energy"
@@ -153,6 +155,7 @@ func ParseCmd(logger fklog.FKLogI, uid uint64, cmdCode int32, cmd string, sessio
 			logger.ErrorWF("ParseCmd ClearOpenBoxTime fail", zap.Error(err), zap.Uint64("userID", fkutil.ToUint64(params["user"])))
 		}
 		err = ClearBarrier(logger, fkutil.ToUint64(params["user"]))
+
 		return
 	case 1005:
 		cmdParams := strings.Split(cmd, "&")
@@ -260,6 +263,19 @@ func ClearBarrier(logger fklog.FKLogI, userId uint64) (err error) {
 	}
 
 	err = mazeequipgetnumredis.GMDel(logger, userId)
+	if err != nil {
+		return
+	}
+
+	//清除关卡存档
+	userInfo, err := mazeuserinfo.GetUserInfoV2(logger, userId)
+	if err != nil {
+		return
+	}
+	err = syncmazestorageinforedis.DelSyncMazeStorageInfo(userId, userInfo.Barrier)
+	if err != nil {
+		return err
+	}
 
 	return
 

@@ -8,6 +8,7 @@ import (
 	"maze_game_server/servers/maze_main_server/process/equip_gm"
 	"maze_game_server/servers/maze_main_server/process/game"
 	"maze_game_server/servers/maze_main_server/process/gm"
+	"maze_game_server/servers/maze_main_server/process/pay"
 
 	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fklog"
 	"gitlab.ifreetalk.com/maze-plate/freetk/fkserver/web_service"
@@ -84,5 +85,8 @@ func RegisterHandler() {
 		equip_gm.RegGm(logger)
 		// Buff
 		buff.InitGM(logger)
+
+		// 充值发货
+		pay.RegPayDelivery(logger)
 	})
 }

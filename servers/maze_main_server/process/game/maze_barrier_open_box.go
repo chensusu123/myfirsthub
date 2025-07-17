@@ -8,6 +8,7 @@ import (
 	"maze_game_server/common/function/gentradeno"
 	"maze_game_server/config/GMazeBoxV8Cfg"
 	"maze_game_server/config/GMazeItemsV8Cfg"
+	"maze_game_server/io/redis/mazebarrieropstatusredis"
 	"maze_game_server/io/redis/mazeboxredis"
 	"maze_game_server/lib/log"
 	"maze_game_server/lib/nano/session"
@@ -53,6 +54,19 @@ func (g *Game) OnBarrierOpenBoxRQ_10445_10446(s *session.Session, req *MazeGame.
 		logger.ErrorWF("OnBarrierOpenBoxRQ barrier and box not match", zap.Any("boxId", req.GetBoxId()), zap.Any("barrierId", req.GetBarrierId()))
 		res.ErrInfo = errors.COMMON_ERROR_TIPS.Wrap("宝箱关卡信息不匹配")
 		return
+	}
+
+	// 防重复操作校验
+	triggered, triggerFn, err := mazebarrieropstatusredis.IsTriggered(logger, userId, req.GetBarrierId(), fmt.Sprintf("openbox:%d", req.GetBoxId()))
+	if err != nil {
+		logger.ErrorWF("OnBarrierOpenBoxRQ IsTriggered fail", zap.Error(err), zap.Any("boxId", req.GetBoxId()), zap.Any("barrierId", req.GetBarrierId()))
+		res.ErrInfo = errors.COMMON_ERROR_TIPS.Wrap("数据校验失败")
+	}
+	if triggered {
+		logger.WarnWF("OnBarrierOpenBoxRQ already opened", zap.Any("boxId", req.GetBoxId()), zap.Any("barrierId", req.GetBarrierId()))
+		res.ErrInfo = errors.COMMON_ERROR_TIPS.Wrap("宝箱已打开")
+	} else {
+		defer triggerFn()
 	}
 
 	opened, err := mazeboxredis.IsOpenedBox(logger, userId, int32(req.GetBoxId()))

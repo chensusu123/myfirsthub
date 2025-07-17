@@ -7,6 +7,7 @@
 package mazebag
 
 import (
+	"maze_game_server/usecase/online"
 	"time"
 
 	"github.com/gogo/protobuf/proto"
@@ -22,7 +23,6 @@ import (
 	"maze_game_server/pb/common/MazeBag"
 	"maze_game_server/pb/common/MazeCommon"
 	"maze_game_server/pb/common/MessageType"
-	"maze_game_server/usecase/mustarrive"
 )
 
 var GlobalMazeBag = &class{}
@@ -187,6 +187,5 @@ func SendBagItemChgID(userCtx fkserver.UserContext, items []*MazeCommon.MazeItem
 	for _, item := range items {
 		idPack.Items = append(idPack.Items, itemutil.BuildMazeBagItem(userCtx, item.GetItemId(), item.GetCount()))
 	}
-
-	_ = mustarrive.SendArrivePacket(userCtx, int64(userCtx.UserID), 10404, idPack)
+	_ = online.Push(userCtx, userCtx.UserID, 10404, idPack)
 }

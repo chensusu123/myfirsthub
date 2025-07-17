@@ -9,6 +9,7 @@ import (
 	"maze_game_server/io/redis/mazecollectredis"
 	"maze_game_server/lib/log"
 	"maze_game_server/lib/nano/session"
+	"maze_game_server/module/mazecollect"
 	"maze_game_server/module/mazeuserinfo"
 	"maze_game_server/pb/common/MazeCollect"
 	"maze_game_server/pb/server/MazeCollectCache"
@@ -19,7 +20,7 @@ import (
 	"google.golang.org/protobuf/proto"
 )
 
-// 道具领取
+// 挂机道具领取
 func (c *Collect) OnMazeCollectItemReceiveRQ_10467_10468(s *session.Session, req *MazeCollect.MazeCollectItemReceiveRQ) (err error) {
 
 	logger := log.Clone("Collect", uint64(s.UID()), 0)
@@ -36,11 +37,17 @@ func (c *Collect) OnMazeCollectItemReceiveRQ_10467_10468(s *session.Session, req
 	}()
 
 	// 是否已经初始化
-	collectInfo, err := mazecollectredis.GetCollectInfo(logger, userId)
-	if err != nil {
-		logger.ErrorWF("OnMazeCollectItemReceiveRQ GetCollectInfo error",
-			zap.Any("userId", userId),
-			zap.Error(err))
+	//collectInfo, err := mazecollectredis.GetCollectInfo(logger, userId)
+	//if err != nil {
+	//	logger.ErrorWF("OnMazeCollectItemReceiveRQ GetCollectInfo error",
+	//		zap.Any("userId", userId),
+	//		zap.Error(err))
+	//	return
+	//}
+	cInfo := mazecollect.NewCollectInfo(logger, userId)
+	collectInfo := cInfo.GetCollectInfo()
+	if collectInfo == nil {
+		logger.ErrorWF("OnMazeCollectItemReceiveRQ GetCollectInfo error", zap.Any("userId", userId))
 		return
 	}
 
@@ -110,7 +117,7 @@ func (c *Collect) OnMazeCollectItemReceiveRQ_10467_10468(s *session.Session, req
 
 	tradeNo := gentradeno.GetTradeNum()
 	items := Map2Common(addItems)
-	errInfo := gentradeno.AddItemEx(logger, userId, 692, tradeNo, req.Header, items...)
+	errInfo := gentradeno.AddItemEx(logger, userId, 692, tradeNo, req.Header, items...) //进背包
 	if errInfo != nil {
 		logger.ErrorWF("GetAllEquipDismantleAward AddItemEx fail", zap.Any("items", items))
 		//res.ErrInfo = errInfo
@@ -123,11 +130,15 @@ func (c *Collect) OnMazeCollectItemReceiveRQ_10467_10468(s *session.Session, req
 		return
 	}
 	res.MazeCollectInfo = mazeCollectInfoPb
-	PushDollMazeCollectInfoLog(logger, userId, resetCollectInfo, collectInfo.GetLastTime(), 0, mazecollectrecord.MazeCollectReceive, tradeNo, items, 0)
+	err = PushDollMazeCollectInfoLog(logger, userId, resetCollectInfo, collectInfo.GetLastTime(), 0, mazecollectrecord.MazeCollectReceive, tradeNo, items, 0)
+	if err != nil {
+		logger.ErrorWF("ItemCollect PushDollMazeCollectInfoLog err", zap.Any("collectInfo", collectInfo), zap.Error(err))
+		return
+	}
 	return
 }
 
-// 重置宠物收集
+// 重置挂机收集
 func ResetMazeCollect(logger fklog.FKLogI, userId uint64, startTime int64, collectInfo *MazeCollectCache.MazeCollectInfo, remainItems []*MazeCollectCache.ItemInfo) (resetCollectInfo *MazeCollectCache.MazeCollectInfo, err error) {
 	cfg := GMazeBarriesOnHookV8Cfg.Get(collectInfo.GetBarrierId())
 	if cfg == nil {

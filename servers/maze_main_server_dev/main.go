@@ -6,7 +6,6 @@ import (
 
 	"maze_game_server/servers/maze_main_server/process"
 	"maze_game_server/usecase/business"
-	"maze_game_server/usecase/tasktimer"
 
 	"maze_game_server/io/gormdemo"
 	"maze_game_server/io/mysql"
@@ -42,7 +41,7 @@ func main() {
 	serverdepend.RegisterDepend(myBiz)
 
 	fkserver.AppServer.AddBasicService(&process.NanoInitService{})
-	fkserver.AddBusiness(tasktimer.GTaskTimerBusiness)
+	// fkserver.AddBusiness(tasktimer.GTaskTimerBusiness)
 
 	fkserver.Run()
 }

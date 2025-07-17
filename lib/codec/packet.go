@@ -72,7 +72,7 @@ func (c *EsPacketCodec) Serializer() serialize.Serializer {
 }
 
 // Decode implements frame.PacketProcessor.
-func (c *EsPacketCodec) Decode(data []byte) (msgs []*frame.Message, err error) {
+func (c *EsPacketCodec) Decode(data []byte) (msgs []*frame.Message, packets []*raw_pkg.StruSvrEsRawBaseHead, err error) {
 	c.buf.Write(data)
 
 	twoBytes := [2]byte{}
@@ -95,6 +95,11 @@ func (c *EsPacketCodec) Decode(data []byte) (msgs []*frame.Message, err error) {
 		}
 
 		if c.buf.Len() < packetLen-2 {
+			// 当数据包不完整时，回退2个字节包长度，下一次使用
+			remain := c.buf.Bytes()
+			c.buf.Reset()
+			c.buf.Write(twoBytes[:])
+			c.buf.Write(remain)
 			break
 		}
 
@@ -111,7 +116,7 @@ func (c *EsPacketCodec) Decode(data []byte) (msgs []*frame.Message, err error) {
 
 		target, found := c.rts[stru.PackType]
 		if !found {
-			fmt.Printf("packet %d not supported", stru.PackType)
+			fmt.Printf("packet %d not supported\n", stru.PackType)
 			continue
 		}
 
@@ -121,6 +126,8 @@ func (c *EsPacketCodec) Decode(data []byte) (msgs []*frame.Message, err error) {
 			Route: target.handler,
 			Data:  stru.Data,
 		})
+
+		packets = append(packets, &stru)
 	}
 
 	return

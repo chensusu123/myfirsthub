@@ -11,6 +11,7 @@ import (
 	"maze_game_server/config/GMazeItemsV8Cfg"
 	"maze_game_server/io/kafka/dollmazefoekafka"
 	"maze_game_server/io/mysql/flowrecord"
+	"maze_game_server/io/redis/mazebarrieropstatusredis"
 	"maze_game_server/lib/log"
 	"maze_game_server/lib/nano/session"
 	"maze_game_server/pb/common/MazeCommon"
@@ -47,6 +48,19 @@ func (g *Game) OnBarrierMonsterDeathRQ_10498_10499(s *session.Session, req *Maze
 		logger.ErrorWF("OnBarrierMonsterDeathRQ get foe cfg fail", zap.Any("MonsterId", req.GetMonsterId()))
 		res.ErrInfo = errors.CONFIG_NOT_FOUND.ToInfo()
 		return
+	}
+
+	// 防重复操作校验
+	triggered, triggerFn, err := mazebarrieropstatusredis.IsTriggered(logger, userId, req.GetBarrierId(), fmt.Sprintf("monsterid:%d", req.GetMonsterGuid()))
+	if err != nil {
+		logger.ErrorWF("OnBarrierMonsterDeathRQ IsTriggered fail", zap.Error(err), zap.Any("MonsterId", req.GetMonsterId()), zap.Any("barrierId", req.GetBarrierId()))
+		res.ErrInfo = errors.COMMON_ERROR_TIPS.Wrap("数据校验失败")
+	}
+	if triggered {
+		logger.WarnWF("OnBarrierMonsterDeathRQ already killed", zap.Any("MonsterId", req.GetMonsterId()), zap.Any("barrierId", req.GetBarrierId()))
+		res.ErrInfo = errors.COMMON_ERROR_TIPS.Wrap("怪物已击杀")
+	} else {
+		defer triggerFn()
 	}
 
 	// 怪物掉落装备

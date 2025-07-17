@@ -6,5 +6,5 @@ type Monitor interface {
 	OnCreate(s *Session)
 
 	// OnClose
-	OnClose(s *Session)
+	OnClose(s *Session, err error)
 }

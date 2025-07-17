@@ -61,7 +61,14 @@ func CalUserSweepBarrierAward(logger fklog.FKLogI, uid uint64, barrierId int32, 
 			continue
 		}
 		for _, foe := range cfg.Monsters_id {
-			foeCountMap[foe] += 1
+			if foe > 0 {
+				foeCountMap[foe] += 1
+			}
+		}
+		for foe, num := range cfg.Monsterslist_ids_and_nums {
+			if foe > 0 {
+				foeCountMap[foe] += num
+			}
 		}
 	}
 

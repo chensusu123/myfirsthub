@@ -18,6 +18,7 @@ var (
 var monitor = new(Monitor)
 
 type Monitor struct {
+	logger   fklog.FKLogI
 	online   sync.Map
 	sessions sync.Map
 }
@@ -25,20 +26,27 @@ type Monitor struct {
 // OnCreate implements session.Monitor.
 func (m *Monitor) OnCreate(s *session.Session) {
 	m.sessions.Store(s.ID(), s)
+	m.logger.InfoWF("Monitor OnCreate session created", zap.Int64("SessionID", s.ID()))
 }
 
 // OnClose implements session.Monitor.
-func (m *Monitor) OnClose(s *session.Session) {
+func (m *Monitor) OnClose(s *session.Session, err error) {
 	value, loaded := m.sessions.LoadAndDelete(s.ID())
 	if loaded {
 		if userID := value.(*session.Session).UID(); userID > 0 {
 			m.online.Delete(uint64(userID))
 		}
 	}
+	var lastErr string
+	if err != nil {
+		lastErr = err.Error()
+	}
+	m.logger.InfoWF("Monitor OnClose session closed", zap.Int64("SessionID", s.ID()), zap.Int64("UID", s.UID()), zap.String("lastErr", lastErr))
 }
 
 // SessionMonitor returns a session monitor.
-func SessionMonitor() *Monitor {
+func SessionMonitor(logger fklog.FKLogI) *Monitor {
+	monitor.logger = logger
 	return monitor
 }
 

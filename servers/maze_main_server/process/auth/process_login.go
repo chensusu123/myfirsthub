@@ -1,17 +1,20 @@
 package auth
 
 import (
+	"context"
 	"time"
 
 	"maze_game_server/common/errors"
 	"maze_game_server/io/redis/UnionIDBindRedis"
 	"maze_game_server/io/redis/useridredis"
+	"maze_game_server/io/redis/usersection"
 	"maze_game_server/lib/log"
 	"maze_game_server/lib/nano/session"
 	"maze_game_server/pb/common/UserLogin"
 	"maze_game_server/usecase/online"
 
 	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fkprometheus"
+	"gitlab.ifreetalk.com/maze-plate/freetk/fkserver/appconfig"
 	"gitlab.ifreetalk.com/maze-plate/freetk/fkserver/config_manager"
 	"go.uber.org/zap"
 	"google.golang.org/protobuf/proto"
@@ -61,6 +64,12 @@ func (a *Auth) OnLoginRQ_10492_10493(s *session.Session, req *UserLogin.UserLogi
 		if err != nil {
 			res.Error = errors.COMMON_ERROR_TIPS.Wrap("add userID to unionID fail")
 			return nil
+		}
+		err = usersection.Set(context.TODO(), userID, appconfig.GlobalConfig().Global.SectionID)
+		if err != nil {
+			logger.ErrorWF("usersection.Set fail",
+				zap.Uint64("userID", userID),
+				zap.Error(err))
 		}
 		userID = newUserID
 	} else {

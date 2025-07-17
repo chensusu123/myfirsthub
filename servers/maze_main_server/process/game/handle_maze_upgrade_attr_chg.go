@@ -12,7 +12,7 @@ import (
 	"maze_game_server/io/redis/mazeuserlevelredis"
 	"maze_game_server/pb/common/Common"
 	"maze_game_server/pb/common/MazeGame"
-	"maze_game_server/usecase/mustarrive"
+	"maze_game_server/usecase/online"
 
 	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fklog"
 	"google.golang.org/protobuf/proto"
@@ -55,7 +55,8 @@ func HandleMazeLvUpgradeAttrChgId(logger fklog.FKLogI, userId uint64, msg *struc
 
 	logger.InfoWF("HandleMazeLvUpgradeAttrChgId send client with",
 		zap.Any("mazeLvChgIDMsg", mazeLvChgIDMsg), zap.Uint64("userId", userId))
-	mustarrive.SendArrivePacket(logger, int64(userId), 10479, mazeLvChgIDMsg)
+	online.Push(logger, uint64(userId), 10479, mazeLvChgIDMsg)
+
 }
 
 // func IsMazeUpgradeCareAttr(attrId int32) bool {

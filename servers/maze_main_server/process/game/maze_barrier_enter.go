@@ -4,14 +4,18 @@ import (
 	"maze_game_server/common/constdef"
 	"maze_game_server/common/errors"
 	"maze_game_server/common/function/gentradeno"
+	"maze_game_server/common/structsdef"
 	"maze_game_server/config/GMazeActionCountV8Cfg"
 	"maze_game_server/config/GMazeBarriesV8Cfg"
 	"maze_game_server/config/GMazeLevelV8Cfg"
+	"maze_game_server/io/redis/mazeattrcalcnotifyqueue"
 	"maze_game_server/io/redis/mazebarriereventredis"
+	"maze_game_server/io/redis/mazebarrieropstatusredis"
 	"maze_game_server/io/redis/mazebarriertempbuffredis"
 	"maze_game_server/io/redis/mazebuffinforedis"
 	"maze_game_server/io/redis/mazechallengenumredis"
 	"maze_game_server/io/redis/mazeuserbarrierredis"
+	"maze_game_server/io/redis/syncmazestorageinforedis"
 	"maze_game_server/lib/log"
 	"maze_game_server/lib/nano/session"
 	"maze_game_server/module/calequipsequence"
@@ -67,18 +71,38 @@ func (g *Game) OnMazeBarrierEnterRQ_10447_10448(s *session.Session, req *MazeGam
 		return
 	}
 
-	if req.GetBarrierId() < userInfo.Barrier {
-		logger.ErrorWF("OnMazeBarrierEnterRQ req barrier lt pass barrier", zap.Any("req", req), zap.Int32("save", userInfo.Barrier))
-		res.ErrInfo = errors.COMMON_ERROR_TIPS.Wrap("该关卡id小于存储的关卡id")
-		return
-	}
+	// TODO 客户端需要进入任意关卡
+	// if req.GetBarrierId() < userInfo.Barrier {
+	// 	logger.ErrorWF("OnMazeBarrierEnterRQ req barrier lt pass barrier", zap.Any("req", req), zap.Int32("save", userInfo.Barrier))
+	// 	res.ErrInfo = errors.COMMON_ERROR_TIPS.Wrap("该关卡id小于存储的关卡id")
+	// 	return
+	// }
 
 	//	res.Energy = proto.Int32(userInfo.Energy)
 	var isNewBarrier bool
 
-	//进入清临时buff
-	mazebarriertempbuffredis.ClearBarrierTempBuff(logger, userId, req.GetBarrierId())
-	mazebuffinforedis.DelMazeBuffBySrc(logger, userId, constdef.MazeBuffSrcSelectBuffForce)
+	// 默认是从存档进入
+	storageInfo, err := syncmazestorageinforedis.GetSyncMazeStorageInfo(userId, userInfo.Barrier)
+	if err != nil {
+		logger.ErrorWF("OnMazeBarrierEnterRQ GetSyncMazeStorageInfo fail", zap.Error(err))
+		return
+	}
+	res.StorageInfo = storageInfo
+	if storageInfo == nil {
+		// 进入清临时buff
+		mazebarriertempbuffredis.ClearBarrierTempBuff(logger, userId, req.GetBarrierId())
+		mazebuffinforedis.DelMazeBuffBySrc(logger, userId, constdef.MazeBuffSrcSelectBuffForce)
+		// 推送属性计算消息
+		calcAttrNotify := &structsdef.MazeCalcAttrNotifyMsg{
+			UserId:  userId,
+			ChgType: constdef.MazeBuffChgForceValue,
+			Session: "buff",
+			BuffSrc: constdef.MazeBuffSrcSelectBuffForce,
+		}
+		mazeattrcalcnotifyqueue.SendMazeAttrCalcNotify(logger, calcAttrNotify)
+		// 清理关卡操作状态
+		mazebarrieropstatusredis.ClearOpStatus(logger, userId, req.GetBarrierId())
+	}
 
 	mazeBattleInfo, err3 := GetMazeBattleData(logger, userId, req.GetBarrierId())
 	if err3 != nil {

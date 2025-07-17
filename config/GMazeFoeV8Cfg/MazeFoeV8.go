@@ -41,6 +41,7 @@ type MazeFoeV8ConfigRow struct {
 	Be_attack_recovery_speed_pro int32           `json:"be_attack_recovery_speed_pro"` // 受击回复动作播放速度系数（>10000加速 ,<10000减速
 	Tough_deplete                int32           `json:"tough_deplete"`                // 韧性被打空时释放技能
 	Search_for_scope             int32           `json:"search_for_scope"`             // 寻敌范围调整值（默认10米）
+	Attacked_back_range          int32           `json:"attacked_back_range"`          // 被击退距离系数（万分比）
 }
 
 // MazeFoeV8Config from maze_foe_v8【迷宫-敌人信息】.xlsx maze_foe_v8
@@ -787,6 +788,20 @@ func (*gMazeFoeV8Parser) Parse(logger fklog.FKLogI, data []string, row interface
 		}
 		config.Search_for_scope = int32(tmp)
 	}
+
+	// parse column 27 attacked_back_range : 被击退距离系数（万分比）
+	if data[27] != "" {
+		tmp, err = strconv.ParseInt(data[27], 10, 64)
+		if err != nil {
+			err = errors.New("parse field attacked_back_range 被击退距离系数（万分比） to int32 failed")
+			logger.ErrorWF("parse field attacked_back_range 被击退距离系数（万分比） to int32 failed.",
+				zap.String("xlsx", "maze_foe_v8【迷宫-敌人信息】.xlsx"), zap.String("sheet", "maze_foe_v8"),
+				zap.String("parse_data", data[27]),
+				zap.Error(err))
+			return
+		}
+		config.Attacked_back_range = int32(tmp)
+	}
 	return
 }
 
@@ -818,6 +833,7 @@ var gMazeFoeV8Fields = []string{
 	"be_attack_recovery_speed_pro",
 	"tough_deplete",
 	"search_for_scope",
+	"attacked_back_range",
 }
 
 // LoadDataManual load data for test

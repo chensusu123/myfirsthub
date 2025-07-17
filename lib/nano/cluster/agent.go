@@ -38,6 +38,9 @@ import (
 	"maze_game_server/lib/nano/scheduler"
 	"maze_game_server/lib/nano/serialize"
 	"maze_game_server/lib/nano/session"
+
+	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fklog"
+	"go.uber.org/zap"
 )
 
 const (
@@ -245,11 +248,21 @@ func (a *agent) setStatus(state int32) {
 func (a *agent) write() {
 	ticker := time.NewTicker(env.Heartbeat)
 	chWrite := make(chan []byte, agentWriteBacklog)
+
+	// Logger
+	logger := fklog.AppLogger().Clone("nano")
+	var lastErr error
+
 	// clean func
 	defer func() {
 		ticker.Stop()
 		close(a.chSend)
 		close(chWrite)
+
+		if env.SessionMonitor != nil {
+			env.SessionMonitor.OnClose(a.session, lastErr)
+		}
+
 		a.Close()
 		if env.Debug {
 			log.Println(fmt.Sprintf("Session write goroutine exit, SessionID=%d, UID=%d", a.session.ID(), a.session.UID()))
@@ -270,14 +283,25 @@ func (a *agent) write() {
 
 		case data := <-chWrite:
 			// close agent while low-level conn broken
-			if _, err := a.conn.Write(data); err != nil {
+			if wCount, err := a.conn.Write(data); err != nil {
+				lastErr = err
 				log.Println(err.Error())
+				logger.ErrorWF("nano write packet failed",
+					zap.Int("data_len", len(data)),
+					zap.String("remote_addr", a.conn.RemoteAddr().String()),
+					zap.Int("write_count", wCount), zap.Error(err))
 				return
+			} else {
+				logger.InfoWF("nano write packet",
+					zap.Int("data_len", len(data)),
+					zap.String("remote_addr", a.conn.RemoteAddr().String()),
+					zap.Int("write_count", wCount))
 			}
 
 		case data := <-a.chSend:
 			payload, err := message.Serialize(data.payload, a.serializer)
 			if err != nil {
+				lastErr = err
 				switch data.typ {
 				case message.Push:
 					log.Println(fmt.Sprintf("Push: %s error: %s", data.route, err.Error()))
@@ -299,6 +323,7 @@ func (a *agent) write() {
 			if pipe := a.pipeline; pipe != nil {
 				err := pipe.Outbound().Process(a.session, m)
 				if err != nil {
+					lastErr = err
 					log.Println("broken pipeline", err.Error())
 					break
 				}
@@ -307,14 +332,22 @@ func (a *agent) write() {
 			var p []byte
 
 			if a.pcodec != nil {
+				logger.InfoWF("nano process packet stop",
+					zap.Uint64("ID", m.ID),
+					zap.String("route", m.Route),
+					zap.String("remote_addr", a.conn.RemoteAddr().String()),
+					zap.Int("rs_data_len", len(m.Data)))
+
 				p, err = a.pcodec.Encode(m)
 				if err != nil {
+					lastErr = err
 					log.Println(err.Error())
 					break
 				}
 			} else {
 				em, err := m.Encode()
 				if err != nil {
+					lastErr = err
 					log.Println(err.Error())
 					break
 				}
@@ -322,6 +355,7 @@ func (a *agent) write() {
 				// packet encode
 				p, err = codec.Encode(packet.Data, em)
 				if err != nil {
+					lastErr = err
 					log.Println(err)
 					break
 				}

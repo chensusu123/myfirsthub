@@ -46,6 +46,8 @@ import (
 	"maze_game_server/lib/nano/session"
 
 	"github.com/gorilla/websocket"
+	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fklog"
+	"go.uber.org/zap"
 )
 
 var (
@@ -213,11 +215,16 @@ func (h *LocalHandler) handle(conn net.Conn, pcodec frame.PacketCodec) {
 	// create a client agent and startup write gorontine
 	agent := newAgent(conn, h.pipeline, pcodec, h.remoteProcess)
 
+	// Logger
+	logger := fklog.AppLogger().Clone("nano")
+
 	h.currentNode.storeSession(agent.session)
 
 	if env.SessionMonitor != nil {
 		env.SessionMonitor.OnCreate(agent.session)
 	}
+
+	var lastErr error
 
 	// startup write goroutine
 	go agent.write()
@@ -252,7 +259,7 @@ func (h *LocalHandler) handle(conn net.Conn, pcodec frame.PacketCodec) {
 		}
 
 		if env.SessionMonitor != nil {
-			env.SessionMonitor.OnClose(agent.session)
+			env.SessionMonitor.OnClose(agent.session, lastErr)
 		}
 
 		agent.Close()
@@ -266,6 +273,7 @@ func (h *LocalHandler) handle(conn net.Conn, pcodec frame.PacketCodec) {
 	for {
 		n, err := conn.Read(buf)
 		if err != nil {
+			lastErr = err
 			log.Println(fmt.Sprintf("Read message error: %s, session will be closed immediately", err.Error()))
 			return
 		}
@@ -274,30 +282,53 @@ func (h *LocalHandler) handle(conn net.Conn, pcodec frame.PacketCodec) {
 			// Must working
 			agent.setStatus(statusWorking)
 
-			msgs, err := agent.pcodec.Decode(buf[:n])
+			msgs, packets, err := agent.pcodec.Decode(buf[:n])
 			if err != nil {
+				lastErr = err
 				log.Println(err.Error())
 
 				// process message decoded
-				for _, m := range msgs {
+				for index, m := range msgs {
+					logger.InfoWF("nano process packet start", zap.Uint64("ID", m.ID),
+						zap.String("remote_addr", agent.conn.RemoteAddr().String()),
+						zap.String("route", m.Route),
+						zap.Uint16("PackLen", packets[index].PackLen),
+						zap.Uint16("PackType", packets[index].PackType),
+						zap.Uint32("SessionID", packets[index].SessionID),
+						zap.Uint64("RqTime", packets[index].EsRqTime),
+						zap.Uint8("CompressType", packets[index].CompressType),
+						zap.Int("rq_data_len", len(m.Data)),
+					)
 					h.processMessage(agent, m)
 				}
 				return
 			}
 
 			// process all message
-			for _, m := range msgs {
+			for index, m := range msgs {
+				logger.InfoWF("nano process packet start", zap.Uint64("ID", m.ID),
+					zap.String("route", m.Route),
+					zap.String("remote_addr", agent.conn.RemoteAddr().String()),
+					zap.Uint16("PackLen", packets[index].PackLen),
+					zap.Uint16("PackType", packets[index].PackType),
+					zap.Uint32("SessionID", packets[index].SessionID),
+					zap.Uint64("RqTime", packets[index].EsRqTime),
+					zap.Uint8("CompressType", packets[index].CompressType),
+					zap.Int("rq_data_len", len(m.Data)),
+				)
 				h.processMessage(agent, m)
 			}
 		} else {
 			// TODO(warning): decoder use slice for performance, packet data should be copy before next Decode
 			packets, err := agent.decoder.Decode(buf[:n])
 			if err != nil {
+				lastErr = err
 				log.Println(err.Error())
 
 				// process packets decoded
 				for _, p := range packets {
 					if err := h.processPacket(agent, p); err != nil {
+						lastErr = err
 						log.Println(err.Error())
 						return
 					}
@@ -308,6 +339,7 @@ func (h *LocalHandler) handle(conn net.Conn, pcodec frame.PacketCodec) {
 			// process all packets
 			for _, p := range packets {
 				if err := h.processPacket(agent, p); err != nil {
+					lastErr = err
 					log.Println(err.Error())
 					return
 				}
@@ -408,7 +440,7 @@ func (h *LocalHandler) remoteProcess(session *session.Session, msg *message.Mess
 		log.Println(err)
 		return
 	}
-	var data = msg.Data
+	data := msg.Data
 	if !noCopy && len(msg.Data) > 0 {
 		data = make([]byte, len(msg.Data))
 		copy(data, msg.Data)
@@ -486,7 +518,7 @@ func (h *LocalHandler) localProcess(handler *component.Handler, lastMid uint64, 
 		}
 	}
 
-	var payload = msg.Data
+	payload := msg.Data
 	var data interface{}
 	if handler.IsRawArg {
 		data = payload
