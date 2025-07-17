@@ -30,7 +30,7 @@ func safeHttpRegister(logger fklog.FKLogI, pattern string, handler func(http.Res
 func RegPayDelivery(logger fklog.FKLogI) {
 	safeHttpRegister(logger, "/v1/pay/delivery", func(writer http.ResponseWriter, request *http.Request) {
 		userId := fkutil.ToUint64(request.Form.Get("userId"))
-		uniqueId := fkutil.ToUint64(request.Form.Get("uniqueId"))
+		uniqueId := fkutil.ToInt32(request.Form.Get("uniqueId"))
 		tradeNo := request.Form.Get("tradeNo")
 		payChannel := request.Form.Get("payChannel")
 		logger.SetLogId(time.Now().UnixNano())

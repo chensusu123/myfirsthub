@@ -9,18 +9,18 @@ import (
 
 const payTokenTTL = 5 * time.Minute
 
-var secretKey = []byte("change‑me‑to‑a‑strong‑key")
+var secretKey = []byte("Qk2WNMH2Dxli0/QWI3ltPraDqigH/Kugx2CD897Ts3g=")
 
 type PayClaims struct {
 	UserId       uint64 `json:"userId"`
-	UniqueId     string `json:"uniqueId"`
+	UniqueId     int32  `json:"uniqueId"`
 	WechatOpenId string `json:"wechatOpenId"`
 	Description  string `json:"description"`
 	ServerId     uint32 `json:"serverId"`
 	jwt.RegisteredClaims
 }
 
-func GeneratePayJWT(userID uint64, uniqueId string, wechatOpenId string, serverId uint32) (string, error) {
+func GeneratePayJWT(userID uint64, uniqueId int32, wechatOpenId string, serverId uint32) (string, error) {
 	claims := PayClaims{
 		UserId:       userID,
 		UniqueId:     uniqueId,
