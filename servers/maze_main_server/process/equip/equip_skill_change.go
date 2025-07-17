@@ -78,8 +78,8 @@ func GetUserBattleSkillInfo(logger fklog.FKLogI, skillId int32, attrMap map[int3
 					ActId:           proto.Int32(actId),
 					ToughBrokeValue: proto.Int32(mazeActCfg.Tough_broke_value),
 					ToughTempValue:  proto.Int32(mazeActCfg.Temp_tough),
-					InitSkillCd:     proto.Int32(skillCfg.Initial_cool_time),
-					SkillCd:         proto.Int32(skillCfg.Skill_cool_time),
+					// InitSkillCd:     proto.Int32(skillCfg.Initial_cool_time),
+					// SkillCd:         proto.Int32(skillCfg.Skill_cool_time),
 				}
 				// 打击点索引:击退距离
 				for index, value := range mazeActCfg.Attack_back_range {
@@ -108,37 +108,37 @@ func GetUserBattleSkillInfo(logger fklog.FKLogI, skillId int32, attrMap map[int3
 	}
 	// todo 缺少触发cd
 	skillInfo := &MazeAIBattle.MazeAISkillInfo{
-		SkillId:    proto.Int32(skillCfg.Id),
-		SkillGroup: proto.Int32(skillCfg.Group),
+		SkillId: proto.Int32(skillCfg.Id),
+		// SkillGroup: proto.Int32(skillCfg.Group),
 		// TriggerType: proto.Int32(), // TODO 待配置表补充
 		// CampType:                     proto.Int32(skillCfg.Target_type),
 		// TargetType:                   proto.Int32(skillCfg.Scope_type),
-		RangeRadius:     proto.Int32(skillCfg.Scope_param1),
-		ReleaseDistance: proto.Int32(skillCfg.Distance_max),
-		ReleaseCd:       proto.Int32(0),
-		TargetMaxCount:  proto.Int32(skillCfg.Target_num),
+		RangeRadius:     GetSkillAttr(skillCfg.Scope_param1, attrMap),
+		ReleaseDistance: GetSkillAttr(skillCfg.Distance_max, attrMap),
+		// ReleaseCd:       proto.Int32(0),
+		TargetMaxCount: GetSkillAttr(skillCfg.Target_num, attrMap),
 		// CanReleaseState:              skillCfg.Is_allow,
 		// CanReleaseTargetState:        skillCfg.Is_target,
-		MainTargetDamageRate:         proto.Int32(skillCfg.Main_target_damage),
-		SecondTargetDamageRate:       proto.Int32(skillCfg.Second_target_damage),
-		SkillDamageFixed:             proto.Int32(skillCfg.Main_target_damage_fix),
+		// MainTargetDamageRate:         GetSkillAttr(skillCfg.Main_target_damage, attrMap),
+		// SecondTargetDamageRate:       GetSkillAttr(skillCfg.Second_target_damage, attrMap),
+		SkillDamageFixed:             GetSkillAttr(skillCfg.Main_target_damage_fix, attrMap),
 		SkillMappingActionId:         actIDs,
 		Level:                        proto.Int32(skillCfg.Level),
 		SkillType:                    proto.Int32(skillCfg.Type),
 		SkillMappingEffectId:         proto.Int32(effectID),
-		SecondTargetSkillDamageFixed: proto.Int32(skillCfg.Second_target_damage_fix),
+		SecondTargetSkillDamageFixed: GetSkillAttr(skillCfg.Second_target_damage_fix, attrMap),
 		IsNoTarget:                   proto.Int32(skillCfg.Is_no_target),
 		DamageElement:                skillCfg.Damage_element,
 		DamageType:                   proto.Int32(skillCfg.Damage_type),
-		InitialCoolTime:              proto.Int32(skillCfg.Initial_cool_time),
-		PublicCoolTime:               proto.Int32(skillCfg.Public_cool_time),
-		SkillCoolTime:                proto.Int32(skillCfg.Skill_cool_time),
-		DistanceMin:                  proto.Int32(skillCfg.Distance_min),
-		IsBreak:                      proto.Int32(skillCfg.Is_break),
-		ScopeType:                    proto.Int32(skillCfg.Scope_type),
-		TargetType:                   proto.Int32(skillCfg.Target_type),
-		MainTargetDamageRates:        GetElementAttrValue(skillCfg.Main_target_damage, skillCfg.Damage_element_adjust, attrMap),
-		SecondTargetDamageRates:      GetElementAttrValue(skillCfg.Second_target_damage, skillCfg.Damage_element_adjust, attrMap),
+		// InitialCoolTime:              proto.Int32(skillCfg.Initial_cool_time),
+		// PublicCoolTime:               proto.Int32(skillCfg.Public_cool_time),
+		SkillCoolTime:           GetSkillAttr(skillCfg.Skill_cool_time, attrMap),
+		DistanceMin:             GetSkillAttr(skillCfg.Distance_min, attrMap),
+		IsBreak:                 proto.Int32(skillCfg.Is_break),
+		ScopeType:               proto.Int32(skillCfg.Scope_type),
+		TargetType:              proto.Int32(skillCfg.Target_type),
+		MainTargetDamageRates:   GetElementAttrValue(skillCfg.Main_target_damage, skillCfg.Damage_element_adjust, attrMap),
+		SecondTargetDamageRates: GetElementAttrValue(skillCfg.Second_target_damage, skillCfg.Damage_element_adjust, attrMap),
 	}
 	// for k, v := range skillCfg.Target_effect_pro {
 	// 	if k == 0 {
@@ -229,10 +229,10 @@ func GetUserBattleSkillInfo(logger fklog.FKLogI, skillId int32, attrMap map[int3
 	}
 
 	skillInfo.ReleaseCondition = proto.Int32(skillCfg.Release_condition)
-	skillInfo.BeforeSelfSkill = FilterSliceZeroValue(skillCfg.Before_self_skill)
-	skillInfo.BeforeTargetSkill = FilterSliceZeroValue(skillCfg.Before_target_skill)
-	skillInfo.AfterSelfSkill = FilterSliceZeroValue(skillCfg.After_self_skill)
-	skillInfo.AfterTargetSkill = FilterSliceZeroValue(skillCfg.After_target_skill)
+	// skillInfo.BeforeSelfSkill = FilterSliceZeroValue(skillCfg.Before_self_skill)
+	// skillInfo.BeforeTargetSkill = FilterSliceZeroValue(skillCfg.Before_target_skill)
+	// skillInfo.AfterSelfSkill = FilterSliceZeroValue(skillCfg.After_self_skill)
+	// skillInfo.AfterTargetSkill = FilterSliceZeroValue(skillCfg.After_target_skill)
 
 	return skillInfo, actDamageConfigs, nil
 }
@@ -312,16 +312,26 @@ func GetAttrValue(attrValue int32, attrValueVariableId map[int32]int32, userAttr
 	return int64(effectAttrValue)
 }
 
-func GetElementAttrValue(attrValue int32, attrValueVariableId []int32, userAttrMap map[int32]int64) (attrValues []int32) {
+func GetElementAttrValue(attrValue map[int32]int32, attrValueVariableId []int32, userAttrMap map[int32]int64) (attrValues []*MazeAIBattle.MazeAIAttrInfo) {
+	attrID, value := GetSkillAttrValue(attrValue, userAttrMap)
 	for _, v := range attrValueVariableId {
 		if v == 0 { // 属性ID为0则给默认值
-			attrValues = append(attrValues, attrValue)
+			attrValues = append(attrValues, &MazeAIBattle.MazeAIAttrInfo{
+				Type:      proto.Int32(attrID),
+				UserValue: proto.Int32(value),
+			})
 		} else {
 			if userAttrMap[v] <= 0 {
-				attrValues = append(attrValues, 0)
+				attrValues = append(attrValues, &MazeAIBattle.MazeAIAttrInfo{
+					Type:      proto.Int32(attrID),
+					UserValue: proto.Int32(0),
+				})
 			} else {
-				rate := int32(float64(attrValue) * float64(userAttrMap[v]) / 10000.0) // 原值 x (属性值 / 10000)
-				attrValues = append(attrValues, rate)
+				rate := int32(float64(value) * float64(userAttrMap[v]) / 10000.0) // 原值 x (属性值 / 10000)
+				attrValues = append(attrValues, &MazeAIBattle.MazeAIAttrInfo{
+					Type:      proto.Int32(attrID),
+					UserValue: proto.Int32(rate),
+				})
 			}
 		}
 	}
@@ -329,9 +339,13 @@ func GetElementAttrValue(attrValue int32, attrValueVariableId []int32, userAttrM
 }
 
 // FillElementAttrValue 用默认值填充各元素属性值
-func FillElementAttrValue(attrValue int32, count int) (attrValues []int32) {
+func FillElementAttrValue(attrValue map[int32]int32, count int, userAttrMap map[int32]int64) (attrValues []*MazeAIBattle.MazeAIAttrInfo) {
+	attrID, value := GetSkillAttrValue(attrValue, userAttrMap)
 	for i := 0; i < count; i++ {
-		attrValues = append(attrValues, attrValue)
+		attrValues = append(attrValues, &MazeAIBattle.MazeAIAttrInfo{
+			Type:      proto.Int32(attrID),
+			UserValue: proto.Int32(value),
+		})
 	}
 	return
 }
@@ -356,6 +370,31 @@ func filterConditionIDs(condition string) (conditionIDs []int32, err error) {
 		conditionIDs = append(conditionIDs, fkutil.ToInt32(v))
 	}
 	return
+}
+
+// GetSkillAttrValue 根据技能属性配置与用户属性列表计算技能最终属性
+func GetSkillAttrValue(skillAttrMap map[int32]int32, userAttrMap map[int32]int64) (attrID int32, value int32) {
+	// 取人物属性值
+	attrID, ok := skillAttrMap[1]
+	if ok {
+		value, ok := userAttrMap[attrID]
+		if ok {
+			return attrID, int32(value)
+		}
+		return attrID, 0
+	}
+	// 取默认值
+	defaultValue, ok := skillAttrMap[0]
+	if ok {
+		value = defaultValue
+	}
+	return
+}
+
+// GetSkillAttr 根据技能属性配置与用户属性列表计算技能最终属性
+func GetSkillAttr(skillAttrMap map[int32]int32, userAttrMap map[int32]int64) (attr *MazeAIBattle.MazeAIAttrInfo) {
+	attrID, value := GetSkillAttrValue(skillAttrMap, userAttrMap)
+	return &MazeAIBattle.MazeAIAttrInfo{Type: proto.Int32(attrID), UserValue: proto.Int32(value)}
 }
 
 // GetEquipSkillInfoChange 获取装备变化引起的技能变化

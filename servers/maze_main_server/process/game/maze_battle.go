@@ -229,17 +229,17 @@ func GetMazeAIMonsterConfig(logger fklog.FKLogI, userId uint64, force int64, foe
 	for _, skillId := range foeCfg.Passive_skill_id {
 		skillIds = append(skillIds, skillId)
 	}
+	skillTotalInfo := &MazeAIBattle.MazeAISkillTotalInfo{}
+	skillTotalInfo.SkillInfoList = make([]*MazeAIBattle.MazeAISkillInfo, 0)
+	attrMap := make(map[int32]int64)
 	if len(skillIds) > 0 {
 		skillCfg := GMazeSkillInfoV8Cfg.Get(skillIds[0])
 		if skillCfg == nil {
 			logger.ErrorWF("GetMazeAIMonsterConfig GMazeSkillInfoV8Cfg err", zap.Any("skillId", skillIds[0]))
 			return nil, errors.New("配置不存在")
 		}
-		attackValue.SkillCd = proto.Int32(skillCfg.Public_cool_time)
+		attackValue.SkillCd = GetSkillAttr(skillCfg.Skill_cool_time, attrMap)
 	}
-	skillTotalInfo := &MazeAIBattle.MazeAISkillTotalInfo{}
-	skillTotalInfo.SkillInfoList = make([]*MazeAIBattle.MazeAISkillInfo, 0)
-	attrMap := make(map[int32]int64)
 	for _, skillId := range skillIds {
 		if skillId == 0 {
 			continue
@@ -392,8 +392,8 @@ func GetUserBattleSkillInfo(logger fklog.FKLogI, skillId int32, attrMap map[int3
 					ActId:           proto.Int32(actId),
 					ToughBrokeValue: proto.Int32(mazeActCfg.Tough_broke_value),
 					ToughTempValue:  proto.Int32(mazeActCfg.Temp_tough),
-					InitSkillCd:     proto.Int32(skillCfg.Initial_cool_time),
-					SkillCd:         proto.Int32(skillCfg.Skill_cool_time),
+					// InitSkillCd:     proto.Int32(skillCfg.Initial_cool_time),
+					// SkillCd:         proto.Int32(skillCfg.Skill_cool_time),
 				}
 				// 打击点索引:击退距离
 				for index, value := range mazeActCfg.Attack_back_range {
@@ -422,37 +422,37 @@ func GetUserBattleSkillInfo(logger fklog.FKLogI, skillId int32, attrMap map[int3
 	}
 	// todo 缺少触发cd
 	skillInfo := &MazeAIBattle.MazeAISkillInfo{
-		SkillId:    proto.Int32(skillCfg.Id),
-		SkillGroup: proto.Int32(skillCfg.Group),
+		SkillId: proto.Int32(skillCfg.Id),
+		// SkillGroup: proto.Int32(skillCfg.Group),
 		// TriggerType: proto.Int32(), // TODO 待配置表补充
 		// CampType:                     proto.Int32(skillCfg.Target_type),
 		// TargetType:                   proto.Int32(skillCfg.Scope_type),
-		RangeRadius:     proto.Int32(skillCfg.Scope_param1),
-		ReleaseDistance: proto.Int32(skillCfg.Distance_max),
-		ReleaseCd:       proto.Int32(0),
-		TargetMaxCount:  proto.Int32(skillCfg.Target_num),
+		RangeRadius:     GetSkillAttr(skillCfg.Scope_param1, attrMap),
+		ReleaseDistance: GetSkillAttr(skillCfg.Distance_max, attrMap),
+		// ReleaseCd:       proto.Int32(0),
+		TargetMaxCount: GetSkillAttr(skillCfg.Target_num, attrMap),
 		// CanReleaseState:              skillCfg.Is_allow,
 		// CanReleaseTargetState:        skillCfg.Is_target,
-		MainTargetDamageRate:         proto.Int32(skillCfg.Main_target_damage),
-		SecondTargetDamageRate:       proto.Int32(skillCfg.Second_target_damage),
-		SkillDamageFixed:             proto.Int32(skillCfg.Main_target_damage_fix),
+		// MainTargetDamageRate:         GetSkillAttr(skillCfg.Main_target_damage, attrMap),
+		// SecondTargetDamageRate:       GetSkillAttr(skillCfg.Second_target_damage, attrMap),
+		SkillDamageFixed:             GetSkillAttr(skillCfg.Main_target_damage_fix, attrMap),
 		SkillMappingActionId:         actIDs,
 		Level:                        proto.Int32(skillCfg.Level),
 		SkillType:                    proto.Int32(skillCfg.Type),
 		SkillMappingEffectId:         proto.Int32(effectID),
-		SecondTargetSkillDamageFixed: proto.Int32(skillCfg.Second_target_damage_fix),
+		SecondTargetSkillDamageFixed: GetSkillAttr(skillCfg.Second_target_damage_fix, attrMap),
 		IsNoTarget:                   proto.Int32(skillCfg.Is_no_target),
 		DamageElement:                skillCfg.Damage_element,
 		DamageType:                   proto.Int32(skillCfg.Damage_type),
-		InitialCoolTime:              proto.Int32(skillCfg.Initial_cool_time),
-		PublicCoolTime:               proto.Int32(skillCfg.Public_cool_time),
-		SkillCoolTime:                proto.Int32(skillCfg.Skill_cool_time),
-		DistanceMin:                  proto.Int32(skillCfg.Distance_min),
-		IsBreak:                      proto.Int32(skillCfg.Is_break),
-		ScopeType:                    proto.Int32(skillCfg.Scope_type),
-		TargetType:                   proto.Int32(skillCfg.Target_type),
-		MainTargetDamageRates:        GetElementAttrValue(skillCfg.Main_target_damage, skillCfg.Damage_element_adjust, attrMap),
-		SecondTargetDamageRates:      GetElementAttrValue(skillCfg.Second_target_damage, skillCfg.Damage_element_adjust, attrMap),
+		// InitialCoolTime:              proto.Int32(skillCfg.Initial_cool_time),
+		// PublicCoolTime:               proto.Int32(skillCfg.Public_cool_time),
+		SkillCoolTime:           GetSkillAttr(skillCfg.Skill_cool_time, attrMap),
+		DistanceMin:             GetSkillAttr(skillCfg.Distance_min, attrMap),
+		IsBreak:                 proto.Int32(skillCfg.Is_break),
+		ScopeType:               proto.Int32(skillCfg.Scope_type),
+		TargetType:              proto.Int32(skillCfg.Target_type),
+		MainTargetDamageRates:   GetElementAttrValue(skillCfg.Main_target_damage, skillCfg.Damage_element_adjust, attrMap),
+		SecondTargetDamageRates: GetElementAttrValue(skillCfg.Second_target_damage, skillCfg.Damage_element_adjust, attrMap),
 	}
 	// for k, v := range skillCfg.Target_effect_pro {
 	// 	if k == 0 {
@@ -543,10 +543,10 @@ func GetUserBattleSkillInfo(logger fklog.FKLogI, skillId int32, attrMap map[int3
 	}
 
 	skillInfo.ReleaseCondition = proto.Int32(skillCfg.Release_condition)
-	skillInfo.BeforeSelfSkill = FilterSliceZeroValue(skillCfg.Before_self_skill)
-	skillInfo.BeforeTargetSkill = FilterSliceZeroValue(skillCfg.Before_target_skill)
-	skillInfo.AfterSelfSkill = FilterSliceZeroValue(skillCfg.After_self_skill)
-	skillInfo.AfterTargetSkill = FilterSliceZeroValue(skillCfg.After_target_skill)
+	// skillInfo.BeforeSelfSkill = FilterSliceZeroValue(skillCfg.Before_self_skill)
+	// skillInfo.BeforeTargetSkill = FilterSliceZeroValue(skillCfg.Before_target_skill)
+	// skillInfo.AfterSelfSkill = FilterSliceZeroValue(skillCfg.After_self_skill)
+	// skillInfo.AfterTargetSkill = FilterSliceZeroValue(skillCfg.After_target_skill)
 
 	return skillInfo, actDamageConfigs, nil
 }
@@ -564,37 +564,37 @@ func GetFoeBattleSkillInfo(logger fklog.FKLogI, skillId int32, attrMap map[int32
 	}
 	// todo 缺少触发cd
 	skillInfo := &MazeAIBattle.MazeAISkillInfo{
-		SkillId:    proto.Int32(skillCfg.Id),
-		SkillGroup: proto.Int32(skillCfg.Group),
+		SkillId: proto.Int32(skillCfg.Id),
+		// SkillGroup: proto.Int32(skillCfg.Group),
 		// TriggerType: proto.Int32(), // TODO 待配置表补充
 		// CampType:                     proto.Int32(skillCfg.Target_type),
 		// TargetType:                   proto.Int32(skillCfg.Scope_type),
-		RangeRadius:     proto.Int32(skillCfg.Scope_param1),
-		ReleaseDistance: proto.Int32(skillCfg.Distance_max),
-		ReleaseCd:       proto.Int32(0),
-		TargetMaxCount:  proto.Int32(skillCfg.Target_num),
+		RangeRadius:     GetSkillAttr(skillCfg.Scope_param1, attrMap),
+		ReleaseDistance: GetSkillAttr(skillCfg.Distance_max, attrMap),
+		// ReleaseCd:       proto.Int32(0),
+		TargetMaxCount: GetSkillAttr(skillCfg.Target_num, attrMap),
 		// CanReleaseState:              skillCfg.Is_allow,
 		// CanReleaseTargetState:        skillCfg.Is_target,
-		MainTargetDamageRate:         proto.Int32(skillCfg.Main_target_damage),
-		SecondTargetDamageRate:       proto.Int32(skillCfg.Second_target_damage),
-		SkillDamageFixed:             proto.Int32(skillCfg.Main_target_damage_fix),
+		// MainTargetDamageRate:         GetSkillAttr(skillCfg.Main_target_damage, attrMap),
+		// SecondTargetDamageRate:       GetSkillAttr(skillCfg.Second_target_damage, attrMap),
+		SkillDamageFixed:             GetSkillAttr(skillCfg.Main_target_damage_fix, attrMap),
 		SkillMappingActionId:         skillActCfg.Act_id,
 		Level:                        proto.Int32(skillCfg.Level),
 		SkillType:                    proto.Int32(skillCfg.Type),
 		SkillMappingEffectId:         proto.Int32(skillActCfg.Effect_id),
-		SecondTargetSkillDamageFixed: proto.Int32(skillCfg.Second_target_damage_fix),
+		SecondTargetSkillDamageFixed: GetSkillAttr(skillCfg.Second_target_damage_fix, attrMap),
 		IsNoTarget:                   proto.Int32(skillCfg.Is_no_target),
 		DamageElement:                skillCfg.Damage_element,
 		DamageType:                   proto.Int32(skillCfg.Damage_type),
-		InitialCoolTime:              proto.Int32(skillCfg.Initial_cool_time),
-		PublicCoolTime:               proto.Int32(skillCfg.Public_cool_time),
-		SkillCoolTime:                proto.Int32(skillCfg.Skill_cool_time),
-		DistanceMin:                  proto.Int32(skillCfg.Distance_min),
-		IsBreak:                      proto.Int32(skillCfg.Is_break),
-		ScopeType:                    proto.Int32(skillCfg.Scope_type),
-		TargetType:                   proto.Int32(skillCfg.Target_type),
-		MainTargetDamageRates:        FillElementAttrValue(skillCfg.Main_target_damage, 5),
-		SecondTargetDamageRates:      FillElementAttrValue(skillCfg.Second_target_damage, 5),
+		// InitialCoolTime:              proto.Int32(skillCfg.Initial_cool_time),
+		// PublicCoolTime:               proto.Int32(skillCfg.Public_cool_time),
+		SkillCoolTime:           GetSkillAttr(skillCfg.Skill_cool_time, attrMap),
+		DistanceMin:             GetSkillAttr(skillCfg.Distance_min, attrMap),
+		IsBreak:                 proto.Int32(skillCfg.Is_break),
+		ScopeType:               proto.Int32(skillCfg.Scope_type),
+		TargetType:              proto.Int32(skillCfg.Target_type),
+		MainTargetDamageRates:   FillElementAttrValue(skillCfg.Main_target_damage, 5, attrMap),
+		SecondTargetDamageRates: FillElementAttrValue(skillCfg.Second_target_damage, 5, attrMap),
 	}
 	// for k, v := range skillCfg.Target_effect_pro {
 	// 	if k == 0 {
@@ -685,10 +685,10 @@ func GetFoeBattleSkillInfo(logger fklog.FKLogI, skillId int32, attrMap map[int32
 	}
 
 	skillInfo.ReleaseCondition = proto.Int32(skillCfg.Release_condition)
-	skillInfo.BeforeSelfSkill = FilterSliceZeroValue(skillCfg.Before_self_skill)
-	skillInfo.BeforeTargetSkill = FilterSliceZeroValue(skillCfg.Before_target_skill)
-	skillInfo.AfterSelfSkill = FilterSliceZeroValue(skillCfg.After_self_skill)
-	skillInfo.AfterTargetSkill = FilterSliceZeroValue(skillCfg.After_target_skill)
+	// skillInfo.BeforeSelfSkill = FilterSliceZeroValue(skillCfg.Before_self_skill)
+	// skillInfo.BeforeTargetSkill = FilterSliceZeroValue(skillCfg.Before_target_skill)
+	// skillInfo.AfterSelfSkill = FilterSliceZeroValue(skillCfg.After_self_skill)
+	// skillInfo.AfterTargetSkill = FilterSliceZeroValue(skillCfg.After_target_skill)
 
 	return skillInfo, nil
 }
@@ -705,9 +705,8 @@ func GetFoeSkillConfigInfo(logger fklog.FKLogI, skillId int32) (*MazeAIBattle.Ma
 		return nil, errors.New("配置不存在")
 	}
 	skillConfigInfo := &MazeAIBattle.MazeSkillConfigInfo{
-		SkillId:     proto.Int32(skillId),
-		InitSkillCd: proto.Int32(skillCfg.Initial_cool_time),
-		SkillCd:     proto.Int32(skillCfg.Skill_cool_time),
+		SkillId: proto.Int32(skillId),
+		SkillCd: GetSkillAttr(skillCfg.Skill_cool_time, map[int32]int64{}),
 	}
 	actDamageConfigs := make([]*MazeAIBattle.MazeAIActAttackValue, 0)
 	if len(skillActCfg.Act_id) > 0 {
@@ -840,4 +839,29 @@ func filterConditionIDs(condition string) (conditionIDs []int32, err error) {
 		conditionIDs = append(conditionIDs, fkutil.ToInt32(v))
 	}
 	return
+}
+
+// GetSkillAttrValue 根据技能属性配置与用户属性列表计算技能最终属性
+func GetSkillAttrValue(skillAttrMap map[int32]int32, userAttrMap map[int32]int64) (attrID int32, value int32) {
+	// 取人物属性值
+	attrID, ok := skillAttrMap[1]
+	if ok {
+		value, ok := userAttrMap[attrID]
+		if ok {
+			return attrID, int32(value)
+		}
+		return attrID, 0
+	}
+	// 取默认值
+	defaultValue, ok := skillAttrMap[0]
+	if ok {
+		value = defaultValue
+	}
+	return
+}
+
+// GetSkillAttr 根据技能属性配置与用户属性列表计算技能最终属性
+func GetSkillAttr(skillAttrMap map[int32]int32, userAttrMap map[int32]int64) (attr *MazeAIBattle.MazeAIAttrInfo) {
+	attrID, value := GetSkillAttrValue(skillAttrMap, userAttrMap)
+	return &MazeAIBattle.MazeAIAttrInfo{Type: proto.Int32(attrID), UserValue: proto.Int32(value)}
 }
