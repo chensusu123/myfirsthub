@@ -26,6 +26,7 @@ func GeneratePayJWT(userID uint64, uniqueId int32, wechatOpenId string, serverId
 		UniqueId:     uniqueId,
 		WechatOpenId: wechatOpenId,
 		ServerId:     serverId,
+		Description:  "测试",
 		RegisteredClaims: jwt.RegisteredClaims{
 			ExpiresAt: jwt.NewNumericDate(time.Now().Add(payTokenTTL)),
 		},
