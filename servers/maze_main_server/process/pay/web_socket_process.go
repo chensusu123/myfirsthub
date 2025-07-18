@@ -44,7 +44,7 @@ func (i *Pay) OnGetPayTokenRQ_10507_10508(s *session.Session, req *MazePay.MazeP
 	if err != nil {
 		logger.ErrorWF("ServerId ParseUint failed", zap.Error(err), zap.Any("req", req), zap.Any("serverIdStr", serverIdStr))
 	}
-	payJwt, err := jwt.GeneratePayJWT(uid, req.GetUniqueId(), "wx123", uint32(serverId))
+	payJwt, err := jwt.GeneratePayJWT(uid, req.GetUniqueId(), "", uint32(serverId))
 	if err != nil {
 		logger.ErrorWF("OnGetPayTokenRQ GeneratePayJWT err", zap.Error(err))
 		res.ErrInfo = errors.MODULE_ERROR.ToInfo()
