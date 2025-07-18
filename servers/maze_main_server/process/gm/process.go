@@ -1,6 +1,7 @@
 package gm
 
 import (
+	"context"
 	"encoding/json"
 	"errors"
 	"fmt"
@@ -13,6 +14,7 @@ import (
 	"maze_game_server/io/redis/UnionIDBindRedis"
 	"maze_game_server/io/redis/mazefixedbarrierredis"
 	"maze_game_server/io/redis/useridredis"
+	"maze_game_server/io/redis/usersection"
 	"maze_game_server/lib/nano/session"
 	"maze_game_server/module/mazecommonvalue"
 	"maze_game_server/module/mazeuserinfo"
@@ -21,6 +23,7 @@ import (
 
 	"github.com/gorilla/schema"
 	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fklog"
+	"gitlab.ifreetalk.com/maze-plate/freetk/fkserver/appconfig"
 	"gitlab.ifreetalk.com/maze-plate/freetk/fkserver/config_manager"
 	"gitlab.ifreetalk.com/maze-plate/freetk/fkutil"
 	"go.uber.org/zap"
@@ -190,6 +193,12 @@ func RegGm(logger fklog.FKLogI) {
 				generateUser.ErrorCode = 1
 				generateUser.ErrorMsg = err.Error()
 				return
+			}
+			err = usersection.Set(context.TODO(), newUserID, appconfig.GlobalConfig().Global.SectionID)
+			if err != nil {
+				logger.ErrorWF("usersection.Set fail",
+					zap.Uint64("userID", userID),
+					zap.Error(err))
 			}
 			userID = newUserID
 		} else {
