@@ -96,7 +96,6 @@ func (g *Game) OnSendDollMazeCmdRQ_10463_10464(s *session.Session, req *MazeGame
 }
 
 func ParseCmd(logger fklog.FKLogI, uid uint64, cmdCode int32, cmd string, session string) (err error) {
-
 	switch cmdCode {
 	case 1002:
 		cmdParams := strings.Split(cmd, "&")

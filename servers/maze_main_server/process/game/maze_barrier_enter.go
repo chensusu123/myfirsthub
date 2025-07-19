@@ -282,6 +282,7 @@ func (g *Game) OnGetStorageInfoRQ_10529_10530(s *session.Session, req *MazeGame.
 
 	res.Header = req.Header
 	res.ErrInfo = errors.NO_ERROR
+	res.BarrierId = req.BarrierId
 
 	userId := uint64(s.UID())
 
