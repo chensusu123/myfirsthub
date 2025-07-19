@@ -232,6 +232,17 @@ func ClearBarrier(logger fklog.FKLogI, userId uint64) (err error) {
 	// 	return
 	// }
 
+	//清除关卡存档
+	userInfo, err := mazeuserinfo.GetUserInfoV2(logger, userId)
+	if err != nil {
+		return
+	}
+	err = syncmazestorageinforedis.DelSyncMazeStorageInfo(userId, userInfo.Barrier)
+	logger.InfoWF("ClearBarrier end", zap.Error(err), zap.Any("userInfo", userInfo), zap.Any("user", userId))
+	if err != nil {
+		return err
+	}
+
 	//清除等级经验通用数值
 	err = mazeuserlevelredis.GMDel(logger, userId)
 	if err != nil {
@@ -265,17 +276,6 @@ func ClearBarrier(logger fklog.FKLogI, userId uint64) (err error) {
 	err = mazeequipgetnumredis.GMDel(logger, userId)
 	if err != nil {
 		return
-	}
-
-	//清除关卡存档
-	userInfo, err := mazeuserinfo.GetUserInfoV2(logger, userId)
-	if err != nil {
-		return
-	}
-	err = syncmazestorageinforedis.DelSyncMazeStorageInfo(userId, userInfo.Barrier)
-	logger.InfoWF("ClearBarrier end", zap.Error(err), zap.Any("userInfo", userInfo), zap.Any("user", userId))
-	if err != nil {
-		return err
 	}
 
 	return
