@@ -4,14 +4,21 @@ import (
 	"encoding/json"
 	"go.uber.org/zap"
 	"google.golang.org/protobuf/proto"
+	"maze_game_server/common/jwt"
 	"maze_game_server/pb/common/MazePay"
 	"maze_game_server/usecase/online"
 	"net/http"
+	"strconv"
 	"time"
 
 	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fklog"
 	"gitlab.ifreetalk.com/maze-plate/freetk/fkutil"
 )
+
+type payDeliveryResponse struct {
+	Code    int    `json:"code"`
+	Message string `json:"message"`
+}
 
 func safeHttpRegister(logger fklog.FKLogI, pattern string, handler func(http.ResponseWriter, *http.Request)) {
 	http.HandleFunc(pattern, func(writer http.ResponseWriter, request *http.Request) {
@@ -29,17 +36,29 @@ func safeHttpRegister(logger fklog.FKLogI, pattern string, handler func(http.Res
 
 func RegPayDelivery(logger fklog.FKLogI) {
 	safeHttpRegister(logger, "/v1/pay/delivery", func(writer http.ResponseWriter, request *http.Request) {
-		userId := fkutil.ToUint64(request.Form.Get("userId"))
-		uniqueId := fkutil.ToInt32(request.Form.Get("uniqueId"))
-		tradeNo := request.Form.Get("tradeNo")
-		payChannel := request.Form.Get("payChannel")
 		logger.SetLogId(time.Now().UnixNano())
-		logger.SetUid(userId)
-		logger.InfoWF("pay delivery begin")
-		_ = uniqueId
-		_ = tradeNo
-		_ = payChannel
-		writer.Header().Set("Content-Type", "application/json")
+		httpCode := http.StatusInternalServerError
+		res := &payDeliveryResponse{
+			Code:    http.StatusInternalServerError,
+			Message: "",
+		}
+		deliveryToken := request.Form.Get("deliveryToken")
+		defer func() {
+			writer.Header().Set("Content-Type", "application/json")
+			writer.WriteHeader(httpCode)
+			err := json.NewEncoder(writer).Encode(res)
+			if err != nil {
+				logger.ErrorWF("PayDelivery JsonEncode fail", zap.Error(err), zap.Any("req", deliveryToken), zap.Any("res", res))
+				return
+			}
+		}()
+
+		// 验证jwt
+		deliveryClaim, err := jwt.ValidateDeliveryJWT(deliveryToken)
+		if err != nil {
+			logger.ErrorWF("pay delivery ValidateDeliveryJWT failed", zap.Error(err), zap.String("deliveryToken", deliveryToken))
+			return
+		}
 
 		{
 			// todo 发货逻辑
@@ -47,21 +66,16 @@ func RegPayDelivery(logger fklog.FKLogI) {
 			// todo 最好还是检查下礼包id是否合法
 			var err error
 			if err != nil {
-				writer.WriteHeader(http.StatusInternalServerError)
-				_ = json.NewEncoder(writer).Encode(map[string]any{
-					"code":    http.StatusInternalServerError,
-					"message": err.Error(),
-				})
+				res.Message = err.Error()
 				logger.ErrorWF("pay delivery failed", zap.Error(err))
+				return
 			}
 		}
 
-		logger.InfoWF("pay delivery success")
-		_ = json.NewEncoder(writer).Encode(map[string]any{
-			"code":    http.StatusOK,
-			"message": "success",
-		})
-		PushPaySuccess(logger, int64(userId), tradeNo)
+		httpCode = http.StatusOK
+		res.Code = httpCode
+		logger.InfoWF("pay delivery success", zap.Any("deliveryClaim", deliveryClaim), zap.Any("res", res))
+		PushPaySuccess(logger, int64(deliveryClaim.UserId), strconv.FormatInt(deliveryClaim.TradeNo, 10))
 	})
 }
 

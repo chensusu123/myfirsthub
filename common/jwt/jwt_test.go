@@ -9,7 +9,7 @@ import (
 )
 
 func TestGenPayJwt(t *testing.T) {
-	orderJwt, err := GeneratePayJWT(123, "123", "wx123", 1)
+	orderJwt, err := GeneratePayJWT(123, 1000001, "wx123", 1)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -27,7 +27,7 @@ func TestValidatePayJwt(t *testing.T) {
 
 func Test(t *testing.T) {
 	req := &MazePay.MazePayTokenRQ{}
-	req.UniqueId = proto.String("xxx")
+	req.UniqueId = proto.Int32(1000001)
 	b, _ := json.Marshal(req)
 	s := string(b)
 	fmt.Println(s)

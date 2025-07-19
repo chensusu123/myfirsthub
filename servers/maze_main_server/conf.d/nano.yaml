@@ -5,7 +5,7 @@ global: # global config.
   hostname: ${HOSTNAME} # service process name.
   env: ${ENVIRONMENT} # environment type, two types: production and development.
   project_group: ${PROJECT_GROUP} # project group name.
-  section_id: ${S_GROUP_ID} # server id.
+  section_id: ${SERVER_ID} # server id.
   k8s_node_hostname: ${K8S_NODE_HOSTNAME} # k8s node hostname.
   cpu_num: ${K8S_REQUEST_CPU} # cpu number.
 server: # server configuration.
