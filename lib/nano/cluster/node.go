@@ -41,6 +41,7 @@ import (
 	"maze_game_server/lib/nano/session"
 
 	"github.com/gorilla/websocket"
+	"gitlab.ifreetalk.com/maze-plate/freetk/fkserver/appconfig"
 	"google.golang.org/grpc"
 )
 
@@ -256,15 +257,31 @@ func (n *Node) listenAndServe() {
 }
 
 func (n *Node) listenAndServeWS() {
-	var upgrader = websocket.Upgrader{
+	upgrader := websocket.Upgrader{
 		ReadBufferSize:  1024,
 		WriteBufferSize: 1024,
-		CheckOrigin:     env.CheckOrigin,
+
+		CheckOrigin: env.CheckOrigin,
 	}
+	appConfig := appconfig.GlobalConfig()
+	namespace := appConfig.Global.Namespace
+	sectionID := appConfig.Global.SectionID
+	appName := appConfig.Server.App
+	shardingID := fmt.Sprintf("%d", appConfig.Global.ShardingID)
 
 	handle := func(path string, pcodec frame.PacketCodec) {
 		http.HandleFunc("/"+strings.TrimPrefix(path, "/"), func(w http.ResponseWriter, r *http.Request) {
-			conn, err := upgrader.Upgrade(w, r, nil)
+			rid := r.Header.Get("X-Trace-Id")
+			if rid == "" {
+				rid = generatorID()
+			}
+			header := w.Header()
+			header.Set("X-App-Namespace", namespace)
+			header.Set("X-App-Section", sectionID)
+			header.Set("X-App-Name", appName)
+			header.Set("X-App-Sharding", shardingID)
+			header.Set("X-Trace-Id", rid)
+			conn, err := upgrader.Upgrade(w, r, header)
 			if err != nil {
 				log.Println(fmt.Sprintf("Upgrade failure, URI=%s, Error=%s", r.RequestURI, err.Error()))
 				return
@@ -288,7 +305,7 @@ func (n *Node) listenAndServeWS() {
 }
 
 func (n *Node) listenAndServeWSTLS() {
-	var upgrader = websocket.Upgrader{
+	upgrader := websocket.Upgrader{
 		ReadBufferSize:  1024,
 		WriteBufferSize: 1024,
 		CheckOrigin:     env.CheckOrigin,
