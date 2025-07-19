@@ -5,6 +5,8 @@ import (
 	"go.uber.org/zap"
 	"google.golang.org/protobuf/proto"
 	"maze_game_server/common/jwt"
+	"maze_game_server/config/GMazeChargeV8Cfg"
+	"maze_game_server/module/mazemoney"
 	"maze_game_server/pb/common/MazePay"
 	"maze_game_server/usecase/online"
 	"net/http"
@@ -59,15 +61,28 @@ func RegPayDelivery(logger fklog.FKLogI) {
 			logger.ErrorWF("pay delivery ValidateDeliveryJWT failed", zap.Error(err), zap.String("deliveryToken", deliveryToken))
 			return
 		}
-
 		{
-			// todo 发货逻辑
+			// 发货
+			// 查找礼包id
+			var chargeCfg *GMazeChargeV8Cfg.MazeChargeV8ConfigRow
+			chargeCfgAll := GMazeChargeV8Cfg.GetAll()
+			for _, i := range chargeCfgAll {
+				if i.Unique_id == deliveryClaim.UniqueId {
+					chargeCfg = i
+					break
+				}
+			}
+			if chargeCfg == nil {
+				logger.ErrorWF("pay delivery unique id not exist", zap.Error(err), zap.Any("deliveryClaim", deliveryClaim))
+				return
+			}
 			// 要优化：发货逻辑和订单状态修改不是事务的，所以存在极限情况多发货  例如：发货后，服务挂掉，支付服务器没收到发货回复认为没有发货成功，将进行发货重试
-			// todo 最好还是检查下礼包id是否合法
-			var err error
+			// todo 充值表要调整可能，目前没法通过maze_charge_v8找到具体的道具id,就临时用rmb的数量了
+			_, err = mazemoney.AddUserDiamond(logger, deliveryClaim.UserId, int64(chargeCfg.Currency_num), 1)
 			if err != nil {
+				res.Code = http.StatusInternalServerError
 				res.Message = err.Error()
-				logger.ErrorWF("pay delivery failed", zap.Error(err))
+				logger.ErrorWF("pay delivery add item failed", zap.Error(err), zap.Any("deliveryClaim", deliveryClaim))
 				return
 			}
 		}
