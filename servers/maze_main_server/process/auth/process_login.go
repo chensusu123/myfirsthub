@@ -65,7 +65,7 @@ func (a *Auth) OnLoginRQ_10492_10493(s *session.Session, req *UserLogin.UserLogi
 			res.Error = errors.COMMON_ERROR_TIPS.Wrap("add userID to unionID fail")
 			return nil
 		}
-		err = usersection.Set(context.TODO(), userID, appconfig.GlobalConfig().Global.SectionID)
+		err = usersection.Set(context.TODO(), newUserID, appconfig.GlobalConfig().Global.SectionID)
 		if err != nil {
 			logger.ErrorWF("usersection.Set fail",
 				zap.Uint64("userID", userID),

@@ -46,17 +46,19 @@ func (ns *NanoInitService) OnInit(logger fklog.FKLogI, config fkconfig.FkConfige
 		ns.addr = svrCfg.Address
 	}
 
+	jsonPath := "/s" + appConfig.Global.SectionID + "/json"
+	pbPath := "/s" + appConfig.Global.SectionID + "/pb"
 	ns.nlisten = func() {
 		nano.Listen(ns.addr,
 			// nano.WithDebugMode(),
 
 			// 启用WebSocket协议
 			nano.WithIsWebsocket(true),
-			nano.WithWSPath("/json",
+			nano.WithWSPath(jsonPath,
 				// 以下Serializer与PacketCodec作用于局部
 				codec.NewJsonPacketCodec(routes, codec.WithSerializer(json.NewSerializer())),
 			),
-			nano.WithWSPath("/pb",
+			nano.WithWSPath(pbPath,
 				// 以下Serializer与PacketCodec作用于局部
 				codec.NewEsPacketCodec(routes, codec.WithSerializer(codec.NewProtobufSerializer())),
 			),
