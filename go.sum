@@ -452,8 +452,6 @@ github.com/jtolds/gls v4.20.0+incompatible h1:xdiiI2gbIgH/gLH7ADydsJ1uDOEzR8yvV7
 github.com/jtolds/gls v4.20.0+incompatible/go.mod h1:QJZ7F/aHp+rZTRtaJ1ow/lLfFfVYBRgL+9YlvaHOwJU=
 github.com/julienschmidt/httprouter v1.2.0/go.mod h1:SYymIcj16QtmaHHD7aYtjjsJG7VTCxuUUipMqKk8s4w=
 github.com/julienschmidt/httprouter v1.3.0/go.mod h1:JR6WtHb+2LUe8TCKY3cZOxFyyO8IZAc4RVcycCCAKdM=
-github.com/justinas/alice v1.2.0 h1:+MHSA/vccVCF4Uq37S42jwlkvI2Xzl7zTPCN5BnZNVo=
-github.com/justinas/alice v1.2.0/go.mod h1:fN5HRH/reO/zrUflLfTN43t3vXvKzvZIENsNEe7i7qA=
 github.com/kisielk/errcheck v1.5.0/go.mod h1:pFxgyoBC7bSaBwPgfKdkLd5X25qrDl4LWUI2bnpBCr8=
 github.com/kisielk/gotool v1.0.0/go.mod h1:XhKaO+MFFWcvkIS/tQcRk01m1F5IRFswLeQ+oQHNcck=
 github.com/klauspost/cpuid/v2 v2.0.9/go.mod h1:FInQzS24/EEf25PyTYn52gqo7WaD8xa0213Md/qVLRg=
@@ -644,8 +642,6 @@ github.com/yuin/goldmark v1.3.5/go.mod h1:mwnBkeHKe2W/ZEtQ+71ViKU8L12m81fl3OWwC1
 github.com/yuin/goldmark v1.4.13/go.mod h1:6yULJ656Px+3vBD8DxQVa3kxgyrAnzto9xy5taEt/CY=
 gitlab.ifreetalk.com/maze-plate/extra v1.0.1-0.20250401060651-722653168d37 h1:lyB5pFQppuBFwhWaEaJN54c9dNnKVjoJoS9ZMezSfhc=
 gitlab.ifreetalk.com/maze-plate/extra v1.0.1-0.20250401060651-722653168d37/go.mod h1:ZHwfNF+727RvJctXbXHW/8kdkKBMIyUNHgUdwjqZ9E0=
-gitlab.ifreetalk.com/maze-plate/freetk v1.0.1-0.20250717083030-63e0a1d77f1a h1:74N3jYVnjZIlCEjckGgDNNnxSn3BT099kt+liKWq6zo=
-gitlab.ifreetalk.com/maze-plate/freetk v1.0.1-0.20250717083030-63e0a1d77f1a/go.mod h1:A+R3OZ1/GrKUOw8e3FLmxHhWtVs1Okbp4/JpYFfmZLg=
 gitlab.ifreetalk.com/nano-ecosystem/fklog v0.0.0-20250609141356-5698d091b098 h1:+ik01IEoU0Yxq6IXKKzrL5TONX8QX9rx9pbyNajEYcM=
 gitlab.ifreetalk.com/nano-ecosystem/fklog v0.0.0-20250609141356-5698d091b098/go.mod h1:EBlTAtJ7j+E85oFKb2G1hAjAVxTVUWvYTObbK2HlaY4=
 gitlab.ifreetalk.com/nano-ecosystem/nlog v0.0.0-20250621054907-e3e89b67b4be h1:zY2uCLvgs+SG7coTJufhHYl4hb5BM7VlCs/2hHb3IYQ=

@@ -63,7 +63,6 @@ require (
 	github.com/hertz-contrib/pprof v0.1.2 // indirect
 	github.com/jinzhu/inflection v1.0.0 // indirect
 	github.com/jinzhu/now v1.1.5 // indirect
-	github.com/justinas/alice v1.2.0 // indirect
 	github.com/klauspost/cpuid/v2 v2.2.5 // indirect
 	github.com/lestrrat-go/strftime v1.0.6 // indirect
 	github.com/lithammer/shortuuid/v4 v4.0.0 // indirect
