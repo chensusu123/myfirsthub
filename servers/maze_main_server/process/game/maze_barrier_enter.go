@@ -94,9 +94,10 @@ func (g *Game) OnMazeBarrierEnterRQ_10447_10448(s *session.Session, req *MazeGam
 			BuffSrc: constdef.MazeBuffSrcSelectBuffForce,
 		}
 		mazeattrcalcnotifyqueue.SendMazeAttrCalcNotify(logger, calcAttrNotify)
-		// 清理关卡操作状态
-		mazebarrieropstatusredis.ClearOpStatus(logger, userId, req.GetBarrierId())
 	}
+
+	// 清理关卡操作状态
+	mazebarrieropstatusredis.ClearOpStatus(logger, userId, req.GetBarrierId())
 
 	mazeBattleInfo, err3 := GetMazeBattleData(logger, userId, req.GetBarrierId())
 	if err3 != nil {
