@@ -56,7 +56,7 @@ func GetSyncMazeStorageInfo(userId uint64, barrierId int32) (info *MazeGame.Maze
 	info = &MazeGame.MazeStorageInfo{}
 	for k, v := range res {
 		if k == StorageInfo_RoleItemData {
-			info.RoleItemData = []byte(v)
+			info.RoleItemData = proto.String(v)
 		}
 		if k == StorageInfo_PassLevel {
 			a, err := strconv.ParseInt(v, 10, 64)
@@ -69,7 +69,7 @@ func GetSyncMazeStorageInfo(userId uint64, barrierId int32) (info *MazeGame.Maze
 			info.RolePos = proto.String(v)
 		}
 		if k == StorageInfo_StorageItemInfo {
-			info.RoleItemData = []byte(v)
+			info.StorageItemInfo = proto.String(v)
 		}
 	}
 

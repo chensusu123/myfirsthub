@@ -81,14 +81,8 @@ func (g *Game) OnMazeBarrierEnterRQ_10447_10448(s *session.Session, req *MazeGam
 	//	res.Energy = proto.Int32(userInfo.Energy)
 	var isNewBarrier bool
 
-	// 默认是从存档进入
-	storageInfo, err := syncmazestorageinforedis.GetSyncMazeStorageInfo(userId, userInfo.Barrier)
-	if err != nil {
-		logger.ErrorWF("OnMazeBarrierEnterRQ GetSyncMazeStorageInfo fail", zap.Error(err))
-		return
-	}
-	res.StorageInfo = storageInfo
-	if storageInfo == nil {
+	// 临时清
+	{
 		// 进入清临时buff
 		mazebarriertempbuffredis.ClearBarrierTempBuff(logger, userId, req.GetBarrierId())
 		mazebuffinforedis.DelMazeBuffBySrc(logger, userId, constdef.MazeBuffSrcSelectBuffForce)
@@ -135,7 +129,6 @@ func (g *Game) OnMazeBarrierEnterRQ_10447_10448(s *session.Session, req *MazeGam
 	}
 
 	var curEnergy int32
-
 	//进入关卡需要
 
 	//首次进入新关还额外需要
@@ -289,6 +282,63 @@ func SubUserEnergy(logger fklog.FKLogI, uid uint64, subEnergy int32) (isSucc boo
 		err = errors.New(string(res.GetErrInfo().GetErrMsg()))
 		return false, res.GetRemainVal(), err
 	}
+}
+
+func (g *Game) OnGetStorageInfoRQ_10529_10530(s *session.Session, req *MazeGame.MazeBarrierEnterRQ) (err error) {
+	defer fkprometheus.InfoPMT("OnGetStorageInfoRQ")()
+
+	logger := log.Clone("Game", uint64(s.UID()), 0)
+	res := &MazeGame.GetStorageInfoRS{}
+
+	logger.InfoWF("OnGetStorageInfoRQ start", zap.Any("req", req))
+	defer func() {
+		err = s.Response(res)
+		logger.InfoWF("OnGetStorageInfoRQ end", zap.Any("res", res))
+	}()
+
+	res.Header = req.Header
+	res.ErrInfo = errors.NO_ERROR
+	res.BarrierId = req.BarrierId
+
+	userId := uint64(s.UID())
+
+	if req.GetBarrierId() <= 0 {
+		logger.ErrorWF("OnGetStorageInfoRQ req barrier invalid", zap.Any("req", req))
+		res.ErrInfo = errors.COMMON_ERROR_TIPS.Wrap("关卡id未设置")
+		return
+	}
+
+	userInfo, err := mazeuserinfo.GetUserInfoV2(logger, userId)
+	if err != nil {
+		logger.ErrorWF("OnGetStorageInfoRQ GetUserInfoV2 fail", zap.Error(err))
+		res.ErrInfo = errors.MODULE_ERROR.ToInfo()
+		return
+	}
+
+	// 默认是从存档进入
+	storageInfo, err := syncmazestorageinforedis.GetSyncMazeStorageInfo(userId, userInfo.Barrier)
+	if err != nil {
+		logger.ErrorWF("OnGetStorageInfoRQ GetSyncMazeStorageInfo fail", zap.Error(err))
+		return
+	}
+	res.StorageInfo = storageInfo
+	if storageInfo == nil {
+		// 进入清临时buff
+		mazebarriertempbuffredis.ClearBarrierTempBuff(logger, userId, req.GetBarrierId())
+		mazebuffinforedis.DelMazeBuffBySrc(logger, userId, constdef.MazeBuffSrcSelectBuffForce)
+		// 推送属性计算消息
+		calcAttrNotify := &structsdef.MazeCalcAttrNotifyMsg{
+			UserId:  userId,
+			ChgType: constdef.MazeBuffChgForceValue,
+			Session: "buff",
+			BuffSrc: constdef.MazeBuffSrcSelectBuffForce,
+		}
+		mazeattrcalcnotifyqueue.SendMazeAttrCalcNotify(logger, calcAttrNotify)
+		// 清理关卡操作状态
+		mazebarrieropstatusredis.ClearOpStatus(logger, userId, req.GetBarrierId())
+	}
+
+	return nil
 }
 
 func GetUserMoney(logger fklog.FKLogI, uid uint64) {

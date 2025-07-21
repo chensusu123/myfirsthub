@@ -22,7 +22,7 @@ func NewPay() *Pay {
 	return &Pay{}
 }
 
-func (i *Pay) OnGetPayTokenRQ_10507_10508(s *session.Session, req *MazePay.MazePayTokenRQ) (err error) {
+func (p *Pay) OnGetPayTokenRQ_10507_10508(s *session.Session, req *MazePay.MazePayTokenRQ) (err error) {
 	logger := log.Clone("Pay", uint64(s.UID()), 0)
 	res := &MazePay.MazePayTokenRS{}
 

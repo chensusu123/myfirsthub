@@ -155,7 +155,7 @@ func ParseCmd(logger fklog.FKLogI, uid uint64, cmdCode int32, cmd string, sessio
 			logger.ErrorWF("ParseCmd ClearOpenBoxTime fail", zap.Error(err), zap.Uint64("userID", fkutil.ToUint64(params["user"])))
 		}
 		err = ClearBarrier(logger, fkutil.ToUint64(params["user"]))
-
+		logger.ErrorWF("ParseCmd End ClearOpenBoxTime", zap.Error(err), zap.Uint64("userID", fkutil.ToUint64(params["user"])))
 		return
 	case 1005:
 		cmdParams := strings.Split(cmd, "&")
@@ -232,6 +232,17 @@ func ClearBarrier(logger fklog.FKLogI, userId uint64) (err error) {
 	// 	return
 	// }
 
+	//清除关卡存档
+	userInfo, err := mazeuserinfo.GetUserInfoV2(logger, userId)
+	if err != nil {
+		return
+	}
+	err = syncmazestorageinforedis.DelSyncMazeStorageInfo(userId, userInfo.Barrier)
+	logger.InfoWF("ClearBarrier end", zap.Error(err), zap.Any("userInfo", userInfo), zap.Any("user", userId))
+	if err != nil {
+		return err
+	}
+
 	//清除等级经验通用数值
 	err = mazeuserlevelredis.GMDel(logger, userId)
 	if err != nil {
@@ -265,16 +276,6 @@ func ClearBarrier(logger fklog.FKLogI, userId uint64) (err error) {
 	err = mazeequipgetnumredis.GMDel(logger, userId)
 	if err != nil {
 		return
-	}
-
-	//清除关卡存档
-	userInfo, err := mazeuserinfo.GetUserInfoV2(logger, userId)
-	if err != nil {
-		return
-	}
-	err = syncmazestorageinforedis.DelSyncMazeStorageInfo(userId, userInfo.Barrier)
-	if err != nil {
-		return err
 	}
 
 	return
