@@ -11,13 +11,13 @@ import sys
 ENV_CONFIG = {
     "test": {
         "redis_host": "10.101.110.231",
-        "redis_port": 9004,
+        "redis_port": 9501,
         "http_url": "https://test-reg.midudutech.com/user/register/mail",
         "gm_url_template": "http://test-gm.midudutech.com/generateUser?AuthId=%s"
     },
     "play": {
         "redis_host": "10.101.110.231",
-        "redis_port": 9004,
+        "redis_port": 9401,
         "http_url": "https://play-reg.midudutech.com/user/register/mail",
         "gm_url_template": "http://play-gm.midudutech.com/generateUser?AuthId=%s"
     }
@@ -66,9 +66,9 @@ def create_email_accounts(email_prefix, count, env):
 
     for _ in range(count):
         # 从 user:id:pool 队列中获取最右侧的数字
-        last_id = r.lindex('user:id:pool', -1)
+        last_id = r.incrby('account:id:pool', 1)
         if last_id is None:
-            print("Redis 队列 user:id:pool 为空，无法创建邮箱账号。")
+            print("账号ID分配失败，无法创建邮箱账号。")
             break
 
         # 取最后 7 位数，不足 7 位左侧补 0
