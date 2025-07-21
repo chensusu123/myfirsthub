@@ -81,6 +81,23 @@ func (g *Game) OnMazeBarrierEnterRQ_10447_10448(s *session.Session, req *MazeGam
 	//	res.Energy = proto.Int32(userInfo.Energy)
 	var isNewBarrier bool
 
+	storageInfo, _ := syncmazestorageinforedis.GetSyncMazeStorageInfo(userId, userInfo.Barrier)
+	if storageInfo == nil {
+		// 进入清临时buff
+		mazebarriertempbuffredis.ClearBarrierTempBuff(logger, userId, req.GetBarrierId())
+		mazebuffinforedis.DelMazeBuffBySrc(logger, userId, constdef.MazeBuffSrcSelectBuffForce)
+		// 推送属性计算消息
+		calcAttrNotify := &structsdef.MazeCalcAttrNotifyMsg{
+			UserId:  userId,
+			ChgType: constdef.MazeBuffChgForceValue,
+			Session: "buff",
+			BuffSrc: constdef.MazeBuffSrcSelectBuffForce,
+		}
+		mazeattrcalcnotifyqueue.SendMazeAttrCalcNotify(logger, calcAttrNotify)
+		// 清理关卡操作状态
+		mazebarrieropstatusredis.ClearOpStatus(logger, userId, req.GetBarrierId())
+	}
+
 	mazeBattleInfo, err3 := GetMazeBattleData(logger, userId, req.GetBarrierId())
 	if err3 != nil {
 		logger.ErrorWF("OnMazeBarrierEnterRQ GetMazeBattleData fail", zap.Error(err3))
@@ -305,21 +322,21 @@ func (g *Game) OnGetStorageInfoRQ_10529_10530(s *session.Session, req *MazeGame.
 		return
 	}
 	res.StorageInfo = storageInfo
-	if storageInfo == nil {
-		// 进入清临时buff
-		mazebarriertempbuffredis.ClearBarrierTempBuff(logger, userId, req.GetBarrierId())
-		mazebuffinforedis.DelMazeBuffBySrc(logger, userId, constdef.MazeBuffSrcSelectBuffForce)
-		// 推送属性计算消息
-		calcAttrNotify := &structsdef.MazeCalcAttrNotifyMsg{
-			UserId:  userId,
-			ChgType: constdef.MazeBuffChgForceValue,
-			Session: "buff",
-			BuffSrc: constdef.MazeBuffSrcSelectBuffForce,
-		}
-		mazeattrcalcnotifyqueue.SendMazeAttrCalcNotify(logger, calcAttrNotify)
-		// 清理关卡操作状态
-		mazebarrieropstatusredis.ClearOpStatus(logger, userId, req.GetBarrierId())
-	}
+	//if storageInfo == nil {
+	//	// 进入清临时buff
+	//	mazebarriertempbuffredis.ClearBarrierTempBuff(logger, userId, req.GetBarrierId())
+	//	mazebuffinforedis.DelMazeBuffBySrc(logger, userId, constdef.MazeBuffSrcSelectBuffForce)
+	//	// 推送属性计算消息
+	//	calcAttrNotify := &structsdef.MazeCalcAttrNotifyMsg{
+	//		UserId:  userId,
+	//		ChgType: constdef.MazeBuffChgForceValue,
+	//		Session: "buff",
+	//		BuffSrc: constdef.MazeBuffSrcSelectBuffForce,
+	//	}
+	//	mazeattrcalcnotifyqueue.SendMazeAttrCalcNotify(logger, calcAttrNotify)
+	//	// 清理关卡操作状态
+	//	mazebarrieropstatusredis.ClearOpStatus(logger, userId, req.GetBarrierId())
+	//}
 
 	return nil
 }
