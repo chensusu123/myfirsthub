@@ -8,6 +8,7 @@ import (
 	"net/http"
 
 	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fklog"
+	"gitlab.ifreetalk.com/maze-plate/freetk/fkserver/appconfig"
 	"gitlab.ifreetalk.com/maze-plate/freetk/fkutil"
 	"go.uber.org/zap"
 )
@@ -15,6 +16,9 @@ import (
 const USER_ID_FIELD = "userId"
 
 func SafeHttpRegister(logger fklog.FKLogI, pattern string, handler func(http.ResponseWriter, *http.Request)) {
+	appConfig := appconfig.GlobalConfig()
+	// /s4/AddExp
+	pattern = "/s" + appConfig.Global.SectionID + pattern
 	http.HandleFunc(pattern, func(writer http.ResponseWriter, request *http.Request) {
 		defer fkutil.CaptureException()
 
