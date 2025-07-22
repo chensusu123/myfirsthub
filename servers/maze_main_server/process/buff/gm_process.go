@@ -24,9 +24,11 @@ import (
  */
 
 func SafeHttpRegister(logger fklog.FKLogI, pattern string, handler func(http.ResponseWriter, *http.Request)) {
+	appConfig := appconfig.GlobalConfig()
+	// /s4/AddExp
+	pattern = "/s" + appConfig.Global.SectionID + pattern
 	http.HandleFunc(pattern, func(writer http.ResponseWriter, request *http.Request) {
 		defer fkutil.CaptureException()
-
 		logger.DebugWF("execute gm", zap.String("pattern", pattern), zap.Any("header", request.Header),
 			zap.Any("host", request.Host), zap.Any("remoteAddr", request.RemoteAddr))
 		// if !CheckGM.CheckGMOnline(context.Background(), logger, 10000, pattern, request.RemoteAddr) {

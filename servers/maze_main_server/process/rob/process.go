@@ -34,6 +34,9 @@ func RegTcpHandler() {
 }
 
 func SafeHttpRegister(logger fklog.FKLogI, pattern string, handler func(fklog.FKLogI, http.ResponseWriter, *http.Request)) {
+	appConfig := appconfig.GlobalConfig()
+	// /s4/AddExp
+	pattern = "/s" + appConfig.Global.SectionID + pattern
 	http.HandleFunc(pattern, func(writer http.ResponseWriter, request *http.Request) {
 		defer fkutil.CaptureException()
 		l := logger.Clone("")
