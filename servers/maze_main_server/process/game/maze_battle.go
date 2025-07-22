@@ -6,6 +6,8 @@ import (
 	"maze_game_server/config/GMazeActInfoV8Cfg"
 	"maze_game_server/config/GMazeAttrItemAttrV8Cfg"
 	"maze_game_server/config/GMazeAttrSkillV8Cfg"
+	"maze_game_server/config/GMazeBarriesV8Cfg"
+	"maze_game_server/config/GMazeBoxV8Cfg"
 	"maze_game_server/config/GMazeBrushFoeV8Cfg"
 	"maze_game_server/config/GMazeFoeV8Cfg"
 	"maze_game_server/config/GMazeSkillActV8Cfg"
@@ -13,6 +15,7 @@ import (
 	"maze_game_server/config/GMazeSkillInfoV8Cfg"
 	"maze_game_server/config/GMazeSkilleffectV8Cfg"
 	"maze_game_server/io/redis/mazebarriertempbuffredis"
+	"maze_game_server/io/redis/mazeboxredis"
 	"maze_game_server/io/redis/mazecalcattrredis"
 	"maze_game_server/pb/common/MazeAIBattle"
 	"regexp"
@@ -121,6 +124,44 @@ func GetMazeBattleData(logger fklog.FKLogI, userId uint64, barrierId int32) (maz
 		}
 		itemUseInfo.SkillIds = append(itemUseInfo.SkillIds, attrSkill.Skill_id)
 		mazeBattleInfo.ItemUseInfos = append(mazeBattleInfo.ItemUseInfos, itemUseInfo)
+	}
+
+	barrierCfg := GMazeBarriesV8Cfg.Get(barrierId)
+	if barrierCfg == nil {
+		logger.ErrorWF("GetMazeBattleData GMazeBarriesV8Cfg fail", zap.Any("barrierId", barrierId))
+		return nil, errors.CONFIG_NOT_FOUND
+	}
+
+	// 关卡掉落物品(宝箱结构物品)
+	for _, boxID := range barrierCfg.Box_ids {
+		if boxID <= 0 {
+			continue
+		}
+		boxCfg := GMazeBoxV8Cfg.Get(boxID)
+		if boxCfg == nil {
+			logger.ErrorWF("GetMazeBattleData GMazeBoxV8Cfg fail", zap.Any("boxId", boxID), zap.Any("barrierId", barrierId))
+			return nil, errors.CONFIG_NOT_FOUND
+		}
+		opened, err := mazeboxredis.IsOpenedBox(logger, userId, boxID)
+		if err != nil {
+			logger.ErrorWF("GetMazeBattleData IsOpenedBox fail", zap.Error(err), zap.Any("boxId", boxID), zap.Any("barrierId", barrierId))
+			return nil, err
+		}
+
+		var resID, resType int32
+
+		if opened > 0 {
+			resID = boxCfg.Res_id
+			resType = boxCfg.Res_type
+		} else {
+			resID = boxCfg.Res_id_first
+			resType = boxCfg.Res_type_first
+		}
+		mazeBattleInfo.DropItemBoxInfos = append(mazeBattleInfo.DropItemBoxInfos, &MazeAIBattle.MazeDropItemBoxInfo{
+			BoxId:   proto.Int32(boxID),
+			ResId:   proto.Int32(resID),
+			ResType: proto.Int32(resType),
+		})
 	}
 
 	return mazeBattleInfo, nil
