@@ -1,13 +1,10 @@
 package game
 
 import (
-	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fklog"
-	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fkprometheus"
-	"go.uber.org/zap"
 	"maze_game_server/common/constdef"
 	"maze_game_server/common/errors"
 	"maze_game_server/common/structsdef"
-	"maze_game_server/config/GMazeAttrSkillV8Cfg"
+	"maze_game_server/config/GMazeSkillInfoV8Cfg"
 	"maze_game_server/io/redis/mazeattrcalcnotifyqueue"
 	"maze_game_server/io/redis/mazebuffinforedis"
 	"maze_game_server/io/redis/mazetempbuffredis"
@@ -17,6 +14,10 @@ import (
 	"maze_game_server/pb/common/MazeGame"
 	"maze_game_server/pb/server/MazeTempBuffSvr"
 	"maze_game_server/usecase/online"
+
+	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fklog"
+	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fkprometheus"
+	"go.uber.org/zap"
 )
 
 func (g *Game) OnEndAreaBattleRQ_10525_10526(s *session.Session, req *MazeGame.EndAreaBattleRQ) (err error) {
@@ -118,26 +119,22 @@ func GetTempBuffSkillInfoChange(logger fklog.FKLogI, userID uint64, tempBuffInfo
 
 func GetUserSkillTotalInfo(logger fklog.FKLogI, userAttrMap map[int32]int64, tempBuff *MazeTempBuffSvr.TempBuffInfo) (skillTotalInfo *MazeAIBattle.MazeAISkillTotalInfo, changed bool, err error) {
 	skillTotalInfo = &MazeAIBattle.MazeAISkillTotalInfo{}
-	for _, buff := range tempBuff.TotalBuff {
-		attrSkillCfg := GMazeAttrSkillV8Cfg.Get(buff.GetBuffId())
-		if attrSkillCfg == nil {
-			continue
-		}
-		if attrSkillCfg.Skill_id > 0 {
-			skillInfo, _, err := GetUserBattleSkillInfo(logger, attrSkillCfg.Skill_id, userAttrMap)
-			if err != nil {
-				return nil, false, err
+	attrMap := make(map[int32]int64)
+	for _, buff := range tempBuff.GetTotalBuff() {
+		attrMap[buff.GetBuffId()] += buff.GetBuffValue()
+	}
+	for _, cfg := range GMazeSkillInfoV8Cfg.GetAll() {
+		if cfg.Skill_attr_id > 0 {
+			_, ok := attrMap[cfg.Skill_attr_id]
+			// 判断是否激活技能
+			if ok {
+				skillInfo, _, err := GetUserBattleSkillInfo(logger, cfg.Id, userAttrMap)
+				if err != nil {
+					return nil, false, err
+				}
+				skillTotalInfo.SkillInfoList = append(skillTotalInfo.SkillInfoList, skillInfo)
+				changed = true
 			}
-			skillTotalInfo.SkillInfoList = append(skillTotalInfo.SkillInfoList, skillInfo)
-			changed = true
-		}
-		if attrSkillCfg.Auto_skill_id > 0 {
-			autoSkillInfo, err := GetMazeAIAutoSkillInfo(logger, attrSkillCfg.Auto_skill_id, userAttrMap)
-			if err != nil {
-				return nil, false, err
-			}
-			skillTotalInfo.AutoSkillInfoList = append(skillTotalInfo.AutoSkillInfoList, autoSkillInfo)
-			changed = true
 		}
 	}
 	return skillTotalInfo, changed, nil

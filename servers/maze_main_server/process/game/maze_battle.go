@@ -10,7 +10,6 @@ import (
 	"maze_game_server/config/GMazeFoeV8Cfg"
 	"maze_game_server/config/GMazeSkillActV8Cfg"
 	"maze_game_server/config/GMazeSkillAutoConditionV8Cfg"
-	"maze_game_server/config/GMazeSkillAutoReleaseV8Cfg"
 	"maze_game_server/config/GMazeSkillInfoV8Cfg"
 	"maze_game_server/config/GMazeSkilleffectV8Cfg"
 	"maze_game_server/io/redis/mazebarriertempbuffredis"
@@ -229,17 +228,17 @@ func GetMazeAIMonsterConfig(logger fklog.FKLogI, userId uint64, force int64, foe
 	for _, skillId := range foeCfg.Passive_skill_id {
 		skillIds = append(skillIds, skillId)
 	}
+	skillTotalInfo := &MazeAIBattle.MazeAISkillTotalInfo{}
+	skillTotalInfo.SkillInfoList = make([]*MazeAIBattle.MazeAISkillInfo, 0)
+	attrMap := make(map[int32]int64)
 	if len(skillIds) > 0 {
 		skillCfg := GMazeSkillInfoV8Cfg.Get(skillIds[0])
 		if skillCfg == nil {
 			logger.ErrorWF("GetMazeAIMonsterConfig GMazeSkillInfoV8Cfg err", zap.Any("skillId", skillIds[0]))
 			return nil, errors.New("配置不存在")
 		}
-		attackValue.SkillCd = proto.Int32(skillCfg.Public_cool_time)
+		attackValue.SkillCd = GetSkillAttr(skillCfg.Skill_cool_time, attrMap)
 	}
-	skillTotalInfo := &MazeAIBattle.MazeAISkillTotalInfo{}
-	skillTotalInfo.SkillInfoList = make([]*MazeAIBattle.MazeAISkillInfo, 0)
-	attrMap := make(map[int32]int64)
 	for _, skillId := range skillIds {
 		if skillId == 0 {
 			continue
@@ -269,22 +268,13 @@ func GetMazeAIMonsterConfig(logger fklog.FKLogI, userId uint64, force int64, foe
 
 func GetUserAttrInfo(logger fklog.FKLogI, userId uint64, userAttrMap map[int32]int64) (*MazeAIBattle.MazeAIRoleConfigInfo, error) {
 	skillIds := make([]int32, 0)
-	autoSkillId := make([]int32, 0)
+	// 激活人物技能
 	for _, cfg := range GMazeSkillInfoV8Cfg.GetAll() {
-		if cfg.Type != 1 {
-			continue
-		}
-		// if cfg.Level != displayLevel {
-		//	continue
-		// }
-		skillIds = append(skillIds, cfg.Id)
-	}
-
-	for _, cfg := range GMazeAttrSkillV8Cfg.GetAll() {
-		if userAttrMap[cfg.Attr_id] > 0 {
-			skillIds = append(skillIds, cfg.Skill_id)
-			if cfg.Auto_skill_id > 0 {
-				autoSkillId = append(autoSkillId, cfg.Auto_skill_id)
+		if cfg.Skill_attr_id > 0 {
+			_, ok := userAttrMap[cfg.Skill_attr_id]
+			// 判断是否激活技能
+			if ok {
+				skillIds = append(skillIds, cfg.Id)
 			}
 		}
 	}
@@ -310,23 +300,6 @@ func GetUserAttrInfo(logger fklog.FKLogI, userId uint64, userAttrMap map[int32]i
 	userSkillInfo.SkillInfoList = make([]*MazeAIBattle.MazeAISkillInfo, 0)
 	userSkillInfo.AutoSkillInfoList = make([]*MazeAIBattle.MazeAIAutoSkillInfo, 0)
 	actDamageConfigList := make([]*MazeAIBattle.MazeAIActAttackValue, 0)
-	for _, skillId := range autoSkillId {
-		if skillId == 0 {
-			continue
-		}
-		autoSkillInfo, err := GetMazeAIAutoSkillInfo(logger, skillId, userAttrMap)
-		if err != nil {
-			logger.WarnWF("GetUserBattleAttr GetMazeAIAutoSkillInfo nil", zap.Uint64("userId", userId), zap.Any("skillId", skillId))
-			return nil, err
-		}
-		userSkillInfo.AutoSkillInfoList = append(userSkillInfo.AutoSkillInfoList, autoSkillInfo)
-	}
-	for _, skillInfo := range userSkillInfo.AutoSkillInfoList {
-		if len(skillInfo.TriggerSkillId) <= 0 {
-			continue
-		}
-		skillIds = append(skillIds, skillInfo.TriggerSkillId...)
-	}
 	for _, skillId := range skillIds {
 		if skillId == 0 {
 			continue
@@ -339,26 +312,26 @@ func GetUserAttrInfo(logger fklog.FKLogI, userId uint64, userAttrMap map[int32]i
 		userSkillInfo.SkillInfoList = append(userSkillInfo.SkillInfoList, skillInfo)
 		actDamageConfigList = append(actDamageConfigList, actDamageConfigs...)
 	}
-	// 使用道具后可使用属性技能
-	for _, row := range GMazeAttrItemAttrV8Cfg.GetAll() {
-		if row.Add_attr <= 0 {
-			continue
-		}
-		attrSkill := GMazeAttrSkillV8Cfg.Get(row.Add_attr)
-		if attrSkill == nil {
-			continue
-		}
-		if attrSkill.Skill_id <= 0 {
-			continue
-		}
-		skillInfo, actDamageConfigs, err := GetUserBattleSkillInfo(logger, attrSkill.Skill_id, userAttrMap)
-		if err != nil {
-			logger.WarnWF("GetUserBattleAttr GetUserBattleSkillInfo nil", zap.Uint64("userId", userId), zap.Any("attrSkillId", attrSkill.Skill_id))
-			return nil, err
-		}
-		userSkillInfo.SkillInfoList = append(userSkillInfo.SkillInfoList, skillInfo)
-		actDamageConfigList = append(actDamageConfigList, actDamageConfigs...)
-	}
+	// // 使用道具后可使用属性技能
+	// for _, row := range GMazeAttrItemAttrV8Cfg.GetAll() {
+	// 	if row.Add_attr <= 0 {
+	// 		continue
+	// 	}
+	// 	attrSkill := GMazeAttrSkillV8Cfg.Get(row.Add_attr)
+	// 	if attrSkill == nil {
+	// 		continue
+	// 	}
+	// 	if attrSkill.Skill_id <= 0 {
+	// 		continue
+	// 	}
+	// 	skillInfo, actDamageConfigs, err := GetUserBattleSkillInfo(logger, attrSkill.Skill_id, userAttrMap)
+	// 	if err != nil {
+	// 		logger.WarnWF("GetUserBattleAttr GetUserBattleSkillInfo nil", zap.Uint64("userId", userId), zap.Any("attrSkillId", attrSkill.Skill_id))
+	// 		return nil, err
+	// 	}
+	// 	userSkillInfo.SkillInfoList = append(userSkillInfo.SkillInfoList, skillInfo)
+	// 	actDamageConfigList = append(actDamageConfigList, actDamageConfigs...)
+	// }
 
 	roleConfigInfo.UserSkillInfo = userSkillInfo
 	roleConfigInfo.ActDamageConfig = actDamageConfigList
@@ -368,7 +341,7 @@ func GetUserAttrInfo(logger fklog.FKLogI, userId uint64, userAttrMap map[int32]i
 func GetUserBattleSkillInfo(logger fklog.FKLogI, skillId int32, attrMap map[int32]int64) (*MazeAIBattle.MazeAISkillInfo, []*MazeAIBattle.MazeAIActAttackValue, error) {
 	skillCfg := GMazeSkillInfoV8Cfg.Get(skillId)
 	if skillCfg == nil {
-		logger.ErrorWF("GetMazeAIMonsterConfig GMazeSkillInfoV8Cfg err", zap.Any("skillId", skillId))
+		logger.ErrorWF("GetUserBattleSkillInfo GMazeSkillInfoV8Cfg err", zap.Any("skillId", skillId))
 		return nil, nil, errors.New("配置不存在")
 	}
 	var (
@@ -385,15 +358,15 @@ func GetUserBattleSkillInfo(logger fklog.FKLogI, skillId int32, attrMap map[int3
 				}
 				mazeActCfg := GMazeActInfoV8Cfg.Get(actId)
 				if mazeActCfg == nil {
-					logger.ErrorWF("GetMazeAIMonsterConfig GMazeActInfoV8Cfg err", zap.Any("skillId", skillId), zap.Any("actId", actId))
+					logger.ErrorWF("GetUserBattleSkillInfo GMazeActInfoV8Cfg err", zap.Any("skillId", skillId), zap.Any("actId", actId))
 					return nil, nil, errors.New("配置不存在")
 				}
 				actDamageConfig := &MazeAIBattle.MazeAIActAttackValue{
 					ActId:           proto.Int32(actId),
 					ToughBrokeValue: proto.Int32(mazeActCfg.Tough_broke_value),
 					ToughTempValue:  proto.Int32(mazeActCfg.Temp_tough),
-					InitSkillCd:     proto.Int32(skillCfg.Initial_cool_time),
-					SkillCd:         proto.Int32(skillCfg.Skill_cool_time),
+					// InitSkillCd:     proto.Int32(skillCfg.Initial_cool_time),
+					// SkillCd:         proto.Int32(skillCfg.Skill_cool_time),
 				}
 				// 打击点索引:击退距离
 				for index, value := range mazeActCfg.Attack_back_range {
@@ -420,56 +393,55 @@ func GetUserBattleSkillInfo(logger fklog.FKLogI, skillId int32, attrMap map[int3
 		actIDs = skillActCfg.Act_id
 		effectID = skillActCfg.Effect_id
 	}
-	// todo 缺少触发cd
+	// 技能基本信息
 	skillInfo := &MazeAIBattle.MazeAISkillInfo{
-		SkillId:    proto.Int32(skillCfg.Id),
-		SkillGroup: proto.Int32(skillCfg.Group),
-		// TriggerType: proto.Int32(), // TODO 待配置表补充
-		// CampType:                     proto.Int32(skillCfg.Target_type),
-		// TargetType:                   proto.Int32(skillCfg.Scope_type),
-		RangeRadius:     proto.Int32(skillCfg.Scope_param1),
-		ReleaseDistance: proto.Int32(skillCfg.Distance_max),
-		ReleaseCd:       proto.Int32(0),
-		TargetMaxCount:  proto.Int32(skillCfg.Target_num),
-		// CanReleaseState:              skillCfg.Is_allow,
-		// CanReleaseTargetState:        skillCfg.Is_target,
-		MainTargetDamageRate:         proto.Int32(skillCfg.Main_target_damage),
-		SecondTargetDamageRate:       proto.Int32(skillCfg.Second_target_damage),
-		SkillDamageFixed:             proto.Int32(skillCfg.Main_target_damage_fix),
+		SkillId:                      proto.Int32(skillCfg.Id),
+		RangeRadius:                  GetSkillAttr(skillCfg.Scope_param1, attrMap),
+		ReleaseDistance:              GetSkillAttr(skillCfg.Distance_max, attrMap),
+		TargetMaxCount:               GetSkillAttr(skillCfg.Target_num, attrMap),
+		SkillDamageFixed:             GetSkillAttr(skillCfg.Main_target_damage_fix, attrMap),
 		SkillMappingActionId:         actIDs,
 		Level:                        proto.Int32(skillCfg.Level),
 		SkillType:                    proto.Int32(skillCfg.Type),
 		SkillMappingEffectId:         proto.Int32(effectID),
-		SecondTargetSkillDamageFixed: proto.Int32(skillCfg.Second_target_damage_fix),
+		SecondTargetSkillDamageFixed: GetSkillAttr(skillCfg.Second_target_damage_fix, attrMap),
 		IsNoTarget:                   proto.Int32(skillCfg.Is_no_target),
 		DamageElement:                skillCfg.Damage_element,
 		DamageType:                   proto.Int32(skillCfg.Damage_type),
-		InitialCoolTime:              proto.Int32(skillCfg.Initial_cool_time),
-		PublicCoolTime:               proto.Int32(skillCfg.Public_cool_time),
-		SkillCoolTime:                proto.Int32(skillCfg.Skill_cool_time),
-		DistanceMin:                  proto.Int32(skillCfg.Distance_min),
+		SkillCoolTime:                GetSkillAttr(skillCfg.Skill_cool_time, attrMap),
+		DistanceMin:                  GetSkillAttr(skillCfg.Distance_min, attrMap),
 		IsBreak:                      proto.Int32(skillCfg.Is_break),
 		ScopeType:                    proto.Int32(skillCfg.Scope_type),
 		TargetType:                   proto.Int32(skillCfg.Target_type),
 		MainTargetDamageRates:        GetElementAttrValue(skillCfg.Main_target_damage, skillCfg.Damage_element_adjust, attrMap),
 		SecondTargetDamageRates:      GetElementAttrValue(skillCfg.Second_target_damage, skillCfg.Damage_element_adjust, attrMap),
 	}
-	// for k, v := range skillCfg.Target_effect_pro {
-	// 	if k == 0 {
-	// 		continue
-	// 	}
-	// 	skillInfo.RateSourceList = append(skillInfo.RateSourceList, &MazeAIBattle.MazeAISkillEffectRateSource{
-	// 		SourceId: proto.Int32(k),
-	// 		TargetId: proto.Int32(v),
-	// 	})
-	// }
+	// 技能触发时机
+	skillInfo.ReleaseTime = proto.Int32(skillCfg.Auto_release_time)
+
+	// 技能触发条件
+	conditionIDs, err := filterConditionIDs(skillCfg.Auto_release_condition)
+	if err != nil {
+		logger.ErrorWF("GetUserBattleSkillInfo filterConditionIDs err", zap.Error(err), zap.Any("skillId", skillId))
+		return nil, nil, errors.New("配置错误")
+	}
+	for _, conditionID := range conditionIDs {
+		condition, err := GetMazeSkillConditionInfo(logger, conditionID, attrMap)
+		if err != nil {
+			logger.ErrorWF("GetUserBattleSkillInfo GetMazeSkillConditionInfo err", zap.Error(err), zap.Any("skillId", skillId), zap.Any("conditionID", conditionID))
+			return nil, nil, err
+		}
+		skillInfo.ConditionConfig = append(skillInfo.ConditionConfig, condition)
+	}
+	skillInfo.ReleaseCondition = proto.String(skillCfg.Auto_release_condition)
+
 	for _, effectId := range skillCfg.Target_effect {
 		if effectId == 0 {
 			continue
 		}
 		effectCfg := GMazeSkilleffectV8Cfg.Get(effectId)
 		if effectCfg == nil {
-			logger.ErrorWF("GetMazeAIMonsterConfig GMazeSkilleffectV8Cfg err", zap.Any("effectId", effectId))
+			logger.ErrorWF("GetUserBattleSkillInfo GMazeSkilleffectV8Cfg err", zap.Any("effectId", effectId))
 			return nil, nil, errors.New("配置不存在")
 		}
 		skillEffectOther := &MazeAIBattle.MazeAISkillEffectConfigInfo{
@@ -499,6 +471,39 @@ func GetUserBattleSkillInfo(logger fklog.FKLogI, skillId int32, attrMap map[int3
 			ValueType: proto.Int32(effectCfg.Attr_value_3_type),
 			Index:     proto.Int32(3),
 		})
+		for attrID, value := range effectCfg.Modify_attr_value {
+			// 属性是加还是减
+			op, ok := effectCfg.Modify_attr_value_variable_id[attrID]
+			if !ok {
+				logger.ErrorWF("GetUserBattleSkillInfo Modify_attr_value_variable_id invalid",
+					zap.Any("effectCfg", effectCfg), zap.Int32("attrID", attrID))
+				continue
+			}
+			// 值类型
+			valueType, ok := effectCfg.Modify_attr_value_type[attrID]
+			if !ok {
+				logger.ErrorWF("GetUserBattleSkillInfo Modify_attr_value_type invalid",
+					zap.Any("effectCfg", effectCfg), zap.Int32("attrID", attrID))
+				continue
+			}
+			// 要加成的属性
+			targetAttrID, ok := effectCfg.Modify_attr_value_attr_id[attrID]
+			if !ok {
+				logger.ErrorWF("GetUserBattleSkillInfo Modify_attr_value_attr_id invalid",
+					zap.Any("effectCfg", effectCfg), zap.Int32("attrID", attrID))
+				continue
+			}
+			if op == 1 {
+				value += int32(attrMap[attrID])
+			} else if op == 2 {
+				value -= int32(attrMap[attrID])
+			}
+			skillEffectOther.AttrModifier = append(skillEffectOther.AttrModifier, &MazeAIBattle.MazeAIAttrInfo{
+				Type:          proto.Int32(targetAttrID),
+				UserValue:     proto.Int32(value),
+				UserValueType: proto.Int32(valueType),
+			})
+		}
 		skillEffectOther.IntervalTime = proto.Int32(int32(GetEffectAttrValue(effectCfg.Attr_value_8, effectCfg.Attr_value_8_variable_id, attrMap)))
 		skillInfo.SkillEffectOther = append(skillInfo.SkillEffectOther, skillEffectOther)
 	}
@@ -509,7 +514,7 @@ func GetUserBattleSkillInfo(logger fklog.FKLogI, skillId int32, attrMap map[int3
 		}
 		effectCfg := GMazeSkilleffectV8Cfg.Get(effectId)
 		if effectCfg == nil {
-			logger.ErrorWF("GetMazeAIMonsterConfig GMazeSkilleffectV8Cfg err", zap.Any("effectId", effectId))
+			logger.ErrorWF("GetUserBattleSkillInfo GMazeSkilleffectV8Cfg err", zap.Any("effectId", effectId))
 			return nil, nil, errors.New("配置不存在")
 		}
 		SkillEffectSelf := &MazeAIBattle.MazeAISkillEffectConfigInfo{
@@ -538,15 +543,42 @@ func GetUserBattleSkillInfo(logger fklog.FKLogI, skillId int32, attrMap map[int3
 			ValueType: proto.Int32(effectCfg.Attr_value_3_type),
 			Index:     proto.Int32(3),
 		})
+		for attrID, value := range effectCfg.Modify_attr_value {
+			// 属性是加还是减
+			op, ok := effectCfg.Modify_attr_value_variable_id[attrID]
+			if !ok {
+				logger.ErrorWF("GetUserBattleSkillInfo Modify_attr_value_variable_id invalid",
+					zap.Any("effectCfg", effectCfg), zap.Int32("attrID", attrID))
+				continue
+			}
+			// 值类型
+			valueType, ok := effectCfg.Modify_attr_value_type[attrID]
+			if !ok {
+				logger.ErrorWF("GetUserBattleSkillInfo Modify_attr_value_type invalid",
+					zap.Any("effectCfg", effectCfg), zap.Int32("attrID", attrID))
+				continue
+			}
+			// 要加成的属性
+			targetAttrID, ok := effectCfg.Modify_attr_value_attr_id[attrID]
+			if !ok {
+				logger.ErrorWF("GetUserBattleSkillInfo Modify_attr_value_attr_id invalid",
+					zap.Any("effectCfg", effectCfg), zap.Int32("attrID", attrID))
+				continue
+			}
+			if op == 1 {
+				value += int32(attrMap[attrID])
+			} else if op == 2 {
+				value -= int32(attrMap[attrID])
+			}
+			SkillEffectSelf.AttrModifier = append(SkillEffectSelf.AttrModifier, &MazeAIBattle.MazeAIAttrInfo{
+				Type:          proto.Int32(targetAttrID),
+				UserValue:     proto.Int32(value),
+				UserValueType: proto.Int32(valueType),
+			})
+		}
 		SkillEffectSelf.IntervalTime = proto.Int32(int32(GetEffectAttrValue(effectCfg.Attr_value_8, effectCfg.Attr_value_8_variable_id, attrMap)))
 		skillInfo.SkillEffectSelf = append(skillInfo.SkillEffectSelf, SkillEffectSelf)
 	}
-
-	skillInfo.ReleaseCondition = proto.Int32(skillCfg.Release_condition)
-	skillInfo.BeforeSelfSkill = FilterSliceZeroValue(skillCfg.Before_self_skill)
-	skillInfo.BeforeTargetSkill = FilterSliceZeroValue(skillCfg.Before_target_skill)
-	skillInfo.AfterSelfSkill = FilterSliceZeroValue(skillCfg.After_self_skill)
-	skillInfo.AfterTargetSkill = FilterSliceZeroValue(skillCfg.After_target_skill)
 
 	return skillInfo, actDamageConfigs, nil
 }
@@ -554,64 +586,63 @@ func GetUserBattleSkillInfo(logger fklog.FKLogI, skillId int32, attrMap map[int3
 func GetFoeBattleSkillInfo(logger fklog.FKLogI, skillId int32, attrMap map[int32]int64) (*MazeAIBattle.MazeAISkillInfo, error) {
 	skillCfg := GMazeSkillInfoV8Cfg.Get(skillId)
 	if skillCfg == nil {
-		logger.ErrorWF("GetMazeAIMonsterConfig GMazeSkillInfoV8Cfg err", zap.Any("skillId", skillId))
+		logger.ErrorWF("GetFoeBattleSkillInfo GMazeSkillInfoV8Cfg err", zap.Any("skillId", skillId))
 		return nil, errors.New("配置不存在")
 	}
 	skillActCfg := GMazeSkillActV8Cfg.Get(skillId)
 	if skillActCfg == nil {
-		logger.ErrorWF("GetMazeAIMonsterConfig GMazeSkillActV8Cfg err", zap.Any("skillId", skillId))
+		logger.ErrorWF("GetFoeBattleSkillInfo GMazeSkillActV8Cfg err", zap.Any("skillId", skillId))
 		return nil, errors.New("配置不存在")
 	}
 	// todo 缺少触发cd
 	skillInfo := &MazeAIBattle.MazeAISkillInfo{
-		SkillId:    proto.Int32(skillCfg.Id),
-		SkillGroup: proto.Int32(skillCfg.Group),
-		// TriggerType: proto.Int32(), // TODO 待配置表补充
-		// CampType:                     proto.Int32(skillCfg.Target_type),
-		// TargetType:                   proto.Int32(skillCfg.Scope_type),
-		RangeRadius:     proto.Int32(skillCfg.Scope_param1),
-		ReleaseDistance: proto.Int32(skillCfg.Distance_max),
-		ReleaseCd:       proto.Int32(0),
-		TargetMaxCount:  proto.Int32(skillCfg.Target_num),
-		// CanReleaseState:              skillCfg.Is_allow,
-		// CanReleaseTargetState:        skillCfg.Is_target,
-		MainTargetDamageRate:         proto.Int32(skillCfg.Main_target_damage),
-		SecondTargetDamageRate:       proto.Int32(skillCfg.Second_target_damage),
-		SkillDamageFixed:             proto.Int32(skillCfg.Main_target_damage_fix),
+		SkillId:                      proto.Int32(skillCfg.Id),
+		RangeRadius:                  GetSkillAttr(skillCfg.Scope_param1, attrMap),
+		ReleaseDistance:              GetSkillAttr(skillCfg.Distance_max, attrMap),
+		TargetMaxCount:               GetSkillAttr(skillCfg.Target_num, attrMap),
+		SkillDamageFixed:             GetSkillAttr(skillCfg.Main_target_damage_fix, attrMap),
 		SkillMappingActionId:         skillActCfg.Act_id,
 		Level:                        proto.Int32(skillCfg.Level),
 		SkillType:                    proto.Int32(skillCfg.Type),
 		SkillMappingEffectId:         proto.Int32(skillActCfg.Effect_id),
-		SecondTargetSkillDamageFixed: proto.Int32(skillCfg.Second_target_damage_fix),
+		SecondTargetSkillDamageFixed: GetSkillAttr(skillCfg.Second_target_damage_fix, attrMap),
 		IsNoTarget:                   proto.Int32(skillCfg.Is_no_target),
 		DamageElement:                skillCfg.Damage_element,
 		DamageType:                   proto.Int32(skillCfg.Damage_type),
-		InitialCoolTime:              proto.Int32(skillCfg.Initial_cool_time),
-		PublicCoolTime:               proto.Int32(skillCfg.Public_cool_time),
-		SkillCoolTime:                proto.Int32(skillCfg.Skill_cool_time),
-		DistanceMin:                  proto.Int32(skillCfg.Distance_min),
+		SkillCoolTime:                GetSkillAttr(skillCfg.Skill_cool_time, attrMap),
+		DistanceMin:                  GetSkillAttr(skillCfg.Distance_min, attrMap),
 		IsBreak:                      proto.Int32(skillCfg.Is_break),
 		ScopeType:                    proto.Int32(skillCfg.Scope_type),
 		TargetType:                   proto.Int32(skillCfg.Target_type),
-		MainTargetDamageRates:        FillElementAttrValue(skillCfg.Main_target_damage, 5),
-		SecondTargetDamageRates:      FillElementAttrValue(skillCfg.Second_target_damage, 5),
+		MainTargetDamageRates:        FillElementAttrValue(skillCfg.Main_target_damage, 5, attrMap),
+		SecondTargetDamageRates:      FillElementAttrValue(skillCfg.Second_target_damage, 5, attrMap),
 	}
-	// for k, v := range skillCfg.Target_effect_pro {
-	// 	if k == 0 {
-	// 		continue
-	// 	}
-	// 	skillInfo.RateSourceList = append(skillInfo.RateSourceList, &MazeAIBattle.MazeAISkillEffectRateSource{
-	// 		SourceId: proto.Int32(k),
-	// 		TargetId: proto.Int32(v),
-	// 	})
-	// }
+	// 技能触发时机
+	skillInfo.ReleaseTime = proto.Int32(skillCfg.Auto_release_time)
+
+	// 技能触发条件
+	conditionIDs, err := filterConditionIDs(skillCfg.Auto_release_condition)
+	if err != nil {
+		logger.ErrorWF("GetFoeBattleSkillInfo filterConditionIDs err", zap.Error(err), zap.Any("skillId", skillId))
+		return nil, errors.New("配置错误")
+	}
+	for _, conditionID := range conditionIDs {
+		condition, err := GetMazeSkillConditionInfo(logger, conditionID, attrMap)
+		if err != nil {
+			logger.ErrorWF("GetFoeBattleSkillInfo GetMazeSkillConditionInfo err", zap.Error(err), zap.Any("skillId", skillId), zap.Any("conditionID", conditionID))
+			return nil, err
+		}
+		skillInfo.ConditionConfig = append(skillInfo.ConditionConfig, condition)
+	}
+	skillInfo.ReleaseCondition = proto.String(skillCfg.Auto_release_condition)
+
 	for _, effectId := range skillCfg.Target_effect {
 		if effectId == 0 {
 			continue
 		}
 		effectCfg := GMazeSkilleffectV8Cfg.Get(effectId)
 		if effectCfg == nil {
-			logger.ErrorWF("GetMazeAIMonsterConfig GMazeSkilleffectV8Cfg err", zap.Any("effectId", effectId))
+			logger.ErrorWF("GetFoeBattleSkillInfo GMazeSkilleffectV8Cfg err", zap.Any("effectId", effectId))
 			return nil, errors.New("配置不存在")
 		}
 		skillEffectOther := &MazeAIBattle.MazeAISkillEffectConfigInfo{
@@ -641,6 +672,39 @@ func GetFoeBattleSkillInfo(logger fklog.FKLogI, skillId int32, attrMap map[int32
 			ValueType: proto.Int32(effectCfg.Attr_value_3_type),
 			Index:     proto.Int32(3),
 		})
+		for attrID, value := range effectCfg.Modify_attr_value {
+			// 属性是加还是减
+			op, ok := effectCfg.Modify_attr_value_variable_id[attrID]
+			if !ok {
+				logger.ErrorWF("GetFoeBattleSkillInfo Modify_attr_value_variable_id invalid",
+					zap.Any("effectCfg", effectCfg), zap.Int32("attrID", attrID))
+				continue
+			}
+			// 值类型
+			valueType, ok := effectCfg.Modify_attr_value_type[attrID]
+			if !ok {
+				logger.ErrorWF("GetFoeBattleSkillInfo Modify_attr_value_type invalid",
+					zap.Any("effectCfg", effectCfg), zap.Int32("attrID", attrID))
+				continue
+			}
+			// 要加成的属性
+			targetAttrID, ok := effectCfg.Modify_attr_value_attr_id[attrID]
+			if !ok {
+				logger.ErrorWF("GetFoeBattleSkillInfo Modify_attr_value_attr_id invalid",
+					zap.Any("effectCfg", effectCfg), zap.Int32("attrID", attrID))
+				continue
+			}
+			if op == 1 {
+				value += int32(attrMap[attrID])
+			} else if op == 2 {
+				value -= int32(attrMap[attrID])
+			}
+			skillEffectOther.AttrModifier = append(skillEffectOther.AttrModifier, &MazeAIBattle.MazeAIAttrInfo{
+				Type:          proto.Int32(targetAttrID),
+				UserValue:     proto.Int32(value),
+				UserValueType: proto.Int32(valueType),
+			})
+		}
 		skillEffectOther.IntervalTime = proto.Int32(int32(GetEffectAttrValue(effectCfg.Attr_value_8, effectCfg.Attr_value_8_variable_id, attrMap)))
 		skillInfo.SkillEffectOther = append(skillInfo.SkillEffectOther, skillEffectOther)
 	}
@@ -651,7 +715,7 @@ func GetFoeBattleSkillInfo(logger fklog.FKLogI, skillId int32, attrMap map[int32
 		}
 		effectCfg := GMazeSkilleffectV8Cfg.Get(effectId)
 		if effectCfg == nil {
-			logger.ErrorWF("GetMazeAIMonsterConfig GMazeSkilleffectV8Cfg err", zap.Any("effectId", effectId))
+			logger.ErrorWF("GetFoeBattleSkillInfo GMazeSkilleffectV8Cfg err", zap.Any("effectId", effectId))
 			return nil, errors.New("配置不存在")
 		}
 		SkillEffectSelf := &MazeAIBattle.MazeAISkillEffectConfigInfo{
@@ -680,15 +744,42 @@ func GetFoeBattleSkillInfo(logger fklog.FKLogI, skillId int32, attrMap map[int32
 			ValueType: proto.Int32(effectCfg.Attr_value_3_type),
 			Index:     proto.Int32(3),
 		})
+		for attrID, value := range effectCfg.Modify_attr_value {
+			// 属性是加还是减
+			op, ok := effectCfg.Modify_attr_value_variable_id[attrID]
+			if !ok {
+				logger.ErrorWF("GetFoeBattleSkillInfo Modify_attr_value_variable_id invalid",
+					zap.Any("effectCfg", effectCfg), zap.Int32("attrID", attrID))
+				continue
+			}
+			// 值类型
+			valueType, ok := effectCfg.Modify_attr_value_type[attrID]
+			if !ok {
+				logger.ErrorWF("GetFoeBattleSkillInfo Modify_attr_value_type invalid",
+					zap.Any("effectCfg", effectCfg), zap.Int32("attrID", attrID))
+				continue
+			}
+			// 要加成的属性
+			targetAttrID, ok := effectCfg.Modify_attr_value_attr_id[attrID]
+			if !ok {
+				logger.ErrorWF("GetFoeBattleSkillInfo Modify_attr_value_attr_id invalid",
+					zap.Any("effectCfg", effectCfg), zap.Int32("attrID", attrID))
+				continue
+			}
+			if op == 1 {
+				value += int32(attrMap[attrID])
+			} else if op == 2 {
+				value -= int32(attrMap[attrID])
+			}
+			SkillEffectSelf.AttrModifier = append(SkillEffectSelf.AttrModifier, &MazeAIBattle.MazeAIAttrInfo{
+				Type:          proto.Int32(targetAttrID),
+				UserValue:     proto.Int32(value),
+				UserValueType: proto.Int32(valueType),
+			})
+		}
 		SkillEffectSelf.IntervalTime = proto.Int32(int32(GetEffectAttrValue(effectCfg.Attr_value_8, effectCfg.Attr_value_8_variable_id, attrMap)))
 		skillInfo.SkillEffectSelf = append(skillInfo.SkillEffectSelf, SkillEffectSelf)
 	}
-
-	skillInfo.ReleaseCondition = proto.Int32(skillCfg.Release_condition)
-	skillInfo.BeforeSelfSkill = FilterSliceZeroValue(skillCfg.Before_self_skill)
-	skillInfo.BeforeTargetSkill = FilterSliceZeroValue(skillCfg.Before_target_skill)
-	skillInfo.AfterSelfSkill = FilterSliceZeroValue(skillCfg.After_self_skill)
-	skillInfo.AfterTargetSkill = FilterSliceZeroValue(skillCfg.After_target_skill)
 
 	return skillInfo, nil
 }
@@ -705,9 +796,8 @@ func GetFoeSkillConfigInfo(logger fklog.FKLogI, skillId int32) (*MazeAIBattle.Ma
 		return nil, errors.New("配置不存在")
 	}
 	skillConfigInfo := &MazeAIBattle.MazeSkillConfigInfo{
-		SkillId:     proto.Int32(skillId),
-		InitSkillCd: proto.Int32(skillCfg.Initial_cool_time),
-		SkillCd:     proto.Int32(skillCfg.Skill_cool_time),
+		SkillId: proto.Int32(skillId),
+		SkillCd: GetSkillAttr(skillCfg.Skill_cool_time, map[int32]int64{}),
 	}
 	actDamageConfigs := make([]*MazeAIBattle.MazeAIActAttackValue, 0)
 	if len(skillActCfg.Act_id) > 0 {
@@ -751,41 +841,41 @@ func GetFoeSkillConfigInfo(logger fklog.FKLogI, skillId int32) (*MazeAIBattle.Ma
 	return skillConfigInfo, nil
 }
 
-func GetMazeAIAutoSkillInfo(logger fklog.FKLogI, skillId int32, attrMap map[int32]int64) (*MazeAIBattle.MazeAIAutoSkillInfo, error) {
-	skillAutoCfg := GMazeSkillAutoReleaseV8Cfg.Get(skillId)
-	if skillAutoCfg == nil {
-		logger.ErrorWF("GetMazeAIAutoSkillInfo GMazeSkillAutoReleaseV8Cfg err", zap.Any("skillId", skillId))
-		return nil, errors.New("配置不存在")
-	}
-	skillConfigInfo := &MazeAIBattle.MazeAIAutoSkillInfo{
-		SkillId:      proto.Int32(skillId),
-		BaseHitrate:  proto.Int32(int32(GetAttrValue(skillAutoCfg.Release_ratio, skillAutoCfg.Release_ratio_variable, attrMap))),
-		TriggerCount: proto.Int32(int32(GetAttrValue(skillAutoCfg.Release_num, skillAutoCfg.Release_num_variable, attrMap))),
-		ProtectCd:    proto.Int32(int32(GetAttrValue(skillAutoCfg.Auto_release_protect_cd, skillAutoCfg.Auto_release_protect_cd_variable, attrMap))),
-		LimitCount:   proto.Int32(int32(GetAttrValue(skillAutoCfg.Max_release_limit, skillAutoCfg.Max_release_limit_variable, attrMap))),
-		TriggerType:  proto.Int32(skillAutoCfg.Release_time),
-		Condition:    proto.String(skillAutoCfg.Release_condition),
-	}
-	// 触发技能列表
-	for _, triggerSkillId := range skillAutoCfg.Skill_id {
-		skillConfigInfo.TriggerSkillId = append(skillConfigInfo.TriggerSkillId, triggerSkillId)
-	}
-	// 技能条件
-	conditionIDs, err := filterConditionIDs(skillAutoCfg.Release_condition)
-	if err != nil {
-		logger.ErrorWF("GetMazeAIAutoSkillInfo filterConditionIDs err", zap.Error(err), zap.Any("skillId", skillId))
-		return nil, errors.New("配置错误")
-	}
-	for _, conditionID := range conditionIDs {
-		condition, err := GetMazeSkillConditionInfo(logger, conditionID, attrMap)
-		if err != nil {
-			logger.ErrorWF("GetMazeAIAutoSkillInfo GetMazeSkillConditionInfo err", zap.Error(err), zap.Any("skillId", skillId), zap.Any("conditionID", conditionID))
-			return nil, err
-		}
-		skillConfigInfo.ConditionConfig = append(skillConfigInfo.ConditionConfig, condition)
-	}
-	return skillConfigInfo, nil
-}
+// func GetMazeAIAutoSkillInfo(logger fklog.FKLogI, skillId int32, attrMap map[int32]int64) (*MazeAIBattle.MazeAIAutoSkillInfo, error) {
+// 	skillAutoCfg := GMazeSkillAutoReleaseV8Cfg.Get(skillId)
+// 	if skillAutoCfg == nil {
+// 		logger.ErrorWF("GetMazeAIAutoSkillInfo GMazeSkillAutoReleaseV8Cfg err", zap.Any("skillId", skillId))
+// 		return nil, errors.New("配置不存在")
+// 	}
+// 	skillConfigInfo := &MazeAIBattle.MazeAIAutoSkillInfo{
+// 		SkillId:      proto.Int32(skillId),
+// 		BaseHitrate:  proto.Int32(int32(GetAttrValue(skillAutoCfg.Release_ratio, skillAutoCfg.Release_ratio_variable, attrMap))),
+// 		TriggerCount: proto.Int32(int32(GetAttrValue(skillAutoCfg.Release_num, skillAutoCfg.Release_num_variable, attrMap))),
+// 		ProtectCd:    proto.Int32(int32(GetAttrValue(skillAutoCfg.Auto_release_protect_cd, skillAutoCfg.Auto_release_protect_cd_variable, attrMap))),
+// 		LimitCount:   proto.Int32(int32(GetAttrValue(skillAutoCfg.Max_release_limit, skillAutoCfg.Max_release_limit_variable, attrMap))),
+// 		TriggerType:  proto.Int32(skillAutoCfg.Release_time),
+// 		Condition:    proto.String(skillAutoCfg.Release_condition),
+// 	}
+// 	// 触发技能列表
+// 	for _, triggerSkillId := range skillAutoCfg.Skill_id {
+// 		skillConfigInfo.TriggerSkillId = append(skillConfigInfo.TriggerSkillId, triggerSkillId)
+// 	}
+// 	// 技能条件
+// 	conditionIDs, err := filterConditionIDs(skillAutoCfg.Release_condition)
+// 	if err != nil {
+// 		logger.ErrorWF("GetMazeAIAutoSkillInfo filterConditionIDs err", zap.Error(err), zap.Any("skillId", skillId))
+// 		return nil, errors.New("配置错误")
+// 	}
+// 	for _, conditionID := range conditionIDs {
+// 		condition, err := GetMazeSkillConditionInfo(logger, conditionID, attrMap)
+// 		if err != nil {
+// 			logger.ErrorWF("GetMazeAIAutoSkillInfo GetMazeSkillConditionInfo err", zap.Error(err), zap.Any("skillId", skillId), zap.Any("conditionID", conditionID))
+// 			return nil, err
+// 		}
+// 		skillConfigInfo.ConditionConfig = append(skillConfigInfo.ConditionConfig, condition)
+// 	}
+// 	return skillConfigInfo, nil
+// }
 
 func GetMazeSkillConditionInfo(logger fklog.FKLogI, conditionID int32, attrMap map[int32]int64) (*MazeAIBattle.MazeSkillCondition, error) {
 	cfg := GMazeSkillAutoConditionV8Cfg.Get(conditionID)
@@ -840,4 +930,29 @@ func filterConditionIDs(condition string) (conditionIDs []int32, err error) {
 		conditionIDs = append(conditionIDs, fkutil.ToInt32(v))
 	}
 	return
+}
+
+// GetSkillAttrValue 根据技能属性配置与用户属性列表计算技能最终属性
+func GetSkillAttrValue(skillAttrMap map[int32]int32, userAttrMap map[int32]int64) (attrID int32, value int32) {
+	// 取人物属性值
+	attrID, ok := skillAttrMap[1]
+	if ok {
+		value, ok := userAttrMap[attrID]
+		if ok {
+			return attrID, int32(value)
+		}
+		return attrID, 0
+	}
+	// 取默认值
+	defaultValue, ok := skillAttrMap[0]
+	if ok {
+		value = defaultValue
+	}
+	return
+}
+
+// GetSkillAttr 根据技能属性配置与用户属性列表计算技能最终属性
+func GetSkillAttr(skillAttrMap map[int32]int32, userAttrMap map[int32]int64) (attr *MazeAIBattle.MazeAIAttrInfo) {
+	attrID, value := GetSkillAttrValue(skillAttrMap, userAttrMap)
+	return &MazeAIBattle.MazeAIAttrInfo{Type: proto.Int32(attrID), UserValue: proto.Int32(value)}
 }

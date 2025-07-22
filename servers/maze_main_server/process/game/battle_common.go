@@ -38,7 +38,7 @@ func GetUserAttrMap(logger fklog.FKLogI, userId uint64) (map[int32]int64, error)
 }
 
 func GetUserBattleAttr(logger fklog.FKLogI, userId uint64, userAttrMap map[int32]int64) (map[int32]*MazeAIBattle.MazeAIAttrInfo, error) {
-	attrTypeMap := GetAttrType()
+	// attrTypeMap := GetAttrType()
 	attrMap := make(map[int32]*MazeAIBattle.MazeAIAttrInfo, 0)
 	for attrId, attrVal := range userAttrMap {
 		if attrId <= 0 {
@@ -50,7 +50,7 @@ func GetUserBattleAttr(logger fklog.FKLogI, userId uint64, userAttrMap map[int32
 			return nil, errors.New("配置不存在")
 		}
 		attrMap[attrId] = &MazeAIBattle.MazeAIAttrInfo{
-			Type:          proto.Int32(attrTypeMap[attrId]),
+			Type:          proto.Int32(attrId),
 			UserValue:     proto.Int32(int32(attrVal)),
 			UserValueType: proto.Int32(attrCfg.Figure),
 		}
@@ -268,16 +268,26 @@ func GetAttrValue(attrValue int32, attrValueVariableId map[int32]int32, userAttr
 	return int64(effectAttrValue)
 }
 
-func GetElementAttrValue(attrValue int32, attrValueVariableId []int32, userAttrMap map[int32]int64) (attrValues []int32) {
+func GetElementAttrValue(attrValue map[int32]int32, attrValueVariableId []int32, userAttrMap map[int32]int64) (attrValues []*MazeAIBattle.MazeAIAttrInfo) {
+	attrID, value := GetSkillAttrValue(attrValue, userAttrMap)
 	for _, v := range attrValueVariableId {
 		if v == 0 { // 属性ID为0则给默认值
-			attrValues = append(attrValues, attrValue)
+			attrValues = append(attrValues, &MazeAIBattle.MazeAIAttrInfo{
+				Type:      proto.Int32(attrID),
+				UserValue: proto.Int32(value),
+			})
 		} else {
 			if userAttrMap[v] <= 0 {
-				attrValues = append(attrValues, 0)
+				attrValues = append(attrValues, &MazeAIBattle.MazeAIAttrInfo{
+					Type:      proto.Int32(attrID),
+					UserValue: proto.Int32(0),
+				})
 			} else {
-				rate := int32(float64(attrValue) * float64(userAttrMap[v]) / 10000.0) // 原值 x (属性值 / 10000)
-				attrValues = append(attrValues, rate)
+				rate := int32(float64(value) * float64(userAttrMap[v]) / 10000.0) // 原值 x (属性值 / 10000)
+				attrValues = append(attrValues, &MazeAIBattle.MazeAIAttrInfo{
+					Type:      proto.Int32(attrID),
+					UserValue: proto.Int32(rate),
+				})
 			}
 		}
 	}
@@ -285,9 +295,13 @@ func GetElementAttrValue(attrValue int32, attrValueVariableId []int32, userAttrM
 }
 
 // FillElementAttrValue 用默认值填充各元素属性值
-func FillElementAttrValue(attrValue int32, count int) (attrValues []int32) {
+func FillElementAttrValue(attrValue map[int32]int32, count int, userAttrMap map[int32]int64) (attrValues []*MazeAIBattle.MazeAIAttrInfo) {
+	attrID, value := GetSkillAttrValue(attrValue, userAttrMap)
 	for i := 0; i < count; i++ {
-		attrValues = append(attrValues, attrValue)
+		attrValues = append(attrValues, &MazeAIBattle.MazeAIAttrInfo{
+			Type:      proto.Int32(attrID),
+			UserValue: proto.Int32(value),
+		})
 	}
 	return
 }

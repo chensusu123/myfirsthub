@@ -7,12 +7,14 @@
 package mazeattrlogic
 
 import (
-	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fklog"
-	"maze_game_server/config/GMazeInitialAttrV8Cfg"
+	"maze_game_server/config/GMazeAttributeV8Cfg"
 
-	"go.uber.org/zap"
+	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fklog"
+
 	"maze_game_server/common/constdef"
 	"maze_game_server/servers/maze_main_server/process/attr_calc/commonlogic"
+
+	"go.uber.org/zap"
 )
 
 type DollAttrCalcCBF func(m *DAC, src int) (err error)
@@ -72,13 +74,24 @@ func HandleMazeBc(m *DAC, src int) (err error) {
 // }
 
 func HandleMazeInit(m *DAC, src int) (err error) {
-	row := GMazeInitialAttrV8Cfg.GetMazeInitialAttrV8Config(constdef.MazeInitAttrCfgId)
-	if row == nil {
-		return
+	var (
+		initialAttrs = make(map[int32]int64)
+	)
+
+	for _, attr := range GMazeAttributeV8Cfg.GetAll() {
+		// 初始化属性值非0则为初始属性
+		if attr.Initial_value != 0 {
+			initialAttrs[attr.Id] = int64(attr.Initial_value)
+		}
 	}
+
+	// row := GMazeInitialAttrV8Cfg.GetMazeInitialAttrV8Config(constdef.MazeInitAttrCfgId)
+	// if row == nil {
+	// 	return
+	// }
 	//	excludeAttrs := dollinitattrv8.GetDollInitExcludeAttrs()
 
-	for id, val := range row.Initial_attr {
+	for id, val := range initialAttrs {
 		if id <= 0 {
 			continue
 		}
