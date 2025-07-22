@@ -181,6 +181,39 @@ func GetUserBattleSkillInfo(logger fklog.FKLogI, skillId int32, attrMap map[int3
 			ValueType: proto.Int32(effectCfg.Attr_value_3_type),
 			Index:     proto.Int32(3),
 		})
+		for attrID, value := range effectCfg.Modify_attr_value {
+			// 属性是加还是减
+			op, ok := effectCfg.Modify_attr_value_variable_id[attrID]
+			if !ok {
+				logger.ErrorWF("GetUserBattleSkillInfo Modify_attr_value_variable_id invalid",
+					zap.Any("effectCfg", effectCfg), zap.Int32("attrID", attrID))
+				continue
+			}
+			// 值类型
+			valueType, ok := effectCfg.Modify_attr_value_type[attrID]
+			if !ok {
+				logger.ErrorWF("GetUserBattleSkillInfo Modify_attr_value_type invalid",
+					zap.Any("effectCfg", effectCfg), zap.Int32("attrID", attrID))
+				continue
+			}
+			// 要加成的属性
+			targetAttrID, ok := effectCfg.Modify_attr_value_attr_id[attrID]
+			if !ok {
+				logger.ErrorWF("GetUserBattleSkillInfo Modify_attr_value_attr_id invalid",
+					zap.Any("effectCfg", effectCfg), zap.Int32("attrID", attrID))
+				continue
+			}
+			if op == 1 {
+				value += int32(attrMap[attrID])
+			} else if op == 2 {
+				value -= int32(attrMap[attrID])
+			}
+			skillEffectOther.AttrModifier = append(skillEffectOther.AttrModifier, &MazeAIBattle.MazeAIAttrInfo{
+				Type:          proto.Int32(targetAttrID),
+				UserValue:     proto.Int32(value),
+				UserValueType: proto.Int32(valueType),
+			})
+		}
 		skillEffectOther.IntervalTime = proto.Int32(int32(GetEffectAttrValue(effectCfg.Attr_value_8, effectCfg.Attr_value_8_variable_id, attrMap)))
 		skillInfo.SkillEffectOther = append(skillInfo.SkillEffectOther, skillEffectOther)
 	}
@@ -220,6 +253,39 @@ func GetUserBattleSkillInfo(logger fklog.FKLogI, skillId int32, attrMap map[int3
 			ValueType: proto.Int32(effectCfg.Attr_value_3_type),
 			Index:     proto.Int32(3),
 		})
+		for attrID, value := range effectCfg.Modify_attr_value {
+			// 属性是加还是减
+			op, ok := effectCfg.Modify_attr_value_variable_id[attrID]
+			if !ok {
+				logger.ErrorWF("GetUserBattleSkillInfo Modify_attr_value_variable_id invalid",
+					zap.Any("effectCfg", effectCfg), zap.Int32("attrID", attrID))
+				continue
+			}
+			// 值类型
+			valueType, ok := effectCfg.Modify_attr_value_type[attrID]
+			if !ok {
+				logger.ErrorWF("GetUserBattleSkillInfo Modify_attr_value_type invalid",
+					zap.Any("effectCfg", effectCfg), zap.Int32("attrID", attrID))
+				continue
+			}
+			// 要加成的属性
+			targetAttrID, ok := effectCfg.Modify_attr_value_attr_id[attrID]
+			if !ok {
+				logger.ErrorWF("GetUserBattleSkillInfo Modify_attr_value_attr_id invalid",
+					zap.Any("effectCfg", effectCfg), zap.Int32("attrID", attrID))
+				continue
+			}
+			if op == 1 {
+				value += int32(attrMap[attrID])
+			} else if op == 2 {
+				value -= int32(attrMap[attrID])
+			}
+			SkillEffectSelf.AttrModifier = append(SkillEffectSelf.AttrModifier, &MazeAIBattle.MazeAIAttrInfo{
+				Type:          proto.Int32(targetAttrID),
+				UserValue:     proto.Int32(value),
+				UserValueType: proto.Int32(valueType),
+			})
+		}
 		SkillEffectSelf.IntervalTime = proto.Int32(int32(GetEffectAttrValue(effectCfg.Attr_value_8, effectCfg.Attr_value_8_variable_id, attrMap)))
 		skillInfo.SkillEffectSelf = append(skillInfo.SkillEffectSelf, SkillEffectSelf)
 	}
