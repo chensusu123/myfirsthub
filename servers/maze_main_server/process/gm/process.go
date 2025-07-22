@@ -117,12 +117,12 @@ func RegGm(logger fklog.FKLogI) {
 			return
 		}
 
-		oldBarrier := userInfo.Barrier
+		// oldBarrier := userInfo.Barrier
 
-		if params.BarrierID <= oldBarrier {
-			fmt.Fprintf(writer, "仅支持跳过关卡，当前第%d关", oldBarrier)
-			return
-		}
+		// if params.BarrierID <= oldBarrier {
+		// 	fmt.Fprintf(writer, "仅支持跳过关卡，当前第%d关", oldBarrier)
+		// 	return
+		// }
 
 		userInfo.SetBarrier(params.BarrierID)
 		userInfo.SetPassBarrier(params.BarrierID - 1)
