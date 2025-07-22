@@ -23,6 +23,10 @@ type MazeBoxV8ConfigRow struct {
 	Award_equip_first  []int32         `json:"award_equip_first"`  // 装备奖励（首次）
 	Drop_exp_num_first map[int32]int64 `json:"drop_exp_num_first"` // 冒险等级:掉落经验数量（首次）
 	Drop_item_first    map[int32]int64 `json:"drop_item_first"`    // 宝箱掉落物品id：数量（首次）
+	Res                int32           `json:"res"`                // 资源id
+	Res_first          int32           `json:"res_first"`          // 资源id（首次）
+	Res_type           int32           `json:"res_type"`           // 资源类型
+	Res_type_first     int32           `json:"res_type_first"`     // 资源类型（首次）
 }
 
 // MazeBoxV8Config from maze_box_v8【迷宫-宝箱】.xlsx maze_box_v8
@@ -494,6 +498,62 @@ func (*gMazeBoxV8Parser) Parse(logger fklog.FKLogI, data []string, row interface
 			config.Drop_item_first[key] = value
 		}
 	}
+
+	// parse column 9 res : 资源id
+	if data[9] != "" {
+		tmp, err = strconv.ParseInt(data[9], 10, 64)
+		if err != nil {
+			err = errors.New("parse field res 资源id to int32 failed")
+			logger.ErrorWF("parse field res 资源id to int32 failed.",
+				zap.String("xlsx", "maze_box_v8【迷宫-宝箱】.xlsx"), zap.String("sheet", "maze_box_v8"),
+				zap.String("parse_data", data[9]),
+				zap.Error(err))
+			return
+		}
+		config.Res = int32(tmp)
+	}
+
+	// parse column 10 res_first : 资源id（首次）
+	if data[10] != "" {
+		tmp, err = strconv.ParseInt(data[10], 10, 64)
+		if err != nil {
+			err = errors.New("parse field res_first 资源id（首次） to int32 failed")
+			logger.ErrorWF("parse field res_first 资源id（首次） to int32 failed.",
+				zap.String("xlsx", "maze_box_v8【迷宫-宝箱】.xlsx"), zap.String("sheet", "maze_box_v8"),
+				zap.String("parse_data", data[10]),
+				zap.Error(err))
+			return
+		}
+		config.Res_first = int32(tmp)
+	}
+
+	// parse column 11 res_type : 资源类型
+	if data[11] != "" {
+		tmp, err = strconv.ParseInt(data[11], 10, 64)
+		if err != nil {
+			err = errors.New("parse field res_type 资源类型 to int32 failed")
+			logger.ErrorWF("parse field res_type 资源类型 to int32 failed.",
+				zap.String("xlsx", "maze_box_v8【迷宫-宝箱】.xlsx"), zap.String("sheet", "maze_box_v8"),
+				zap.String("parse_data", data[11]),
+				zap.Error(err))
+			return
+		}
+		config.Res_type = int32(tmp)
+	}
+
+	// parse column 12 res_type_first : 资源类型（首次）
+	if data[12] != "" {
+		tmp, err = strconv.ParseInt(data[12], 10, 64)
+		if err != nil {
+			err = errors.New("parse field res_type_first 资源类型（首次） to int32 failed")
+			logger.ErrorWF("parse field res_type_first 资源类型（首次） to int32 failed.",
+				zap.String("xlsx", "maze_box_v8【迷宫-宝箱】.xlsx"), zap.String("sheet", "maze_box_v8"),
+				zap.String("parse_data", data[12]),
+				zap.Error(err))
+			return
+		}
+		config.Res_type_first = int32(tmp)
+	}
 	return
 }
 
@@ -507,6 +567,10 @@ var gMazeBoxV8Fields = []string{
 	"award_equip_first",
 	"drop_exp_num_first",
 	"drop_item_first",
+	"res",
+	"res_first",
+	"res_type",
+	"res_type_first",
 }
 
 // LoadDataManual load data for test

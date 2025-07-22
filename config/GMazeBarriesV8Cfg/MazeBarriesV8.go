@@ -36,6 +36,7 @@ type MazeBarriesV8ConfigRow struct {
 	Attack_action2_need_kongfu map[int32]int64 `json:"attack_action2_need_kongfu"` // 普攻档位2刷怪区域：所需武力值
 	Attack_action3_need_kongfu map[int32]int64 `json:"attack_action3_need_kongfu"` // 普攻档位3刷怪区域：所需武力值
 	Monster_max_num            map[int32]int32 `json:"monster_max_num"`            // 区域刷怪数量上限
+	Box_ids                    []int32         `json:"box_ids"`                    // 宝箱列表
 }
 
 // MazeBarriesV8Config from maze_barries_v8【迷宫-关卡信息】.xlsx maze_barries_v8
@@ -745,6 +746,25 @@ func (*gMazeBarriesV8Parser) Parse(logger fklog.FKLogI, data []string, row inter
 			config.Monster_max_num[key] = value
 		}
 	}
+
+	// parse column 22 box_ids : 宝箱列表
+	if data[22] != "" {
+
+		vals := strings.Split(data[22], ",")
+		for k, v := range vals {
+			tmp, err = strconv.ParseInt(v, 10, 64)
+			if err != nil {
+				err = errors.New("parse array field box_ids 宝箱列表 to []int32 failed")
+				logger.ErrorWF("parse array field box_ids 宝箱列表 to []int32 failed.",
+					zap.String("xlsx", "maze_barries_v8【迷宫-关卡信息】.xlsx"), zap.String("sheet", "maze_barries_v8"),
+					// zap.String("field_data",data[22]),
+					zap.String("parse_data", v), zap.Int("index", k),
+					zap.Error(err))
+				return
+			}
+			config.Box_ids = append(config.Box_ids, int32(tmp))
+		}
+	}
 	return
 }
 
@@ -771,6 +791,7 @@ var gMazeBarriesV8Fields = []string{
 	"attack_action2_need_kongfu",
 	"attack_action3_need_kongfu",
 	"monster_max_num",
+	"box_ids",
 }
 
 // LoadDataManual load data for test

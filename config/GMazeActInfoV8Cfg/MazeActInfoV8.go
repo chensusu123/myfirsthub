@@ -19,6 +19,7 @@ type MazeActInfoV8ConfigRow struct {
 	Attack_back_range         map[int32]int32 `json:"attack_back_range"`         // 打击点:击退距离系数
 	Tough_broke_value         int32           `json:"tough_broke_value"`         // 削韧值
 	Temp_tough                int32           `json:"temp_tough"`                // 动作临时韧性
+	Kongfu_hit_time_ratio     map[int32]int32 `json:"kongfu_hit_time_ratio"`     // 打击点:计算受击档位武力比系数
 }
 
 // MazeActInfoV8Config from maze_act_info_v8【迷宫-动作配置】.xlsx maze_act_info_v8
@@ -387,6 +388,43 @@ func (*gMazeActInfoV8Parser) Parse(logger fklog.FKLogI, data []string, row inter
 		}
 		config.Temp_tough = int32(tmp)
 	}
+
+	// parse column 5 kongfu_hit_time_ratio : 打击点:计算受击档位武力比系数
+	if data[5] != "" {
+
+		config.Kongfu_hit_time_ratio = make(map[int32]int32)
+		var key int32
+		var value int32
+		vals := strings.Split(data[5], "_")
+		for k, val := range vals {
+			items := strings.Split(val, ":")
+			tmp, err = strconv.ParseInt(items[0], 10, 64)
+			if err != nil {
+				err = errors.New("parse map field kongfu_hit_time_ratio 打击点:计算受击档位武力比系数 to key int32 failed")
+				logger.ErrorWF("parse map field kongfu_hit_time_ratio 打击点:计算受击档位武力比系数 to key int32 failed.",
+					zap.String("xlsx", "maze_act_info_v8【迷宫-动作配置】.xlsx"), zap.String("sheet", "maze_act_info_v8"),
+					// zap.String("field_data",data[5]),
+					zap.String("item_data", val), zap.Int("index", k),
+					zap.String("parse_data", items[0]),
+					zap.Error(err))
+				return
+			}
+			key = int32(tmp)
+			tmp, err = strconv.ParseInt(items[1], 10, 64)
+			if err != nil {
+				err = errors.New("parse map field kongfu_hit_time_ratio 打击点:计算受击档位武力比系数 to value int32 failed")
+				logger.ErrorWF("parse map field kongfu_hit_time_ratio 打击点:计算受击档位武力比系数 to value int32 failed.",
+					zap.String("xlsx", "maze_act_info_v8【迷宫-动作配置】.xlsx"), zap.String("sheet", "maze_act_info_v8"),
+					// zap.String("field_data",data[5]),
+					zap.String("item_data", val), zap.Int("index", k),
+					zap.String("parse_data", items[1]),
+					zap.Error(err))
+				return
+			}
+			value = int32(tmp)
+			config.Kongfu_hit_time_ratio[key] = value
+		}
+	}
 	return
 }
 
@@ -396,6 +434,7 @@ var gMazeActInfoV8Fields = []string{
 	"attack_back_range",
 	"tough_broke_value",
 	"temp_tough",
+	"kongfu_hit_time_ratio",
 }
 
 // LoadDataManual load data for test
