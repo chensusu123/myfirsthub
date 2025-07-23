@@ -118,10 +118,10 @@ func (g *Game) OnMazeBarrierEnterRQ_10447_10448(s *session.Session, req *MazeGam
 	} else {
 		isNewBarrier = true
 	}
-	if req.GetBarrierId() > userInfo.Barrier {
-		// 	isNewBarrier = true
-		userInfo.SetBarrier(req.GetBarrierId())
-	}
+	// if req.GetBarrierId() > userInfo.Barrier {
+	// 	isNewBarrier = true
+	userInfo.SetBarrier(req.GetBarrierId())
+	// }
 
 	shopInfo, err := calequipsequence.GetMazeShopInfo(logger, userId, int32(userInfo.Level), req.GetBarrierId())
 	if err != nil {
