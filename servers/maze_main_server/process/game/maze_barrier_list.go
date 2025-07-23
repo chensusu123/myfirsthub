@@ -132,7 +132,7 @@ func (g *Game) OnMazeBarrierListRQ_10457_10458(s *session.Session, req *MazeGame
 	fixedBarrierId, err := mazefixedbarrierredis.GetUserFixedBarrierID(logger, userId)
 	if err != nil {
 		logger.ErrorWF("OnMazeBarrierListRQ GetUserFixedBarrierID failed", zap.Error(err), zap.Uint64("userId", userId))
-	} else if fixedBarrierId > 0 && currBarrier < fixedBarrierId {
+	} else if fixedBarrierId > 0 && currBarrier == 1 {
 		currBarrier = fixedBarrierId
 		logger.WarnWF("Fix current barrier", zap.Uint64("userId", userId), zap.Int32("currBarrier", currBarrier))
 	}
