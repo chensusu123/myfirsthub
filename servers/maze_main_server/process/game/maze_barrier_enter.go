@@ -119,7 +119,7 @@ func (g *Game) OnMazeBarrierEnterRQ_10447_10448(s *session.Session, req *MazeGam
 		isNewBarrier = true
 	}
 	// if req.GetBarrierId() > userInfo.Barrier {
-	// 	isNewBarrier = true
+	isNewBarrier = true
 	userInfo.SetBarrier(req.GetBarrierId())
 	// }
 
