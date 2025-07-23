@@ -6,12 +6,16 @@ import (
 	"errors"
 	"fmt"
 	"net/http"
+	"sort"
 	"time"
 
 	"maze_game_server/common/function/gm"
+	"maze_game_server/config/GMazeAttributeV8Cfg"
 	"maze_game_server/config/GMazeBarriesV8Cfg"
 	"maze_game_server/io/kafka/mazeuserlevelkafka"
 	"maze_game_server/io/redis/UnionIDBindRedis"
+	"maze_game_server/io/redis/mazebarriertempbuffredis"
+	"maze_game_server/io/redis/mazecalcattrredis"
 	"maze_game_server/io/redis/mazefixedbarrierredis"
 	"maze_game_server/io/redis/useridredis"
 	"maze_game_server/io/redis/usersection"
@@ -236,6 +240,62 @@ func RegGm(logger fklog.FKLogI) {
 				fmt.Fprintf(writer, "%d %d %s\n", s.ID(), userID, s.RemoteAddr().String())
 			}
 		})
+	})
+
+	gm.SafeHttpRegister(logger, "/attrs", func(writer http.ResponseWriter, request *http.Request) {
+		logger.SetLogId(time.Now().UnixNano())
+		var (
+			userId    = fkutil.ToUint64(request.Form.Get("user_id"))
+			barrierId = fkutil.ToInt32(request.Form.Get("barrier_id"))
+		)
+
+		userAttrMap, err := mazecalcattrredis.GetAllMazeCalcAttr(logger, userId)
+		if err != nil {
+			logger.ErrorWF("GetAllMazeCalcAttr nil", zap.Uint64("userId", userId), zap.Error(err))
+			fmt.Fprintf(writer, "获取人物属性失败: %s\n", err.Error())
+			return
+		}
+		if barrierId > 0 {
+			tempBuffInfo, err := mazebarriertempbuffredis.GetBarrierTempBuff(logger, userId, barrierId)
+			if err != nil {
+				logger.ErrorWF("GetBarrierTempBuff err", zap.Error(err))
+				fmt.Fprintf(writer, "获取临时BUFF失败: %s\n", err.Error())
+				return
+			}
+			for _, buffInfo := range tempBuffInfo.TotalBuff {
+				userAttrMap[buffInfo.GetBuffId()] += buffInfo.GetBuffValue()
+			}
+		}
+		type UserAttr struct {
+			AttrID int32
+			Value  int64
+		}
+		attrs := make([]UserAttr, 0, len(userAttrMap))
+		for attrID, value := range userAttrMap {
+			attrs = append(attrs, UserAttr{AttrID: attrID, Value: value})
+		}
+
+		sort.Slice(attrs, func(i, j int) bool {
+			return attrs[i].AttrID < attrs[j].AttrID
+		})
+
+		for _, attr := range attrs {
+			attrCfg := GMazeAttributeV8Cfg.Get(attr.AttrID)
+			if attrCfg != nil {
+				switch attrCfg.Figure {
+				case 1:
+					fmt.Fprintf(writer, "[%d]%s: %d\n", attr.AttrID, attrCfg.Name, attr.Value)
+				case 2:
+					fmt.Fprintf(writer, "[%d]%s: %.4f\n", attr.AttrID, attrCfg.Name, float64(attr.Value)/10000.0)
+				case 3:
+					fmt.Fprintf(writer, "[%d]%s: %.7f\n", attr.AttrID, attrCfg.Name, float64(attr.Value)/1000000.0)
+				default:
+					fmt.Fprintf(writer, "[%d]属性值类型[%d]无效\n", attr.AttrID, attrCfg.Figure)
+				}
+			} else {
+				fmt.Fprintf(writer, "[%d]属性配置不存在\n", attr.AttrID)
+			}
+		}
 	})
 }
 
