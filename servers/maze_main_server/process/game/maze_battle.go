@@ -233,6 +233,9 @@ func GetMazeAIMonsterConfig(logger fklog.FKLogI, userId uint64, force int64, foe
 	}
 	monsterConfigInfo.AttackValue = attackValue
 	monsterConfigInfo.AttackedBackRange = proto.Int32(foeCfg.Attacked_back_range)
+	monsterConfigInfo.AttackedBackRangeAfter = proto.Int32(foeCfg.Attacked_back_range_after)
+	monsterConfigInfo.ThreatValue = proto.Int32(foeCfg.Threat_value)
+	monsterConfigInfo.ArrowThreatValue = proto.Int32(foeCfg.Arrow_threat_value)
 	monsterConfigInfo.AttrInfo = make([]*MazeAIBattle.MazeAIAttrInfo, 0)
 	monsterConfigInfo.AttrInfo = append(monsterConfigInfo.AttrInfo, &MazeAIBattle.MazeAIAttrInfo{
 		Type:          proto.Int32(int32(MazeAIBattle.MAZE_AI_ATTR_TYPE_ROLE_ATK_VALUE)),
@@ -428,7 +431,13 @@ func GetUserBattleSkillInfo(logger fklog.FKLogI, skillId int32, attrMap map[int3
 					}
 					actDamageConfig.ActDamageRatios = append(actDamageConfig.ActDamageRatios, actDamageRatio)
 				}
-
+				// 计算受击档位武力比系数
+				for index, value := range mazeActCfg.Kongfu_hit_time_ratio {
+					actDamageConfig.KongfuHitTimeRatio = append(actDamageConfig.KongfuHitTimeRatio, &MazeAIBattle.MazeAttackHitTimeRatio{
+						Index:        proto.Int32(index),
+						HitTimeRatio: proto.Int32(value),
+					})
+				}
 			}
 		}
 		actIDs = skillActCfg.Act_id
@@ -875,7 +884,13 @@ func GetFoeSkillConfigInfo(logger fklog.FKLogI, skillId int32) (*MazeAIBattle.Ma
 				}
 				actDamageConfig.ActDamageRatios = append(actDamageConfig.ActDamageRatios, actDamageRatio)
 			}
-
+			// 计算受击档位武力比系数
+			for index, value := range mazeActCfg.Kongfu_hit_time_ratio {
+				actDamageConfig.KongfuHitTimeRatio = append(actDamageConfig.KongfuHitTimeRatio, &MazeAIBattle.MazeAttackHitTimeRatio{
+					Index:        proto.Int32(index),
+					HitTimeRatio: proto.Int32(value),
+				})
+			}
 		}
 	}
 	skillConfigInfo.ActDamageConfig = actDamageConfigs

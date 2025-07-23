@@ -97,7 +97,13 @@ func GetUserBattleSkillInfo(logger fklog.FKLogI, skillId int32, attrMap map[int3
 					}
 					actDamageConfig.ActDamageRatios = append(actDamageConfig.ActDamageRatios, actDamageRatio)
 				}
-
+				// 计算受击档位武力比系数
+				for index, value := range mazeActCfg.Kongfu_hit_time_ratio {
+					actDamageConfig.KongfuHitTimeRatio = append(actDamageConfig.KongfuHitTimeRatio, &MazeAIBattle.MazeAttackHitTimeRatio{
+						Index:        proto.Int32(index),
+						HitTimeRatio: proto.Int32(value),
+					})
+				}
 			}
 		}
 		actIDs = skillActCfg.Act_id
