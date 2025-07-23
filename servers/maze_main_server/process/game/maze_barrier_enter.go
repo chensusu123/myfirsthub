@@ -81,7 +81,7 @@ func (g *Game) OnMazeBarrierEnterRQ_10447_10448(s *session.Session, req *MazeGam
 	//	res.Energy = proto.Int32(userInfo.Energy)
 	var isNewBarrier bool
 
-	storageInfo, _ := syncmazestorageinforedis.GetSyncMazeStorageInfo(userId, userInfo.Barrier)
+	storageInfo, _ := syncmazestorageinforedis.GetSyncMazeStorageInfo(userId, req.GetBarrierId())
 	if storageInfo == nil {
 		// 进入清临时buff
 		mazebarriertempbuffredis.ClearBarrierTempBuff(logger, userId, req.GetBarrierId())
