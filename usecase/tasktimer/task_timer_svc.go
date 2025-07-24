@@ -23,6 +23,11 @@ type TaskTimerBusiness struct {
 	namespace string
 }
 
+// OnShutdown implements fkcore.FKServiceI.
+func (tb *TaskTimerBusiness) OnShutdown(fklog.FKLogI) error {
+	return nil
+}
+
 // FKServiceI 服务接口
 func (tb *TaskTimerBusiness) Name() string {
 	return "TaskTimerService"

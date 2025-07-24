@@ -110,3 +110,8 @@ func (ns *NanoInitService) OnStop(logger fklog.FKLogI) error {
 func (ns *NanoInitService) OnFinish(logger fklog.FKLogI) error {
 	return nil
 }
+
+// OnShutdown implements fkcore.FKServiceI.
+func (ns *NanoInitService) OnShutdown(fklog.FKLogI) error {
+	return nil
+}
