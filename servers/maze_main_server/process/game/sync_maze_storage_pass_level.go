@@ -39,7 +39,7 @@ func (g *Game) OnSyncMazeStoragePassLevelRQ_10517_10518(s *session.Session, req 
 	// 道具产出信息
 	err = syncmazestorageinforedis.SaveSyncMazeStorageInfo(userId, userInfo.Barrier, syncmazestorageinforedis.StorageInfo_PassLevel, data)
 	if err != nil {
-		logger.ErrorWF("OnSyncMazeStoragePassLevelRQ SaveSyncMazeStorageInfo", zap.String("passLevel", "passLevel"), zap.Error(err))
+		logger.ErrorWF("OnSyncMazeStoragePassLevelRQ SaveSyncMazeStorageInfo", zap.Int64("passLevel", req.GetPassLevel()), zap.Error(err))
 		res.ErrInfo = errors.MODULE_ERROR.ToInfo()
 		return
 	}
