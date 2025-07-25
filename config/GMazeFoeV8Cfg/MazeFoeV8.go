@@ -16,7 +16,7 @@ import (
 type MazeFoeV8ConfigRow struct {
 	Order                        int32           `json:"order"`                        // 怪物id
 	In_barries_id                int32           `json:"in_barries_id"`                // 所属关卡id
-	Foe_type                     int32           `json:"foe_type"`                     // 怪物类型（1-小怪 2-守关boss 3-巡逻守卫
+	Foe_type                     int32           `json:"foe_type"`                     // 怪物类型（1-小怪 2-守关boss 3-巡逻守卫 4-精英怪
 	Drop_item                    map[int32]int64 `json:"drop_item"`                    // 怪物掉落物品
 	Drop_equip                   []int32         `json:"drop_equip"`                   // 怪物掉落装备
 	Name                         string          `json:"name"`                         // 怪物名称
@@ -326,12 +326,12 @@ func (*gMazeFoeV8Parser) Parse(logger fklog.FKLogI, data []string, row interface
 		config.In_barries_id = int32(tmp)
 	}
 
-	// parse column 2 foe_type : 怪物类型（1-小怪 2-守关boss 3-巡逻守卫
+	// parse column 2 foe_type : 怪物类型（1-小怪 2-守关boss 3-巡逻守卫 4-精英怪
 	if data[2] != "" {
 		tmp, err = strconv.ParseInt(data[2], 10, 64)
 		if err != nil {
-			err = errors.New("parse field foe_type 怪物类型（1-小怪 2-守关boss 3-巡逻守卫 to int32 failed")
-			logger.ErrorWF("parse field foe_type 怪物类型（1-小怪 2-守关boss 3-巡逻守卫 to int32 failed.",
+			err = errors.New("parse field foe_type 怪物类型（1-小怪 2-守关boss 3-巡逻守卫 4-精英怪 to int32 failed")
+			logger.ErrorWF("parse field foe_type 怪物类型（1-小怪 2-守关boss 3-巡逻守卫 4-精英怪 to int32 failed.",
 				zap.String("xlsx", "maze_foe_v8【迷宫-敌人信息】.xlsx"), zap.String("sheet", "maze_foe_v8"),
 				zap.String("parse_data", data[2]),
 				zap.Error(err))
