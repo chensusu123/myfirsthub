@@ -1055,7 +1055,7 @@ type MazeAIMonsterConfigInfo struct {
 	MonsterSpeed           *int32                `protobuf:"varint,2,opt,name=monster_speed,json=monsterSpeed" json:"monster_speed,omitempty"` //怪物移动速度增加的比例万分比  怪的基础速度在客户端的map_role_show表里
 	AttrInfo               []*MazeAIAttrInfo     `protobuf:"bytes,3,rep,name=attr_info,json=attrInfo" json:"attr_info,omitempty"`
 	SkillTotalInfo         *MazeAISkillTotalInfo `protobuf:"bytes,4,opt,name=skill_total_info,json=skillTotalInfo" json:"skill_total_info,omitempty"`                            //技能信息
-	FoeType                *int32                `protobuf:"varint,5,opt,name=foe_type,json=foeType" json:"foe_type,omitempty"`                                                  //怪物类型 （1-小怪 2-守关boss 3-巡逻守卫）
+	FoeType                *int32                `protobuf:"varint,5,opt,name=foe_type,json=foeType" json:"foe_type,omitempty"`                                                  //怪物类型 （1-小怪 2-守关boss 3-巡逻守卫 4-精英怪）
 	AttackedBackRange      *int32                `protobuf:"varint,6,opt,name=attacked_back_range,json=attackedBackRange" json:"attacked_back_range,omitempty"`                  // 被击退距离系数（万分比）
 	AttackedBackRangeAfter *int32                `protobuf:"varint,7,opt,name=attacked_back_range_after,json=attackedBackRangeAfter" json:"attacked_back_range_after,omitempty"` // 被击退距离系数（破除韧性后）（万分比）attacked_back_range_after
 	ThreatValue            *int32                `protobuf:"varint,8,opt,name=threat_value,json=threatValue" json:"threat_value,omitempty"`                                      // 近战威胁值 threat_value
