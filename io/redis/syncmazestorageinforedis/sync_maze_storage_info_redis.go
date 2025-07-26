@@ -17,6 +17,7 @@ const (
 	StorageInfo_RolePos         = "rolePos"         //角色位置
 	StorageInfo_StorageItemInfo = "storageItemInfo" //机关列表
 	StorageInfo_StageLevel      = "stageLevel"      //阶段等级
+	StorageInfo_MonsterAreaInfo = "monsterAreaInfo" //已经打过的刷怪区域
 )
 
 var gRedis = &fkredis.FkRedis{}
@@ -56,28 +57,27 @@ func GetSyncMazeStorageInfo(userId uint64, barrierId int32) (info *MazeGame.Maze
 
 	info = &MazeGame.MazeStorageInfo{}
 	for k, v := range res {
-		if k == StorageInfo_RoleItemData {
+		switch k {
+		case StorageInfo_RoleItemData:
 			info.RoleItemData = proto.String(v)
-		}
-		if k == StorageInfo_PassLevel {
+		case StorageInfo_PassLevel:
 			a, err := strconv.ParseInt(v, 10, 64)
 			if err != nil {
 				continue
 			}
 			info.PassLevel = proto.Int64(a)
-		}
-		if k == StorageInfo_RolePos {
+		case StorageInfo_RolePos:
 			info.RolePos = proto.String(v)
-		}
-		if k == StorageInfo_StorageItemInfo {
+		case StorageInfo_StorageItemInfo:
 			info.StorageItemInfo = proto.String(v)
-		}
-		if k == StorageInfo_StageLevel {
+		case StorageInfo_StageLevel:
 			a, err := strconv.ParseInt(v, 10, 32)
 			if err != nil {
 				continue
 			}
 			info.StageLevel = proto.Int32(int32(a))
+		case StorageInfo_MonsterAreaInfo:
+			info.MonsterAreaInfo = proto.String(v)
 		}
 	}
 
