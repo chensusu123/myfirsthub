@@ -142,7 +142,7 @@ func GetMazeBattleData(logger fklog.FKLogI, userId uint64, barrierId int32) (maz
 			logger.ErrorWF("GetMazeBattleData GMazeBoxV8Cfg fail", zap.Any("boxId", boxID), zap.Any("barrierId", barrierId))
 			return nil, errors.CONFIG_NOT_FOUND
 		}
-		opened, err := mazeboxredis.IsOpenedBox(logger, userId, boxID)
+		opened, err := mazeboxredis.IsOpenedBox(logger, userId, barrierId, boxID)
 		if err != nil {
 			logger.ErrorWF("GetMazeBattleData IsOpenedBox fail", zap.Error(err), zap.Any("boxId", boxID), zap.Any("barrierId", barrierId))
 			return nil, err

@@ -17,7 +17,6 @@ import (
 	"maze_game_server/pb/server/MazeEquipSvr"
 
 	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fkprometheus"
-	"gitlab.ifreetalk.com/maze-plate/freetk/fkutil"
 	"go.uber.org/zap"
 	"google.golang.org/protobuf/proto"
 )
@@ -49,12 +48,12 @@ func (g *Game) OnBarrierOpenBoxRQ_10445_10446(s *session.Session, req *MazeGame.
 		return
 	}
 
-	// 更新box表格 读表校验宝箱对应的关卡id
-	if fkutil.ToInt64(boxCfg.Level_id) != int64(req.GetBarrierId()) {
-		logger.ErrorWF("OnBarrierOpenBoxRQ barrier and box not match", zap.Any("boxId", req.GetBoxId()), zap.Any("barrierId", req.GetBarrierId()))
-		res.ErrInfo = errors.COMMON_ERROR_TIPS.Wrap("宝箱关卡信息不匹配")
-		return
-	}
+	// // 更新box表格 读表校验宝箱对应的关卡id
+	// if fkutil.ToInt64(boxCfg.Level_id) != int64(req.GetBarrierId()) {
+	// 	logger.ErrorWF("OnBarrierOpenBoxRQ barrier and box not match", zap.Any("boxId", req.GetBoxId()), zap.Any("barrierId", req.GetBarrierId()))
+	// 	res.ErrInfo = errors.COMMON_ERROR_TIPS.Wrap("宝箱关卡信息不匹配")
+	// 	return
+	// }
 
 	// 防重复操作校验
 	triggered, triggerFn, err := mazebarrieropstatusredis.IsTriggered(logger, userId, req.GetBarrierId(), fmt.Sprintf("openbox:%d", req.GetBoxId()))
@@ -69,7 +68,7 @@ func (g *Game) OnBarrierOpenBoxRQ_10445_10446(s *session.Session, req *MazeGame.
 		defer triggerFn()
 	}
 
-	opened, err := mazeboxredis.IsOpenedBox(logger, userId, int32(req.GetBoxId()))
+	opened, err := mazeboxredis.IsOpenedBox(logger, userId, req.GetBarrierId(), int32(req.GetBoxId()))
 	if err != nil {
 		logger.ErrorWF("OnBarrierOpenBoxRQ IsOpenedBox fail", zap.Error(err), zap.Any("boxId", req.GetBoxId()), zap.Any("barrierId", req.GetBarrierId()))
 		res.ErrInfo = errors.COMMON_ERROR_TIPS.Wrap("宝箱打开失败")
@@ -146,7 +145,7 @@ func (g *Game) OnBarrierOpenBoxRQ_10445_10446(s *session.Session, req *MazeGame.
 	res.Kongfu = proto.Int32(boxCfg.Add_kongfu)
 
 	// 标记宝箱已打开过
-	err = mazeboxredis.SetOpenBoxTime(logger, userId, int32(req.GetBoxId()))
+	err = mazeboxredis.SetOpenBoxTime(logger, userId, req.GetBarrierId(), int32(req.GetBoxId()))
 	if err != nil {
 		logger.ErrorWF("OnBarrierOpenBoxRQ SetOpenBoxTime fail", zap.Error(err), zap.Any("boxId", req.GetBoxId()), zap.Any("barrierId", req.GetBarrierId()))
 	}
