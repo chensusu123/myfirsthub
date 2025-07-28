@@ -112,18 +112,22 @@ func checkSelectBuff(logger fklog.FKLogI, level, buffId int32, buffInfo *MazeTem
 
 func updateBuffInfo(logger fklog.FKLogI, userId uint64, stageId, level, buffId, buffType int32,
 	buffInfo *MazeTempBuffSvr.TempBuffInfo) error {
+	areaId := buffInfo.BuffSequence.GetAreaId()
+	areaIndex := buffInfo.BuffSequence.GetAreaIndex()
 	buffInfo.BuffSequence = &MazeTempBuffSvr.BuffSequence{
 		Index: proto.Int32(level),
 	}
 
 	buffInfo.SelectedBuff = append(buffInfo.SelectedBuff, &MazeTempBuffSvr.SelectedBuffInfo{
-		BuffId: proto.Int32(buffId),
-		Level:  proto.Int32(level),
-		Type:   proto.Int32(buffType),
+		BuffId:    proto.Int32(buffId),
+		Level:     proto.Int32(level),
+		Type:      proto.Int32(buffType),
+		AreaId:    proto.Int32(areaId),
+		AreaIndex: proto.Int32(areaIndex),
 	})
 
 	var totalMap map[int32]int64
-	totalMap, buffInfo.TotalBuff = getTotalBuff(logger, buffInfo.GetSelectedBuff())
+	totalMap, buffInfo.TotalBuff = GetTotalBuff(logger, buffInfo.GetSelectedBuff())
 	// 更新buff信息
 	err := mazetempbuffredis.SetMazeTempBuff(logger, userId, stageId, buffInfo)
 	if err != nil {
@@ -156,7 +160,14 @@ func updateBuffInfo(logger fklog.FKLogI, userId uint64, stageId, level, buffId, 
 
 	_ = mazetempbuffchgmsg.PushTempBuffChangeMsg(logger, msg)
 
-	// buff中心
+	// 同步到buff中心
+	TempBuffChangeSync(logger, userId, buffInfo)
+
+	return nil
+}
+
+// 同步到buff中心
+func TempBuffChangeSync(logger fklog.FKLogI, userId uint64, buffInfo *MazeTempBuffSvr.TempBuffInfo) error {
 	forceAttr, err := GetSelectBuffForceAttr(buffInfo.TotalBuff)
 	if err != nil {
 		logger.ErrorWF("updateBuffInfo GetSelectBuffForceAttr failed", zap.Error(err))
@@ -182,11 +193,10 @@ func updateBuffInfo(logger fklog.FKLogI, userId uint64, stageId, level, buffId, 
 		BuffSrc: constdef.MazeBuffSrcSelectBuffForce,
 	}
 	mazeattrcalcnotifyqueue.SendMazeAttrCalcNotify(logger, calcAttrNotify)
-
 	return nil
 }
 
-func getTotalBuff(logger fklog.FKLogI, buffList []*MazeTempBuffSvr.SelectedBuffInfo) (
+func GetTotalBuff(logger fklog.FKLogI, buffList []*MazeTempBuffSvr.SelectedBuffInfo) (
 	map[int32]int64, []*MazeTempBuffSvr.TotalBuffInfo) {
 	totalMap := make(map[int32]int64)
 	for _, info := range buffList {

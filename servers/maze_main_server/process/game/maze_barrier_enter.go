@@ -8,13 +8,17 @@ import (
 	"maze_game_server/config/GMazeActionCountV8Cfg"
 	"maze_game_server/config/GMazeBarriesV8Cfg"
 	"maze_game_server/config/GMazeLevelV8Cfg"
+	"maze_game_server/excel/mazeenergyaffixlvv8config"
+	"maze_game_server/io/kafka/mazetempbuffchgmsg"
 	"maze_game_server/io/redis/mazeattrcalcnotifyqueue"
 	"maze_game_server/io/redis/mazebarriereventredis"
 	"maze_game_server/io/redis/mazebarrieropstatusredis"
 	"maze_game_server/io/redis/mazebarriertempbuffredis"
 	"maze_game_server/io/redis/mazebuffinforedis"
 	"maze_game_server/io/redis/mazechallengenumredis"
+	"maze_game_server/io/redis/mazetempbuffredis"
 	"maze_game_server/io/redis/mazeuserbarrierredis"
+	"maze_game_server/io/redis/passarearedis"
 	"maze_game_server/io/redis/syncmazestorageinforedis"
 	"maze_game_server/lib/log"
 	"maze_game_server/lib/nano/session"
@@ -25,6 +29,8 @@ import (
 	"maze_game_server/pb/common/MazeCommon"
 	"maze_game_server/pb/common/MazeGame"
 	"maze_game_server/pb/server/MazeEnergySvr"
+	"maze_game_server/pb/server/MazeTempBuffSvr"
+	"maze_game_server/servers/maze_main_server/process/buff"
 	"maze_game_server/servers/maze_main_server/process/game/energy"
 	"maze_game_server/servers/maze_main_server/process/game/events"
 	"time"
@@ -94,6 +100,10 @@ func (g *Game) OnMazeBarrierEnterRQ_10447_10448(s *session.Session, req *MazeGam
 			BuffSrc: constdef.MazeBuffSrcSelectBuffForce,
 		}
 		mazeattrcalcnotifyqueue.SendMazeAttrCalcNotify(logger, calcAttrNotify)
+	} else {
+		// 刷一半的情况需要检查三选一是否有问题
+
+		checkTempBuff(logger, userId, req.GetBarrierId())
 	}
 
 	// 清理关卡操作状态
@@ -344,4 +354,95 @@ func (g *Game) OnGetStorageInfoRQ_10529_10530(s *session.Session, req *MazeGame.
 
 func GetUserMoney(logger fklog.FKLogI, uid uint64) {
 
+}
+
+// 检查关卡的buff情况，一定要靠前，因为可能会有清除部分buff的情况
+func checkTempBuff(logger fklog.FKLogI, userId uint64, barrierId int32) error {
+	tempBuff, err := mazetempbuffredis.GetMazeTempBuff(logger, userId, barrierId)
+	if err != nil {
+		logger.ErrorWF("checkTempBuff GetMazeTempBuff fail", zap.Error(err))
+		return err
+	}
+	if tempBuff == nil || len(tempBuff.SelectedBuff) == 0 {
+		logger.InfoWF("checkTempBuff not need delete buff")
+		return nil
+	}
+	// 已选择的buff不是0，就需要检查了
+	passArea, err := passarearedis.GetBarrierPassArea(logger, userId, barrierId)
+	if err != nil {
+		logger.ErrorWF("checkTempBuff GetBarrierPassArea fail", zap.Error(err))
+		return err
+	}
+	deleteBuffIds := make([]int32, 0)
+	j := 0
+	for _, temp := range tempBuff.SelectedBuff {
+		exist := false
+		for _, i := range passArea {
+			if temp.GetAreaId() == i.AreaId && temp.GetAreaIndex() == i.AreaIndex {
+				exist = true
+			}
+		}
+		if exist {
+			tempBuff.SelectedBuff[j] = temp
+			j++
+		} else {
+			deleteBuffIds = append(deleteBuffIds, temp.GetBuffId())
+		}
+	}
+	tempBuff.SelectedBuff = tempBuff.SelectedBuff[:j]
+	selectBuffCount := len(tempBuff.SelectedBuff)
+	if len(deleteBuffIds) == 0 {
+		logger.InfoWF("checkTempBuff deleteBuffIds==0 not need delete buff")
+		return nil
+	}
+
+	// 有被清除掉的buff，那需要更新buff
+	tempBuff.BuffSequence = &MazeTempBuffSvr.BuffSequence{
+		Index: proto.Int32(int32(selectBuffCount) + 1),
+	}
+	var totalMap map[int32]int64
+	totalMap, tempBuff.TotalBuff = buff.GetTotalBuff(logger, tempBuff.GetSelectedBuff())
+	// 更新buff信息
+	err = mazetempbuffredis.SetMazeTempBuff(logger, userId, barrierId, tempBuff)
+	if err != nil {
+		logger.ErrorWF("checkTempBuff SetMazeTempBuff failed", zap.Any("info", tempBuff), zap.Error(err))
+		return err
+	}
+
+	// 推送buff变化信息
+	msg := &mazetempbuffchgmsg.MazeTempBuffChangeMsg{
+		UserId:  userId,
+		StageId: barrierId,
+		ChgType: 1,
+		ChgDesc: "清除部分buff",
+	}
+
+	// 计算buff变化
+	attrMap := make(map[int32]int64)
+	for _, buffId := range deleteBuffIds {
+		config := mazeenergyaffixlvv8config.GetAffixConfig(buffId)
+		if config != nil {
+			for id, value := range config.Add_attr {
+				attrMap[id] += value
+			}
+		}
+	}
+	chgAttrs := make([]*mazetempbuffchgmsg.AttrChgInfo, 0, len(attrMap))
+	for id, value := range attrMap {
+		chgAttrs = append(chgAttrs, &mazetempbuffchgmsg.AttrChgInfo{
+			AttrId: id,
+			OldVal: totalMap[id] + value,
+			CurVal: totalMap[id],
+		})
+	}
+
+	msg.ChgAttrs = chgAttrs
+	_ = mazetempbuffchgmsg.PushTempBuffChangeMsg(logger, msg)
+
+	// 同步到buff中心
+	buff.TempBuffChangeSync(logger, userId, tempBuff)
+
+	logger.InfoWF("checkTempBuff delete buff success ", zap.Any("info", tempBuff), zap.Any("deleteBuffIds", deleteBuffIds))
+
+	return nil
 }

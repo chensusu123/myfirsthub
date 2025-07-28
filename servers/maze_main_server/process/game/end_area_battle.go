@@ -1,23 +1,18 @@
 package game
 
 import (
-	"maze_game_server/common/constdef"
-	"maze_game_server/common/errors"
-	"maze_game_server/common/structsdef"
-	"maze_game_server/config/GMazeSkillInfoV8Cfg"
-	"maze_game_server/io/redis/mazeattrcalcnotifyqueue"
-	"maze_game_server/io/redis/mazebuffinforedis"
-	"maze_game_server/io/redis/mazetempbuffredis"
-	"maze_game_server/lib/log"
-	"maze_game_server/lib/nano/session"
-	"maze_game_server/pb/common/MazeAIBattle"
-	"maze_game_server/pb/common/MazeGame"
-	"maze_game_server/pb/server/MazeTempBuffSvr"
-	"maze_game_server/usecase/online"
-
 	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fklog"
 	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fkprometheus"
 	"go.uber.org/zap"
+	"maze_game_server/common/errors"
+	"maze_game_server/config/GMazeSkillInfoV8Cfg"
+	"maze_game_server/io/redis/passarearedis"
+	"maze_game_server/lib/log"
+	"maze_game_server/lib/nano/session"
+	"maze_game_server/module/mazeuserinfo"
+	"maze_game_server/pb/common/MazeAIBattle"
+	"maze_game_server/pb/common/MazeGame"
+	"maze_game_server/pb/server/MazeTempBuffSvr"
 )
 
 func (g *Game) OnEndAreaBattleRQ_10525_10526(s *session.Session, req *MazeGame.EndAreaBattleRQ) (err error) {
@@ -34,62 +29,42 @@ func (g *Game) OnEndAreaBattleRQ_10525_10526(s *session.Session, req *MazeGame.E
 
 	res.Header = req.Header
 	res.ErrInfo = errors.NO_ERROR
-	return err
-	//temp block logic error
-
 	userId := uint64(s.UID())
 
-	if req.GetStageId() <= 0 {
+	if req.GetStageId() <= 0 || req.GetAreaId() <= 0 {
 		logger.ErrorWF("OnEndAreaBattleRQ req invalid", zap.Any("req", req))
 		res.ErrInfo = errors.COMMON_ERROR_TIPS.Wrap("关卡id未设置")
 		return
 	}
-	tempBuffInfo, err := mazetempbuffredis.GetMazeTempBuff(logger, userId, req.GetStageId())
+
+	userInfo, err := mazeuserinfo.GetUserInfoV2(logger, userId)
 	if err != nil {
-		logger.ErrorWF("OnEndAreaBattleRQ GetMazeTempBuff failed", zap.Error(err), zap.Any("req", req))
+		logger.ErrorWF("OnEndAreaBattleRQ GetUserInfo fail", zap.Error(err))
+		res.ErrInfo = errors.MODULE_ERROR.ToInfo()
+		return
+	}
+	if userInfo.Barrier != req.GetStageId() {
+		logger.ErrorWF("OnEndAreaBattleRQ barrier err", zap.Any("req", req), zap.Any("barrier", userInfo.Barrier))
+		res.ErrInfo = errors.COMMON_ERROR_TIPS.Wrap("关卡id错误")
 		return
 	}
 
-	if tempBuffInfo == nil {
-		logger.InfoWF("OnEndAreaBattleRQ user tempBuffInfo is nil", zap.Any("req", req))
+	passArea, err := passarearedis.GetBarrierPassArea(logger, userId, req.GetStageId())
+	if err != nil {
+		logger.ErrorWF("OnEndAreaBattleRQ GetBarrierPassArea fail", zap.Error(err))
+		res.ErrInfo = errors.MODULE_ERROR.ToInfo()
 		return
 	}
+	passArea = append(passArea, &passarearedis.PassArea{
+		AreaId:    req.GetAreaId(),
+		AreaIndex: req.GetAreaIndex(),
+	})
 
-	err = mazetempbuffredis.DelMazeTempBuff(logger, userId, req.GetStageId())
+	err = passarearedis.SetBarrierPassArea(logger, userId, req.GetStageId(), passArea)
 	if err != nil {
-		logger.ErrorWF("OnEndAreaBattleRQ DelMazeTempBuff failed", zap.Error(err), zap.Any("req", req))
+		logger.ErrorWF("OnEndAreaBattleRQ SetBarrierPassArea fail", zap.Error(err))
+		res.ErrInfo = errors.MODULE_ERROR.ToInfo()
 		return
-	}
-
-	// 通知
-	// 删除临时buff武力属性
-	err = mazebuffinforedis.DelMazeBuffBySrc(logger, userId, constdef.MazeBuffSrcSelectBuffForce)
-	if err != nil {
-		logger.ErrorWF("OnEndAreaBattleRQ DelMazeBuffBySrc failed", zap.Uint64("userId", userId), zap.Error(err))
-		return
-	}
-	// 推送属性计算消息
-	calcAttrNotify := &structsdef.MazeCalcAttrNotifyMsg{
-		UserId: userId,
-		// FromServer: fmt.Sprintf("%d %s", fkconfig.EnvVal.ServerType, fkconfig.EnvVal.AppName),
-		ChgType: constdef.MazeBuffChgForceValue,
-		Session: "buff",
-		BuffSrc: constdef.MazeBuffSrcSelectBuffForce,
-	}
-	mazeattrcalcnotifyqueue.SendMazeAttrCalcNotify(logger, calcAttrNotify)
-
-	// 通知删除技能
-	equipSkillInfoChange, changed, err := GetTempBuffSkillInfoChange(logger, userId, tempBuffInfo)
-	if err != nil {
-		logger.ErrorWF("OnEndAreaBattleRQ GetTempBuffSkillInfoChange fail",
-			zap.Error(err),
-			zap.Uint64("userId", userId),
-			zap.Any("req", req),
-		)
-	} else if changed {
-		defer func() {
-			online.Push(logger, userId, 10510, equipSkillInfoChange)
-		}()
 	}
 
 	return nil

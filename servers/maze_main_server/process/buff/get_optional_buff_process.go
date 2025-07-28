@@ -46,12 +46,13 @@ func (b *Buff) GetOptionalMazeTempBuffListRQ_10435_10436(s *session.Session, req
 	res.Level = req.Level
 	res.Type = req.Type
 	res.AreaId = req.AreaId
+	res.AreaIndex = req.AreaIndex
 	defer func() {
 		err = s.Response(res)
 		logger.InfoWF("GetOptionalMazeTempBuffListRQ end", zap.Any("req", req), zap.Any("res", res),
 			zap.Duration("costTime", time.Now().Sub(start)))
 	}()
-
+	areaIndex := req.GetAreaIndex()
 	userId, stageId, level, buffType, areaId := uint64(s.UID()), req.GetStageId(), req.GetLevel(), int32(req.GetType()), req.GetAreaId()
 	if userId == 0 || stageId == 0 || level == 0 {
 		logger.WarnWF("GetOptionalMazeTempBuffListRQ args error", zap.Any("req", req))
@@ -88,7 +89,7 @@ func (b *Buff) GetOptionalMazeTempBuffListRQ_10435_10436(s *session.Session, req
 
 	if len(buffInfo.GetBuffSequence().GetSelectBuffList()) == 0 {
 		// 生成可选buff列表
-		errInfo := getOptionalBuffList(logger, userId, stageId, level, buffType, areaId, buffInfo)
+		errInfo := getOptionalBuffList(logger, userId, stageId, level, buffType, areaId, areaIndex, buffInfo)
 		if errInfo != nil {
 			logger.ErrorWF("GetOptionalMazeTempBuffListRQ getOptionalBuffList", zap.Int32("stageId", stageId),
 				zap.Any("info", buffInfo), zap.Any("errInfo", errInfo))
@@ -120,7 +121,7 @@ func (b *Buff) GetOptionalMazeTempBuffListRQ_10435_10436(s *session.Session, req
 }
 
 // 获取可选buff列表
-func getOptionalBuffList(logger fklog.FKLogI, userId uint64, stageId, level, buffType, areaId int32,
+func getOptionalBuffList(logger fklog.FKLogI, userId uint64, stageId, level, buffType, areaId, areaIndex int32,
 	buffInfo *MazeTempBuffSvr.TempBuffInfo) *MessageType.ErrorInfo {
 	if level < buffInfo.GetBuffSequence().GetIndex() {
 		logger.WarnWF("getOptionalBuffList level already select", zap.Int32("level", level),
@@ -190,6 +191,8 @@ func getOptionalBuffList(logger fklog.FKLogI, userId uint64, stageId, level, buf
 	}
 
 	buffInfo.BuffSequence.SelectBuffList = buffList
+	buffInfo.BuffSequence.AreaId = proto.Int32(areaId)
+	buffInfo.BuffSequence.AreaIndex = proto.Int32(areaIndex)
 	err = mazetempbuffredis.SetMazeTempBuff(logger, userId, stageId, buffInfo)
 	if err != nil {
 		logger.ErrorWF("getOptionalBuffList SetMazeTempBuff failed", zap.Int32("stageId", stageId),

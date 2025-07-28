@@ -118,7 +118,7 @@ func InitGM(logger fklog.FKLogI) {
 		}
 
 		var totalMap map[int32]int64
-		totalMap, buffInfo.TotalBuff = getTotalBuff(logger, buffInfo.GetSelectedBuff())
+		totalMap, buffInfo.TotalBuff = GetTotalBuff(logger, buffInfo.GetSelectedBuff())
 		// 更新buff信息
 		err = mazetempbuffredis.SetMazeTempBuff(logger, userId, stageId, buffInfo)
 		if err != nil {
