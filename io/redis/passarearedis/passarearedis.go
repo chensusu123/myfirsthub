@@ -37,12 +37,12 @@ func GetBarrierPassArea(logger fklog.FKLogI, userId uint64, barrierId int32) ([]
 	}
 
 	if err != nil {
-		logger.ErrorWF("GetMazeTempBuff GET", zap.String("key", key), zap.Error(err))
+		logger.ErrorWF("GetBarrierPassArea GET", zap.String("key", key), zap.Error(err))
 		return nil, err
 	}
 
 	var passAreas []*PassArea
-	err = serialize.Unmarshal(res, passAreas)
+	err = serialize.Unmarshal(res, &passAreas)
 	if err != nil {
 		logger.ErrorWF("GetBarrierPassArea Unmarshal", zap.String("key", key), zap.Error(err))
 		return nil, err
