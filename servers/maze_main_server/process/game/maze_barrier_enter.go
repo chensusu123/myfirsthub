@@ -102,11 +102,14 @@ func (g *Game) OnMazeBarrierEnterRQ_10447_10448(s *session.Session, req *MazeGam
 		mazeattrcalcnotifyqueue.SendMazeAttrCalcNotify(logger, calcAttrNotify)
 	} else {
 		// 刷一半的情况需要检查三选一是否有问题
-		err = checkTempBuff(logger, userId, req.GetBarrierId())
+		tempBuff, err := checkTempBuff(logger, userId, req.GetBarrierId())
 		if err != nil {
 			logger.ErrorWF("OnMazeBarrierEnterRQ checkTempBuff", zap.Error(err))
 			res.ErrInfo = errors.MODULE_ERROR.ToInfo()
-			return
+			return err
+		}
+		if tempBuff != nil && tempBuff.BuffSequence != nil {
+			res.EnergyLevel = tempBuff.BuffSequence.Index
 		}
 	}
 
@@ -361,21 +364,21 @@ func GetUserMoney(logger fklog.FKLogI, uid uint64) {
 }
 
 // 检查关卡的buff情况，一定要靠前，因为可能会有清除部分buff的情况
-func checkTempBuff(logger fklog.FKLogI, userId uint64, barrierId int32) error {
+func checkTempBuff(logger fklog.FKLogI, userId uint64, barrierId int32) (*MazeTempBuffSvr.TempBuffInfo, error) {
 	tempBuff, err := mazetempbuffredis.GetMazeTempBuff(logger, userId, barrierId)
 	if err != nil {
 		logger.ErrorWF("checkTempBuff GetMazeTempBuff fail", zap.Error(err))
-		return err
+		return nil, err
 	}
 	if tempBuff == nil || len(tempBuff.SelectedBuff) == 0 {
 		logger.InfoWF("checkTempBuff not need delete buff")
-		return nil
+		return nil, nil
 	}
 	// 已选择的buff不是0，就需要检查了
 	passArea, err := passarearedis.GetBarrierPassArea(logger, userId, barrierId)
 	if err != nil {
 		logger.ErrorWF("checkTempBuff GetBarrierPassArea fail", zap.Error(err))
-		return err
+		return nil, err
 	}
 	deleteBuffIds := make([]int32, 0)
 	j := 0
@@ -397,7 +400,7 @@ func checkTempBuff(logger fklog.FKLogI, userId uint64, barrierId int32) error {
 	selectBuffCount := len(tempBuff.SelectedBuff)
 	if len(deleteBuffIds) == 0 {
 		logger.InfoWF("checkTempBuff deleteBuffIds==0 not need delete buff")
-		return nil
+		return tempBuff, nil
 	}
 
 	// 有被清除掉的buff，那需要更新buff
@@ -410,7 +413,7 @@ func checkTempBuff(logger fklog.FKLogI, userId uint64, barrierId int32) error {
 	err = mazetempbuffredis.SetMazeTempBuff(logger, userId, barrierId, tempBuff)
 	if err != nil {
 		logger.ErrorWF("checkTempBuff SetMazeTempBuff failed", zap.Any("info", tempBuff), zap.Error(err))
-		return err
+		return nil, err
 	}
 
 	// 推送buff变化信息
@@ -448,5 +451,5 @@ func checkTempBuff(logger fklog.FKLogI, userId uint64, barrierId int32) error {
 
 	logger.InfoWF("checkTempBuff delete buff success ", zap.Any("info", tempBuff), zap.Any("deleteBuffIds", deleteBuffIds))
 
-	return nil
+	return tempBuff, nil
 }
