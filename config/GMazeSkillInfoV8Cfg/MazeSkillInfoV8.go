@@ -41,6 +41,7 @@ type MazeSkillInfoV8ConfigRow struct {
 	Second_target_damage     map[int32]int32 `json:"second_target_damage"`     // 非主目标直接伤害系数
 	Self_effect              []int32         `json:"self_effect"`              // 释放后自身效果
 	Target_effect            []int32         `json:"target_effect"`            // 释放后对目标效果
+	Summon_id                int32           `json:"summon_id"`                // 召唤物id（默认召唤1个）
 }
 
 // MazeSkillInfoV8Config from maze_skill_info_v8【迷宫-技能-技能信息】.xlsx maze_skill_info_v8
@@ -871,6 +872,20 @@ func (*gMazeSkillInfoV8Parser) Parse(logger fklog.FKLogI, data []string, row int
 			config.Target_effect = append(config.Target_effect, int32(tmp))
 		}
 	}
+
+	// parse column 27 summon_id : 召唤物id（默认召唤1个）
+	if data[27] != "" {
+		tmp, err = strconv.ParseInt(data[27], 10, 64)
+		if err != nil {
+			err = errors.New("parse field summon_id 召唤物id（默认召唤1个） to int32 failed")
+			logger.ErrorWF("parse field summon_id 召唤物id（默认召唤1个） to int32 failed.",
+				zap.String("xlsx", "maze_skill_info_v8【迷宫-技能-技能信息】.xlsx"), zap.String("sheet", "maze_skill_info_v8"),
+				zap.String("parse_data", data[27]),
+				zap.Error(err))
+			return
+		}
+		config.Summon_id = int32(tmp)
+	}
 	return
 }
 
@@ -902,6 +917,7 @@ var gMazeSkillInfoV8Fields = []string{
 	"second_target_damage",
 	"self_effect",
 	"target_effect",
+	"summon_id",
 }
 
 // LoadDataManual load data for test
