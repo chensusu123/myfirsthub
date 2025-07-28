@@ -15,7 +15,6 @@ import (
 // MazeBoxV8ConfigRow from maze_box_v8【迷宫-宝箱】.xlsx maze_box_v8
 type MazeBoxV8ConfigRow struct {
 	Id                 int32           `json:"id"`                 // 宝箱id
-	Level_id           string          `json:"level_id"`           // 关卡id
 	Award_equip        []int32         `json:"award_equip"`        // 装备奖励（非首次）
 	Drop_exp_num       map[int32]int64 `json:"drop_exp_num"`       // 冒险等级:掉落经验数量（非首次）
 	Drop_item          map[int32]int64 `json:"drop_item"`          // 宝箱掉落物品id：数量（非首次）
@@ -294,22 +293,17 @@ func (*gMazeBoxV8Parser) Parse(logger fklog.FKLogI, data []string, row interface
 		config.Id = int32(tmp)
 	}
 
-	// parse column 1 level_id : 关卡id
+	// parse column 1 award_equip : 装备奖励（非首次）
 	if data[1] != "" {
-		config.Level_id = data[1]
-	}
 
-	// parse column 2 award_equip : 装备奖励（非首次）
-	if data[2] != "" {
-
-		vals := strings.Split(data[2], ",")
+		vals := strings.Split(data[1], ",")
 		for k, v := range vals {
 			tmp, err = strconv.ParseInt(v, 10, 64)
 			if err != nil {
 				err = errors.New("parse array field award_equip 装备奖励（非首次） to []int32 failed")
 				logger.ErrorWF("parse array field award_equip 装备奖励（非首次） to []int32 failed.",
 					zap.String("xlsx", "maze_box_v8【迷宫-宝箱】.xlsx"), zap.String("sheet", "maze_box_v8"),
-					// zap.String("field_data",data[2]),
+					// zap.String("field_data",data[1]),
 					zap.String("parse_data", v), zap.Int("index", k),
 					zap.Error(err))
 				return
@@ -318,13 +312,13 @@ func (*gMazeBoxV8Parser) Parse(logger fklog.FKLogI, data []string, row interface
 		}
 	}
 
-	// parse column 3 drop_exp_num : 冒险等级:掉落经验数量（非首次）
-	if data[3] != "" {
+	// parse column 2 drop_exp_num : 冒险等级:掉落经验数量（非首次）
+	if data[2] != "" {
 
 		config.Drop_exp_num = make(map[int32]int64)
 		var key int32
 		var value int64
-		vals := strings.Split(data[3], "_")
+		vals := strings.Split(data[2], "_")
 		for k, val := range vals {
 			items := strings.Split(val, ":")
 			tmp, err = strconv.ParseInt(items[0], 10, 64)
@@ -332,7 +326,7 @@ func (*gMazeBoxV8Parser) Parse(logger fklog.FKLogI, data []string, row interface
 				err = errors.New("parse map field drop_exp_num 冒险等级:掉落经验数量（非首次） to key int32 failed")
 				logger.ErrorWF("parse map field drop_exp_num 冒险等级:掉落经验数量（非首次） to key int32 failed.",
 					zap.String("xlsx", "maze_box_v8【迷宫-宝箱】.xlsx"), zap.String("sheet", "maze_box_v8"),
-					// zap.String("field_data",data[3]),
+					// zap.String("field_data",data[2]),
 					zap.String("item_data", val), zap.Int("index", k),
 					zap.String("parse_data", items[0]),
 					zap.Error(err))
@@ -344,7 +338,7 @@ func (*gMazeBoxV8Parser) Parse(logger fklog.FKLogI, data []string, row interface
 				err = errors.New("parse map field drop_exp_num 冒险等级:掉落经验数量（非首次） to value int64 failed")
 				logger.ErrorWF("parse map field drop_exp_num 冒险等级:掉落经验数量（非首次） to value int64 failed.",
 					zap.String("xlsx", "maze_box_v8【迷宫-宝箱】.xlsx"), zap.String("sheet", "maze_box_v8"),
-					// zap.String("field_data",data[3]),
+					// zap.String("field_data",data[2]),
 					zap.String("item_data", val), zap.Int("index", k),
 					zap.String("parse_data", items[1]),
 					zap.Error(err))
@@ -355,13 +349,13 @@ func (*gMazeBoxV8Parser) Parse(logger fklog.FKLogI, data []string, row interface
 		}
 	}
 
-	// parse column 4 drop_item : 宝箱掉落物品id：数量（非首次）
-	if data[4] != "" {
+	// parse column 3 drop_item : 宝箱掉落物品id：数量（非首次）
+	if data[3] != "" {
 
 		config.Drop_item = make(map[int32]int64)
 		var key int32
 		var value int64
-		vals := strings.Split(data[4], "_")
+		vals := strings.Split(data[3], "_")
 		for k, val := range vals {
 			items := strings.Split(val, ":")
 			tmp, err = strconv.ParseInt(items[0], 10, 64)
@@ -369,7 +363,7 @@ func (*gMazeBoxV8Parser) Parse(logger fklog.FKLogI, data []string, row interface
 				err = errors.New("parse map field drop_item 宝箱掉落物品id：数量（非首次） to key int32 failed")
 				logger.ErrorWF("parse map field drop_item 宝箱掉落物品id：数量（非首次） to key int32 failed.",
 					zap.String("xlsx", "maze_box_v8【迷宫-宝箱】.xlsx"), zap.String("sheet", "maze_box_v8"),
-					// zap.String("field_data",data[4]),
+					// zap.String("field_data",data[3]),
 					zap.String("item_data", val), zap.Int("index", k),
 					zap.String("parse_data", items[0]),
 					zap.Error(err))
@@ -381,7 +375,7 @@ func (*gMazeBoxV8Parser) Parse(logger fklog.FKLogI, data []string, row interface
 				err = errors.New("parse map field drop_item 宝箱掉落物品id：数量（非首次） to value int64 failed")
 				logger.ErrorWF("parse map field drop_item 宝箱掉落物品id：数量（非首次） to value int64 failed.",
 					zap.String("xlsx", "maze_box_v8【迷宫-宝箱】.xlsx"), zap.String("sheet", "maze_box_v8"),
-					// zap.String("field_data",data[4]),
+					// zap.String("field_data",data[3]),
 					zap.String("item_data", val), zap.Int("index", k),
 					zap.String("parse_data", items[1]),
 					zap.Error(err))
@@ -392,31 +386,31 @@ func (*gMazeBoxV8Parser) Parse(logger fklog.FKLogI, data []string, row interface
 		}
 	}
 
-	// parse column 5 add_kongfu : 增加通关值
-	if data[5] != "" {
-		tmp, err = strconv.ParseInt(data[5], 10, 64)
+	// parse column 4 add_kongfu : 增加通关值
+	if data[4] != "" {
+		tmp, err = strconv.ParseInt(data[4], 10, 64)
 		if err != nil {
 			err = errors.New("parse field add_kongfu 增加通关值 to int32 failed")
 			logger.ErrorWF("parse field add_kongfu 增加通关值 to int32 failed.",
 				zap.String("xlsx", "maze_box_v8【迷宫-宝箱】.xlsx"), zap.String("sheet", "maze_box_v8"),
-				zap.String("parse_data", data[5]),
+				zap.String("parse_data", data[4]),
 				zap.Error(err))
 			return
 		}
 		config.Add_kongfu = int32(tmp)
 	}
 
-	// parse column 6 award_equip_first : 装备奖励（首次）
-	if data[6] != "" {
+	// parse column 5 award_equip_first : 装备奖励（首次）
+	if data[5] != "" {
 
-		vals := strings.Split(data[6], ",")
+		vals := strings.Split(data[5], ",")
 		for k, v := range vals {
 			tmp, err = strconv.ParseInt(v, 10, 64)
 			if err != nil {
 				err = errors.New("parse array field award_equip_first 装备奖励（首次） to []int32 failed")
 				logger.ErrorWF("parse array field award_equip_first 装备奖励（首次） to []int32 failed.",
 					zap.String("xlsx", "maze_box_v8【迷宫-宝箱】.xlsx"), zap.String("sheet", "maze_box_v8"),
-					// zap.String("field_data",data[6]),
+					// zap.String("field_data",data[5]),
 					zap.String("parse_data", v), zap.Int("index", k),
 					zap.Error(err))
 				return
@@ -425,13 +419,13 @@ func (*gMazeBoxV8Parser) Parse(logger fklog.FKLogI, data []string, row interface
 		}
 	}
 
-	// parse column 7 drop_exp_num_first : 冒险等级:掉落经验数量（首次）
-	if data[7] != "" {
+	// parse column 6 drop_exp_num_first : 冒险等级:掉落经验数量（首次）
+	if data[6] != "" {
 
 		config.Drop_exp_num_first = make(map[int32]int64)
 		var key int32
 		var value int64
-		vals := strings.Split(data[7], "_")
+		vals := strings.Split(data[6], "_")
 		for k, val := range vals {
 			items := strings.Split(val, ":")
 			tmp, err = strconv.ParseInt(items[0], 10, 64)
@@ -439,7 +433,7 @@ func (*gMazeBoxV8Parser) Parse(logger fklog.FKLogI, data []string, row interface
 				err = errors.New("parse map field drop_exp_num_first 冒险等级:掉落经验数量（首次） to key int32 failed")
 				logger.ErrorWF("parse map field drop_exp_num_first 冒险等级:掉落经验数量（首次） to key int32 failed.",
 					zap.String("xlsx", "maze_box_v8【迷宫-宝箱】.xlsx"), zap.String("sheet", "maze_box_v8"),
-					// zap.String("field_data",data[7]),
+					// zap.String("field_data",data[6]),
 					zap.String("item_data", val), zap.Int("index", k),
 					zap.String("parse_data", items[0]),
 					zap.Error(err))
@@ -451,7 +445,7 @@ func (*gMazeBoxV8Parser) Parse(logger fklog.FKLogI, data []string, row interface
 				err = errors.New("parse map field drop_exp_num_first 冒险等级:掉落经验数量（首次） to value int64 failed")
 				logger.ErrorWF("parse map field drop_exp_num_first 冒险等级:掉落经验数量（首次） to value int64 failed.",
 					zap.String("xlsx", "maze_box_v8【迷宫-宝箱】.xlsx"), zap.String("sheet", "maze_box_v8"),
-					// zap.String("field_data",data[7]),
+					// zap.String("field_data",data[6]),
 					zap.String("item_data", val), zap.Int("index", k),
 					zap.String("parse_data", items[1]),
 					zap.Error(err))
@@ -462,13 +456,13 @@ func (*gMazeBoxV8Parser) Parse(logger fklog.FKLogI, data []string, row interface
 		}
 	}
 
-	// parse column 8 drop_item_first : 宝箱掉落物品id：数量（首次）
-	if data[8] != "" {
+	// parse column 7 drop_item_first : 宝箱掉落物品id：数量（首次）
+	if data[7] != "" {
 
 		config.Drop_item_first = make(map[int32]int64)
 		var key int32
 		var value int64
-		vals := strings.Split(data[8], "_")
+		vals := strings.Split(data[7], "_")
 		for k, val := range vals {
 			items := strings.Split(val, ":")
 			tmp, err = strconv.ParseInt(items[0], 10, 64)
@@ -476,7 +470,7 @@ func (*gMazeBoxV8Parser) Parse(logger fklog.FKLogI, data []string, row interface
 				err = errors.New("parse map field drop_item_first 宝箱掉落物品id：数量（首次） to key int32 failed")
 				logger.ErrorWF("parse map field drop_item_first 宝箱掉落物品id：数量（首次） to key int32 failed.",
 					zap.String("xlsx", "maze_box_v8【迷宫-宝箱】.xlsx"), zap.String("sheet", "maze_box_v8"),
-					// zap.String("field_data",data[8]),
+					// zap.String("field_data",data[7]),
 					zap.String("item_data", val), zap.Int("index", k),
 					zap.String("parse_data", items[0]),
 					zap.Error(err))
@@ -488,7 +482,7 @@ func (*gMazeBoxV8Parser) Parse(logger fklog.FKLogI, data []string, row interface
 				err = errors.New("parse map field drop_item_first 宝箱掉落物品id：数量（首次） to value int64 failed")
 				logger.ErrorWF("parse map field drop_item_first 宝箱掉落物品id：数量（首次） to value int64 failed.",
 					zap.String("xlsx", "maze_box_v8【迷宫-宝箱】.xlsx"), zap.String("sheet", "maze_box_v8"),
-					// zap.String("field_data",data[8]),
+					// zap.String("field_data",data[7]),
 					zap.String("item_data", val), zap.Int("index", k),
 					zap.String("parse_data", items[1]),
 					zap.Error(err))
@@ -499,56 +493,56 @@ func (*gMazeBoxV8Parser) Parse(logger fklog.FKLogI, data []string, row interface
 		}
 	}
 
-	// parse column 9 res_type : 资源类型
-	if data[9] != "" {
-		tmp, err = strconv.ParseInt(data[9], 10, 64)
+	// parse column 8 res_type : 资源类型
+	if data[8] != "" {
+		tmp, err = strconv.ParseInt(data[8], 10, 64)
 		if err != nil {
 			err = errors.New("parse field res_type 资源类型 to int32 failed")
 			logger.ErrorWF("parse field res_type 资源类型 to int32 failed.",
 				zap.String("xlsx", "maze_box_v8【迷宫-宝箱】.xlsx"), zap.String("sheet", "maze_box_v8"),
-				zap.String("parse_data", data[9]),
+				zap.String("parse_data", data[8]),
 				zap.Error(err))
 			return
 		}
 		config.Res_type = int32(tmp)
 	}
 
-	// parse column 10 res_type_first : 资源类型（首次）
-	if data[10] != "" {
-		tmp, err = strconv.ParseInt(data[10], 10, 64)
+	// parse column 9 res_type_first : 资源类型（首次）
+	if data[9] != "" {
+		tmp, err = strconv.ParseInt(data[9], 10, 64)
 		if err != nil {
 			err = errors.New("parse field res_type_first 资源类型（首次） to int32 failed")
 			logger.ErrorWF("parse field res_type_first 资源类型（首次） to int32 failed.",
 				zap.String("xlsx", "maze_box_v8【迷宫-宝箱】.xlsx"), zap.String("sheet", "maze_box_v8"),
-				zap.String("parse_data", data[10]),
+				zap.String("parse_data", data[9]),
 				zap.Error(err))
 			return
 		}
 		config.Res_type_first = int32(tmp)
 	}
 
-	// parse column 11 res_id : 资源id
-	if data[11] != "" {
-		tmp, err = strconv.ParseInt(data[11], 10, 64)
+	// parse column 10 res_id : 资源id
+	if data[10] != "" {
+		tmp, err = strconv.ParseInt(data[10], 10, 64)
 		if err != nil {
 			err = errors.New("parse field res_id 资源id to int32 failed")
 			logger.ErrorWF("parse field res_id 资源id to int32 failed.",
 				zap.String("xlsx", "maze_box_v8【迷宫-宝箱】.xlsx"), zap.String("sheet", "maze_box_v8"),
-				zap.String("parse_data", data[11]),
+				zap.String("parse_data", data[10]),
 				zap.Error(err))
 			return
 		}
 		config.Res_id = int32(tmp)
 	}
 
-	// parse column 12 res_id_first : 资源id（首次）
-	if data[12] != "" {
-		tmp, err = strconv.ParseInt(data[12], 10, 64)
+	// parse column 11 res_id_first : 资源id（首次）
+	if data[11] != "" {
+		tmp, err = strconv.ParseInt(data[11], 10, 64)
 		if err != nil {
 			err = errors.New("parse field res_id_first 资源id（首次） to int32 failed")
 			logger.ErrorWF("parse field res_id_first 资源id（首次） to int32 failed.",
 				zap.String("xlsx", "maze_box_v8【迷宫-宝箱】.xlsx"), zap.String("sheet", "maze_box_v8"),
-				zap.String("parse_data", data[12]),
+				zap.String("parse_data", data[11]),
 				zap.Error(err))
 			return
 		}
@@ -559,7 +553,6 @@ func (*gMazeBoxV8Parser) Parse(logger fklog.FKLogI, data []string, row interface
 
 var gMazeBoxV8Fields = []string{
 	"id",
-	"level_id",
 	"award_equip",
 	"drop_exp_num",
 	"drop_item",
