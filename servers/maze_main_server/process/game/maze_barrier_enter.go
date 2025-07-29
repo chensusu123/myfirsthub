@@ -92,6 +92,8 @@ func (g *Game) OnMazeBarrierEnterRQ_10447_10448(s *session.Session, req *MazeGam
 		// 进入清临时buff
 		mazebarriertempbuffredis.ClearBarrierTempBuff(logger, userId, req.GetBarrierId())
 		mazebuffinforedis.DelMazeBuffBySrc(logger, userId, constdef.MazeBuffSrcSelectBuffForce)
+		// 清除通过的区域
+		passarearedis.DelBarrierPassArea(logger, userId, req.GetBarrierId())
 		// 推送属性计算消息
 		calcAttrNotify := &structsdef.MazeCalcAttrNotifyMsg{
 			UserId:  userId,

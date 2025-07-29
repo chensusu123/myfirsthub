@@ -37,14 +37,14 @@ func GetBarrierPassArea(logger fklog.FKLogI, userId uint64, barrierId int32) ([]
 	}
 
 	if err != nil {
-		logger.ErrorWF("GetBarrierPassArea GET", zap.String("key", key), zap.Error(err))
+		logger.ErrorWF("GetBarrierPassArea GET err", zap.String("key", key), zap.Error(err))
 		return nil, err
 	}
 
 	var passAreas []*PassArea
 	err = serialize.Unmarshal(res, &passAreas)
 	if err != nil {
-		logger.ErrorWF("GetBarrierPassArea Unmarshal", zap.String("key", key), zap.Error(err))
+		logger.ErrorWF("GetBarrierPassArea Unmarshal err", zap.String("key", key), zap.Error(err))
 		return nil, err
 	}
 	logger.DebugWF("GetBarrierPassArea end", zap.String("key", key), zap.Any("passAreas", passAreas))
@@ -61,10 +61,22 @@ func SetBarrierPassArea(logger fklog.FKLogI, userId uint64, barrierId int32, pas
 	}
 	_, err = gRedis.Do(context.Background(), "SET", key, data)
 	if err != nil {
-		logger.ErrorWF("SetBarrierPassArea", zap.String("key", key), zap.Any("passArea", passArea),
+		logger.ErrorWF("SetBarrierPassArea err", zap.String("key", key), zap.Any("passArea", passArea),
 			zap.Error(err))
 		return err
 	}
 	logger.InfoWF("SetBarrierPassArea end", zap.String("key", key), zap.Any("passArea", passArea))
+	return nil
+}
+
+// DelBarrierPassArea
+func DelBarrierPassArea(logger fklog.FKLogI, userId uint64, barrierId int32) (err error) {
+	key := getKey(userId, barrierId)
+	_, err = gRedis.Do(context.Background(), "DEL", key)
+	if err != nil {
+		logger.ErrorWF("DelBarrierPassArea err", zap.String("key", key), zap.Error(err))
+		return err
+	}
+	logger.InfoWF("DelBarrierPassArea end", zap.String("key", key))
 	return nil
 }
