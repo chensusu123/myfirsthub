@@ -55,6 +55,17 @@ func (g *Game) OnEndAreaBattleRQ_10525_10526(s *session.Session, req *MazeGame.E
 		res.ErrInfo = errors.MODULE_ERROR.ToInfo()
 		return
 	}
+	exist := false
+	for _, area := range passArea {
+		if area.AreaId == req.GetAreaId() && area.AreaIndex == req.GetAreaIndex() {
+			exist = true
+		}
+	}
+	if exist {
+		logger.InfoWF("OnEndAreaBattleRQ area already passed", zap.Int32("stageId", req.GetStageId()),
+			zap.Int32("areaId", req.GetAreaId()), zap.Int32("areaIndex", req.GetAreaIndex()))
+		return
+	}
 	passArea = append(passArea, &passarearedis.PassArea{
 		AreaId:    req.GetAreaId(),
 		AreaIndex: req.GetAreaIndex(),
