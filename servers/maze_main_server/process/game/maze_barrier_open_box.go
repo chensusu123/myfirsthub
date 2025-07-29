@@ -6,6 +6,7 @@ import (
 	"maze_game_server/common/errors"
 	"maze_game_server/common/function/addequip"
 	"maze_game_server/common/function/gentradeno"
+	"maze_game_server/config/GMazeBarriesV8Cfg"
 	"maze_game_server/config/GMazeBoxV8Cfg"
 	"maze_game_server/config/GMazeItemsV8Cfg"
 	"maze_game_server/io/redis/mazebarrieropstatusredis"
@@ -45,6 +46,13 @@ func (g *Game) OnBarrierOpenBoxRQ_10445_10446(s *session.Session, req *MazeGame.
 	if boxCfg == nil {
 		logger.ErrorWF("OnBarrierOpenBoxRQ get box cfg fail", zap.Any("boxId", req.GetBoxId()))
 		res.ErrInfo = errors.CONFIG_NOT_FOUND.ToInfo()
+		return
+	}
+
+	barrierCfg := GMazeBarriesV8Cfg.Get(req.GetBarrierId())
+	if barrierCfg == nil {
+		logger.ErrorWF("OnBarrierOpenBoxRQ barrier not found", zap.Any("boxId", req.GetBoxId()), zap.Any("barrierId", req.GetBarrierId()))
+		res.ErrInfo = errors.COMMON_ERROR_TIPS.Wrap("关卡配置不存在")
 		return
 	}
 
@@ -96,7 +104,14 @@ func (g *Game) OnBarrierOpenBoxRQ_10445_10446(s *session.Session, req *MazeGame.
 		}
 	}
 	if len(equip) > 0 {
-		_, err = addequip.AddEquipToBagWithOpdata(logger, userId, int32(MazeEquipSvr.ENUM_EQUIP_BAG_OP_TYPE_MAZE_EQUIP_BOX_AWARD), req.GetOpData(), tradeNo, equip)
+		opType := int32(MazeEquipSvr.ENUM_EQUIP_BAG_OP_TYPE_MAZE_EQUIP_BOX_AWARD)
+		for _, boxID := range barrierCfg.Box_ids {
+			if boxID == int32(req.GetBoxId()) {
+				opType = int32(MazeEquipSvr.ENUM_EQUIP_BAG_OP_TYPE_MAZE_EQUIP_DROP_ITEM_BOX_AWARD)
+				break
+			}
+		}
+		_, err = addequip.AddEquipToBagWithOpdata(logger, userId, opType, req.GetOpData(), tradeNo, equip)
 		if err != nil {
 			logger.ErrorWF("OnBarrierOpenBoxRQ addEquipToBag fail", zap.Error(err), zap.Any("optype", int32(MazeEquipSvr.ENUM_EQUIP_BAG_OP_TYPE_MAZE_EQUIP_BOX_AWARD)),
 				zap.Any("tradeNo", tradeNo), zap.Any("addEquip", equip))
