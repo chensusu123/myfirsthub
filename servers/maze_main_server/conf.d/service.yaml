@@ -31,4 +31,6 @@ service:
     add: "127.0.0.1:6379"
   - name: maze-game.redis
     add: "127.0.0.1:6379"
+  - name: friend.redis
+    add: "127.0.0.1:6379"
 

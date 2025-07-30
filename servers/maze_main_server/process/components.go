@@ -12,6 +12,7 @@ import (
 	"maze_game_server/servers/maze_main_server/process/equip"
 	"maze_game_server/servers/maze_main_server/process/equip_gm"
 	"maze_game_server/servers/maze_main_server/process/family"
+	"maze_game_server/servers/maze_main_server/process/friend"
 	"maze_game_server/servers/maze_main_server/process/game"
 	"maze_game_server/servers/maze_main_server/process/game/energy"
 	"maze_game_server/servers/maze_main_server/process/game/sweep"
@@ -31,22 +32,23 @@ func Components() (comps *component.Components, routes *codec.Routes) {
 	}
 
 	{
-		reg(auth.NewAuth())          // 验证组件
-		reg(game.NewGame())          // 关卡组件
-		reg(attr_calc.NewProperty()) // 人物属性
-		reg(energy.NewEnergy())      // 体力组件
-		reg(sweep.NewSweep())        // 扫荡组件
-		reg(buff.NewBuff())          // Buff组件
-		reg(collect.NewCollect())    // 挂机组件
-		reg(equip.NewEquip())        // 装备组件
-		reg(equip_gm.NewEquipGM())   // 装备批量操作组件
-		reg(item.NewItem())          // 道具组件
-		reg(card.NewCard())          // 月卡
-		reg(rob.NewRob())            // 掠夺
-		reg(interact.NewInteract())  // 交互
-		reg(pay.NewPay())            // 支付
-		reg(family.NewFamily())      // 家族组件
-		reg(alliance.NewAlliance())  // 联盟组件
+		reg(auth.NewAuth())              // 验证组件
+		reg(game.NewGame())              // 关卡组件
+		reg(attr_calc.NewProperty())     // 人物属性
+		reg(energy.NewEnergy())          // 体力组件
+		reg(sweep.NewSweep())            // 扫荡组件
+		reg(buff.NewBuff())              // Buff组件
+		reg(collect.NewCollect())        // 挂机组件
+		reg(equip.NewEquip())            // 装备组件
+		reg(equip_gm.NewEquipGM())       // 装备批量操作组件
+		reg(item.NewItem())              // 道具组件
+		reg(card.NewCard())              // 月卡
+		reg(rob.NewRob())                // 掠夺
+		reg(interact.NewInteract())      // 交互
+		reg(pay.NewPay())                // 支付
+		reg(family.NewFamily())          // 家族组件
+		reg(alliance.NewAlliance())      // 联盟组件
+		reg(friend.NewFriendComponent()) // 好友
 	}
 
 	return

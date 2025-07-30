@@ -82,3 +82,48 @@ func Test_randomBuff(t *testing.T) {
 
 	time.Sleep(time.Second)
 }
+
+func TestGetOptionalBuffList(t *testing.T) {
+	var userId uint64 = 40000007
+	var stageId int32 = 12
+	var level int32 = 5
+	var buffType int32 = 1
+	var areaId int32 = 120001
+	buffInfo := &MazeTempBuffSvr.TempBuffInfo{
+		BuffSequence: &MazeTempBuffSvr.BuffSequence{
+			Index: proto.Int32(5),
+		},
+		TotalBuff: []*MazeTempBuffSvr.TotalBuffInfo{
+			{
+				BuffId:    proto.Int32(9201),
+				BuffValue: proto.Int64(9000),
+			},
+			{
+				BuffId:    proto.Int32(3060001),
+				BuffValue: proto.Int64(22000),
+			},
+			{
+				BuffId:    proto.Int32(3041501),
+				BuffValue: proto.Int64(3),
+			},
+			{
+				BuffId:    proto.Int32(3060000),
+				BuffValue: proto.Int64(1),
+			},
+			{
+				BuffId:    proto.Int32(7000302),
+				BuffValue: proto.Int64(5000),
+			},
+		},
+		SelectedBuff: []*MazeTempBuffSvr.SelectedBuffInfo{
+			{BuffId: proto.Int32(700100001), Level: proto.Int32(2), Type: proto.Int32(1)},
+			{BuffId: proto.Int32(700100101), Level: proto.Int32(3), Type: proto.Int32(1)},
+			{BuffId: proto.Int32(700100102), Level: proto.Int32(4), Type: proto.Int32(1)},
+		},
+	}
+	errInfo := getOptionalBuffList(gTestLogger, userId, stageId, level, buffType, areaId, buffInfo)
+	if errInfo != nil {
+		gTestLogger.ErrorWF("GetOptionalMazeTempBuffListRQ getOptionalBuffList", zap.Int32("stageId", stageId),
+			zap.Any("info", buffInfo), zap.Any("errInfo", errInfo))
+	}
+}

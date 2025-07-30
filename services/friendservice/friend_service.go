@@ -1,0 +1,47 @@
+package friendservice
+
+import (
+	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fklog"
+	"maze_game_server/common/errors"
+	"maze_game_server/model/friendmodel"
+)
+
+// 外部系统可调用方法
+type FriendService interface {
+	// 好友请求
+	AddFriendRequest(logger fklog.FKLogI, fromID, toID uint64) *errors.CodeError
+	// 同意好友请求   同意后会把双方的申请记录删除
+	AcceptFriendRequest(logger fklog.FKLogI, userId, toID uint64) *errors.CodeError
+	// 拒绝好友请求   拒绝后能看见拒绝信息
+	RejectFriendRequest(logger fklog.FKLogI, userId, toID uint64) *errors.CodeError
+	// 好友列表
+	FriendList(logger fklog.FKLogI, userId uint64, page, pageSize int32) ([]*friendmodel.FriendInfo, *errors.CodeError)
+	// 添加到黑名单   会把好友和好友申请记录都删除
+	AddBlacklist(logger fklog.FKLogI, userID, toUserID uint64) *errors.CodeError
+	// 移除黑名单
+	RemoveBlacklist(logger fklog.FKLogI, userID, toId uint64) *errors.CodeError
+	// 移除好友
+	RemoveFriend(logger fklog.FKLogI, userId, toId uint64) *errors.CodeError
+	// 收到的好友请求列表  申请列表30天清除
+	ReceiveFriendRequestList(logger fklog.FKLogI, userId uint64, page, pageSize int32) ([]*friendmodel.ReceiveFriendRequestInfo, *errors.CodeError)
+	// 发送的好友请求列表  发送列表30天清除
+	SendFriendRequestList(logger fklog.FKLogI, userId uint64, page, pageSize int32) ([]*friendmodel.SendFriendRequestInfo, *errors.CodeError)
+	// 黑名单列表
+	Blacklist(logger fklog.FKLogI, userId uint64, page, pageSize int32) ([]*friendmodel.BlacklistInfo, *errors.CodeError)
+	// 删除用户全部的好友, 发送的申请, 收到的申请, 黑名单
+	DeleteUserAll(logger fklog.FKLogI, userId uint64) error
+}
+
+// GlobalFriendService 好友服务可用全局唯一对象
+var GlobalFriendService FriendService
+
+func init() {
+	GlobalFriendService = newFriendService()
+}
+
+type service struct {
+}
+
+func newFriendService() FriendService {
+	return &service{}
+}
