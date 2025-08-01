@@ -133,6 +133,8 @@ func GetUserBattleSkillInfo(logger fklog.FKLogI, skillId int32, attrMap map[int3
 		SecondTargetDamageRates:      GetElementAttrValue(skillCfg.Second_target_damage, skillCfg.Damage_element_adjust, attrMap),
 		Priority:                     proto.Int32(skillCfg.Priority),
 		SummonId:                     proto.Int32(skillCfg.Summon_id),
+		Duration:                     GetSkillAttr(skillCfg.Duration, attrMap),
+		Interval:                     GetSkillAttr(skillCfg.Interval, attrMap),
 	}
 	// 技能触发时机
 	skillInfo.ReleaseTime = proto.Int32(skillCfg.Auto_release_time)
