@@ -14,9 +14,10 @@ import (
 
 // MazeEnergyAffixFrontV8ConfigRow from maze_energy_affix_front_v8【迷宫-能力词条-前置词条组】.xlsx maze_energy_affix_front_v8
 type MazeEnergyAffixFrontV8ConfigRow struct {
-	Order        int32   `json:"order"`        // 词条前置组id
-	Affix_id_set []int32 `json:"affix_id_set"` // 词条组id
-	Must_num     int32   `json:"must_num"`     // 必须拥有的词条数
+	Order           int32           `json:"order"`           // 词条前置组id
+	Affix_id_set    []int32         `json:"affix_id_set"`    // 词条组id
+	Must_num        int32           `json:"must_num"`        // 必须拥有的词条数
+	Affix_group_num map[int32]int32 `json:"affix_group_num"` // 词条前置所需词条组id:总数量
 }
 
 // MazeEnergyAffixFrontV8Config from maze_energy_affix_front_v8【迷宫-能力词条-前置词条组】.xlsx maze_energy_affix_front_v8
@@ -316,6 +317,43 @@ func (*gMazeEnergyAffixFrontV8Parser) Parse(logger fklog.FKLogI, data []string, 
 		}
 		config.Must_num = int32(tmp)
 	}
+
+	// parse column 3 affix_group_num : 词条前置所需词条组id:总数量
+	if data[3] != "" {
+
+		config.Affix_group_num = make(map[int32]int32)
+		var key int32
+		var value int32
+		vals := strings.Split(data[3], "_")
+		for k, val := range vals {
+			items := strings.Split(val, ":")
+			tmp, err = strconv.ParseInt(items[0], 10, 64)
+			if err != nil {
+				err = errors.New("parse map field affix_group_num 词条前置所需词条组id:总数量 to key int32 failed")
+				logger.ErrorWF("parse map field affix_group_num 词条前置所需词条组id:总数量 to key int32 failed.",
+					zap.String("xlsx", "maze_energy_affix_front_v8【迷宫-能力词条-前置词条组】.xlsx"), zap.String("sheet", "maze_energy_affix_front_v8"),
+					// zap.String("field_data",data[3]),
+					zap.String("item_data", val), zap.Int("index", k),
+					zap.String("parse_data", items[0]),
+					zap.Error(err))
+				return
+			}
+			key = int32(tmp)
+			tmp, err = strconv.ParseInt(items[1], 10, 64)
+			if err != nil {
+				err = errors.New("parse map field affix_group_num 词条前置所需词条组id:总数量 to value int32 failed")
+				logger.ErrorWF("parse map field affix_group_num 词条前置所需词条组id:总数量 to value int32 failed.",
+					zap.String("xlsx", "maze_energy_affix_front_v8【迷宫-能力词条-前置词条组】.xlsx"), zap.String("sheet", "maze_energy_affix_front_v8"),
+					// zap.String("field_data",data[3]),
+					zap.String("item_data", val), zap.Int("index", k),
+					zap.String("parse_data", items[1]),
+					zap.Error(err))
+				return
+			}
+			value = int32(tmp)
+			config.Affix_group_num[key] = value
+		}
+	}
 	return
 }
 
@@ -323,6 +361,7 @@ var gMazeEnergyAffixFrontV8Fields = []string{
 	"order",
 	"affix_id_set",
 	"must_num",
+	"affix_group_num",
 }
 
 // LoadDataManual load data for test
