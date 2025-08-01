@@ -44,6 +44,7 @@ type MazeSkillInfoV8ConfigRow struct {
 	Summon_id                int32           `json:"summon_id"`                // 召唤物id（默认召唤1个）
 	Duration                 map[int32]int32 `json:"duration"`                 // 技能持续时间（毫秒）
 	Interval                 map[int32]int32 `json:"interval"`                 // 技能伤害或效果生效间隔（毫秒）
+	Damage_adjustment        map[int32]int32 `json:"damage_adjustment"`        // 每次造成伤害后的伤害调整系数
 }
 
 // MazeSkillInfoV8Config from maze_skill_info_v8【迷宫-技能-技能信息】.xlsx maze_skill_info_v8
@@ -962,6 +963,43 @@ func (*gMazeSkillInfoV8Parser) Parse(logger fklog.FKLogI, data []string, row int
 			config.Interval[key] = value
 		}
 	}
+
+	// parse column 30 damage_adjustment : 每次造成伤害后的伤害调整系数
+	if data[30] != "" {
+
+		config.Damage_adjustment = make(map[int32]int32)
+		var key int32
+		var value int32
+		vals := strings.Split(data[30], "_")
+		for k, val := range vals {
+			items := strings.Split(val, ":")
+			tmp, err = strconv.ParseInt(items[0], 10, 64)
+			if err != nil {
+				err = errors.New("parse map field damage_adjustment 每次造成伤害后的伤害调整系数 to key int32 failed")
+				logger.ErrorWF("parse map field damage_adjustment 每次造成伤害后的伤害调整系数 to key int32 failed.",
+					zap.String("xlsx", "maze_skill_info_v8【迷宫-技能-技能信息】.xlsx"), zap.String("sheet", "maze_skill_info_v8"),
+					// zap.String("field_data",data[30]),
+					zap.String("item_data", val), zap.Int("index", k),
+					zap.String("parse_data", items[0]),
+					zap.Error(err))
+				return
+			}
+			key = int32(tmp)
+			tmp, err = strconv.ParseInt(items[1], 10, 64)
+			if err != nil {
+				err = errors.New("parse map field damage_adjustment 每次造成伤害后的伤害调整系数 to value int32 failed")
+				logger.ErrorWF("parse map field damage_adjustment 每次造成伤害后的伤害调整系数 to value int32 failed.",
+					zap.String("xlsx", "maze_skill_info_v8【迷宫-技能-技能信息】.xlsx"), zap.String("sheet", "maze_skill_info_v8"),
+					// zap.String("field_data",data[30]),
+					zap.String("item_data", val), zap.Int("index", k),
+					zap.String("parse_data", items[1]),
+					zap.Error(err))
+				return
+			}
+			value = int32(tmp)
+			config.Damage_adjustment[key] = value
+		}
+	}
 	return
 }
 
@@ -996,6 +1034,7 @@ var gMazeSkillInfoV8Fields = []string{
 	"summon_id",
 	"duration",
 	"interval",
+	"damage_adjustment",
 }
 
 // LoadDataManual load data for test
