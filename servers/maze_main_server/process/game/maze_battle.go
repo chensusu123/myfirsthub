@@ -469,6 +469,7 @@ func GetUserBattleSkillInfo(logger fklog.FKLogI, skillId int32, attrMap map[int3
 		SummonId:                     proto.Int32(skillCfg.Summon_id),
 		Duration:                     GetSkillAttr(skillCfg.Duration, attrMap),
 		Interval:                     GetSkillAttr(skillCfg.Interval, attrMap),
+		DamageAdjustment:             GetSkillAttr(skillCfg.Damage_adjustment, attrMap),
 	}
 	// 技能触发时机
 	skillInfo.ReleaseTime = proto.Int32(skillCfg.Auto_release_time)
@@ -674,6 +675,7 @@ func GetFoeBattleSkillInfo(logger fklog.FKLogI, skillId int32, attrMap map[int32
 		SummonId:                     proto.Int32(skillCfg.Summon_id),
 		Duration:                     GetSkillAttr(skillCfg.Duration, attrMap),
 		Interval:                     GetSkillAttr(skillCfg.Interval, attrMap),
+		DamageAdjustment:             GetSkillAttr(skillCfg.Damage_adjustment, attrMap),
 	}
 	// 技能触发时机
 	skillInfo.ReleaseTime = proto.Int32(skillCfg.Auto_release_time)
