@@ -7,9 +7,15 @@ import (
 	"gitlab.ifreetalk.com/maze-plate/freetk/fkutil"
 	"go.uber.org/zap"
 	"google.golang.org/protobuf/proto"
+	"maze_game_server/excel/mazeenergyaffixlvv8config"
+	"maze_game_server/io/kafka/mazetempbuffchgmsg"
+	"maze_game_server/model/tempbuffmodel"
 	"maze_game_server/module/itemmodule"
 	"maze_game_server/pb/common/MazeCommon"
+	"maze_game_server/services/tempbuffservice"
 	"net/http"
+	"sort"
+	"strings"
 )
 
 /**
@@ -39,113 +45,121 @@ func SafeHttpRegister(logger fklog.FKLogI, pattern string, handler func(http.Res
 func InitGM(logger fklog.FKLogI) {
 	// 设置buff
 	SafeHttpRegister(logger, "/setMazeTempBuff", func(writer http.ResponseWriter, request *http.Request) {
-		_, _ = writer.Write([]byte(fmt.Sprintf("暂时不支持设置buff， 请找开发重新开发")))
 		// 外网线上环境不允许使用GM
-		//request.ParseForm()
-		//userId := fkutil.ToUint64(request.Form.Get("userid"))
-		//stageId := fkutil.ToInt32(request.Form.Get("stageId"))
-		//buffs := request.Form.Get("buffs")
-		//logger.SetUid(userId)
-		//var buffList []int32
-		//for _, str := range strings.Split(buffs, ",") {
-		//	if buff := fkutil.ToInt32(str); buff != 0 {
-		//		buffList = append(buffList, buff)
-		//	}
-		//}
-		//
-		//sort.Slice(buffList, func(i, j int) bool {
-		//	return buffList[i] < buffList[j]
-		//})
-		//
-		//if userId == 0 || stageId == 0 || len(buffs) == 0 {
-		//	logger.WarnWF("setMazeTempBuff args is error")
-		//	_, _ = writer.Write([]byte("set maze temp buff args is error"))
-		//	return
-		//}
-		//
-		//logger.InfoWF("setMazeTempBuff start", zap.Uint64("userId", userId),
-		//	zap.Int32("stageId", stageId), zap.Int32s("buffList", buffList))
-		//
-		//buffInfo, err := tempbuffmodel.NewTempBuffInfoModel(logger, userId, stageId)
-		//if err != nil {
-		//	logger.ErrorWF("setMazeTempBuff GetMazeTempBuff", zap.Error(err))
-		//	_, _ = writer.Write([]byte("get user buff failed"))
-		//	return
-		//}
-		//
-		//if buffInfo == nil || buffInfo.BuffSequence == nil {
-		//	buffInfo = &tempbuffmodel.TempBuffInfoModel{
-		//		BuffSequence: &tempbuffmodel.BuffSequence{
-		//			Index: 1,
-		//		},
-		//	}
-		//}
-		//
-		//// 校验选择的buff
-		//buffMap := make(map[int32]int32)
-		//for _, info := range buffInfo.SelectedBuff {
-		//	buffMap[info.BuffId] += 1
-		//}
-		//
-		//var errs []string
-		//var successList, failedList []string
-		//for _, buffId := range buffList {
-		//	buffWeight, err := getOptionBuffWeightInfo(buffId, buffMap)
-		//	if err != nil {
-		//		failedList = append(failedList, fmt.Sprintf("%d", buffId))
-		//		errs = append(errs, err.Error())
-		//		continue
-		//	}
-		//
-		//	_ = buffWeight
-		//
-		//	buffInfo.SelectedBuff = append(buffInfo.SelectedBuff, &tempbuffmodel.SelectedBuffInfo{
-		//		BuffId: buffId,
-		//	})
-		//	successList = append(successList, fmt.Sprintf("%d", buffId))
-		//	buffMap[buffId] += 1
-		//}
-		//
-		//if len(successList) == 0 {
-		//	logger.WarnWF("setMazeTempBuff optionalList is nil")
-		//	_, _ = writer.Write([]byte("not have optional buff, failed buff:" + strings.Join(failedList, ",") + " errs:" + strings.Join(errs, ",")))
-		//	return
-		//}
-		//
-		//var totalMap map[int32]int64
-		//totalMap, buffInfo.TotalBuff = GetTotalBuff(logger, buffInfo.GetSelectedBuff())
-		//// 更新buff信息
-		//err = mazetempbuffredis.SetMazeTempBuff(logger, userId, stageId, buffInfo)
-		//if err != nil {
-		//	logger.ErrorWF("setMazeTempBuff SetMazeTempBuff failed", zap.Any("info", buffInfo), zap.Error(err))
-		//	_, _ = writer.Write([]byte("save buff failed"))
-		//	return
-		//}
-		//
-		//// 推送buff变化信息
-		//msg := &mazetempbuffchgmsg.MazeTempBuffChangeMsg{
-		//	UserId:  userId,
-		//	StageId: stageId,
-		//	ChgType: 1,
-		//	ChgDesc: "gm添加buff",
-		//}
-		//
-		//// 计算buff变化
-		//chgAttrs := make([]*mazetempbuffchgmsg.AttrChgInfo, 0, len(totalMap))
-		//for id, value := range totalMap {
-		//	chgAttrs = append(chgAttrs, &mazetempbuffchgmsg.AttrChgInfo{
-		//		AttrId: id,
-		//		OldVal: value,
-		//		CurVal: value,
-		//	})
-		//}
-		//
-		//msg.ChgAttrs = chgAttrs
-		//_ = mazetempbuffchgmsg.PushTempBuffChangeMsg(logger, msg)
-		//_, _ = writer.Write([]byte("set success buff:" + strings.Join(successList, ",")))
-		//if len(failedList) > 0 {
-		//	_, _ = writer.Write([]byte("failed buff:" + strings.Join(failedList, ",")))
-		//}
+		request.ParseForm()
+		userId := fkutil.ToUint64(request.Form.Get("userid"))
+		stageId := fkutil.ToInt32(request.Form.Get("stageId"))
+		buffs := request.Form.Get("buffs")
+		logger.SetUid(userId)
+		var buffList []int32
+		for _, str := range strings.Split(buffs, ",") {
+			if buff := fkutil.ToInt32(str); buff != 0 {
+				buffList = append(buffList, buff)
+			}
+		}
+
+		sort.Slice(buffList, func(i, j int) bool {
+			return buffList[i] < buffList[j]
+		})
+
+		if userId == 0 || stageId == 0 || len(buffs) == 0 {
+			logger.WarnWF("setMazeTempBuff args is error")
+			_, _ = writer.Write([]byte("set maze temp buff args is error"))
+			return
+		}
+
+		logger.InfoWF("setMazeTempBuff start", zap.Uint64("userId", userId),
+			zap.Int32("stageId", stageId), zap.Int32s("buffList", buffList))
+		buffInfo, err := tempbuffservice.GlobalTempBuffService.GetTempBuffInfo(logger, userId, stageId)
+		if err != nil {
+			logger.ErrorWF("setMazeTempBuff GetMazeTempBuff", zap.Error(err))
+			_, _ = writer.Write([]byte("get user buff failed"))
+			return
+		}
+
+		if buffInfo == nil || buffInfo.BuffSequence == nil {
+			buffInfo = &tempbuffmodel.TempBuffInfoModel{
+				BuffSequence: &tempbuffmodel.BuffSequence{
+					Level: 1,
+				},
+			}
+		}
+
+		// 统计词条已经选择的次数
+		selectedBuffMap := make(map[int32]int32)
+		for _, info := range buffInfo.SelectedBuff {
+			selectedBuffMap[info.BuffId] += 1
+		}
+		// 统计词条组以及选择的次数
+		selectedBuffGroupMap := make(map[int32]int32)
+		for _, i := range buffInfo.SelectedBuff {
+			buffConfig := mazeenergyaffixlvv8config.GetAffixConfig(i.BuffId)
+			if buffConfig == nil {
+				logger.WarnWF("createOptionalBuffList GetAffixConfig is nil", zap.Int32("buffId", i.BuffId))
+				continue
+			}
+			selectedBuffGroupMap[buffConfig.Affix_group_id] += 1
+		}
+
+		var errs []string
+		var successList, failedList []string
+		for _, buffId := range buffList {
+			buffWeight := tempbuffservice.GlobalTempBuffService.GetOptionBuffWeightInfo(logger, buffId, selectedBuffMap, selectedBuffGroupMap)
+			if err != nil {
+				failedList = append(failedList, fmt.Sprintf("%d", buffId))
+				errs = append(errs, err.Error())
+				continue
+			}
+
+			_ = buffWeight
+
+			buffInfo.SelectedBuff = append(buffInfo.SelectedBuff, &tempbuffmodel.SelectedBuffInfo{
+				BuffId: buffId,
+			})
+			successList = append(successList, fmt.Sprintf("%d", buffId))
+			selectedBuffMap[buffId] += 1
+		}
+
+		if len(successList) == 0 {
+			logger.WarnWF("setMazeTempBuff optionalList is nil")
+			_, _ = writer.Write([]byte("not have optional buff, failed buff:" + strings.Join(failedList, ",") + " errs:" + strings.Join(errs, ",")))
+			return
+		}
+
+		var totalMap map[int32]int64
+		totalMap, buffInfo.TotalBuff = tempbuffservice.GlobalTempBuffService.GetTotalBuff(logger, buffInfo.SelectedBuff)
+		// 更新buff信息
+		err = buffInfo.Save(logger, userId, stageId)
+		if err != nil {
+			logger.ErrorWF("setMazeTempBuff SetMazeTempBuff failed", zap.Any("info", buffInfo), zap.Error(err))
+			_, _ = writer.Write([]byte("save buff failed"))
+			return
+		}
+
+		// 推送buff变化信息
+		msg := &mazetempbuffchgmsg.MazeTempBuffChangeMsg{
+			UserId:  userId,
+			StageId: stageId,
+			ChgType: 1,
+			ChgDesc: "gm添加buff",
+		}
+
+		// 计算buff变化
+		chgAttrs := make([]*mazetempbuffchgmsg.AttrChgInfo, 0, len(totalMap))
+		for id, value := range totalMap {
+			chgAttrs = append(chgAttrs, &mazetempbuffchgmsg.AttrChgInfo{
+				AttrId: id,
+				OldVal: value,
+				CurVal: value,
+			})
+		}
+
+		msg.ChgAttrs = chgAttrs
+		_ = mazetempbuffchgmsg.PushTempBuffChangeMsg(logger, msg)
+		_, _ = writer.Write([]byte("set success buff:" + strings.Join(successList, ",")))
+		if len(failedList) > 0 {
+			_, _ = writer.Write([]byte("failed buff:" + strings.Join(failedList, ",")))
+		}
 
 		// // buff中心
 		// forceAttr, err := GetSelectBuffForceAttr(buffInfo.TotalBuff)

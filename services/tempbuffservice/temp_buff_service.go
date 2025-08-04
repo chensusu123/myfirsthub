@@ -31,6 +31,12 @@ type TempBuffService interface {
 
 	// 获取临时buff信息
 	GetTempBuffInfo(logger fklog.FKLogI, userID uint64, stageId int32) (*tempbuffmodel.TempBuffInfoModel, error)
+
+	// 获取buff权重
+	GetOptionBuffWeightInfo(logger fklog.FKLogI, buffId int32, selectedBuffMap, selectedBuffGroupMap map[int32]int32) *WeightInfo
+
+	// 根据选择的buff获取全部buff属性
+	GetTotalBuff(logger fklog.FKLogI, buffList []*tempbuffmodel.SelectedBuffInfo) (map[int32]int64, []*tempbuffmodel.TotalBuffInfo)
 }
 
 // GlobalTempBuffService 临时buff可用全局唯一对象

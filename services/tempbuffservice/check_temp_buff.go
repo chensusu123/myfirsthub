@@ -54,7 +54,7 @@ func (s *service) CheckTempBuff(logger fklog.FKLogI, userId uint64, barrierId in
 		Level: int32(selectBuffCount) + 1,
 	}
 	var totalMap map[int32]int64
-	totalMap, tempBuff.TotalBuff = s.getTotalBuff(logger, tempBuff.SelectedBuff)
+	totalMap, tempBuff.TotalBuff = s.GetTotalBuff(logger, tempBuff.SelectedBuff)
 	// 更新buff信息
 	err = tempBuff.Save(logger, userId, barrierId)
 	if err != nil {

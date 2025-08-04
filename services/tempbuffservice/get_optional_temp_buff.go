@@ -331,7 +331,7 @@ func (s *service) filterBuffList(logger fklog.FKLogI, optionalMap map[int32]stru
 			continue
 		}
 
-		buffWeight := s.getOptionBuffWeightInfo(logger, buffId, selectedBuffMap, selectedBuffGroupMap)
+		buffWeight := s.GetOptionBuffWeightInfo(logger, buffId, selectedBuffMap, selectedBuffGroupMap)
 		if buffWeight == nil {
 			continue
 		}
@@ -349,7 +349,7 @@ func (s *service) filterBuffList(logger fklog.FKLogI, optionalMap map[int32]stru
 			continue
 		}
 
-		buffWeight := s.getOptionBuffWeightInfo(logger, buffId, selectedBuffMap, selectedBuffGroupMap)
+		buffWeight := s.GetOptionBuffWeightInfo(logger, buffId, selectedBuffMap, selectedBuffGroupMap)
 		if buffWeight == nil {
 			continue
 		}
@@ -362,7 +362,7 @@ func (s *service) filterBuffList(logger fklog.FKLogI, optionalMap map[int32]stru
 }
 
 // 检查buff是否满足可选条件， 获取可选buff的权重信息
-func (s *service) getOptionBuffWeightInfo(logger fklog.FKLogI, buffId int32, selectedBuffMap, selectedBuffGroupMap map[int32]int32) *WeightInfo {
+func (s *service) GetOptionBuffWeightInfo(logger fklog.FKLogI, buffId int32, selectedBuffMap, selectedBuffGroupMap map[int32]int32) *WeightInfo {
 	buffConfig := mazeenergyaffixlvv8config.GetAffixConfig(buffId)
 	if buffConfig == nil {
 		logger.WarnWF("getOptionBuffWeightInfo buffConfig is nil", zap.Int32("buffId", buffId))

@@ -79,7 +79,7 @@ func (s *service) updateBuffInfo(logger fklog.FKLogI, userId uint64, stageId, le
 	})
 
 	var totalMap map[int32]int64
-	totalMap, buffInfo.TotalBuff = s.getTotalBuff(logger, buffInfo.SelectedBuff)
+	totalMap, buffInfo.TotalBuff = s.GetTotalBuff(logger, buffInfo.SelectedBuff)
 	// 更新buff信息
 	err := buffInfo.Save(logger, userId, stageId)
 	if err != nil {
@@ -148,7 +148,7 @@ func (s *service) TempBuffChangeSync(logger fklog.FKLogI, userId uint64, buffInf
 	return nil
 }
 
-func (s *service) getTotalBuff(logger fklog.FKLogI, buffList []*tempbuffmodel.SelectedBuffInfo) (
+func (s *service) GetTotalBuff(logger fklog.FKLogI, buffList []*tempbuffmodel.SelectedBuffInfo) (
 	map[int32]int64, []*tempbuffmodel.TotalBuffInfo) {
 	totalMap := make(map[int32]int64)
 	for _, info := range buffList {
