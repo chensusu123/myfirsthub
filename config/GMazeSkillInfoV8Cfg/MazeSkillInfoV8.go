@@ -45,6 +45,7 @@ type MazeSkillInfoV8ConfigRow struct {
 	Duration                 map[int32]int32 `json:"duration"`                 // 技能持续时间（毫秒）
 	Interval                 map[int32]int32 `json:"interval"`                 // 技能伤害或效果生效间隔（毫秒）
 	Damage_adjustment        map[int32]int32 `json:"damage_adjustment"`        // 每次造成伤害后的伤害调整系数
+	Trajectory_num           map[int32]int32 `json:"trajectory_num"`           // 弹道数量
 }
 
 // MazeSkillInfoV8Config from maze_skill_info_v8【迷宫-技能-技能信息】.xlsx maze_skill_info_v8
@@ -1023,6 +1024,43 @@ func (*gMazeSkillInfoV8Parser) Parse(logger fklog.FKLogI, data []string, row int
 			config.Damage_adjustment[key] = value
 		}
 	}
+
+	// parse column 31 trajectory_num : 弹道数量
+	if data[31] != "" {
+
+		config.Trajectory_num = make(map[int32]int32)
+		var key int32
+		var value int32
+		vals := strings.Split(data[31], "_")
+		for k, val := range vals {
+			items := strings.Split(val, ":")
+			tmp, err = strconv.ParseInt(items[0], 10, 64)
+			if err != nil {
+				err = errors.New("parse map field trajectory_num 弹道数量 to key int32 failed")
+				logger.ErrorWF("parse map field trajectory_num 弹道数量 to key int32 failed.",
+					zap.String("xlsx", "maze_skill_info_v8【迷宫-技能-技能信息】.xlsx"), zap.String("sheet", "maze_skill_info_v8"),
+					// zap.String("field_data",data[31]),
+					zap.String("item_data", val), zap.Int("index", k),
+					zap.String("parse_data", items[0]),
+					zap.Error(err))
+				return
+			}
+			key = int32(tmp)
+			tmp, err = strconv.ParseInt(items[1], 10, 64)
+			if err != nil {
+				err = errors.New("parse map field trajectory_num 弹道数量 to value int32 failed")
+				logger.ErrorWF("parse map field trajectory_num 弹道数量 to value int32 failed.",
+					zap.String("xlsx", "maze_skill_info_v8【迷宫-技能-技能信息】.xlsx"), zap.String("sheet", "maze_skill_info_v8"),
+					// zap.String("field_data",data[31]),
+					zap.String("item_data", val), zap.Int("index", k),
+					zap.String("parse_data", items[1]),
+					zap.Error(err))
+				return
+			}
+			value = int32(tmp)
+			config.Trajectory_num[key] = value
+		}
+	}
 	return
 }
 
@@ -1058,6 +1096,7 @@ var gMazeSkillInfoV8Fields = []string{
 	"duration",
 	"interval",
 	"damage_adjustment",
+	"trajectory_num",
 }
 
 // LoadDataManual load data for test
