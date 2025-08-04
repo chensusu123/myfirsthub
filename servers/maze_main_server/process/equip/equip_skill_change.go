@@ -117,7 +117,7 @@ func GetUserBattleSkillInfo(logger fklog.FKLogI, skillId int32, attrMap map[int3
 		TargetMaxCount:               GetSkillAttr(skillCfg.Target_num, attrMap),
 		SkillDamageFixed:             GetSkillAttr(skillCfg.Main_target_damage_fix, attrMap),
 		SkillMappingActionId:         actIDs,
-		Level:                        proto.Int32(skillCfg.Level),
+		Level:                        GetSkillAttr(skillCfg.Level, attrMap),
 		SkillType:                    proto.Int32(skillCfg.Type),
 		SkillMappingEffectId:         proto.Int32(effectID),
 		SecondTargetSkillDamageFixed: GetSkillAttr(skillCfg.Second_target_damage_fix, attrMap),
