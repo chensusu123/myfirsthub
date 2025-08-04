@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"maze_game_server/services/tempbuffservice"
 	"net/http"
 	"sort"
 	"time"
@@ -14,7 +15,6 @@ import (
 	"maze_game_server/config/GMazeBarriesV8Cfg"
 	"maze_game_server/io/kafka/mazeuserlevelkafka"
 	"maze_game_server/io/redis/UnionIDBindRedis"
-	"maze_game_server/io/redis/mazebarriertempbuffredis"
 	"maze_game_server/io/redis/mazecalcattrredis"
 	"maze_game_server/io/redis/mazefixedbarrierredis"
 	"maze_game_server/io/redis/useridredis"
@@ -256,14 +256,14 @@ func RegGm(logger fklog.FKLogI) {
 			return
 		}
 		if barrierId > 0 {
-			tempBuffInfo, err := mazebarriertempbuffredis.GetBarrierTempBuff(logger, userId, barrierId)
+			tempBuffInfo, err := tempbuffservice.GlobalTempBuffService.GetTempBuffInfo(logger, userId, barrierId)
 			if err != nil {
 				logger.ErrorWF("GetBarrierTempBuff err", zap.Error(err))
 				fmt.Fprintf(writer, "获取临时BUFF失败: %s\n", err.Error())
 				return
 			}
 			for _, buffInfo := range tempBuffInfo.TotalBuff {
-				userAttrMap[buffInfo.GetBuffId()] += buffInfo.GetBuffValue()
+				userAttrMap[buffInfo.BuffId] += buffInfo.BuffValue
 			}
 		}
 		type UserAttr struct {

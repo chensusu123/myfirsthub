@@ -6,9 +6,9 @@ import (
 	"go.uber.org/zap"
 	"maze_game_server/common/errors"
 	"maze_game_server/config/GMazeSkillInfoV8Cfg"
-	"maze_game_server/io/redis/passarearedis"
 	"maze_game_server/lib/log"
 	"maze_game_server/lib/nano/session"
+	"maze_game_server/model/passareamodel"
 	"maze_game_server/module/mazeuserinfo"
 	"maze_game_server/pb/common/MazeAIBattle"
 	"maze_game_server/pb/common/MazeGame"
@@ -49,14 +49,14 @@ func (g *Game) OnEndAreaBattleRQ_10525_10526(s *session.Session, req *MazeGame.E
 		return
 	}
 
-	passArea, err := passarearedis.GetBarrierPassArea(logger, userId, req.GetStageId())
+	passAreaModel, err := passareamodel.NewPassAreaModel(logger, userId, req.GetStageId())
 	if err != nil {
 		logger.ErrorWF("OnEndAreaBattleRQ GetBarrierPassArea fail", zap.Error(err))
 		res.ErrInfo = errors.MODULE_ERROR.ToInfo()
 		return
 	}
 	exist := false
-	for _, area := range passArea {
+	for _, area := range passAreaModel.PassAreaList {
 		if area.AreaId == req.GetAreaId() && area.AreaIndex == req.GetAreaIndex() {
 			exist = true
 		}
@@ -66,12 +66,12 @@ func (g *Game) OnEndAreaBattleRQ_10525_10526(s *session.Session, req *MazeGame.E
 			zap.Int32("areaId", req.GetAreaId()), zap.Int32("areaIndex", req.GetAreaIndex()))
 		return
 	}
-	passArea = append(passArea, &passarearedis.PassArea{
+	passAreaModel.PassAreaList = append(passAreaModel.PassAreaList, &passareamodel.PassAreaInfo{
 		AreaId:    req.GetAreaId(),
 		AreaIndex: req.GetAreaIndex(),
 	})
 
-	err = passarearedis.SetBarrierPassArea(logger, userId, req.GetStageId(), passArea)
+	err = passAreaModel.Save(logger, userId, req.GetStageId())
 	if err != nil {
 		logger.ErrorWF("OnEndAreaBattleRQ SetBarrierPassArea fail", zap.Error(err))
 		res.ErrInfo = errors.MODULE_ERROR.ToInfo()

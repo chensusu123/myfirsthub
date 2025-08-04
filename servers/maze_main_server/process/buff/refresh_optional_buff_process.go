@@ -1,30 +1,15 @@
 package buff
 
 import (
-	"maze_game_server/common/errors"
-	"maze_game_server/excel/mazebarriesv8config"
-	"maze_game_server/excel/mazeenergyaffixrandrulev8config"
-	"maze_game_server/excel/mazeenergyresetcostv8config"
-	"maze_game_server/io/redis/mazetempbuffredis"
-	"maze_game_server/lib/log"
-	"maze_game_server/lib/nano/session"
-	"maze_game_server/module/itemmodule"
-	"maze_game_server/pb/common/MazeCommon"
-	"maze_game_server/pb/common/MazeTempBuff"
-	"maze_game_server/pb/server/MazeTempBuffSvr"
-	"time"
-
-	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fklog"
 	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fkprometheus"
 	"go.uber.org/zap"
-	"google.golang.org/protobuf/proto"
+	"maze_game_server/common/errors"
+	"maze_game_server/lib/log"
+	"maze_game_server/lib/nano/session"
+	"maze_game_server/pb/common/MazeTempBuff"
+	"maze_game_server/services/tempbuffservice"
+	"time"
 )
-
-/**
- * @Author: liushuhang
- * @Date: 2025/3/24 15:20
- * @Description: 刷新迷宫可选buff列表
- */
 
 func (b *Buff) RefreshOptionalMazeTempBuffListRQ_10439_10440(s *session.Session, req *MazeTempBuff.RefreshOptionalMazeTempBuffListRQ) (err error) {
 	defer fkprometheus.InfoPMT("RefreshOptionalMazeTempBuffListRQ")()
@@ -60,120 +45,12 @@ func (b *Buff) RefreshOptionalMazeTempBuffListRQ_10439_10440(s *session.Session,
 		res.ErrInfo = errors.COMMON_ERROR_TIPS.Wrap("areaId参数错误")
 		return nil
 	}
-	// todo 检查用户是不是小程序用户
 
-	buffInfo, err := mazetempbuffredis.GetMazeTempBuff(logger, userId, stageId)
+	optionalBuffInfo, err := tempbuffservice.GlobalTempBuffService.RefreshOptionalMazeTempBuffList(logger, userId, stageId, level, areaId, cost)
 	if err != nil {
-		logger.ErrorWF("RefreshOptionalMazeTempBuffListRQ GetMazeTempBuff failed", zap.Error(err))
-		res.ErrInfo = errors.COMMON_ERROR_TIPS.Wrap("获取用户buff信息失败")
-		return err
-	}
-
-	if buffInfo == nil {
-		logger.WarnWF("RefreshOptionalMazeTempBuffListRQ buff is nil", zap.Error(err))
-		res.ErrInfo = errors.COMMON_ERROR_TIPS.Wrap("获取用户buff信息失败")
+		res.ErrInfo = errors.COMMON_ERROR_TIPS.Wrap(err.Error())
 		return nil
 	}
-
-	// 是否可以刷新
-	config := mazeenergyresetcostv8config.GetEnergyResetCostConfig(buffInfo.GetBuffSequence().GetRefreshCount() + 1)
-	if config == nil {
-		logger.WarnWF("RefreshOptionalMazeTempBuffListRQ refresh config is nil", zap.Error(err))
-		res.ErrInfo = errors.COMMON_ERROR_TIPS.Wrap("获取刷新配置失败")
-		return nil
-	}
-
-	if !checkCost(config.Cost, cost) {
-		logger.WarnWF("RefreshOptionalMazeTempBuffListRQ checkCost failed", zap.Error(err))
-		res.ErrInfo = errors.COMMON_ERROR_TIPS.Wrap("刷新消耗异常")
-		return nil
-	}
-
-	var newCost []*MazeCommon.MazeItem
-	for _, item := range cost {
-		if item.GetItemId() == 46200001 {
-			continue
-		}
-
-		newCost = append(newCost, item)
-	}
-
-	logger.InfoWF("RefreshOptionalMazeTempBuffListRQ DeductItems start", zap.Any("cost", newCost))
-	if len(newCost) > 0 {
-		err = itemmodule.DeductItems(logger, userId, itemmodule.CostRefreshType, newCost)
-		if err != nil {
-			logger.ErrorWF("RefreshOptionalMazeTempBuffListRQ DeductItems failed", zap.Error(err))
-			res.ErrInfo = errors.COMMON_ERROR_TIPS.Wrap(err.Error())
-			return err
-		}
-	}
-
-	// 刷新可选buff
-	err = refreshOptionalBuff(logger, userId, stageId, level, areaId, buffInfo)
-	if err != nil {
-		logger.ErrorWF("RefreshOptionalMazeTempBuffListRQ refreshOptionalBuff failed", zap.Error(err))
-		res.ErrInfo = errors.COMMON_ERROR_TIPS.Wrap("刷新buff失败")
-		return err
-	}
-
-	res.OptionalBuffInfo = packOptionalInfo(logger, buffInfo)
-	if res.GetOptionalBuffInfo() != nil {
-		return nil
-	}
-
-	if len(buffInfo.GetBuffSequence().GetSelectBuffList()) == 0 {
-		// 无buff可选
-		res.ErrInfo = errors.COMMON_ERROR_TIPS.Wrap("buff已全部选择")
-		return nil
-	}
-
-	res.ErrInfo = errors.COMMON_ERROR_TIPS.Wrap("buff配置异常")
-	return nil
-}
-
-func checkCost(costMap map[int32]int64, costList []*MazeCommon.MazeItem) bool {
-	if len(costList) != len(costMap) {
-		return false
-	}
-
-	for _, item := range costList {
-		if count, ok := costMap[item.GetItemId()]; !ok || count != item.GetCount() {
-			return false
-		}
-	}
-
-	return true
-}
-
-func refreshOptionalBuff(logger fklog.FKLogI, userId uint64, stageId, level int32, areaId int32,
-	buffInfo *MazeTempBuffSvr.TempBuffInfo) (err error) {
-	stageConfig := mazebarriesv8config.GetStageConfig(stageId)
-	if stageConfig == nil {
-		logger.WarnWF("getOptionalBuffList stage config unknown", zap.Int32("stageId", stageId))
-		return errors.New("关卡配置异常")
-	}
-
-	buffInfo.BuffSequence.RefreshCount = proto.Int32(buffInfo.GetBuffSequence().GetRefreshCount() + 1)
-	// 生成可选的buff列表
-	ruleId, ok := stageConfig.Energy_affix_rand_rule[areaId]
-	if !ok || ruleId == 0 {
-		logger.WarnWF("getOptionalBuffList stage config unknown", zap.Int32("stageId", stageId),
-			zap.Int32("areaId", areaId))
-		return errors.New("没有找到能力随机规则")
-	}
-	configId := mazeenergyaffixrandrulev8config.GetKey(ruleId, level)
-	buffInfo.BuffSequence.SelectBuffList, err = createOptionalBuffList(logger, buffInfo, configId)
-	if err != nil {
-		logger.ErrorWF("refreshOptionalBuff createOptionalBuffList failed", zap.Error(err))
-		return err
-	}
-
-	err = mazetempbuffredis.SetMazeTempBuff(logger, userId, stageId, buffInfo)
-	if err != nil {
-		logger.ErrorWF("refreshOptionalBuff SetMazeTempBuff failed",
-			zap.Int32("stageId", stageId), zap.Any("info", buffInfo), zap.Error(err))
-		return err
-	}
-
-	return nil
+	res.OptionalBuffInfo = optionalBuffInfo2PbOptionalBuffInfo(optionalBuffInfo)
+	return
 }

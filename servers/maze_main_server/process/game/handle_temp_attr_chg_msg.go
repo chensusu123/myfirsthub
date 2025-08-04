@@ -23,8 +23,14 @@ func HandleTempBuffMsg(logger fklog.FKLogI, msg *MazeTempBuffChangeMsg) {
 	// 		zap.Int("msg's len", len(data)), zap.Uint64("userId", msg.UserId))
 	// 	return
 	// }
-
 	userId := msg.UserId
+	if msg.ChgType == 2 {
+		// 由于检查buff是在进入关卡时检查，那不需要重新计算buff的技能，因为进入关卡本身会计算
+		logger.InfoWF("HandleTempBuffMsg chgType == 2", zap.Any("msg", msg),
+			zap.Uint64("userId", userId))
+		return
+	}
+
 	logger.InfoWF("HandleTempBuffMsg start", zap.Any("msg", msg),
 		zap.Uint64("userId", userId))
 	if userId <= 0 || len(msg.ChgAttrs) == 0 {
