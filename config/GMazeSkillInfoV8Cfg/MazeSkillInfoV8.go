@@ -18,7 +18,7 @@ type MazeSkillInfoV8ConfigRow struct {
 	Skill_attr_id            int32           `json:"skill_attr_id"`            // 获得技能对应属性id
 	Type                     int32           `json:"type"`                     // 技能类型
 	Priority                 int32           `json:"priority"`                 // 动作技能释放优先级
-	Level                    int32           `json:"level"`                    // 技能等级
+	Level                    map[int32]int32 `json:"level"`                    // 技能等级
 	Name                     string          `json:"name"`                     // 技能名
 	Desc                     string          `json:"desc"`                     // 技能描述_文本
 	Auto_release_time        int32           `json:"auto_release_time"`        // 自动释放时机
@@ -356,16 +356,39 @@ func (*gMazeSkillInfoV8Parser) Parse(logger fklog.FKLogI, data []string, row int
 
 	// parse column 4 level : 技能等级
 	if data[4] != "" {
-		tmp, err = strconv.ParseInt(data[4], 10, 64)
-		if err != nil {
-			err = errors.New("parse field level 技能等级 to int32 failed")
-			logger.ErrorWF("parse field level 技能等级 to int32 failed.",
-				zap.String("xlsx", "maze_skill_info_v8【迷宫-技能-技能信息】.xlsx"), zap.String("sheet", "maze_skill_info_v8"),
-				zap.String("parse_data", data[4]),
-				zap.Error(err))
-			return
+
+		config.Level = make(map[int32]int32)
+		var key int32
+		var value int32
+		vals := strings.Split(data[4], "_")
+		for k, val := range vals {
+			items := strings.Split(val, ":")
+			tmp, err = strconv.ParseInt(items[0], 10, 64)
+			if err != nil {
+				err = errors.New("parse map field level 技能等级 to key int32 failed")
+				logger.ErrorWF("parse map field level 技能等级 to key int32 failed.",
+					zap.String("xlsx", "maze_skill_info_v8【迷宫-技能-技能信息】.xlsx"), zap.String("sheet", "maze_skill_info_v8"),
+					// zap.String("field_data",data[4]),
+					zap.String("item_data", val), zap.Int("index", k),
+					zap.String("parse_data", items[0]),
+					zap.Error(err))
+				return
+			}
+			key = int32(tmp)
+			tmp, err = strconv.ParseInt(items[1], 10, 64)
+			if err != nil {
+				err = errors.New("parse map field level 技能等级 to value int32 failed")
+				logger.ErrorWF("parse map field level 技能等级 to value int32 failed.",
+					zap.String("xlsx", "maze_skill_info_v8【迷宫-技能-技能信息】.xlsx"), zap.String("sheet", "maze_skill_info_v8"),
+					// zap.String("field_data",data[4]),
+					zap.String("item_data", val), zap.Int("index", k),
+					zap.String("parse_data", items[1]),
+					zap.Error(err))
+				return
+			}
+			value = int32(tmp)
+			config.Level[key] = value
 		}
-		config.Level = int32(tmp)
 	}
 
 	// parse column 5 name : 技能名
