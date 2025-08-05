@@ -37,6 +37,7 @@ type MazeBarriesV8ConfigRow struct {
 	Attack_action3_need_kongfu map[int32]int64 `json:"attack_action3_need_kongfu"` // 普攻档位3刷怪区域：所需武力值
 	Monster_max_num            map[int32]int32 `json:"monster_max_num"`            // 区域刷怪数量上限
 	Box_ids                    []int32         `json:"box_ids"`                    // 宝箱列表
+	Equ_drop                   int32           `json:"equ_drop"`                   // 装备掉落id
 }
 
 // MazeBarriesV8Config from maze_barries_v8【迷宫-关卡信息】.xlsx maze_barries_v8
@@ -765,6 +766,20 @@ func (*gMazeBarriesV8Parser) Parse(logger fklog.FKLogI, data []string, row inter
 			config.Box_ids = append(config.Box_ids, int32(tmp))
 		}
 	}
+
+	// parse column 23 equ_drop : 装备掉落id
+	if data[23] != "" {
+		tmp, err = strconv.ParseInt(data[23], 10, 64)
+		if err != nil {
+			err = errors.New("parse field equ_drop 装备掉落id to int32 failed")
+			logger.ErrorWF("parse field equ_drop 装备掉落id to int32 failed.",
+				zap.String("xlsx", "maze_barries_v8【迷宫-关卡信息】.xlsx"), zap.String("sheet", "maze_barries_v8"),
+				zap.String("parse_data", data[23]),
+				zap.Error(err))
+			return
+		}
+		config.Equ_drop = int32(tmp)
+	}
 	return
 }
 
@@ -792,6 +807,7 @@ var gMazeBarriesV8Fields = []string{
 	"attack_action3_need_kongfu",
 	"monster_max_num",
 	"box_ids",
+	"equ_drop",
 }
 
 // LoadDataManual load data for test
