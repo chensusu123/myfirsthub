@@ -266,7 +266,7 @@ func (n *Node) listenAndServeWS() {
 	appConfig := appconfig.GlobalConfig()
 	namespace := appConfig.Global.Namespace
 	sectionID := appConfig.Global.SectionID
-	appName := appConfig.Server.App
+	appName := appConfig.Server.AppName
 	shardingID := fmt.Sprintf("%d", appConfig.Global.ShardingID)
 
 	handle := func(path string, pcodec frame.PacketCodec) {

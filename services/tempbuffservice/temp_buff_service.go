@@ -37,6 +37,9 @@ type TempBuffService interface {
 
 	// 根据选择的buff获取全部buff属性
 	GetTotalBuff(logger fklog.FKLogI, buffList []*tempbuffmodel.SelectedBuffInfo) (map[int32]int64, []*tempbuffmodel.TotalBuffInfo)
+
+	// 清除通过的区域
+	DelPassArea(logger fklog.FKLogI, userID uint64, stageId int32) error
 }
 
 // GlobalTempBuffService 临时buff可用全局唯一对象

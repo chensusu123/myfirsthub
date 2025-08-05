@@ -37,7 +37,7 @@ func (ns *NanoInitService) OnInit(logger fklog.FKLogI, config fkconfig.FkConfige
 	// Nano组件与路由
 	comps, routes := Components()
 
-	ns.appName = appConfig.Server.App
+	ns.appName = appConfig.Server.AppName
 	ns.namespace = appConfig.Global.Namespace
 	ns.serviceName = ns.appName + ".ws"
 

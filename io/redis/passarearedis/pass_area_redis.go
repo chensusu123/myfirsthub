@@ -1,13 +1,13 @@
-package tempbuffredis
+package passarearedis
 
 import (
 	"context"
 	"fmt"
+	"github.com/redis/go-redis/v9"
 	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fklog"
 	"go.uber.org/zap"
+	"maze_game_server/io/redis"
 )
-
-// todo 通过区域的redis直接使用了临时buff的redis， 因为通过区域只有临时buff这使用了
 
 // getKey 获取缓存操作key。
 func gePassAreaKey(userId uint64, barrierId int32) string {
@@ -16,7 +16,7 @@ func gePassAreaKey(userId uint64, barrierId int32) string {
 
 // GetBarrierPassArea
 func GetBarrierPassArea(logger fklog.FKLogI, userId uint64, barrierId int32) ([]byte, error) {
-	db, err := gCli.GetDB()
+	db, err := globalredis.GCli.GetDB()
 	if err != nil {
 		return nil, err
 	}
@@ -24,6 +24,9 @@ func GetBarrierPassArea(logger fklog.FKLogI, userId uint64, barrierId int32) ([]
 
 	bytes, err := db.Get(context.TODO(), key).Bytes()
 	if err != nil {
+		if err == redis.Nil {
+			return nil, nil
+		}
 		logger.ErrorWF("GetBarrierPassArea GET err", zap.String("key", key), zap.Error(err))
 		return nil, err
 	}
@@ -33,7 +36,7 @@ func GetBarrierPassArea(logger fklog.FKLogI, userId uint64, barrierId int32) ([]
 
 // SetBarrierPassArea
 func SetBarrierPassArea(logger fklog.FKLogI, userId uint64, barrierId int32, data []byte) (err error) {
-	db, err := gCli.GetDB()
+	db, err := globalredis.GCli.GetDB()
 	if err != nil {
 		return err
 	}
@@ -51,7 +54,7 @@ func SetBarrierPassArea(logger fklog.FKLogI, userId uint64, barrierId int32, dat
 
 // DelBarrierPassArea
 func DelBarrierPassArea(logger fklog.FKLogI, userId uint64, barrierId int32) (err error) {
-	db, err := gCli.GetDB()
+	db, err := globalredis.GCli.GetDB()
 	if err != nil {
 		return err
 	}

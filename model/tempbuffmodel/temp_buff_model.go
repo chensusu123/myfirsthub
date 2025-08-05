@@ -3,7 +3,7 @@ package tempbuffmodel
 import (
 	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fklog"
 	"go.uber.org/zap"
-	"maze_game_server/io/redis/tempbuff"
+	"maze_game_server/io/redis/tempbuffredis"
 	"maze_game_server/lib/serialize"
 )
 

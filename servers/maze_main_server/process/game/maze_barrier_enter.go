@@ -15,7 +15,6 @@ import (
 	"maze_game_server/io/redis/mazechallengenumredis"
 	"maze_game_server/io/redis/mazeuserbarrierredis"
 	"maze_game_server/io/redis/syncmazestorageinforedis"
-	"maze_game_server/io/redis/tempbuff"
 	"maze_game_server/lib/log"
 	"maze_game_server/lib/nano/session"
 	"maze_game_server/module/calequipsequence"
@@ -88,7 +87,7 @@ func (g *Game) OnMazeBarrierEnterRQ_10447_10448(s *session.Session, req *MazeGam
 		tempbuffservice.GlobalTempBuffService.DelTempBuff(logger, userId, req.GetBarrierId())
 		mazebuffinforedis.DelMazeBuffBySrc(logger, userId, constdef.MazeBuffSrcSelectBuffForce)
 		// 清除通过的区域
-		tempbuffredis.DelBarrierPassArea(logger, userId, req.GetBarrierId())
+		tempbuffservice.GlobalTempBuffService.DelPassArea(logger, userId, req.GetBarrierId())
 		// 推送属性计算消息
 		calcAttrNotify := &structsdef.MazeCalcAttrNotifyMsg{
 			UserId:  userId,

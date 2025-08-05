@@ -3,35 +3,18 @@ package tempbuffredis
 import (
 	"context"
 	"fmt"
-	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/database/nanoredis"
+	"github.com/redis/go-redis/v9"
 	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fklog"
-	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/serverdepend"
 	"go.uber.org/zap"
+	"maze_game_server/io/redis"
 )
-
-type TempBuffRedis struct {
-	*nanoredis.NanoRedis
-}
-
-func New(serviceName string, name string) *TempBuffRedis {
-	rt := &TempBuffRedis{}
-	rt.NanoRedis = nanoredis.NewNanoRedis(serviceName, name)
-	return rt
-}
-
-var gCli *TempBuffRedis
-
-func init() {
-	gCli = New("temp.buff.redis", "temp.buff.redis.maze_main")
-	serverdepend.RegisterDepend(gCli)
-}
 
 func getKey(userId uint64, stageId int32) string {
 	return fmt.Sprintf("tempbuff:u:%d:stage:%d", userId, stageId)
 }
 
 func SetMazeTempBuff(logger fklog.FKLogI, userId uint64, stageId int32, bytes []byte) error {
-	db, err := gCli.GetDB()
+	db, err := globalredis.GCli.GetDB()
 	if err != nil {
 		return err
 	}
@@ -48,7 +31,7 @@ func SetMazeTempBuff(logger fklog.FKLogI, userId uint64, stageId int32, bytes []
 }
 
 func GetMazeTempBuff(logger fklog.FKLogI, userId uint64, stageId int32) ([]byte, error) {
-	db, err := gCli.GetDB()
+	db, err := globalredis.GCli.GetDB()
 	if err != nil {
 		return nil, err
 	}
@@ -57,6 +40,9 @@ func GetMazeTempBuff(logger fklog.FKLogI, userId uint64, stageId int32) ([]byte,
 	bytes, err := db.Get(context.TODO(), key).Bytes()
 
 	if err != nil {
+		if err == redis.Nil {
+			return nil, nil
+		}
 		logger.ErrorWF("GetMazeTempBuff GET", zap.String("key", key), zap.Int32("stageId", stageId), zap.Error(err))
 		return nil, err
 	}
@@ -66,7 +52,7 @@ func GetMazeTempBuff(logger fklog.FKLogI, userId uint64, stageId int32) ([]byte,
 }
 
 func DelMazeTempBuff(logger fklog.FKLogI, userId uint64, stageId int32) error {
-	db, err := gCli.GetDB()
+	db, err := globalredis.GCli.GetDB()
 	if err != nil {
 		return err
 	}

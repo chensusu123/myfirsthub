@@ -3,7 +3,7 @@ package passareamodel
 import (
 	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fklog"
 	"go.uber.org/zap"
-	tempbuffredis "maze_game_server/io/redis/tempbuff"
+	"maze_game_server/io/redis/passarearedis"
 	"maze_game_server/lib/serialize"
 )
 
@@ -13,7 +13,7 @@ type PassAreaInfo struct {
 }
 
 type PassAreaModel struct {
-	PassAreaList []*PassAreaInfo `json:"passAreaList,omitempty"`
+	PassAreaList []*PassAreaInfo `json:"pass_area_list,omitempty"`
 }
 
 func NewPassAreaModel(logger fklog.FKLogI, userID uint64, stageId int32) (*PassAreaModel, error) {
@@ -25,7 +25,7 @@ func NewPassAreaModel(logger fklog.FKLogI, userID uint64, stageId int32) (*PassA
 }
 
 func (p *PassAreaModel) load(logger fklog.FKLogI, userID uint64, stageId int32) (err error) {
-	bytes, err := tempbuffredis.GetBarrierPassArea(logger, userID, stageId)
+	bytes, err := passarearedis.GetBarrierPassArea(logger, userID, stageId)
 	if err != nil {
 		return err
 	}
@@ -47,9 +47,9 @@ func (p *PassAreaModel) Save(logger fklog.FKLogI, userID uint64, stageId int32) 
 		logger.ErrorWF("TempBuff save Marshal failed", zap.Error(err), zap.Uint64("userID", userID), zap.Int32("stageId", stageId))
 		return err
 	}
-	return tempbuffredis.SetBarrierPassArea(logger, userID, stageId, bytes)
+	return passarearedis.SetBarrierPassArea(logger, userID, stageId, bytes)
 }
 
 func (p *PassAreaModel) Del(logger fklog.FKLogI, userID uint64, stageId int32) (err error) {
-	return tempbuffredis.DelBarrierPassArea(logger, userID, stageId)
+	return passarearedis.DelBarrierPassArea(logger, userID, stageId)
 }

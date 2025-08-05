@@ -1,10 +1,12 @@
 package tempbuffservice
 
 import (
+	"context"
 	"fmt"
+	"github.com/redis/go-redis/v9"
 	"gitlab.ifreetalk.com/maze-plate/freetk/fkserver"
 	fileResolver "gitlab.ifreetalk.com/maze-plate/freetk/registry/fileresolver"
-	tempbuffredis "maze_game_server/io/redis/tempbuff"
+	"maze_game_server/io/redis"
 	"maze_game_server/lib/log"
 	"maze_game_server/model/passareamodel"
 	"maze_game_server/model/tempbuffmodel"
@@ -23,7 +25,7 @@ func TestMain(m *testing.M) {
 		fmt.Println(err)
 		return
 	}
-	err = tempbuffredis.GCli.Init(fileResolver.New("./conf.d/service.yaml"))
+	err = globalredis.GCli.Init(fileResolver.New("./conf.d/service.yaml"))
 	if err != nil {
 		fmt.Println(err)
 		return
@@ -34,6 +36,20 @@ func TestMain(m *testing.M) {
 	m.Run()
 }
 
+func TestRedis(t *testing.T) {
+	db, err := globalredis.GCli.GetDB()
+	if err != nil {
+		return
+	}
+	res, err := db.Get(context.Background(), "123").Result()
+	if err != nil {
+		if err == redis.Nil {
+			return
+		}
+		return
+	}
+	fmt.Println(res)
+}
 func TestTempBuffRedis(t *testing.T) {
 	err, model := tempbuffmodel.NewTempBuffInfoModel(logger, 40000001, 31)
 	if err != nil {
