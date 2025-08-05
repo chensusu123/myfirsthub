@@ -184,8 +184,8 @@ func GetAttrType() map[int32]int32 {
 	attrTypeMap[constdef.ElectricityContinuousDamageExtraBeHurtValueAdd] = int32(MazeAIBattle.MAZE_AI_ATTR_TYPE_ELECTRICITY_CONTINUOUS_DAMAGE_EXTRA_BE_HURT_VALUE_ADD)
 	attrTypeMap[constdef.LightningTargetCount] = int32(MazeAIBattle.MAZE_AI_ATTR_TYPE_LIGHTNING_TARGET_COUNT)
 	attrTypeMap[constdef.LightningDamage] = int32(MazeAIBattle.MAZE_AI_ATTR_TYPE_LIGHTNING_DAMAGE)
-	attrTypeMap[constdef.ParalysisChanceOnLightningHitAccuracy] = int32(MazeAIBattle.MAZE_AI_ATTR_TYPE_PARALYSIS_CHANCE_ON_LIGHTNING_HIT_ACCURACY)
-	attrTypeMap[constdef.ParalysisDurationOnLightningHitParam5] = int32(MazeAIBattle.MAZE_AI_ATTR_TYPE_PARALYSIS_DURATION_ON_LIGHTNING_HIT_DURATION_PARAM5)
+	// attrTypeMap[constdef.ParalysisChanceOnLightningHitAccuracy] = int32(MazeAIBattle.MAZE_AI_ATTR_TYPE_PARALYSIS_CHANCE_ON_LIGHTNING_HIT_ACCURACY)
+	// attrTypeMap[constdef.ParalysisDurationOnLightningHitParam5] = int32(MazeAIBattle.MAZE_AI_ATTR_TYPE_PARALYSIS_DURATION_ON_LIGHTNING_HIT_DURATION_PARAM5)
 	attrTypeMap[constdef.LightningCooldown] = int32(MazeAIBattle.MAZE_AI_ATTR_TYPE_LIGHTNING_COOLDOWN)
 
 	attrTypeMap[constdef.PoisonTagAttrId] = int32(MazeAIBattle.MAZE_AI_ATTR_TYPE_POISON_TAG_ATTR_ID)
