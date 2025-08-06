@@ -17,7 +17,7 @@ import (
 	"maze_game_server/io/redis/syncmazestorageinforedis"
 	"maze_game_server/lib/log"
 	"maze_game_server/lib/nano/session"
-	"maze_game_server/module/calequipsequence"
+	"maze_game_server/model/equipdropmodel"
 	"maze_game_server/module/mazecommonvalue"
 	"maze_game_server/module/mazeuserinfo"
 	"maze_game_server/pb/common/MazeAIBattle"
@@ -136,9 +136,14 @@ func (g *Game) OnMazeBarrierEnterRQ_10447_10448(s *session.Session, req *MazeGam
 	userInfo.SetBarrier(req.GetBarrierId())
 	// }
 
-	shopInfo, err := calequipsequence.GetMazeShopInfo(logger, userId, int32(userInfo.Level), req.GetBarrierId())
+	//shopInfo, err := calequipsequence.GetMazeShopInfo(logger, userId, int32(userInfo.Level), req.GetBarrierId())
+	//if err != nil {
+	//	logger.ErrorWF("OnMazeBarrierEnterRQ GetMazeShopInfo fail", zap.Error(err))
+	//	return
+	//}
+	dropInfo, err := equipdropmodel.NewEquipSpecialDropModel(logger, userId)
 	if err != nil {
-		logger.ErrorWF("OnMazeBarrierEnterRQ GetMazeShopInfo fail", zap.Error(err))
+		logger.ErrorWF("OnMazeBarrierEnterRQ GetEquipSpecialDropModel fail", zap.Error(err))
 		return
 	}
 
@@ -256,7 +261,7 @@ func (g *Game) OnMazeBarrierEnterRQ_10447_10448(s *session.Session, req *MazeGam
 		Money:      proto.Int64(money),
 		Income:     proto.Int64(income),
 		Diamond:    proto.Int64(diamond),
-		EquipPoint: proto.Int64(int64(shopInfo.EquipPoints)),
+		EquipPoint: proto.Int64(int64(dropInfo.EquipPoints)),
 		Energy:     proto.Int32(curEnergy),
 	}
 

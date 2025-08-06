@@ -3,6 +3,8 @@ package calsweepbarrier
 import (
 	"errors"
 	"fmt"
+	"maze_game_server/model/equipdropmodel"
+	"maze_game_server/services/equipdropservice"
 	"strings"
 
 	"maze_game_server/common/constdef"
@@ -16,7 +18,6 @@ import (
 	"maze_game_server/config/GMazeShopV8Cfg"
 	"maze_game_server/io/kafka/mazebarrieruserkafka"
 	"maze_game_server/io/kafka/mazeuserlevelkafka"
-	"maze_game_server/module/calequipsequence"
 	"maze_game_server/module/mazebarrier"
 	"maze_game_server/module/mazecommonvalue"
 	"maze_game_server/module/mazeuserinfo"
@@ -111,12 +112,12 @@ func CalUserSweepBarrierAward(logger fklog.FKLogI, uid uint64, barrierId int32, 
 	}
 
 	//取存储的装备分 加上扫荡新增的分数 计算掉落的装备
-	calLv := calequipsequence.GetMazeBarrierLv(int32(userInfo.Level), barrierId)
-	shopInfo, err := calequipsequence.GetMazeShopInfo(logger, uid, calLv, barrierId)
-	if err != nil {
-		logger.ErrorWF("CalUserSweepBarrierAward GetMazeShopInfo fail", zap.Any("barrierId", barrierId))
-		return
-	}
+	calLv := equipdropservice.GlobalEquipDropService.GetMazeBarrierLv(int32(userInfo.Level), barrierId)
+	//shopInfo, err := calequipsequence.GetMazeShopInfo(logger, uid, calLv, barrierId)
+	//if err != nil {
+	//	logger.ErrorWF("CalUserSweepBarrierAward GetMazeShopInfo fail", zap.Any("barrierId", barrierId))
+	//	return
+	//}
 	shopCfg := GMazeShopV8Cfg.Get(calLv)
 	if shopCfg == nil {
 		logger.ErrorWF("CalUserSweepBarrierAward get shop cfg fail", zap.Any("calLv", calLv))
@@ -124,16 +125,28 @@ func CalUserSweepBarrierAward(logger fklog.FKLogI, uid uint64, barrierId int32, 
 		return
 	}
 
-	//根据装备积分额外增加装备
-	newTotal := shopInfo.EquipPoints + int32(addEquipPoint)
-	shopInfo.EquipPoints = newTotal % shopCfg.Need_equip_score
-	equipNum := newTotal / shopCfg.Need_equip_score
+	dropInfo, err := equipdropmodel.NewEquipSpecialDropModel(logger, uid)
+	if err != nil {
+		logger.ErrorWF("CalUserSweepBarrierAward GetEquipSpecialDropModel fail", zap.Uint64("uid", uid))
+		return
+	}
 
-	addEquipMap, err := calequipsequence.GetNewEquip(logger, uid, barrierId, calLv, equipNum)
+	//根据装备积分额外增加装备
+	newTotal := dropInfo.EquipPoints + int32(addEquipPoint)
+	dropInfo.EquipPoints = newTotal % barrierCfg.Need_equip_score
+	equipNum := newTotal / barrierCfg.Need_equip_score
+
+	//addEquipMap, err := calequipsequence.GetNewEquip(logger, uid, barrierId, calLv, equipNum)
+	//if err != nil {
+	//	logger.ErrorWF("CalUserSweepBarrierAward GetNewEquip fail", zap.Error(err), zap.Any("barrier", barrierId), zap.Any("calLv", calLv))
+	//	return
+	//}
+	addEquipMap, err := equipdropservice.GlobalEquipDropService.GetNewEquip(logger, uid, calLv, barrierId, equipNum)
 	if err != nil {
 		logger.ErrorWF("CalUserSweepBarrierAward GetNewEquip fail", zap.Error(err), zap.Any("barrier", barrierId), zap.Any("calLv", calLv))
 		return
 	}
+
 	for k, v := range addEquipMap {
 		equipMap[k] += v
 	}

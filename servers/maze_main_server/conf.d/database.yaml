@@ -2,12 +2,12 @@ mysql_list:
   - name: BizCfg
     user: root
     db: maze
-    password: mysql
+    password: "123456"
     sharding_type: 0
     sharding_count: 1
   - name: maze_main_server.mysql
     user: root
     db: maze
-    password: mysql
+    password: "123456"
     sharding_type: 0
     sharding_count: 1
