@@ -5,14 +5,14 @@ import (
 	"maze_game_server/common/errors"
 	"maze_game_server/io/kafka/mazemoneykafka"
 	"maze_game_server/io/kafka/mazeuserlevelkafka"
-	"maze_game_server/io/redis/mazeshopseqredis"
 	"maze_game_server/lib/log"
 	"maze_game_server/lib/nano/session"
-	"maze_game_server/module/calequipsequence"
+	"maze_game_server/model/equipdropmodel"
 	"maze_game_server/module/mazecommonvalue"
 	"maze_game_server/module/mazemoney"
 	"maze_game_server/module/mazeuserinfo"
 	"maze_game_server/pb/common/MazeGame"
+	"maze_game_server/services/equipdropservice"
 
 	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fkprometheus"
 	"go.uber.org/zap"
@@ -71,17 +71,25 @@ func (g *Game) OnReportDataRQ_10453_10454(s *session.Session, req *MazeGame.Repo
 
 	}
 
-	var shopInfo *mazeshopseqredis.MazeShopInfo
+	var dropInfo *equipdropmodel.EquipSpecialDropModel
+	//var shopInfo *mazeshopseqredis.MazeShopInfo
 	if reportInfo.GetReportMask()&4 == 4 {
 		// 上报装备积分
-		shopInfo, err = calequipsequence.GetMazeShopInfo(logger, userId, int32(userInfo.Level), userInfo.Barrier)
+		dropInfo, err = equipdropmodel.NewEquipSpecialDropModel(logger, userId)
 		if err != nil {
-			logger.ErrorWF("ReportDataRQ GetMazeShopInfo fail", zap.Error(err))
+			logger.ErrorWF("ReportDataRQ GetEquipSpecialDropModel fail", zap.Error(err), zap.Uint64("userId", userId))
 			res.ErrInfo = errors.MODULE_ERROR.ToInfo()
 			return
 		}
+		dropInfo.EquipPoints = int32(reportInfo.GetEquipPoint())
 
-		shopInfo.EquipPoints = int32(reportInfo.GetEquipPoint())
+		//shopInfo, err = calequipsequence.GetMazeShopInfo(logger, userId, int32(userInfo.Level), userInfo.Barrier)
+		//if err != nil {
+		//	logger.ErrorWF("ReportDataRQ GetMazeShopInfo fail", zap.Error(err))
+		//	res.ErrInfo = errors.MODULE_ERROR.ToInfo()
+		//	return
+		//}
+		//shopInfo.EquipPoints = int32(reportInfo.GetEquipPoint())
 	}
 
 	// 修改上报数据的存储
@@ -131,11 +139,17 @@ func (g *Game) OnReportDataRQ_10453_10454(s *session.Session, req *MazeGame.Repo
 	}
 
 	if reportInfo.GetReportMask()&4 == 4 {
-		newLevel := calequipsequence.GetMazeBarrierLv(int32(userInfo.Level), userInfo.Barrier)
-		err = mazeshopseqredis.SetMazeShopInfo(logger, userId, int32(newLevel), shopInfo)
+		newLevel := equipdropservice.GlobalEquipDropService.GetMazeBarrierLv(int32(userInfo.Level), userInfo.Barrier)
+		err = dropInfo.Save(logger, userId)
 		if err != nil {
-			logger.ErrorWF("ReportDataRQ SetMazeShopInfo fail", zap.Error(err), zap.Any("level", newLevel), zap.Any("shopInfo", shopInfo))
+			logger.ErrorWF("ReportDataRQ EquipSpecialDropModel save fail", zap.Error(err), zap.Any("level", newLevel), zap.Any("dropInfo", dropInfo))
+			return err
 		}
+
+		//err = mazeshopseqredis.SetMazeShopInfo(logger, userId, int32(newLevel), shopInfo)
+		//if err != nil {
+		//	logger.ErrorWF("ReportDataRQ SetMazeShopInfo fail", zap.Error(err), zap.Any("level", newLevel), zap.Any("shopInfo", shopInfo))
+		//}
 	}
 
 	// if reportInfo.GetReportMask()&8 == 8 {

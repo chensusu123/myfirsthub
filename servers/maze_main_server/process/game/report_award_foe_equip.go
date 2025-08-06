@@ -6,10 +6,10 @@ import (
 	"maze_game_server/common/function/gentradeno"
 	"maze_game_server/lib/log"
 	"maze_game_server/lib/nano/session"
-	"maze_game_server/module/calequipsequence"
 	"maze_game_server/module/mazeuserinfo"
 	"maze_game_server/pb/common/MazeGame"
 	"maze_game_server/pb/server/MazeEquipSvr"
+	"maze_game_server/services/equipdropservice"
 
 	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fkprometheus"
 	"go.uber.org/zap"
@@ -53,7 +53,13 @@ func (g *Game) OnReportAwardFoeEquipRQ_10455_10456(s *session.Session, req *Maze
 		return
 	}
 
-	addEquipMap, err := calequipsequence.GetNewEquip(logger, userId, req.GetBarrierId(), int32(level), equipNum)
+	//addEquipMap, err := calequipsequence.GetNewEquip(logger, userId, req.GetBarrierId(), int32(level), equipNum)
+	//if err != nil {
+	//	logger.ErrorWF("OnReportAwardFoeEquipRQ GetMazeShopInfo fail", zap.Error(err), zap.Any("barrier", req.GetBarrierId()), zap.Any("level", level))
+	//	res.ErrInfo = errors.MODULE_ERROR.ToInfo()
+	//	return
+	//}
+	addEquipMap, err := equipdropservice.GlobalEquipDropService.GetNewEquip(logger, userId, int32(level), req.GetBarrierId(), equipNum)
 	if err != nil {
 		logger.ErrorWF("OnReportAwardFoeEquipRQ GetMazeShopInfo fail", zap.Error(err), zap.Any("barrier", req.GetBarrierId()), zap.Any("level", level))
 		res.ErrInfo = errors.MODULE_ERROR.ToInfo()
