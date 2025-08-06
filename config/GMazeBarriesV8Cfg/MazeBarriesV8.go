@@ -38,6 +38,7 @@ type MazeBarriesV8ConfigRow struct {
 	Monster_max_num            map[int32]int32 `json:"monster_max_num"`            // 区域刷怪数量上限
 	Box_ids                    []int32         `json:"box_ids"`                    // 宝箱列表
 	Equ_drop                   int32           `json:"equ_drop"`                   // 装备掉落id
+	Need_equip_score           int32           `json:"need_equip_score"`           // 掉落装备所需积分
 }
 
 // MazeBarriesV8Config from maze_barries_v8【迷宫-关卡信息】.xlsx maze_barries_v8
@@ -780,6 +781,20 @@ func (*gMazeBarriesV8Parser) Parse(logger fklog.FKLogI, data []string, row inter
 		}
 		config.Equ_drop = int32(tmp)
 	}
+
+	// parse column 24 need_equip_score : 掉落装备所需积分
+	if data[24] != "" {
+		tmp, err = strconv.ParseInt(data[24], 10, 64)
+		if err != nil {
+			err = errors.New("parse field need_equip_score 掉落装备所需积分 to int32 failed")
+			logger.ErrorWF("parse field need_equip_score 掉落装备所需积分 to int32 failed.",
+				zap.String("xlsx", "maze_barries_v8【迷宫-关卡信息】.xlsx"), zap.String("sheet", "maze_barries_v8"),
+				zap.String("parse_data", data[24]),
+				zap.Error(err))
+			return
+		}
+		config.Need_equip_score = int32(tmp)
+	}
 	return
 }
 
@@ -808,6 +823,7 @@ var gMazeBarriesV8Fields = []string{
 	"monster_max_num",
 	"box_ids",
 	"equ_drop",
+	"need_equip_score",
 }
 
 // LoadDataManual load data for test
