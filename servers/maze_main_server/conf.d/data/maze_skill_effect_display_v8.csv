@@ -1,0 +1,10 @@
+paipaiworld_config,Unnamed: 1,Unnamed: 2,Unnamed: 3,Unnamed: 4,Unnamed: 5,Unnamed: 6,Unnamed: 7
+INT_K,INT_C,STRING_C,STRING_C,STRING_C_S,INT_C,STRING_C,STRING_C
+effect_group,display_type,color,effect_type,buff_list_name,is_number,buff_list_desc,buff_list_icon
+effect组id,效果展示类型（0-不展示 1-效果触发时展示 2-效果进入冷却时展示,颜色,效果分类,buff列表里的效果名称,是否要具体值,buff列表里的效果描述,buff列表里的图标
+5401,,#FF767F,2,攻速提高,0,攻速+{value}[1]%，持续{last_time}[1]秒,yin_hua
+5402,,#FF767F,2,攻击提高,0,攻击+{value}[1]%，持续{last_time}[1]秒,bei_shui
+5403,,#4ED22E,2,防御提高,0,防御+{value}[1]%，持续{last_time}[1]秒,fang_bao
+5404,,#FF767F,2,生命提高,0,生命+{value}[1]%，持续{last_time}[1]秒,add_blood
+5406,,#FF767F,2,暴击提高,0,暴击率+{value}[1]%，持续{last_time}[1]秒,kuang_bao
+100,,#4ED22E,2,恢复生命,0,恢复生命,bu_mian

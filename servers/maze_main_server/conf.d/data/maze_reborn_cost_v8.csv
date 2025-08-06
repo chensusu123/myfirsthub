@@ -1,0 +1,7 @@
+paipaiworld_config,Unnamed: 1,Unnamed: 2,Unnamed: 3
+INT_K,INT_S,INT_S,MAP<INT:LONG>_S
+order,reborn_min,reborn_max,cost
+序号,复活次数,复活次数,复活消耗
+1,1,1,46200001:5
+2,2,2,46200001:10
+3,3,3,46200001:20

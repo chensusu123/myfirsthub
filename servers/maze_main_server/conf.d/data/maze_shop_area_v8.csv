@@ -1,0 +1,13 @@
+paipaiworld_config,Unnamed: 1,Unnamed: 2
+INT_K,INT_S_C,INT_S_C
+order,shop_level_min,shop_level_max
+区域id,对应最小商店等级,对应最大商店等级
+0,1,160
+10001,1,3
+20001,1,4
+30001,1,3
+40001,1,4
+50001,1,5
+50002,1,6
+60001,1,7
+60002,1,8
