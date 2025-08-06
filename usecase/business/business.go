@@ -503,7 +503,7 @@ func (tb *tCustomBusiness) Init(logger fklog.FKLogI) (err error) {
 	// }
 	_ = data
 	// 监控文件变化
-	tb.closeMonitor, err = filemonitor.MonitorChangeForCacheServer(logger, ".xlsx",
+	tb.closeMonitor, err = filemonitor.MonitorChangeForCacheServer(logger, ".csv",
 		tb, tb.isSameDir, flagConfigPath, readDir)
 	if err != nil {
 		logger.ErrorWF("OnInit monitor file path failed.", zap.String("path", flagConfigPath), zap.String("version", tb.gitFile),

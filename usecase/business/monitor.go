@@ -1,18 +1,17 @@
 package business
 
 import (
+	"bytes"
 	"crypto/md5"
+	"encoding/csv"
 	"fmt"
 	"io/ioutil"
 	"path/filepath"
 	"strings"
 	"time"
 
-	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fkalert"
 	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fklog"
 	"gitlab.ifreetalk.com/maze-plate/freetk/fkutil/filemonitor"
-
-	"github.com/xuri/excelize/v2"
 
 	"go.uber.org/zap"
 )
@@ -188,63 +187,112 @@ func (tb *tCustomBusiness) OnChange(logger fklog.FKLogI, file string, data []byt
 	// defer endf()
 
 	cfgVersion := tb.gitCfgVersion.Load()
-	xlsxFile, err := excelize.OpenFile(file)
+	//xlsxFile, err := excelize.OpenFile(file)
+	//if err != nil {
+	//	fkalert.Alert(alertOpenExcelFailed, file)
+	//	logger.ErrorWF("OnChange open excel by binary failed.", zap.String("file", file), zap.Int("len", len(data)), zap.Error(err))
+	//	return err
+	//}
+	fileMd5 := fmt.Sprintf("%x", md5.Sum(data))
+	//// 编译所有sheet
+	//for _, sheetSrcName := range xlsxFile.GetSheetMap() {
+	//	sheetName, ok := checkSheetName(sheetSrcName)
+	//	logger.DebugWF("OnChange recv file.", zap.String("file", file), zap.String("md5", fileMd5),
+	//		zap.String("src_sheet", sheetSrcName), zap.String("sheet", sheetName))
+	//	if !ok {
+	//		logger.WarnWF("OnChange ignore sheet. check sheet name.", zap.String("file", file), zap.String("md5", fileMd5),
+	//			zap.String("src_sheet", sheetSrcName), zap.String("sheet", sheetName))
+	//		continue
+	//	}
+	//	rows, err := xlsxFile.GetRows(sheetSrcName)
+	//	if err != nil {
+	//		logger.WarnWF("OnChange ignore sheet. get rows data.", zap.String("file", file), zap.String("md5", fileMd5),
+	//			zap.String("src_sheet", sheetSrcName), zap.String("sheet", sheetName))
+	//		continue
+	//	}
+	//
+	//	full, err := parseExcellSheet(logger, file, sheetSrcName, rows)
+	//	if err != nil || full == nil {
+	//		logger.ErrorWF("OnChange load sheet data failed.", zap.String("file", file), zap.String("md5", fileMd5), zap.String("src", sheetSrcName),
+	//			zap.String("sheet", sheetName), zap.Bool("full", full == nil), zap.Error(err))
+	//		continue
+	//	}
+	//	full.FileMd5 = fileMd5
+	//	full.SheetDataMd5 = calcSheetDataMd5(logger, full.Data)
+	//	full.Md5Sum = calcFieldsMd5(full.Fields)
+	//	newCache := &excellFileCache{}
+	//	newCache.Base = full
+	//	newCache.File = file
+	//	newCache.Sheet = sheetSrcName
+	//	newCache.logger = logger
+	//	full.file = newCache
+	//	// last := getConfigCache(sheetName)
+	//	// if last != nil {
+	//	// 	last.updateExcellCache(newCache)
+	//	// }
+	//	full.Desc = cfgVersion
+	//
+	//	// 第一次加载，直接更新缓存，否则预存储
+	//	if tb.isFirstLoad {
+	//		tb.saveConfigCache(sheetName, newCache)
+	//	} else {
+	//		tb.saveConfigCacheForChange(sheetName, newCache)
+	//	}
+	//
+	//	logger.DebugWF("OnChange update config.", zap.String("file", file),
+	//		zap.String("src_sheet", sheetSrcName), zap.String("sheet", sheetName),
+	//		zap.String("fileMd5", full.FileMd5), zap.String("sheetDataMd5", full.SheetDataMd5), zap.Any("desc", full.Desc),
+	//		zap.Strings("fields", full.Fields), zap.String("git_version", cfgVersion), zap.Any("rows", len(rows)))
+	//}
+
+	// 1. 提取文件名（含扩展名）
+	base := filepath.Base(file) // "git_version_v8【配表版本号】.csv"
+	// 2. 去掉扩展名
+	name := strings.TrimSuffix(base, filepath.Ext(base)) // "git_version_v8【配表版本号】"
+	sheetName, ok := checkSheetName(name)
+	if !ok {
+		return nil
+	}
+	fileReader := bytes.NewReader(data)
+	reader := csv.NewReader(fileReader)
+	rows, err := reader.ReadAll()
 	if err != nil {
-		fkalert.Alert(alertOpenExcelFailed, file)
-		logger.ErrorWF("OnChange open excel by binary failed.", zap.String("file", file), zap.Int("len", len(data)), zap.Error(err))
+		panic(err)
+	}
+	sheetSrcName := name
+	full, err := parseExcellSheet(logger, file, sheetSrcName, rows)
+	if err != nil || full == nil {
+		logger.ErrorWF("OnChange load sheet data failed.", zap.String("file", file), zap.String("md5", fileMd5), zap.String("src", sheetSrcName),
+			zap.String("sheet", sheetName), zap.Bool("full", full == nil), zap.Error(err))
 		return err
 	}
-	fileMd5 := fmt.Sprintf("%x", md5.Sum(data))
-	// 编译所有sheet
-	for _, sheetSrcName := range xlsxFile.GetSheetMap() {
-		sheetName, ok := checkSheetName(sheetSrcName)
-		logger.DebugWF("OnChange recv file.", zap.String("file", file), zap.String("md5", fileMd5),
-			zap.String("src_sheet", sheetSrcName), zap.String("sheet", sheetName))
-		if !ok {
-			logger.WarnWF("OnChange ignore sheet. check sheet name.", zap.String("file", file), zap.String("md5", fileMd5),
-				zap.String("src_sheet", sheetSrcName), zap.String("sheet", sheetName))
-			continue
-		}
-		rows, err := xlsxFile.GetRows(sheetSrcName)
-		if err != nil {
-			logger.WarnWF("OnChange ignore sheet. get rows data.", zap.String("file", file), zap.String("md5", fileMd5),
-				zap.String("src_sheet", sheetSrcName), zap.String("sheet", sheetName))
-			continue
-		}
+	full.FileMd5 = fileMd5
+	full.SheetDataMd5 = calcSheetDataMd5(logger, full.Data)
+	full.Md5Sum = calcFieldsMd5(full.Fields)
+	newCache := &excellFileCache{}
+	newCache.Base = full
+	newCache.File = file
+	newCache.Sheet = sheetSrcName
+	newCache.logger = logger
+	full.file = newCache
+	// last := getConfigCache(sheetName)
+	// if last != nil {
+	// 	last.updateExcellCache(newCache)
+	// }
+	full.Desc = cfgVersion
 
-		full, err := parseExcellSheet(logger, file, sheetSrcName, rows)
-		if err != nil || full == nil {
-			logger.ErrorWF("OnChange load sheet data failed.", zap.String("file", file), zap.String("md5", fileMd5), zap.String("src", sheetSrcName),
-				zap.String("sheet", sheetName), zap.Bool("full", full == nil), zap.Error(err))
-			continue
-		}
-		full.FileMd5 = fileMd5
-		full.SheetDataMd5 = calcSheetDataMd5(logger, full.Data)
-		full.Md5Sum = calcFieldsMd5(full.Fields)
-		newCache := &excellFileCache{}
-		newCache.Base = full
-		newCache.File = file
-		newCache.Sheet = sheetSrcName
-		newCache.logger = logger
-		full.file = newCache
-		// last := getConfigCache(sheetName)
-		// if last != nil {
-		// 	last.updateExcellCache(newCache)
-		// }
-		full.Desc = cfgVersion
-
-		// 第一次加载，直接更新缓存，否则预存储
-		if tb.isFirstLoad {
-			tb.saveConfigCache(sheetName, newCache)
-		} else {
-			tb.saveConfigCacheForChange(sheetName, newCache)
-		}
-
-		logger.DebugWF("OnChange update config.", zap.String("file", file),
-			zap.String("src_sheet", sheetSrcName), zap.String("sheet", sheetName),
-			zap.String("fileMd5", full.FileMd5), zap.String("sheetDataMd5", full.SheetDataMd5), zap.Any("desc", full.Desc),
-			zap.Strings("fields", full.Fields), zap.String("git_version", cfgVersion), zap.Any("rows", len(rows)))
+	// 第一次加载，直接更新缓存，否则预存储
+	if tb.isFirstLoad {
+		tb.saveConfigCache(sheetName, newCache)
+	} else {
+		tb.saveConfigCacheForChange(sheetName, newCache)
 	}
+
+	logger.DebugWF("OnChange update config.", zap.String("file", file),
+		zap.String("src_sheet", sheetSrcName), zap.String("sheet", sheetName),
+		zap.String("fileMd5", full.FileMd5), zap.String("sheetDataMd5", full.SheetDataMd5), zap.Any("desc", full.Desc),
+		zap.Strings("fields", full.Fields), zap.String("git_version", cfgVersion), zap.Any("rows", len(rows)))
+
 	// 加载记录
 	res := &excelReadResult{}
 	res.file = strings.Replace(file, flagConfigPath, "", -1)
