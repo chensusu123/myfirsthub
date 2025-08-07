@@ -62,8 +62,13 @@ func (s service) getEquipId(logger fklog.FKLogI, userId uint64, mazeLevel int32,
 		logger.ErrorWF("GetEquipId GetMazeEquDropV8Cfg failed", zap.Error(err), zap.Uint64("userId", userId), zap.Int32("barrier", barrier))
 		return nil, err
 	}
+	index, ok := info.DropMap[cfg.Order]
+	if !ok {
+		index = 0
+	}
+
 	equipMap = make(map[int32]int32)
-	if cfg.Special_drop != nil && info.SpecialDropIndex < int32(len(cfg.Special_drop)-1) {
+	if cfg.Special_drop != nil && index < int32(len(cfg.Special_drop)-1) {
 		dropMap, addNum := s.specialEquipDrop(logger, userId, barrier, mazeLevel, addCount)
 		if len(dropMap) > 0 {
 			for k, v := range dropMap {
@@ -113,6 +118,8 @@ func (s service) specialEquipDrop(logger fklog.FKLogI, userId uint64, barrier, m
 			logger.InfoWF("specialEquipDrop special_drop max limit")
 			return nil, 0
 		}
+	} else {
+		index = 0
 	}
 
 	equipIdMap = make(map[int32]int32)
