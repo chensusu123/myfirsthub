@@ -90,7 +90,7 @@ order,version,uid,position,show_type,sub_type,rotation,ob_range,obstruction,scal
 85,101,34697,"37,50.00319,57",56,0,"0,0,0",,0,"1,1,1",Prefab/PuzzleMap/Prop/P_DiKuai_Jia.prefab,,,5,0,,0,0,0,0,0,0,,,,0,,0
 86,101,34698,"39,50.00319,57",56,0,"0,0,0",,0,"1,1,1",Prefab/PuzzleMap/Prop/P_DiKuai_Jia.prefab,,,5,0,,0,0,0,0,0,0,,,,0,,0
 87,101,34713,"35,50.00319,57",56,0,"0,0,0",,0,"1,1,1",Prefab/PuzzleMap/Prop/P_DiKuai_Jia.prefab,,,5,0,,0,0,0,0,0,0,,,,0,,0
-88,101,34703,"34.9199981689453,50.00319,61.0800018310547",56,1,"0,90,0",,0,"1,1,1",Prefab/PuzzleMap/Prop/P_Zhangai_b.prefab,,,5,0,,0,0,0,0,0,0,,,,0,,0
+88,101,34703,"35,50.00319,61",56,1,"0,90,0",,0,"1,1,1",Prefab/PuzzleMap/Prop/P_Zhangai_b.prefab,,,5,0,,0,0,0,0,0,0,,,,0,,0
 89,101,34704,"39,50.00319,61",56,0,"0,0,0",,0,"1,1,1",Prefab/PuzzleMap/Prop/P_DiKuai_Jia.prefab,,,5,0,,0,0,0,0,0,0,,,,0,,0
 90,101,34705,"39,50.00319,63",56,0,"0,0,0",,0,"1,1,1",Prefab/PuzzleMap/Prop/P_DiKuai_Jia.prefab,,,5,0,,0,0,0,0,0,0,,,,0,,0
 91,101,34708,"31,50.00319,59",56,0,"0,0,0",,0,"1,1,1",Prefab/PuzzleMap/Prop/P_DiKuai_Jia.prefab,,,5,0,,0,0,0,0,0,0,,,,0,,0
