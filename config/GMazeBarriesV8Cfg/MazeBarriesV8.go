@@ -22,8 +22,8 @@ type MazeBarriesV8ConfigRow struct {
 	Box_id_first               int32           `json:"box_id_first"`               // 首次通关奖励
 	Hp_vial                    int32           `json:"hp_vial"`                    // 血瓶id
 	Drop_vial_foe              []int32         `json:"drop_vial_foe"`              // 掉落血瓶的怪物数
-	Challenge_cost             int32           `json:"challenge_cost"`             // 挑战消耗次数
-	Mop_cost                   int32           `json:"mop_cost"`                   // 扫荡消耗体力
+	Challenge_cost             int32           `json:"challenge_cost"`             // 挑战消耗次数（废弃）
+	Mop_cost                   int32           `json:"mop_cost"`                   // 挑战和扫荡消耗体力
 	Drop_equip_lv_min          int32           `json:"drop_equip_lv_min"`          // 掉落装备等级，小
 	Drop_equip_lv_max          int32           `json:"drop_equip_lv_max"`          // 掉落装备等级,大
 	Energy_list                []int32         `json:"energy_list"`                // 能力等级队列（随机）
@@ -39,6 +39,10 @@ type MazeBarriesV8ConfigRow struct {
 	Box_ids                    []int32         `json:"box_ids"`                    // 宝箱列表
 	Equ_drop                   int32           `json:"equ_drop"`                   // 装备掉落id
 	Need_equip_score           int32           `json:"need_equip_score"`           // 掉落装备所需积分
+	Need_item1_score           int32           `json:"need_item1_score"`           // 掉落道具1金币所需积分
+	Need_item2_score           int32           `json:"need_item2_score"`           // 掉落道具2强化石所需积分
+	Item1_nums_per_pile        int32           `json:"item1_nums_per_pile"`        // 掉落道具1金币单堆数量
+	Item2_nums_per_pile        int32           `json:"item2_nums_per_pile"`        // 掉落道具2强化石单堆数量
 }
 
 // MazeBarriesV8Config from maze_barries_v8【迷宫-关卡信息】.xlsx maze_barries_v8
@@ -400,12 +404,12 @@ func (*gMazeBarriesV8Parser) Parse(logger fklog.FKLogI, data []string, row inter
 		}
 	}
 
-	// parse column 8 challenge_cost : 挑战消耗次数
+	// parse column 8 challenge_cost : 挑战消耗次数（废弃）
 	if data[8] != "" {
 		tmp, err = strconv.ParseInt(data[8], 10, 64)
 		if err != nil {
-			err = errors.New("parse field challenge_cost 挑战消耗次数 to int32 failed")
-			logger.ErrorWF("parse field challenge_cost 挑战消耗次数 to int32 failed.",
+			err = errors.New("parse field challenge_cost 挑战消耗次数（废弃） to int32 failed")
+			logger.ErrorWF("parse field challenge_cost 挑战消耗次数（废弃） to int32 failed.",
 				zap.String("xlsx", "maze_barries_v8【迷宫-关卡信息】.xlsx"), zap.String("sheet", "maze_barries_v8"),
 				zap.String("parse_data", data[8]),
 				zap.Error(err))
@@ -414,12 +418,12 @@ func (*gMazeBarriesV8Parser) Parse(logger fklog.FKLogI, data []string, row inter
 		config.Challenge_cost = int32(tmp)
 	}
 
-	// parse column 9 mop_cost : 扫荡消耗体力
+	// parse column 9 mop_cost : 挑战和扫荡消耗体力
 	if data[9] != "" {
 		tmp, err = strconv.ParseInt(data[9], 10, 64)
 		if err != nil {
-			err = errors.New("parse field mop_cost 扫荡消耗体力 to int32 failed")
-			logger.ErrorWF("parse field mop_cost 扫荡消耗体力 to int32 failed.",
+			err = errors.New("parse field mop_cost 挑战和扫荡消耗体力 to int32 failed")
+			logger.ErrorWF("parse field mop_cost 挑战和扫荡消耗体力 to int32 failed.",
 				zap.String("xlsx", "maze_barries_v8【迷宫-关卡信息】.xlsx"), zap.String("sheet", "maze_barries_v8"),
 				zap.String("parse_data", data[9]),
 				zap.Error(err))
@@ -795,6 +799,62 @@ func (*gMazeBarriesV8Parser) Parse(logger fklog.FKLogI, data []string, row inter
 		}
 		config.Need_equip_score = int32(tmp)
 	}
+
+	// parse column 25 need_item1_score : 掉落道具1金币所需积分
+	if data[25] != "" {
+		tmp, err = strconv.ParseInt(data[25], 10, 64)
+		if err != nil {
+			err = errors.New("parse field need_item1_score 掉落道具1金币所需积分 to int32 failed")
+			logger.ErrorWF("parse field need_item1_score 掉落道具1金币所需积分 to int32 failed.",
+				zap.String("xlsx", "maze_barries_v8【迷宫-关卡信息】.xlsx"), zap.String("sheet", "maze_barries_v8"),
+				zap.String("parse_data", data[25]),
+				zap.Error(err))
+			return
+		}
+		config.Need_item1_score = int32(tmp)
+	}
+
+	// parse column 26 need_item2_score : 掉落道具2强化石所需积分
+	if data[26] != "" {
+		tmp, err = strconv.ParseInt(data[26], 10, 64)
+		if err != nil {
+			err = errors.New("parse field need_item2_score 掉落道具2强化石所需积分 to int32 failed")
+			logger.ErrorWF("parse field need_item2_score 掉落道具2强化石所需积分 to int32 failed.",
+				zap.String("xlsx", "maze_barries_v8【迷宫-关卡信息】.xlsx"), zap.String("sheet", "maze_barries_v8"),
+				zap.String("parse_data", data[26]),
+				zap.Error(err))
+			return
+		}
+		config.Need_item2_score = int32(tmp)
+	}
+
+	// parse column 27 item1_nums_per_pile : 掉落道具1金币单堆数量
+	if data[27] != "" {
+		tmp, err = strconv.ParseInt(data[27], 10, 64)
+		if err != nil {
+			err = errors.New("parse field item1_nums_per_pile 掉落道具1金币单堆数量 to int32 failed")
+			logger.ErrorWF("parse field item1_nums_per_pile 掉落道具1金币单堆数量 to int32 failed.",
+				zap.String("xlsx", "maze_barries_v8【迷宫-关卡信息】.xlsx"), zap.String("sheet", "maze_barries_v8"),
+				zap.String("parse_data", data[27]),
+				zap.Error(err))
+			return
+		}
+		config.Item1_nums_per_pile = int32(tmp)
+	}
+
+	// parse column 28 item2_nums_per_pile : 掉落道具2强化石单堆数量
+	if data[28] != "" {
+		tmp, err = strconv.ParseInt(data[28], 10, 64)
+		if err != nil {
+			err = errors.New("parse field item2_nums_per_pile 掉落道具2强化石单堆数量 to int32 failed")
+			logger.ErrorWF("parse field item2_nums_per_pile 掉落道具2强化石单堆数量 to int32 failed.",
+				zap.String("xlsx", "maze_barries_v8【迷宫-关卡信息】.xlsx"), zap.String("sheet", "maze_barries_v8"),
+				zap.String("parse_data", data[28]),
+				zap.Error(err))
+			return
+		}
+		config.Item2_nums_per_pile = int32(tmp)
+	}
 	return
 }
 
@@ -824,6 +884,10 @@ var gMazeBarriesV8Fields = []string{
 	"box_ids",
 	"equ_drop",
 	"need_equip_score",
+	"need_item1_score",
+	"need_item2_score",
+	"item1_nums_per_pile",
+	"item2_nums_per_pile",
 }
 
 // LoadDataManual load data for test
