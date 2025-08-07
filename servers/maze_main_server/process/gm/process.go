@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"maze_game_server/excel/mazeenergyaffixlvv8config"
 	"maze_game_server/model/tempbuffmodel"
 	"maze_game_server/services/tempbuffservice"
 	"net/http"
@@ -303,6 +304,15 @@ func RegGm(logger fklog.FKLogI) {
 			}
 		}
 		if tempBuffInfo != nil {
+			fmt.Fprintf(writer, "----------------临时词条列表----------------\n")
+			for _, info := range tempBuffInfo.SelectedBuff {
+				cfg := mazeenergyaffixlvv8config.GetAffixConfig(info.BuffId)
+				if cfg != nil {
+					fmt.Fprintf(writer, "[%d]%s 描述: %s\n", info.BuffId, cfg.Affix_name, cfg.Affix_desc)
+				} else {
+					fmt.Fprintf(writer, "[%d]词条配置不存在\n", info.BuffId)
+				}
+			}
 			fmt.Fprintf(writer, "----------------临时属性列表----------------\n")
 			for _, buffInfo := range tempBuffInfo.TotalBuff {
 				attrCfg := GMazeAttributeV8Cfg.Get(buffInfo.BuffId)
