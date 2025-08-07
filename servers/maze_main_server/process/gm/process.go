@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"maze_game_server/model/tempbuffmodel"
 	"maze_game_server/services/tempbuffservice"
 	"net/http"
 	"sort"
@@ -255,8 +256,12 @@ func RegGm(logger fklog.FKLogI) {
 			fmt.Fprintf(writer, "获取人物属性失败: %s\n", err.Error())
 			return
 		}
+
+		var (
+			tempBuffInfo *tempbuffmodel.TempBuffInfoModel
+		)
 		if barrierId > 0 {
-			tempBuffInfo, err := tempbuffservice.GlobalTempBuffService.GetTempBuffInfo(logger, userId, barrierId)
+			tempBuffInfo, err = tempbuffservice.GlobalTempBuffService.GetTempBuffInfo(logger, userId, barrierId)
 			if err != nil {
 				logger.ErrorWF("GetBarrierTempBuff err", zap.Error(err))
 				fmt.Fprintf(writer, "获取临时BUFF失败: %s\n", err.Error())
@@ -279,6 +284,7 @@ func RegGm(logger fklog.FKLogI) {
 			return attrs[i].AttrID < attrs[j].AttrID
 		})
 
+		fmt.Fprintf(writer, "----------------用户属性列表----------------\n")
 		for _, attr := range attrs {
 			attrCfg := GMazeAttributeV8Cfg.Get(attr.AttrID)
 			if attrCfg != nil {
@@ -294,6 +300,26 @@ func RegGm(logger fklog.FKLogI) {
 				}
 			} else {
 				fmt.Fprintf(writer, "[%d]属性配置不存在\n", attr.AttrID)
+			}
+		}
+		if tempBuffInfo != nil {
+			fmt.Fprintf(writer, "----------------临时属性列表----------------\n")
+			for _, buffInfo := range tempBuffInfo.TotalBuff {
+				attrCfg := GMazeAttributeV8Cfg.Get(buffInfo.BuffId)
+				if attrCfg != nil {
+					switch attrCfg.Figure {
+					case 1:
+						fmt.Fprintf(writer, "[%d]%s: %d\n", buffInfo.BuffId, attrCfg.Name, buffInfo.BuffValue)
+					case 2:
+						fmt.Fprintf(writer, "[%d]%s: %.4f\n", buffInfo.BuffId, attrCfg.Name, float64(buffInfo.BuffValue)/10000.0)
+					case 3:
+						fmt.Fprintf(writer, "[%d]%s: %.7f\n", buffInfo.BuffId, attrCfg.Name, float64(buffInfo.BuffValue)/1000000.0)
+					default:
+						fmt.Fprintf(writer, "[%d]属性值类型[%d]无效\n", buffInfo.BuffId, attrCfg.Figure)
+					}
+				} else {
+					fmt.Fprintf(writer, "[%d]属性配置不存在\n", buffInfo.BuffId)
+				}
 			}
 		}
 	})
