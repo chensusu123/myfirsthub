@@ -14,7 +14,7 @@ import (
 	"maze_game_server/module/mazeuserinfo"
 )
 
-func (s service) GetNewEquip(logger fklog.FKLogI, userId uint64, barrierId int32, level int32, equipNum int32) (newEquip map[int32]int32, err error) {
+func (s service) GetNewEquip(logger fklog.FKLogI, userId uint64, level int32, barrierId int32, equipNum int32) (newEquip map[int32]int32, err error) {
 	userInfo, err := mazeuserinfo.GetUserInfoV2(logger, userId)
 	if err != nil {
 		logger.ErrorWF("GetNewEquip GetNewEquip fail", zap.Error(err))
@@ -136,6 +136,7 @@ func (s service) specialEquipDrop(logger fklog.FKLogI, userId uint64, barrier, m
 		quality := cfg.Special_drop[i]
 		pos := cfg.Special_drop[i+1]
 		equipId := getEquipId(newLevel, quality, pos)
+		logger.InfoWF("specialEquipDrop getEquipId success", zap.Int32("level", newLevel), zap.Int32("quality", quality), zap.Int32("pos", pos), zap.Int32("equipId", equipId))
 		equipIdMap[equipId] += 1
 
 		index = int32(i + 1)
@@ -183,9 +184,10 @@ func (s service) regularityEquipDrop(logger fklog.FKLogI, userId uint64, barrier
 		}
 
 		pos := fkutil.RandInt32(1, constdef.EquipPosNum+1) //部位等概率随机
-		logger.InfoWF("regularityEquipDrop random quality, pos", zap.Int32("level", newLevel), zap.Int32("quality", quality), zap.Int("pos", pos))
+		//logger.InfoWF("regularityEquipDrop random quality, pos", zap.Int32("level", newLevel), zap.Int32("quality", quality), zap.Int("pos", pos))
 
 		equipId := getEquipId(newLevel, quality, int32(pos))
+		logger.InfoWF("regularityEquipDrop getEquipId success", zap.Int32("level", newLevel), zap.Int32("quality", quality), zap.Int32("pos", int32(pos)), zap.Int32("equipId", equipId))
 		equipIdMap[equipId] += 1
 	}
 	return
