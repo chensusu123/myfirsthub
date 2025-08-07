@@ -107,9 +107,12 @@ func (s service) specialEquipDrop(logger fklog.FKLogI, userId uint64, barrier, m
 		return nil, 0
 	}
 
-	if info.SpecialDropIndex >= int32(len(cfg.Special_drop)-1) {
-		logger.InfoWF("specialEquipDrop special_drop max limit")
-		return nil, 0
+	index, ok := info.DropMap[cfg.Order]
+	if ok {
+		if index >= int32(len(cfg.Special_drop)-1) {
+			logger.InfoWF("specialEquipDrop special_drop max limit")
+			return nil, 0
+		}
 	}
 
 	equipIdMap = make(map[int32]int32)
@@ -119,7 +122,7 @@ func (s service) specialEquipDrop(logger fklog.FKLogI, userId uint64, barrier, m
 		if addCount == add {
 			break
 		}
-		if i < int(info.SpecialDropIndex) {
+		if i < int(index) {
 			continue
 		}
 
@@ -128,7 +131,8 @@ func (s service) specialEquipDrop(logger fklog.FKLogI, userId uint64, barrier, m
 		equipId := getEquipId(newLevel, quality, pos)
 		equipIdMap[equipId] += 1
 
-		info.SpecialDropIndex = int32(i + 1)
+		index = int32(i + 1)
+		info.DropMap[cfg.Order] = int32(i + 1)
 		add++
 	}
 
