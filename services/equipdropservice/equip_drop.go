@@ -14,7 +14,7 @@ import (
 	"maze_game_server/module/mazeuserinfo"
 )
 
-func (s service) GetNewEquip(logger fklog.FKLogI, userId uint64, barrierId int32, level int32, equipNum int32) (newEquip map[int32]int32, err error) {
+func (s service) GetNewEquip(logger fklog.FKLogI, userId uint64, level int32, barrierId int32, equipNum int32) (newEquip map[int32]int32, err error) {
 	userInfo, err := mazeuserinfo.GetUserInfoV2(logger, userId)
 	if err != nil {
 		logger.ErrorWF("GetNewEquip GetNewEquip fail", zap.Error(err))
@@ -62,8 +62,13 @@ func (s service) getEquipId(logger fklog.FKLogI, userId uint64, mazeLevel int32,
 		logger.ErrorWF("GetEquipId GetMazeEquDropV8Cfg failed", zap.Error(err), zap.Uint64("userId", userId), zap.Int32("barrier", barrier))
 		return nil, err
 	}
+	index, ok := info.DropMap[cfg.Order]
+	if !ok {
+		index = 0
+	}
+
 	equipMap = make(map[int32]int32)
-	if cfg.Special_drop != nil && info.SpecialDropIndex < int32(len(cfg.Special_drop)-1) {
+	if cfg.Special_drop != nil && index < int32(len(cfg.Special_drop)-1) {
 		dropMap, addNum := s.specialEquipDrop(logger, userId, barrier, mazeLevel, addCount)
 		if len(dropMap) > 0 {
 			for k, v := range dropMap {
@@ -107,9 +112,14 @@ func (s service) specialEquipDrop(logger fklog.FKLogI, userId uint64, barrier, m
 		return nil, 0
 	}
 
-	if info.SpecialDropIndex >= int32(len(cfg.Special_drop)-1) {
-		logger.InfoWF("specialEquipDrop special_drop max limit")
-		return nil, 0
+	index, ok := info.DropMap[cfg.Order]
+	if ok {
+		if index >= int32(len(cfg.Special_drop)-1) {
+			logger.InfoWF("specialEquipDrop special_drop max limit")
+			return nil, 0
+		}
+	} else {
+		index = 0
 	}
 
 	equipIdMap = make(map[int32]int32)
@@ -119,16 +129,18 @@ func (s service) specialEquipDrop(logger fklog.FKLogI, userId uint64, barrier, m
 		if addCount == add {
 			break
 		}
-		if i < int(info.SpecialDropIndex) {
+		if i < int(index) {
 			continue
 		}
 
 		quality := cfg.Special_drop[i]
 		pos := cfg.Special_drop[i+1]
 		equipId := getEquipId(newLevel, quality, pos)
+		logger.InfoWF("specialEquipDrop getEquipId success", zap.Int32("level", newLevel), zap.Int32("quality", quality), zap.Int32("pos", pos), zap.Int32("equipId", equipId))
 		equipIdMap[equipId] += 1
 
-		info.SpecialDropIndex = int32(i + 1)
+		index = int32(i + 1)
+		info.DropMap[cfg.Order] = int32(i + 1)
 		add++
 	}
 
@@ -172,9 +184,10 @@ func (s service) regularityEquipDrop(logger fklog.FKLogI, userId uint64, barrier
 		}
 
 		pos := fkutil.RandInt32(1, constdef.EquipPosNum+1) //部位等概率随机
-		logger.InfoWF("regularityEquipDrop random quality, pos", zap.Int32("level", newLevel), zap.Int32("quality", quality), zap.Int("pos", pos))
+		//logger.InfoWF("regularityEquipDrop random quality, pos", zap.Int32("level", newLevel), zap.Int32("quality", quality), zap.Int("pos", pos))
 
 		equipId := getEquipId(newLevel, quality, int32(pos))
+		logger.InfoWF("regularityEquipDrop getEquipId success", zap.Int32("level", newLevel), zap.Int32("quality", quality), zap.Int32("pos", int32(pos)), zap.Int32("equipId", equipId))
 		equipIdMap[equipId] += 1
 	}
 	return

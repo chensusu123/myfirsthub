@@ -8,13 +8,16 @@ import (
 )
 
 type EquipSpecialDropModel struct {
-	OrderId          int32 `json:"order_id"`           // MazeEquDropV8ConfigRow表序列id
-	SpecialDropIndex int32 `json:"special_drop_index"` // 已经掉落的特殊掉落下标
-	EquipPoints      int32 `json:"equip_points"`       // 装备分
+	//OrderId          int32 `json:"order_id"`           // MazeEquDropV8ConfigRow表序列id
+	//SpecialDropIndex int32           `json:"special_drop_index"` // 已经掉落的特殊掉落下标
+	EquipPoints int32           `json:"equip_points"` // 装备分
+	DropMap     map[int32]int32 `json:"drop_map"`     // 特殊掉落记录：key=MazeEquDropV8ConfigRow表序列id，value=已经掉落的特殊掉落下标
 }
 
 func NewEquipSpecialDropModel(logger fklog.FKLogI, userID uint64) (*EquipSpecialDropModel, error) {
-	info := &EquipSpecialDropModel{}
+	info := &EquipSpecialDropModel{
+		DropMap: make(map[int32]int32),
+	}
 	if err := info.load(logger, userID); err != nil {
 		return nil, err
 	}
