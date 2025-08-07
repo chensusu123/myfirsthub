@@ -9,12 +9,12 @@ import (
 	"maze_game_server/io/redis/mazechallengenumredis"
 	"maze_game_server/io/redis/mazecollectredis"
 	"maze_game_server/io/redis/mazeequipgetnumredis"
+	"maze_game_server/io/redis/mazeequipspecialdropredis"
 	"maze_game_server/io/redis/mazeuserbarrierredis"
 	"maze_game_server/io/redis/mazeuserlevelredis"
 	"maze_game_server/io/redis/syncmazestorageinforedis"
 	"maze_game_server/lib/log"
 	"maze_game_server/lib/nano/session"
-	"maze_game_server/model/equipdropmodel"
 	"maze_game_server/module/mazeuserinfo"
 	"maze_game_server/pb/common/MazeGame"
 	"maze_game_server/pb/server/MazeEnergySvr"
@@ -261,15 +261,11 @@ func ClearBarrier(logger fklog.FKLogI, userId uint64) (err error) {
 	//	return
 	//}
 
-	dropInfo, err := equipdropmodel.NewEquipSpecialDropModel(logger, userId)
+	err = mazeequipspecialdropredis.GMDel(logger, userId)
 	if err != nil {
 		return err
 	}
-	err = dropInfo.Del(logger, userId)
-	if err != nil {
-		return err
-	}
-	
+
 	err = mazecollectredis.GMDel(logger, userId)
 	if err != nil {
 		return
