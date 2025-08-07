@@ -2,11 +2,7 @@ package buff
 
 import (
 	"fmt"
-	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fklog"
-	"gitlab.ifreetalk.com/maze-plate/freetk/fkserver/appconfig"
-	"gitlab.ifreetalk.com/maze-plate/freetk/fkutil"
-	"go.uber.org/zap"
-	"google.golang.org/protobuf/proto"
+	"maze_game_server/config/GMazeAttributeV8Cfg"
 	"maze_game_server/excel/mazeenergyaffixlvv8config"
 	"maze_game_server/io/kafka/mazetempbuffchgmsg"
 	"maze_game_server/model/tempbuffmodel"
@@ -16,6 +12,12 @@ import (
 	"net/http"
 	"sort"
 	"strings"
+
+	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fklog"
+	"gitlab.ifreetalk.com/maze-plate/freetk/fkserver/appconfig"
+	"gitlab.ifreetalk.com/maze-plate/freetk/fkutil"
+	"go.uber.org/zap"
+	"google.golang.org/protobuf/proto"
 )
 
 /**
@@ -126,8 +128,24 @@ func InitGM(logger fklog.FKLogI) {
 			return
 		}
 
+		// 校验属性配置
+		for _, info := range buffInfo.SelectedBuff {
+			// 获取buff实际加成
+			config := mazeenergyaffixlvv8config.GetAffixConfig(info.BuffId)
+			if config != nil {
+				for id := range config.Add_attr {
+					attrCfg := GMazeAttributeV8Cfg.Get(id)
+					if attrCfg == nil {
+						fmt.Fprintf(writer, "词条[%d]增加的属性[%d]配置无效，请检查属性配置表: maze_attribute_v8【迷宫-属性】.xlsx", info.BuffId, id)
+						return
+					}
+				}
+			}
+		}
+
 		var totalMap map[int32]int64
 		totalMap, buffInfo.TotalBuff = tempbuffservice.GlobalTempBuffService.GetTotalBuff(logger, buffInfo.SelectedBuff)
+
 		// 更新buff信息
 		err = buffInfo.Save(logger, userId, stageId)
 		if err != nil {
