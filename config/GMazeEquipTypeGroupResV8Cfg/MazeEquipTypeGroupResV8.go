@@ -14,8 +14,8 @@ import (
 
 // MazeEquipTypeGroupResV8ConfigRow from maze_equip_type_res_v8【迷宫-装备-类型与对应资源】.xlsx maze_equip_type_group_res_v8
 type MazeEquipTypeGroupResV8ConfigRow struct {
-	Order            int32   `json:"order"`            // 序号
-	Maze_model_group []int32 `json:"maze_model_group"` // 迷宫模型资源列表
+	Order            int32           `json:"order"`            // 序号
+	Maze_model_group map[int32]int32 `json:"maze_model_group"` // 迷宫模型资源列表
 }
 
 // MazeEquipTypeGroupResV8Config from maze_equip_type_res_v8【迷宫-装备-类型与对应资源】.xlsx maze_equip_type_group_res_v8
@@ -286,19 +286,37 @@ func (*gMazeEquipTypeGroupResV8Parser) Parse(logger fklog.FKLogI, data []string,
 	// parse column 1 maze_model_group : 迷宫模型资源列表
 	if data[1] != "" {
 
-		vals := strings.Split(data[1], ",")
-		for k, v := range vals {
-			tmp, err = strconv.ParseInt(v, 10, 64)
+		config.Maze_model_group = make(map[int32]int32)
+		var key int32
+		var value int32
+		vals := strings.Split(data[1], "_")
+		for k, val := range vals {
+			items := strings.Split(val, ":")
+			tmp, err = strconv.ParseInt(items[0], 10, 64)
 			if err != nil {
-				err = errors.New("parse array field maze_model_group 迷宫模型资源列表 to []int32 failed")
-				logger.ErrorWF("parse array field maze_model_group 迷宫模型资源列表 to []int32 failed.",
+				err = errors.New("parse map field maze_model_group 迷宫模型资源列表 to key int32 failed")
+				logger.ErrorWF("parse map field maze_model_group 迷宫模型资源列表 to key int32 failed.",
 					zap.String("xlsx", "maze_equip_type_res_v8【迷宫-装备-类型与对应资源】.xlsx"), zap.String("sheet", "maze_equip_type_group_res_v8"),
 					// zap.String("field_data",data[1]),
-					zap.String("parse_data", v), zap.Int("index", k),
+					zap.String("item_data", val), zap.Int("index", k),
+					zap.String("parse_data", items[0]),
 					zap.Error(err))
 				return
 			}
-			config.Maze_model_group = append(config.Maze_model_group, int32(tmp))
+			key = int32(tmp)
+			tmp, err = strconv.ParseInt(items[1], 10, 64)
+			if err != nil {
+				err = errors.New("parse map field maze_model_group 迷宫模型资源列表 to value int32 failed")
+				logger.ErrorWF("parse map field maze_model_group 迷宫模型资源列表 to value int32 failed.",
+					zap.String("xlsx", "maze_equip_type_res_v8【迷宫-装备-类型与对应资源】.xlsx"), zap.String("sheet", "maze_equip_type_group_res_v8"),
+					// zap.String("field_data",data[1]),
+					zap.String("item_data", val), zap.Int("index", k),
+					zap.String("parse_data", items[1]),
+					zap.Error(err))
+				return
+			}
+			value = int32(tmp)
+			config.Maze_model_group[key] = value
 		}
 	}
 	return
