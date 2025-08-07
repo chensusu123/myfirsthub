@@ -199,7 +199,7 @@ func (x *QueryMazeEnergyRS) GetEnergyInfo() *EnergyInfo {
 	return nil
 }
 
-//10610 UN_TCP_PACK_CLI_ENERGY_CHANGE_ID
+//## 10610 UN_TCP_PACK_CLI_ENERGY_CHANGE_ID
 //体力变化ID包
 type EnergyChangeID struct {
 	state         protoimpl.MessageState
@@ -248,7 +248,7 @@ func (x *EnergyChangeID) GetEnergyInfo() *EnergyInfo {
 	return nil
 }
 
-// 10611 	UN_TCP_PACK_CLI_USE_MAZE_ENERGY_ITEM_RQ
+//## 10611 	UN_TCP_PACK_CLI_USE_MAZE_ENERGY_ITEM_RQ
 // 使用迷宫体力道具请求
 type UseMazeEnergyItemRQ struct {
 	state         protoimpl.MessageState
@@ -297,7 +297,7 @@ func (x *UseMazeEnergyItemRQ) GetHeader() *Common.PacketHeader {
 	return nil
 }
 
-//10612 	UN_TCP_PACK_CLI_USE_MAZE_ENERGY_ITEM_RS
+//## 10612 	UN_TCP_PACK_CLI_USE_MAZE_ENERGY_ITEM_RS
 // 使用迷宫体力道具应答
 type UseMazeEnergyItemRS struct {
 	state         protoimpl.MessageState
