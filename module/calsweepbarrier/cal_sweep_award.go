@@ -96,12 +96,12 @@ func CalUserSweepBarrierAward(logger fklog.FKLogI, uid uint64, barrierId int32, 
 			err = errors.New("foe cfg nil")
 			return
 		}
-		foeExpMap[foeId] = foeCfg.Drop_exp_num[int32(userInfo.Level)]
-		foeMoneyMap[foeId] = foeCfg.Drop_coin_num[int32(userInfo.Level)]
-		foeEquipPointMap[foeId] = foeCfg.Drop_equip_score_num[int32(userInfo.Level)]
-		addExp += (foeCfg.Drop_exp_num[int32(userInfo.Level)] + expExtra) * int64(num)
-		addMoney += (foeCfg.Drop_coin_num[int32(userInfo.Level)] + moneyExtra) * int64(num)
-		addEquipPoint += foeCfg.Drop_equip_score_num[int32(userInfo.Level)] * int64(num)
+		foeExpMap[foeId] = int64(foeCfg.Drop_exp_num)
+		foeMoneyMap[foeId] = int64(foeCfg.Drop_coin_num)
+		foeEquipPointMap[foeId] = int64(foeCfg.Drop_equip_score_num)
+		addExp += (int64(foeCfg.Drop_exp_num) + expExtra) * int64(num)
+		addMoney += (int64(foeCfg.Drop_coin_num) + moneyExtra) * int64(num)
+		addEquipPoint += int64(foeCfg.Drop_equip_score_num) * int64(num)
 	}
 
 	// 计算加成 由于没有武力值 暂时没有额外加成
