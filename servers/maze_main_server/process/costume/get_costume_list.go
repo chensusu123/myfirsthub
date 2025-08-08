@@ -12,7 +12,7 @@ import (
 	"time"
 )
 
-func (c *CostumeComponent) GetUserCostume_10613_10613(s *session.Session, req *Costume.GetUserCostumeRQ) (err error) {
+func (c *CostumeComponent) GetUserCostume_10613_10614(s *session.Session, req *Costume.GetUserCostumeRQ) (err error) {
 	defer fkprometheus.InfoPMT("GetUserCostume")()
 
 	start := time.Now()
