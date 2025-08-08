@@ -33,6 +33,7 @@ import (
 	"maze_game_server/pb/server/MazeEquipSvr"
 	"maze_game_server/servers/maze_main_server/process/equip/demconstdef"
 	"maze_game_server/servers/maze_main_server/process/equip/module"
+	"maze_game_server/services/costumeservice"
 	"maze_game_server/usecase/online"
 
 	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fklog"
@@ -357,6 +358,8 @@ func (ep *Equip) OnDressMazeEquipRQ_10418_10419(s *session.Session, req *MazeGam
 		chgMask, int32(int32(MazeGameEquip.ENUM_MAZE_EQUIP_POS_MASK_LOAD_EQUIP_INFO)),
 		constdef.DollAssembleChgTypeReplaceEquip)
 
+	// 换装备推送装扮变化id包
+	costumeservice.GlobalCostumeService.ChangeCostume(logger, userId)
 	return nil
 }
 
