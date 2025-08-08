@@ -5,14 +5,12 @@ import (
 	"maze_game_server/common/errors"
 	"maze_game_server/common/function/gentradeno"
 	"maze_game_server/common/structsdef"
-	"maze_game_server/config/GMazeActionCountV8Cfg"
 	"maze_game_server/config/GMazeBarriesV8Cfg"
 	"maze_game_server/config/GMazeLevelV8Cfg"
 	"maze_game_server/io/redis/mazeattrcalcnotifyqueue"
 	"maze_game_server/io/redis/mazebarriereventredis"
 	"maze_game_server/io/redis/mazebarrieropstatusredis"
 	"maze_game_server/io/redis/mazebuffinforedis"
-	"maze_game_server/io/redis/mazechallengenumredis"
 	"maze_game_server/io/redis/mazeuserbarrierredis"
 	"maze_game_server/io/redis/syncmazestorageinforedis"
 	"maze_game_server/lib/log"
@@ -26,6 +24,7 @@ import (
 	"maze_game_server/pb/server/MazeEnergySvr"
 	"maze_game_server/servers/maze_main_server/process/game/energy"
 	"maze_game_server/servers/maze_main_server/process/game/events"
+	"maze_game_server/services/barrierenergyservice"
 	"maze_game_server/services/tempbuffservice"
 	"time"
 
@@ -170,41 +169,49 @@ func (g *Game) OnMazeBarrierEnterRQ_10447_10448(s *session.Session, req *MazeGam
 		// }
 		// curEnergy = remainVal
 
+		//扣体力
+		_, err := barrierenergyservice.GlobalBarrierEnergyService.SubEnergy(logger, userId, barrierCfg.Mop_cost)
+		if err != nil {
+			res.ErrInfo = errors.COMMON_ERROR_TIPS.Wrap("体力不足")
+			logger.ErrorWF("OnMazeBarrierEnterRQ SubEnergy fail", zap.Error(err))
+			return err
+		}
+
 		//扣次数
-		var maxNum int32
-		maxNumCfg := GMazeActionCountV8Cfg.Get(101)
-		if maxNumCfg == nil {
-			logger.ErrorWF("OnMazeBarrierEnterRQ GMazeActionCountV8Cfg fail", zap.Error(err))
-			res.ErrInfo = errors.CONFIG_NOT_FOUND.ToInfo()
-			return
-		}
-		maxNum = maxNumCfg.Day_count_v8
-		now := time.Now()
-		today := now.Year()*10000 + int(now.Month())*100 + now.Day()
-
-		useNumToday, err2 := mazechallengenumredis.GetUserChallengeNum(logger, userId, today)
-		if err2 != nil {
-			logger.ErrorWF("OnMazeBarrierEnterRQ GetUserChallengeNum fail", zap.Error(err2))
-			res.ErrInfo = errors.MODULE_ERROR.ToInfo()
-			return
-		}
-		if int32(useNumToday)+barrierCfg.Challenge_cost > maxNum {
-			res.ErrInfo = errors.COMMON_ERROR_TIPS.Wrap("次数不足")
-			return
-		}
-		err = mazechallengenumredis.AddUserChallengeNum(logger, userId, today, barrierCfg.Challenge_cost)
-		if err != nil {
-			logger.ErrorWF("OnMazeBarrierEnterRQ AddUserChallengeNum fail", zap.Error(err))
-			res.ErrInfo = errors.MODULE_ERROR.ToInfo()
-			return
-		}
-
-		err = mazeuserinfo.SetUserInfoV2(logger, userId, userInfo)
-		if err != nil {
-			logger.ErrorWF("OnMazeBarrierEnterRQ SetUserInfoV2 fail", zap.Error(err))
-			res.ErrInfo = errors.MODULE_ERROR.ToInfo()
-			return
-		}
+		//var maxNum int32
+		//maxNumCfg := GMazeActionCountV8Cfg.Get(101)
+		//if maxNumCfg == nil {
+		//	logger.ErrorWF("OnMazeBarrierEnterRQ GMazeActionCountV8Cfg fail", zap.Error(err))
+		//	res.ErrInfo = errors.CONFIG_NOT_FOUND.ToInfo()
+		//	return
+		//}
+		//maxNum = maxNumCfg.Day_count_v8
+		//now := time.Now()
+		//today := now.Year()*10000 + int(now.Month())*100 + now.Day()
+		//
+		//useNumToday, err2 := mazechallengenumredis.GetUserChallengeNum(logger, userId, today)
+		//if err2 != nil {
+		//	logger.ErrorWF("OnMazeBarrierEnterRQ GetUserChallengeNum fail", zap.Error(err2))
+		//	res.ErrInfo = errors.MODULE_ERROR.ToInfo()
+		//	return
+		//}
+		//if int32(useNumToday)+barrierCfg.Challenge_cost > maxNum {
+		//	res.ErrInfo = errors.COMMON_ERROR_TIPS.Wrap("次数不足")
+		//	return
+		//}
+		//err = mazechallengenumredis.AddUserChallengeNum(logger, userId, today, barrierCfg.Challenge_cost)
+		//if err != nil {
+		//	logger.ErrorWF("OnMazeBarrierEnterRQ AddUserChallengeNum fail", zap.Error(err))
+		//	res.ErrInfo = errors.MODULE_ERROR.ToInfo()
+		//	return
+		//}
+		//
+		//err = mazeuserinfo.SetUserInfoV2(logger, userId, userInfo)
+		//if err != nil {
+		//	logger.ErrorWF("OnMazeBarrierEnterRQ SetUserInfoV2 fail", zap.Error(err))
+		//	res.ErrInfo = errors.MODULE_ERROR.ToInfo()
+		//	return
+		//}
 
 		// 记录用户关卡状态 清除客户端上报数据
 		userBarrier.BarrierId = proto.Int32(req.GetBarrierId())
