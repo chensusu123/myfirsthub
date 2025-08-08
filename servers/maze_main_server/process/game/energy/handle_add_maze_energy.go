@@ -9,9 +9,9 @@ package energy
 import (
 	"maze_game_server/common/constdef"
 	"maze_game_server/common/errors"
-	"maze_game_server/excel/mazeconfigv8"
 	"maze_game_server/module/mazeuserinfo"
 	"maze_game_server/pb/server/MazeEnergySvr"
+	"maze_game_server/services/barrierenergyservice"
 	"time"
 
 	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fklog"
@@ -65,7 +65,7 @@ func AddMazeEnergyRQ(logger fklog.FKLogI, userID uint64, req *MazeEnergySvr.AddM
 		res.ErrInfo = errors.MODULE_ERROR.ToInfo()
 		return
 	}
-	maxVal := mazeconfigv8.GetEnergyMax() // 体力最大值
+	maxVal := barrierenergyservice.GlobalBarrierEnergyService.GetEnergyMaxValue() // 体力最大值
 	if uInfo.Energy >= maxVal {
 		logger.WarnWF("AddMazeEnergyRQ energy already full",
 			zap.Int32("has", uInfo.Energy),

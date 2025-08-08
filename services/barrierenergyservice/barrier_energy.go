@@ -1,0 +1,261 @@
+package barrierenergyservice
+
+import (
+	"errors"
+	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fklog"
+	"go.uber.org/zap"
+	"google.golang.org/protobuf/proto"
+	"maze_game_server/common/constdef"
+	"maze_game_server/config/GMazeConfigV8Cfg"
+	"maze_game_server/module/mazeuserinfo"
+	"maze_game_server/pb/common/MazeEnergy"
+	"maze_game_server/usecase/online"
+	"time"
+)
+
+func (s service) GetBarrierEnergy(logger fklog.FKLogI, userId uint64) (curEnergy int32, nextTime int64, err error) {
+	uInfo, err := mazeuserinfo.GetUserInfoV2(logger, userId)
+	if err != nil {
+		logger.ErrorWF("GetBarrierEnergy GetUserInfoV2 fail", zap.Error(err))
+		return 0, 0, errors.New("userInfo not find")
+	}
+	var updateFlag int32 //是否需要更新
+	now := time.Now().Unix()
+	maxVal := GetEnergyMax()     // 体力最大值
+	cost, val := GetEnergyRate() // 每n秒回复多少体力
+	var nextUpdateTime int64     // 下次更新时间
+	//var chgVal int32             // 变化值
+
+	if uInfo.EnergyLastTime == 0 { // 首次初始化
+		uInfo.SetEnergyLastTime(now)
+		initVal := GetEnergyInitVal()
+		//chgVal = initVal - uInfo.Energy
+		uInfo.SetEnergy(initVal)
+		updateFlag = 1
+		nextUpdateTime = now + int64(cost)
+
+	} else {
+		curVal := uInfo.Energy
+		if curVal < GetEnergyMax() { // 未恢复满
+			cycleNum := (now - uInfo.EnergyLastTime) / int64(cost)        // 周期数
+			addVal := cycleNum * int64(val)                               // 周期数*每周期增加的体力
+			lastUpdateTime := uInfo.EnergyLastTime + cycleNum*int64(cost) // 计算上次更新时间
+			nextUpdateTime = lastUpdateTime + int64(cost)
+			if addVal > 0 {
+				//chgVal = int32(addVal)
+				curVal += int32(addVal)
+				if curVal >= maxVal { // 如果恢复到满值,上次恢复时间设置为当前时间
+					curVal = maxVal
+					lastUpdateTime = now
+					nextUpdateTime = now + int64(cost)
+				}
+				uInfo.SetEnergyLastTime(lastUpdateTime)
+				uInfo.SetEnergy(curVal)
+				updateFlag = 2
+			}
+		} else {
+			nextUpdateTime = now + int64(cost)
+		}
+	}
+	if updateFlag > 0 {
+		err = mazeuserinfo.SetUserInfoV2(logger, userId, uInfo)
+		if err != nil {
+			logger.ErrorWF("OnQueryMazeEnergyRQ SetUserInfoV2 fail", zap.Error(err))
+			return 0, 0, errors.New("保存数据错误")
+		}
+		//nextTime := uInfo.EnergyLastTime + GetEnergyRecoverCfg() - time.Now().Unix()
+		err := s.SendEnergyChgPack(logger, userId, uInfo.Energy, nextUpdateTime)
+		if err != nil {
+			logger.ErrorWF("OnQueryMazeEnergyRQ SendEnergyChgPack fail", zap.Error(err))
+			return 0, 0, errors.New("保存数据错误")
+		}
+	}
+	return uInfo.Energy, nextUpdateTime, err
+}
+
+// 增加体力，结果大于最大值时体力等于最大值
+func (s service) AddEnergy(logger fklog.FKLogI, userId uint64, addVal int32) (curEnergy int32, nextTime int64, err error) {
+	uInfo, err := mazeuserinfo.GetUserInfoV2(logger, userId)
+	if err != nil {
+		logger.ErrorWF("AddEnergy GetUserInfoV2 fail", zap.Error(err))
+		return 0, 0, errors.New("userInfo not find")
+	}
+	maxVal := GetEnergyMax() // 体力最大值
+
+	remain := uInfo.Energy + addVal
+	if remain >= maxVal { // 如果加到满值，更新上次恢复时间
+		remain = maxVal
+		uInfo.SetEnergyLastTime(time.Now().Unix())
+	}
+	uInfo.SetEnergy(remain)
+	err = mazeuserinfo.SetUserInfoV2(logger, userId, uInfo)
+	if err != nil {
+		logger.ErrorWF("AddEnergy SetUserInfoV2 fail", zap.Error(err), zap.Any("uInfo", uInfo))
+		return 0, 0, errors.New("userInfo not find")
+	}
+	curEnergy = remain
+
+	var updateFlag int32 //是否需要更新
+	now := time.Now().Unix()
+	cost, val := GetEnergyRate() // 每n秒回复多少体力
+	var nextUpdateTime int64     // 下次更新时间
+
+	if uInfo.EnergyLastTime == 0 { // 首次初始化
+		uInfo.SetEnergyLastTime(now)
+		initVal := GetEnergyInitVal()
+		uInfo.SetEnergy(initVal)
+		updateFlag = 1
+		nextUpdateTime = now + int64(cost)
+	} else {
+		curVal := uInfo.Energy
+		if curVal < maxVal { // 未恢复满
+			cycleNum := (now - uInfo.EnergyLastTime) / int64(cost)        // 周期数
+			addVal := cycleNum * int64(val)                               // 周期数*每周期增加的体力
+			lastUpdateTime := uInfo.EnergyLastTime + cycleNum*int64(cost) // 计算上次更新时间
+			nextUpdateTime = lastUpdateTime + int64(cost)
+			if addVal > 0 {
+				curVal += int32(addVal)
+				if curVal >= maxVal { // 如果恢复到满值,上次恢复时间设置为当前时间
+					curVal = maxVal
+					lastUpdateTime = now
+					nextUpdateTime = now + int64(cost)
+				}
+				uInfo.SetEnergyLastTime(lastUpdateTime)
+				uInfo.SetEnergy(curVal)
+				updateFlag = 2
+			}
+		} else {
+			nextUpdateTime = now + int64(cost)
+		}
+	}
+	if updateFlag > 0 {
+		err = mazeuserinfo.SetUserInfoV2(logger, userId, uInfo)
+		if err != nil {
+			logger.ErrorWF("AddEnergy SetUserInfoV2 fail", zap.Error(err))
+			return 0, 0, errors.New("保存数据错误")
+		}
+
+		err := s.SendEnergyChgPack(logger, userId, uInfo.Energy, nextUpdateTime)
+		if err != nil {
+			logger.ErrorWF("AddEnergy SendEnergyChgPack fail", zap.Error(err))
+			return 0, 0, err
+		}
+	}
+	return uInfo.Energy, nextUpdateTime, err
+}
+
+// 减少体力
+func (s service) SubEnergy(logger fklog.FKLogI, userId uint64, subVal int32) (int32, error) {
+	uInfo, err := mazeuserinfo.GetUserInfoV2(logger, userId)
+	if err != nil {
+		logger.ErrorWF("AddEnergy GetUserInfoV2 fail", zap.Error(err))
+		return 0, errors.New("userInfo not find")
+	}
+
+	if uInfo.Energy < subVal {
+		logger.WarnWF("SubEnergy energy less", zap.Int32("has", uInfo.Energy), zap.Int32("need", subVal))
+		return 0, errors.New("energy not enough")
+	}
+
+	remain := uInfo.Energy - subVal
+	if uInfo.Energy >= s.GetEnergyMaxValue() { // 如果满值时扣除，更新上次恢复时间
+		uInfo.SetEnergyLastTime(time.Now().Unix())
+	}
+	uInfo.SetEnergy(remain)
+	err = mazeuserinfo.SetUserInfoV2(logger, userId, uInfo)
+	if err != nil {
+		logger.ErrorWF("SubEnergy SetUserInfoV2 fail", zap.Error(err), zap.Any("uInfo", uInfo))
+		return 0, errors.New("userInfo not find")
+	}
+
+	err = s.SendEnergyChgPack(logger, userId, remain, uInfo.EnergyLastTime)
+	if err != nil {
+		logger.ErrorWF("SubEnergy SendEnergyChgPack fail", zap.Error(err), zap.Any("uInfo", uInfo))
+		return remain, err
+	}
+
+	return remain, err
+}
+
+func (s service) GetEnergyMaxValue() int32 {
+	return GetEnergyMax()
+}
+
+func (s service) GetEnergyRecoverCfg() int64 {
+	return GetEnergyRecoverCfg()
+}
+
+func (s service) GetEnergyItemCfg() (int32, int32) {
+	return GetEnergyItemCfg()
+}
+
+// 推送体力变化ID包
+func (s service) SendEnergyChgPack(logger fklog.FKLogI, userId uint64, curEnergy int32, nextRecoverTime int64) error {
+	maxEnergy := GetEnergyMax() // 体力最大值
+	if curEnergy == maxEnergy {
+		nextRecoverTime = -1
+	}
+	energyPack := &MazeEnergy.EnergyChangeID{
+		EnergyInfo: &MazeEnergy.EnergyInfo{
+			CurVal:           proto.Int32(curEnergy),
+			MaxVal:           proto.Int32(maxEnergy),
+			NextRecoveryTime: proto.Int64(nextRecoverTime),
+		},
+	}
+	err := online.Push(logger, userId, 10610, energyPack)
+	if err != nil {
+		logger.ErrorWF("SendEnergyChgPack send client failed", zap.Uint64("userID", userId), zap.Error(err), zap.Any("energyPack", energyPack))
+	} else {
+		logger.InfoWF("SendEnergyChgPack send client success", zap.Uint64("userID", userId), zap.Any("energyPack", energyPack))
+	}
+	return err
+}
+
+// 体力初始值
+func GetEnergyInitVal() int32 {
+	row := GMazeConfigV8Cfg.GetMazeConfigV8Config(constdef.MazeCfgId302)
+	if row != nil {
+		return int32(row.Value_int)
+	}
+	return 200
+}
+
+// 体力上限
+func GetEnergyMax() int32 {
+	row := GMazeConfigV8Cfg.GetMazeConfigV8Config(constdef.MazeCfgId301)
+	if row != nil {
+		return int32(row.Value_int)
+	}
+	return 200
+}
+
+// 体力恢复效率
+func GetEnergyRate() (costTime, recoverVal int32) {
+	row := GMazeConfigV8Cfg.GetMazeConfigV8Config(constdef.MazeCfgId303)
+	if row != nil {
+		for k, v := range row.Value_map {
+			return k, int32(v)
+		}
+	}
+	return 90, 1
+}
+
+// 迷宫体力回复间隔时间（秒）
+func GetEnergyRecoverCfg() int64 {
+	row := GMazeConfigV8Cfg.GetMazeConfigV8Config(constdef.MazeCfgId303)
+	if row != nil {
+		return row.Value_int
+	}
+	return 30
+}
+
+// 迷宫体力瓶道具id：对应的体力数量
+func GetEnergyItemCfg() (id, count int32) {
+	row := GMazeConfigV8Cfg.GetMazeConfigV8Config(constdef.MazeCfgId304)
+	if row != nil {
+		for k, v := range row.Value_map {
+			return k, int32(v)
+		}
+	}
+	return 49000001, 60
+}

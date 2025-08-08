@@ -9,9 +9,9 @@ package energy
 import (
 	"maze_game_server/common/constdef"
 	"maze_game_server/common/errors"
-	"maze_game_server/excel/mazeconfigv8"
 	"maze_game_server/module/mazeuserinfo"
 	"maze_game_server/pb/server/MazeEnergySvr"
+	"maze_game_server/services/barrierenergyservice"
 	"time"
 
 	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fklog"
@@ -75,7 +75,7 @@ func SubMazeEnergyRQ(logger fklog.FKLogI, userID uint64, req *MazeEnergySvr.SubM
 	}
 	record := BeginRecord(req.GetUserId(), req.GetOpType(), uInfo)
 	remain := uInfo.Energy - req.GetSubVal()
-	if uInfo.Energy >= mazeconfigv8.GetEnergyMax() { // 如果满值时扣除，更新上次恢复时间
+	if uInfo.Energy >= barrierenergyservice.GlobalBarrierEnergyService.GetEnergyMaxValue() { // 如果满值时扣除，更新上次恢复时间
 		uInfo.SetEnergyLastTime(time.Now().Unix())
 	}
 	uInfo.SetEnergy(remain)
