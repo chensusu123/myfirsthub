@@ -3,7 +3,9 @@
 package sweep
 
 import (
-	"maze_game_server/common/constdef"
+	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fkprometheus"
+	"go.uber.org/zap"
+	"google.golang.org/protobuf/proto"
 	"maze_game_server/common/errors"
 	"maze_game_server/common/function/uniqueid"
 	"maze_game_server/config/GMazeBarriesV8Cfg"
@@ -12,16 +14,7 @@ import (
 	"maze_game_server/module/calsweepbarrier"
 	"maze_game_server/module/mazeuserinfo"
 	"maze_game_server/pb/common/MazeGame"
-	"maze_game_server/pb/common/MessageType"
-	"maze_game_server/pb/server/MazeEnergySvr"
-	"maze_game_server/servers/maze_main_server/process/game/energy"
 	"maze_game_server/services/barrierenergyservice"
-
-	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fkconfig"
-	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fklog"
-	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fkprometheus"
-	"go.uber.org/zap"
-	"google.golang.org/protobuf/proto"
 )
 
 // OnStartMazeSweepRQ start sweep

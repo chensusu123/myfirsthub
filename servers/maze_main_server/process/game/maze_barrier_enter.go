@@ -168,7 +168,7 @@ func (g *Game) OnMazeBarrierEnterRQ_10447_10448(s *session.Session, req *MazeGam
 		// curEnergy = remainVal
 
 		//扣体力
-		_, err := barrierenergyservice.GlobalBarrierEnergyService.SubEnergy(logger, userId, barrierCfg.Mop_cost)
+		_, err = barrierenergyservice.GlobalBarrierEnergyService.SubEnergy(logger, userId, barrierCfg.Mop_cost)
 		if err != nil {
 			res.ErrInfo = errors.COMMON_ERROR_TIPS.Wrap("体力不足")
 			logger.ErrorWF("OnMazeBarrierEnterRQ SubEnergy fail", zap.Error(err))
