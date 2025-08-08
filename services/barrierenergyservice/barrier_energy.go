@@ -61,17 +61,17 @@ func (s service) GetBarrierEnergy(logger fklog.FKLogI, userId uint64) (curEnergy
 		err = mazeuserinfo.SetUserInfoV2(logger, userId, uInfo)
 		if err != nil {
 			logger.ErrorWF("OnQueryMazeEnergyRQ SetUserInfoV2 fail", zap.Error(err))
-			return 0, 0, errors.New("保存数据错误")
+			return uInfo.Energy, nextUpdateTime, errors.New("保存数据错误")
 		}
 		//nextTime := uInfo.EnergyLastTime + GetEnergyRecoverCfg() - time.Now().Unix()
 		err := s.SendEnergyChgPack(logger, userId, uInfo.Energy, nextUpdateTime)
 		if err != nil {
 			logger.ErrorWF("OnQueryMazeEnergyRQ SendEnergyChgPack fail", zap.Error(err))
-			return 0, 0, errors.New("保存数据错误")
+			return uInfo.Energy, nextUpdateTime, err
 		}
 	}
 
-	logger.InfoWF("GetBarrierEnergy success", zap.Any("userId", userId), zap.Any("curEnergy", curEnergy), zap.Any("nextUpdateTime", nextUpdateTime))
+	logger.InfoWF("GetBarrierEnergy success", zap.Any("userId", userId), zap.Any("curEnergy", uInfo.Energy), zap.Any("nextUpdateTime", nextUpdateTime))
 	return uInfo.Energy, nextUpdateTime, err
 }
 
@@ -93,7 +93,7 @@ func (s service) AddEnergy(logger fklog.FKLogI, userId uint64, addVal int32) (cu
 	err = mazeuserinfo.SetUserInfoV2(logger, userId, uInfo)
 	if err != nil {
 		logger.ErrorWF("AddEnergy SetUserInfoV2 fail", zap.Error(err), zap.Any("uInfo", uInfo))
-		return 0, 0, errors.New("userInfo not find")
+		return uInfo.Energy, uInfo.EnergyLastTime, errors.New("userInfo not find")
 	}
 	curEnergy = remain
 
@@ -134,13 +134,13 @@ func (s service) AddEnergy(logger fklog.FKLogI, userId uint64, addVal int32) (cu
 		err = mazeuserinfo.SetUserInfoV2(logger, userId, uInfo)
 		if err != nil {
 			logger.ErrorWF("AddEnergy SetUserInfoV2 fail", zap.Error(err))
-			return 0, 0, errors.New("保存数据错误")
+			return uInfo.Energy, nextUpdateTime, errors.New("保存数据错误")
 		}
 
 		err := s.SendEnergyChgPack(logger, userId, uInfo.Energy, nextUpdateTime)
 		if err != nil {
 			logger.ErrorWF("AddEnergy SendEnergyChgPack fail", zap.Error(err))
-			return 0, 0, err
+			return uInfo.Energy, nextUpdateTime, err
 		}
 	}
 
@@ -158,7 +158,7 @@ func (s service) SubEnergy(logger fklog.FKLogI, userId uint64, subVal int32) (in
 
 	if uInfo.Energy < subVal {
 		logger.WarnWF("SubEnergy energy less", zap.Int32("has", uInfo.Energy), zap.Int32("need", subVal))
-		return 0, errors.New("energy not enough")
+		return uInfo.Energy, errors.New("energy not enough")
 	}
 
 	remain := uInfo.Energy - subVal
@@ -169,16 +169,16 @@ func (s service) SubEnergy(logger fklog.FKLogI, userId uint64, subVal int32) (in
 	err = mazeuserinfo.SetUserInfoV2(logger, userId, uInfo)
 	if err != nil {
 		logger.ErrorWF("SubEnergy SetUserInfoV2 fail", zap.Error(err), zap.Any("uInfo", uInfo))
-		return 0, errors.New("userInfo not find")
+		return uInfo.Energy, errors.New("userInfo not find")
 	}
 
 	err = s.SendEnergyChgPack(logger, userId, remain, uInfo.EnergyLastTime)
 	if err != nil {
 		logger.ErrorWF("SubEnergy SendEnergyChgPack fail", zap.Error(err), zap.Any("uInfo", uInfo))
-		return remain, err
+		return uInfo.Energy, err
 	}
 	logger.InfoWF("SubEnergy success", zap.Any("userId", userId), zap.Any("uInfo", uInfo), zap.Any("remain", remain), zap.Int32("subVal", subVal))
-	return remain, err
+	return uInfo.Energy, err
 }
 
 func (s service) GetEnergyMaxValue() int32 {
