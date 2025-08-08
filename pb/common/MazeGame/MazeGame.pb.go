@@ -346,6 +346,63 @@ func (BarrierResult) EnumDescriptor() ([]byte, []int) {
 	return file_common_MazeGame_proto_rawDescGZIP(), []int{4}
 }
 
+// 积分奖励道具类型
+type ReportScoreAwardItemType int32
+
+const (
+	ReportScoreAwardItemType_REWARD_GOLD             ReportScoreAwardItemType = 1 // 金币
+	ReportScoreAwardItemType_REWARD_Strengthen_Stone ReportScoreAwardItemType = 2 // 强化石
+)
+
+// Enum value maps for ReportScoreAwardItemType.
+var (
+	ReportScoreAwardItemType_name = map[int32]string{
+		1: "REWARD_GOLD",
+		2: "REWARD_Strengthen_Stone",
+	}
+	ReportScoreAwardItemType_value = map[string]int32{
+		"REWARD_GOLD":             1,
+		"REWARD_Strengthen_Stone": 2,
+	}
+)
+
+func (x ReportScoreAwardItemType) Enum() *ReportScoreAwardItemType {
+	p := new(ReportScoreAwardItemType)
+	*p = x
+	return p
+}
+
+func (x ReportScoreAwardItemType) String() string {
+	return protoimpl.X.EnumStringOf(x.Descriptor(), protoreflect.EnumNumber(x))
+}
+
+func (ReportScoreAwardItemType) Descriptor() protoreflect.EnumDescriptor {
+	return file_common_MazeGame_proto_enumTypes[5].Descriptor()
+}
+
+func (ReportScoreAwardItemType) Type() protoreflect.EnumType {
+	return &file_common_MazeGame_proto_enumTypes[5]
+}
+
+func (x ReportScoreAwardItemType) Number() protoreflect.EnumNumber {
+	return protoreflect.EnumNumber(x)
+}
+
+// Deprecated: Do not use.
+func (x *ReportScoreAwardItemType) UnmarshalJSON(b []byte) error {
+	num, err := protoimpl.X.UnmarshalJSONEnum(x.Descriptor(), b)
+	if err != nil {
+		return err
+	}
+	*x = ReportScoreAwardItemType(num)
+	return nil
+}
+
+// Deprecated: Use ReportScoreAwardItemType.Descriptor instead.
+func (ReportScoreAwardItemType) EnumDescriptor() ([]byte, []int) {
+	return file_common_MazeGame_proto_rawDescGZIP(), []int{5}
+}
+
 // 迷宫中通用数值
 type MazeCommonValue struct {
 	state         protoimpl.MessageState
@@ -4700,10 +4757,11 @@ type ReportScoreAwardItemRQ struct {
 	sizeCache     protoimpl.SizeCache
 	unknownFields protoimpl.UnknownFields
 
-	Header    *Common.PacketHeader   `protobuf:"bytes,1,opt,name=header" json:"header,omitempty"`
-	UserLevel *int32                 `protobuf:"varint,2,opt,name=user_level,json=userLevel" json:"user_level,omitempty"`
-	BarrierId *int32                 `protobuf:"varint,3,opt,name=barrier_id,json=barrierId" json:"barrier_id,omitempty"`
-	ItemList  []*MazeCommon.MazeItem `protobuf:"bytes,4,rep,name=item_list,json=itemList" json:"item_list,omitempty"` //加的道具列表
+	Header     *Common.PacketHeader      `protobuf:"bytes,1,opt,name=header" json:"header,omitempty"`
+	UserLevel  *int32                    `protobuf:"varint,2,opt,name=user_level,json=userLevel" json:"user_level,omitempty"`
+	BarrierId  *int32                    `protobuf:"varint,3,opt,name=barrier_id,json=barrierId" json:"barrier_id,omitempty"`
+	RewardType *ReportScoreAwardItemType `protobuf:"varint,4,opt,name=RewardType,enum=MazeGame.ReportScoreAwardItemType" json:"RewardType,omitempty"`
+	Count      *int32                    `protobuf:"varint,5,opt,name=count" json:"count,omitempty"`
 }
 
 func (x *ReportScoreAwardItemRQ) Reset() {
@@ -4759,11 +4817,18 @@ func (x *ReportScoreAwardItemRQ) GetBarrierId() int32 {
 	return 0
 }
 
-func (x *ReportScoreAwardItemRQ) GetItemList() []*MazeCommon.MazeItem {
-	if x != nil {
-		return x.ItemList
+func (x *ReportScoreAwardItemRQ) GetRewardType() ReportScoreAwardItemType {
+	if x != nil && x.RewardType != nil {
+		return *x.RewardType
 	}
-	return nil
+	return ReportScoreAwardItemType_REWARD_GOLD
+}
+
+func (x *ReportScoreAwardItemRQ) GetCount() int32 {
+	if x != nil && x.Count != nil {
+		return *x.Count
+	}
+	return 0
 }
 
 //## 10619	UN_TCP_PACK_CLI_REPORT_SCORE_AWARD_ITEM_RS
@@ -4776,8 +4841,8 @@ type ReportScoreAwardItemRS struct {
 	Header    *Common.PacketHeader   `protobuf:"bytes,1,opt,name=header" json:"header,omitempty"`
 	ErrInfo   *MessageType.ErrorInfo `protobuf:"bytes,2,opt,name=err_info,json=errInfo" json:"err_info,omitempty"`
 	UserLevel *int32                 `protobuf:"varint,3,opt,name=user_level,json=userLevel" json:"user_level,omitempty"`
-	BarrierId *int32                 `protobuf:"varint,4,opt,name=barrier_id,json=barrierId" json:"barrier_id,omitempty"`
-	ItemList  []*MazeCommon.MazeItem `protobuf:"bytes,5,rep,name=item_list,json=itemList" json:"item_list,omitempty"` //加的道具列表
+	ItemId    *int32                 `protobuf:"varint,4,opt,name=item_id,json=itemId" json:"item_id,omitempty"`
+	Count     *int32                 `protobuf:"varint,5,opt,name=count" json:"count,omitempty"`
 }
 
 func (x *ReportScoreAwardItemRS) Reset() {
@@ -4833,18 +4898,18 @@ func (x *ReportScoreAwardItemRS) GetUserLevel() int32 {
 	return 0
 }
 
-func (x *ReportScoreAwardItemRS) GetBarrierId() int32 {
-	if x != nil && x.BarrierId != nil {
-		return *x.BarrierId
+func (x *ReportScoreAwardItemRS) GetItemId() int32 {
+	if x != nil && x.ItemId != nil {
+		return *x.ItemId
 	}
 	return 0
 }
 
-func (x *ReportScoreAwardItemRS) GetItemList() []*MazeCommon.MazeItem {
-	if x != nil {
-		return x.ItemList
+func (x *ReportScoreAwardItemRS) GetCount() int32 {
+	if x != nil && x.Count != nil {
+		return *x.Count
 	}
-	return nil
+	return 0
 }
 
 var File_common_MazeGame_proto protoreflect.FileDescriptor
@@ -5524,7 +5589,7 @@ var file_common_MazeGame_proto_rawDesc = []byte{
 	0x14, 0x2e, 0x4d, 0x61, 0x7a, 0x65, 0x43, 0x6f, 0x6d, 0x6d, 0x6f, 0x6e, 0x2e, 0x4d, 0x61, 0x7a,
 	0x65, 0x49, 0x74, 0x65, 0x6d, 0x52, 0x09, 0x65, 0x71, 0x75, 0x69, 0x70, 0x4c, 0x69, 0x73, 0x74,
 	0x12, 0x17, 0x0a, 0x07, 0x6f, 0x70, 0x5f, 0x64, 0x61, 0x74, 0x61, 0x18, 0x06, 0x20, 0x01, 0x28,
-	0x09, 0x52, 0x06, 0x6f, 0x70, 0x44, 0x61, 0x74, 0x61, 0x22, 0xb7, 0x01, 0x0a, 0x16, 0x52, 0x65,
+	0x09, 0x52, 0x06, 0x6f, 0x70, 0x44, 0x61, 0x74, 0x61, 0x22, 0xde, 0x01, 0x0a, 0x16, 0x52, 0x65,
 	0x70, 0x6f, 0x72, 0x74, 0x53, 0x63, 0x6f, 0x72, 0x65, 0x41, 0x77, 0x61, 0x72, 0x64, 0x49, 0x74,
 	0x65, 0x6d, 0x52, 0x51, 0x12, 0x2c, 0x0a, 0x06, 0x68, 0x65, 0x61, 0x64, 0x65, 0x72, 0x18, 0x01,
 	0x20, 0x01, 0x28, 0x0b, 0x32, 0x14, 0x2e, 0x43, 0x6f, 0x6d, 0x6d, 0x6f, 0x6e, 0x2e, 0x50, 0x61,
@@ -5533,70 +5598,75 @@ var file_common_MazeGame_proto_rawDesc = []byte{
 	0x18, 0x02, 0x20, 0x01, 0x28, 0x05, 0x52, 0x09, 0x75, 0x73, 0x65, 0x72, 0x4c, 0x65, 0x76, 0x65,
 	0x6c, 0x12, 0x1d, 0x0a, 0x0a, 0x62, 0x61, 0x72, 0x72, 0x69, 0x65, 0x72, 0x5f, 0x69, 0x64, 0x18,
 	0x03, 0x20, 0x01, 0x28, 0x05, 0x52, 0x09, 0x62, 0x61, 0x72, 0x72, 0x69, 0x65, 0x72, 0x49, 0x64,
-	0x12, 0x31, 0x0a, 0x09, 0x69, 0x74, 0x65, 0x6d, 0x5f, 0x6c, 0x69, 0x73, 0x74, 0x18, 0x04, 0x20,
-	0x03, 0x28, 0x0b, 0x32, 0x14, 0x2e, 0x4d, 0x61, 0x7a, 0x65, 0x43, 0x6f, 0x6d, 0x6d, 0x6f, 0x6e,
-	0x2e, 0x4d, 0x61, 0x7a, 0x65, 0x49, 0x74, 0x65, 0x6d, 0x52, 0x08, 0x69, 0x74, 0x65, 0x6d, 0x4c,
-	0x69, 0x73, 0x74, 0x22, 0xea, 0x01, 0x0a, 0x16, 0x52, 0x65, 0x70, 0x6f, 0x72, 0x74, 0x53, 0x63,
-	0x6f, 0x72, 0x65, 0x41, 0x77, 0x61, 0x72, 0x64, 0x49, 0x74, 0x65, 0x6d, 0x52, 0x53, 0x12, 0x2c,
-	0x0a, 0x06, 0x68, 0x65, 0x61, 0x64, 0x65, 0x72, 0x18, 0x01, 0x20, 0x01, 0x28, 0x0b, 0x32, 0x14,
-	0x2e, 0x43, 0x6f, 0x6d, 0x6d, 0x6f, 0x6e, 0x2e, 0x50, 0x61, 0x63, 0x6b, 0x65, 0x74, 0x48, 0x65,
-	0x61, 0x64, 0x65, 0x72, 0x52, 0x06, 0x68, 0x65, 0x61, 0x64, 0x65, 0x72, 0x12, 0x31, 0x0a, 0x08,
-	0x65, 0x72, 0x72, 0x5f, 0x69, 0x6e, 0x66, 0x6f, 0x18, 0x02, 0x20, 0x01, 0x28, 0x0b, 0x32, 0x16,
-	0x2e, 0x4d, 0x65, 0x73, 0x73, 0x61, 0x67, 0x65, 0x54, 0x79, 0x70, 0x65, 0x2e, 0x45, 0x72, 0x72,
-	0x6f, 0x72, 0x49, 0x6e, 0x66, 0x6f, 0x52, 0x07, 0x65, 0x72, 0x72, 0x49, 0x6e, 0x66, 0x6f, 0x12,
-	0x1d, 0x0a, 0x0a, 0x75, 0x73, 0x65, 0x72, 0x5f, 0x6c, 0x65, 0x76, 0x65, 0x6c, 0x18, 0x03, 0x20,
-	0x01, 0x28, 0x05, 0x52, 0x09, 0x75, 0x73, 0x65, 0x72, 0x4c, 0x65, 0x76, 0x65, 0x6c, 0x12, 0x1d,
-	0x0a, 0x0a, 0x62, 0x61, 0x72, 0x72, 0x69, 0x65, 0x72, 0x5f, 0x69, 0x64, 0x18, 0x04, 0x20, 0x01,
-	0x28, 0x05, 0x52, 0x09, 0x62, 0x61, 0x72, 0x72, 0x69, 0x65, 0x72, 0x49, 0x64, 0x12, 0x31, 0x0a,
-	0x09, 0x69, 0x74, 0x65, 0x6d, 0x5f, 0x6c, 0x69, 0x73, 0x74, 0x18, 0x05, 0x20, 0x03, 0x28, 0x0b,
-	0x32, 0x14, 0x2e, 0x4d, 0x61, 0x7a, 0x65, 0x43, 0x6f, 0x6d, 0x6d, 0x6f, 0x6e, 0x2e, 0x4d, 0x61,
-	0x7a, 0x65, 0x49, 0x74, 0x65, 0x6d, 0x52, 0x08, 0x69, 0x74, 0x65, 0x6d, 0x4c, 0x69, 0x73, 0x74,
-	0x2a, 0x44, 0x0a, 0x0e, 0x4d, 0x41, 0x5a, 0x45, 0x5f, 0x55, 0x53, 0x45, 0x52, 0x5f, 0x54, 0x59,
-	0x50, 0x45, 0x12, 0x17, 0x0a, 0x13, 0x4d, 0x41, 0x5a, 0x45, 0x5f, 0x55, 0x53, 0x45, 0x52, 0x5f,
-	0x54, 0x59, 0x50, 0x45, 0x5f, 0x44, 0x4f, 0x4c, 0x4c, 0x10, 0x01, 0x12, 0x19, 0x0a, 0x15, 0x4d,
-	0x41, 0x5a, 0x45, 0x5f, 0x55, 0x53, 0x45, 0x52, 0x5f, 0x54, 0x59, 0x50, 0x45, 0x5f, 0x53, 0x49,
-	0x4e, 0x47, 0x4c, 0x45, 0x10, 0x02, 0x2a, 0xb5, 0x02, 0x0a, 0x0e, 0x4d, 0x41, 0x5a, 0x45, 0x5f,
-	0x44, 0x41, 0x54, 0x41, 0x5f, 0x54, 0x59, 0x50, 0x45, 0x12, 0x1d, 0x0a, 0x19, 0x45, 0x4e, 0x55,
+	0x12, 0x42, 0x0a, 0x0a, 0x52, 0x65, 0x77, 0x61, 0x72, 0x64, 0x54, 0x79, 0x70, 0x65, 0x18, 0x04,
+	0x20, 0x01, 0x28, 0x0e, 0x32, 0x22, 0x2e, 0x4d, 0x61, 0x7a, 0x65, 0x47, 0x61, 0x6d, 0x65, 0x2e,
+	0x52, 0x65, 0x70, 0x6f, 0x72, 0x74, 0x53, 0x63, 0x6f, 0x72, 0x65, 0x41, 0x77, 0x61, 0x72, 0x64,
+	0x49, 0x74, 0x65, 0x6d, 0x54, 0x79, 0x70, 0x65, 0x52, 0x0a, 0x52, 0x65, 0x77, 0x61, 0x72, 0x64,
+	0x54, 0x79, 0x70, 0x65, 0x12, 0x14, 0x0a, 0x05, 0x63, 0x6f, 0x75, 0x6e, 0x74, 0x18, 0x05, 0x20,
+	0x01, 0x28, 0x05, 0x52, 0x05, 0x63, 0x6f, 0x75, 0x6e, 0x74, 0x22, 0xc7, 0x01, 0x0a, 0x16, 0x52,
+	0x65, 0x70, 0x6f, 0x72, 0x74, 0x53, 0x63, 0x6f, 0x72, 0x65, 0x41, 0x77, 0x61, 0x72, 0x64, 0x49,
+	0x74, 0x65, 0x6d, 0x52, 0x53, 0x12, 0x2c, 0x0a, 0x06, 0x68, 0x65, 0x61, 0x64, 0x65, 0x72, 0x18,
+	0x01, 0x20, 0x01, 0x28, 0x0b, 0x32, 0x14, 0x2e, 0x43, 0x6f, 0x6d, 0x6d, 0x6f, 0x6e, 0x2e, 0x50,
+	0x61, 0x63, 0x6b, 0x65, 0x74, 0x48, 0x65, 0x61, 0x64, 0x65, 0x72, 0x52, 0x06, 0x68, 0x65, 0x61,
+	0x64, 0x65, 0x72, 0x12, 0x31, 0x0a, 0x08, 0x65, 0x72, 0x72, 0x5f, 0x69, 0x6e, 0x66, 0x6f, 0x18,
+	0x02, 0x20, 0x01, 0x28, 0x0b, 0x32, 0x16, 0x2e, 0x4d, 0x65, 0x73, 0x73, 0x61, 0x67, 0x65, 0x54,
+	0x79, 0x70, 0x65, 0x2e, 0x45, 0x72, 0x72, 0x6f, 0x72, 0x49, 0x6e, 0x66, 0x6f, 0x52, 0x07, 0x65,
+	0x72, 0x72, 0x49, 0x6e, 0x66, 0x6f, 0x12, 0x1d, 0x0a, 0x0a, 0x75, 0x73, 0x65, 0x72, 0x5f, 0x6c,
+	0x65, 0x76, 0x65, 0x6c, 0x18, 0x03, 0x20, 0x01, 0x28, 0x05, 0x52, 0x09, 0x75, 0x73, 0x65, 0x72,
+	0x4c, 0x65, 0x76, 0x65, 0x6c, 0x12, 0x17, 0x0a, 0x07, 0x69, 0x74, 0x65, 0x6d, 0x5f, 0x69, 0x64,
+	0x18, 0x04, 0x20, 0x01, 0x28, 0x05, 0x52, 0x06, 0x69, 0x74, 0x65, 0x6d, 0x49, 0x64, 0x12, 0x14,
+	0x0a, 0x05, 0x63, 0x6f, 0x75, 0x6e, 0x74, 0x18, 0x05, 0x20, 0x01, 0x28, 0x05, 0x52, 0x05, 0x63,
+	0x6f, 0x75, 0x6e, 0x74, 0x2a, 0x44, 0x0a, 0x0e, 0x4d, 0x41, 0x5a, 0x45, 0x5f, 0x55, 0x53, 0x45,
+	0x52, 0x5f, 0x54, 0x59, 0x50, 0x45, 0x12, 0x17, 0x0a, 0x13, 0x4d, 0x41, 0x5a, 0x45, 0x5f, 0x55,
+	0x53, 0x45, 0x52, 0x5f, 0x54, 0x59, 0x50, 0x45, 0x5f, 0x44, 0x4f, 0x4c, 0x4c, 0x10, 0x01, 0x12,
+	0x19, 0x0a, 0x15, 0x4d, 0x41, 0x5a, 0x45, 0x5f, 0x55, 0x53, 0x45, 0x52, 0x5f, 0x54, 0x59, 0x50,
+	0x45, 0x5f, 0x53, 0x49, 0x4e, 0x47, 0x4c, 0x45, 0x10, 0x02, 0x2a, 0xb5, 0x02, 0x0a, 0x0e, 0x4d,
+	0x41, 0x5a, 0x45, 0x5f, 0x44, 0x41, 0x54, 0x41, 0x5f, 0x54, 0x59, 0x50, 0x45, 0x12, 0x1d, 0x0a,
+	0x19, 0x45, 0x4e, 0x55, 0x4d, 0x5f, 0x4d, 0x41, 0x5a, 0x45, 0x5f, 0x44, 0x41, 0x54, 0x41, 0x5f,
+	0x54, 0x59, 0x50, 0x45, 0x5f, 0x4c, 0x45, 0x56, 0x45, 0x4c, 0x10, 0x01, 0x12, 0x1b, 0x0a, 0x17,
+	0x45, 0x4e, 0x55, 0x4d, 0x5f, 0x4d, 0x41, 0x5a, 0x45, 0x5f, 0x44, 0x41, 0x54, 0x41, 0x5f, 0x54,
+	0x59, 0x50, 0x45, 0x5f, 0x45, 0x58, 0x50, 0x10, 0x02, 0x12, 0x1f, 0x0a, 0x1b, 0x45, 0x4e, 0x55,
 	0x4d, 0x5f, 0x4d, 0x41, 0x5a, 0x45, 0x5f, 0x44, 0x41, 0x54, 0x41, 0x5f, 0x54, 0x59, 0x50, 0x45,
-	0x5f, 0x4c, 0x45, 0x56, 0x45, 0x4c, 0x10, 0x01, 0x12, 0x1b, 0x0a, 0x17, 0x45, 0x4e, 0x55, 0x4d,
+	0x5f, 0x45, 0x58, 0x50, 0x5f, 0x4d, 0x41, 0x58, 0x10, 0x03, 0x12, 0x1d, 0x0a, 0x19, 0x45, 0x4e,
+	0x55, 0x4d, 0x5f, 0x4d, 0x41, 0x5a, 0x45, 0x5f, 0x44, 0x41, 0x54, 0x41, 0x5f, 0x54, 0x59, 0x50,
+	0x45, 0x5f, 0x46, 0x4f, 0x52, 0x43, 0x45, 0x10, 0x04, 0x12, 0x1d, 0x0a, 0x19, 0x45, 0x4e, 0x55,
+	0x4d, 0x5f, 0x4d, 0x41, 0x5a, 0x45, 0x5f, 0x44, 0x41, 0x54, 0x41, 0x5f, 0x54, 0x59, 0x50, 0x45,
+	0x5f, 0x4d, 0x4f, 0x4e, 0x45, 0x59, 0x10, 0x05, 0x12, 0x1e, 0x0a, 0x1a, 0x45, 0x4e, 0x55, 0x4d,
 	0x5f, 0x4d, 0x41, 0x5a, 0x45, 0x5f, 0x44, 0x41, 0x54, 0x41, 0x5f, 0x54, 0x59, 0x50, 0x45, 0x5f,
-	0x45, 0x58, 0x50, 0x10, 0x02, 0x12, 0x1f, 0x0a, 0x1b, 0x45, 0x4e, 0x55, 0x4d, 0x5f, 0x4d, 0x41,
-	0x5a, 0x45, 0x5f, 0x44, 0x41, 0x54, 0x41, 0x5f, 0x54, 0x59, 0x50, 0x45, 0x5f, 0x45, 0x58, 0x50,
-	0x5f, 0x4d, 0x41, 0x58, 0x10, 0x03, 0x12, 0x1d, 0x0a, 0x19, 0x45, 0x4e, 0x55, 0x4d, 0x5f, 0x4d,
-	0x41, 0x5a, 0x45, 0x5f, 0x44, 0x41, 0x54, 0x41, 0x5f, 0x54, 0x59, 0x50, 0x45, 0x5f, 0x46, 0x4f,
-	0x52, 0x43, 0x45, 0x10, 0x04, 0x12, 0x1d, 0x0a, 0x19, 0x45, 0x4e, 0x55, 0x4d, 0x5f, 0x4d, 0x41,
-	0x5a, 0x45, 0x5f, 0x44, 0x41, 0x54, 0x41, 0x5f, 0x54, 0x59, 0x50, 0x45, 0x5f, 0x4d, 0x4f, 0x4e,
-	0x45, 0x59, 0x10, 0x05, 0x12, 0x1e, 0x0a, 0x1a, 0x45, 0x4e, 0x55, 0x4d, 0x5f, 0x4d, 0x41, 0x5a,
-	0x45, 0x5f, 0x44, 0x41, 0x54, 0x41, 0x5f, 0x54, 0x59, 0x50, 0x45, 0x5f, 0x49, 0x4e, 0x43, 0x4f,
-	0x4d, 0x45, 0x10, 0x06, 0x12, 0x22, 0x0a, 0x1e, 0x45, 0x4e, 0x55, 0x4d, 0x5f, 0x4d, 0x41, 0x5a,
-	0x45, 0x5f, 0x44, 0x41, 0x54, 0x41, 0x5f, 0x54, 0x59, 0x50, 0x45, 0x5f, 0x45, 0x58, 0x50, 0x5f,
-	0x49, 0x4e, 0x43, 0x4f, 0x4d, 0x45, 0x10, 0x07, 0x12, 0x23, 0x0a, 0x1f, 0x45, 0x4e, 0x55, 0x4d,
+	0x49, 0x4e, 0x43, 0x4f, 0x4d, 0x45, 0x10, 0x06, 0x12, 0x22, 0x0a, 0x1e, 0x45, 0x4e, 0x55, 0x4d,
 	0x5f, 0x4d, 0x41, 0x5a, 0x45, 0x5f, 0x44, 0x41, 0x54, 0x41, 0x5f, 0x54, 0x59, 0x50, 0x45, 0x5f,
-	0x45, 0x51, 0x55, 0x49, 0x50, 0x5f, 0x50, 0x4f, 0x49, 0x4e, 0x54, 0x10, 0x08, 0x12, 0x1f, 0x0a,
-	0x1b, 0x45, 0x4e, 0x55, 0x4d, 0x5f, 0x4d, 0x41, 0x5a, 0x45, 0x5f, 0x44, 0x41, 0x54, 0x41, 0x5f,
-	0x54, 0x59, 0x50, 0x45, 0x5f, 0x44, 0x49, 0x41, 0x4d, 0x4f, 0x4e, 0x44, 0x10, 0x09, 0x2a, 0x46,
-	0x0a, 0x1c, 0x4d, 0x41, 0x5a, 0x45, 0x5f, 0x43, 0x4f, 0x4d, 0x4d, 0x4f, 0x4e, 0x5f, 0x56, 0x41,
-	0x4c, 0x55, 0x45, 0x5f, 0x43, 0x48, 0x47, 0x5f, 0x52, 0x45, 0x41, 0x53, 0x4f, 0x4e, 0x12, 0x26,
-	0x0a, 0x22, 0x4d, 0x41, 0x5a, 0x45, 0x5f, 0x43, 0x4f, 0x4d, 0x4d, 0x4f, 0x4e, 0x5f, 0x56, 0x41,
-	0x4c, 0x55, 0x45, 0x5f, 0x43, 0x48, 0x47, 0x5f, 0x52, 0x45, 0x41, 0x53, 0x4f, 0x4e, 0x5f, 0x4c,
-	0x4f, 0x47, 0x49, 0x4e, 0x10, 0x01, 0x2a, 0xb1, 0x01, 0x0a, 0x0f, 0x42, 0x61, 0x74, 0x74, 0x6c,
-	0x65, 0x45, 0x76, 0x65, 0x6e, 0x74, 0x54, 0x79, 0x70, 0x65, 0x12, 0x0b, 0x0a, 0x07, 0x55, 0x4e,
-	0x4b, 0x4e, 0x4f, 0x57, 0x4e, 0x10, 0x00, 0x12, 0x12, 0x0a, 0x0e, 0x41, 0x54, 0x54, 0x41, 0x43,
-	0x4b, 0x5f, 0x4d, 0x4f, 0x4e, 0x53, 0x54, 0x45, 0x52, 0x10, 0x01, 0x12, 0x0f, 0x0a, 0x0b, 0x42,
-	0x45, 0x5f, 0x41, 0x54, 0x54, 0x41, 0x43, 0x4b, 0x45, 0x44, 0x10, 0x02, 0x12, 0x10, 0x0a, 0x0c,
-	0x4d, 0x4f, 0x4e, 0x53, 0x54, 0x45, 0x52, 0x5f, 0x44, 0x45, 0x41, 0x44, 0x10, 0x03, 0x12, 0x13,
-	0x0a, 0x0f, 0x52, 0x45, 0x46, 0x52, 0x45, 0x53, 0x48, 0x5f, 0x4d, 0x4f, 0x4e, 0x53, 0x54, 0x45,
-	0x52, 0x10, 0x04, 0x12, 0x10, 0x0a, 0x0c, 0x54, 0x52, 0x49, 0x47, 0x47, 0x45, 0x52, 0x5f, 0x54,
-	0x52, 0x41, 0x50, 0x10, 0x05, 0x12, 0x0d, 0x0a, 0x09, 0x52, 0x4f, 0x4c, 0x45, 0x5f, 0x4d, 0x4f,
-	0x56, 0x45, 0x10, 0x06, 0x12, 0x11, 0x0a, 0x0d, 0x45, 0x4e, 0x54, 0x45, 0x52, 0x5f, 0x42, 0x41,
-	0x52, 0x52, 0x49, 0x45, 0x52, 0x10, 0x07, 0x12, 0x11, 0x0a, 0x0d, 0x4c, 0x45, 0x41, 0x56, 0x45,
-	0x5f, 0x42, 0x41, 0x52, 0x52, 0x49, 0x45, 0x52, 0x10, 0x08, 0x2a, 0x24, 0x0a, 0x0d, 0x42, 0x61,
-	0x72, 0x72, 0x69, 0x65, 0x72, 0x52, 0x65, 0x73, 0x75, 0x6c, 0x74, 0x12, 0x08, 0x0a, 0x04, 0x50,
-	0x41, 0x53, 0x53, 0x10, 0x01, 0x12, 0x09, 0x0a, 0x05, 0x44, 0x45, 0x41, 0x54, 0x48, 0x10, 0x02,
-	0x42, 0x33, 0x5a, 0x23, 0x6d, 0x61, 0x7a, 0x65, 0x5f, 0x67, 0x61, 0x6d, 0x65, 0x5f, 0x73, 0x65,
-	0x72, 0x76, 0x65, 0x72, 0x2f, 0x70, 0x62, 0x2f, 0x63, 0x6f, 0x6d, 0x6d, 0x6f, 0x6e, 0x2f, 0x4d,
-	0x61, 0x7a, 0x65, 0x47, 0x61, 0x6d, 0x65, 0xaa, 0x02, 0x0b, 0x50, 0x62, 0x2e, 0x4d, 0x61, 0x7a,
-	0x65, 0x47, 0x61, 0x6d, 0x65,
+	0x45, 0x58, 0x50, 0x5f, 0x49, 0x4e, 0x43, 0x4f, 0x4d, 0x45, 0x10, 0x07, 0x12, 0x23, 0x0a, 0x1f,
+	0x45, 0x4e, 0x55, 0x4d, 0x5f, 0x4d, 0x41, 0x5a, 0x45, 0x5f, 0x44, 0x41, 0x54, 0x41, 0x5f, 0x54,
+	0x59, 0x50, 0x45, 0x5f, 0x45, 0x51, 0x55, 0x49, 0x50, 0x5f, 0x50, 0x4f, 0x49, 0x4e, 0x54, 0x10,
+	0x08, 0x12, 0x1f, 0x0a, 0x1b, 0x45, 0x4e, 0x55, 0x4d, 0x5f, 0x4d, 0x41, 0x5a, 0x45, 0x5f, 0x44,
+	0x41, 0x54, 0x41, 0x5f, 0x54, 0x59, 0x50, 0x45, 0x5f, 0x44, 0x49, 0x41, 0x4d, 0x4f, 0x4e, 0x44,
+	0x10, 0x09, 0x2a, 0x46, 0x0a, 0x1c, 0x4d, 0x41, 0x5a, 0x45, 0x5f, 0x43, 0x4f, 0x4d, 0x4d, 0x4f,
+	0x4e, 0x5f, 0x56, 0x41, 0x4c, 0x55, 0x45, 0x5f, 0x43, 0x48, 0x47, 0x5f, 0x52, 0x45, 0x41, 0x53,
+	0x4f, 0x4e, 0x12, 0x26, 0x0a, 0x22, 0x4d, 0x41, 0x5a, 0x45, 0x5f, 0x43, 0x4f, 0x4d, 0x4d, 0x4f,
+	0x4e, 0x5f, 0x56, 0x41, 0x4c, 0x55, 0x45, 0x5f, 0x43, 0x48, 0x47, 0x5f, 0x52, 0x45, 0x41, 0x53,
+	0x4f, 0x4e, 0x5f, 0x4c, 0x4f, 0x47, 0x49, 0x4e, 0x10, 0x01, 0x2a, 0xb1, 0x01, 0x0a, 0x0f, 0x42,
+	0x61, 0x74, 0x74, 0x6c, 0x65, 0x45, 0x76, 0x65, 0x6e, 0x74, 0x54, 0x79, 0x70, 0x65, 0x12, 0x0b,
+	0x0a, 0x07, 0x55, 0x4e, 0x4b, 0x4e, 0x4f, 0x57, 0x4e, 0x10, 0x00, 0x12, 0x12, 0x0a, 0x0e, 0x41,
+	0x54, 0x54, 0x41, 0x43, 0x4b, 0x5f, 0x4d, 0x4f, 0x4e, 0x53, 0x54, 0x45, 0x52, 0x10, 0x01, 0x12,
+	0x0f, 0x0a, 0x0b, 0x42, 0x45, 0x5f, 0x41, 0x54, 0x54, 0x41, 0x43, 0x4b, 0x45, 0x44, 0x10, 0x02,
+	0x12, 0x10, 0x0a, 0x0c, 0x4d, 0x4f, 0x4e, 0x53, 0x54, 0x45, 0x52, 0x5f, 0x44, 0x45, 0x41, 0x44,
+	0x10, 0x03, 0x12, 0x13, 0x0a, 0x0f, 0x52, 0x45, 0x46, 0x52, 0x45, 0x53, 0x48, 0x5f, 0x4d, 0x4f,
+	0x4e, 0x53, 0x54, 0x45, 0x52, 0x10, 0x04, 0x12, 0x10, 0x0a, 0x0c, 0x54, 0x52, 0x49, 0x47, 0x47,
+	0x45, 0x52, 0x5f, 0x54, 0x52, 0x41, 0x50, 0x10, 0x05, 0x12, 0x0d, 0x0a, 0x09, 0x52, 0x4f, 0x4c,
+	0x45, 0x5f, 0x4d, 0x4f, 0x56, 0x45, 0x10, 0x06, 0x12, 0x11, 0x0a, 0x0d, 0x45, 0x4e, 0x54, 0x45,
+	0x52, 0x5f, 0x42, 0x41, 0x52, 0x52, 0x49, 0x45, 0x52, 0x10, 0x07, 0x12, 0x11, 0x0a, 0x0d, 0x4c,
+	0x45, 0x41, 0x56, 0x45, 0x5f, 0x42, 0x41, 0x52, 0x52, 0x49, 0x45, 0x52, 0x10, 0x08, 0x2a, 0x24,
+	0x0a, 0x0d, 0x42, 0x61, 0x72, 0x72, 0x69, 0x65, 0x72, 0x52, 0x65, 0x73, 0x75, 0x6c, 0x74, 0x12,
+	0x08, 0x0a, 0x04, 0x50, 0x41, 0x53, 0x53, 0x10, 0x01, 0x12, 0x09, 0x0a, 0x05, 0x44, 0x45, 0x41,
+	0x54, 0x48, 0x10, 0x02, 0x2a, 0x48, 0x0a, 0x18, 0x52, 0x65, 0x70, 0x6f, 0x72, 0x74, 0x53, 0x63,
+	0x6f, 0x72, 0x65, 0x41, 0x77, 0x61, 0x72, 0x64, 0x49, 0x74, 0x65, 0x6d, 0x54, 0x79, 0x70, 0x65,
+	0x12, 0x0f, 0x0a, 0x0b, 0x52, 0x45, 0x57, 0x41, 0x52, 0x44, 0x5f, 0x47, 0x4f, 0x4c, 0x44, 0x10,
+	0x01, 0x12, 0x1b, 0x0a, 0x17, 0x52, 0x45, 0x57, 0x41, 0x52, 0x44, 0x5f, 0x53, 0x74, 0x72, 0x65,
+	0x6e, 0x67, 0x74, 0x68, 0x65, 0x6e, 0x5f, 0x53, 0x74, 0x6f, 0x6e, 0x65, 0x10, 0x02, 0x42, 0x33,
+	0x5a, 0x23, 0x6d, 0x61, 0x7a, 0x65, 0x5f, 0x67, 0x61, 0x6d, 0x65, 0x5f, 0x73, 0x65, 0x72, 0x76,
+	0x65, 0x72, 0x2f, 0x70, 0x62, 0x2f, 0x63, 0x6f, 0x6d, 0x6d, 0x6f, 0x6e, 0x2f, 0x4d, 0x61, 0x7a,
+	0x65, 0x47, 0x61, 0x6d, 0x65, 0xaa, 0x02, 0x0b, 0x50, 0x62, 0x2e, 0x4d, 0x61, 0x7a, 0x65, 0x47,
+	0x61, 0x6d, 0x65,
 }
 
 var (
@@ -5611,7 +5681,7 @@ func file_common_MazeGame_proto_rawDescGZIP() []byte {
 	return file_common_MazeGame_proto_rawDescData
 }
 
-var file_common_MazeGame_proto_enumTypes = make([]protoimpl.EnumInfo, 5)
+var file_common_MazeGame_proto_enumTypes = make([]protoimpl.EnumInfo, 6)
 var file_common_MazeGame_proto_msgTypes = make([]protoimpl.MessageInfo, 64)
 var file_common_MazeGame_proto_goTypes = []interface{}{
 	(MAZE_USER_TYPE)(0),                      // 0: MazeGame.MAZE_USER_TYPE
@@ -5619,195 +5689,195 @@ var file_common_MazeGame_proto_goTypes = []interface{}{
 	(MAZE_COMMON_VALUE_CHG_REASON)(0),        // 2: MazeGame.MAZE_COMMON_VALUE_CHG_REASON
 	(BattleEventType)(0),                     // 3: MazeGame.BattleEventType
 	(BarrierResult)(0),                       // 4: MazeGame.BarrierResult
-	(*MazeCommonValue)(nil),                  // 5: MazeGame.MazeCommonValue
-	(*MazeCommonValueChg)(nil),               // 6: MazeGame.MazeCommonValueChg
-	(*MazeCommonValueChgID)(nil),             // 7: MazeGame.MazeCommonValueChgID
-	(*MazeLoginRQ)(nil),                      // 8: MazeGame.MazeLoginRQ
-	(*MazeLoginRS)(nil),                      // 9: MazeGame.MazeLoginRS
-	(*BarrierOpenBoxRQ)(nil),                 // 10: MazeGame.BarrierOpenBoxRQ
-	(*BarrierOpenBoxRS)(nil),                 // 11: MazeGame.BarrierOpenBoxRS
-	(*MazeCommonValueSync)(nil),              // 12: MazeGame.MazeCommonValueSync
-	(*MazeStorageInfo)(nil),                  // 13: MazeGame.MazeStorageInfo
-	(*SyncMazeStorageRoleItemDataRQ)(nil),    // 14: MazeGame.SyncMazeStorageRoleItemDataRQ
-	(*SyncMazeStorageRoleItemDataRS)(nil),    // 15: MazeGame.SyncMazeStorageRoleItemDataRS
-	(*SyncMazeStoragePassLevelRQ)(nil),       // 16: MazeGame.SyncMazeStoragePassLevelRQ
-	(*SyncMazeStoragePassLevelRS)(nil),       // 17: MazeGame.SyncMazeStoragePassLevelRS
-	(*SyncMazeStorageRolePosRQ)(nil),         // 18: MazeGame.SyncMazeStorageRolePosRQ
-	(*SyncMazeStorageRolePosRS)(nil),         // 19: MazeGame.SyncMazeStorageRolePosRS
-	(*SyncMazeStorageItemInfoRQ)(nil),        // 20: MazeGame.SyncMazeStorageItemInfoRQ
-	(*SyncMazeStorageItemInfoRS)(nil),        // 21: MazeGame.SyncMazeStorageItemInfoRS
-	(*SyncMazeStorageStageLevelRQ)(nil),      // 22: MazeGame.SyncMazeStorageStageLevelRQ
-	(*SyncMazeStorageStageLevelRS)(nil),      // 23: MazeGame.SyncMazeStorageStageLevelRS
-	(*SyncMazeStorageMonsterAreaInfoRQ)(nil), // 24: MazeGame.SyncMazeStorageMonsterAreaInfoRQ
-	(*SyncMazeStorageMonsterAreaInfoRS)(nil), // 25: MazeGame.SyncMazeStorageMonsterAreaInfoRS
-	(*GetStorageInfoRQ)(nil),                 // 26: MazeGame.GetStorageInfoRQ
-	(*GetStorageInfoRS)(nil),                 // 27: MazeGame.GetStorageInfoRS
-	(*MazeBarrierEnterRQ)(nil),               // 28: MazeGame.MazeBarrierEnterRQ
-	(*MazeBarrierEnterRS)(nil),               // 29: MazeGame.MazeBarrierEnterRS
-	(*BarrierDeathRQ)(nil),                   // 30: MazeGame.BarrierDeathRQ
-	(*BarrierDeathRS)(nil),                   // 31: MazeGame.BarrierDeathRS
-	(*SendDollMazeCmdRQ)(nil),                // 32: MazeGame.SendDollMazeCmdRQ
-	(*SendDollMazeCmdRS)(nil),                // 33: MazeGame.SendDollMazeCmdRS
-	(*ReportUserInfo)(nil),                   // 34: MazeGame.ReportUserInfo
-	(*ReportDataRQ)(nil),                     // 35: MazeGame.ReportDataRQ
-	(*ReportDataRS)(nil),                     // 36: MazeGame.ReportDataRS
-	(*BattlePos)(nil),                        // 37: MazeGame.BattlePos
-	(*BattleEventAttack)(nil),                // 38: MazeGame.BattleEventAttack
-	(*DefenderInfo)(nil),                     // 39: MazeGame.DefenderInfo
-	(*BattleEventMonsterDead)(nil),           // 40: MazeGame.BattleEventMonsterDead
-	(*BattleEventRefreshMonster)(nil),        // 41: MazeGame.BattleEventRefreshMonster
-	(*BattleEventTriggerTrap)(nil),           // 42: MazeGame.BattleEventTriggerTrap
-	(*BattleEventRoleMove)(nil),              // 43: MazeGame.BattleEventRoleMove
-	(*BattleEventEnterBarrier)(nil),          // 44: MazeGame.BattleEventEnterBarrier
-	(*BattleEventLeaveBarrier)(nil),          // 45: MazeGame.BattleEventLeaveBarrier
-	(*BattleEvent)(nil),                      // 46: MazeGame.BattleEvent
-	(*ReportBattleEventRQ)(nil),              // 47: MazeGame.ReportBattleEventRQ
-	(*ReportBattleEventRS)(nil),              // 48: MazeGame.ReportBattleEventRS
-	(*ReportAwardFoeEquipRQ)(nil),            // 49: MazeGame.ReportAwardFoeEquipRQ
-	(*ReportAwardFoeEquipRS)(nil),            // 50: MazeGame.ReportAwardFoeEquipRS
-	(*MazeLvUpgradeID)(nil),                  // 51: MazeGame.MazeLvUpgradeID
-	(*MazeBarrierInfo)(nil),                  // 52: MazeGame.MazeBarrierInfo
-	(*MazeBarrierListRQ)(nil),                // 53: MazeGame.MazeBarrierListRQ
-	(*MazeBarrierListRS)(nil),                // 54: MazeGame.MazeBarrierListRS
-	(*MazeBarrierPassRQ)(nil),                // 55: MazeGame.MazeBarrierPassRQ
-	(*MazeBarrierPassRS)(nil),                // 56: MazeGame.MazeBarrierPassRS
-	(*MazeBarrierRebornRQ)(nil),              // 57: MazeGame.MazeBarrierRebornRQ
-	(*MazeBarrierRebornRS)(nil),              // 58: MazeGame.MazeBarrierRebornRS
-	(*StartMazeSweepRQ)(nil),                 // 59: MazeGame.StartMazeSweepRQ
-	(*StartMazeSweepRS)(nil),                 // 60: MazeGame.StartMazeSweepRS
-	(*BarrierMonsterDeathRQ)(nil),            // 61: MazeGame.BarrierMonsterDeathRQ
-	(*BarrierMonsterDeathRS)(nil),            // 62: MazeGame.BarrierMonsterDeathRS
-	(*EndAreaBattleRQ)(nil),                  // 63: MazeGame.EndAreaBattleRQ
-	(*EndAreaBattleRS)(nil),                  // 64: MazeGame.EndAreaBattleRS
-	(*BarrierPickItemRQ)(nil),                // 65: MazeGame.BarrierPickItemRQ
-	(*BarrierPickItemRS)(nil),                // 66: MazeGame.BarrierPickItemRS
-	(*ReportScoreAwardItemRQ)(nil),           // 67: MazeGame.ReportScoreAwardItemRQ
-	(*ReportScoreAwardItemRS)(nil),           // 68: MazeGame.ReportScoreAwardItemRS
-	(*Common.PacketHeader)(nil),              // 69: Common.PacketHeader
-	(*MessageType.ErrorInfo)(nil),            // 70: MessageType.ErrorInfo
-	(*MazeCommon.MazeItem)(nil),              // 71: MazeCommon.MazeItem
-	(*MazeAIBattle.MazeBarrierInfo)(nil),     // 72: MazeAIBattle.MazeBarrierInfo
-	(*MazeAIBattle.MazeAIReportInfo)(nil),    // 73: MazeAIBattle.MazeAIReportInfo
-	(*Common.AttrChgInfo)(nil),               // 74: Common.AttrChgInfo
-	(*MazeCommon.MazeCount)(nil),             // 75: MazeCommon.MazeCount
+	(ReportScoreAwardItemType)(0),            // 5: MazeGame.ReportScoreAwardItemType
+	(*MazeCommonValue)(nil),                  // 6: MazeGame.MazeCommonValue
+	(*MazeCommonValueChg)(nil),               // 7: MazeGame.MazeCommonValueChg
+	(*MazeCommonValueChgID)(nil),             // 8: MazeGame.MazeCommonValueChgID
+	(*MazeLoginRQ)(nil),                      // 9: MazeGame.MazeLoginRQ
+	(*MazeLoginRS)(nil),                      // 10: MazeGame.MazeLoginRS
+	(*BarrierOpenBoxRQ)(nil),                 // 11: MazeGame.BarrierOpenBoxRQ
+	(*BarrierOpenBoxRS)(nil),                 // 12: MazeGame.BarrierOpenBoxRS
+	(*MazeCommonValueSync)(nil),              // 13: MazeGame.MazeCommonValueSync
+	(*MazeStorageInfo)(nil),                  // 14: MazeGame.MazeStorageInfo
+	(*SyncMazeStorageRoleItemDataRQ)(nil),    // 15: MazeGame.SyncMazeStorageRoleItemDataRQ
+	(*SyncMazeStorageRoleItemDataRS)(nil),    // 16: MazeGame.SyncMazeStorageRoleItemDataRS
+	(*SyncMazeStoragePassLevelRQ)(nil),       // 17: MazeGame.SyncMazeStoragePassLevelRQ
+	(*SyncMazeStoragePassLevelRS)(nil),       // 18: MazeGame.SyncMazeStoragePassLevelRS
+	(*SyncMazeStorageRolePosRQ)(nil),         // 19: MazeGame.SyncMazeStorageRolePosRQ
+	(*SyncMazeStorageRolePosRS)(nil),         // 20: MazeGame.SyncMazeStorageRolePosRS
+	(*SyncMazeStorageItemInfoRQ)(nil),        // 21: MazeGame.SyncMazeStorageItemInfoRQ
+	(*SyncMazeStorageItemInfoRS)(nil),        // 22: MazeGame.SyncMazeStorageItemInfoRS
+	(*SyncMazeStorageStageLevelRQ)(nil),      // 23: MazeGame.SyncMazeStorageStageLevelRQ
+	(*SyncMazeStorageStageLevelRS)(nil),      // 24: MazeGame.SyncMazeStorageStageLevelRS
+	(*SyncMazeStorageMonsterAreaInfoRQ)(nil), // 25: MazeGame.SyncMazeStorageMonsterAreaInfoRQ
+	(*SyncMazeStorageMonsterAreaInfoRS)(nil), // 26: MazeGame.SyncMazeStorageMonsterAreaInfoRS
+	(*GetStorageInfoRQ)(nil),                 // 27: MazeGame.GetStorageInfoRQ
+	(*GetStorageInfoRS)(nil),                 // 28: MazeGame.GetStorageInfoRS
+	(*MazeBarrierEnterRQ)(nil),               // 29: MazeGame.MazeBarrierEnterRQ
+	(*MazeBarrierEnterRS)(nil),               // 30: MazeGame.MazeBarrierEnterRS
+	(*BarrierDeathRQ)(nil),                   // 31: MazeGame.BarrierDeathRQ
+	(*BarrierDeathRS)(nil),                   // 32: MazeGame.BarrierDeathRS
+	(*SendDollMazeCmdRQ)(nil),                // 33: MazeGame.SendDollMazeCmdRQ
+	(*SendDollMazeCmdRS)(nil),                // 34: MazeGame.SendDollMazeCmdRS
+	(*ReportUserInfo)(nil),                   // 35: MazeGame.ReportUserInfo
+	(*ReportDataRQ)(nil),                     // 36: MazeGame.ReportDataRQ
+	(*ReportDataRS)(nil),                     // 37: MazeGame.ReportDataRS
+	(*BattlePos)(nil),                        // 38: MazeGame.BattlePos
+	(*BattleEventAttack)(nil),                // 39: MazeGame.BattleEventAttack
+	(*DefenderInfo)(nil),                     // 40: MazeGame.DefenderInfo
+	(*BattleEventMonsterDead)(nil),           // 41: MazeGame.BattleEventMonsterDead
+	(*BattleEventRefreshMonster)(nil),        // 42: MazeGame.BattleEventRefreshMonster
+	(*BattleEventTriggerTrap)(nil),           // 43: MazeGame.BattleEventTriggerTrap
+	(*BattleEventRoleMove)(nil),              // 44: MazeGame.BattleEventRoleMove
+	(*BattleEventEnterBarrier)(nil),          // 45: MazeGame.BattleEventEnterBarrier
+	(*BattleEventLeaveBarrier)(nil),          // 46: MazeGame.BattleEventLeaveBarrier
+	(*BattleEvent)(nil),                      // 47: MazeGame.BattleEvent
+	(*ReportBattleEventRQ)(nil),              // 48: MazeGame.ReportBattleEventRQ
+	(*ReportBattleEventRS)(nil),              // 49: MazeGame.ReportBattleEventRS
+	(*ReportAwardFoeEquipRQ)(nil),            // 50: MazeGame.ReportAwardFoeEquipRQ
+	(*ReportAwardFoeEquipRS)(nil),            // 51: MazeGame.ReportAwardFoeEquipRS
+	(*MazeLvUpgradeID)(nil),                  // 52: MazeGame.MazeLvUpgradeID
+	(*MazeBarrierInfo)(nil),                  // 53: MazeGame.MazeBarrierInfo
+	(*MazeBarrierListRQ)(nil),                // 54: MazeGame.MazeBarrierListRQ
+	(*MazeBarrierListRS)(nil),                // 55: MazeGame.MazeBarrierListRS
+	(*MazeBarrierPassRQ)(nil),                // 56: MazeGame.MazeBarrierPassRQ
+	(*MazeBarrierPassRS)(nil),                // 57: MazeGame.MazeBarrierPassRS
+	(*MazeBarrierRebornRQ)(nil),              // 58: MazeGame.MazeBarrierRebornRQ
+	(*MazeBarrierRebornRS)(nil),              // 59: MazeGame.MazeBarrierRebornRS
+	(*StartMazeSweepRQ)(nil),                 // 60: MazeGame.StartMazeSweepRQ
+	(*StartMazeSweepRS)(nil),                 // 61: MazeGame.StartMazeSweepRS
+	(*BarrierMonsterDeathRQ)(nil),            // 62: MazeGame.BarrierMonsterDeathRQ
+	(*BarrierMonsterDeathRS)(nil),            // 63: MazeGame.BarrierMonsterDeathRS
+	(*EndAreaBattleRQ)(nil),                  // 64: MazeGame.EndAreaBattleRQ
+	(*EndAreaBattleRS)(nil),                  // 65: MazeGame.EndAreaBattleRS
+	(*BarrierPickItemRQ)(nil),                // 66: MazeGame.BarrierPickItemRQ
+	(*BarrierPickItemRS)(nil),                // 67: MazeGame.BarrierPickItemRS
+	(*ReportScoreAwardItemRQ)(nil),           // 68: MazeGame.ReportScoreAwardItemRQ
+	(*ReportScoreAwardItemRS)(nil),           // 69: MazeGame.ReportScoreAwardItemRS
+	(*Common.PacketHeader)(nil),              // 70: Common.PacketHeader
+	(*MessageType.ErrorInfo)(nil),            // 71: MessageType.ErrorInfo
+	(*MazeCommon.MazeItem)(nil),              // 72: MazeCommon.MazeItem
+	(*MazeAIBattle.MazeBarrierInfo)(nil),     // 73: MazeAIBattle.MazeBarrierInfo
+	(*MazeAIBattle.MazeAIReportInfo)(nil),    // 74: MazeAIBattle.MazeAIReportInfo
+	(*Common.AttrChgInfo)(nil),               // 75: Common.AttrChgInfo
+	(*MazeCommon.MazeCount)(nil),             // 76: MazeCommon.MazeCount
 }
 var file_common_MazeGame_proto_depIdxs = []int32{
-	5,   // 0: MazeGame.MazeCommonValueChg.old_value:type_name -> MazeGame.MazeCommonValue
-	5,   // 1: MazeGame.MazeCommonValueChg.new_value:type_name -> MazeGame.MazeCommonValue
-	6,   // 2: MazeGame.MazeCommonValueChgID.common_value_list:type_name -> MazeGame.MazeCommonValueChg
-	69,  // 3: MazeGame.MazeLoginRQ.header:type_name -> Common.PacketHeader
-	69,  // 4: MazeGame.MazeLoginRS.header:type_name -> Common.PacketHeader
-	70,  // 5: MazeGame.MazeLoginRS.err_info:type_name -> MessageType.ErrorInfo
-	69,  // 6: MazeGame.BarrierOpenBoxRQ.header:type_name -> Common.PacketHeader
-	69,  // 7: MazeGame.BarrierOpenBoxRS.header:type_name -> Common.PacketHeader
-	70,  // 8: MazeGame.BarrierOpenBoxRS.err_info:type_name -> MessageType.ErrorInfo
-	71,  // 9: MazeGame.BarrierOpenBoxRS.awards:type_name -> MazeCommon.MazeItem
-	69,  // 10: MazeGame.SyncMazeStorageRoleItemDataRQ.header:type_name -> Common.PacketHeader
-	69,  // 11: MazeGame.SyncMazeStorageRoleItemDataRS.header:type_name -> Common.PacketHeader
-	70,  // 12: MazeGame.SyncMazeStorageRoleItemDataRS.err_info:type_name -> MessageType.ErrorInfo
-	69,  // 13: MazeGame.SyncMazeStoragePassLevelRQ.header:type_name -> Common.PacketHeader
-	69,  // 14: MazeGame.SyncMazeStoragePassLevelRS.header:type_name -> Common.PacketHeader
-	70,  // 15: MazeGame.SyncMazeStoragePassLevelRS.err_info:type_name -> MessageType.ErrorInfo
-	69,  // 16: MazeGame.SyncMazeStorageRolePosRQ.header:type_name -> Common.PacketHeader
-	69,  // 17: MazeGame.SyncMazeStorageRolePosRS.header:type_name -> Common.PacketHeader
-	70,  // 18: MazeGame.SyncMazeStorageRolePosRS.err_info:type_name -> MessageType.ErrorInfo
-	69,  // 19: MazeGame.SyncMazeStorageItemInfoRQ.header:type_name -> Common.PacketHeader
-	69,  // 20: MazeGame.SyncMazeStorageItemInfoRS.header:type_name -> Common.PacketHeader
-	70,  // 21: MazeGame.SyncMazeStorageItemInfoRS.err_info:type_name -> MessageType.ErrorInfo
-	69,  // 22: MazeGame.SyncMazeStorageStageLevelRQ.header:type_name -> Common.PacketHeader
-	69,  // 23: MazeGame.SyncMazeStorageStageLevelRS.header:type_name -> Common.PacketHeader
-	70,  // 24: MazeGame.SyncMazeStorageStageLevelRS.err_info:type_name -> MessageType.ErrorInfo
-	69,  // 25: MazeGame.SyncMazeStorageMonsterAreaInfoRQ.header:type_name -> Common.PacketHeader
-	69,  // 26: MazeGame.SyncMazeStorageMonsterAreaInfoRS.header:type_name -> Common.PacketHeader
-	70,  // 27: MazeGame.SyncMazeStorageMonsterAreaInfoRS.err_info:type_name -> MessageType.ErrorInfo
-	69,  // 28: MazeGame.GetStorageInfoRQ.header:type_name -> Common.PacketHeader
-	69,  // 29: MazeGame.GetStorageInfoRS.header:type_name -> Common.PacketHeader
-	70,  // 30: MazeGame.GetStorageInfoRS.err_info:type_name -> MessageType.ErrorInfo
-	13,  // 31: MazeGame.GetStorageInfoRS.storage_info:type_name -> MazeGame.MazeStorageInfo
-	69,  // 32: MazeGame.MazeBarrierEnterRQ.header:type_name -> Common.PacketHeader
-	69,  // 33: MazeGame.MazeBarrierEnterRS.header:type_name -> Common.PacketHeader
-	70,  // 34: MazeGame.MazeBarrierEnterRS.err_info:type_name -> MessageType.ErrorInfo
-	72,  // 35: MazeGame.MazeBarrierEnterRS.maze_barrier_info:type_name -> MazeAIBattle.MazeBarrierInfo
-	73,  // 36: MazeGame.MazeBarrierEnterRS.maze_report_info:type_name -> MazeAIBattle.MazeAIReportInfo
-	12,  // 37: MazeGame.MazeBarrierEnterRS.sync_data:type_name -> MazeGame.MazeCommonValueSync
-	69,  // 38: MazeGame.BarrierDeathRQ.header:type_name -> Common.PacketHeader
-	69,  // 39: MazeGame.BarrierDeathRS.header:type_name -> Common.PacketHeader
-	70,  // 40: MazeGame.BarrierDeathRS.err_info:type_name -> MessageType.ErrorInfo
-	71,  // 41: MazeGame.BarrierDeathRS.barrier_award:type_name -> MazeCommon.MazeItem
-	69,  // 42: MazeGame.SendDollMazeCmdRQ.header:type_name -> Common.PacketHeader
-	70,  // 43: MazeGame.SendDollMazeCmdRS.err_info:type_name -> MessageType.ErrorInfo
-	69,  // 44: MazeGame.SendDollMazeCmdRS.header:type_name -> Common.PacketHeader
-	69,  // 45: MazeGame.ReportDataRQ.header:type_name -> Common.PacketHeader
-	34,  // 46: MazeGame.ReportDataRQ.user_info:type_name -> MazeGame.ReportUserInfo
-	69,  // 47: MazeGame.ReportDataRS.header:type_name -> Common.PacketHeader
-	70,  // 48: MazeGame.ReportDataRS.err_info:type_name -> MessageType.ErrorInfo
-	34,  // 49: MazeGame.ReportDataRS.user_info:type_name -> MazeGame.ReportUserInfo
-	39,  // 50: MazeGame.BattleEventAttack.defenders:type_name -> MazeGame.DefenderInfo
-	37,  // 51: MazeGame.DefenderInfo.defender_pos:type_name -> MazeGame.BattlePos
-	39,  // 52: MazeGame.BattleEventMonsterDead.monsters:type_name -> MazeGame.DefenderInfo
-	37,  // 53: MazeGame.BattleEventRefreshMonster.pos:type_name -> MazeGame.BattlePos
-	37,  // 54: MazeGame.BattleEventRoleMove.pos:type_name -> MazeGame.BattlePos
+	6,   // 0: MazeGame.MazeCommonValueChg.old_value:type_name -> MazeGame.MazeCommonValue
+	6,   // 1: MazeGame.MazeCommonValueChg.new_value:type_name -> MazeGame.MazeCommonValue
+	7,   // 2: MazeGame.MazeCommonValueChgID.common_value_list:type_name -> MazeGame.MazeCommonValueChg
+	70,  // 3: MazeGame.MazeLoginRQ.header:type_name -> Common.PacketHeader
+	70,  // 4: MazeGame.MazeLoginRS.header:type_name -> Common.PacketHeader
+	71,  // 5: MazeGame.MazeLoginRS.err_info:type_name -> MessageType.ErrorInfo
+	70,  // 6: MazeGame.BarrierOpenBoxRQ.header:type_name -> Common.PacketHeader
+	70,  // 7: MazeGame.BarrierOpenBoxRS.header:type_name -> Common.PacketHeader
+	71,  // 8: MazeGame.BarrierOpenBoxRS.err_info:type_name -> MessageType.ErrorInfo
+	72,  // 9: MazeGame.BarrierOpenBoxRS.awards:type_name -> MazeCommon.MazeItem
+	70,  // 10: MazeGame.SyncMazeStorageRoleItemDataRQ.header:type_name -> Common.PacketHeader
+	70,  // 11: MazeGame.SyncMazeStorageRoleItemDataRS.header:type_name -> Common.PacketHeader
+	71,  // 12: MazeGame.SyncMazeStorageRoleItemDataRS.err_info:type_name -> MessageType.ErrorInfo
+	70,  // 13: MazeGame.SyncMazeStoragePassLevelRQ.header:type_name -> Common.PacketHeader
+	70,  // 14: MazeGame.SyncMazeStoragePassLevelRS.header:type_name -> Common.PacketHeader
+	71,  // 15: MazeGame.SyncMazeStoragePassLevelRS.err_info:type_name -> MessageType.ErrorInfo
+	70,  // 16: MazeGame.SyncMazeStorageRolePosRQ.header:type_name -> Common.PacketHeader
+	70,  // 17: MazeGame.SyncMazeStorageRolePosRS.header:type_name -> Common.PacketHeader
+	71,  // 18: MazeGame.SyncMazeStorageRolePosRS.err_info:type_name -> MessageType.ErrorInfo
+	70,  // 19: MazeGame.SyncMazeStorageItemInfoRQ.header:type_name -> Common.PacketHeader
+	70,  // 20: MazeGame.SyncMazeStorageItemInfoRS.header:type_name -> Common.PacketHeader
+	71,  // 21: MazeGame.SyncMazeStorageItemInfoRS.err_info:type_name -> MessageType.ErrorInfo
+	70,  // 22: MazeGame.SyncMazeStorageStageLevelRQ.header:type_name -> Common.PacketHeader
+	70,  // 23: MazeGame.SyncMazeStorageStageLevelRS.header:type_name -> Common.PacketHeader
+	71,  // 24: MazeGame.SyncMazeStorageStageLevelRS.err_info:type_name -> MessageType.ErrorInfo
+	70,  // 25: MazeGame.SyncMazeStorageMonsterAreaInfoRQ.header:type_name -> Common.PacketHeader
+	70,  // 26: MazeGame.SyncMazeStorageMonsterAreaInfoRS.header:type_name -> Common.PacketHeader
+	71,  // 27: MazeGame.SyncMazeStorageMonsterAreaInfoRS.err_info:type_name -> MessageType.ErrorInfo
+	70,  // 28: MazeGame.GetStorageInfoRQ.header:type_name -> Common.PacketHeader
+	70,  // 29: MazeGame.GetStorageInfoRS.header:type_name -> Common.PacketHeader
+	71,  // 30: MazeGame.GetStorageInfoRS.err_info:type_name -> MessageType.ErrorInfo
+	14,  // 31: MazeGame.GetStorageInfoRS.storage_info:type_name -> MazeGame.MazeStorageInfo
+	70,  // 32: MazeGame.MazeBarrierEnterRQ.header:type_name -> Common.PacketHeader
+	70,  // 33: MazeGame.MazeBarrierEnterRS.header:type_name -> Common.PacketHeader
+	71,  // 34: MazeGame.MazeBarrierEnterRS.err_info:type_name -> MessageType.ErrorInfo
+	73,  // 35: MazeGame.MazeBarrierEnterRS.maze_barrier_info:type_name -> MazeAIBattle.MazeBarrierInfo
+	74,  // 36: MazeGame.MazeBarrierEnterRS.maze_report_info:type_name -> MazeAIBattle.MazeAIReportInfo
+	13,  // 37: MazeGame.MazeBarrierEnterRS.sync_data:type_name -> MazeGame.MazeCommonValueSync
+	70,  // 38: MazeGame.BarrierDeathRQ.header:type_name -> Common.PacketHeader
+	70,  // 39: MazeGame.BarrierDeathRS.header:type_name -> Common.PacketHeader
+	71,  // 40: MazeGame.BarrierDeathRS.err_info:type_name -> MessageType.ErrorInfo
+	72,  // 41: MazeGame.BarrierDeathRS.barrier_award:type_name -> MazeCommon.MazeItem
+	70,  // 42: MazeGame.SendDollMazeCmdRQ.header:type_name -> Common.PacketHeader
+	71,  // 43: MazeGame.SendDollMazeCmdRS.err_info:type_name -> MessageType.ErrorInfo
+	70,  // 44: MazeGame.SendDollMazeCmdRS.header:type_name -> Common.PacketHeader
+	70,  // 45: MazeGame.ReportDataRQ.header:type_name -> Common.PacketHeader
+	35,  // 46: MazeGame.ReportDataRQ.user_info:type_name -> MazeGame.ReportUserInfo
+	70,  // 47: MazeGame.ReportDataRS.header:type_name -> Common.PacketHeader
+	71,  // 48: MazeGame.ReportDataRS.err_info:type_name -> MessageType.ErrorInfo
+	35,  // 49: MazeGame.ReportDataRS.user_info:type_name -> MazeGame.ReportUserInfo
+	40,  // 50: MazeGame.BattleEventAttack.defenders:type_name -> MazeGame.DefenderInfo
+	38,  // 51: MazeGame.DefenderInfo.defender_pos:type_name -> MazeGame.BattlePos
+	40,  // 52: MazeGame.BattleEventMonsterDead.monsters:type_name -> MazeGame.DefenderInfo
+	38,  // 53: MazeGame.BattleEventRefreshMonster.pos:type_name -> MazeGame.BattlePos
+	38,  // 54: MazeGame.BattleEventRoleMove.pos:type_name -> MazeGame.BattlePos
 	4,   // 55: MazeGame.BattleEventLeaveBarrier.result:type_name -> MazeGame.BarrierResult
 	3,   // 56: MazeGame.BattleEvent.type:type_name -> MazeGame.BattleEventType
-	38,  // 57: MazeGame.BattleEvent.attack:type_name -> MazeGame.BattleEventAttack
-	40,  // 58: MazeGame.BattleEvent.monster_dead:type_name -> MazeGame.BattleEventMonsterDead
-	41,  // 59: MazeGame.BattleEvent.refresh_monster:type_name -> MazeGame.BattleEventRefreshMonster
-	42,  // 60: MazeGame.BattleEvent.trigger_trap:type_name -> MazeGame.BattleEventTriggerTrap
-	43,  // 61: MazeGame.BattleEvent.role_move:type_name -> MazeGame.BattleEventRoleMove
-	44,  // 62: MazeGame.BattleEvent.enter_barrier:type_name -> MazeGame.BattleEventEnterBarrier
-	45,  // 63: MazeGame.BattleEvent.leave_barrier:type_name -> MazeGame.BattleEventLeaveBarrier
-	69,  // 64: MazeGame.ReportBattleEventRQ.header:type_name -> Common.PacketHeader
-	46,  // 65: MazeGame.ReportBattleEventRQ.events:type_name -> MazeGame.BattleEvent
-	69,  // 66: MazeGame.ReportBattleEventRS.header:type_name -> Common.PacketHeader
-	70,  // 67: MazeGame.ReportBattleEventRS.err_info:type_name -> MessageType.ErrorInfo
-	69,  // 68: MazeGame.ReportAwardFoeEquipRQ.header:type_name -> Common.PacketHeader
-	69,  // 69: MazeGame.ReportAwardFoeEquipRS.header:type_name -> Common.PacketHeader
-	70,  // 70: MazeGame.ReportAwardFoeEquipRS.err_info:type_name -> MessageType.ErrorInfo
-	74,  // 71: MazeGame.MazeLvUpgradeID.chg_attrs:type_name -> Common.AttrChgInfo
-	69,  // 72: MazeGame.MazeBarrierListRQ.header:type_name -> Common.PacketHeader
-	69,  // 73: MazeGame.MazeBarrierListRS.header:type_name -> Common.PacketHeader
-	70,  // 74: MazeGame.MazeBarrierListRS.err_info:type_name -> MessageType.ErrorInfo
-	52,  // 75: MazeGame.MazeBarrierListRS.maze_barrier_list:type_name -> MazeGame.MazeBarrierInfo
-	75,  // 76: MazeGame.MazeBarrierListRS.challenge_info:type_name -> MazeCommon.MazeCount
-	69,  // 77: MazeGame.MazeBarrierPassRQ.header:type_name -> Common.PacketHeader
-	69,  // 78: MazeGame.MazeBarrierPassRS.header:type_name -> Common.PacketHeader
-	70,  // 79: MazeGame.MazeBarrierPassRS.err_info:type_name -> MessageType.ErrorInfo
-	71,  // 80: MazeGame.MazeBarrierPassRS.barrier_award:type_name -> MazeCommon.MazeItem
-	71,  // 81: MazeGame.MazeBarrierPassRS.barrier_rare_award:type_name -> MazeCommon.MazeItem
-	69,  // 82: MazeGame.MazeBarrierRebornRQ.header:type_name -> Common.PacketHeader
-	71,  // 83: MazeGame.MazeBarrierRebornRQ.reborn_cost:type_name -> MazeCommon.MazeItem
-	69,  // 84: MazeGame.MazeBarrierRebornRS.header:type_name -> Common.PacketHeader
-	70,  // 85: MazeGame.MazeBarrierRebornRS.err_info:type_name -> MessageType.ErrorInfo
-	71,  // 86: MazeGame.MazeBarrierRebornRS.reborn_cost:type_name -> MazeCommon.MazeItem
-	69,  // 87: MazeGame.StartMazeSweepRQ.header:type_name -> Common.PacketHeader
-	69,  // 88: MazeGame.StartMazeSweepRS.header:type_name -> Common.PacketHeader
-	70,  // 89: MazeGame.StartMazeSweepRS.err_info:type_name -> MessageType.ErrorInfo
-	71,  // 90: MazeGame.StartMazeSweepRS.awards:type_name -> MazeCommon.MazeItem
-	71,  // 91: MazeGame.StartMazeSweepRS.rare_award:type_name -> MazeCommon.MazeItem
-	69,  // 92: MazeGame.BarrierMonsterDeathRQ.header:type_name -> Common.PacketHeader
-	69,  // 93: MazeGame.BarrierMonsterDeathRS.header:type_name -> Common.PacketHeader
-	70,  // 94: MazeGame.BarrierMonsterDeathRS.err_info:type_name -> MessageType.ErrorInfo
-	71,  // 95: MazeGame.BarrierMonsterDeathRS.awards:type_name -> MazeCommon.MazeItem
-	69,  // 96: MazeGame.EndAreaBattleRQ.header:type_name -> Common.PacketHeader
-	70,  // 97: MazeGame.EndAreaBattleRS.err_info:type_name -> MessageType.ErrorInfo
-	69,  // 98: MazeGame.EndAreaBattleRS.header:type_name -> Common.PacketHeader
-	69,  // 99: MazeGame.BarrierPickItemRQ.header:type_name -> Common.PacketHeader
-	71,  // 100: MazeGame.BarrierPickItemRQ.item_list:type_name -> MazeCommon.MazeItem
-	71,  // 101: MazeGame.BarrierPickItemRQ.equip_list:type_name -> MazeCommon.MazeItem
-	69,  // 102: MazeGame.BarrierPickItemRS.header:type_name -> Common.PacketHeader
-	70,  // 103: MazeGame.BarrierPickItemRS.err_info:type_name -> MessageType.ErrorInfo
-	71,  // 104: MazeGame.BarrierPickItemRS.item_list:type_name -> MazeCommon.MazeItem
-	71,  // 105: MazeGame.BarrierPickItemRS.equip_list:type_name -> MazeCommon.MazeItem
-	69,  // 106: MazeGame.ReportScoreAwardItemRQ.header:type_name -> Common.PacketHeader
-	71,  // 107: MazeGame.ReportScoreAwardItemRQ.item_list:type_name -> MazeCommon.MazeItem
-	69,  // 108: MazeGame.ReportScoreAwardItemRS.header:type_name -> Common.PacketHeader
-	70,  // 109: MazeGame.ReportScoreAwardItemRS.err_info:type_name -> MessageType.ErrorInfo
-	71,  // 110: MazeGame.ReportScoreAwardItemRS.item_list:type_name -> MazeCommon.MazeItem
-	111, // [111:111] is the sub-list for method output_type
-	111, // [111:111] is the sub-list for method input_type
-	111, // [111:111] is the sub-list for extension type_name
-	111, // [111:111] is the sub-list for extension extendee
-	0,   // [0:111] is the sub-list for field type_name
+	39,  // 57: MazeGame.BattleEvent.attack:type_name -> MazeGame.BattleEventAttack
+	41,  // 58: MazeGame.BattleEvent.monster_dead:type_name -> MazeGame.BattleEventMonsterDead
+	42,  // 59: MazeGame.BattleEvent.refresh_monster:type_name -> MazeGame.BattleEventRefreshMonster
+	43,  // 60: MazeGame.BattleEvent.trigger_trap:type_name -> MazeGame.BattleEventTriggerTrap
+	44,  // 61: MazeGame.BattleEvent.role_move:type_name -> MazeGame.BattleEventRoleMove
+	45,  // 62: MazeGame.BattleEvent.enter_barrier:type_name -> MazeGame.BattleEventEnterBarrier
+	46,  // 63: MazeGame.BattleEvent.leave_barrier:type_name -> MazeGame.BattleEventLeaveBarrier
+	70,  // 64: MazeGame.ReportBattleEventRQ.header:type_name -> Common.PacketHeader
+	47,  // 65: MazeGame.ReportBattleEventRQ.events:type_name -> MazeGame.BattleEvent
+	70,  // 66: MazeGame.ReportBattleEventRS.header:type_name -> Common.PacketHeader
+	71,  // 67: MazeGame.ReportBattleEventRS.err_info:type_name -> MessageType.ErrorInfo
+	70,  // 68: MazeGame.ReportAwardFoeEquipRQ.header:type_name -> Common.PacketHeader
+	70,  // 69: MazeGame.ReportAwardFoeEquipRS.header:type_name -> Common.PacketHeader
+	71,  // 70: MazeGame.ReportAwardFoeEquipRS.err_info:type_name -> MessageType.ErrorInfo
+	75,  // 71: MazeGame.MazeLvUpgradeID.chg_attrs:type_name -> Common.AttrChgInfo
+	70,  // 72: MazeGame.MazeBarrierListRQ.header:type_name -> Common.PacketHeader
+	70,  // 73: MazeGame.MazeBarrierListRS.header:type_name -> Common.PacketHeader
+	71,  // 74: MazeGame.MazeBarrierListRS.err_info:type_name -> MessageType.ErrorInfo
+	53,  // 75: MazeGame.MazeBarrierListRS.maze_barrier_list:type_name -> MazeGame.MazeBarrierInfo
+	76,  // 76: MazeGame.MazeBarrierListRS.challenge_info:type_name -> MazeCommon.MazeCount
+	70,  // 77: MazeGame.MazeBarrierPassRQ.header:type_name -> Common.PacketHeader
+	70,  // 78: MazeGame.MazeBarrierPassRS.header:type_name -> Common.PacketHeader
+	71,  // 79: MazeGame.MazeBarrierPassRS.err_info:type_name -> MessageType.ErrorInfo
+	72,  // 80: MazeGame.MazeBarrierPassRS.barrier_award:type_name -> MazeCommon.MazeItem
+	72,  // 81: MazeGame.MazeBarrierPassRS.barrier_rare_award:type_name -> MazeCommon.MazeItem
+	70,  // 82: MazeGame.MazeBarrierRebornRQ.header:type_name -> Common.PacketHeader
+	72,  // 83: MazeGame.MazeBarrierRebornRQ.reborn_cost:type_name -> MazeCommon.MazeItem
+	70,  // 84: MazeGame.MazeBarrierRebornRS.header:type_name -> Common.PacketHeader
+	71,  // 85: MazeGame.MazeBarrierRebornRS.err_info:type_name -> MessageType.ErrorInfo
+	72,  // 86: MazeGame.MazeBarrierRebornRS.reborn_cost:type_name -> MazeCommon.MazeItem
+	70,  // 87: MazeGame.StartMazeSweepRQ.header:type_name -> Common.PacketHeader
+	70,  // 88: MazeGame.StartMazeSweepRS.header:type_name -> Common.PacketHeader
+	71,  // 89: MazeGame.StartMazeSweepRS.err_info:type_name -> MessageType.ErrorInfo
+	72,  // 90: MazeGame.StartMazeSweepRS.awards:type_name -> MazeCommon.MazeItem
+	72,  // 91: MazeGame.StartMazeSweepRS.rare_award:type_name -> MazeCommon.MazeItem
+	70,  // 92: MazeGame.BarrierMonsterDeathRQ.header:type_name -> Common.PacketHeader
+	70,  // 93: MazeGame.BarrierMonsterDeathRS.header:type_name -> Common.PacketHeader
+	71,  // 94: MazeGame.BarrierMonsterDeathRS.err_info:type_name -> MessageType.ErrorInfo
+	72,  // 95: MazeGame.BarrierMonsterDeathRS.awards:type_name -> MazeCommon.MazeItem
+	70,  // 96: MazeGame.EndAreaBattleRQ.header:type_name -> Common.PacketHeader
+	71,  // 97: MazeGame.EndAreaBattleRS.err_info:type_name -> MessageType.ErrorInfo
+	70,  // 98: MazeGame.EndAreaBattleRS.header:type_name -> Common.PacketHeader
+	70,  // 99: MazeGame.BarrierPickItemRQ.header:type_name -> Common.PacketHeader
+	72,  // 100: MazeGame.BarrierPickItemRQ.item_list:type_name -> MazeCommon.MazeItem
+	72,  // 101: MazeGame.BarrierPickItemRQ.equip_list:type_name -> MazeCommon.MazeItem
+	70,  // 102: MazeGame.BarrierPickItemRS.header:type_name -> Common.PacketHeader
+	71,  // 103: MazeGame.BarrierPickItemRS.err_info:type_name -> MessageType.ErrorInfo
+	72,  // 104: MazeGame.BarrierPickItemRS.item_list:type_name -> MazeCommon.MazeItem
+	72,  // 105: MazeGame.BarrierPickItemRS.equip_list:type_name -> MazeCommon.MazeItem
+	70,  // 106: MazeGame.ReportScoreAwardItemRQ.header:type_name -> Common.PacketHeader
+	5,   // 107: MazeGame.ReportScoreAwardItemRQ.RewardType:type_name -> MazeGame.ReportScoreAwardItemType
+	70,  // 108: MazeGame.ReportScoreAwardItemRS.header:type_name -> Common.PacketHeader
+	71,  // 109: MazeGame.ReportScoreAwardItemRS.err_info:type_name -> MessageType.ErrorInfo
+	110, // [110:110] is the sub-list for method output_type
+	110, // [110:110] is the sub-list for method input_type
+	110, // [110:110] is the sub-list for extension type_name
+	110, // [110:110] is the sub-list for extension extendee
+	0,   // [0:110] is the sub-list for field type_name
 }
 
 func init() { file_common_MazeGame_proto_init() }
@@ -6590,7 +6660,7 @@ func file_common_MazeGame_proto_init() {
 		File: protoimpl.DescBuilder{
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
 			RawDescriptor: file_common_MazeGame_proto_rawDesc,
-			NumEnums:      5,
+			NumEnums:      6,
 			NumMessages:   64,
 			NumExtensions: 0,
 			NumServices:   0,
