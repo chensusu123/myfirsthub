@@ -18,7 +18,7 @@ func (s service) GetUserCostume(logger fklog.FKLogI, userId uint64) (map[int32]i
 		return nil, err
 	}
 	_ = effect
-
+	var groupModel map[int32]int32 = nil
 	allRows := GMazeEquipPosRankV8Cfg.GetAllMazeEquipPosRankV8Config()
 	for _, posCfg := range allRows {
 		var unlock int32
@@ -42,9 +42,7 @@ func (s service) GetUserCostume(logger fklog.FKLogI, userId uint64) (map[int32]i
 						logger.ErrorWF("OnGetMazeAssembleRQ GMazeEquipTypeGroupResV8Cfg failed", zap.Int32("Maze_model_group_id", equipTypeResCfg.Maze_model_group_id))
 						return nil, fmt.Errorf("配置找不到")
 					}
-					for k, v := range groupResCfg.Maze_model_group {
-						res[k] = v
-					}
+					groupModel = groupResCfg.Maze_model_group
 				} else {
 					res[posCfg.Pos_id] = equipTypeResCfg.Maze_model
 				}
@@ -56,6 +54,11 @@ func (s service) GetUserCostume(logger fklog.FKLogI, userId uint64) (map[int32]i
 			continue
 		}
 		res[posCfg.Pos_id] = 0
+	}
+	if groupModel != nil {
+		for k, v := range groupModel {
+			res[k] = v
+		}
 	}
 	return res, nil
 }
