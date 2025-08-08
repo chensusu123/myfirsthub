@@ -9,7 +9,7 @@ import (
 
 // 保存积分装备奖励信息
 func (s *service) SaveBarrierScoreRewardEquip(logger fklog.FKLogI, userId uint64, barrier int32, equipList map[int32]int32) (err error) {
-	err = s.saveBarrierScoreReward(logger, userId, barrier, equipList, nil)
+	err = s.SaveBarrierScoreReward(logger, userId, barrier, equipList, nil)
 	if err != nil {
 		return err
 	}
@@ -17,15 +17,15 @@ func (s *service) SaveBarrierScoreRewardEquip(logger fklog.FKLogI, userId uint64
 }
 
 // 保存积分道具奖励信息
-func (s *service) SaveBarrierScoreRewardItem(logger fklog.FKLogI, userId uint64, barrier int32, itemList map[int32]int32) (err error) {
-	err = s.saveBarrierScoreReward(logger, userId, barrier, nil, itemList)
+func (s *service) SaveBarrierScoreRewardItem(logger fklog.FKLogI, userId uint64, barrier int32, itemList map[int32]int64) (err error) {
+	err = s.SaveBarrierScoreReward(logger, userId, barrier, nil, itemList)
 	if err != nil {
 		return err
 	}
 	return nil
 }
 
-func (s *service) saveBarrierScoreReward(logger fklog.FKLogI, userId uint64, barrier int32, equipList map[int32]int32, itemList map[int32]int32) (err error) {
+func (s *service) SaveBarrierScoreReward(logger fklog.FKLogI, userId uint64, barrier int32, equipList map[int32]int32, itemList map[int32]int64) (err error) {
 	model, err := barrierscorerewardmodel.NewBarrierScoreRewardModel(logger, userId, barrier)
 	if err != nil {
 		logger.ErrorWF("SaveBarrierScoreReward NewBarrierScoreRewardModel err", zap.Error(err))

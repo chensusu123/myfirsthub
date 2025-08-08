@@ -117,9 +117,9 @@ func (g *Game) OnBarrierPickItemRQ_10527_10528(s *session.Session, req *MazeGame
 	}
 
 	// 保存到已获取的道具
-	itemMap := make(map[int32]int32)
+	itemMap := make(map[int32]int64)
 	for _, i := range realAddItemList {
-		itemMap[i.GetItemId()] += int32(i.GetCount())
+		itemMap[i.GetItemId()] += i.GetCount()
 	}
 	if err = barrierscorerewardservice.GlobalScoreRewardService.SaveBarrierScoreRewardItem(logger, userId, req.GetBarrierId(), itemMap); err != nil {
 		logger.ErrorWF("OnBarrierPickItemRQ SaveBarrierScoreRewardItem err", zap.Error(err), zap.Any("barrier", req.GetBarrierId()))

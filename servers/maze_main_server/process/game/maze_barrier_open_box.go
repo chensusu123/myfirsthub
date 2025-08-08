@@ -16,6 +16,7 @@ import (
 	"maze_game_server/pb/common/MazeCommon"
 	"maze_game_server/pb/common/MazeGame"
 	"maze_game_server/pb/server/MazeEquipSvr"
+	"maze_game_server/services/barrierscorerewardservice"
 
 	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fkprometheus"
 	"go.uber.org/zap"
@@ -163,6 +164,12 @@ func (g *Game) OnBarrierOpenBoxRQ_10445_10446(s *session.Session, req *MazeGame.
 	err = mazeboxredis.SetOpenBoxTime(logger, userId, req.GetBarrierId(), int32(req.GetBoxId()))
 	if err != nil {
 		logger.ErrorWF("OnBarrierOpenBoxRQ SetOpenBoxTime fail", zap.Error(err), zap.Any("boxId", req.GetBoxId()), zap.Any("barrierId", req.GetBarrierId()))
+	}
+
+	// 保存到已获取的道具
+	if err = barrierscorerewardservice.GlobalScoreRewardService.SaveBarrierScoreReward(logger, userId, req.GetBarrierId(), equip, dropItem); err != nil {
+		logger.ErrorWF("OnBarrierPickItemRQ SaveBarrierScoreRewardItem err", zap.Error(err), zap.Any("barrier", req.GetBarrierId()))
+		res.ErrInfo = errors.MODULE_ERROR.ToInfo()
 	}
 
 	return nil

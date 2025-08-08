@@ -11,7 +11,7 @@ import (
 
 type ItemRewardInfo struct {
 	ItemId int32 `json:"item_id,omitempty"`
-	Count  int32 `json:"count,omitempty"`
+	Count  int64 `json:"count,omitempty"`
 }
 type EquipRewardInfo struct {
 	EquipId int32 `json:"equip_id,omitempty"`
