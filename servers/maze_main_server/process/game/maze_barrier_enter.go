@@ -13,6 +13,7 @@ import (
 	"maze_game_server/io/redis/mazebuffinforedis"
 	"maze_game_server/io/redis/mazeuserbarrierredis"
 	"maze_game_server/io/redis/syncmazestorageinforedis"
+	"maze_game_server/lib/codec"
 	"maze_game_server/lib/log"
 	"maze_game_server/lib/nano/session"
 	"maze_game_server/model/equipdropmodel"
@@ -20,6 +21,7 @@ import (
 	"maze_game_server/module/mazeuserinfo"
 	"maze_game_server/pb/common/MazeAIBattle"
 	"maze_game_server/pb/common/MazeCommon"
+	"maze_game_server/pb/common/MazeEnergy"
 	"maze_game_server/pb/common/MazeGame"
 	"maze_game_server/servers/maze_main_server/process/game/events"
 	"maze_game_server/services/barrierenergyservice"
@@ -37,11 +39,14 @@ func (g *Game) OnMazeBarrierEnterRQ_10447_10448(s *session.Session, req *MazeGam
 
 	logger := log.Clone("Game", uint64(s.UID()), 0)
 	res := &MazeGame.MazeBarrierEnterRS{}
+	energyID := &MazeEnergy.EnergyChangeID{} //defer时多补一个体力ID包
 
 	logger.InfoWF("OnMazeBarrierEnterRQ start", zap.Any("req", req))
 	defer func() {
 		err = s.Response(res)
 		logger.InfoWF("OnMazeBarrierEnterRQ end", zap.Any("res", res))
+		err = s.ResponseMID(codec.ToMessageID(uint32(time.Now().Unix()), 10610, 0), energyID)
+		logger.InfoWF("OnMazeBarrierEnterRQ end send EnergyChangeID", zap.Any("energyID", energyID))
 	}()
 
 	res.Header = req.Header
@@ -168,7 +173,7 @@ func (g *Game) OnMazeBarrierEnterRQ_10447_10448(s *session.Session, req *MazeGam
 		// curEnergy = remainVal
 
 		//扣体力
-		_, err = barrierenergyservice.GlobalBarrierEnergyService.SubEnergy(logger, userId, barrierCfg.Mop_cost)
+		curEnergy, err = barrierenergyservice.GlobalBarrierEnergyService.SubEnergy(logger, userId, barrierCfg.Mop_cost)
 		if err != nil {
 			res.ErrInfo = errors.COMMON_ERROR_TIPS.Wrap("体力不足")
 			logger.ErrorWF("OnMazeBarrierEnterRQ SubEnergy fail", zap.Error(err))
@@ -268,6 +273,12 @@ func (g *Game) OnMazeBarrierEnterRQ_10447_10448(s *session.Session, req *MazeGam
 		Diamond:    proto.Int64(diamond),
 		EquipPoint: proto.Int64(int64(dropInfo.EquipPoints)),
 		Energy:     proto.Int32(curEnergy),
+	}
+
+	energyID.EnergyInfo = &MazeEnergy.EnergyInfo{
+		CurVal:           proto.Int32(userInfo.Energy),
+		MaxVal:           proto.Int32(barrierenergyservice.GlobalBarrierEnergyService.GetEnergyMaxValue()),
+		NextRecoveryTime: proto.Int64(userInfo.EnergyLastTime),
 	}
 
 	err = mazebarriereventredis.EnterBarrier(logger, userId, req.GetBarrierId())

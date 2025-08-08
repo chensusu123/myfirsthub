@@ -9,12 +9,15 @@ import (
 	"maze_game_server/common/errors"
 	"maze_game_server/common/function/uniqueid"
 	"maze_game_server/config/GMazeBarriesV8Cfg"
+	"maze_game_server/lib/codec"
 	"maze_game_server/lib/log"
 	"maze_game_server/lib/nano/session"
 	"maze_game_server/module/calsweepbarrier"
 	"maze_game_server/module/mazeuserinfo"
+	"maze_game_server/pb/common/MazeEnergy"
 	"maze_game_server/pb/common/MazeGame"
 	"maze_game_server/services/barrierenergyservice"
+	"time"
 )
 
 // OnStartMazeSweepRQ start sweep
@@ -23,6 +26,7 @@ func (sp *Sweep) OnStartMazeSweepRQ_10471_10472(s *session.Session, req *MazeGam
 
 	logger := log.Clone("Sweep", uint64(s.UID()), 0)
 	res := &MazeGame.StartMazeSweepRS{}
+	energyID := &MazeEnergy.EnergyChangeID{} //defer时多补一个体力ID包
 
 	res.Header = req.Header
 	res.ErrInfo = errors.NO_ERROR
@@ -33,7 +37,10 @@ func (sp *Sweep) OnStartMazeSweepRQ_10471_10472(s *session.Session, req *MazeGam
 	defer func() {
 		err = s.Response(res)
 		logger.InfoWF("OnStartMazeSweepRQ end", zap.Any("res", res), zap.Any("errMsg", string(res.GetErrInfo().GetErrMsg())))
+		err = s.ResponseMID(codec.ToMessageID(uint32(time.Now().Unix()), 10610, 0), energyID)
+		logger.InfoWF("OnStartMazeSweepRQ end send EnergyChangeID", zap.Any("energyID", energyID))
 	}()
+
 	barrierId := req.GetBarrierId()
 	res.BarrierId = req.BarrierId
 	if userID <= 0 {
@@ -86,6 +93,12 @@ func (sp *Sweep) OnStartMazeSweepRQ_10471_10472(s *session.Session, req *MazeGam
 		logger.ErrorWF("OnStartMazeSweepRQ CalUserSweepBarrierAward fail", zap.Int32("barrierId", barrierId), zap.Error(err))
 		res.ErrInfo = errors.COMMON_ERROR_TIPS.Wrap("获取扫荡奖励失败")
 		return
+	}
+
+	energyID.EnergyInfo = &MazeEnergy.EnergyInfo{
+		CurVal:           proto.Int32(userInfo.Energy),
+		MaxVal:           proto.Int32(barrierenergyservice.GlobalBarrierEnergyService.GetEnergyMaxValue()),
+		NextRecoveryTime: proto.Int64(userInfo.EnergyLastTime),
 	}
 
 	return nil

@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"maze_game_server/excel/mazeenergyaffixlvv8config"
 	"maze_game_server/model/tempbuffmodel"
+	"maze_game_server/services/barrierenergyservice"
 	"maze_game_server/services/tempbuffservice"
 	"net/http"
 	"sort"
@@ -332,6 +333,22 @@ func RegGm(logger fklog.FKLogI) {
 				}
 			}
 		}
+	})
+
+	gm.SafeHttpRegister(logger, "/addEnergy", func(writer http.ResponseWriter, request *http.Request) {
+		logger.SetLogId(time.Now().UnixNano())
+		var (
+			userId = fkutil.ToUint64(request.Form.Get("user_id"))
+			count  = fkutil.ToInt32(request.Form.Get("count"))
+		)
+		if count > barrierenergyservice.GlobalBarrierEnergyService.GetEnergyMaxValue() {
+			return
+		}
+		curEnergy, _, err := barrierenergyservice.GlobalBarrierEnergyService.AddEnergy(logger, userId, count)
+		if err != nil {
+			return
+		}
+		fmt.Fprintf(writer, "add barrier energy success, curEnergy=[%d]", curEnergy)
 	})
 }
 
