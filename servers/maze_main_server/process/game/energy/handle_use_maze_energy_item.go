@@ -88,7 +88,7 @@ func (e *Energy) OnUseMazeEnergyItemRQ_10611_10612(s *session.Session, req *Maze
 
 	energy, nextTime, err := barrierenergyservice.GlobalBarrierEnergyService.AddEnergy(logger, userId, recoverNum)
 	if err != nil {
-
+		logger.ErrorWF("OnUseMazeEnergyItemRQ AddEnergy fail", zap.Error(err))
 		return err
 	}
 	//remain := uInfo.Energy + recoverNum
