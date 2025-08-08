@@ -81,12 +81,10 @@ func (s service) getEquipId(logger fklog.FKLogI, userId uint64, mazeLevel int32,
 	if addCount <= 0 {
 		return
 	}
-	for i := int32(0); i < addCount; i++ {
-		dropMap := s.regularityEquipDrop(logger, userId, barrier, mazeLevel, addCount)
-		if len(dropMap) > 0 {
-			for k, v := range dropMap {
-				equipMap[k] += v
-			}
+	dropMap := s.regularityEquipDrop(logger, userId, barrier, mazeLevel, addCount)
+	if len(dropMap) > 0 {
+		for k, v := range dropMap {
+			equipMap[k] += v
 		}
 	}
 	return
