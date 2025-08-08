@@ -70,6 +70,8 @@ func (s service) GetBarrierEnergy(logger fklog.FKLogI, userId uint64) (curEnergy
 			return 0, 0, errors.New("保存数据错误")
 		}
 	}
+
+	logger.InfoWF("GetBarrierEnergy success", zap.Any("userId", userId), zap.Any("curEnergy", curEnergy), zap.Any("nextUpdateTime", nextUpdateTime))
 	return uInfo.Energy, nextUpdateTime, err
 }
 
@@ -141,6 +143,8 @@ func (s service) AddEnergy(logger fklog.FKLogI, userId uint64, addVal int32) (cu
 			return 0, 0, err
 		}
 	}
+
+	logger.InfoWF("AddEnergy success", zap.Any("userId", userId), zap.Any("uInfo", uInfo), zap.Any("nextUpdateTime", nextUpdateTime), zap.Any("addVal", addVal))
 	return uInfo.Energy, nextUpdateTime, err
 }
 
@@ -173,7 +177,7 @@ func (s service) SubEnergy(logger fklog.FKLogI, userId uint64, subVal int32) (in
 		logger.ErrorWF("SubEnergy SendEnergyChgPack fail", zap.Error(err), zap.Any("uInfo", uInfo))
 		return remain, err
 	}
-
+	logger.InfoWF("SubEnergy success", zap.Any("userId", userId), zap.Any("uInfo", uInfo), zap.Any("remain", remain), zap.Int32("subVal", subVal))
 	return remain, err
 }
 

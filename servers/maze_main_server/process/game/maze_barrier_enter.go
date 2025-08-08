@@ -21,8 +21,6 @@ import (
 	"maze_game_server/pb/common/MazeAIBattle"
 	"maze_game_server/pb/common/MazeCommon"
 	"maze_game_server/pb/common/MazeGame"
-	"maze_game_server/pb/server/MazeEnergySvr"
-	"maze_game_server/servers/maze_main_server/process/game/energy"
 	"maze_game_server/servers/maze_main_server/process/game/events"
 	"maze_game_server/services/barrierenergyservice"
 	"maze_game_server/services/tempbuffservice"
@@ -206,12 +204,12 @@ func (g *Game) OnMazeBarrierEnterRQ_10447_10448(s *session.Session, req *MazeGam
 		//	return
 		//}
 		//
-		//err = mazeuserinfo.SetUserInfoV2(logger, userId, userInfo)
-		//if err != nil {
-		//	logger.ErrorWF("OnMazeBarrierEnterRQ SetUserInfoV2 fail", zap.Error(err))
-		//	res.ErrInfo = errors.MODULE_ERROR.ToInfo()
-		//	return
-		//}
+		err = mazeuserinfo.SetUserInfoV2(logger, userId, userInfo)
+		if err != nil {
+			logger.ErrorWF("OnMazeBarrierEnterRQ SetUserInfoV2 fail", zap.Error(err))
+			res.ErrInfo = errors.MODULE_ERROR.ToInfo()
+			return
+		}
 
 		// 记录用户关卡状态 清除客户端上报数据
 		userBarrier.BarrierId = proto.Int32(req.GetBarrierId())
@@ -282,33 +280,33 @@ func (g *Game) OnMazeBarrierEnterRQ_10447_10448(s *session.Session, req *MazeGam
 	return nil
 }
 
-func SubUserEnergy(logger fklog.FKLogI, uid uint64, subEnergy int32) (isSucc bool, newEnergy int32, err error) {
-	req := &MazeEnergySvr.SubMazeEnergyRQ{
-		UserId:      proto.Uint64(uid),
-		SubVal:      proto.Int32(subEnergy),
-		OpType:      proto.Int32(1), //NUM_MAZE_ENERGY_OP_TYPE_CHALLLENGE
-		OpDesc:      proto.String("maze_barrier_enter"),
-		TradeNumber: proto.Uint64(gentradeno.GetTradeNum()),
-	}
-	res := &MazeEnergySvr.SubMazeEnergyRS{}
-	// 合并服务，内聚接口
-	// err = mazeenergyrpc.SubMazeEnergyRQ(logger, req, res)
-	err = energy.SubMazeEnergyRQ(logger, uid, req, res)
-	if err != nil {
-		logger.ErrorWF("OnMazeBarrierEnterRQ SubMazeEnergyRQ fail", zap.Error(err), zap.Any("req", req), zap.Any("res", res))
-		return
-	}
-	// 体力不足，返回错误码(80000 // 体力不足),并带回剩余的体力值
-	// 扣体力成功，返回剩余的体力值
-	if res.GetErrInfo().GetErrCode() == errors.NO_ERROR_CODE {
-		return true, res.GetRemainVal(), nil
-	} else if res.GetErrInfo().GetErrCode() == 80000 {
-		return false, res.GetRemainVal(), nil
-	} else {
-		err = errors.New(string(res.GetErrInfo().GetErrMsg()))
-		return false, res.GetRemainVal(), err
-	}
-}
+//func SubUserEnergy(logger fklog.FKLogI, uid uint64, subEnergy int32) (isSucc bool, newEnergy int32, err error) {
+//	req := &MazeEnergySvr.SubMazeEnergyRQ{
+//		UserId:      proto.Uint64(uid),
+//		SubVal:      proto.Int32(subEnergy),
+//		OpType:      proto.Int32(1), //NUM_MAZE_ENERGY_OP_TYPE_CHALLLENGE
+//		OpDesc:      proto.String("maze_barrier_enter"),
+//		TradeNumber: proto.Uint64(gentradeno.GetTradeNum()),
+//	}
+//	res := &MazeEnergySvr.SubMazeEnergyRS{}
+//	// 合并服务，内聚接口
+//	// err = mazeenergyrpc.SubMazeEnergyRQ(logger, req, res)
+//	err = energy.SubMazeEnergyRQ(logger, uid, req, res)
+//	if err != nil {
+//		logger.ErrorWF("OnMazeBarrierEnterRQ SubMazeEnergyRQ fail", zap.Error(err), zap.Any("req", req), zap.Any("res", res))
+//		return
+//	}
+//	// 体力不足，返回错误码(80000 // 体力不足),并带回剩余的体力值
+//	// 扣体力成功，返回剩余的体力值
+//	if res.GetErrInfo().GetErrCode() == errors.NO_ERROR_CODE {
+//		return true, res.GetRemainVal(), nil
+//	} else if res.GetErrInfo().GetErrCode() == 80000 {
+//		return false, res.GetRemainVal(), nil
+//	} else {
+//		err = errors.New(string(res.GetErrInfo().GetErrMsg()))
+//		return false, res.GetRemainVal(), err
+//	}
+//}
 
 func (g *Game) OnGetStorageInfoRQ_10529_10530(s *session.Session, req *MazeGame.MazeBarrierEnterRQ) (err error) {
 	defer fkprometheus.InfoPMT("OnGetStorageInfoRQ")()

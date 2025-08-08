@@ -3,7 +3,6 @@ package game
 import (
 	"maze_game_server/common/constdef"
 	"maze_game_server/common/errors"
-	"maze_game_server/common/function/uniqueid"
 	"maze_game_server/io/redis/mazebarriermoneyredis"
 	"maze_game_server/io/redis/mazeboxredis"
 	"maze_game_server/io/redis/mazechallengenumredis"
@@ -17,8 +16,7 @@ import (
 	"maze_game_server/lib/nano/session"
 	"maze_game_server/module/mazeuserinfo"
 	"maze_game_server/pb/common/MazeGame"
-	"maze_game_server/pb/server/MazeEnergySvr"
-	"maze_game_server/servers/maze_main_server/process/game/energy"
+	"maze_game_server/services/barrierenergyservice"
 	"strings"
 	"time"
 
@@ -26,7 +24,6 @@ import (
 	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fkprometheus"
 	"gitlab.ifreetalk.com/maze-plate/freetk/fkutil"
 	"go.uber.org/zap"
-	"google.golang.org/protobuf/proto"
 )
 
 func (g *Game) OnSendDollMazeCmdRQ_10463_10464(s *session.Session, req *MazeGame.SendDollMazeCmdRQ) (err error) {
@@ -342,14 +339,21 @@ func CmdAddEnergy(logger fklog.FKLogI, userId uint64, args map[string]string) er
 		logger.WarnWF("CmdAddEnergy vInt=0", zap.Any("args", args))
 		return errors.New("加体力参数错误")
 	}
-	rq := &MazeEnergySvr.AddMazeEnergyRQ{}
-	rs := &MazeEnergySvr.AddMazeEnergyRS{}
-	rq.UserId = proto.Uint64(userId)
-	rq.AddVal = proto.Int32(vInt)
-	rq.OpType = proto.Int32(int32(MazeEnergySvr.ENUM_MAZE_ENERGY_OP_TYPE_GMADD))
-	rq.OpDesc = proto.String("CmdGmAdd")
-	rq.TradeNumber = proto.Uint64(uniqueid.GenUniqueIdUInt64())
+	_, _, err := barrierenergyservice.GlobalBarrierEnergyService.AddEnergy(logger, userId, vInt)
+	if err != nil {
+		logger.ErrorWF("CmdAddEnergy AddEnergy failed", zap.Error(err))
+		return err
+	}
+
+	//rq := &MazeEnergySvr.AddMazeEnergyRQ{}
+	//rs := &MazeEnergySvr.AddMazeEnergyRS{}
+	//rq.UserId = proto.Uint64(userId)
+	//rq.AddVal = proto.Int32(vInt)
+	//rq.OpType = proto.Int32(int32(MazeEnergySvr.ENUM_MAZE_ENERGY_OP_TYPE_GMADD))
+	//rq.OpDesc = proto.String("CmdGmAdd")
+	//rq.TradeNumber = proto.Uint64(uniqueid.GenUniqueIdUInt64())
 	// 合并服务，直接访问函数
 	// return mazeenergyrpc.AddMazeEnergyRQ(logger, rq, rs)
-	return energy.AddMazeEnergyRQ(logger, userId, rq, rs)
+	//return energy.AddMazeEnergyRQ(logger, userId, rq, rs)
+	return err
 }

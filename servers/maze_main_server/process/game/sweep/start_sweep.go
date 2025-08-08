@@ -15,6 +15,7 @@ import (
 	"maze_game_server/pb/common/MessageType"
 	"maze_game_server/pb/server/MazeEnergySvr"
 	"maze_game_server/servers/maze_main_server/process/game/energy"
+	"maze_game_server/services/barrierenergyservice"
 
 	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fkconfig"
 	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fklog"
@@ -74,10 +75,11 @@ func (sp *Sweep) OnStartMazeSweepRQ_10471_10472(s *session.Session, req *MazeGam
 		return
 	}
 	// check and cost energy
-	remainVal, errInfo := SubSweepEnergy(logger, userID, barrierId, barrierCfg.Mop_cost)
+	//remainVal, errInfo := SubSweepEnergy(logger, userID, barrierId, barrierCfg.Mop_cost)
+	remainVal, errInfo := barrierenergyservice.GlobalBarrierEnergyService.SubEnergy(logger, userID, barrierCfg.Mop_cost)
 	res.RemainEnergy = proto.Int32(remainVal)
-	if errInfo != nil && errInfo.GetErrCode() != errors.NO_ERROR_CODE {
-		res.ErrInfo = errInfo
+	if errInfo != nil {
+		res.ErrInfo = errors.COMMON_ERROR_TIPS.Wrap("体力不足")
 		return
 	}
 	// make gameID
@@ -97,38 +99,38 @@ func (sp *Sweep) OnStartMazeSweepRQ_10471_10472(s *session.Session, req *MazeGam
 }
 
 // SubSweepEnergy sub energy
-func SubSweepEnergy(logger fklog.FKLogI, userID uint64, barrierId int32, subVal int32) (remainVal int32, errInfo *MessageType.ErrorInfo) {
-	errInfo = errors.NO_ERROR
-	subEnergyRq := &MazeEnergySvr.SubMazeEnergyRQ{
-		UserId:      proto.Uint64(userID),
-		OpType:      proto.Int32(int32(MazeEnergySvr.ENUM_MAZE_ENERGY_OP_TYPE_SWEEP)),
-		SubVal:      proto.Int32(subVal),
-		TradeNumber: proto.Uint64(uniqueid.GenUniqueIdUInt64()),
-		OpDesc:      proto.String(fkconfig.GetServerConfig().ServerName),
-	}
-	subEnergyRs := &MazeEnergySvr.SubMazeEnergyRS{}
-	// 合并服务，内聚接口
-	// err := mazeenergyrpc.SubMazeEnergyRQ(logger, subEnergyRq, subEnergyRs)
-	err := energy.SubMazeEnergyRQ(logger, userID, subEnergyRq, subEnergyRs)
-	if err != nil {
-		errInfo = errors.COMMON_ERROR_TIPS.Wrap("扣体力失败")
-		logger.ErrorWF("SubSweepEnergy SubMazeEnergyRQ fail", zap.Int32("barrierId", barrierId),
-			zap.Error(err))
-		return subEnergyRs.GetRemainVal(), errInfo
-	}
-	if subEnergyRs.GetErrInfo().GetErrCode() != errors.NO_ERROR_CODE {
-		if subEnergyRs.GetErrInfo().GetErrCode() == constdef.MAZE_ERR_ENERGY_LESS {
-			errInfo = errors.COMMON_ERROR_TIPS.Wrap("体力不足")
-			logger.WarnWF("SubSweepEnergy SubMazeEnergyRQ less energy", zap.Int32("barrierId", barrierId))
-		} else {
-			logger.ErrorWF("SubSweepEnergy SubMazeEnergyRQ fail", zap.Int32("barrierId", barrierId),
-				zap.Any("err", errInfo), zap.String("errMsg", string(errInfo.GetErrMsg())))
-			errInfo = subEnergyRs.GetErrInfo()
-		}
-		return subEnergyRs.GetRemainVal(), errInfo
-	}
-	return subEnergyRs.GetRemainVal(), errInfo
-}
+//func SubSweepEnergy(logger fklog.FKLogI, userID uint64, barrierId int32, subVal int32) (remainVal int32, errInfo *MessageType.ErrorInfo) {
+//	errInfo = errors.NO_ERROR
+//	subEnergyRq := &MazeEnergySvr.SubMazeEnergyRQ{
+//		UserId:      proto.Uint64(userID),
+//		OpType:      proto.Int32(int32(MazeEnergySvr.ENUM_MAZE_ENERGY_OP_TYPE_SWEEP)),
+//		SubVal:      proto.Int32(subVal),
+//		TradeNumber: proto.Uint64(uniqueid.GenUniqueIdUInt64()),
+//		OpDesc:      proto.String(fkconfig.GetServerConfig().ServerName),
+//	}
+//	subEnergyRs := &MazeEnergySvr.SubMazeEnergyRS{}
+//	// 合并服务，内聚接口
+//	// err := mazeenergyrpc.SubMazeEnergyRQ(logger, subEnergyRq, subEnergyRs)
+//	err := energy.SubMazeEnergyRQ(logger, userID, subEnergyRq, subEnergyRs)
+//	if err != nil {
+//		errInfo = errors.COMMON_ERROR_TIPS.Wrap("扣体力失败")
+//		logger.ErrorWF("SubSweepEnergy SubMazeEnergyRQ fail", zap.Int32("barrierId", barrierId),
+//			zap.Error(err))
+//		return subEnergyRs.GetRemainVal(), errInfo
+//	}
+//	if subEnergyRs.GetErrInfo().GetErrCode() != errors.NO_ERROR_CODE {
+//		if subEnergyRs.GetErrInfo().GetErrCode() == constdef.MAZE_ERR_ENERGY_LESS {
+//			errInfo = errors.COMMON_ERROR_TIPS.Wrap("体力不足")
+//			logger.WarnWF("SubSweepEnergy SubMazeEnergyRQ less energy", zap.Int32("barrierId", barrierId))
+//		} else {
+//			logger.ErrorWF("SubSweepEnergy SubMazeEnergyRQ fail", zap.Int32("barrierId", barrierId),
+//				zap.Any("err", errInfo), zap.String("errMsg", string(errInfo.GetErrMsg())))
+//			errInfo = subEnergyRs.GetErrInfo()
+//		}
+//		return subEnergyRs.GetRemainVal(), errInfo
+//	}
+//	return subEnergyRs.GetRemainVal(), errInfo
+//}
 
 // func GetSweepAward(logger fklog.FKLogI, userID uint64, barrierId int32) ([]*Common.Item, error) {
 // 	addExp, addMoney, awardItems, err := calsweepbarrier.CalUserSweepBarrierAward(logger, userID, barrierId)
