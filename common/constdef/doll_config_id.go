@@ -48,3 +48,15 @@ const (
 const (
 	MazeInitAttrCfgId int32 = 1 // 迷宫初始属性列表
 )
+
+// 展示道具id
+const (
+	GoldPileItemCfgId            = 46200002 // 金币堆道具id
+	StrengthenStonePileItemCfgId = 46700002 // 强化石堆道具id
+)
+
+// 展示道具与实际道具对应配置id
+const (
+	GoldPileShow2RealCfgId            int32 = 901
+	StrengthenStonePileShow2RealCfgId int32 = 902
+)

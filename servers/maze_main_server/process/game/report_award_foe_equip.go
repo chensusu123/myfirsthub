@@ -9,6 +9,7 @@ import (
 	"maze_game_server/module/mazeuserinfo"
 	"maze_game_server/pb/common/MazeGame"
 	"maze_game_server/pb/server/MazeEquipSvr"
+	"maze_game_server/services/barrierscorerewardservice"
 	"maze_game_server/services/equipdropservice"
 
 	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fkprometheus"
@@ -74,5 +75,11 @@ func (g *Game) OnReportAwardFoeEquipRQ_10455_10456(s *session.Session, req *Maze
 			zap.Any("tradeNo", tradeNo), zap.Any("addEquip", addEquipMap), zap.Any("rs", rs))
 	}
 	// PushDollMazeShopInfoLog(logger, userId, int32(level), shopInfo, rs.EquipList, 19, tradeNo, 0)
+
+	if err = barrierscorerewardservice.GlobalScoreRewardService.SaveBarrierScoreRewardEquip(logger, userId, req.GetBarrierId(), addEquipMap); err != nil {
+		logger.ErrorWF("OnReportAwardFoeEquipRQ SaveBarrierScoreRewardEquip err", zap.Error(err), zap.Any("barrier", req.GetBarrierId()))
+		res.ErrInfo = errors.MODULE_ERROR.ToInfo()
+	}
+
 	return
 }
