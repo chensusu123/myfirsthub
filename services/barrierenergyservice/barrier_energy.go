@@ -156,12 +156,17 @@ func (s service) SubEnergy(logger fklog.FKLogI, userId uint64, subVal int32) (in
 		return 0, errors.New("userInfo not find")
 	}
 
-	if uInfo.Energy < subVal {
+	curEnergy, _, err := s.GetBarrierEnergy(logger, userId)
+	if err != nil {
+		return 0, err
+	}
+
+	if curEnergy < subVal {
 		logger.WarnWF("SubEnergy energy less", zap.Int32("has", uInfo.Energy), zap.Int32("need", subVal))
 		return uInfo.Energy, errors.New("energy not enough")
 	}
 
-	remain := uInfo.Energy - subVal
+	remain := curEnergy - subVal
 	if uInfo.Energy >= s.GetEnergyMaxValue() { // 如果满值时扣除，更新上次恢复时间
 		uInfo.SetEnergyLastTime(time.Now().Unix())
 	}
