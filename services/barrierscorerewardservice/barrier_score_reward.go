@@ -2,9 +2,10 @@ package barrierscorerewardservice
 
 import (
 	"fmt"
+	"maze_game_server/model/barrierscorerewardmodel"
+
 	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fklog"
 	"go.uber.org/zap"
-	"maze_game_server/model/barrierscorerewardmodel"
 )
 
 // 保存积分装备奖励信息
@@ -73,4 +74,21 @@ func (s *service) SaveBarrierScoreReward(logger fklog.FKLogI, userId uint64, bar
 	}
 
 	return nil
+}
+
+func (s *service) GetBarrierScoreReward(logger fklog.FKLogI, userId uint64, barrier int32) (equipList map[int32]int32, itemList map[int32]int64, err error) {
+	model, err := barrierscorerewardmodel.NewBarrierScoreRewardModel(logger, userId, barrier)
+	if err != nil {
+		logger.ErrorWF("GetBarrierScoreReward NewBarrierScoreRewardModel err", zap.Error(err))
+		return nil, nil, fmt.Errorf("获取用户关卡积分奖励信息失败")
+	}
+	equipList = make(map[int32]int32)
+	itemList = make(map[int32]int64)
+	for _, v := range model.EquipList {
+		equipList[v.EquipId] = v.Count
+	}
+	for _, v := range model.ItemList {
+		itemList[v.ItemId] = v.Count
+	}
+	return equipList, itemList, nil
 }

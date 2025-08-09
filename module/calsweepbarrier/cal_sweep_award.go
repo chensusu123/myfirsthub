@@ -31,14 +31,8 @@ import (
 	"google.golang.org/protobuf/proto"
 )
 
-// 获取扫荡关卡的奖励 equipItem 装备奖励 ohterItem 物品奖励 expItem 经验奖励
-func GetSweepBarrierAward(logger fklog.FKLogI, uid uint64, barrierId int32) (equipItem map[int32]int32, ohterItem []*MazeCommon.MazeItem, expItem *MazeCommon.MazeItem, err error) {
-	userInfo, err := mazeuserinfo.GetUserInfoV2(logger, uid)
-	if err != nil {
-		logger.ErrorWF("GetSweepBarrierAward GetUserInfoV2 fail", zap.Error(err))
-		return
-	}
-
+// 获取扫荡关卡的奖励 equipItem 通过装备奖励 ohterItem 物品奖励 expItem 经验奖励 equipNum 打怪掉落装备数量
+func GetSweepBarrierAward(logger fklog.FKLogI, uid uint64, barrierId int32) (equipItem map[int32]int32, otherItem map[int32]int64, expItem *MazeCommon.MazeItem, equipNum int32, err error) {
 	barrierCfg := GMazeBarriesV8Cfg.Get(barrierId)
 	if barrierCfg == nil {
 		logger.ErrorWF("GetSweepBarrierAward get barrier cfg fail", zap.Any("barrierId", barrierId))
@@ -112,15 +106,6 @@ func GetSweepBarrierAward(logger fklog.FKLogI, uid uint64, barrierId int32) (equ
 		return
 	}
 
-	//取存储的装备分 加上扫荡新增的分数 计算掉落的装备
-	calLv := equipdropservice.GlobalEquipDropService.GetMazeBarrierLv(int32(userInfo.Level), barrierId)
-	shopCfg := GMazeShopV8Cfg.Get(calLv)
-	if shopCfg == nil {
-		logger.ErrorWF("GetSweepBarrierAward get shop cfg fail", zap.Any("calLv", calLv))
-		err = errors.New("shop cfg nil")
-		return
-	}
-
 	dropInfo, err := equipdropmodel.NewEquipSpecialDropModel(logger, uid)
 	if err != nil {
 		logger.ErrorWF("GetSweepBarrierAward GetEquipSpecialDropModel fail", zap.Uint64("uid", uid))
@@ -130,10 +115,7 @@ func GetSweepBarrierAward(logger fklog.FKLogI, uid uint64, barrierId int32) (equ
 	//根据装备积分额外增加装备
 	newTotal := dropInfo.EquipPoints + int32(addEquipPoint)
 	dropInfo.EquipPoints = newTotal % barrierCfg.Need_equip_score
-	equipNum := newTotal / barrierCfg.Need_equip_score
-
-	// fmt.Println("newTotal", newTotal)
-	// fmt.Println("equipNum", equipNum)
+	equipNum = newTotal / barrierCfg.Need_equip_score
 
 	// 掉落道具一
 	item1Num := addItem1 / barrierCfg.Need_item1_score
@@ -155,18 +137,6 @@ func GetSweepBarrierAward(logger fklog.FKLogI, uid uint64, barrierId int32) (equ
 		}
 	}
 
-	addEquipMap, err := equipdropservice.GlobalEquipDropService.GetNewEquip(logger, uid, calLv, barrierId, equipNum)
-	if err != nil {
-		logger.ErrorWF("GetSweepBarrierAward GetNewEquip fail", zap.Error(err), zap.Any("barrier", barrierId), zap.Any("calLv", calLv))
-		return
-	}
-
-	// logger.InfoWF("equipMap", zap.Any("equipMap", equipMap))
-	for k, v := range addEquipMap {
-		equipMap[k] += v
-	}
-	// logger.InfoWF("addEquipMap", zap.Any("addEquipMap", addEquipMap))
-	// logger.InfoWF("equipMap", zap.Any("equipMap", equipMap))
 	equipItem = equipMap
 
 	// 经验奖励
@@ -175,21 +145,24 @@ func GetSweepBarrierAward(logger fklog.FKLogI, uid uint64, barrierId int32) (equ
 	}
 
 	addItems[constdef.MazeCommonItemCoin] += addMoney
-	if len(addItems) > 0 {
-		awardItems := itemutil.Map2Common(addItems)
-		ohterItem = append(ohterItem, awardItems...)
-	}
 
+	otherItem = addItems
 	return
 }
 
 // 发送扫荡奖励
 func CalUserSweepBarrierAward(logger fklog.FKLogI, uid uint64, barrierId int32, header *Common.PacketHeader) (awardItem []*MazeCommon.MazeItem, rareItem []*MazeCommon.MazeItem, err error) {
 	// 获取扫荡奖励
-	equipItem, ohterItem, expItem, err := GetSweepBarrierAward(logger, uid, barrierId)
+	equipItem, addItems, expItem, equipNum, err := GetSweepBarrierAward(logger, uid, barrierId)
 	if err != nil {
 		logger.ErrorWF("CalUserSweepBarrierAward GetSweepBarrierAward fail", zap.Error(err))
 		return
+	}
+
+	otherItem := make([]*MazeCommon.MazeItem, 0)
+	if len(addItems) > 0 {
+		awardItems := itemutil.Map2Common(addItems)
+		otherItem = append(otherItem, awardItems...)
 	}
 
 	// 获取用户信息
@@ -254,14 +227,14 @@ func CalUserSweepBarrierAward(logger fklog.FKLogI, uid uint64, barrierId int32, 
 	tradeNo := gentradeno.GetTradeNum()
 
 	// 发送物品
-	if len(ohterItem) > 0 {
+	if len(otherItem) > 0 {
 		//697	UN_CGK_COMMON_BILL_TYPE_697	迷宫扫荡
-		errInfo := gentradeno.AddItemEx(logger, uid, 697, tradeNo, header, ohterItem...)
+		errInfo := gentradeno.AddItemEx(logger, uid, 697, tradeNo, header, otherItem...)
 		if errInfo != nil {
-			logger.ErrorWF("CalUserSweepBarrierAward AddItemEx fail", zap.Any("errInfo", errInfo), zap.Any("awardItems", ohterItem))
+			logger.ErrorWF("CalUserSweepBarrierAward AddItemEx fail", zap.Any("errInfo", errInfo), zap.Any("otherItem", otherItem))
 		}
 
-		for _, v := range ohterItem {
+		for _, v := range otherItem {
 			_, ok := rareMap[v.GetItemId()]
 			if ok {
 				rareItem = append(rareItem, v)
@@ -269,6 +242,26 @@ func CalUserSweepBarrierAward(logger fklog.FKLogI, uid uint64, barrierId int32, 
 				awardItem = append(awardItem, v)
 			}
 		}
+	}
+
+	//取存储的装备分 加上扫荡新增的分数 计算掉落的装备
+	calLv := equipdropservice.GlobalEquipDropService.GetMazeBarrierLv(int32(userInfo.Level), barrierId)
+	shopCfg := GMazeShopV8Cfg.Get(calLv)
+	if shopCfg == nil {
+		logger.ErrorWF("GetSweepBarrierAward get shop cfg fail", zap.Any("calLv", calLv))
+		err = errors.New("shop cfg nil")
+		return
+	}
+
+	addEquipMap, err := equipdropservice.GlobalEquipDropService.GetNewEquip(logger, uid, calLv, barrierId, equipNum)
+	if err != nil {
+		logger.ErrorWF("GetSweepBarrierAward GetNewEquip fail", zap.Error(err), zap.Any("barrier", barrierId), zap.Any("calLv", calLv))
+		return
+	}
+
+	// logger.InfoWF("equipMap", zap.Any("equipMap", equipMap))
+	for k, v := range addEquipMap {
+		equipItem[k] += v
 	}
 
 	// 发送装备
