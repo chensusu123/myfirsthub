@@ -338,7 +338,7 @@ func RegGm(logger fklog.FKLogI) {
 	gm.SafeHttpRegister(logger, "/addEnergy", func(writer http.ResponseWriter, request *http.Request) {
 		logger.SetLogId(time.Now().UnixNano())
 		var (
-			userId = fkutil.ToUint64(request.Form.Get("user_id"))
+			userId = fkutil.ToUint64(request.Form.Get("userId"))
 			count  = fkutil.ToInt32(request.Form.Get("count"))
 		)
 		if count > barrierenergyservice.GlobalBarrierEnergyService.GetEnergyMaxValue() {

@@ -3,6 +3,7 @@ package game
 import (
 	"maze_game_server/common/constdef"
 	"maze_game_server/common/errors"
+	"maze_game_server/io/redis/barrierscorerewardredis"
 	"maze_game_server/io/redis/mazebarriermoneyredis"
 	"maze_game_server/io/redis/mazeboxredis"
 	"maze_game_server/io/redis/mazechallengenumredis"
@@ -276,6 +277,12 @@ func ClearBarrier(logger fklog.FKLogI, userId uint64) (err error) {
 	}
 
 	err = mazeequipgetnumredis.GMDel(logger, userId)
+	if err != nil {
+		return
+	}
+
+	//清除关卡已获得奖励存档
+	err = barrierscorerewardredis.DelBarrierScoreReward(logger, userId, userInfo.Barrier)
 	if err != nil {
 		return
 	}

@@ -12,6 +12,7 @@ import (
 	"maze_game_server/config/GMazeBarriesV8Cfg"
 	"maze_game_server/io/kafka/mazebarrieruserkafka"
 	"maze_game_server/io/kafka/mazeuserlevelkafka"
+	"maze_game_server/io/redis/barrierscorerewardredis"
 	"maze_game_server/io/redis/mazebarriereventredis"
 	"maze_game_server/io/redis/mazebarrieropstatusredis"
 	"maze_game_server/io/redis/mazechallengenumredis"
@@ -240,6 +241,8 @@ func (g *Game) OnMazeBarrierPassRQ_10459_10460(s *session.Session, req *MazeGame
 	syncmazestorageinforedis.DelSyncMazeStorageInfo(userId, req.GetBarrierId())
 	// 清理关卡操作状态
 	mazebarrieropstatusredis.ClearOpStatus(logger, userId, req.GetBarrierId())
+	//清除关卡已获得奖励存档
+	barrierscorerewardredis.DelBarrierScoreReward(logger, userId, userInfo.Barrier)
 
 	logger.InfoWF("OnMazeBarrierPassRQ award dump", zap.Any("exp", req.GetFoeExp()), zap.Any("awardItem", awardMap), zap.Any("awardEquip", equipMap))
 
