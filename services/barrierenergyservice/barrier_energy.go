@@ -84,7 +84,13 @@ func (s service) AddEnergy(logger fklog.FKLogI, userId uint64, addVal int32) (cu
 	}
 	maxVal := GetEnergyMax() // 体力最大值
 
-	remain := uInfo.Energy + addVal
+	cur, _, err := s.GetBarrierEnergy(logger, userId)
+	if err != nil {
+		logger.ErrorWF("AddEnergy GetBarrierEnergy fail", zap.Error(err))
+		return uInfo.Energy, uInfo.EnergyLastTime, err
+	}
+
+	remain := cur + addVal
 	if remain >= maxVal { // 如果加到满值，更新上次恢复时间
 		remain = maxVal
 		uInfo.SetEnergyLastTime(time.Now().Unix())
