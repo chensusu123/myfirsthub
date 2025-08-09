@@ -26,7 +26,6 @@ import (
 	"maze_game_server/pb/common/MazeGame"
 	"maze_game_server/pb/server/MazeEquipSvr"
 	"maze_game_server/servers/maze_main_server/process/game/events"
-	"maze_game_server/services/barrierscorerewardservice"
 	"strings"
 	"time"
 
@@ -226,44 +225,6 @@ func (g *Game) OnMazeBarrierPassRQ_10459_10460(s *session.Session, req *MazeGame
 				} else {
 					res.BarrierAward = append(res.BarrierAward, itemEquip)
 				}
-			}
-		}
-	}
-
-	// 获取存储的当前关卡的奖励数据, 仅做通关展示用，其实已经进背包了
-	nowBarrierEquipList, nowBarrierItemList, err := barrierscorerewardservice.GlobalScoreRewardService.GetBarrierScoreReward(logger, userId, req.GetBarrierId())
-	if err != nil {
-		logger.ErrorWF("GetBarrierDeathAward GetBarrierScoreReward err", zap.Error(err),
-			zap.Any("barrier", req.GetBarrierId()),
-			zap.Any("userId", userId),
-			zap.Any("nowBarrierEquipList", nowBarrierEquipList),
-			zap.Any("nowBarrierItemList", nowBarrierItemList),
-		)
-		return err
-	}
-	if len(nowBarrierItemList) > 0 {
-		awardItems := itemutil.Map2Common(awardMap)
-		for _, item := range awardItems {
-			_, ok := rareMap[item.GetItemId()]
-			if ok {
-				res.BarrierRareAward = append(res.BarrierRareAward, item)
-			} else {
-				res.BarrierAward = append(res.BarrierAward, item)
-			}
-		}
-	}
-	if len(nowBarrierEquipList) > 0 {
-		for equipId, _ := range nowBarrierEquipList {
-			itemEquip, err := equiptoitem.PackMazeEquipInfoSvrToItem(equipId)
-			if err != nil {
-				logger.ErrorWF("OnMazeBarrierPassRQ PackMazeEquipInfoSvrToItem fail", zap.Error(err), zap.Any("equipId", equipId))
-				continue
-			}
-			_, ok := rareMap[itemEquip.GetItemId()]
-			if ok {
-				res.BarrierRareAward = append(res.BarrierRareAward, itemEquip)
-			} else {
-				res.BarrierAward = append(res.BarrierAward, itemEquip)
 			}
 		}
 	}
