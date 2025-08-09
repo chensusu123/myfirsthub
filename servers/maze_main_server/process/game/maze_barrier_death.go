@@ -2,8 +2,11 @@ package game
 
 import (
 	"fmt"
-	"maze_game_server/common/constdef"
 	"maze_game_server/common/errors"
+	"maze_game_server/common/function/addequip"
+	"maze_game_server/common/function/gentradeno"
+	"maze_game_server/common/function/itemutil"
+	"maze_game_server/config/GMazeConfigV8Cfg"
 	"maze_game_server/io/kafka/mazebarrieruserkafka"
 	"maze_game_server/io/kafka/mazeuserlevelkafka"
 	"maze_game_server/io/redis/mazebarriereventredis"
@@ -14,7 +17,10 @@ import (
 	"maze_game_server/module/mazeuserinfo"
 	"maze_game_server/pb/common/MazeCommon"
 	"maze_game_server/pb/common/MazeGame"
+	"maze_game_server/pb/server/MazeEquipSvr"
 	"maze_game_server/servers/maze_main_server/process/game/events"
+	"maze_game_server/services/awardservice"
+	"strings"
 	"time"
 
 	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fklog"
@@ -71,10 +77,27 @@ func (g *Game) OnMazeBarrierDeathRQ_10449_10450(s *session.Session, req *MazeGam
 		return
 	}
 
+	// 计算出失败的奖励
+	addItems, equipItem, expCount, err := awardservice.GlobalAwardService.GetBarrierDeathAward(logger, userId, req.GetBarrierId())
+	if err != nil {
+		logger.ErrorWF("OnMazeBarrierDeathRQ GetBarrierDeathAward fail", zap.Error(err))
+		res.ErrInfo = errors.MODULE_ERROR.ToInfo()
+		return
+	}
+
+	var nowExp int64
+	expCount -= int64(req.GetFoeExp())
+	if expCount > 0 {
+		tmpSum := int64(expCount) * int64(GMazeConfigV8Cfg.Get(911).Value_int)
+		nowExp = tmpSum/10000 + int64(req.GetFoeExp())
+	} else {
+		nowExp = int64(req.GetFoeExp())
+	}
+
 	//更新等级经验
 	oldLevel := userInfo.Level
 	oldExp := userInfo.TotalExp
-	err = userInfo.AddExp(int64(req.GetFoeExp()))
+	err = userInfo.AddExp(nowExp)
 	if err != nil {
 		logger.ErrorWF("OnMazeBarrierDeathRQ addExp fail", zap.Error(err))
 		res.ErrInfo = errors.MODULE_ERROR.ToInfo()
@@ -122,15 +145,38 @@ func (g *Game) OnMazeBarrierDeathRQ_10449_10450(s *session.Session, req *MazeGam
 	// 触发离开关卡事件
 	events.OnLeaveBarrier(logger, userId, 0, time.Now().UnixMilli(), &MazeGame.BattleEventLeaveBarrier{BarrierId: proto.Int32(req.GetBarrierId()), Result: MazeGame.BarrierResult_DEATH.Enum()})
 
-	if req.GetFoeExp() > 0 {
-		res.BarrierAward = []*MazeCommon.MazeItem{&MazeCommon.MazeItem{ItemId: proto.Int32(constdef.MazeCommonItemExp), Count: proto.Int64(int64(req.GetFoeExp()))}}
+	// 发送道具和装备奖励
+	tradeNo := gentradeno.GetTradeNum()
+	otherItem := make([]*MazeCommon.MazeItem, 0)
+	if len(addItems) > 0 {
+		awardItems := itemutil.Map2Common(addItems)
+		otherItem = append(otherItem, awardItems...)
 	}
+
+	if len(otherItem) > 0 {
+		//697	UN_CGK_COMMON_BILL_TYPE_697	迷宫扫荡
+		errInfo := gentradeno.AddItemEx(logger, uint64(s.UID()), 697, tradeNo, req.GetHeader(), otherItem...)
+		if errInfo != nil {
+			logger.ErrorWF("CalUserSweepBarrierAward AddItemEx fail", zap.Any("errInfo", errInfo), zap.Any("otherItem", otherItem))
+		}
+	}
+
+	// 发送装备
+	if len(equipItem) > 0 {
+		_, err := addequip.AddEquipToBag(logger, uint64(s.UID()), int32(MazeEquipSvr.ENUM_EQUIP_BAG_OP_TYPE_MAZE_EQUIP_SWEEP_AWARD), tradeNo, equipItem)
+		if err != nil {
+			logger.ErrorWF("CalUserSweepBarrierAward addEquipToBag fail", zap.Error(err), zap.Any("optype", int32(MazeEquipSvr.ENUM_EQUIP_BAG_OP_TYPE_MAZE_EQUIP_BOX_AWARD)),
+				zap.Any("tradeNo", tradeNo), zap.Any("addEquip", equipItem))
+		}
+	}
+
+	logger.InfoWF("OnMazeBarrierDeathRQ addItems", zap.Any("addItems", addItems), zap.Any("equipItem", equipItem), zap.Any("expCount", expCount))
 
 	passRecord := &mazebarrieruserkafka.MazeBarrierUserGameRecord{
 		UserId:  userId,
 		Barrier: req.GetBarrierId(),
 		GameRet: mazebarrieruserkafka.GameRetDeath,
-		Awards:  fmt.Sprintf("%d:%d", constdef.MazeCommonItemExp, req.GetFoeExp()),
+		Awards:  getmapAwards(addItems, equipItem),
 	}
 
 	mazebarrieruserkafka.PushMazeBarrierUserRecord(logger, passRecord)
@@ -156,4 +202,17 @@ func GetDeathPunish(logger fklog.FKLogI, userId uint64) (subDeathPer int64, lost
 
 	// err = errors.New("not found death cfg")
 	return
+}
+
+func getmapAwards(awardMap map[int32]int64, awardEquip map[int32]int32) string {
+	awardStr := make([]string, 0)
+
+	for k, v := range awardMap {
+		awardStr = append(awardStr, fmt.Sprintf("%d:%d", k, v))
+	}
+
+	for k, v := range awardEquip {
+		awardStr = append(awardStr, fmt.Sprintf("%d:%d", k, v))
+	}
+	return strings.Join(awardStr, "_")
 }

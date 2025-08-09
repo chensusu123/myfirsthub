@@ -9,6 +9,8 @@ type BarrierScoreRewardService interface {
 	SaveBarrierScoreRewardItem(logger fklog.FKLogI, userId uint64, barrier int32, itemList map[int32]int64) (err error)
 	// 保存积分装备和道具信息
 	SaveBarrierScoreReward(logger fklog.FKLogI, userId uint64, barrier int32, equipList map[int32]int32, itemList map[int32]int64) (err error)
+	// 获取当前积分装备和道具信息
+	GetBarrierScoreReward(logger fklog.FKLogI, userId uint64, barrier int32) (equipList map[int32]int32, itemList map[int32]int64, err error)
 }
 
 var GlobalScoreRewardService BarrierScoreRewardService
