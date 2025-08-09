@@ -3,6 +3,7 @@ package equiptoitem
 import (
 	"errors"
 	"fmt"
+	"maze_game_server/excel/mazeequiptyperesv8"
 
 	"maze_game_server/config/GMazeEquipInfoV8Cfg"
 	"maze_game_server/config/GMazeEquipTypeResV8Cfg"
@@ -11,6 +12,21 @@ import (
 
 	"google.golang.org/protobuf/proto"
 )
+
+func PackMazeEquipInfoSvrToItem(equipId int32) (item *MazeCommon.MazeItem, err error) {
+	equipTypeResCfg := mazeequiptyperesv8.GetEquipTypeResCfg(equipId, 0, 0)
+	if equipTypeResCfg == nil {
+		err = fmt.Errorf("mazeequiptyperesv8 get cfg fail, equipId:%d", equipId)
+		return
+	}
+	equip := &MazeEquipSvr.MazeEquipInfoSvr{
+		EquipId:    proto.Int32(equipId),
+		EquipResId: proto.Int32(equipTypeResCfg.Order),
+		EquipName:  proto.String(equipTypeResCfg.Name),
+	}
+	itemEquip, err := PackEquipToItem(equip)
+	return itemEquip, err
+}
 
 func PackEquipToItem(equip *MazeEquipSvr.MazeEquipInfoSvr) (item *MazeCommon.MazeItem, err error) {
 	if equip == nil {
