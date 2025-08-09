@@ -71,6 +71,9 @@ func (s service) GetBarrierEnergy(logger fklog.FKLogI, userId uint64) (curEnergy
 		}
 	}
 
+	//服务器添加定时器,补发ID包
+	s.startUserRecoverEnergy(logger, userId, nextUpdateTime)
+
 	logger.InfoWF("GetBarrierEnergy success", zap.Any("userId", userId), zap.Any("curEnergy", uInfo.Energy), zap.Any("nextUpdateTime", nextUpdateTime))
 	return uInfo.Energy, nextUpdateTime, err
 }
@@ -259,7 +262,9 @@ func GetEnergyRate() (costTime, recoverVal int32) {
 func GetEnergyRecoverCfg() int64 {
 	row := GMazeConfigV8Cfg.GetMazeConfigV8Config(constdef.MazeCfgId303)
 	if row != nil {
-		return row.Value_int
+		for k, _ := range row.Value_map {
+			return int64(k)
+		}
 	}
 	return 30
 }

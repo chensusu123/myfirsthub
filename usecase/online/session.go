@@ -78,3 +78,8 @@ func Scan(fn func(id int64, s *session.Session)) {
 		return true
 	})
 }
+
+func IsOnline(userID uint64) bool {
+	_, ok := monitor.online.Load(userID)
+	return ok
+}
