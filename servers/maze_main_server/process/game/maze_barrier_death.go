@@ -2,6 +2,7 @@ package game
 
 import (
 	"fmt"
+	"maze_game_server/common/constdef"
 	"maze_game_server/common/errors"
 	"maze_game_server/common/function/addequip"
 	"maze_game_server/common/function/gentradeno"
@@ -79,17 +80,19 @@ func (g *Game) OnMazeBarrierDeathRQ_10449_10450(s *session.Session, req *MazeGam
 	}
 
 	// 计算出失败的奖励
-	addItems, equipItem, expCount, err := awardservice.GlobalAwardService.GetBarrierDeathAward(logger, userId, req.GetBarrierId())
+	realItem, showItem, realEquip, showEquip, showExp, err := awardservice.GlobalAwardService.GetBarrierDeathAward(logger, userId, req.GetBarrierId())
 	if err != nil {
 		logger.ErrorWF("OnMazeBarrierDeathRQ GetBarrierDeathAward fail", zap.Error(err))
 		res.ErrInfo = errors.MODULE_ERROR.ToInfo()
 		return
 	}
 
+	logger.InfoWF("OnMazeBarrierDeathRQ GetBarrierDeathAward", zap.Any("realItem", realItem), zap.Any("showItem", showItem), zap.Any("realEquip", realEquip), zap.Any("showEquip", showEquip), zap.Any("showExp", showExp))
+
 	var nowExp int64
-	expCount -= int64(req.GetFoeExp())
-	if expCount > 0 {
-		tmpSum := int64(expCount) * int64(GMazeConfigV8Cfg.Get(911).Value_int)
+	showExp -= int64(req.GetFoeExp())
+	if showExp > 0 {
+		tmpSum := int64(showExp) * int64(GMazeConfigV8Cfg.Get(911).Value_int)
 		nowExp = tmpSum/10000 + int64(req.GetFoeExp())
 	} else {
 		nowExp = int64(req.GetFoeExp())
@@ -112,6 +115,11 @@ func (g *Game) OnMazeBarrierDeathRQ_10449_10450(s *session.Session, req *MazeGam
 		return
 	}
 	mazecommonvalue.HandleUserLevelExpChg(logger, userId, userInfo.Level, userInfo.Exp, req.GetHeader().GetSession())
+
+	res.BarrierAward = append(res.BarrierAward, &MazeCommon.MazeItem{
+		ItemId: proto.Int32(constdef.MazeCommonItemExp),
+		Count:  proto.Int64(nowExp),
+	})
 
 	defer func() {
 		if oldLevel != newLevel {
@@ -149,8 +157,8 @@ func (g *Game) OnMazeBarrierDeathRQ_10449_10450(s *session.Session, req *MazeGam
 	// 发送道具和装备奖励
 	tradeNo := gentradeno.GetTradeNum()
 	otherItem := make([]*MazeCommon.MazeItem, 0)
-	if len(addItems) > 0 {
-		awardItems := itemutil.Map2Common(addItems)
+	if len(realItem) > 0 {
+		awardItems := itemutil.Map2Common(realItem)
 		otherItem = append(otherItem, awardItems...)
 	}
 
@@ -159,35 +167,49 @@ func (g *Game) OnMazeBarrierDeathRQ_10449_10450(s *session.Session, req *MazeGam
 		errInfo := gentradeno.AddItemEx(logger, uint64(s.UID()), 697, tradeNo, req.GetHeader(), otherItem...)
 		if errInfo != nil {
 			logger.ErrorWF("CalUserSweepBarrierAward AddItemEx fail", zap.Any("errInfo", errInfo), zap.Any("otherItem", otherItem))
+			res.ErrInfo = errors.MODULE_ERROR.ToInfo()
+			return
 		}
-		res.BarrierAward = append(res.BarrierAward, otherItem...)
+		// res.BarrierAward = append(res.BarrierAward, otherItem...)
 	}
 
 	// 发送装备
-	if len(equipItem) > 0 {
-		rs, err := addequip.AddEquipToBag(logger, uint64(s.UID()), int32(MazeEquipSvr.ENUM_EQUIP_BAG_OP_TYPE_MAZE_EQUIP_SWEEP_AWARD), tradeNo, equipItem)
+	if len(realEquip) > 0 {
+		_, err := addequip.AddEquipToBag(logger, uint64(s.UID()), int32(MazeEquipSvr.ENUM_EQUIP_BAG_OP_TYPE_MAZE_EQUIP_SWEEP_AWARD), tradeNo, realEquip)
 		if err != nil {
 			logger.ErrorWF("CalUserSweepBarrierAward addEquipToBag fail", zap.Error(err), zap.Any("optype", int32(MazeEquipSvr.ENUM_EQUIP_BAG_OP_TYPE_MAZE_EQUIP_BOX_AWARD)),
-				zap.Any("tradeNo", tradeNo), zap.Any("addEquip", equipItem))
-		}
-
-		for _, equip := range rs.GetEquipList() {
-			itemEquip, err := equiptoitem.PackEquipToItem(equip)
-			if err != nil {
-				logger.ErrorWF("CalUserSweepBarrierAward PackEquipToItem fail", zap.Error(err), zap.Any("equip", equip))
-				continue
-			}
-			res.BarrierAward = append(res.BarrierAward, itemEquip)
+				zap.Any("tradeNo", tradeNo), zap.Any("addEquip", realEquip))
+			res.ErrInfo = errors.MODULE_ERROR.ToInfo()
+			return err
 		}
 	}
 
-	logger.InfoWF("OnMazeBarrierDeathRQ addItems", zap.Any("addItems", addItems), zap.Any("equipItem", equipItem), zap.Any("expCount", expCount), zap.Any("nowExp", nowExp))
+	// 展示获取的奖励
+	if len(showItem) > 0 {
+		res.BarrierAward = append(res.BarrierAward, itemutil.Map2Common(showItem)...)
+	}
+
+	if len(showEquip) > 0 {
+		for equipId, count := range showEquip {
+			for i := 0; i < int(count); i++ {
+				itemEquip, err := equiptoitem.PackMazeEquipInfoSvrToItem(equipId)
+				if err != nil {
+					logger.ErrorWF("CalUserSweepBarrierAward PackMazeEquipInfoSvrToItem fail", zap.Error(err), zap.Any("equipId", equipId))
+					continue
+				}
+				res.BarrierAward = append(res.BarrierAward, itemEquip)
+			}
+		}
+	}
+
+	logger.InfoWF("OnMazeBarrierDeathRQ showAward", zap.Any("showItem", showItem), zap.Any("showEquip", showEquip))
+	// logger.InfoWF("OnMazeBarrierDeathRQ addItems", zap.Any("addItems", addItems), zap.Any("equipItem", equipItem), zap.Any("expCount", expCount), zap.Any("nowExp", nowExp))
 
 	passRecord := &mazebarrieruserkafka.MazeBarrierUserGameRecord{
 		UserId:  userId,
 		Barrier: req.GetBarrierId(),
 		GameRet: mazebarrieruserkafka.GameRetDeath,
-		Awards:  getmapAwards(addItems, equipItem),
+		Awards:  getmapAwards(realItem, realEquip),
 	}
 
 	mazebarrieruserkafka.PushMazeBarrierUserRecord(logger, passRecord)

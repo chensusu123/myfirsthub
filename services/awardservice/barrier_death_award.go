@@ -17,13 +17,13 @@ import (
 	"go.uber.org/zap"
 )
 
-// 经验外部处理
-func (s *service) GetBarrierDeathAward(logger fklog.FKLogI, userId uint64, barrier int32) (awardMap map[int32]int64, equipMap map[int32]int32, expCount int64, err error) {
+func (s *service) GetBarrierDeathAward(logger fklog.FKLogI, userId uint64, barrier int32) (realItemMap map[int32]int64, showItemMap map[int32]int64,
+	realEquipMap map[int32]int32, showEquipMap map[int32]int32, expCount int64, err error) {
 	// 获取当前关卡的扫荡奖励
 	equipItem, ohterItem, expItem, equipNum, err := calsweepbarrier.GetSweepBarrierAward(logger, userId, barrier)
 	if err != nil {
 		logger.ErrorWF("GetBarrierDeathAward GetSweepBarrierAward err", zap.Error(err))
-		return nil, nil, 0, err
+		return nil, nil, nil, nil, 0, err
 	}
 	logger.InfoWF("GetBarrierDeathAward GetSweepBarrierAward", zap.Any("equipItem", equipItem), zap.Any("ohterItem", ohterItem), zap.Any("expItem", expItem), zap.Any("equipNum", equipNum))
 
@@ -36,7 +36,7 @@ func (s *service) GetBarrierDeathAward(logger fklog.FKLogI, userId uint64, barri
 			zap.Any("nowBarrierEquipList", nowBarrierEquipList),
 			zap.Any("nowBarrierItemList", nowBarrierItemList),
 		)
-		return nil, nil, 0, err
+		return nil, nil, nil, nil, 0, err
 	}
 	logger.InfoWF("GetBarrierDeathAward GetBarrierScoreReward", zap.Any("nowBarrierEquipList", nowBarrierEquipList), zap.Any("nowBarrierItemList", nowBarrierItemList))
 
@@ -44,7 +44,7 @@ func (s *service) GetBarrierDeathAward(logger fklog.FKLogI, userId uint64, barri
 	barrierCfg := GMazeBarriesV8Cfg.Get(barrier)
 	if barrierCfg == nil {
 		logger.ErrorWF("GetBarrierDeathAward get box cfg fail", zap.Any("barrier", barrier))
-		return nil, nil, 0, errors.New("box cfg nil")
+		return nil, nil, nil, nil, 0, errors.New("box cfg nil")
 	}
 
 	boxEquipCount := 0
@@ -52,13 +52,13 @@ func (s *service) GetBarrierDeathAward(logger fklog.FKLogI, userId uint64, barri
 	boxCfg := GMazeBoxV8Cfg.Get(barrierCfg.Box_id)
 	if boxCfg == nil {
 		logger.ErrorWF("GetBarrierDeathAward get box cfg fail", zap.Any("boxId", barrierCfg.Box_id))
-		return nil, nil, 0, errors.New("box cfg nil")
+		return nil, nil, nil, nil, 0, errors.New("box cfg nil")
 	}
 
 	opened, err := mazeboxredis.IsOpenedBox(logger, userId, barrier, barrierCfg.Box_id)
 	if err != nil {
 		logger.ErrorWF("GetBarrierDeathAward IsOpenedBox fail", zap.Error(err), zap.Any("boxId", barrierCfg.Box_id), zap.Any("barrierId", barrier))
-		return nil, nil, 0, err
+		return nil, nil, nil, nil, 0, err
 	}
 
 	// 首次打开宝箱奖励 转化为非首次
@@ -70,7 +70,7 @@ func (s *service) GetBarrierDeathAward(logger fklog.FKLogI, userId uint64, barri
 				ohterItem[k] -= v
 			} else if k > 0 && !ok {
 				logger.ErrorWF("GetBarrierDeathAward get box cfg fail", zap.Any("boxId", barrierCfg.Box_id), zap.Any("itemId", k))
-				return nil, nil, 0, errors.New("item not found")
+				return nil, nil, nil, nil, 0, errors.New("item not found")
 			}
 		}
 
@@ -100,7 +100,7 @@ func (s *service) GetBarrierDeathAward(logger fklog.FKLogI, userId uint64, barri
 		userInfo, err := mazeuserinfo.GetUserInfoV2(logger, userId)
 		if err != nil {
 			logger.ErrorWF("CalUserSweepBarrierAward GetUserInfoV2 fail", zap.Error(err))
-			return nil, nil, 0, err
+			return nil, nil, nil, nil, 0, err
 		}
 
 		calLv := equipdropservice.GlobalEquipDropService.GetMazeBarrierLv(int32(userInfo.Level), barrier)
@@ -108,13 +108,13 @@ func (s *service) GetBarrierDeathAward(logger fklog.FKLogI, userId uint64, barri
 		if shopCfg == nil {
 			logger.ErrorWF("GetSweepBarrierAward get shop cfg fail", zap.Any("calLv", calLv))
 			err = errors.New("shop cfg nil")
-			return nil, nil, 0, err
+			return nil, nil, nil, nil, 0, err
 		}
 
 		addEquipMap, err := equipdropservice.GlobalEquipDropService.GetNewEquip(logger, userId, calLv, barrier, nowequipNum)
 		if err != nil {
 			logger.ErrorWF("GetSweepBarrierAward GetNewEquip fail", zap.Error(err), zap.Any("barrier", barrier), zap.Any("calLv", calLv))
-			return nil, nil, 0, err
+			return nil, nil, nil, nil, 0, err
 		}
 
 		for k, v := range addEquipMap {
@@ -126,14 +126,34 @@ func (s *service) GetBarrierDeathAward(logger fklog.FKLogI, userId uint64, barri
 		equipItem[k] += v
 	}
 
+	realEquipMap = make(map[int32]int32)
+	// 记录失败新增装备奖励
+	for k, v := range equipItem {
+		realEquipMap[k] = v
+	}
+
 	// 道具
 	for k, v := range ohterItem {
 		tmpSum := int64(v) * int64(GMazeConfigV8Cfg.Get(912).Value_int)
 		ohterItem[k] = tmpSum / 10000
 	}
+
+	realItemMap = make(map[int32]int64)
+	// 记录失败新增物品奖励
+	for k, v := range nowBarrierItemList {
+		realItemMap[k] += v
+	}
+
 	for k, v := range nowBarrierItemList {
 		ohterItem[k] += v
 	}
 
-	return ohterItem, equipItem, expItem.GetCount(), nil
+	logger.InfoWF("GetBarrierDeathAward", zap.Any("realItemMap", realItemMap),
+		zap.Any("ohterItem", ohterItem),
+		zap.Any("realEquipMap", realEquipMap),
+		zap.Any("equipItem", equipItem),
+		zap.Any("expItem", expItem),
+	)
+
+	return realItemMap, ohterItem, realEquipMap, equipItem, expItem.GetCount(), nil
 }
