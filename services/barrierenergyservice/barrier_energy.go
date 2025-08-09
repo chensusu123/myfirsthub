@@ -19,56 +19,11 @@ func (s service) GetBarrierEnergy(logger fklog.FKLogI, userId uint64) (curEnergy
 		logger.ErrorWF("GetBarrierEnergy GetUserInfoV2 fail", zap.Error(err))
 		return 0, 0, errors.New("userInfo not find")
 	}
-	var updateFlag int32 //是否需要更新
-	now := time.Now().Unix()
-	maxVal := GetEnergyMax()     // 体力最大值
-	cost, val := GetEnergyRate() // 每n秒回复多少体力
-	var nextUpdateTime int64     // 下次更新时间
-	//var chgVal int32             // 变化值
 
-	if uInfo.EnergyLastTime == 0 { // 首次初始化
-		uInfo.SetEnergyLastTime(now)
-		initVal := GetEnergyInitVal()
-		//chgVal = initVal - uInfo.Energy
-		uInfo.SetEnergy(initVal)
-		updateFlag = 1
-		nextUpdateTime = now + int64(cost)
-
-	} else {
-		curVal := uInfo.Energy
-		if curVal < GetEnergyMax() { // 未恢复满
-			cycleNum := (now - uInfo.EnergyLastTime) / int64(cost)        // 周期数
-			addVal := cycleNum * int64(val)                               // 周期数*每周期增加的体力
-			lastUpdateTime := uInfo.EnergyLastTime + cycleNum*int64(cost) // 计算上次更新时间
-			nextUpdateTime = lastUpdateTime + int64(cost)
-			if addVal > 0 {
-				//chgVal = int32(addVal)
-				curVal += int32(addVal)
-				if curVal >= maxVal { // 如果恢复到满值,上次恢复时间设置为当前时间
-					curVal = maxVal
-					lastUpdateTime = now
-					nextUpdateTime = now + int64(cost)
-				}
-				uInfo.SetEnergyLastTime(lastUpdateTime)
-				uInfo.SetEnergy(curVal)
-				updateFlag = 2
-			}
-		} else {
-			nextUpdateTime = now + int64(cost)
-		}
-	}
-	if updateFlag > 0 {
-		err = mazeuserinfo.SetUserInfoV2(logger, userId, uInfo)
-		if err != nil {
-			logger.ErrorWF("OnQueryMazeEnergyRQ SetUserInfoV2 fail", zap.Error(err))
-			return uInfo.Energy, nextUpdateTime, errors.New("保存数据错误")
-		}
-		//nextTime := uInfo.EnergyLastTime + GetEnergyRecoverCfg() - time.Now().Unix()
-		err := s.SendEnergyChgPack(logger, userId, uInfo.Energy, nextUpdateTime)
-		if err != nil {
-			logger.ErrorWF("OnQueryMazeEnergyRQ SendEnergyChgPack fail", zap.Error(err))
-			return uInfo.Energy, nextUpdateTime, err
-		}
+	curEnergy, nextUpdateTime, err := s.calEnergy(logger, userId)
+	if err != nil {
+		logger.ErrorWF("GetBarrierEnergy calEnergy fail", zap.Error(err))
+		return uInfo.Energy, uInfo.EnergyLastTime, err
 	}
 
 	//服务器添加定时器,补发ID包
@@ -278,4 +233,65 @@ func GetEnergyItemCfg() (id, count int32) {
 		}
 	}
 	return 49000001, 60
+}
+
+// 计算体力
+func (s service) calEnergy(logger fklog.FKLogI, userId uint64) (curEnergy int32, nextTime int64, err error) {
+	uInfo, err := mazeuserinfo.GetUserInfoV2(logger, userId)
+	if err != nil {
+		logger.ErrorWF("GetBarrierEnergy GetUserInfoV2 fail", zap.Error(err))
+		return 0, 0, errors.New("userInfo not find")
+	}
+	var updateFlag int32 //是否需要更新
+	now := time.Now().Unix()
+	maxVal := GetEnergyMax()     // 体力最大值
+	cost, val := GetEnergyRate() // 每n秒回复多少体力
+	var nextUpdateTime int64     // 下次更新时间
+	//var chgVal int32             // 变化值
+
+	if uInfo.EnergyLastTime == 0 { // 首次初始化
+		uInfo.SetEnergyLastTime(now)
+		initVal := GetEnergyInitVal()
+		//chgVal = initVal - uInfo.Energy
+		uInfo.SetEnergy(initVal)
+		updateFlag = 1
+		nextUpdateTime = now + int64(cost)
+
+	} else {
+		curVal := uInfo.Energy
+		if curVal < GetEnergyMax() { // 未恢复满
+			cycleNum := (now - uInfo.EnergyLastTime) / int64(cost)        // 周期数
+			addVal := cycleNum * int64(val)                               // 周期数*每周期增加的体力
+			lastUpdateTime := uInfo.EnergyLastTime + cycleNum*int64(cost) // 计算上次更新时间
+			nextUpdateTime = lastUpdateTime + int64(cost)
+			if addVal > 0 {
+				//chgVal = int32(addVal)
+				curVal += int32(addVal)
+				if curVal >= maxVal { // 如果恢复到满值,上次恢复时间设置为当前时间
+					curVal = maxVal
+					lastUpdateTime = now
+					nextUpdateTime = now + int64(cost)
+				}
+				uInfo.SetEnergyLastTime(lastUpdateTime)
+				uInfo.SetEnergy(curVal)
+				updateFlag = 2
+			}
+		} else {
+			nextUpdateTime = now + int64(cost)
+		}
+	}
+	if updateFlag > 0 {
+		err = mazeuserinfo.SetUserInfoV2(logger, userId, uInfo)
+		if err != nil {
+			logger.ErrorWF("OnQueryMazeEnergyRQ SetUserInfoV2 fail", zap.Error(err))
+			return uInfo.Energy, nextUpdateTime, errors.New("保存数据错误")
+		}
+		//nextTime := uInfo.EnergyLastTime + GetEnergyRecoverCfg() - time.Now().Unix()
+		err := s.SendEnergyChgPack(logger, userId, uInfo.Energy, nextUpdateTime)
+		if err != nil {
+			logger.ErrorWF("OnQueryMazeEnergyRQ SendEnergyChgPack fail", zap.Error(err))
+			return uInfo.Energy, nextUpdateTime, err
+		}
+	}
+	return uInfo.Energy, nextUpdateTime, nil
 }
