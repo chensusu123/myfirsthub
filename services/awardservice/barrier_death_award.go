@@ -140,7 +140,7 @@ func (s *service) GetBarrierDeathAward(logger fklog.FKLogI, userId uint64, barri
 
 	realItemMap = make(map[int32]int64)
 	// 记录失败新增物品奖励
-	for k, v := range nowBarrierItemList {
+	for k, v := range ohterItem {
 		realItemMap[k] += v
 	}
 
