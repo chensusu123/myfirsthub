@@ -51,8 +51,8 @@ const (
 
 // 展示道具id
 const (
-	GoldPileItemCfgId            = 46200002 // 金币堆道具id
-	StrengthenStonePileItemCfgId = 46700002 // 强化石堆道具id
+	GoldPileItemCfgId            = 46200101 // 金币堆道具id
+	StrengthenStonePileItemCfgId = 46700101 // 强化石堆道具id
 )
 
 // 展示道具与实际道具对应配置id
