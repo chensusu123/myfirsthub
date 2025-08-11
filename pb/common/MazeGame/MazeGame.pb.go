@@ -4956,7 +4956,7 @@ type BarrierKillMonsterRQ struct {
 	AreaId      *int32               `protobuf:"varint,3,opt,name=area_id,json=areaId" json:"area_id,omitempty"`                // 区域id
 	AreaIndex   *int32               `protobuf:"varint,4,opt,name=area_index,json=areaIndex" json:"area_index,omitempty"`       // 子区域id
 	MonsterId   *int32               `protobuf:"varint,5,opt,name=monster_id,json=monsterId" json:"monster_id,omitempty"`       //怪物配置id
-	MonsterGuid *int64               `protobuf:"varint,6,opt,name=monster_guid,json=monsterGuid" json:"monster_guid,omitempty"` //怪物唯一id
+	MonsterGuid *int64               `protobuf:"varint,6,opt,name=monster_guid,json=monsterGuid" json:"monster_guid,omitempty"` //怪物唯一guid
 }
 
 func (x *BarrierKillMonsterRQ) Reset() {
