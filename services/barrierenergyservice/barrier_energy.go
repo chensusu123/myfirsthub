@@ -30,7 +30,7 @@ func (s service) GetBarrierEnergy(logger fklog.FKLogI, userId uint64) (curEnergy
 	s.startUserRecoverEnergy(logger, userId, nextUpdateTime)
 
 	logger.InfoWF("GetBarrierEnergy success", zap.Any("userId", userId), zap.Any("curEnergy", uInfo.Energy), zap.Any("nextUpdateTime", nextUpdateTime))
-	return uInfo.Energy, nextUpdateTime, err
+	return curEnergy, nextUpdateTime, err
 }
 
 // 增加体力，结果大于最大值时体力等于最大值
