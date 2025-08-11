@@ -42,7 +42,7 @@ func (s service) AddEnergy(logger fklog.FKLogI, userId uint64, addVal int32) (cu
 	}
 	maxVal := GetEnergyMax() // 体力最大值
 
-	cur, _, err := s.GetBarrierEnergy(logger, userId)
+	cur, nextTime, err := s.GetBarrierEnergy(logger, userId)
 	if err != nil {
 		logger.ErrorWF("AddEnergy GetBarrierEnergy fail", zap.Error(err))
 		return uInfo.Energy, uInfo.EnergyLastTime, err
@@ -60,56 +60,8 @@ func (s service) AddEnergy(logger fklog.FKLogI, userId uint64, addVal int32) (cu
 		return uInfo.Energy, uInfo.EnergyLastTime, errors.New("userInfo not find")
 	}
 	curEnergy = remain
-
-	var updateFlag int32 //是否需要更新
-	now := time.Now().Unix()
-	cost, val := GetEnergyRate() // 每n秒回复多少体力
-	var nextUpdateTime int64     // 下次更新时间
-
-	if uInfo.EnergyLastTime == 0 { // 首次初始化
-		uInfo.SetEnergyLastTime(now)
-		initVal := GetEnergyInitVal()
-		uInfo.SetEnergy(initVal)
-		updateFlag = 1
-		nextUpdateTime = now + int64(cost)
-	} else {
-		curVal := uInfo.Energy
-		if curVal < maxVal { // 未恢复满
-			cycleNum := (now - uInfo.EnergyLastTime) / int64(cost)        // 周期数
-			addVal := cycleNum * int64(val)                               // 周期数*每周期增加的体力
-			lastUpdateTime := uInfo.EnergyLastTime + cycleNum*int64(cost) // 计算上次更新时间
-			nextUpdateTime = lastUpdateTime + int64(cost)
-			if addVal > 0 {
-				curVal += int32(addVal)
-				if curVal >= maxVal { // 如果恢复到满值,上次恢复时间设置为当前时间
-					curVal = maxVal
-					lastUpdateTime = now
-					nextUpdateTime = now + int64(cost)
-				}
-				uInfo.SetEnergyLastTime(lastUpdateTime)
-				uInfo.SetEnergy(curVal)
-				updateFlag = 2
-			}
-		} else {
-			nextUpdateTime = now + int64(cost)
-		}
-	}
-	if updateFlag > 0 {
-		err = mazeuserinfo.SetUserInfoV2(logger, userId, uInfo)
-		if err != nil {
-			logger.ErrorWF("AddEnergy SetUserInfoV2 fail", zap.Error(err))
-			return uInfo.Energy, nextUpdateTime, errors.New("保存数据错误")
-		}
-
-		err := s.SendEnergyChgPack(logger, userId, uInfo.Energy, nextUpdateTime)
-		if err != nil {
-			logger.ErrorWF("AddEnergy SendEnergyChgPack fail", zap.Error(err))
-			//return uInfo.Energy, nextUpdateTime, err
-		}
-	}
-
-	logger.InfoWF("AddEnergy success", zap.Any("userId", userId), zap.Any("uInfo", uInfo), zap.Any("nextUpdateTime", nextUpdateTime), zap.Any("addVal", addVal))
-	return uInfo.Energy, nextUpdateTime, err
+	logger.InfoWF("AddEnergy success", zap.Any("userId", userId), zap.Any("uInfo", uInfo), zap.Any("nextUpdateTime", nextTime), zap.Any("addVal", addVal), zap.Any("curEnergy", curEnergy))
+	return curEnergy, nextTime, err
 }
 
 // 减少体力
@@ -146,7 +98,7 @@ func (s service) SubEnergy(logger fklog.FKLogI, userId uint64, subVal int32) (in
 		logger.ErrorWF("SubEnergy SendEnergyChgPack fail", zap.Error(err), zap.Any("uInfo", uInfo))
 		//return uInfo.Energy, err
 	}
-	logger.InfoWF("SubEnergy success", zap.Any("userId", userId), zap.Any("uInfo", uInfo), zap.Any("remain", remain), zap.Int32("subVal", subVal))
+	logger.InfoWF("SubEnergy success", zap.Any("userId", userId), zap.Any("uInfo", uInfo), zap.Any("curEnergy", remain), zap.Int32("subVal", subVal))
 	return uInfo.Energy, err
 }
 

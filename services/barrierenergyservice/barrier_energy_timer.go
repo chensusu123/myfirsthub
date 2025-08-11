@@ -68,32 +68,6 @@ func (s service) handleRecoverUserEnergy(logger fklog.FKLogI, userID uint64) {
 		logger.InfoWF("handleRecoverUserEnergy add timer", zap.Any("userID", userID), zap.Int64("nextTriggerTime", nextTriggerTime), zap.Any("timer", timer))
 	}()
 
-	//maxVal := GetEnergyMax() // 体力最大值
-	//uInfo, err := mazeuserinfo.GetUserInfoV2(logger, userID)
-	//if err != nil {
-	//	logger.ErrorWF("handleRecoverUserEnergy GetUserInfoV2 fail", zap.Error(err))
-	//	return
-	//}
-	//
-	//curEnergy := uInfo.Energy
-	//nextTime := uInfo.EnergyLastTime
-	//
-	//if curEnergy >= maxVal {
-	//	// 用户体力已经满了不需要恢复
-	//	logger.InfoWF("handleRecoverUserEnergy user energy full", zap.Uint64("userId", userID), zap.Any("curEnergy", curEnergy))
-	//	return
-	//}
-	//
-	//delay := GetEnergyRecoverCfg()
-	//if time.Now().Unix() < nextTime+delay {
-	//	// 如果当前时间小于下次恢复时间不需要恢复
-	//	logger.InfoWF("handleRecoverUserEnergy current time small next recover time", zap.Uint64("userId", userID), zap.Any("curEnergy", curEnergy), zap.Any("nextTime", nextTime), zap.Any("delay", delay))
-	//	return
-	//}
-	//
-	//// 恢复1点
-	//curEnergy = curEnergy + 1
-	//nextTime = nextTime + delay
 	curEnergy, nextTime, err := s.calEnergy(logger, userID)
 	if err != nil {
 		logger.InfoWF("handleRecoverUserEnergy calEnergy failed", zap.Any("userID", userID), zap.Error(err))
