@@ -45,7 +45,8 @@ func (g *Game) OnMazeBarrierEnterRQ_10447_10448(s *session.Session, req *MazeGam
 	defer func() {
 		err = s.Response(res)
 		logger.InfoWF("OnMazeBarrierEnterRQ end", zap.Any("res", res))
-		err = s.ResponseMID(codec.ToMessageID(uint32(time.Now().Unix()), 10610, 0), energyID)
+
+		err = s.ResponseMID(codec.ToMessageID(uint32(time.Now().Unix()), 0, 10610), energyID)
 		logger.InfoWF("OnMazeBarrierEnterRQ end send EnergyChangeID", zap.Any("energyID", energyID))
 	}()
 

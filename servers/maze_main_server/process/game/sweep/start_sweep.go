@@ -37,7 +37,7 @@ func (sp *Sweep) OnStartMazeSweepRQ_10471_10472(s *session.Session, req *MazeGam
 	defer func() {
 		err = s.Response(res)
 		logger.InfoWF("OnStartMazeSweepRQ end", zap.Any("res", res), zap.Any("errMsg", string(res.GetErrInfo().GetErrMsg())))
-		err = s.ResponseMID(codec.ToMessageID(uint32(time.Now().Unix()), 10610, 0), energyID)
+		err = s.ResponseMID(codec.ToMessageID(uint32(time.Now().Unix()), 0, 10610), energyID)
 		logger.InfoWF("OnStartMazeSweepRQ end send EnergyChangeID", zap.Any("energyID", energyID))
 	}()
 
