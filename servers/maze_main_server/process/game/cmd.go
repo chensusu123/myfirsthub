@@ -287,6 +287,12 @@ func ClearBarrier(logger fklog.FKLogI, userId uint64) (err error) {
 		return
 	}
 
+	//重置体力
+	err = barrierenergyservice.GlobalBarrierEnergyService.ResetEnergy(logger, userId)
+	if err != nil {
+		return
+	}
+
 	return
 
 }

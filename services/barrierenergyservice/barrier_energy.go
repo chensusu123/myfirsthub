@@ -250,3 +250,28 @@ func (s service) calEnergy(logger fklog.FKLogI, userId uint64) (curEnergy int32,
 	}
 	return uInfo.Energy, nextUpdateTime, nil
 }
+
+func (s service) ResetEnergy(logger fklog.FKLogI, userId uint64) (err error) {
+	uInfo, err := mazeuserinfo.GetUserInfoV2(logger, userId)
+	if err != nil {
+		logger.ErrorWF("ResetEnergy GetUserInfoV2 fail", zap.Error(err))
+		return errors.New("userInfo not find")
+	}
+
+	now := time.Now().Unix()
+	cost, _ := GetEnergyRate() // 每n秒回复多少体力
+
+	uInfo.SetEnergyLastTime(now)
+	initVal := GetEnergyInitVal()
+	uInfo.SetEnergy(initVal)
+	nextUpdateTime := now + int64(cost)
+
+	err = mazeuserinfo.SetUserInfoV2(logger, userId, uInfo)
+	if err != nil {
+		logger.ErrorWF("ResetEnergy SetUserInfoV2 fail", zap.Error(err))
+		return errors.New("保存数据错误")
+	}
+	s.SendEnergyChgPack(logger, userId, uInfo.Energy, nextUpdateTime)
+
+	return nil
+}
