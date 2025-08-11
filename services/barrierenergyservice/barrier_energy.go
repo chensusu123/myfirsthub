@@ -74,7 +74,8 @@ func (s service) SubEnergy(logger fklog.FKLogI, userId uint64, subVal int32) (in
 
 	curEnergy, _, err := s.GetBarrierEnergy(logger, userId)
 	if err != nil {
-		return 0, err
+		logger.ErrorWF("SubEnergy GetBarrierEnergy fail", zap.Error(err))
+		return uInfo.Energy, err
 	}
 
 	if curEnergy < subVal {
@@ -96,6 +97,7 @@ func (s service) SubEnergy(logger fklog.FKLogI, userId uint64, subVal int32) (in
 	err = s.SendEnergyChgPack(logger, userId, remain, uInfo.EnergyLastTime)
 	if err != nil {
 		logger.ErrorWF("SubEnergy SendEnergyChgPack fail", zap.Error(err), zap.Any("uInfo", uInfo))
+		err = nil
 		//return uInfo.Energy, err
 	}
 	logger.InfoWF("SubEnergy success", zap.Any("userId", userId), zap.Any("uInfo", uInfo), zap.Any("curEnergy", remain), zap.Int32("subVal", subVal))
@@ -241,6 +243,7 @@ func (s service) calEnergy(logger fklog.FKLogI, userId uint64) (curEnergy int32,
 		//nextTime := uInfo.EnergyLastTime + GetEnergyRecoverCfg() - time.Now().Unix()
 		err := s.SendEnergyChgPack(logger, userId, uInfo.Energy, nextUpdateTime)
 		if err != nil {
+			err = nil
 			logger.ErrorWF("OnQueryMazeEnergyRQ SendEnergyChgPack fail", zap.Error(err))
 			//return uInfo.Energy, nextUpdateTime, err
 		}
