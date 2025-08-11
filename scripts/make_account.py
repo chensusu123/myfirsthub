@@ -13,18 +13,18 @@ ENV_CONFIG = {
         "redis_host": "10.101.110.239",
         "redis_port": 65001,
         "http_url": "https://test-reg.midudutech.com/user/register/mail",
-        "gm_url_template": "http://play-gm.midudutech.com/s5/generateUser?AuthId=%s"
+        "gm_url_template": "http://test-gm.midudutech.com/s5/%s/generateUser?AuthId=%s"
     },
     "play": {
-        "redis_host": "10.101.110.231",
-        "redis_port": 9401,
+        "redis_host": "10.101.110.239",
+        "redis_port": 65001,
         "http_url": "https://play-reg.midudutech.com/user/register/mail",
-        "gm_url_template": "http://play-gm.midudutech.com/s4/generateUser?AuthId=%s"
+        "gm_url_template": "http://play-gm.midudutech.com/s4/%s/generateUser?AuthId=%s"
     }
 }
 
 def call_gm_api(auth_id, env):
-    gm_url = ENV_CONFIG[env]["gm_url_template"] % auth_id
+    gm_url = ENV_CONFIG[env]["gm_url_template"] % (auth_id, auth_id)
     try:
         response = requests.get(gm_url)
         response.raise_for_status()
@@ -72,7 +72,7 @@ def create_email_accounts(email_prefix, count, env):
             print("连续5次失败，退出")
             break
         # 从 user:id:pool 队列中获取最右侧的数字
-        tmpId = r.get('account:id:pool')
+        tmpId = r.get('s:0:account:id:pool')
         if tmpId is None:
             print("账号ID分配失败，无法创建邮箱账号。")
             break
@@ -110,7 +110,7 @@ def create_email_accounts(email_prefix, count, env):
                     print(f"创建邮箱账号 {email} 后，调用 GM 接口失败: {error_msg}") 
             elif result.get("status") == 500:
                 count += 1
-                r.incrby('account:id:pool', 1)
+                r.incrby('s:0:account:id:pool', 1)
                 failCount += 1
             else:
                 print(f"创建邮箱账号 {email} 失败，接口返回非 200 状态码: {result.get('desc', '未知错误')}")
