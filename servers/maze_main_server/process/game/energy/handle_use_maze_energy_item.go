@@ -51,7 +51,7 @@ func (e *Energy) OnUseMazeEnergyItemRQ_10611_10612(s *session.Session, req *Maze
 		err = barrierenergyservice.GlobalBarrierEnergyService.SendEnergyChgPack(logger, userId, uInfo.Energy, nextTime)
 		if err != nil {
 			logger.ErrorWF("OnUseMazeEnergyItemRQ SendEnergyChgPack failed", zap.Error(err))
-			return err
+			//return err
 		}
 
 		logger.WarnWF("OnUseMazeEnergyItemRQ energy already full", zap.Int32("has", uInfo.Energy), zap.Int32("maxVal", maxVal))
