@@ -17,7 +17,7 @@ ENV_CONFIG = {
     },
     "play": {
         "redis_host": "10.101.110.239",
-        "redis_port": 65001,
+        "redis_port": 65002,
         "http_url": "https://play-reg.midudutech.com/user/register/mail",
         "gm_url_template": "http://play-gm.midudutech.com/s4/%s/generateUser?AuthId=%s"
     }
