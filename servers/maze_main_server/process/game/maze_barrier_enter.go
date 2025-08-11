@@ -73,6 +73,16 @@ func (g *Game) OnMazeBarrierEnterRQ_10447_10448(s *session.Session, req *MazeGam
 		return
 	}
 
+	energy, _, err := barrierenergyservice.GlobalBarrierEnergyService.GetBarrierEnergy(logger, userId)
+	if err != nil {
+		return err
+	}
+	energyID.EnergyInfo = &MazeEnergy.EnergyInfo{
+		CurVal:           proto.Int32(energy),
+		MaxVal:           proto.Int32(barrierenergyservice.GlobalBarrierEnergyService.GetEnergyMaxValue()),
+		NextRecoveryTime: proto.Int64(userInfo.EnergyLastTime),
+	}
+
 	// TODO 客户端需要进入任意关卡
 	// if req.GetBarrierId() < userInfo.Barrier {
 	// 	logger.ErrorWF("OnMazeBarrierEnterRQ req barrier lt pass barrier", zap.Any("req", req), zap.Int32("save", userInfo.Barrier))
@@ -273,12 +283,6 @@ func (g *Game) OnMazeBarrierEnterRQ_10447_10448(s *session.Session, req *MazeGam
 		Diamond:    proto.Int64(diamond),
 		EquipPoint: proto.Int64(int64(dropInfo.EquipPoints)),
 		Energy:     proto.Int32(curEnergy),
-	}
-
-	energyID.EnergyInfo = &MazeEnergy.EnergyInfo{
-		CurVal:           proto.Int32(userInfo.Energy),
-		MaxVal:           proto.Int32(barrierenergyservice.GlobalBarrierEnergyService.GetEnergyMaxValue()),
-		NextRecoveryTime: proto.Int64(userInfo.EnergyLastTime),
 	}
 
 	err = mazebarriereventredis.EnterBarrier(logger, userId, req.GetBarrierId())

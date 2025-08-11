@@ -69,6 +69,16 @@ func (sp *Sweep) OnStartMazeSweepRQ_10471_10472(s *session.Session, req *MazeGam
 		return
 	}
 
+	energy, _, err := barrierenergyservice.GlobalBarrierEnergyService.GetBarrierEnergy(logger, userID)
+	if err != nil {
+		return err
+	}
+	energyID.EnergyInfo = &MazeEnergy.EnergyInfo{
+		CurVal:           proto.Int32(energy),
+		MaxVal:           proto.Int32(barrierenergyservice.GlobalBarrierEnergyService.GetEnergyMaxValue()),
+		NextRecoveryTime: proto.Int64(userInfo.EnergyLastTime),
+	}
+
 	if barrierId > userInfo.PassBarrier {
 		logger.ErrorWF("OnStartMazeSweepRQ exceed maxUserBarrierID", zap.Any("req", req), zap.Int32("save", userInfo.Barrier))
 		res.ErrInfo = errors.COMMON_ERROR_TIPS.Wrap("不能扫荡未通关的关卡")
@@ -93,12 +103,6 @@ func (sp *Sweep) OnStartMazeSweepRQ_10471_10472(s *session.Session, req *MazeGam
 		logger.ErrorWF("OnStartMazeSweepRQ CalUserSweepBarrierAward fail", zap.Int32("barrierId", barrierId), zap.Error(err))
 		res.ErrInfo = errors.COMMON_ERROR_TIPS.Wrap("获取扫荡奖励失败")
 		return
-	}
-
-	energyID.EnergyInfo = &MazeEnergy.EnergyInfo{
-		CurVal:           proto.Int32(userInfo.Energy),
-		MaxVal:           proto.Int32(barrierenergyservice.GlobalBarrierEnergyService.GetEnergyMaxValue()),
-		NextRecoveryTime: proto.Int64(userInfo.EnergyLastTime),
 	}
 
 	return nil
