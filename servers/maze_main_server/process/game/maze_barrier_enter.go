@@ -190,6 +190,11 @@ func (g *Game) OnMazeBarrierEnterRQ_10447_10448(s *session.Session, req *MazeGam
 			return err
 		}
 
+		energyID.EnergyInfo = &MazeEnergy.EnergyInfo{
+			CurVal:           proto.Int32(curEnergy),
+			MaxVal:           proto.Int32(barrierenergyservice.GlobalBarrierEnergyService.GetEnergyMaxValue()),
+			NextRecoveryTime: proto.Int64(userInfo.EnergyLastTime),
+		}
 		//扣次数
 		//var maxNum int32
 		//maxNumCfg := GMazeActionCountV8Cfg.Get(101)

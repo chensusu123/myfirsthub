@@ -96,6 +96,12 @@ func (sp *Sweep) OnStartMazeSweepRQ_10471_10472(s *session.Session, req *MazeGam
 	gameID := uniqueid.GenUniqueIdUInt64()
 	res.GameId = proto.Uint64(gameID)
 
+	energyID.EnergyInfo = &MazeEnergy.EnergyInfo{
+		CurVal:           proto.Int32(remainVal),
+		MaxVal:           proto.Int32(barrierenergyservice.GlobalBarrierEnergyService.GetEnergyMaxValue()),
+		NextRecoveryTime: proto.Int64(userInfo.EnergyLastTime),
+	}
+
 	// query sweep award
 	// res.Awards, err = GetSweepAward(ctx, userID, barrierId)
 	res.Awards, res.RareAward, err = calsweepbarrier.CalUserSweepBarrierAward(logger, userID, barrierId, req.GetHeader())
