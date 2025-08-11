@@ -185,12 +185,12 @@ func (g *Game) OnMazeBarrierDeathRQ_10449_10450(s *session.Session, req *MazeGam
 	}
 
 	// 展示获取的奖励
-	if len(showItem) > 0 {
-		res.BarrierAward = append(res.BarrierAward, itemutil.Map2Common(showItem)...)
+	if len(realItem) > 0 {
+		res.BarrierAward = append(res.BarrierAward, itemutil.Map2Common(realItem)...)
 	}
 
-	if len(showEquip) > 0 {
-		for equipId, count := range showEquip {
+	if len(realEquip) > 0 {
+		for equipId, count := range realEquip {
 			for i := 0; i < int(count); i++ {
 				itemEquip, err := equiptoitem.PackMazeEquipInfoSvrToItem(equipId)
 				if err != nil {
@@ -202,7 +202,7 @@ func (g *Game) OnMazeBarrierDeathRQ_10449_10450(s *session.Session, req *MazeGam
 		}
 	}
 
-	logger.InfoWF("OnMazeBarrierDeathRQ showAward", zap.Any("showItem", showItem), zap.Any("showEquip", showEquip))
+	logger.InfoWF("OnMazeBarrierDeathRQ showAward", zap.Any("realItem", realItem), zap.Any("realEquip", realEquip))
 	// logger.InfoWF("OnMazeBarrierDeathRQ addItems", zap.Any("addItems", addItems), zap.Any("equipItem", equipItem), zap.Any("expCount", expCount), zap.Any("nowExp", nowExp))
 
 	passRecord := &mazebarrieruserkafka.MazeBarrierUserGameRecord{

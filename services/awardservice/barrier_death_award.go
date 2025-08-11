@@ -122,14 +122,14 @@ func (s *service) GetBarrierDeathAward(logger fklog.FKLogI, userId uint64, barri
 		}
 	}
 
-	for k, v := range nowBarrierEquipList {
-		equipItem[k] += v
-	}
-
 	realEquipMap = make(map[int32]int32)
 	// 记录失败新增装备奖励
 	for k, v := range equipItem {
 		realEquipMap[k] = v
+	}
+
+	for k, v := range nowBarrierEquipList {
+		equipItem[k] += v
 	}
 
 	// 道具
