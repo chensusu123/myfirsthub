@@ -35,6 +35,7 @@ func (m *Monitor) OnClose(s *session.Session, err error) {
 	if loaded {
 		if userID := value.(*session.Session).UID(); userID > 0 {
 			m.online.Delete(uint64(userID))
+			m.logger.InfoWF("Monitor OnClose user offline", zap.Int64("SessionID", s.ID()), zap.Int64("UID", s.UID()))
 		}
 	}
 	var lastErr string
@@ -58,6 +59,7 @@ func Bind(logger fklog.FKLogI, s *session.Session, userID uint64) (err error) {
 		return ErrSessionNotFound
 	}
 	monitor.online.Store(userID, value)
+	logger.InfoWF("Monitor session bound", zap.Int64("SessionID", s.ID()), zap.Uint64("userID", userID))
 	return
 }
 
