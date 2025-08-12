@@ -13,6 +13,7 @@ import (
 	"maze_game_server/servers/maze_main_server/process/equip"
 	"maze_game_server/servers/maze_main_server/process/equip_gm"
 	"maze_game_server/servers/maze_main_server/process/family"
+	"maze_game_server/servers/maze_main_server/process/frame"
 	"maze_game_server/servers/maze_main_server/process/game"
 	"maze_game_server/servers/maze_main_server/process/game/energy"
 	"maze_game_server/servers/maze_main_server/process/game/sweep"
@@ -49,6 +50,7 @@ func Components() (comps *component.Components, routes *codec.Routes) {
 		reg(family.NewFamily())            // 家族组件
 		reg(alliance.NewAlliance())        // 联盟组件
 		reg(costume.NewCostumeComponent()) // 装扮组件
+		reg(frame.NewFrame())              // 帧同步组件
 	}
 
 	return
