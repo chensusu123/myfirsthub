@@ -7,6 +7,7 @@ import (
 	"google.golang.org/protobuf/proto"
 	"maze_game_server/common/constdef"
 	"maze_game_server/config/GMazeConfigV8Cfg"
+	"maze_game_server/io/kafka/mazeenergyrecord"
 	"maze_game_server/module/mazeuserinfo"
 	"maze_game_server/pb/common/MazeEnergy"
 	"maze_game_server/usecase/online"
@@ -196,6 +197,8 @@ func (s service) calEnergy(logger fklog.FKLogI, userId uint64) (curEnergy int32,
 		logger.ErrorWF("GetBarrierEnergy GetUserInfoV2 fail", zap.Error(err))
 		return 0, 0, errors.New("userInfo not find")
 	}
+
+	oldEnergy := uInfo.Energy
 	var updateFlag int32 //是否需要更新
 	now := time.Now().Unix()
 	maxVal := GetEnergyMax()     // 体力最大值
@@ -210,6 +213,7 @@ func (s service) calEnergy(logger fklog.FKLogI, userId uint64) (curEnergy int32,
 		uInfo.SetEnergy(initVal)
 		updateFlag = 1
 		nextUpdateTime = now + int64(cost)
+		s.PushEnergyRecord(logger, userId, oldEnergy, uInfo.Energy, mazeenergyrecord.InitEnergy, nextUpdateTime)
 
 	} else {
 		curVal := uInfo.Energy
@@ -229,6 +233,7 @@ func (s service) calEnergy(logger fklog.FKLogI, userId uint64) (curEnergy int32,
 				uInfo.SetEnergyLastTime(lastUpdateTime)
 				uInfo.SetEnergy(curVal)
 				updateFlag = 2
+				s.PushEnergyRecord(logger, userId, oldEnergy, uInfo.Energy, mazeenergyrecord.TimerRecovery, nextUpdateTime)
 			}
 		} else {
 			nextUpdateTime = now + int64(cost)
@@ -257,6 +262,7 @@ func (s service) ResetEnergy(logger fklog.FKLogI, userId uint64) (err error) {
 		logger.ErrorWF("ResetEnergy GetUserInfoV2 fail", zap.Error(err))
 		return errors.New("userInfo not find")
 	}
+	oldEnergy := uInfo.Energy
 
 	now := time.Now().Unix()
 	cost, _ := GetEnergyRate() // 每n秒回复多少体力
@@ -273,5 +279,23 @@ func (s service) ResetEnergy(logger fklog.FKLogI, userId uint64) (err error) {
 	}
 	s.SendEnergyChgPack(logger, userId, uInfo.Energy, nextUpdateTime)
 
+	s.PushEnergyRecord(logger, userId, oldEnergy, uInfo.Energy, mazeenergyrecord.Reset, nextUpdateTime)
+
 	return nil
+}
+
+func (s service) PushEnergyRecord(logger fklog.FKLogI, userId uint64, oldEnergy, newEnergy, opType int32, lastTime int64) {
+	if oldEnergy != newEnergy {
+		record := &mazeenergyrecord.MazeEnergyChgRecord{
+			UserId:   userId,
+			OldVal:   oldEnergy,
+			NewVal:   newEnergy,
+			LastTime: lastTime,
+			OpType:   opType,
+		}
+		err := mazeenergyrecord.PushMazeEnergyChgRecord(logger, record)
+		if err != nil {
+			logger.ErrorWF("OnUseMazeEnergyItemRQ PushMazeEnergyChgRecord fail", zap.Error(err))
+		}
+	}
 }

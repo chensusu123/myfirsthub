@@ -7,6 +7,7 @@ import (
 	"maze_game_server/io/kafka/mazeattrchgrecord"
 	"maze_game_server/io/kafka/mazebarrieruserkafka"
 	"maze_game_server/io/kafka/mazecollectrecord"
+	"maze_game_server/io/kafka/mazeenergyrecord"
 	"maze_game_server/io/kafka/mazeequipbagrecord"
 	"maze_game_server/io/kafka/mazemoneykafka"
 	"maze_game_server/io/kafka/mazerebornkafka"
@@ -28,4 +29,5 @@ func RegConsumeHandler() {
 	mazebarrieruserkafka.Watch(SaveSweepRecord)
 	mazetempbuffchgmsg.Watch(SaveTempBuffChgRecord)
 	mazeuserlevelkafka.Watch(SaveUserLevelRecord)
+	mazeenergyrecord.Watch(SaveUserEnergyRecord)
 }

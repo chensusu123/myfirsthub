@@ -5,6 +5,7 @@ import (
 	"maze_game_server/common/errors"
 	"maze_game_server/common/function/gentradeno"
 	"maze_game_server/common/function/uniqueid"
+	"maze_game_server/io/kafka/mazeenergyrecord"
 	"maze_game_server/lib/log"
 	"maze_game_server/lib/nano/session"
 	"maze_game_server/module/mazeuserinfo"
@@ -42,6 +43,7 @@ func (e *Energy) OnUseMazeEnergyItemRQ_10611_10612(s *session.Session, req *Maze
 		return
 	}
 
+	oldEnergy := uInfo.Energy
 	maxVal := barrierenergyservice.GlobalBarrierEnergyService.GetEnergyMaxValue() // 体力最大值
 
 	if uInfo.Energy >= maxVal {
@@ -92,70 +94,15 @@ func (e *Energy) OnUseMazeEnergyItemRQ_10611_10612(s *session.Session, req *Maze
 		logger.ErrorWF("OnUseMazeEnergyItemRQ AddEnergy fail", zap.Error(err))
 		return err
 	}
-	//remain := uInfo.Energy + recoverNum
-	//if remain >= maxVal { // 如果加到满值，更新上次恢复时间
-	//	remain = maxVal
-	//	uInfo.SetEnergyLastTime(time.Now().Unix())
-	//}
-	//uInfo.SetEnergy(remain)
-	//err = mazeuserinfo.SetUserInfoV2(logger, userId, uInfo)
-	//if err != nil {
-	//	logger.ErrorWF("OnUseMazeEnergyItemRQ SetUserInfoV2 fail", zap.Error(err), zap.Any("uInfo", uInfo))
-	//	res.ErrInfo = errors.MODULE_ERROR.ToInfo()
-	//	return
-	//}
-	//res.EnergyInfo.CurVal = proto.Int32(remain)
-	//
-	//var updateFlag int32 //是否需要更新
-	//now := time.Now().Unix()
-	//cost, val := mazeconfigv8.GetEnergyRate() // 每n秒回复多少体力
-	//var nextUpdateTime int64                  // 下次更新时间
-	//record := BeginRecord(userId, mazeenergyrecord.TimerRecovery, uInfo)
-	////var chgVal int32 // 变化值
-	//
-	//if uInfo.EnergyLastTime == 0 { // 首次初始化
-	//	uInfo.SetEnergyLastTime(now)
-	//	initVal := mazeconfigv8.GetEnergyInitVal()
-	//	//chgVal = initVal - uInfo.Energy
-	//	uInfo.SetEnergy(initVal)
-	//	updateFlag = 1
-	//	nextUpdateTime = now + int64(cost)
-	//	record.OpType = mazeenergyrecord.InitEnergy
-	//
-	//} else {
-	//	curVal := uInfo.Energy
-	//	if curVal < mazeconfigv8.GetEnergyMax() { // 未恢复满
-	//		cycleNum := (now - uInfo.EnergyLastTime) / int64(cost)        // 周期数
-	//		addVal := cycleNum * int64(val)                               // 周期数*每周期增加的体力
-	//		lastUpdateTime := uInfo.EnergyLastTime + cycleNum*int64(cost) // 计算上次更新时间
-	//		nextUpdateTime = lastUpdateTime + int64(cost)
-	//		if addVal > 0 {
-	//			//chgVal = int32(addVal)
-	//			curVal += int32(addVal)
-	//			if curVal >= maxVal { // 如果恢复到满值,上次恢复时间设置为当前时间
-	//				curVal = maxVal
-	//				lastUpdateTime = now
-	//				nextUpdateTime = now + int64(cost)
-	//			}
-	//			uInfo.SetEnergyLastTime(lastUpdateTime)
-	//			uInfo.SetEnergy(curVal)
-	//			updateFlag = 2
-	//		}
-	//	} else {
-	//		nextUpdateTime = now + int64(cost)
-	//	}
-	//}
-	//if updateFlag > 0 {
-	//	err = mazeuserinfo.SetUserInfoV2(logger, userId, uInfo)
-	//	if err != nil {
-	//		logger.ErrorWF("OnQueryMazeEnergyRQ SetUserInfoV2 fail", zap.Error(err))
-	//		res.ErrInfo = errors.DB_SAVE_ERROR.ToInfo()
-	//		return
-	//	}
-	//}
+
 	res.EnergyInfo = &MazeEnergy.EnergyInfo{
 		CurVal:           proto.Int32(energy),
 		MaxVal:           proto.Int32(maxVal),
 		NextRecoveryTime: proto.Int64(nextTime)}
+
+	defer func() {
+		barrierenergyservice.GlobalBarrierEnergyService.PushEnergyRecord(logger, userId, oldEnergy, energy, mazeenergyrecord.ItemEnergy, uInfo.EnergyLastTime)
+	}()
+
 	return
 }

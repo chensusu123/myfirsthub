@@ -9,6 +9,7 @@ import (
 	"maze_game_server/common/errors"
 	"maze_game_server/common/function/uniqueid"
 	"maze_game_server/config/GMazeBarriesV8Cfg"
+	"maze_game_server/io/kafka/mazeenergyrecord"
 	"maze_game_server/lib/codec"
 	"maze_game_server/lib/log"
 	"maze_game_server/lib/nano/session"
@@ -101,6 +102,10 @@ func (sp *Sweep) OnStartMazeSweepRQ_10471_10472(s *session.Session, req *MazeGam
 		MaxVal:           proto.Int32(barrierenergyservice.GlobalBarrierEnergyService.GetEnergyMaxValue()),
 		NextRecoveryTime: proto.Int64(userInfo.EnergyLastTime),
 	}
+
+	defer func() {
+		barrierenergyservice.GlobalBarrierEnergyService.PushEnergyRecord(logger, userID, energy, remainVal, mazeenergyrecord.SweepBarrier, userInfo.EnergyLastTime)
+	}()
 
 	// query sweep award
 	// res.Awards, err = GetSweepAward(ctx, userID, barrierId)

@@ -3,6 +3,7 @@ package game
 import (
 	"maze_game_server/common/constdef"
 	"maze_game_server/common/errors"
+	"maze_game_server/io/kafka/mazeenergyrecord"
 	"maze_game_server/io/redis/barrierscorerewardredis"
 	"maze_game_server/io/redis/mazebarriermoneyredis"
 	"maze_game_server/io/redis/mazeboxredis"
@@ -352,11 +353,18 @@ func CmdAddEnergy(logger fklog.FKLogI, userId uint64, args map[string]string) er
 		logger.WarnWF("CmdAddEnergy vInt=0", zap.Any("args", args))
 		return errors.New("加体力参数错误")
 	}
-	_, _, err := barrierenergyservice.GlobalBarrierEnergyService.AddEnergy(logger, userId, vInt)
+	oldEnergy, _, err := barrierenergyservice.GlobalBarrierEnergyService.GetBarrierEnergy(logger, userId)
+	if err != nil {
+		logger.ErrorWF("CmdAddEnergy GetBarrierEnergy failed", zap.Error(err))
+		return err
+	}
+
+	newEnergy, nextUpdateTime, err := barrierenergyservice.GlobalBarrierEnergyService.AddEnergy(logger, userId, vInt)
 	if err != nil {
 		logger.ErrorWF("CmdAddEnergy AddEnergy failed", zap.Error(err))
 		return err
 	}
+	barrierenergyservice.GlobalBarrierEnergyService.PushEnergyRecord(logger, userId, oldEnergy, newEnergy, mazeenergyrecord.GMAdd, nextUpdateTime)
 
 	//rq := &MazeEnergySvr.AddMazeEnergyRQ{}
 	//rs := &MazeEnergySvr.AddMazeEnergyRS{}

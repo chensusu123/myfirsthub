@@ -7,6 +7,7 @@ import (
 	"maze_game_server/common/structsdef"
 	"maze_game_server/config/GMazeBarriesV8Cfg"
 	"maze_game_server/config/GMazeLevelV8Cfg"
+	"maze_game_server/io/kafka/mazeenergyrecord"
 	"maze_game_server/io/redis/mazeattrcalcnotifyqueue"
 	"maze_game_server/io/redis/mazebarriereventredis"
 	"maze_game_server/io/redis/mazebarrieropstatusredis"
@@ -83,6 +84,7 @@ func (g *Game) OnMazeBarrierEnterRQ_10447_10448(s *session.Session, req *MazeGam
 		MaxVal:           proto.Int32(barrierenergyservice.GlobalBarrierEnergyService.GetEnergyMaxValue()),
 		NextRecoveryTime: proto.Int64(userInfo.EnergyLastTime),
 	}
+	oldEnergy := energy
 
 	// TODO 客户端需要进入任意关卡
 	// if req.GetBarrierId() < userInfo.Barrier {
@@ -196,6 +198,10 @@ func (g *Game) OnMazeBarrierEnterRQ_10447_10448(s *session.Session, req *MazeGam
 			MaxVal:           proto.Int32(barrierenergyservice.GlobalBarrierEnergyService.GetEnergyMaxValue()),
 			NextRecoveryTime: proto.Int64(userInfo.EnergyLastTime),
 		}
+
+		defer func() {
+			barrierenergyservice.GlobalBarrierEnergyService.PushEnergyRecord(logger, userId, oldEnergy, curEnergy, mazeenergyrecord.EnterBarrier, userInfo.EnergyLastTime)
+		}()
 		//扣次数
 		//var maxNum int32
 		//maxNumCfg := GMazeActionCountV8Cfg.Get(101)

@@ -13,6 +13,7 @@ type BarrierEnergyService interface {
 	GetEnergyRecoverCfg() int64
 	GetEnergyItemCfg() (int32, int32)
 	ResetEnergy(logger fklog.FKLogI, userId uint64) error
+	PushEnergyRecord(logger fklog.FKLogI, userId uint64, oldEnergy, newEnergy, opType int32, lastTime int64)
 }
 
 var GlobalBarrierEnergyService BarrierEnergyService
