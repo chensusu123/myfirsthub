@@ -25,6 +25,7 @@ import (
 	"maze_game_server/pb/common/MazeEnergy"
 	"maze_game_server/pb/common/MazeGame"
 	"maze_game_server/servers/maze_main_server/process/game/events"
+	"maze_game_server/services/barrierarearecordservice"
 	"maze_game_server/services/barrierenergyservice"
 	"maze_game_server/services/tempbuffservice"
 	"time"
@@ -121,6 +122,14 @@ func (g *Game) OnMazeBarrierEnterRQ_10447_10448(s *session.Session, req *MazeGam
 		}
 		if tempBuff != nil && tempBuff.BuffSequence != nil {
 			res.EnergyLevel = proto.Int32(tempBuff.BuffSequence.Level)
+		}
+
+		//刷一半的情况需要把未通过的区域杀怪记录删除
+		err = barrierarearecordservice.GlobalBarrierAreaRecordService.DelBarrierAreaRecord(logger, userId, req.GetBarrierId())
+		if err != nil {
+			logger.ErrorWF("OnMazeBarrierEnterRQ DelBarrierAreaRecord fail", zap.Error(err))
+			res.ErrInfo = errors.MODULE_ERROR.ToInfo()
+			return err
 		}
 	}
 

@@ -26,6 +26,7 @@ import (
 	"maze_game_server/pb/common/MazeGame"
 	"maze_game_server/pb/server/MazeEquipSvr"
 	"maze_game_server/servers/maze_main_server/process/game/events"
+	"maze_game_server/services/barrierarearecordservice"
 	"strings"
 	"time"
 
@@ -228,6 +229,14 @@ func (g *Game) OnMazeBarrierPassRQ_10459_10460(s *session.Session, req *MazeGame
 			}
 		}
 	}
+
+	killMonsterNum, totalDamage, _, err := barrierarearecordservice.GlobalBarrierAreaRecordService.GetBarrierAreaRecord(logger, userId, req.GetBarrierId())
+	if err != nil {
+		logger.ErrorWF("OnMazeBarrierPassRQ GetBarrierAreaRecord fail", zap.Error(err))
+		return err
+	}
+	res.TotalDamage = proto.Int64(totalDamage)
+	res.KillMonsterNum = proto.Int32(killMonsterNum)
 
 	err = mazebarriereventredis.LeaveBarrier(logger, userId, req.GetBarrierId(), true)
 	if err != nil {

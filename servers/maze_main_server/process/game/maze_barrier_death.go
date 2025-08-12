@@ -22,6 +22,7 @@ import (
 	"maze_game_server/pb/server/MazeEquipSvr"
 	"maze_game_server/servers/maze_main_server/process/game/events"
 	"maze_game_server/services/awardservice"
+	"maze_game_server/services/barrierarearecordservice"
 	"strings"
 	"time"
 
@@ -204,6 +205,14 @@ func (g *Game) OnMazeBarrierDeathRQ_10449_10450(s *session.Session, req *MazeGam
 
 	logger.InfoWF("OnMazeBarrierDeathRQ showAward", zap.Any("realItem", realItem), zap.Any("realEquip", realEquip))
 	// logger.InfoWF("OnMazeBarrierDeathRQ addItems", zap.Any("addItems", addItems), zap.Any("equipItem", equipItem), zap.Any("expCount", expCount), zap.Any("nowExp", nowExp))
+
+	killMonsterNum, totalDamage, _, err := barrierarearecordservice.GlobalBarrierAreaRecordService.GetBarrierAreaRecord(logger, userId, req.GetBarrierId())
+	if err != nil {
+		logger.ErrorWF("OnMazeBarrierPassRQ GetBarrierAreaRecord fail", zap.Error(err))
+		return err
+	}
+	res.TotalDamage = proto.Int64(totalDamage)
+	res.KillMonsterNum = proto.Int32(killMonsterNum)
 
 	passRecord := &mazebarrieruserkafka.MazeBarrierUserGameRecord{
 		UserId:  userId,
