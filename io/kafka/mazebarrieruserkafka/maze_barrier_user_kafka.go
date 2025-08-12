@@ -22,7 +22,7 @@ var d = dispatcher.NewDispatcher[*MazeBarrierUserGameRecord]()
 type MazeBarrierUserGameRecord struct {
 	UserId     uint64 `json:"user_id" gorm:"column:user_id"`         // 用户id
 	Barrier    int32  `json:"barrier" gorm:"column:barrier"`         // 关卡id
-	GameRet    int32  `json:"game_ret" gorm:"-"`                     // 用户闯关结果 1-通关成功 2-死亡失败 3-扫荡
+	GameRet    int32  `json:"game_ret" gorm:"column:game_ret"`       // 用户闯关结果 1-通关成功 2-死亡失败 3-扫荡
 	Awards     string `json:"awards" gorm:"column:awards"`           // 本次获得的奖励
 	GroupID    uint32 `json:"group_id" gorm:"column:group_id"`       // 组id
 	CreateTime int64  `json:"create_time" gorm:"column:create_time"` // 操作时间
