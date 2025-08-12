@@ -33,7 +33,8 @@ func (e *Equip) OnEquipDismantleListRQ_10616_10617(s *session.Session, req *Maze
 	shardingID := uint64(s.UID())
 
 	defer func() {
-		userCtx.InfoWF("OnMazeEquipDismantleListRQ end", zap.Any("res", res))
+		err = s.Response(res)
+		userCtx.InfoWF("OnMazeEquipDismantleListRQ end", zap.Any("res", res), zap.Error(err))
 	}()
 
 	userCtx.InfoWF("OnMazeEquipDismantleListRQ with", zap.Any("req", req))
