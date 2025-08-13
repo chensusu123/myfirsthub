@@ -27,6 +27,8 @@ import (
 	"maze_game_server/pb/server/MazeEquipSvr"
 	"maze_game_server/servers/maze_main_server/process/game/events"
 	"maze_game_server/services/barrierarearecordservice"
+	"maze_game_server/services/barriersavedataservice"
+	"maze_game_server/services/tempbuffservice"
 	"strings"
 	"time"
 
@@ -252,7 +254,13 @@ func (g *Game) OnMazeBarrierPassRQ_10459_10460(s *session.Session, req *MazeGame
 	mazebarrieropstatusredis.ClearOpStatus(logger, userId, req.GetBarrierId())
 	//清除关卡已获得奖励存档
 	//barrierscorerewardredis.DelBarrierScoreReward(logger, userId, userInfo.Barrier)
-
+	// 删除关卡存档 new
+	barriersavedataservice.GlobalBarrierSaveDataService.DelBarrierSaveData(logger, userId, req.GetBarrierId())
+	// 删除临时buff
+	tempbuffservice.GlobalTempBuffService.DelTempBuff(logger, userId, req.GetBarrierId())
+	// 删除通过的区域
+	tempbuffservice.GlobalTempBuffService.DelPassArea(logger, userId, req.GetBarrierId())
+	
 	logger.InfoWF("OnMazeBarrierPassRQ award dump", zap.Any("exp", req.GetFoeExp()), zap.Any("awardItem", awardMap), zap.Any("awardEquip", equipMap))
 
 	passRecord := &mazebarrieruserkafka.MazeBarrierUserGameRecord{

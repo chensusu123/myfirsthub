@@ -68,3 +68,19 @@ func TestPickItem(t *testing.T) {
 		return
 	}
 }
+
+func TestSaveBarrierData(t *testing.T) {
+	game := NewGame()
+	session := &session.Session{}
+	session.Bind(40000003)
+	req := &MazeGame.SaveBarrierDataRQ{}
+	req.StageId = proto.Int32(1)
+	req.BarrierId = proto.Int32(2)
+	req.RescueValue = proto.Int32(100)
+	req.BossPower = proto.Int32(1000)
+	err := game.OnSaveBarrierDataRQ_10624_10625(session, req)
+	if err != nil {
+		fmt.Println(err)
+		return
+	}
+}

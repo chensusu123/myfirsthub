@@ -11,6 +11,7 @@ import (
 	"maze_game_server/module/mazemoney"
 	"maze_game_server/module/mazeuserinfo"
 	"maze_game_server/pb/common/MazeGame"
+	"maze_game_server/services/barriersavedataservice"
 
 	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fkprometheus"
 	"go.uber.org/zap"
@@ -106,7 +107,12 @@ func (g *Game) OnMazeLoginRQ_10451_10452(s *session.Session, req *MazeGame.MazeL
 	// 	return
 	// }
 
-	commonList := mazecommonvalue.MakeAllCommonValue(logger, userId, level, exp, expMax, force, money, extra, extraExp, diamond, req.GetHeader().GetSession())
+	passValue, err := barriersavedataservice.GlobalBarrierSaveDataService.GetPassValue(logger, userId, userInfo.Barrier)
+	if err != nil {
+		res.ErrInfo = errors.COMMON_ERROR_TIPS.Wrap(err.Error())
+		return nil
+	}
+	commonList := mazecommonvalue.MakeAllCommonValue(logger, userId, level, exp, expMax, force, money, extra, extraExp, diamond, passValue, req.GetHeader().GetSession())
 
 	mazecommonvalue.SendCommonValueIdPack(logger, userId, commonList)
 

@@ -61,6 +61,8 @@ const (
 	StrengthenStonePileShow2RealCfgId int32 = 902
 )
 
+
+const PassValueInitCfgId = 921 // 通关值初始值
 const (
 	ItemTypeGoldCoinPile    = 462 // 金币堆
 	ItemTypeQianghuashiPile = 467 // 强化水晶堆

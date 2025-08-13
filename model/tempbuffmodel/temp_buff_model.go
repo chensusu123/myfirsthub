@@ -49,7 +49,7 @@ func (tb *TempBuffInfoModel) load(logger fklog.FKLogI, userID uint64, stageId in
 	}
 	err = serialize.Unmarshal(bytes, tb)
 	if err != nil {
-		logger.ErrorWF("TempBuff load Unmarshal failed", zap.Error(err), zap.Uint64("userID", userID), zap.Int32("stageId", stageId))
+		logger.ErrorWF("TempBuff load Unmarshal failed", zap.Error(err), zap.Int32("stageId", stageId))
 		return err
 	}
 	return
@@ -58,7 +58,7 @@ func (tb *TempBuffInfoModel) load(logger fklog.FKLogI, userID uint64, stageId in
 func (tb *TempBuffInfoModel) Save(logger fklog.FKLogI, userID uint64, stageId int32) (err error) {
 	bytes, err := serialize.Marshal(tb)
 	if err != nil {
-		logger.ErrorWF("TempBuff save Marshal failed", zap.Error(err), zap.Uint64("userID", userID), zap.Int32("stageId", stageId))
+		logger.ErrorWF("TempBuff save Marshal failed", zap.Error(err), zap.Int32("stageId", stageId))
 		return err
 	}
 	return tempbuffredis.SetMazeTempBuff(logger, userID, stageId, bytes)

@@ -27,6 +27,7 @@ import (
 	"maze_game_server/servers/maze_main_server/process/game/events"
 	"maze_game_server/services/barrierarearecordservice"
 	"maze_game_server/services/barrierenergyservice"
+	"maze_game_server/services/barriersavedataservice"
 	"maze_game_server/services/tempbuffservice"
 	"time"
 
@@ -96,9 +97,16 @@ func (g *Game) OnMazeBarrierEnterRQ_10447_10448(s *session.Session, req *MazeGam
 
 	//	res.Energy = proto.Int32(userInfo.Energy)
 	var isNewBarrier bool
-
 	storageInfo, _ := syncmazestorageinforedis.GetSyncMazeStorageInfo(userId, req.GetBarrierId())
-	if storageInfo == nil {
+
+	// 获取存档数据 new
+	saveData, err := barriersavedataservice.GlobalBarrierSaveDataService.GetBarrierSaveData(logger, userId, req.GetBarrierId())
+	if err != nil {
+		logger.ErrorWF("OnMazeBarrierEnterRQ GetBarrierSaveData err", zap.Error(err))
+		res.ErrInfo = errors.MODULE_ERROR.ToInfo()
+		return err
+	}
+	if storageInfo == nil || saveData.StageId == 0 {
 		// 进入清临时buff
 		tempbuffservice.GlobalTempBuffService.DelTempBuff(logger, userId, req.GetBarrierId())
 		mazebuffinforedis.DelMazeBuffBySrc(logger, userId, constdef.MazeBuffSrcSelectBuffForce)
@@ -133,6 +141,13 @@ func (g *Game) OnMazeBarrierEnterRQ_10447_10448(s *session.Session, req *MazeGam
 		}
 	}
 
+	res.SaveData = &MazeGame.BarrierSaveData{
+		StageId:     proto.Int32(saveData.StageId),
+		RescueValue: proto.Int32(saveData.RescueValue),
+		BossPower:   proto.Int32(saveData.BossPower),
+	}
+	// 推送通关值
+	mazecommonvalue.SendPassValueIdPack(logger, userId, req.GetBarrierId(), saveData.StageId)
 	// 清理关卡操作状态
 	mazebarrieropstatusredis.ClearOpStatus(logger, userId, req.GetBarrierId())
 
