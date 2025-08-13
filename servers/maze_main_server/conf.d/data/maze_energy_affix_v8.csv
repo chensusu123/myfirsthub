@@ -412,10 +412,10 @@ order,affix_group_id,affix_group_order,affix_lv,font_affix_condition,use_num_max
 600400201,6004,5,3,600400201,2,400,7920084:4800_9920084:4800,溅射,碎冰的伤害增加60%,,SkillBuffIcon_atlas0,jianshe
 600400202,6004,6,3,600400202,1,400,920081:1,冰球,召唤一个冰球围绕自己，对接触的敌人产生伤害,,SkillBuffIcon_atlas0,bingqiu
 600400203,6004,7,3,600400203,1,400,920086:1,冰雪领域,减速敌人后产生一冰雪领域，冻敌3s并造成巨量单体伤害,,SkillBuffIcon_atlas0,bingxuelingyu
-600400301,6004,8,4,600400301,2,600,14920081:2,冰球数量,召唤冰球的数量+2,,SkillBuffIcon_atlas0,bingqiu
-600400302,6004,9,4,600400302,1,600,5001511:2000,冰球爆炸,冰球有几率冰冻敌人,,SkillBuffIcon_atlas0,hanbingdongjie
+600400301,6004,8,4,600400301,2,600,14920081:2_13920081:1,冰球数量,召唤冰球的数量+2,,SkillBuffIcon_atlas0,bingqiu
+600400302,6004,9,4,600400302,1,600,5001511:2000_13920081:1,冰球爆炸,冰球有几率冰冻敌人,,SkillBuffIcon_atlas0,hanbingdongjie
 600400303,6004,10,4,600400303,2,600,7920085:24000_9920085:24000,极寒,冻结伤害增加80%,,SkillBuffIcon_atlas0,bingxuelingyu
-600400401,6004,11,5,600400401,2,800,5001511:2000,爆炸增伤,冰球冰冻敌人的概率增加20%,,SkillBuffIcon_atlas0,hanbingdongjie
+600400401,6004,11,5,600400401,2,800,5001511:2000_13920081:1,爆炸增伤,冰球冰冻敌人的概率增加20%,,SkillBuffIcon_atlas0,hanbingdongjie
 600400501,6004,12,6,600400501,1,1600,920082:1,极寒领域,被冻住的敌人会立即死亡，同时召唤一个冰球,,SkillBuffIcon_atlas0,bingqiu
 600500001,6005,1,1,0,1,200,3060000:1_7000302:4500,陨石,普通攻击附加45%的火焰伤害（临时测试）,,SkillBuffIcon_atlas0,yunshi
 600500101,6005,2,2,600500101,2,200,3060001:4000,火系增伤,火焰伤害提升40%（临时测试）,,SkillBuffIcon_atlas0,huoxizengshang
