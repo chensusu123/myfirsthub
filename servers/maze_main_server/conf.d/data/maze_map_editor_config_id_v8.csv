@@ -1,9 +1,15 @@
-paipaiworld_config,Unnamed: 1,Unnamed: 2,Unnamed: 3,Unnamed: 4,Unnamed: 5,Unnamed: 6,Unnamed: 7,Unnamed: 8,Unnamed: 9
-INT_K,INT_C_S,INT_C_S,INT_C,INT_C,STRING,STRING,INT_C_S,INT_C,LIST<INT>_C
-ID,level_id,config_id,monster_id,box_id,puzzle_mechanism_id,brush_area_id,add_kungfu,add_weight_value,kill_mons_add_weight_value
-唯一ID,关卡ID,地编配置id,守卫id,宝箱id,谜题机关id,刷怪区域id,增加通关值,增加砝码值,刷怪增加砝码值（刷怪进度，增加砝码值；两个数为一组数据）
-11001,1,1001,90000101,,,,10,5,0
-11002,1,1002,,10011,,,,,0
-11003,1,1003,90000102,,,,15,8,0
-11004,1,1004,,,,10001,20,,"10,20,30,20,60,20,100,20,100,20"
-11005,1,1005,,,1,,,10,0
+paipaiworld_config,Unnamed: 1,Unnamed: 2,Unnamed: 3,Unnamed: 4,Unnamed: 5,Unnamed: 6,Unnamed: 7,Unnamed: 8
+INT_K,INT_C_S,INT_C_S,INT_C,INT_C,STRING,INT_C_S,INT_C,LIST<INT>_C
+ID,level_id,config_id,monster_id,box_id,desc,add_kungfu,add_weight_value,kill_mons_add_weight_value
+唯一ID,关卡ID,地编配置id,守卫id,宝箱id,备份,增加通关值,增加砝码值,刷怪增加砝码值（刷怪进度，增加砝码值；两个数为一组数据）
+10001,1,5002,90000101,,守卫1（火把）,1,5,0
+10002,1,44001,,,火把,,,0
+10003,1,43001,,,藤蔓吊桥,,8,0
+10004,1,2001,,,刷怪区域1,2,,"10,20,30,20,60,20,100,20,100,20"
+10005,1,5001,90000102,,守卫2（过关点）,1,10,0
+20001,2,5001,90000201,,守卫1（蓝钥匙）,1,,0
+20002,2,16001,,,蓝门,,,0
+20003,2,2001,,,刷怪区域1,2,,0
+20004,2,5002,90000202,,守卫2（浮桥机关）,1,,0
+20005,2,6001,,,浮桥机关,,,0
+20006,2,17001,,,小芽,,,0
