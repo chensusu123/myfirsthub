@@ -27,7 +27,7 @@ type MazeBarriesV8ConfigRow struct {
 	Drop_equip_lv_min          int32           `json:"drop_equip_lv_min"`          // 掉落装备等级，小
 	Drop_equip_lv_max          int32           `json:"drop_equip_lv_max"`          // 掉落装备等级,大
 	Energy_list                []int32         `json:"energy_list"`                // 能力等级队列（随机）
-	Initial_kongfu             int32           `json:"initial_kongfu"`             // 玩家初始武力值
+	Barries_add_kongfu         int32           `json:"barries_add_kongfu"`         // 关卡通关值增量
 	Energy_id                  map[int32]int32 `json:"energy_id"`                  // 当前关卡使用的能力id
 	Energy_affix_rand_rule     map[int32]int32 `json:"energy_affix_rand_rule"`     // 能力词条随机规则
 	Rare_items_show            []int32         `json:"rare_items_show"`            // 展示为稀有的物品id
@@ -479,18 +479,18 @@ func (*gMazeBarriesV8Parser) Parse(logger fklog.FKLogI, data []string, row inter
 		}
 	}
 
-	// parse column 13 initial_kongfu : 玩家初始武力值
+	// parse column 13 barries_add_kongfu : 关卡通关值增量
 	if data[13] != "" {
 		tmp, err = strconv.ParseInt(data[13], 10, 64)
 		if err != nil {
-			err = errors.New("parse field initial_kongfu 玩家初始武力值 to int32 failed")
-			logger.ErrorWF("parse field initial_kongfu 玩家初始武力值 to int32 failed.",
+			err = errors.New("parse field barries_add_kongfu 关卡通关值增量 to int32 failed")
+			logger.ErrorWF("parse field barries_add_kongfu 关卡通关值增量 to int32 failed.",
 				zap.String("xlsx", "maze_barries_v8【迷宫-关卡信息】.xlsx"), zap.String("sheet", "maze_barries_v8"),
 				zap.String("parse_data", data[13]),
 				zap.Error(err))
 			return
 		}
-		config.Initial_kongfu = int32(tmp)
+		config.Barries_add_kongfu = int32(tmp)
 	}
 
 	// parse column 14 energy_id : 当前关卡使用的能力id
@@ -872,7 +872,7 @@ var gMazeBarriesV8Fields = []string{
 	"drop_equip_lv_min",
 	"drop_equip_lv_max",
 	"energy_list",
-	"initial_kongfu",
+	"barries_add_kongfu",
 	"energy_id",
 	"energy_affix_rand_rule",
 	"rare_items_show",
