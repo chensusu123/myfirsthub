@@ -13,12 +13,13 @@ import (
 
 // DollMapPuzzleNewV8ConfigRow from doll_map_puzzle_new_v8【人偶-地图数据-新解谜】.xlsx doll_map_puzzle_new_v8
 type DollMapPuzzleNewV8ConfigRow struct {
-	Order     int32  `json:"order"`     // 序号
-	Show_type int32  `json:"show_type"` // 道具大类型（比如门）
-	Sub_type  int32  `json:"sub_type"`  // 分类小类型（比如红门、黄门等）
-	Level     int32  `json:"level"`     // 关卡
-	Config_id string `json:"config_id"` // type*1000+index
-	Stage     int32  `json:"stage"`     // 区域阶段属性
+	Order        int32  `json:"order"`        // 序号
+	Show_type    int32  `json:"show_type"`    // 道具大类型（比如门）
+	Sub_type     int32  `json:"sub_type"`     // 分类小类型（比如红门、黄门等）
+	Level        int32  `json:"level"`        // 关卡
+	Monster_area string `json:"monster_area"` // 区域id_战区
+	Config_id    string `json:"config_id"`    // type*1000+index
+	Stage        int32  `json:"stage"`        // 区域阶段属性
 }
 
 // DollMapPuzzleNewV8Config from doll_map_puzzle_new_v8【人偶-地图数据-新解谜】.xlsx doll_map_puzzle_new_v8
@@ -328,19 +329,24 @@ func (*gDollMapPuzzleNewV8Parser) Parse(logger fklog.FKLogI, data []string, row 
 		config.Level = int32(tmp)
 	}
 
-	// parse column 4 config_id : type*1000+index
+	// parse column 4 monster_area : 区域id_战区
 	if data[4] != "" {
-		config.Config_id = data[4]
+		config.Monster_area = data[4]
 	}
 
-	// parse column 5 stage : 区域阶段属性
+	// parse column 5 config_id : type*1000+index
 	if data[5] != "" {
-		tmp, err = strconv.ParseInt(data[5], 10, 64)
+		config.Config_id = data[5]
+	}
+
+	// parse column 6 stage : 区域阶段属性
+	if data[6] != "" {
+		tmp, err = strconv.ParseInt(data[6], 10, 64)
 		if err != nil {
 			err = errors.New("parse field stage 区域阶段属性 to int32 failed")
 			logger.ErrorWF("parse field stage 区域阶段属性 to int32 failed.",
 				zap.String("xlsx", "doll_map_puzzle_new_v8【人偶-地图数据-新解谜】.xlsx"), zap.String("sheet", "doll_map_puzzle_new_v8"),
-				zap.String("parse_data", data[5]),
+				zap.String("parse_data", data[6]),
 				zap.Error(err))
 			return
 		}
@@ -354,6 +360,7 @@ var gDollMapPuzzleNewV8Fields = []string{
 	"show_type",
 	"sub_type",
 	"level",
+	"monster_area",
 	"config_id",
 	"stage",
 }
