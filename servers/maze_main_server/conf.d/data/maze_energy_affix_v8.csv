@@ -392,7 +392,7 @@ order,affix_group_id,affix_group_order,affix_lv,font_affix_condition,use_num_max
 600200303,6002,10,4,600200303,2,600,72005201:1500,雷神降世,雷神附体概率+15%,,SkillBuffIcon_atlas0,leishenfuti
 600200401,6002,11,5,600200401,2,800,7920053:15000_9920053:15000,电刃增伤,超强电刃伤害+100%,,SkillBuffIcon_atlas0,gaonengdianren
 600200501,6002,12,6,600200501,1,1600,920054:1,天罚,每击杀一个敌人，会劈出一道超强电刃,,SkillBuffIcon_atlas0,gaonengdianren
-600300001,6003,1,1,0,1,200,920061:1,暴风雪,学习暴风雪技能（未生效）,,SkillBuffIcon_atlas0,baofengxue
+600300001,6003,1,1,0,1,200,920061:1,暴风雪,学习暴风雪技能,,SkillBuffIcon_atlas0,baofengxue
 600300101,6003,2,2,600300101,2,200,3050301:6000_3050701:6000,寒冰增伤,冰系伤害+60%,,SkillBuffIcon_atlas0,bingxizengshang
 600300102,6003,3,2,600300102,2,200,1920061:-1500,寒冰冷却,暴风雪冷却时间减少15%,,SkillBuffIcon_atlas0,baofengxue
 600300103,6003,4,2,600300103,2,200,5001706:2000,寒冰减速,暴风雪造成减速的概率提高20%,,SkillBuffIcon_atlas0,chihuan
@@ -411,12 +411,12 @@ order,affix_group_id,affix_group_order,affix_lv,font_affix_condition,use_num_max
 600400103,6004,4,2,600400103,2,200,5001716:2000,迟缓,冰刃造成减速的概率提高20%,,SkillBuffIcon_atlas0,chihuan
 600400201,6004,5,3,600400201,2,400,7920084:4800_9920084:4800,溅射,碎冰的伤害增加60%,,SkillBuffIcon_atlas0,jianshe
 600400202,6004,6,3,600400202,1,400,920081:1,冰球,召唤一个冰球围绕自己，对接触的敌人产生伤害,,SkillBuffIcon_atlas0,bingqiu
-600400203,6004,7,3,600400203,1,400,920086:1,冰雪领域,（未生效）,,SkillBuffIcon_atlas0,bingxuelingyu
-600400301,6004,8,4,600400301,2,600,14920081:2,冰球数量,（未生效）,,SkillBuffIcon_atlas0,bingqiu
-600400302,6004,9,4,600400302,1,600,5001511:1500,冰球爆炸,（未生效）,,SkillBuffIcon_atlas0,hanbingdongjie
-600400303,6004,10,4,600400303,2,600,7920085:10000_9920085:10000,极寒,（未生效）,,SkillBuffIcon_atlas0,bingxuelingyu
-600400401,6004,11,5,600400401,2,800,5001511:2000,爆炸增伤,（未生效）,,SkillBuffIcon_atlas0,hanbingdongjie
-600400501,6004,12,6,600400501,1,1600,920082:1,极寒领域,（未生效）,,SkillBuffIcon_atlas0,bingqiu
+600400203,6004,7,3,600400203,1,400,920086:1,冰雪领域,减速敌人后产生一冰雪领域，冻敌3s并造成巨量单体伤害,,SkillBuffIcon_atlas0,bingxuelingyu
+600400301,6004,8,4,600400301,2,600,14920081:1,冰球数量,召唤冰球的数量+1,,SkillBuffIcon_atlas0,bingqiu
+600400302,6004,9,4,600400302,1,600,5001511:2000,冰球爆炸,冰球有几率冰冻敌人,,SkillBuffIcon_atlas0,hanbingdongjie
+600400303,6004,10,4,600400303,2,600,7920085:24000_9920085:24000,极寒,冻结伤害增加80%,,SkillBuffIcon_atlas0,bingxuelingyu
+600400401,6004,11,5,600400401,2,800,5001511:2000,爆炸增伤,冰球冰冻敌人的概率增加20%,,SkillBuffIcon_atlas0,hanbingdongjie
+600400501,6004,12,6,600400501,1,1600,920082:1,极寒领域,被冻住的敌人会立即死亡，同时召唤一个冰球,,SkillBuffIcon_atlas0,bingqiu
 600500001,6005,1,1,0,1,200,920031:1,陨石,学习陨石技能（未生效）,,SkillBuffIcon_atlas0,yunshi
 600500101,6005,2,2,600500101,2,200,3070301:6000_3070701:6000,火系增伤,（未生效）,,SkillBuffIcon_atlas0,huoxizengshang
 600500102,6005,3,2,600500102,2,200,1920031:-1200,陨石冷却,（未生效）,,SkillBuffIcon_atlas0,yunshi
