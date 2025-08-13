@@ -26,6 +26,7 @@ import (
 	"fmt"
 	"math/rand"
 	"net"
+	"net/http"
 	"reflect"
 	"sort"
 	"strings"
@@ -207,13 +208,23 @@ func (h *LocalHandler) RemoteService() []string {
 	return result
 }
 
-func (h *LocalHandler) handle(conn net.Conn, pcodec frame.PacketCodec) {
+func (h *LocalHandler) handle(conn net.Conn, r *http.Request, pcodec frame.PacketCodec) {
 	// Select a packet codec
 	if pcodec == nil {
 		pcodec = h.pcodec
 	}
 	// create a client agent and startup write gorontine
 	agent := newAgent(conn, h.pipeline, pcodec, h.remoteProcess)
+
+	// Init session
+	// 将Websocket连接请求Header中的数据转存至Session
+	if r != nil {
+		// Header: X-Forwarded-For
+		addr := r.Header.Get("X-Forwarded-For")
+		if len(addr) > 0 {
+			agent.session.Set("ClientAddr", addr)
+		}
+	}
 
 	// Logger
 	logger := fklog.AppLogger().Clone("nano")
@@ -500,13 +511,13 @@ func (h *LocalHandler) processMessage(agent *agent, msg *message.Message) {
 	}
 }
 
-func (h *LocalHandler) handleWS(conn *websocket.Conn, pcodec frame.PacketCodec) {
+func (h *LocalHandler) handleWS(conn *websocket.Conn, r *http.Request, pcodec frame.PacketCodec) {
 	c, err := newWSConn(conn)
 	if err != nil {
 		log.Println(err)
 		return
 	}
-	go h.handle(c, pcodec)
+	go h.handle(c, r, pcodec)
 }
 
 func (h *LocalHandler) localProcess(handler *component.Handler, lastMid uint64, session *session.Session, serializer serialize.Serializer, msg *message.Message) {

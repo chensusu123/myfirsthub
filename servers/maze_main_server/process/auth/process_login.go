@@ -32,7 +32,7 @@ func (a *Auth) OnLoginRQ_10492_10493(s *session.Session, req *UserLogin.UserLogi
 
 	defer func() {
 		err = s.Response(res)
-		logger.InfoWF("OnLoginRQ end", zap.Any("req", req), zap.Any("res", res))
+		logger.InfoWF("OnLoginRQ end", zap.Any("req", req), zap.Any("res", res), zap.String("ClientAddr", s.String("ClientAddr")))
 	}()
 
 	// 认证

@@ -252,7 +252,7 @@ func (n *Node) listenAndServe() {
 			continue
 		}
 
-		go n.handler.handle(conn, nil)
+		go n.handler.handle(conn, nil, nil)
 	}
 }
 
@@ -271,23 +271,18 @@ func (n *Node) listenAndServeWS() {
 
 	handle := func(path string, pcodec frame.PacketCodec) {
 		http.HandleFunc("/"+strings.TrimPrefix(path, "/"), func(w http.ResponseWriter, r *http.Request) {
-			rid := r.Header.Get("X-Trace-Id")
-			if rid == "" {
-				rid = generatorID()
-			}
 			header := w.Header()
 			header.Set("X-App-Namespace", namespace)
 			header.Set("X-App-Section", sectionID)
 			header.Set("X-App-Name", appName)
 			header.Set("X-App-Sharding", shardingID)
-			header.Set("X-Trace-Id", rid)
 			conn, err := upgrader.Upgrade(w, r, header)
 			if err != nil {
 				log.Println(fmt.Sprintf("Upgrade failure, URI=%s, Error=%s", r.RequestURI, err.Error()))
 				return
 			}
 
-			n.handler.handleWS(conn, pcodec)
+			n.handler.handleWS(conn, r, pcodec)
 		})
 	}
 
@@ -311,15 +306,26 @@ func (n *Node) listenAndServeWSTLS() {
 		CheckOrigin:     env.CheckOrigin,
 	}
 
+	appConfig := appconfig.GlobalConfig()
+	namespace := appConfig.Global.Namespace
+	sectionID := appConfig.Global.SectionID
+	appName := appConfig.Server.AppName
+	shardingID := fmt.Sprintf("%d", appConfig.Global.ShardingID)
+
 	handle := func(path string, pcodec frame.PacketCodec) {
 		http.HandleFunc("/"+strings.TrimPrefix(path, "/"), func(w http.ResponseWriter, r *http.Request) {
-			conn, err := upgrader.Upgrade(w, r, nil)
+			header := w.Header()
+			header.Set("X-App-Namespace", namespace)
+			header.Set("X-App-Section", sectionID)
+			header.Set("X-App-Name", appName)
+			header.Set("X-App-Sharding", shardingID)
+			conn, err := upgrader.Upgrade(w, r, header)
 			if err != nil {
 				log.Println(fmt.Sprintf("Upgrade failure, URI=%s, Error=%s", r.RequestURI, err.Error()))
 				return
 			}
 
-			n.handler.handleWS(conn, pcodec)
+			n.handler.handleWS(conn, r, pcodec)
 		})
 	}
 
