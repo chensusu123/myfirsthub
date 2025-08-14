@@ -15,6 +15,38 @@ import (
 
 // 计算通关值
 func CalcPassValue(logger fklog.FKLogI, barrier, stage int32) (int64, error) {
+	passValue, err := CalcInitPassValue(logger, barrier)
+	if err != nil {
+		return 0, err
+	}
+	if stage > 0 {
+		// 计算本关已通过阶段的通关值
+		for _, i := range GDollMapPuzzleNewV8Cfg.GetAll() {
+			if i.Level != barrier || i.Stage > stage {
+				continue
+			}
+			if i.Config_id == "" {
+				continue
+			}
+			for _, j := range GMazeMapEditorConfigIdV8Cfg.GetAll() {
+				configId, err := strconv.ParseInt(i.Config_id, 10, 32)
+				if err != nil {
+					logger.ErrorWF("calcPassValue Parse config id err", zap.String("configId", i.Config_id))
+					return 0, err
+				}
+				if j.Level_id == i.Level && j.Config_id == int32(configId) {
+					if j.Add_kungfu != 0 {
+						passValue += int64(j.Add_kungfu)
+					}
+				}
+			}
+		}
+	}
+
+	return passValue, nil
+}
+
+func CalcInitPassValue(logger fklog.FKLogI, barrier int32) (int64, error) {
 	cfg := GMazeConfigV8Cfg.Get(constdef.PassValueInitCfgId)
 	if cfg == nil {
 		logger.ErrorWF("calcPassValue PassValueInitCfgId not exist", zap.Int32("cfgId", constdef.PassValueInitCfgId))
@@ -25,28 +57,6 @@ func CalcPassValue(logger fklog.FKLogI, barrier, stage int32) (int64, error) {
 	for _, row := range GMazeBarriesV8Cfg.GetAll() {
 		if row.Order < barrier {
 			passValue += int64(row.Barries_add_kongfu)
-		}
-	}
-	// 计算本关已通过阶段的通关值
-	for _, i := range GDollMapPuzzleNewV8Cfg.GetAll() {
-		if i.Level != barrier || i.Stage > stage {
-			continue
-		}
-		// 临时逻辑
-		if i.Config_id == "" {
-			continue
-		}
-		for _, j := range GMazeMapEditorConfigIdV8Cfg.GetAll() {
-			configId, err := strconv.ParseInt(i.Config_id, 10, 32)
-			if err != nil {
-				logger.ErrorWF("calcPassValue Parse config id err", zap.String("configId", i.Config_id))
-				return 0, err
-			}
-			if j.Level_id == i.Level && j.Config_id == int32(configId) {
-				if j.Add_kungfu != 0 {
-					passValue += int64(j.Add_kungfu)
-				}
-			}
 		}
 	}
 	return passValue, nil

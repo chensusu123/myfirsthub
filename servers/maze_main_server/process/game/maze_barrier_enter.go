@@ -146,6 +146,13 @@ func (g *Game) OnMazeBarrierEnterRQ_10447_10448(s *session.Session, req *MazeGam
 		RescueValue: proto.Int32(saveData.RescueValue),
 		BossPower:   proto.Int32(saveData.BossPower),
 	}
+	initPassValue, err := mazecommonvalue.CalcInitPassValue(logger, req.GetBarrierId())
+	if err != nil {
+		logger.ErrorWF("OnMazeBarrierEnterRQ CalcInitPassvalue fail", zap.Error(err))
+		res.ErrInfo = errors.MODULE_ERROR.ToInfo()
+		return
+	}
+	res.InitPassValue = proto.Int32(int32(initPassValue))
 	// 推送通关值
 	mazecommonvalue.SendPassValueIdPack(logger, userId, req.GetBarrierId(), saveData.StageId)
 	// 清理关卡操作状态
