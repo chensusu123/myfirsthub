@@ -22,7 +22,7 @@ func CalcPassValue(logger fklog.FKLogI, barrier, stage int32) (int64, error) {
 	if stage > 0 {
 		// 计算本关已通过阶段的通关值
 		for _, i := range GDollMapPuzzleNewV8Cfg.GetAll() {
-			if i.Level != barrier || i.Stage > stage {
+			if i.Level != barrier || i.Stage > stage || i.Stage == 0 {
 				continue
 			}
 			if i.Config_id == "" {
