@@ -5,7 +5,6 @@ import (
 	"maze_game_server/common/errors"
 	"maze_game_server/config/GMazeActInfoV8Cfg"
 	"maze_game_server/config/GMazeAttrItemAttrV8Cfg"
-	"maze_game_server/config/GMazeAttrSkillV8Cfg"
 	"maze_game_server/config/GMazeBarriesV8Cfg"
 	"maze_game_server/config/GMazeBoxV8Cfg"
 	"maze_game_server/config/GMazeBrushFoeV8Cfg"
@@ -108,22 +107,25 @@ func GetMazeBattleData(logger fklog.FKLogI, userId uint64, barrierId int32) (maz
 	}
 
 	// 道具使用配置
-	for _, row := range GMazeAttrItemAttrV8Cfg.GetAll() {
-		if row.Add_attr <= 0 {
+	attrItems := make(map[int32][]int32)
+	for _, itemAttrCfg := range GMazeAttrItemAttrV8Cfg.GetAll() {
+		attrItems[itemAttrCfg.Add_attr] = append(attrItems[itemAttrCfg.Add_attr], itemAttrCfg.Order)
+	}
+	for _, skillCfg := range GMazeSkillInfoV8Cfg.GetAll() {
+		if skillCfg.Skill_attr_id <= 0 {
 			continue
 		}
-		attrSkill := GMazeAttrSkillV8Cfg.Get(row.Add_attr)
-		if attrSkill == nil {
-			continue
+		// 检查技能属性
+		itemIDs, found := attrItems[skillCfg.Skill_attr_id]
+		if found {
+			for _, itemID := range itemIDs {
+				itemUseInfo := &MazeAIBattle.MazeItemUseInfo{
+					ItemId: proto.Int32(itemID),
+				}
+				itemUseInfo.SkillIds = append(itemUseInfo.SkillIds, skillCfg.Id)
+				mazeBattleInfo.ItemUseInfos = append(mazeBattleInfo.ItemUseInfos, itemUseInfo)
+			}
 		}
-		if attrSkill.Skill_id <= 0 {
-			continue
-		}
-		itemUseInfo := &MazeAIBattle.MazeItemUseInfo{
-			ItemId: proto.Int32(row.Order),
-		}
-		itemUseInfo.SkillIds = append(itemUseInfo.SkillIds, attrSkill.Skill_id)
-		mazeBattleInfo.ItemUseInfos = append(mazeBattleInfo.ItemUseInfos, itemUseInfo)
 	}
 
 	barrierCfg := GMazeBarriesV8Cfg.Get(barrierId)
