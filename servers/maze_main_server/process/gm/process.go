@@ -7,15 +7,19 @@ import (
 	"fmt"
 	"maze_game_server/excel/mazeenergyaffixlvv8config"
 	"maze_game_server/model/tempbuffmodel"
+	"maze_game_server/pb/common/Common"
+	"maze_game_server/pb/common/MazeCommon"
 	"maze_game_server/services/barrierenergyservice"
 	"maze_game_server/services/tempbuffservice"
 	"net/http"
 	"sort"
 	"time"
 
+	"maze_game_server/common/function/gentradeno"
 	"maze_game_server/common/function/gm"
 	"maze_game_server/config/GMazeAttributeV8Cfg"
 	"maze_game_server/config/GMazeBarriesV8Cfg"
+	"maze_game_server/config/GMazeItemsV8Cfg"
 	"maze_game_server/io/kafka/mazeuserlevelkafka"
 	"maze_game_server/io/redis/UnionIDBindRedis"
 	"maze_game_server/io/redis/mazecalcattrredis"
@@ -34,6 +38,7 @@ import (
 	"gitlab.ifreetalk.com/maze-plate/freetk/fkserver/config_manager"
 	"gitlab.ifreetalk.com/maze-plate/freetk/fkutil"
 	"go.uber.org/zap"
+	"google.golang.org/protobuf/proto"
 )
 
 var form = schema.NewDecoder()
@@ -349,6 +354,52 @@ func RegGm(logger fklog.FKLogI) {
 			return
 		}
 		fmt.Fprintf(writer, "add barrier energy success, curEnergy=[%d]", curEnergy)
+	})
+
+	// 添加道具
+	gm.SafeHttpRegister(logger, "/addItem", func(writer http.ResponseWriter, request *http.Request) {
+		logger.SetLogId(time.Now().UnixNano())
+		var (
+			userId = fkutil.ToUint64(request.Form.Get("userId"))
+			itemId = fkutil.ToInt32(request.Form.Get("itemId"))
+			count  = fkutil.ToInt64(request.Form.Get("count"))
+		)
+
+		tradeNo := gentradeno.GetTradeNum()
+		items := make([]*MazeCommon.MazeItem, 0)
+
+		if userId <= 0 {
+			fmt.Fprintf(writer, "请指定有效用户ID")
+			return
+		}
+
+		if itemId <= 0 || count <= 0 {
+			fmt.Fprintf(writer, "无效道具ID或道具数量")
+			return
+		}
+
+		itemCfg := GMazeItemsV8Cfg.Get(itemId)
+		if itemCfg == nil {
+			fmt.Fprintf(writer, "无效道具，请检查道具配置表：maze_items_v8【迷宫-道具】.xlsx")
+			return
+		}
+
+		items = append(items, &MazeCommon.MazeItem{
+			Count:  proto.Int64(count),
+			ItemId: proto.Int32(itemId),
+		})
+
+		header := &Common.PacketHeader{}
+		header.Sharding = proto.Int64(int64(userId))
+
+		errInfo := gentradeno.AddItemEx(logger, userId, 697, tradeNo, header, items...)
+		if errInfo != nil {
+			fmt.Fprintf(writer, "添加道具失败，错误：%s", string(errInfo.GetErrMsg()))
+			logger.ErrorWF("addItem AddItemEx fail", zap.Any("errInfo", errInfo), zap.Any("ItemList", items))
+			return
+		}
+
+		fmt.Fprintf(writer, "添加[%d]个道具[%s]成功", count, itemCfg.Prop_name)
 	})
 }
 
