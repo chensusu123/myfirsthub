@@ -4,14 +4,11 @@ import (
 	"maze_game_server/common/constdef"
 	"maze_game_server/common/errors"
 	"maze_game_server/common/function/gentradeno"
-	"maze_game_server/common/structsdef"
 	"maze_game_server/config/GMazeBarriesV8Cfg"
 	"maze_game_server/config/GMazeLevelV8Cfg"
 	"maze_game_server/io/kafka/mazeenergyrecord"
-	"maze_game_server/io/redis/mazeattrcalcnotifyqueue"
 	"maze_game_server/io/redis/mazebarriereventredis"
 	"maze_game_server/io/redis/mazebarrieropstatusredis"
-	"maze_game_server/io/redis/mazebuffinforedis"
 	"maze_game_server/io/redis/mazeuserbarrierredis"
 	"maze_game_server/io/redis/syncmazestorageinforedis"
 	"maze_game_server/lib/codec"
@@ -106,18 +103,8 @@ func (g *Game) OnMazeBarrierEnterRQ_10447_10448(s *session.Session, req *MazeGam
 		res.ErrInfo = errors.MODULE_ERROR.ToInfo()
 		return err
 	}
-	if storageInfo == nil || saveData.StageId == 0 {
-		mazebuffinforedis.DelMazeBuffBySrc(logger, userId, constdef.MazeBuffSrcSelectBuffForce)
-		// 推送属性计算消息
-		calcAttrNotify := &structsdef.MazeCalcAttrNotifyMsg{
-			UserId:  userId,
-			ChgType: constdef.MazeBuffChgForceValue,
-			Session: "buff",
-			BuffSrc: constdef.MazeBuffSrcSelectBuffForce,
-		}
-		mazeattrcalcnotifyqueue.SendMazeAttrCalcNotify(logger, calcAttrNotify)
-	} else {
-		// 刷一半的情况需要检查三选一是否有问题
+	if storageInfo != nil || saveData.StageId != 0 {
+		// 有存档的情况需要检查三选一是否有问题
 		tempBuff, err := tempbuffservice.GlobalTempBuffService.CheckTempBuff(logger, userId, req.GetBarrierId(), saveData.StageId)
 		if err != nil {
 			logger.ErrorWF("OnMazeBarrierEnterRQ checkTempBuff", zap.Error(err))
@@ -128,8 +115,8 @@ func (g *Game) OnMazeBarrierEnterRQ_10447_10448(s *session.Session, req *MazeGam
 			res.EnergyLevel = proto.Int32(tempBuff.BuffSequence.Level)
 		}
 
-		//刷一半的情况需要把未通过的区域杀怪记录删除
-		err = barrierarearecordservice.GlobalBarrierAreaRecordService.DelBarrierAreaRecord(logger, userId, req.GetBarrierId())
+		//有存档的情况需要把未通过的区域杀怪记录删除
+		err = barrierarearecordservice.GlobalBarrierAreaRecordService.DelBarrierAreaRecord(logger, userId, req.GetBarrierId(), saveData.StageId)
 		if err != nil {
 			logger.ErrorWF("OnMazeBarrierEnterRQ DelBarrierAreaRecord fail", zap.Error(err))
 			res.ErrInfo = errors.MODULE_ERROR.ToInfo()

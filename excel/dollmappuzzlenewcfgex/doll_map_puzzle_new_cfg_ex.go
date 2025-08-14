@@ -78,3 +78,16 @@ func GetBarrierConfigs(barrier int32) []*GDollMapPuzzleNewV8Cfg.DollMapPuzzleNew
 func GetBarrierAreaInfos(barrier int32) []*AreaInfo {
 	return gConfigDataEx.BarrierAreaMap[barrier]
 }
+
+// 获取通过的区域
+func GetPassAreaInfos(barrierId, stageId int32) []*AreaInfo {
+	areaInfos := GetBarrierAreaInfos(barrierId)
+	passArea := make([]*AreaInfo, 0)
+	for _, i := range areaInfos {
+		if i.StageId != 0 || i.StageId > stageId {
+			continue
+		}
+		passArea = append(passArea, i)
+	}
+	return passArea
+}

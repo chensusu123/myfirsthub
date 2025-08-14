@@ -26,14 +26,7 @@ func (s *service) CheckTempBuff(logger fklog.FKLogI, userId uint64, barrierId in
 	//	logger.ErrorWF("checkTempBuff GetBarrierPassArea fail", zap.Error(err))
 	//	return nil, err
 	//}
-	areaInfos := dollmappuzzlenewcfgex.GetBarrierAreaInfos(barrierId)
-	passArea := make([]*dollmappuzzlenewcfgex.AreaInfo, 0)
-	for _, i := range areaInfos {
-		if i.StageId != 0 || i.StageId > stage {
-			continue
-		}
-		passArea = append(passArea, i)
-	}
+	passArea := dollmappuzzlenewcfgex.GetPassAreaInfos(barrierId, stage)
 	deleteBuffIds := make([]int32, 0)
 	j := 0
 	for _, temp := range tempBuff.SelectedBuff {

@@ -3,8 +3,8 @@ package barrierarearecordservice
 import (
 	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fklog"
 	"go.uber.org/zap"
+	"maze_game_server/excel/dollmappuzzlenewcfgex"
 	"maze_game_server/model/barrierarearecordmodel"
-	"maze_game_server/model/passareamodel"
 )
 
 func (s service) GetBarrierAreaRecord(logger fklog.FKLogI, userId uint64, stageId int32) (killMonsterNum int32, totalDamage int64, guidList []int64, err error) {
@@ -106,22 +106,23 @@ func (s service) AddDamage(logger fklog.FKLogI, userId uint64, stageId, areaId, 
 	return totalDamage, nil
 }
 
-func (s service) DelBarrierAreaRecord(logger fklog.FKLogI, userId uint64, stageId int32) error {
+func (s service) DelBarrierAreaRecord(logger fklog.FKLogI, userId uint64, barrierId, stageId int32) error {
 
-	passAreaModel, err := passareamodel.NewPassAreaModel(logger, userId, stageId)
-	if err != nil {
-		logger.ErrorWF("DelBarrierAreaRecord NewPassAreaModel fail", zap.Error(err))
-		return err
-	}
+	//passAreaModel, err := passareamodel.NewPassAreaModel(logger, userId, stageId)
+	//if err != nil {
+	//	logger.ErrorWF("DelBarrierAreaRecord NewPassAreaModel fail", zap.Error(err))
+	//	return err
+	//}
 
-	recordModel, err := barrierarearecordmodel.NewBarrierAreaNumRecordModel(logger, userId, stageId)
+	passArea := dollmappuzzlenewcfgex.GetPassAreaInfos(barrierId, stageId)
+	recordModel, err := barrierarearecordmodel.NewBarrierAreaNumRecordModel(logger, userId, barrierId)
 	if err != nil {
 		logger.ErrorWF("AddDamage NewBarrierAreaNumRecordModel fail", zap.Error(err))
 		return err
 	}
 
-	if len(passAreaModel.PassAreaList) == 0 {
-		err = recordModel.Del(logger, userId, stageId)
+	if len(passArea) == 0 {
+		err = recordModel.Del(logger, userId, barrierId)
 		if err != nil {
 			logger.ErrorWF("DelBarrierAreaRecord DEL fail", zap.Error(err))
 			return err
@@ -131,7 +132,7 @@ func (s service) DelBarrierAreaRecord(logger fklog.FKLogI, userId uint64, stageI
 		//删除未完成区域伤害值存档
 		delList := make([]int32, 0)
 		for k, _ := range recordModel.DamageRecordMap {
-			isPass := isPassBarrierArea(logger, userId, stageId, k)
+			isPass := isPassBarrierArea(logger, userId, barrierId, k, passArea)
 			if !isPass {
 				delList = append(delList, k)
 			}
@@ -147,7 +148,7 @@ func (s service) DelBarrierAreaRecord(logger fklog.FKLogI, userId uint64, stageI
 		//删除未完成区域杀怪数存档
 		delArr := make([]int32, 0)
 		for k, _ := range recordModel.KillMonsterRecordMap {
-			isPass := isPassBarrierArea(logger, userId, stageId, k)
+			isPass := isPassBarrierArea(logger, userId, barrierId, k, passArea)
 			if !isPass {
 				delArr = append(delArr, k)
 			}
@@ -165,7 +166,7 @@ func (s service) DelBarrierAreaRecord(logger fklog.FKLogI, userId uint64, stageI
 		}
 	}
 
-	err = recordModel.Save(logger, userId, stageId)
+	err = recordModel.Save(logger, userId, barrierId)
 	if err != nil {
 		logger.ErrorWF("DelBarrierAreaRecord Save fail", zap.Error(err))
 	}
@@ -187,16 +188,9 @@ func DecodeAreaField(field int32) (areaId, areaIndex int32) {
 }
 
 // 是否通过关卡区域
-func isPassBarrierArea(logger fklog.FKLogI, userId uint64, stageId int32, field int32) bool {
-	passAreaModel, err := passareamodel.NewPassAreaModel(logger, userId, stageId)
-	if err != nil {
-		logger.ErrorWF("isPassBarrierArea NewPassAreaModel fail", zap.Error(err))
-		return false
-	}
-
+func isPassBarrierArea(logger fklog.FKLogI, userId uint64, stageId int32, field int32, passArea []*dollmappuzzlenewcfgex.AreaInfo) bool {
 	areaId, areaIndex := DecodeAreaField(field)
-
-	for _, info := range passAreaModel.PassAreaList {
+	for _, info := range passArea {
 		if info.AreaId == areaId && info.AreaIndex == areaIndex {
 			return true
 		}
