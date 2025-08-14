@@ -60,3 +60,10 @@ const (
 	GoldPileShow2RealCfgId            int32 = 901
 	StrengthenStonePileShow2RealCfgId int32 = 902
 )
+
+const (
+	ItemTypeGoldCoinPile    = 462 // 金币堆
+	ItemTypeQianghuashiPile = 467 // 强化水晶堆
+	ItemTypeTempBuff        = 482 // 三选一道具
+	ItemTypeEnergyPotion    = 490 // 体力药剂
+)

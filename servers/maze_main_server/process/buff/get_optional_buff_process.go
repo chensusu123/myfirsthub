@@ -1,9 +1,6 @@
 package buff
 
 import (
-	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fkprometheus"
-	"go.uber.org/zap"
-	"google.golang.org/protobuf/proto"
 	"maze_game_server/common/errors"
 	"maze_game_server/lib/log"
 	"maze_game_server/lib/nano/session"
@@ -11,6 +8,10 @@ import (
 	"maze_game_server/pb/common/MazeTempBuff"
 	"maze_game_server/services/tempbuffservice"
 	"time"
+
+	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fkprometheus"
+	"go.uber.org/zap"
+	"google.golang.org/protobuf/proto"
 )
 
 func (b *Buff) GetOptionalMazeTempBuffListRQ_10435_10436(s *session.Session, req *MazeTempBuff.GetOptionalMazeTempBuffListRQ) (err error) {
@@ -55,11 +56,11 @@ func (b *Buff) GetOptionalMazeTempBuffListRQ_10435_10436(s *session.Session, req
 		res.ErrInfo = errors.COMMON_ERROR_TIPS.Wrap(err.Error())
 		return nil
 	}
-	res.OptionalBuffInfo = optionalBuffInfo2PbOptionalBuffInfo(optionalBuffInfo)
+	res.OptionalBuffInfo = OptionalBuffInfo2PbOptionalBuffInfo(optionalBuffInfo)
 	return
 }
 
-func optionalBuffInfo2PbOptionalBuffInfo(optionalBuffInfo *tempbuffservice.OptionalBuffInfo) *MazeTempBuff.OptionalBuffInfo {
+func OptionalBuffInfo2PbOptionalBuffInfo(optionalBuffInfo *tempbuffservice.OptionalBuffInfo) *MazeTempBuff.OptionalBuffInfo {
 	pb := &MazeTempBuff.OptionalBuffInfo{}
 	pb.IsRefresh = proto.Int32(optionalBuffInfo.IsRefresh)
 	pb.SelectBuffTime = proto.Int32(optionalBuffInfo.SelectBuffTime)
