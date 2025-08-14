@@ -12,7 +12,7 @@ import (
 	"maze_game_server/pb/common/MazeCommon"
 )
 
-func (s *service) RefreshOptionalMazeTempBuffList(logger fklog.FKLogI, userId uint64, stageId, level, areaId int32, cost []*MazeCommon.MazeItem) (*OptionalBuffInfo, error) {
+func (s *service) RefreshOptionalMazeTempBuffList(logger fklog.FKLogI, userId uint64, stageId, level, areaId, attrMask int32, cost []*MazeCommon.MazeItem) (*OptionalBuffInfo, error) {
 	buffInfo, err := tempbuffmodel.NewTempBuffInfoModel(logger, userId, stageId)
 	if err != nil {
 		logger.ErrorWF("RefreshOptionalMazeTempBuffListRQ GetMazeTempBuff failed", zap.Error(err))
@@ -55,7 +55,7 @@ func (s *service) RefreshOptionalMazeTempBuffList(logger fklog.FKLogI, userId ui
 	}
 
 	// 刷新可选buff
-	err = s.refreshOptionalBuff(logger, userId, stageId, level, areaId, buffInfo)
+	err = s.refreshOptionalBuff(logger, userId, stageId, level, areaId, attrMask, buffInfo)
 	if err != nil {
 		logger.ErrorWF("RefreshOptionalMazeTempBuffListRQ refreshOptionalBuff failed", zap.Error(err))
 		return nil, fmt.Errorf("刷新buff失败")
@@ -88,7 +88,7 @@ func (s *service) checkCost(costMap map[int32]int64, costList []*MazeCommon.Maze
 	return true
 }
 
-func (s *service) refreshOptionalBuff(logger fklog.FKLogI, userId uint64, stageId, level, areaId int32,
+func (s *service) refreshOptionalBuff(logger fklog.FKLogI, userId uint64, stageId, level, areaId, attrMask int32,
 	buffInfo *tempbuffmodel.TempBuffInfoModel) (err error) {
 	stageConfig := mazebarriesv8config.GetStageConfig(stageId)
 	if stageConfig == nil {
@@ -97,7 +97,7 @@ func (s *service) refreshOptionalBuff(logger fklog.FKLogI, userId uint64, stageI
 	}
 
 	buffInfo.BuffSequence.RefreshCount = buffInfo.BuffSequence.RefreshCount + 1
-	buffInfo.BuffSequence.OptionalBuffList, err = s.createOptionalBuffList(logger, buffInfo, level, areaId, stageConfig)
+	buffInfo.BuffSequence.OptionalBuffList, err = s.createOptionalBuffList(logger, buffInfo, level, areaId, attrMask, stageConfig)
 	if err != nil {
 		logger.ErrorWF("refreshOptionalBuff createOptionalBuffList failed", zap.Error(err))
 		return err

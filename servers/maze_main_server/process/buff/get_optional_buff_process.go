@@ -50,8 +50,7 @@ func (b *Buff) GetOptionalMazeTempBuffListRQ_10435_10436(s *session.Session, req
 		res.ErrInfo = errors.COMMON_ERROR_TIPS.Wrap("areaId参数错误")
 		return nil
 	}
-
-	optionalBuffInfo, err := tempbuffservice.GlobalTempBuffService.GetOptionalTempBuffList(logger, userId, stageId, level, int32(req.GetType()), areaId, req.GetAreaIndex())
+	optionalBuffInfo, err := tempbuffservice.GlobalTempBuffService.GetOptionalTempBuffList(logger, userId, stageId, level, int32(req.GetType()), areaId, req.GetAreaIndex(), req.GetAttrMask())
 	if err != nil {
 		res.ErrInfo = errors.COMMON_ERROR_TIPS.Wrap(err.Error())
 		return nil

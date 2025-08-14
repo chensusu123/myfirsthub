@@ -46,7 +46,7 @@ func (b *Buff) RefreshOptionalMazeTempBuffListRQ_10439_10440(s *session.Session,
 		return nil
 	}
 
-	optionalBuffInfo, err := tempbuffservice.GlobalTempBuffService.RefreshOptionalMazeTempBuffList(logger, userId, stageId, level, areaId, cost)
+	optionalBuffInfo, err := tempbuffservice.GlobalTempBuffService.RefreshOptionalMazeTempBuffList(logger, userId, stageId, level, areaId, req.GetAttrMask(), cost)
 	if err != nil {
 		res.ErrInfo = errors.COMMON_ERROR_TIPS.Wrap(err.Error())
 		return nil

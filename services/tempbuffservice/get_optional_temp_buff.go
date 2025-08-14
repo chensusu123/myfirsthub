@@ -19,7 +19,7 @@ import (
 	"maze_game_server/pb/common/MazeTempBuff"
 )
 
-func (s *service) GetOptionalTempBuffList(logger fklog.FKLogI, userId uint64, stageId, level, buffType, areaId, areaIndex int32) (*OptionalBuffInfo, error) {
+func (s *service) GetOptionalTempBuffList(logger fklog.FKLogI, userId uint64, stageId, level, buffType, areaId, areaIndex, attrMask int32) (*OptionalBuffInfo, error) {
 	buffInfo, err := tempbuffmodel.NewTempBuffInfoModel(logger, userId, stageId)
 	if err != nil {
 		logger.ErrorWF("GetOptionalMazeTempBuffListRQ GetMazeTempBuff failed", zap.Error(err))
@@ -37,7 +37,7 @@ func (s *service) GetOptionalTempBuffList(logger fklog.FKLogI, userId uint64, st
 
 	if len(buffInfo.BuffSequence.OptionalBuffList) == 0 {
 		// 没有可选buff, 生成可选buff列表
-		err = s.genOptionalBuffList(logger, userId, stageId, level, buffType, areaId, areaIndex, buffInfo)
+		err = s.genOptionalBuffList(logger, userId, stageId, level, buffType, areaId, areaIndex, attrMask, buffInfo)
 		if err != nil {
 			logger.ErrorWF("GetOptionalMazeTempBuffListRQ getOptionalBuffList", zap.Int32("stageId", stageId),
 				zap.Any("info", buffInfo), zap.Any("err", err.Error()))
@@ -65,7 +65,7 @@ func (s *service) GetOptionalTempBuffList(logger fklog.FKLogI, userId uint64, st
 }
 
 // 生成可选buff列表
-func (s *service) genOptionalBuffList(logger fklog.FKLogI, userId uint64, stageId, level, buffType, areaId, areaIndex int32,
+func (s *service) genOptionalBuffList(logger fklog.FKLogI, userId uint64, stageId, level, buffType, areaId, areaIndex, attrMask int32,
 	buffInfo *tempbuffmodel.TempBuffInfoModel) error {
 	if level < buffInfo.BuffSequence.Level {
 		logger.WarnWF("genOptionalBuffList level already select", zap.Int32("level", level),
@@ -100,7 +100,7 @@ func (s *service) genOptionalBuffList(logger fklog.FKLogI, userId uint64, stageI
 
 	buffInfo.BuffSequence.Level = level
 	// 生成可选的buff列表
-	buffList, err := s.createOptionalBuffList(logger, buffInfo, level, areaId, stageConfig)
+	buffList, err := s.createOptionalBuffList(logger, buffInfo, level, areaId, attrMask, stageConfig)
 	if err != nil {
 		logger.ErrorWF("genOptionalBuffList createOptionalBuffList failed", zap.Error(err))
 		return fmt.Errorf("创建可选buff列表失败")
@@ -211,7 +211,7 @@ func (s *service) packSelectBuffList(logger fklog.FKLogI, buffList []int32) []*B
 
 // 生成可选的buff列表
 func (s *service) createOptionalBuffList(logger fklog.FKLogI, buffInfo *tempbuffmodel.TempBuffInfoModel,
-	level, areaId int32, stageConfig *GMazeBarriesV8Cfg.MazeBarriesV8ConfigRow) ([]int32, error) {
+	level, areaId, attrMask int32, stageConfig *GMazeBarriesV8Cfg.MazeBarriesV8ConfigRow) ([]int32, error) {
 
 	ruleId, ok := stageConfig.Energy_affix_rand_rule[areaId]
 	if !ok || ruleId <= 0 {
@@ -247,22 +247,24 @@ func (s *service) createOptionalBuffList(logger fklog.FKLogI, buffInfo *tempbuff
 		var libraryId int32
 		switch i {
 		case 1:
-			libraryId, _ = s.randLibraryId(randConfig.Pos_1_lib)
+			libraryId, _ = s.randLibraryId(randConfig.Pos_1_lib, attrMask)
 		case 2:
-			libraryId, _ = s.randLibraryId(randConfig.Pos_2_lib)
+			libraryId, _ = s.randLibraryId(randConfig.Pos_2_lib, attrMask)
 		case 3:
-			libraryId, _ = s.randLibraryId(randConfig.Pos_3_lib)
+			libraryId, _ = s.randLibraryId(randConfig.Pos_3_lib, attrMask)
 		case 4:
-			libraryId, _ = s.randLibraryId(randConfig.Pos_4_lib)
+			libraryId, _ = s.randLibraryId(randConfig.Pos_4_lib, attrMask)
 		case 5:
-			libraryId, _ = s.randLibraryId(randConfig.Pos_5_lib)
+			libraryId, _ = s.randLibraryId(randConfig.Pos_5_lib, attrMask)
 		case 6:
-			libraryId, _ = s.randLibraryId(randConfig.Pos_6_lib)
+			libraryId, _ = s.randLibraryId(randConfig.Pos_6_lib, attrMask)
 		default:
 			logger.WarnWF("createOptionalBuffList unknown id", zap.Int64("num", i))
 			return nil, nil
 		}
-
+		if libraryId == 0 {
+			continue
+		}
 		// 随机库id
 		affixList, certainly_list := mazeenergyaffixlibraryv8config.GetEnergyLibraryAffixList(libraryId)
 		if len(affixList) == 0 {
@@ -291,7 +293,7 @@ func (s *service) createOptionalBuffList(logger fklog.FKLogI, buffInfo *tempbuff
 	return optionalList, nil
 }
 
-func (s *service) randLibraryId(libraryMap map[int32]int32) (int32, int32) {
+func (s *service) randLibraryId(libraryMap map[int32]int32, attrMask int32) (int32, int32) {
 	var (
 		weightList  []*WeightInfo
 		totalWeight int32
@@ -300,7 +302,9 @@ func (s *service) randLibraryId(libraryMap map[int32]int32) (int32, int32) {
 		if weight == 0 {
 			continue
 		}
-
+		if need := TestBuffAttrMask(id, attrMask); !need {
+			continue
+		}
 		weightList = append(weightList, &WeightInfo{
 			Id:     id,
 			Weight: weight,
@@ -453,4 +457,40 @@ func (s *service) randomId(optionalList []*WeightInfo, totalWeight int32) (int32
 	}
 
 	return 0, weight
+}
+
+const (
+	IceMask int32 = 1 << iota
+	FireMask
+	FlashMask
+	PoisonMask
+)
+
+// 测试用，只选需要的buff
+func TestBuffAttrMask(libId, attrMask int32) bool {
+	if attrMask == 0 {
+		return true
+	}
+	// 测试用属性掩码 0-全部 1-冰 2-火 4-电 8-毒
+	if attrMask&IceMask > 0 {
+		if libId == 403 || libId == 404 {
+			return true
+		}
+	}
+	if attrMask&FireMask > 0 {
+		if libId == 405 || libId == 406 {
+			return true
+		}
+	}
+	if attrMask&FlashMask > 0 {
+		if libId == 401 || libId == 402 {
+			return true
+		}
+	}
+	if attrMask&PoisonMask > 0 {
+		if libId == 407 || libId == 408 {
+			return true
+		}
+	}
+	return false
 }

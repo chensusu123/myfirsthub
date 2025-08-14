@@ -4,12 +4,17 @@ import (
 	"context"
 	"fmt"
 	"github.com/redis/go-redis/v9"
+	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fklog"
 	"gitlab.ifreetalk.com/maze-plate/freetk/fkserver"
+	"gitlab.ifreetalk.com/maze-plate/freetk/fkserver/config_manager"
+	"gitlab.ifreetalk.com/maze-plate/freetk/fkserver/config_manager/loadconfigapi"
 	fileResolver "gitlab.ifreetalk.com/maze-plate/freetk/registry/fileresolver"
+	"go.uber.org/zap"
 	"maze_game_server/io/redis"
 	"maze_game_server/lib/log"
 	"maze_game_server/model/passareamodel"
 	"maze_game_server/model/tempbuffmodel"
+	"maze_game_server/usecase/business"
 	"os"
 	"testing"
 )
@@ -32,7 +37,17 @@ func TestMain(m *testing.M) {
 	}
 	os.Stdout = originalStdout
 	os.Stderr = originalStderr
-
+	loadconfigapi.SetLoadConfigFunc(business.GCustomBusiness.LoadCacheConfig)
+	err = business.GCustomBusiness.Init(fklog.AppLogger().Clone("loadconfigapi"))
+	if err != nil {
+		logger.ErrorWF("load file failed", zap.Error(err))
+		return
+	}
+	err = config_manager.Init(context.Background(), logger, nil)
+	if err != nil {
+		logger.ErrorWF("parse excel failed", zap.Error(err))
+		return
+	}
 	m.Run()
 }
 
@@ -66,4 +81,12 @@ func TestPassAreaRedis(t *testing.T) {
 		return
 	}
 	fmt.Println(model)
+}
+func TestGetOptionalTempBuff(t *testing.T) {
+	optionalBuffInfo, err := GlobalTempBuffService.GetOptionalTempBuffList(logger, 40000001, 1, 2, 1, 10001, 0, 1)
+	if err != nil {
+		fmt.Println(err)
+		return
+	}
+	_ = optionalBuffInfo
 }

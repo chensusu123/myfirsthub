@@ -12,10 +12,10 @@ type TempBuffService interface {
 	GetMazeTempBuffList(logger fklog.FKLogI, userId uint64, stageId int32) ([]*BuffInfo, error)
 
 	// GetOptionalTempBuffList 获取可选临时buff列表
-	GetOptionalTempBuffList(logger fklog.FKLogI, userId uint64, stageId, level, buffType, areaId, areaIndex int32) (*OptionalBuffInfo, error)
+	GetOptionalTempBuffList(logger fklog.FKLogI, userId uint64, stageId, level, buffType, areaId, areaIndex, attrMask int32) (*OptionalBuffInfo, error)
 
 	// RefreshOptionalMazeTempBuffList 刷新可选临时buff列表
-	RefreshOptionalMazeTempBuffList(logger fklog.FKLogI, userId uint64, stageId, level, areaId int32, cost []*MazeCommon.MazeItem) (*OptionalBuffInfo, error)
+	RefreshOptionalMazeTempBuffList(logger fklog.FKLogI, userId uint64, stageId, level, areaId, attrMask int32, cost []*MazeCommon.MazeItem) (*OptionalBuffInfo, error)
 
 	// SelectMazeTempBuffRQ 选择临时buff
 	SelectMazeTempBuff(logger fklog.FKLogI, userId uint64, stageId, level, buffId, buffType int32) ([]*BuffInfo, error)
