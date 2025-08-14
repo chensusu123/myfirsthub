@@ -107,11 +107,7 @@ func (g *Game) OnMazeBarrierEnterRQ_10447_10448(s *session.Session, req *MazeGam
 		return err
 	}
 	if storageInfo == nil || saveData.StageId == 0 {
-		// 进入清临时buff
-		tempbuffservice.GlobalTempBuffService.DelTempBuff(logger, userId, req.GetBarrierId())
 		mazebuffinforedis.DelMazeBuffBySrc(logger, userId, constdef.MazeBuffSrcSelectBuffForce)
-		// 清除通过的区域
-		tempbuffservice.GlobalTempBuffService.DelPassArea(logger, userId, req.GetBarrierId())
 		// 推送属性计算消息
 		calcAttrNotify := &structsdef.MazeCalcAttrNotifyMsg{
 			UserId:  userId,

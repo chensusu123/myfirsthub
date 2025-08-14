@@ -10,7 +10,7 @@ import (
 )
 
 func getKey(userId uint64, stageId int32) string {
-	return fmt.Sprintf("tempbuff:u:%d:stage:%d", userId, stageId)
+	return fmt.Sprintf("tempbuff:u:%d:barrier:%d", userId, stageId)
 }
 
 func SetMazeTempBuff(logger fklog.FKLogI, userId uint64, stageId int32, bytes []byte) error {

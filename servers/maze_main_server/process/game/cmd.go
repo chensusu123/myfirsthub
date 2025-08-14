@@ -19,6 +19,8 @@ import (
 	"maze_game_server/module/mazeuserinfo"
 	"maze_game_server/pb/common/MazeGame"
 	"maze_game_server/services/barrierenergyservice"
+	"maze_game_server/services/barriersavedataservice"
+	"maze_game_server/services/tempbuffservice"
 	"strings"
 	"time"
 
@@ -294,6 +296,21 @@ func ClearBarrier(logger fklog.FKLogI, userId uint64) (err error) {
 		return
 	}
 
+	//清除新存档
+	err = barriersavedataservice.GlobalBarrierSaveDataService.DelBarrierSaveData(logger, userId, userInfo.Barrier)
+	if err != nil {
+		return
+	}
+	// 进入清临时buff
+	err = tempbuffservice.GlobalTempBuffService.DelTempBuff(logger, userId, userInfo.Barrier)
+	if err != nil {
+		return
+	}
+	// 清除通过的区域
+	err = tempbuffservice.GlobalTempBuffService.DelPassArea(logger, userId, userInfo.Barrier)
+	if err != nil {
+		return
+	}
 	return
 
 }
