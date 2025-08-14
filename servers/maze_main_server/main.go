@@ -2,6 +2,8 @@ package main
 
 import (
 	"fmt"
+	"maze_game_server/io"
+	globalredis "maze_game_server/io/redis"
 	"os"
 
 	"maze_game_server/io/mysql"
@@ -27,7 +29,7 @@ func main() {
 	fkserver.SetMonitorName(fkserver.GroupNameGO, fkserver.ProjectNamePPWD, "maze_main_server")
 
 	process.RegisterHandler()
-
+	io.InitBackendCoder(globalredis.GCli, nil)
 	fkserver.AddBusiness(&business.GCustomBusiness)
 	loadconfigapi.SetLoadConfigFunc(business.GCustomBusiness.LoadCacheConfig)
 	loadconfigapi.SetInitConfigCacheFunc(business.GCustomBusiness.Init)
