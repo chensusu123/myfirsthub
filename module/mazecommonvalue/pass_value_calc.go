@@ -5,10 +5,10 @@ import (
 	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fklog"
 	"go.uber.org/zap"
 	"maze_game_server/common/constdef"
-	"maze_game_server/config/GDollMapPuzzleNewV8Cfg"
 	"maze_game_server/config/GMazeBarriesV8Cfg"
 	"maze_game_server/config/GMazeConfigV8Cfg"
-	"maze_game_server/config/GMazeMapEditorConfigIdV8Cfg"
+	"maze_game_server/excel/dollmappuzzlenewcfgex"
+	"maze_game_server/excel/mazemapeditorconfigidcfgex"
 	"maze_game_server/pb/common/MazeGame"
 	"strconv"
 )
@@ -21,20 +21,20 @@ func CalcPassValue(logger fklog.FKLogI, barrier, stage int32) (int64, error) {
 	}
 	if stage > 0 {
 		// 计算本关已通过阶段的通关值
-		for _, i := range GDollMapPuzzleNewV8Cfg.GetAll() {
-			if i.Level != barrier || i.Stage > stage || i.Stage == 0 {
+		for _, i := range dollmappuzzlenewcfgex.GetBarrierConfigs(barrier) {
+			if i.Stage > stage || i.Stage == 0 {
 				continue
 			}
 			if i.Config_id == "" {
 				continue
 			}
-			for _, j := range GMazeMapEditorConfigIdV8Cfg.GetAll() {
+			for _, j := range mazemapeditorconfigidcfgex.GetBarrierConfigs(barrier) {
 				configId, err := strconv.ParseInt(i.Config_id, 10, 32)
 				if err != nil {
 					logger.ErrorWF("calcPassValue Parse config id err", zap.String("configId", i.Config_id))
 					return 0, err
 				}
-				if j.Level_id == i.Level && j.Config_id == int32(configId) {
+				if j.Config_id == int32(configId) {
 					if j.Add_kungfu != 0 {
 						passValue += int64(j.Add_kungfu)
 					}

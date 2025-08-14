@@ -27,7 +27,7 @@ type TempBuffService interface {
 	GetTempBuffAttr(logger fklog.FKLogI, userID uint64, stageId int32) (map[int32]int64, error)
 
 	// 进入关卡前检查关卡的buff情况，因为可能会有清除部分buff的情况
-	CheckTempBuff(logger fklog.FKLogI, userId uint64, barrierId int32) (*tempbuffmodel.TempBuffInfoModel, error)
+	CheckTempBuff(logger fklog.FKLogI, userId uint64, barrierId int32, stage int32) (*tempbuffmodel.TempBuffInfoModel, error)
 
 	// 获取临时buff信息
 	GetTempBuffInfo(logger fklog.FKLogI, userID uint64, stageId int32) (*tempbuffmodel.TempBuffInfoModel, error)

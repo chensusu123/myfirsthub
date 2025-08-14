@@ -10,7 +10,7 @@ import (
 )
 
 // 进入关卡前检查关卡的buff情况，因为可能会有清除部分buff的情况
-func (s *service) CheckTempBuff(logger fklog.FKLogI, userId uint64, barrierId int32) (*tempbuffmodel.TempBuffInfoModel, error) {
+func (s *service) CheckTempBuff(logger fklog.FKLogI, userId uint64, barrierId int32, stage int32) (*tempbuffmodel.TempBuffInfoModel, error) {
 	tempBuff, err := tempbuffmodel.NewTempBuffInfoModel(logger, userId, barrierId)
 	if err != nil {
 		logger.ErrorWF("checkTempBuff GetMazeTempBuff", zap.Error(err))

@@ -122,7 +122,7 @@ func (g *Game) OnMazeBarrierEnterRQ_10447_10448(s *session.Session, req *MazeGam
 		mazeattrcalcnotifyqueue.SendMazeAttrCalcNotify(logger, calcAttrNotify)
 	} else {
 		// 刷一半的情况需要检查三选一是否有问题
-		tempBuff, err := tempbuffservice.GlobalTempBuffService.CheckTempBuff(logger, userId, req.GetBarrierId())
+		tempBuff, err := tempbuffservice.GlobalTempBuffService.CheckTempBuff(logger, userId, req.GetBarrierId(), saveData.StageId)
 		if err != nil {
 			logger.ErrorWF("OnMazeBarrierEnterRQ checkTempBuff", zap.Error(err))
 			res.ErrInfo = errors.MODULE_ERROR.ToInfo()
