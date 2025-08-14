@@ -34,6 +34,12 @@ func unpackFieldToPb(field string, in []byte, pb *MazeEquipCache.MazeAssembleDb)
 			return e
 		}
 		pb.SwitchSuitTime = proto.Int64(ret)
+	case constdef.AssemblePrefixEquipPosEnSuit: //装备位强化套装Id
+		ret, e := fkutil.Bytes2Int64(in)
+		if e != nil {
+			return e
+		}
+		pb.EpEnSuitId = proto.Int32(int32(ret))
 	default:
 		find = false
 	}
@@ -72,6 +78,8 @@ func packFieldFromPb(field string, pb *MazeEquipCache.MazeAssembleDb) (out inter
 		out = pb.GetCurSuitIndex()
 	case constdef.AssemblePrefixSwitchSuitTime: // 套装切换时间
 		out = pb.GetSwitchSuitTime()
+	case constdef.AssemblePrefixEquipPosEnSuit: //装备位强化套装Id
+		out = pb.GetEpEnSuitId()
 	default:
 		find = false
 	}
