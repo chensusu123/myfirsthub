@@ -15,8 +15,8 @@ func (b *Buff) SelectMazeTempBuffRQ_10437_10438(s *session.Session, req *MazeTem
 	defer fkprometheus.InfoPMT("SelectMazeTempBuffRQ")()
 
 	start := time.Now()
-
 	logger := log.Clone("Buff", uint64(s.UID()), 0)
+	logger.InfoWF("SelectMazeTempBuffRQ start", zap.Any("req", req))
 	res := &MazeTempBuff.SelectMazeTempBuffRS{}
 	res.ErrInfo = errors.NO_ERROR
 	res.Header = req.Header

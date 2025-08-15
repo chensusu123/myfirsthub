@@ -14,10 +14,10 @@ import (
 
 func (b *Buff) GetMazeTempBuffListRQ_10433_10434(s *session.Session, req *MazeTempBuff.GetMazeTempBuffListRQ) (err error) {
 	defer fkprometheus.InfoPMT("GetMazeTempBuffListRQ")()
-
 	start := time.Now()
 
 	logger := log.Clone("Buff", uint64(s.UID()), 0)
+	logger.InfoWF("GetMazeTempBuffListRQ start", zap.Any("req", req))
 	res := &MazeTempBuff.GetMazeTempBuffListRS{}
 	res.ErrInfo = errors.NO_ERROR
 	res.Header = req.Header
