@@ -14,7 +14,7 @@ import (
 // MazeAttrItemAttrV8ConfigRow from maze_item_attr_v8【迷宫-道具-道具id对应属性id】.xlsx maze_attr_item_attr_v8
 type MazeAttrItemAttrV8ConfigRow struct {
 	Order    int32 `json:"order"`    // 道具id
-	Add_attr int32 `json:"add_attr"` // 对应的属性id（走属性对应技能逻辑）
+	Add_attr int32 `json:"add_attr"` // 技能属性id
 }
 
 // MazeAttrItemAttrV8Config from maze_item_attr_v8【迷宫-道具-道具id对应属性id】.xlsx maze_attr_item_attr_v8
@@ -282,12 +282,12 @@ func (*gMazeAttrItemAttrV8Parser) Parse(logger fklog.FKLogI, data []string, row 
 		config.Order = int32(tmp)
 	}
 
-	// parse column 1 add_attr : 对应的属性id（走属性对应技能逻辑）
+	// parse column 1 add_attr : 技能属性id
 	if data[1] != "" {
 		tmp, err = strconv.ParseInt(data[1], 10, 64)
 		if err != nil {
-			err = errors.New("parse field add_attr 对应的属性id（走属性对应技能逻辑） to int32 failed")
-			logger.ErrorWF("parse field add_attr 对应的属性id（走属性对应技能逻辑） to int32 failed.",
+			err = errors.New("parse field add_attr 技能属性id to int32 failed")
+			logger.ErrorWF("parse field add_attr 技能属性id to int32 failed.",
 				zap.String("xlsx", "maze_item_attr_v8【迷宫-道具-道具id对应属性id】.xlsx"), zap.String("sheet", "maze_attr_item_attr_v8"),
 				zap.String("parse_data", data[1]),
 				zap.Error(err))
