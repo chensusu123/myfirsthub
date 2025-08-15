@@ -10,12 +10,15 @@ import (
 	"time"
 
 	"maze_game_server/io/dispatcher"
+	"maze_game_server/io/kafka/kafkacommonstruct"
 
 	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fklog"
 	"go.uber.org/zap"
 )
 
 // var json = jsoniter.ConfigCompatibleWithStandardLibrary
+
+type KafkaCommon = kafkacommonstruct.KafkaCommon
 
 const (
 	TimerRecovery int32 = 100 // 时间恢复
@@ -29,6 +32,7 @@ const (
 
 // 迷宫体力变化流水
 type MazeEnergyChgRecord struct {
+	KafkaCommon
 	UserId uint64 `json:"user_id"` // 用户id
 	OldVal int32  `json:"old_val"` // 旧值
 	//ChgVal   int32  `json:"chg_val"`   // 变化值

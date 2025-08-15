@@ -1,25 +1,43 @@
 package flowrecord
 
 import (
-	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fklog"
-	"go.uber.org/zap"
+	"context"
+	"encoding/json"
+	"fmt"
+	"maze_game_server/io/kafka"
 	"maze_game_server/io/kafka/dollequipdismantlekafka"
 	"maze_game_server/io/mysql"
+	"strings"
+	"time"
+
+	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fklog"
+	"gitlab.ifreetalk.com/maze-plate/freetk/fkserver/appconfig"
+	"go.uber.org/zap"
 )
 
 const MazeEquipDismantRecordTableName = "maze_equip_dismant_record"
 
 // 保存装备分解流水
 func SaveEquipDismantRecord(logger fklog.FKLogI, record *dollequipdismantlekafka.MazeGameEquipDismantleRecord) {
-	db, err := mysql.GetMysqlDb()
+	nowDbTable := strings.Split(mysql.GetFullyQualifiedTableName(MazeEquipDismantRecordTableName), ".")
+
+	record.DataBase = nowDbTable[0]
+	record.Table = nowDbTable[1]
+	record.SectionID = appconfig.GlobalConfig().Global.SectionID
+
+	// 打到kafka 中
+	data, err := json.Marshal(record)
 	if err != nil {
-		logger.ErrorWF("GetMysqlDb fail", zap.Error(err), zap.Any("MazeEquipDismantRecordTableName:", MazeEquipDismantRecordTableName))
+		logger.ErrorWF("SaveEquipDismantRecord Marshal Fail",
+			zap.Any("record", record))
 		return
 	}
-
-	res := db.Table(mysql.GetFullyQualifiedTableName(MazeEquipDismantRecordTableName)).Create(record)
-	if res.Error != nil {
-		logger.ErrorWF("SaveEquipDismantRecord fail", zap.Error(err), zap.Any("flowrecord", record))
+	err = kafka.GflowKafka.SendMsg(context.TODO(), fmt.Sprintf("%v", time.Now().UnixNano()), data)
+	if err != nil {
+		logger.ErrorWF("SaveEquipDismantRecord SendMsg Fail",
+			zap.Any("record", record),
+			zap.Error(err),
+		)
 		return
 	}
 	logger.InfoWF("SaveEquipDismantRecord succ", zap.Any("flowrecord", record))

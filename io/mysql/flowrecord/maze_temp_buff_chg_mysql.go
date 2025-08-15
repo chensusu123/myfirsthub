@@ -1,32 +1,43 @@
 package flowrecord
 
 import (
+	"context"
 	"encoding/json"
-	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fklog"
-	"go.uber.org/zap"
+	"fmt"
+	"maze_game_server/io/kafka"
 	"maze_game_server/io/kafka/mazetempbuffchgmsg"
 	"maze_game_server/io/mysql"
+	"strings"
+	"time"
+
+	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fklog"
+	"gitlab.ifreetalk.com/maze-plate/freetk/fkserver/appconfig"
+	"go.uber.org/zap"
 )
 
 const MazeTempBuffChangeRecordTableName = "maze_temp_buff_change_record"
 
 // 保存临时buff变化流水
 func SaveTempBuffChgRecord(logger fklog.FKLogI, record *mazetempbuffchgmsg.MazeTempBuffChangeMsg) {
-	db, err := mysql.GetMysqlDb()
-	if err != nil {
-		logger.ErrorWF("GetMysqlDb fail", zap.Error(err), zap.Any("MazeTempBuffChangeRecordTableName:", MazeTempBuffChangeRecordTableName))
-		return
-	}
+	nowDbTable := strings.Split(mysql.GetFullyQualifiedTableName(MazeTempBuffChangeRecordTableName), ".")
 
-	chgAttrs, err := json.Marshal(record.ChgAttrs)
+	record.DataBase = nowDbTable[0]
+	record.Table = nowDbTable[1]
+	record.SectionID = appconfig.GlobalConfig().Global.SectionID
+
+	// 打到kafka 中
+	data, err := json.Marshal(record)
 	if err != nil {
-		logger.ErrorWF("SaveTempBuffChgRecord marshal failed", zap.Any("record", record), zap.Error(err))
+		logger.ErrorWF("SaveTempBuffChgRecord Marshal Fail",
+			zap.Any("record", record))
 		return
 	}
-	record.ChgAttrsStr = string(chgAttrs)
-	res := db.Table(mysql.GetFullyQualifiedTableName(MazeTempBuffChangeRecordTableName)).Create(record)
-	if res.Error != nil {
-		logger.ErrorWF("SaveTempBuffChgRecord fail", zap.Error(err), zap.Any("flowrecord", record))
+	err = kafka.GflowKafka.SendMsg(context.TODO(), fmt.Sprintf("%v", time.Now().UnixNano()), data)
+	if err != nil {
+		logger.ErrorWF("SaveTempBuffChgRecord SendMsg Fail",
+			zap.Any("record", record),
+			zap.Error(err),
+		)
 		return
 	}
 	logger.InfoWF("SaveTempBuffChgRecord succ", zap.Any("flowrecord", record))

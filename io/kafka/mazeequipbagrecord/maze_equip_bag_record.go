@@ -1,9 +1,11 @@
 package mazeequipbagrecord
 
 import (
+	"maze_game_server/io/dispatcher"
+	"maze_game_server/io/kafka/kafkacommonstruct"
+
 	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fklog"
 	"go.uber.org/zap"
-	"maze_game_server/io/dispatcher"
 )
 
 // var json = jsoniter.ConfigCompatibleWithStandardLibrary
@@ -16,8 +18,11 @@ const (
 	MazeDressEquip       int32 = 5 // 装备穿戴
 )
 
+type KafkaCommon = kafkacommonstruct.KafkaCommon
+
 // 装备背包流水
 type MazeGameEquipBagRecord struct {
+	KafkaCommon
 	UserId        uint64 `json:"user_id" gorm:"column:user_id"`                 //用户id
 	ChgType       int32  `json:"chg_type" gorm:"column:chg_type"`               //变化原因 1 添加 2 删除 3 更新 4 锁定 5 解锁 6 实例化装备 7 删除实例化装备
 	TradeNum      uint64 `json:"trade_num" gorm:"column:trade_num"`             //交易单号

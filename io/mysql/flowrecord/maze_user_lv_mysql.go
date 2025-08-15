@@ -24,17 +24,6 @@ func SaveUserLevelRecord(logger fklog.FKLogI, record *mazeuserlevelkafka.MazeUse
 	record.DataBase = nowDbTable[0]
 	record.Table = nowDbTable[1]
 	record.SectionID = appconfig.GlobalConfig().Global.SectionID
-	// db, err := mysql.GetMysqlDb()
-	// if err != nil {
-	// 	logger.ErrorWF("GetMysqlDb fail", zap.Error(err), zap.Any("MazeUserLevelRecordTableName:", MazeUserLevelRecordTableName))
-	// 	return
-	// }
-
-	// res := db.Table(mysql.GetFullyQualifiedTableName(MazeUserLevelRecordTableName)).Create(record)
-	// if res.Error != nil {
-	// 	logger.ErrorWF("SaveUserLevelRecord fail", zap.Error(err), zap.Any("flowrecord", record))
-	// 	return
-	// }
 
 	// 打到kafka 中
 	data, err := json.Marshal(record)
@@ -45,7 +34,7 @@ func SaveUserLevelRecord(logger fklog.FKLogI, record *mazeuserlevelkafka.MazeUse
 	}
 	err = kafka.GflowKafka.SendMsg(context.TODO(), fmt.Sprintf("%v", time.Now().UnixNano()), data)
 	if err != nil {
-		logger.ErrorWF("SaveUserLevelRecord SendMsg",
+		logger.ErrorWF("SaveUserLevelRecord SendMsg Fail",
 			zap.Any("record", record),
 			zap.Error(err),
 		)

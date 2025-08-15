@@ -4,6 +4,7 @@ import (
 	"time"
 
 	"maze_game_server/io/dispatcher"
+	"maze_game_server/io/kafka/kafkacommonstruct"
 
 	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fklog"
 )
@@ -18,8 +19,11 @@ var d = dispatcher.NewDispatcher[*MazeBarrierUserGameRecord]()
 
 // var json = jsoniter.ConfigCompatibleWithStandardLibrary
 
+type KafkaCommon = kafkacommonstruct.KafkaCommon
+
 // 用户迷宫闯关纪录
 type MazeBarrierUserGameRecord struct {
+	KafkaCommon
 	UserId     uint64 `json:"user_id" gorm:"column:user_id"`         // 用户id
 	Barrier    int32  `json:"barrier" gorm:"column:barrier"`         // 关卡id
 	GameRet    int32  `json:"game_ret" gorm:"column:game_ret"`       // 用户闯关结果 1-通关成功 2-死亡失败 3-扫荡

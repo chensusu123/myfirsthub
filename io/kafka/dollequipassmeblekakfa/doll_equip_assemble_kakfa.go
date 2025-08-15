@@ -4,6 +4,7 @@ import (
 	"time"
 
 	"maze_game_server/io/dispatcher"
+	"maze_game_server/io/kafka/kafkacommonstruct"
 
 	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fklog"
 	"go.uber.org/zap"
@@ -33,7 +34,10 @@ const (
 	DollEquipAssembleOpBag      int32 = 1000 // 背包操作最终类型= DollEquipAssembleOpBag+ 背包ENUM_EQUIP_BAG_OP_TYPE
 )
 
+type KafkaCommon = kafkacommonstruct.KafkaCommon
+
 type MazeGameEquipAssembleRecord struct {
+	KafkaCommon
 	UserId     uint64 `json:"user_id" gorm:"column:user_id"`           // 用户Id
 	GroupId    uint32 `json:"group_id" gorm:"column:group_id"`         // 分组ID  当时服务分片所属分组
 	EquipPos   int32  `json:"equip_pos" gorm:"column:equip_pos"`       // 装备位ID
@@ -47,7 +51,7 @@ type MazeGameEquipAssembleRecord struct {
 	RetCode    int32  `json:"ret_code" gorm:"column:ret_code"`         // 0:成功  其他失败
 	CodeMask   int32  `json:"code_mask" gorm:"column:code_mask"`       // 业务掩码
 	TransID    uint64 `json:"trans_id" gorm:"column:trans_id"`         // 事务Id
-	OpTime     int64  `json:"op_time" gorm:"column:create_time"`       // 流水时间戳
+	OpTime     int64  `json:"create_time" gorm:"column:create_time"`   // 流水时间戳
 	ServerId   int32  `json:"server_id" gorm:"column:server_id"`
 }
 
