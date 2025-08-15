@@ -16,7 +16,6 @@ import (
 	"maze_game_server/servers/maze_main_server/process/frame"
 	"maze_game_server/servers/maze_main_server/process/game"
 	"maze_game_server/servers/maze_main_server/process/game/energy"
-	"maze_game_server/servers/maze_main_server/process/game/sweep"
 	"maze_game_server/servers/maze_main_server/process/interact"
 	"maze_game_server/servers/maze_main_server/process/item"
 	"maze_game_server/servers/maze_main_server/process/pay"
@@ -37,7 +36,6 @@ func Components() (comps *component.Components, routes *codec.Routes) {
 		reg(game.NewGame())                // 关卡组件
 		reg(attr_calc.NewProperty())       // 人物属性
 		reg(energy.NewEnergy())            // 体力组件
-		reg(sweep.NewSweep())              // 扫荡组件
 		reg(buff.NewBuff())                // Buff组件
 		reg(collect.NewCollect())          // 挂机组件
 		reg(equip.NewEquip())              // 装备组件
