@@ -11,3 +11,6 @@ mysql_list:
     password: "123456"
     sharding_type: 0
     sharding_count: 1
+kafka_list:
+  - name: maze_main_server_flow.kafka
+    topic: topic-s-gameflow

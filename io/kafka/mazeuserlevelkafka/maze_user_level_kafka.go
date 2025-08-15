@@ -4,6 +4,7 @@ import (
 	"time"
 
 	"maze_game_server/io/dispatcher"
+	"maze_game_server/io/kafka/kafkacommonstruct"
 
 	jsoniter "github.com/json-iterator/go"
 	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fklog"
@@ -12,8 +13,11 @@ import (
 
 var json = jsoniter.ConfigCompatibleWithStandardLibrary
 
+type KafkaCommon = kafkacommonstruct.KafkaCommon
+
 // 用户等级变化流水
 type MazeUserLevelRecord struct {
+	KafkaCommon
 	UserId      uint64 `json:"user_id" gorm:"column:user_id"`             // 用户id
 	OldLevel    int32  `json:"old_level" gorm:"column:old_level"`         // 旧等级
 	OldTotalExp int64  `json:"old_total_exp" gorm:"column:old_total_exp"` // 旧经验总值
