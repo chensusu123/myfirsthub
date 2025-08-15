@@ -27,7 +27,7 @@ type MazeBarriesV8ConfigRow struct {
 	Drop_equip_lv_min          int32           `json:"drop_equip_lv_min"`          // 掉落装备等级，小
 	Drop_equip_lv_max          int32           `json:"drop_equip_lv_max"`          // 掉落装备等级,大
 	Energy_list                []int32         `json:"energy_list"`                // 能力等级队列（随机）
-	Initial_kongfu             int32           `json:"initial_kongfu"`             // 玩家初始武力值
+	Barries_add_kongfu         int32           `json:"barries_add_kongfu"`         // 关卡通关值增量
 	Energy_id                  map[int32]int32 `json:"energy_id"`                  // 当前关卡使用的能力id
 	Energy_affix_rand_rule     map[int32]int32 `json:"energy_affix_rand_rule"`     // 能力词条随机规则
 	Rare_items_show            []int32         `json:"rare_items_show"`            // 展示为稀有的物品id
@@ -43,6 +43,8 @@ type MazeBarriesV8ConfigRow struct {
 	Need_item2_score           int32           `json:"need_item2_score"`           // 掉落道具2强化石所需积分
 	Item1_nums_per_pile        int32           `json:"item1_nums_per_pile"`        // 掉落道具1金币单堆数量
 	Item2_nums_per_pile        int32           `json:"item2_nums_per_pile"`        // 掉落道具2强化石单堆数量
+	Demon_num                  int32           `json:"demon_num"`                  // 猪妖值
+	Initial_speed              int32           `json:"initial_speed"`              // 初始速度（万分比)
 }
 
 // MazeBarriesV8Config from maze_barries_v8【迷宫-关卡信息】.xlsx maze_barries_v8
@@ -479,18 +481,18 @@ func (*gMazeBarriesV8Parser) Parse(logger fklog.FKLogI, data []string, row inter
 		}
 	}
 
-	// parse column 13 initial_kongfu : 玩家初始武力值
+	// parse column 13 barries_add_kongfu : 关卡通关值增量
 	if data[13] != "" {
 		tmp, err = strconv.ParseInt(data[13], 10, 64)
 		if err != nil {
-			err = errors.New("parse field initial_kongfu 玩家初始武力值 to int32 failed")
-			logger.ErrorWF("parse field initial_kongfu 玩家初始武力值 to int32 failed.",
+			err = errors.New("parse field barries_add_kongfu 关卡通关值增量 to int32 failed")
+			logger.ErrorWF("parse field barries_add_kongfu 关卡通关值增量 to int32 failed.",
 				zap.String("xlsx", "maze_barries_v8【迷宫-关卡信息】.xlsx"), zap.String("sheet", "maze_barries_v8"),
 				zap.String("parse_data", data[13]),
 				zap.Error(err))
 			return
 		}
-		config.Initial_kongfu = int32(tmp)
+		config.Barries_add_kongfu = int32(tmp)
 	}
 
 	// parse column 14 energy_id : 当前关卡使用的能力id
@@ -855,6 +857,34 @@ func (*gMazeBarriesV8Parser) Parse(logger fklog.FKLogI, data []string, row inter
 		}
 		config.Item2_nums_per_pile = int32(tmp)
 	}
+
+	// parse column 29 demon_num : 猪妖值
+	if data[29] != "" {
+		tmp, err = strconv.ParseInt(data[29], 10, 64)
+		if err != nil {
+			err = errors.New("parse field demon_num 猪妖值 to int32 failed")
+			logger.ErrorWF("parse field demon_num 猪妖值 to int32 failed.",
+				zap.String("xlsx", "maze_barries_v8【迷宫-关卡信息】.xlsx"), zap.String("sheet", "maze_barries_v8"),
+				zap.String("parse_data", data[29]),
+				zap.Error(err))
+			return
+		}
+		config.Demon_num = int32(tmp)
+	}
+
+	// parse column 30 initial_speed : 初始速度（万分比)
+	if data[30] != "" {
+		tmp, err = strconv.ParseInt(data[30], 10, 64)
+		if err != nil {
+			err = errors.New("parse field initial_speed 初始速度（万分比) to int32 failed")
+			logger.ErrorWF("parse field initial_speed 初始速度（万分比) to int32 failed.",
+				zap.String("xlsx", "maze_barries_v8【迷宫-关卡信息】.xlsx"), zap.String("sheet", "maze_barries_v8"),
+				zap.String("parse_data", data[30]),
+				zap.Error(err))
+			return
+		}
+		config.Initial_speed = int32(tmp)
+	}
 	return
 }
 
@@ -872,7 +902,7 @@ var gMazeBarriesV8Fields = []string{
 	"drop_equip_lv_min",
 	"drop_equip_lv_max",
 	"energy_list",
-	"initial_kongfu",
+	"barries_add_kongfu",
 	"energy_id",
 	"energy_affix_rand_rule",
 	"rare_items_show",
@@ -888,6 +918,8 @@ var gMazeBarriesV8Fields = []string{
 	"need_item2_score",
 	"item1_nums_per_pile",
 	"item2_nums_per_pile",
+	"demon_num",
+	"initial_speed",
 }
 
 // LoadDataManual load data for test
