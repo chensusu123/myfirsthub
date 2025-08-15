@@ -125,9 +125,10 @@ func (g *Game) OnMazeBarrierEnterRQ_10447_10448(s *session.Session, req *MazeGam
 	}
 
 	res.SaveData = &MazeGame.BarrierSaveData{
-		StageId:     proto.Int32(saveData.StageId),
-		RescueValue: proto.Int32(saveData.RescueValue),
-		BossPower:   proto.Int32(saveData.BossPower),
+		StageId:      proto.Int32(saveData.StageId),
+		RescueValue:  proto.Int32(saveData.RescueValue),
+		BossPower:    proto.Int32(saveData.BossPower),
+		BossProgress: proto.Float32(saveData.BossProgress),
 	}
 	initPassValue, err := mazecommonvalue.CalcInitPassValue(logger, req.GetBarrierId())
 	if err != nil {

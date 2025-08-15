@@ -9,9 +9,10 @@ import (
 
 // 关卡存档数据
 type BarrierSaveDataModel struct {
-	StageId     int32 `json:"stage_id,omitempty"`
-	RescueValue int32 `json:"rescue_value,omitempty"`
-	BossPower   int32 `json:"boss_power,omitempty"`
+	StageId      int32   `json:"stage_id,omitempty"`
+	RescueValue  int32   `json:"rescue_value,omitempty"`
+	BossPower    int32   `json:"boss_power,omitempty"`
+	BossProgress float32 `json:"boss_progress,omitempty"`
 }
 
 func NewBarrierSaveDataModel(logger fklog.FKLogI, userID uint64, barrierId int32, isLoad bool) (*BarrierSaveDataModel, error) {
