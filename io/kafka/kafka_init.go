@@ -22,6 +22,6 @@ func NewKafkaProduce(serviceName string, name string) *KafkaProducer {
 }
 
 func init() {
-	GflowKafka = NewKafkaProduce("test.kafka", "KafkaProducerDemo")
+	GflowKafka = NewKafkaProduce("maze_main_server_flow.kafka", "game_flow_produce")
 	serverdepend.RegisterDepend(GflowKafka)
 }
