@@ -1,28 +1,49 @@
 package flowrecord
 
 import (
-	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fklog"
-	"go.uber.org/zap"
+	"context"
+	"encoding/json"
+	"fmt"
+	"maze_game_server/io/kafka"
 	"maze_game_server/io/kafka/dollmazefoekafka"
 	"maze_game_server/io/mysql"
+	"strings"
+	"time"
+
+	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fklog"
+	"gitlab.ifreetalk.com/maze-plate/freetk/fkserver/appconfig"
+	"go.uber.org/zap"
 )
 
 const MazeFoeRecordTableName = "maze_foe_record"
 
 // 保存用户打怪流水
 func SaveFoeRecord(logger fklog.FKLogI, record *dollmazefoekafka.DollMazeFoeRecord) {
-	db, err := mysql.GetMysqlDb()
-	if err != nil {
-		logger.ErrorWF("GetMysqlDb fail", zap.Error(err), zap.Any("MazeFoeRecordTableName:", MazeFoeRecordTableName))
-		return
+	if record.CreateTime == 0 {
+		record.CreateTime = time.Now().UnixNano() / 1000000
 	}
 
-	res := db.Table(mysql.GetFullyQualifiedTableName(MazeFoeRecordTableName)).Create(record)
-	if res.Error != nil {
-		logger.ErrorWF("SaveFoeRecord fail", zap.Error(err), zap.Any("flowrecord", record))
+	nowDbTable := strings.Split(mysql.GetFullyQualifiedTableName(MazeAttrChgRecordTableName), ".")
+	record.DataBase = nowDbTable[0]
+	record.Table = nowDbTable[1]
+	record.SectionID = appconfig.GlobalConfig().Global.SectionID
+
+	// 打到kafka 中
+	data, err := json.Marshal(record)
+	if err != nil {
+		logger.ErrorWF("SaveAttrChgRecord Marshal Fail",
+			zap.Any("record", record))
 		return
 	}
-	logger.InfoWF("SaveFoeRecord succ", zap.Any("flowrecord", record))
+	err = kafka.GflowKafka.SendMsg(context.TODO(), fmt.Sprintf("%v", time.Now().UnixNano()), data)
+	if err != nil {
+		logger.ErrorWF("SaveAttrChgRecord SendMsg Fail",
+			zap.Any("record", record),
+			zap.Error(err),
+		)
+		return
+	}
+	logger.InfoWF("SaveAttrChgRecord succ", zap.Any("flowrecord", record))
 
 	return
 }
