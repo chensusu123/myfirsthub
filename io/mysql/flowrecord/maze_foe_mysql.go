@@ -19,11 +19,14 @@ const MazeFoeRecordTableName = "maze_foe_record"
 
 // 保存用户打怪流水
 func SaveFoeRecord(logger fklog.FKLogI, record *dollmazefoekafka.DollMazeFoeRecord) {
+	if record.AwardList == "null" {
+		record.AwardList = ""
+	}
 	if record.CreateTime == 0 {
 		record.CreateTime = time.Now().UnixNano() / 1000000
 	}
 
-	nowDbTable := strings.Split(mysql.GetFullyQualifiedTableName(MazeAttrChgRecordTableName), ".")
+	nowDbTable := strings.Split(mysql.GetFullyQualifiedTableName(MazeFoeRecordTableName), ".")
 	record.DataBase = nowDbTable[0]
 	record.Table = nowDbTable[1]
 	record.SectionID = appconfig.GlobalConfig().Global.SectionID
@@ -31,19 +34,19 @@ func SaveFoeRecord(logger fklog.FKLogI, record *dollmazefoekafka.DollMazeFoeReco
 	// 打到kafka 中
 	data, err := json.Marshal(record)
 	if err != nil {
-		logger.ErrorWF("SaveAttrChgRecord Marshal Fail",
+		logger.ErrorWF("SaveFoeRecord Marshal Fail",
 			zap.Any("record", record))
 		return
 	}
 	err = kafka.GflowKafka.SendMsg(context.TODO(), fmt.Sprintf("%v", time.Now().UnixNano()), data)
 	if err != nil {
-		logger.ErrorWF("SaveAttrChgRecord SendMsg Fail",
+		logger.ErrorWF("SaveFoeRecord SendMsg Fail",
 			zap.Any("record", record),
 			zap.Error(err),
 		)
 		return
 	}
-	logger.InfoWF("SaveAttrChgRecord succ", zap.Any("flowrecord", record))
+	logger.InfoWF("SaveFoeRecord succ", zap.Any("flowrecord", record))
 
 	return
 }
