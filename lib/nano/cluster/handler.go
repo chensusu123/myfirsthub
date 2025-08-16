@@ -287,7 +287,7 @@ func (h *LocalHandler) handle(conn net.Conn, r *http.Request, pcodec frame.Packe
 	// read loop
 	buf := make([]byte, 2048)
 	remoteAddr := agent.conn.RemoteAddr().String()
-
+	sessionID := agent.session.ID()
 	for {
 		n, err := conn.Read(buf)
 		if err != nil {
@@ -307,7 +307,8 @@ func (h *LocalHandler) handle(conn net.Conn, r *http.Request, pcodec frame.Packe
 			agent.setStatus(statusWorking)
 			span.SetAttributes(attribute.String("remote_addr", remoteAddr),
 				attribute.Int("recv_data_len", n),
-				attribute.Int64("sessionID", agent.session.UID()),
+				attribute.Int64("sessionID", sessionID),
+				attribute.Int64("user_id", agent.session.UID()),
 			)
 			span.AddEvent("agent.pcodec.decode")
 			msgs, packets, err := agent.pcodec.Decode(buf[:n])
