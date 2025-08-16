@@ -4,6 +4,7 @@ import (
 	"time"
 
 	"maze_game_server/io/dispatcher"
+	"maze_game_server/io/kafka/kafkacommonstruct"
 
 	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fklog"
 	"go.uber.org/zap"
@@ -11,8 +12,11 @@ import (
 
 // var json = jsoniter.ConfigCompatibleWithStandardLibrary
 
+type KafkaCommon = kafkacommonstruct.KafkaCommon
+
 // 用户货币变化流水
 type MazeMoneyRecord struct {
+	KafkaCommon
 	UserId        uint64 `json:"user_id" gorm:"column:user_id"`                 // 用户id
 	OldMoneyId    int32  `json:"old_money_id" gorm:"column:old_money_id"`       // 旧货币id
 	OldMoneyCount int64  `json:"old_money_count" gorm:"column:old_money_count"` // 旧货币数量

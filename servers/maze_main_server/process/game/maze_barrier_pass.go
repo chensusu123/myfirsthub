@@ -2,18 +2,23 @@ package game
 
 import (
 	"fmt"
+	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fklog"
 	"maze_game_server/common/constdef"
 	"maze_game_server/common/errors"
 	"maze_game_server/common/function/addequip"
 	"maze_game_server/common/function/gentradeno"
 	"maze_game_server/common/function/itemutil"
 	"maze_game_server/common/function/packtopb/equiptoitem"
+	"maze_game_server/common/structsdef"
 	"maze_game_server/config/GMazeActionCountV8Cfg"
 	"maze_game_server/config/GMazeBarriesV8Cfg"
 	"maze_game_server/io/kafka/mazebarrieruserkafka"
 	"maze_game_server/io/kafka/mazeuserlevelkafka"
+	"maze_game_server/io/redis/barrierscorerewardredis"
+	"maze_game_server/io/redis/mazeattrcalcnotifyqueue"
 	"maze_game_server/io/redis/mazebarriereventredis"
 	"maze_game_server/io/redis/mazebarrieropstatusredis"
+	"maze_game_server/io/redis/mazebuffinforedis"
 	"maze_game_server/io/redis/mazechallengenumredis"
 	"maze_game_server/io/redis/mazeuserbarrierredis"
 	"maze_game_server/io/redis/syncmazestorageinforedis"
@@ -26,6 +31,9 @@ import (
 	"maze_game_server/pb/common/MazeGame"
 	"maze_game_server/pb/server/MazeEquipSvr"
 	"maze_game_server/servers/maze_main_server/process/game/events"
+	"maze_game_server/services/barrierarearecordservice"
+	"maze_game_server/services/barriersavedataservice"
+	"maze_game_server/services/tempbuffservice"
 	"strings"
 	"time"
 
@@ -229,6 +237,14 @@ func (g *Game) OnMazeBarrierPassRQ_10459_10460(s *session.Session, req *MazeGame
 		}
 	}
 
+	killMonsterNum, totalDamage, _, err := barrierarearecordservice.GlobalBarrierAreaRecordService.GetBarrierAreaRecord(logger, userId, req.GetBarrierId())
+	if err != nil {
+		logger.ErrorWF("OnMazeBarrierPassRQ GetBarrierAreaRecord fail", zap.Error(err))
+		return err
+	}
+	res.TotalDamage = proto.Int64(totalDamage)
+	res.KillMonsterNum = proto.Int32(killMonsterNum)
+
 	err = mazebarriereventredis.LeaveBarrier(logger, userId, req.GetBarrierId(), true)
 	if err != nil {
 		logger.ErrorWF("OnMazeBarrierPassRQ LeaveBarrier fail", zap.Error(err))
@@ -237,12 +253,8 @@ func (g *Game) OnMazeBarrierPassRQ_10459_10460(s *session.Session, req *MazeGame
 	// 触发离开关卡事件
 	events.OnLeaveBarrier(logger, userId, 0, time.Now().UnixMilli(), &MazeGame.BattleEventLeaveBarrier{BarrierId: proto.Int32(req.GetBarrierId()), Result: MazeGame.BarrierResult_PASS.Enum()})
 
-	// 删除关卡存档
-	syncmazestorageinforedis.DelSyncMazeStorageInfo(userId, req.GetBarrierId())
-	// 清理关卡操作状态
-	mazebarrieropstatusredis.ClearOpStatus(logger, userId, req.GetBarrierId())
-	//清除关卡已获得奖励存档
-	//barrierscorerewardredis.DelBarrierScoreReward(logger, userId, userInfo.Barrier)
+	// 清除关卡的临时数据
+	ClearBarriersTempData(logger, userId, req.GetBarrierId())
 
 	logger.InfoWF("OnMazeBarrierPassRQ award dump", zap.Any("exp", req.GetFoeExp()), zap.Any("awardItem", awardMap), zap.Any("awardEquip", equipMap))
 
@@ -271,4 +283,30 @@ func getAwards(exp int32, awardMap map[int32]int64, awardEquip map[int32]int32) 
 		awardStr = append(awardStr, fmt.Sprintf("%d:%d", k, v))
 	}
 	return strings.Join(awardStr, "_")
+}
+
+// 清除关卡的临时数据
+func ClearBarriersTempData(logger fklog.FKLogI, userId uint64, barrierId int32) {
+	// 删除关卡存档
+	syncmazestorageinforedis.DelSyncMazeStorageInfo(userId, barrierId)
+	// 清理关卡操作状态
+	mazebarrieropstatusredis.ClearOpStatus(logger, userId, barrierId)
+	//清除关卡已获得奖励存档
+	barrierscorerewardredis.DelBarrierScoreReward(logger, userId, barrierId)
+	// 删除关卡存档 new
+	barriersavedataservice.GlobalBarrierSaveDataService.DelBarrierSaveData(logger, userId, barrierId)
+	// 删除临时buff
+	tempbuffservice.GlobalTempBuffService.DelTempBuff(logger, userId, barrierId)
+	// 删除通过的区域
+	tempbuffservice.GlobalTempBuffService.DelPassArea(logger, userId, barrierId)
+
+	mazebuffinforedis.DelMazeBuffBySrc(logger, userId, constdef.MazeBuffSrcSelectBuffForce)
+	// 推送属性计算消息
+	calcAttrNotify := &structsdef.MazeCalcAttrNotifyMsg{
+		UserId:  userId,
+		ChgType: constdef.MazeBuffChgForceValue,
+		Session: "buff",
+		BuffSrc: constdef.MazeBuffSrcSelectBuffForce,
+	}
+	mazeattrcalcnotifyqueue.SendMazeAttrCalcNotify(logger, calcAttrNotify)
 }

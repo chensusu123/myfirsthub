@@ -5,17 +5,21 @@ import (
 
 	"maze_game_server/common/function/itemutil"
 	"maze_game_server/io/dispatcher"
+	"maze_game_server/io/kafka/kafkacommonstruct"
 	"maze_game_server/pb/common/MazeCommon"
 
 	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fklog"
 	"go.uber.org/zap"
 )
 
+type KafkaCommon = kafkacommonstruct.KafkaCommon
+
 // 装备位强化流水
 type EquipPosLevelUpRecord struct {
+	KafkaCommon
 	UserId       uint64 `json:"user_id" gorm:"column:user_id"`
 	GroupId      uint32 `json:"group_id" gorm:"column:group_id"`
-	OpTime       int64  `json:"op_time" gorm:"column:create_time"` // 毫秒时间戳
+	OpTime       int64  `json:"create_time" gorm:"column:create_time"` // 毫秒时间戳
 	PosId        int32  `json:"pos_id" gorm:"column:pos_id"`
 	OldPosLv     int32  `json:"old_pos_lv" gorm:"column:old_pos_lv"`           // 强化前装备位等级
 	NewPosLv     int32  `json:"new_pos_lv" gorm:"column:new_pos_lv"`           // 强化后装备位等级

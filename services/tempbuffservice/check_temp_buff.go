@@ -3,14 +3,14 @@ package tempbuffservice
 import (
 	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fklog"
 	"go.uber.org/zap"
+	"maze_game_server/excel/dollmappuzzlenewcfgex"
 	"maze_game_server/excel/mazeenergyaffixlvv8config"
 	"maze_game_server/io/kafka/mazetempbuffchgmsg"
-	"maze_game_server/model/passareamodel"
 	"maze_game_server/model/tempbuffmodel"
 )
 
 // 进入关卡前检查关卡的buff情况，因为可能会有清除部分buff的情况
-func (s *service) CheckTempBuff(logger fklog.FKLogI, userId uint64, barrierId int32) (*tempbuffmodel.TempBuffInfoModel, error) {
+func (s *service) CheckTempBuff(logger fklog.FKLogI, userId uint64, barrierId int32, stage int32) (*tempbuffmodel.TempBuffInfoModel, error) {
 	tempBuff, err := tempbuffmodel.NewTempBuffInfoModel(logger, userId, barrierId)
 	if err != nil {
 		logger.ErrorWF("checkTempBuff GetMazeTempBuff", zap.Error(err))
@@ -21,16 +21,17 @@ func (s *service) CheckTempBuff(logger fklog.FKLogI, userId uint64, barrierId in
 		return nil, nil
 	}
 	// 已选择的buff不是0，就需要检查了
-	passArea, err := passareamodel.NewPassAreaModel(logger, userId, barrierId)
-	if err != nil {
-		logger.ErrorWF("checkTempBuff GetBarrierPassArea fail", zap.Error(err))
-		return nil, err
-	}
+	//passArea, err := passareamodel.NewPassAreaModel(logger, userId, barrierId)
+	//if err != nil {
+	//	logger.ErrorWF("checkTempBuff GetBarrierPassArea fail", zap.Error(err))
+	//	return nil, err
+	//}
+	passArea := dollmappuzzlenewcfgex.GetPassAreaInfos(barrierId, stage)
 	deleteBuffIds := make([]int32, 0)
 	j := 0
 	for _, temp := range tempBuff.SelectedBuff {
 		exist := false
-		for _, i := range passArea.PassAreaList {
+		for _, i := range passArea {
 			if temp.AreaId == i.AreaId && temp.AreaIndex == i.AreaIndex {
 				exist = true
 			}

@@ -4,6 +4,7 @@ import (
 	"time"
 
 	"maze_game_server/io/dispatcher"
+	"maze_game_server/io/kafka/kafkacommonstruct"
 
 	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fklog"
 	"go.uber.org/zap"
@@ -11,8 +12,11 @@ import (
 
 // var json = jsoniter.ConfigCompatibleWithStandardLibrary
 
+type KafkaCommon = kafkacommonstruct.KafkaCommon
+
 // 用户复活流水
 type MazeRebornRecord struct {
+	KafkaCommon
 	UserId      uint64 `json:"user_id" gorm:"column:user_id"`           // 用户id
 	Barrier     int32  `json:"barrier" gorm:"column:barrier"`           // 关卡id
 	RebornCount int64  `json:"reborn_count" gorm:"column:reborn_count"` // 复活次数 第n次复活

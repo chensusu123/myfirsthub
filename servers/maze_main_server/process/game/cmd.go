@@ -293,7 +293,8 @@ func ClearBarrier(logger fklog.FKLogI, userId uint64) (err error) {
 	if err != nil {
 		return
 	}
-
+	
+	ClearBarriersTempData(logger, userId, userInfo.Barrier)
 	return
 
 }

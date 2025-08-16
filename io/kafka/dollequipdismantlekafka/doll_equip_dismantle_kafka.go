@@ -4,6 +4,7 @@ import (
 	"time"
 
 	"maze_game_server/io/dispatcher"
+	"maze_game_server/io/kafka/kafkacommonstruct"
 
 	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fklog"
 	"go.uber.org/zap"
@@ -19,8 +20,11 @@ const (
 
 // var json = jsoniter.ConfigCompatibleWithStandardLibrary
 
+type KafkaCommon = kafkacommonstruct.KafkaCommon
+
 // 装备分解流水
 type MazeGameEquipDismantleRecord struct {
+	KafkaCommon
 	UserId     uint64 `json:"user_id" gorm:"column:user_id"`         // 用户id
 	EquipGuids string `json:"equip_guids" gorm:"column:equip_guids"` // 装备guid列表
 	TradeNum   uint64 `json:"trade_num" gorm:"column:trade_num"`     // 交易单号

@@ -4,6 +4,7 @@ import (
 	"time"
 
 	"maze_game_server/io/dispatcher"
+	"maze_game_server/io/kafka/kafkacommonstruct"
 
 	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fklog"
 	"go.uber.org/zap"
@@ -17,8 +18,11 @@ const (
 	MazeCollectReceive = 3 // 领取
 )
 
+type KafkaCommon = kafkacommonstruct.KafkaCommon
+
 // 迷宫挂机变化流水
 type MazeCollectChgRecord struct {
+	KafkaCommon
 	UserId        uint64 `json:"user_id" gorm:"column:user_id"`               // 用户id
 	OpType        int32  `json:"op_type" gorm:"column:op_type"`               // 1.初始化 2.定时收集 3.领取
 	StartTime     int64  `json:"start_time" gorm:"column:start_time"`         // 开始时间

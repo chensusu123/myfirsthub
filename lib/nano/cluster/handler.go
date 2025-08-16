@@ -48,6 +48,11 @@ import (
 
 	"github.com/gorilla/websocket"
 	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fklog"
+	"gitlab.ifreetalk.com/maze-plate/freetk/pkg/logidutil"
+	"go.opentelemetry.io/otel"
+	"go.opentelemetry.io/otel/attribute"
+	"go.opentelemetry.io/otel/codes"
+	"go.opentelemetry.io/otel/trace"
 	"go.uber.org/zap"
 )
 
@@ -281,6 +286,8 @@ func (h *LocalHandler) handle(conn net.Conn, r *http.Request, pcodec frame.Packe
 
 	// read loop
 	buf := make([]byte, 2048)
+	remoteAddr := agent.conn.RemoteAddr().String()
+	sessionID := agent.session.ID()
 	for {
 		n, err := conn.Read(buf)
 		if err != nil {
@@ -290,17 +297,28 @@ func (h *LocalHandler) handle(conn net.Conn, r *http.Request, pcodec frame.Packe
 		}
 
 		if agent.pcodec != nil {
+			loggerLoop := logger.Clone("nano")
+			loggerLoop.SetLogId(logidutil.GenerateLogID())
+			ctx := fklog.ContextWithLogger(context.Background(), loggerLoop)
+			tracer := otel.Tracer("nano.recive")
+			ctx, span := tracer.Start(ctx, "recive_data")
+
 			// Must working
 			agent.setStatus(statusWorking)
-
+			span.SetAttributes(attribute.String("remote_addr", remoteAddr),
+				attribute.Int("recv_data_len", n),
+				attribute.Int64("sessionID", sessionID),
+			)
+			span.AddEvent("agent.pcodec.decode")
 			msgs, packets, err := agent.pcodec.Decode(buf[:n])
 			if err != nil {
 				lastErr = err
 				log.Println(err.Error())
-
+				span.RecordError(err)
+				span.SetStatus(codes.Error, "agent.pcodec.Decode failed.")
 				// process message decoded
 				for index, m := range msgs {
-					logger.InfoWF("nano process packet start", zap.Uint64("ID", m.ID),
+					loggerLoop.CtxInfo(ctx, "nano process packet start", zap.Uint64("ID", m.ID),
 						zap.String("remote_addr", agent.conn.RemoteAddr().String()),
 						zap.String("route", m.Route),
 						zap.Uint16("PackLen", packets[index].PackLen),
@@ -310,14 +328,17 @@ func (h *LocalHandler) handle(conn net.Conn, r *http.Request, pcodec frame.Packe
 						zap.Uint8("CompressType", packets[index].CompressType),
 						zap.Int("rq_data_len", len(m.Data)),
 					)
-					h.processMessage(agent, m)
+					h.processMessage(ctx, agent, m)
 				}
+				fklog.ContextAppLogger(ctx).CtxError(ctx, "nano message processed", zap.Error(err))
+				span.End()
 				return
 			}
 
+			span.AddEvent("process.message", trace.EventOption(trace.WithAttributes(attribute.Int("msg_count", len(msgs)))))
 			// process all message
 			for index, m := range msgs {
-				logger.InfoWF("nano process packet start", zap.Uint64("ID", m.ID),
+				loggerLoop.CtxInfo(ctx, "nano process packet start", zap.Uint64("ID", m.ID),
 					zap.String("route", m.Route),
 					zap.String("remote_addr", agent.conn.RemoteAddr().String()),
 					zap.Uint16("PackLen", packets[index].PackLen),
@@ -327,8 +348,10 @@ func (h *LocalHandler) handle(conn net.Conn, r *http.Request, pcodec frame.Packe
 					zap.Uint8("CompressType", packets[index].CompressType),
 					zap.Int("rq_data_len", len(m.Data)),
 				)
-				h.processMessage(agent, m)
+				h.processMessage(ctx, agent, m)
 			}
+
+			span.End()
 		} else {
 			// TODO(warning): decoder use slice for performance, packet data should be copy before next Decode
 			packets, err := agent.decoder.Decode(buf[:n])
@@ -391,7 +414,7 @@ func (h *LocalHandler) processPacket(agent *agent, p *packet.Packet) error {
 		if err != nil {
 			return err
 		}
-		h.processMessage(agent, msg)
+		h.processMessage(context.TODO(), agent, msg)
 
 	case packet.Heartbeat:
 		// expected
@@ -491,7 +514,7 @@ func (h *LocalHandler) remoteProcess(session *session.Session, msg *message.Mess
 	}
 }
 
-func (h *LocalHandler) processMessage(agent *agent, msg *message.Message) {
+func (h *LocalHandler) processMessage(ctx context.Context, agent *agent, msg *message.Message) {
 	var lastMid uint64
 	switch msg.Type {
 	case message.Request:
@@ -503,11 +526,18 @@ func (h *LocalHandler) processMessage(agent *agent, msg *message.Message) {
 		return
 	}
 
+	tracer := otel.Tracer("nano.process.message")
+	ctx, span := tracer.Start(ctx, msg.Route)
+
+	// agent.session.SetContext(ctx)
 	handler, found := h.localHandlers[msg.Route]
 	if !found {
+		span.AddEvent("nano.remote.process")
 		h.remoteProcess(agent.session, msg, false)
+		span.End()
 	} else {
-		h.localProcess(handler, lastMid, agent.session, agent.serializer, msg)
+		span.AddEvent("nano.local.process")
+		h.localProcess(ctx, handler, lastMid, agent.session, agent.serializer, msg)
 	}
 }
 
@@ -520,7 +550,7 @@ func (h *LocalHandler) handleWS(conn *websocket.Conn, r *http.Request, pcodec fr
 	go h.handle(c, r, pcodec)
 }
 
-func (h *LocalHandler) localProcess(handler *component.Handler, lastMid uint64, session *session.Session, serializer serialize.Serializer, msg *message.Message) {
+func (h *LocalHandler) localProcess(ctx context.Context, handler *component.Handler, lastMid uint64, session *session.Session, serializer serialize.Serializer, msg *message.Message) {
 	if pipe := h.pipeline; pipe != nil {
 		err := pipe.Inbound().Process(session, msg)
 		if err != nil {
@@ -528,7 +558,8 @@ func (h *LocalHandler) localProcess(handler *component.Handler, lastMid uint64, 
 			return
 		}
 	}
-
+	span := trace.SpanFromContext(ctx)
+	span.AddEvent("nano.local.process.begin")
 	payload := msg.Data
 	var data interface{}
 	if handler.IsRawArg {
@@ -538,9 +569,13 @@ func (h *LocalHandler) localProcess(handler *component.Handler, lastMid uint64, 
 		if serializer == nil {
 			serializer = env.Serializer
 		}
+		span.AddEvent("nano.unmarshal")
 		err := serializer.Unmarshal(payload, data)
 		if err != nil {
+			span.RecordError(err)
+			span.SetStatus(codes.Error, "Unmarshal failed.")
 			log.Println(fmt.Sprintf("Deserialize to %T failed: %+v (%v)", data, err, payload))
+			span.End()
 			return
 		}
 	}
@@ -557,11 +592,21 @@ func (h *LocalHandler) localProcess(handler *component.Handler, lastMid uint64, 
 		case *acceptor:
 			v.lastMid = lastMid
 		}
-
+		// span := trace.SpanFromContext(ctx)
+		span.AddEvent("nano.func.call.begin")
+		session.SetContext(ctx)
 		result := handler.Method.Func.Call(args)
+		span.AddEvent("nano.func.call.end")
+		defer func() {
+			span.AddEvent("nano.local.process.end")
+			session.SetContext(context.Background())
+			span.End()
+		}()
 		if len(result) > 0 {
 			if err := result[0].Interface(); err != nil {
 				log.Println(fmt.Sprintf("Service %s error: %+v", msg.Route, err))
+				span.RecordError(err.(error))
+				span.SetStatus(codes.Error, "handler.Method.Func.Call failed.")
 			}
 		}
 	}
@@ -569,6 +614,8 @@ func (h *LocalHandler) localProcess(handler *component.Handler, lastMid uint64, 
 	index := strings.LastIndex(msg.Route, ".")
 	if index < 0 {
 		log.Println(fmt.Sprintf("nano/handler: invalid route %s", msg.Route))
+		span.SetStatus(codes.Error, "nano/handler: invalid route")
+		span.End()
 		return
 	}
 
@@ -578,6 +625,8 @@ func (h *LocalHandler) localProcess(handler *component.Handler, lastMid uint64, 
 		sched := session.Value(s.SchedName)
 		if sched == nil {
 			log.Println(fmt.Sprintf("nanl/handler: cannot found `schedular.LocalScheduler` by %s", s.SchedName))
+			span.SetStatus(codes.Error, "nanl/handler: cannot found schedular.LocalScheduler")
+			span.End()
 			return
 		}
 
@@ -585,10 +634,14 @@ func (h *LocalHandler) localProcess(handler *component.Handler, lastMid uint64, 
 		if !ok {
 			log.Println(fmt.Sprintf("nanl/handler: Type %T does not implement the `schedular.LocalScheduler` interface",
 				sched))
+			span.SetStatus(codes.Error, "nanl/handler: cannot found schedular.LocalScheduler")
+			span.End()
 			return
 		}
+		span.AddEvent("nano.local.schedule.task")
 		local.Schedule(task)
 	} else {
+		span.AddEvent("nano.schedule.task")
 		scheduler.PushTask(task)
 	}
 }

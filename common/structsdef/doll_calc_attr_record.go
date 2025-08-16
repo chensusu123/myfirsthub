@@ -6,7 +6,12 @@
  */
 package structsdef
 
+import "maze_game_server/io/kafka/kafkacommonstruct"
+
+type KafkaCommon = kafkacommonstruct.KafkaCommon
+
 type MazeGameAttrChgRecord struct {
+	KafkaCommon
 	UserId     uint64 `json:"user_id" gorm:"column:user_id"`           //用户Id
 	GroupId    uint32 `json:"group_id" gorm:"column:group_id"`         //分组Id
 	AttrId     int32  `json:"attr_id" gorm:"column:attr_id"`           //属性ID
