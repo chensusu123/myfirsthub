@@ -308,6 +308,7 @@ func (h *LocalHandler) handle(conn net.Conn, r *http.Request, pcodec frame.Packe
 			span.SetAttributes(attribute.String("remote_addr", remoteAddr),
 				attribute.Int("recv_data_len", n),
 				attribute.Int64("sessionID", sessionID),
+				attribute.Int64("user_id", agent.session.UID()),
 			)
 			span.AddEvent("agent.pcodec.decode")
 			msgs, packets, err := agent.pcodec.Decode(buf[:n])

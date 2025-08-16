@@ -245,43 +245,47 @@ func (s *service) createOptionalBuffList(logger fklog.FKLogI, buffInfo *tempbuff
 	num := mazeconfigv8config.GetBuffSelectCount()
 	for i := int64(1); i <= num; i++ {
 		var libraryId int32
+		var posLib map[int32]int32
 		switch i {
 		case 1:
-			libraryId, _ = s.randLibraryId(randConfig.Pos_1_lib, attrMask)
+			posLib = randConfig.Pos_1_lib
 		case 2:
-			libraryId, _ = s.randLibraryId(randConfig.Pos_2_lib, attrMask)
+			posLib = randConfig.Pos_2_lib
 		case 3:
-			libraryId, _ = s.randLibraryId(randConfig.Pos_3_lib, attrMask)
-		case 4:
-			libraryId, _ = s.randLibraryId(randConfig.Pos_4_lib, attrMask)
-		case 5:
-			libraryId, _ = s.randLibraryId(randConfig.Pos_5_lib, attrMask)
-		case 6:
-			libraryId, _ = s.randLibraryId(randConfig.Pos_6_lib, attrMask)
+			posLib = randConfig.Pos_3_lib
 		default:
 			logger.WarnWF("createOptionalBuffList unknown id", zap.Int64("num", i))
 			return nil, nil
 		}
-		if libraryId == 0 {
-			continue
-		}
-		// 随机库id
-		affixList, certainly_list := mazeenergyaffixlibraryv8config.GetEnergyLibraryAffixList(libraryId)
-		if len(affixList) == 0 {
-			return nil, errors.New("affixList is nil")
-		}
+		maxRandLibCount := len(posLib)
+		for j := 1; j <= maxRandLibCount; j++ {
+			libraryId, _ = s.randLibraryId(posLib, attrMask)
+			if libraryId == 0 {
+				continue
+			}
+			// 随机库id
+			affixList, certainly_list := mazeenergyaffixlibraryv8config.GetEnergyLibraryAffixList(libraryId)
+			if len(affixList) == 0 {
+				return nil, errors.New("affixList is nil")
+			}
 
-		// 过滤掉不可选择的词条
-		optionalList, totalWeight := s.filterBuffList(logger, optionalMap, affixList, certainly_list, selectedBuffMap, selectedBuffGroupMap)
-		// 随机选择个词条
-		buffId, weight := s.randomId(optionalList, totalWeight)
-		if buffId != 0 {
-			optionalMap[buffId] = struct{}{}
-		}
+			// 过滤出可选择的词条
+			optionalList, totalWeight := s.filterBuffList(logger, optionalMap, affixList, certainly_list, selectedBuffMap, selectedBuffGroupMap)
+			// 随机选择个词条
+			buffId, weight := s.randomId(optionalList, totalWeight)
 
-		logger.DebugWF("createOptionalBuffList random", zap.Int64("i", i), zap.Int32("libraryId", libraryId),
-			zap.Int32s("affixList", affixList), zap.Any("optionalList", optionalList),
-			zap.Int32("weight", weight), zap.Int32("id", buffId))
+			logger.DebugWF("createOptionalBuffList random", zap.Int64("pos", i), zap.Int32("libraryId", libraryId),
+				zap.Int32s("affixList", affixList), zap.Any("optionalList", optionalList),
+				zap.Int32("weight", weight), zap.Int32("id", buffId), zap.Int("randLibCount", j))
+
+			if buffId != 0 {
+				optionalMap[buffId] = struct{}{}
+				break
+			} else {
+				// 这次没随机到就把这个库删掉重新随机
+				delete(posLib, libraryId)
+			}
+		}
 	}
 
 	var optionalList []int32
@@ -331,10 +335,12 @@ func (s *service) filterBuffList(logger fklog.FKLogI, optionalMap map[int32]stru
 
 	// 先添加必选buff
 	for _, buffId := range ce_buffList {
+		if buffId == 0 {
+			continue
+		}
 		if _, ok := optionalMap[buffId]; ok {
 			continue
 		}
-
 		buffWeight := s.GetOptionBuffWeightInfo(logger, buffId, selectedBuffMap, selectedBuffGroupMap)
 		if buffWeight == nil {
 			continue

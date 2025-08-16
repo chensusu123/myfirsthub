@@ -18,12 +18,13 @@ func GetMazeConfig(configId int32) map[int32]int64 {
 }
 
 func GetBuffSelectCount() int64 {
-	config := GMazeConfigV8Cfg.Get(999)
-	if config == nil {
-		return 3
-	}
-
-	return config.Value_int
+	//config := GMazeConfigV8Cfg.Get(999)
+	//if config == nil {
+	//	return 3
+	//}
+	//
+	//return config.Value_int
+	return 3
 }
 
 func GetBuffSelectTime() int32 {
