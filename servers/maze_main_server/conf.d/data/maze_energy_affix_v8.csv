@@ -467,6 +467,6 @@ order,affix_group_id,affix_group_order,affix_lv,font_affix_condition,use_num_max
 600800303,6008,10,4,600800303,2,600,3080001:7000,癫狂,火焰伤害提升70%（临时测试）,,SkillBuffIcon_atlas0,jingshencuoluan
 600800401,6008,11,5,600800401,2,800,3080001:8000,毒液增伤,火焰伤害提升80%（临时测试）,,SkillBuffIcon_atlas0,liudu
 600800501,6008,12,6,600800501,1,1600,3080001:40000,尸爆,火焰伤害提升400%（临时测试）,,SkillBuffIcon_atlas0,shibao
-600900001,6009,1,1,0,1,200,890021:80000_890022:3000,血瓶掉率,血瓶掉落概率提高30%,,SkillBuffIcon_atlas0,xuepingdiaolvtigao
-600900101,6009,2,2,600900101,1,200,890021:80000_890022:3000,血瓶掉率,血瓶掉落概率提高30%,,SkillBuffIcon_atlas0,xuepingdiaolvtigao
+600900001,6009,1,1,0,1,200,890021:500000_890022:3000,血瓶掉率,血瓶掉落概率提高30%,,SkillBuffIcon_atlas0,xuepingdiaolvtigao
+600900101,6009,2,2,600900101,1,200,890021:500000_890022:3000,血瓶掉率,血瓶掉落概率提高30%,,SkillBuffIcon_atlas0,xuepingdiaolvtigao
 600900102,6009,3,2,600900102,1,200,890011:90000,血瓶效果,血瓶回复效果提高30%,,SkillBuffIcon_atlas0,huifutigao
