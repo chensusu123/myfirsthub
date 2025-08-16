@@ -672,17 +672,12 @@ github.com/prometheus/procfs v0.6.0/go.mod h1:cz+aTbrPOrUb4q7XlbU9ygM+/jj0fzG6c1
 github.com/prometheus/procfs v0.7.3/go.mod h1:cz+aTbrPOrUb4q7XlbU9ygM+/jj0fzG6c1xBZuNvfVA=
 github.com/prometheus/procfs v0.11.1 h1:xRC8Iq1yyca5ypa9n1EZnWZkt7dwcoRPQwX/5gwaUuI=
 github.com/prometheus/procfs v0.11.1/go.mod h1:eesXgaPo1q7lBpVMoMy0ZOFTth9hBn4W/y0/p/ScXhY=
-<<<<<<< HEAD
-github.com/redis/go-redis/v9 v9.10.0 h1:FxwK3eV8p/CQa0Ch276C7u2d0eNC9kCmAYQ7mCXCzVs=
-github.com/redis/go-redis/v9 v9.10.0/go.mod h1:huWgSWd8mW6+m0VPhJjSSQ+d6Nh1VICQ6Q5lHuCH/Iw=
-=======
 github.com/redis/go-redis/extra/rediscmd/v9 v9.12.1 h1:DR14pbiA9cjS5btoGU7oKuBcaYGzpxMsAyswO6mHqSk=
 github.com/redis/go-redis/extra/rediscmd/v9 v9.12.1/go.mod h1:mWGfYiY4x0lamv7XbhF0M1hxwa6EkfxzEpVsv9yG7PY=
 github.com/redis/go-redis/extra/redisotel/v9 v9.12.1 h1:2MioZj2s8Ovom2Yrpb/bBCJ88fR9L0MfMq2wAH44R8M=
 github.com/redis/go-redis/extra/redisotel/v9 v9.12.1/go.mod h1:nw1BvV+EW5TmXbfUOhFsPETFR390JLmtdWut88T1VAE=
 github.com/redis/go-redis/v9 v9.12.1 h1:k5iquqv27aBtnTm2tIkROUDp8JBXhXZIVu1InSgvovg=
 github.com/redis/go-redis/v9 v9.12.1/go.mod h1:huWgSWd8mW6+m0VPhJjSSQ+d6Nh1VICQ6Q5lHuCH/Iw=
->>>>>>> 418f7c79 (feat(session): 添加context支持到session结构)
 github.com/rogpeppe/fastuuid v1.2.0/go.mod h1:jVj6XXZzXRy/MSR5jhDC/2q6DgLz+nrA6LYCDYWNEvQ=
 github.com/rogpeppe/go-internal v1.3.0/go.mod h1:M8bDsm7K2OlrFYOpmOWEs/qY81heoFRclV5y23lUDJ4=
 github.com/rogpeppe/go-internal v1.13.1 h1:KvO1DLK/DRN07sQ1LQKScxyZJuNnedQ5/wKSR38lUII=
@@ -754,15 +749,12 @@ github.com/twmb/murmur3 v1.1.8 h1:8Yt9taO/WN3l08xErzjeschgZU2QSrwm1kclYq+0aRg=
 github.com/twmb/murmur3 v1.1.8/go.mod h1:Qq/R7NUyOfr65zD+6Q5IHKsJLwP7exErjN6lyyq3OSQ=
 github.com/urfave/cli v1.22.16 h1:MH0k6uJxdwdeWQTwhSO42Pwr4YLrNLwBtg1MRgTqPdQ=
 github.com/urfave/cli v1.22.16/go.mod h1:EeJR6BKodywf4zciqrdw6hpCPk68JO9z5LazXZMn5Po=
-<<<<<<< HEAD
 github.com/xdg-go/pbkdf2 v1.0.0 h1:Su7DPu48wXMwC3bs7MCNG+z4FhcyEuz5dlvchbq0B0c=
 github.com/xdg-go/pbkdf2 v1.0.0/go.mod h1:jrpuAogTd400dnrH08LKmI/xc1MbPOebTwRqcT5RDeI=
 github.com/xdg-go/scram v1.1.2 h1:FHX5I5B4i4hKRVRBCFRxq1iQRej7WO3hhBuJf+UUySY=
 github.com/xdg-go/scram v1.1.2/go.mod h1:RT/sEzTbU5y00aCK8UOx6R7YryM0iF1N2MOmC3kKLN4=
 github.com/xdg-go/stringprep v1.0.4 h1:XLI/Ng3O1Atzq0oBs3TWm+5ZVgkq2aqdlvP9JtoZ6c8=
 github.com/xdg-go/stringprep v1.0.4/go.mod h1:mPGuuIYwz7CmR2bT9j4GbQqutWS1zV24gijq1dTyGkM=
-=======
->>>>>>> 418f7c79 (feat(session): 添加context支持到session结构)
 github.com/yuin/goldmark v1.1.25/go.mod h1:3hX8gzYuyVAZsxl0MRgGTJEmQBFcNTphYh9decYSb74=
 github.com/yuin/goldmark v1.1.27/go.mod h1:3hX8gzYuyVAZsxl0MRgGTJEmQBFcNTphYh9decYSb74=
 github.com/yuin/goldmark v1.1.32/go.mod h1:3hX8gzYuyVAZsxl0MRgGTJEmQBFcNTphYh9decYSb74=
@@ -771,23 +763,12 @@ github.com/yuin/goldmark v1.3.5/go.mod h1:mwnBkeHKe2W/ZEtQ+71ViKU8L12m81fl3OWwC1
 github.com/yuin/goldmark v1.4.13/go.mod h1:6yULJ656Px+3vBD8DxQVa3kxgyrAnzto9xy5taEt/CY=
 gitlab.ifreetalk.com/maze-plate/extra v1.0.1-0.20250401060651-722653168d37 h1:lyB5pFQppuBFwhWaEaJN54c9dNnKVjoJoS9ZMezSfhc=
 gitlab.ifreetalk.com/maze-plate/extra v1.0.1-0.20250401060651-722653168d37/go.mod h1:ZHwfNF+727RvJctXbXHW/8kdkKBMIyUNHgUdwjqZ9E0=
-<<<<<<< HEAD
-gitlab.ifreetalk.com/maze-plate/freetk v1.0.1-0.20250805034318-1250369f1890 h1:1G75gYh0njrOSxP+tpEqDet+k/lA5R1DT+pH8/BjZb0=
-gitlab.ifreetalk.com/maze-plate/freetk v1.0.1-0.20250805034318-1250369f1890/go.mod h1:zi0BCHevNd8ZqyZS9hh4VOhcPIm7niLyr6Uw/5EH4XQ=
-gitlab.ifreetalk.com/nano-ecosystem/fklog v0.0.0-20250609141356-5698d091b098 h1:+ik01IEoU0Yxq6IXKKzrL5TONX8QX9rx9pbyNajEYcM=
-gitlab.ifreetalk.com/nano-ecosystem/fklog v0.0.0-20250609141356-5698d091b098/go.mod h1:EBlTAtJ7j+E85oFKb2G1hAjAVxTVUWvYTObbK2HlaY4=
-gitlab.ifreetalk.com/nano-ecosystem/nlog v0.0.0-20250621054907-e3e89b67b4be h1:zY2uCLvgs+SG7coTJufhHYl4hb5BM7VlCs/2hHb3IYQ=
-gitlab.ifreetalk.com/nano-ecosystem/nlog v0.0.0-20250621054907-e3e89b67b4be/go.mod h1:afctc1nzS/SmluhZpZPBJ/yvAKFVPFZfvJQfrdy9jSY=
-=======
 gitlab.ifreetalk.com/maze-plate/freetk v1.0.1-0.20250816023310-bdd4fa6f79bd h1:jaUbqe1yq0K2mveNP7w4iPdYNov95uyzbJjV32K2XTo=
 gitlab.ifreetalk.com/maze-plate/freetk v1.0.1-0.20250816023310-bdd4fa6f79bd/go.mod h1:GUZl0E8Dd//x8o1HwfOoVD13pHlmQTfr8AonO4+heP8=
-gitlab.ifreetalk.com/maze-plate/freetk v1.0.1-0.20250816033101-8946c7399fda h1:3PZ20QxKsiY9ZXg2SrooxrRSk/ZO4zWdVHLJoQNihF0=
-gitlab.ifreetalk.com/maze-plate/freetk v1.0.1-0.20250816033101-8946c7399fda/go.mod h1:GUZl0E8Dd//x8o1HwfOoVD13pHlmQTfr8AonO4+heP8=
 gitlab.ifreetalk.com/nano-ecosystem/fklog v0.0.0-20250813072008-4577841956ed h1:vi1Miaxky3Agh7JC3t6LP6/BBfEA5AdYXf6QdGzevUA=
 gitlab.ifreetalk.com/nano-ecosystem/fklog v0.0.0-20250813072008-4577841956ed/go.mod h1:EBlTAtJ7j+E85oFKb2G1hAjAVxTVUWvYTObbK2HlaY4=
 gitlab.ifreetalk.com/nano-ecosystem/nlog v0.0.0-20250814132232-adc839e27abd h1:XQLx7JtkGYw5Fq4N/A5y29CFP7GNZwAeeFUOY6QtuLk=
 gitlab.ifreetalk.com/nano-ecosystem/nlog v0.0.0-20250814132232-adc839e27abd/go.mod h1:OLDsN3KZPFtmMuvTz1ExvxaTtEpJhlorv4WE/tpoFWw=
->>>>>>> 418f7c79 (feat(session): 添加context支持到session结构)
 go.opencensus.io v0.21.0/go.mod h1:mSImk1erAIZhrmZN+AvHh14ztQfjbGwt4TtuofqLduU=
 go.opencensus.io v0.22.0/go.mod h1:+kGneAE2xo2IficOXnaByMWTGM9T73dGwxeWcUqIpI8=
 go.opencensus.io v0.22.2/go.mod h1:yxeiOL68Rb0Xd1ddK5vPZ/oVn4vY4Ynel7k9FzqtOIw=

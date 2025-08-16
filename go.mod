@@ -21,23 +21,14 @@ require (
 	github.com/pingcap/check v0.0.0-20211026125417-57bd13f7b5f0
 	github.com/pingcap/errors v0.11.4
 	github.com/polarismesh/polaris-go v1.6.1
-<<<<<<< HEAD
-	github.com/redis/go-redis/v9 v9.10.0
-	github.com/samber/slog-zap/v2 v2.6.2
-	github.com/spf13/cast v1.9.2
-	github.com/urfave/cli v1.22.16
-	gitlab.ifreetalk.com/maze-plate/freetk v1.0.1-0.20250805034318-1250369f1890
-	gitlab.ifreetalk.com/nano-ecosystem/fklog v0.0.0-20250609141356-5698d091b098
-=======
 	github.com/redis/go-redis/v9 v9.12.1
 	github.com/samber/slog-zap/v2 v2.6.2
 	github.com/spf13/cast v1.9.2
 	github.com/urfave/cli v1.22.16
-	gitlab.ifreetalk.com/maze-plate/freetk v1.0.1-0.20250816033101-8946c7399fda
+	gitlab.ifreetalk.com/maze-plate/freetk v1.0.1-0.20250816023310-bdd4fa6f79bd
 	gitlab.ifreetalk.com/nano-ecosystem/fklog v0.0.0-20250813072008-4577841956ed
 	go.opentelemetry.io/otel v1.37.0
 	go.opentelemetry.io/otel/trace v1.37.0
->>>>>>> 418f7c79 (feat(session): 添加context支持到session结构)
 	go.uber.org/atomic v1.11.0
 	go.uber.org/zap v1.27.0
 	google.golang.org/grpc v1.64.0
@@ -45,6 +36,8 @@ require (
 	gopkg.in/yaml.v3 v3.0.1
 	gorm.io/gorm v1.30.0
 )
+
+require go.opentelemetry.io/contrib/instrumentation/net/http/otelhttp v0.62.0
 
 require (
 	filippo.io/edwards25519 v1.1.0 // indirect
@@ -118,11 +111,8 @@ require (
 	github.com/prometheus/client_model v0.5.0 // indirect
 	github.com/prometheus/common v0.44.0 // indirect
 	github.com/prometheus/procfs v0.11.1 // indirect
-<<<<<<< HEAD
-=======
 	github.com/redis/go-redis/extra/rediscmd/v9 v9.12.1 // indirect
 	github.com/redis/go-redis/extra/redisotel/v9 v9.12.1 // indirect
->>>>>>> 418f7c79 (feat(session): 添加context支持到session结构)
 	github.com/russross/blackfriday/v2 v2.1.0 // indirect
 	github.com/samber/lo v1.47.0 // indirect
 	github.com/samber/slog-common v0.18.1 // indirect
@@ -135,13 +125,8 @@ require (
 	github.com/twitchyliquid64/golang-asm v0.15.1 // indirect
 	github.com/twmb/murmur3 v1.1.8 // indirect
 	gitlab.ifreetalk.com/maze-plate/extra v1.0.1-0.20250401060651-722653168d37 // indirect
-<<<<<<< HEAD
-	gitlab.ifreetalk.com/nano-ecosystem/nlog v0.0.0-20250621054907-e3e89b67b4be // indirect
-	go.opentelemetry.io/otel v1.24.0 // indirect
-=======
 	gitlab.ifreetalk.com/nano-ecosystem/nlog v0.0.0-20250814132232-adc839e27abd // indirect
 	go.opentelemetry.io/auto/sdk v1.1.0 // indirect
-	go.opentelemetry.io/contrib/instrumentation/net/http/otelhttp v0.62.0 // indirect
 	go.opentelemetry.io/contrib/instrumentation/runtime v0.45.0 // indirect
 	go.opentelemetry.io/contrib/propagators/b3 v1.20.0 // indirect
 	go.opentelemetry.io/contrib/propagators/ot v1.20.0 // indirect
@@ -149,7 +134,6 @@ require (
 	go.opentelemetry.io/otel/exporters/otlp/otlpmetric/otlpmetricgrpc v0.42.0 // indirect
 	go.opentelemetry.io/otel/exporters/otlp/otlptrace v1.19.0 // indirect
 	go.opentelemetry.io/otel/exporters/otlp/otlptrace/otlptracegrpc v1.19.0 // indirect
->>>>>>> 418f7c79 (feat(session): 添加context支持到session结构)
 	go.opentelemetry.io/otel/exporters/prometheus v0.44.0 // indirect
 	go.opentelemetry.io/otel/metric v1.37.0 // indirect
 	go.opentelemetry.io/otel/sdk v1.37.0 // indirect
