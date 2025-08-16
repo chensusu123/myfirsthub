@@ -28,7 +28,8 @@ func (g *Game) OnSaveBarrierDataRQ_10624_10625(s *session.Session, req *MazeGame
 	res.ErrInfo = errors.NO_ERROR
 	userId := uint64(s.UID())
 
-	err = barriersavedataservice.GlobalBarrierSaveDataService.SaveBarrierData(logger, userId, req.GetBarrierId(), req.GetStageId(), req.GetRescueValue(), req.GetBossPower())
+	err = barriersavedataservice.GlobalBarrierSaveDataService.SaveBarrierData(logger, userId, req.GetBarrierId(),
+		req.GetStageId(), req.GetRescueValue(), req.GetBossPower(), req.GetBossProgress())
 	if err != nil {
 		res.ErrInfo = errors.COMMON_ERROR_TIPS.Wrap(err.Error())
 		return nil

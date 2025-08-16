@@ -8,7 +8,7 @@ import (
 // BarrierSaveDataService 关卡存档service
 type BarrierSaveDataService interface {
 	// 保存关卡存档
-	SaveBarrierData(logger fklog.FKLogI, userId uint64, barrier, stageId, rescueValue, bossPower int32) error
+	SaveBarrierData(logger fklog.FKLogI, userId uint64, barrier, stageId, rescueValue, bossPower int32, bossProgress float32) error
 	// 获取关卡存档
 	GetBarrierSaveData(logger fklog.FKLogI, userId uint64, barrier int32) (*barriersavedatamodel.BarrierSaveDataModel, error)
 	// 删除关卡存档

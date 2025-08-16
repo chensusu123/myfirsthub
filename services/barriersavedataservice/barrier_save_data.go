@@ -8,7 +8,7 @@ import (
 	"maze_game_server/module/mazecommonvalue"
 )
 
-func (s *service) SaveBarrierData(logger fklog.FKLogI, userId uint64, barrier, stageId, rescueValue, bossPower int32) error {
+func (s *service) SaveBarrierData(logger fklog.FKLogI, userId uint64, barrier, stageId, rescueValue, bossPower int32, bossProgress float32) error {
 	model, err := barriersavedatamodel.NewBarrierSaveDataModel(logger, userId, barrier, false)
 	if err != nil {
 		logger.ErrorWF("GetBarrierSaveData NewBarrierSaveDataModel err", zap.Error(err))
@@ -17,6 +17,7 @@ func (s *service) SaveBarrierData(logger fklog.FKLogI, userId uint64, barrier, s
 	model.StageId = stageId
 	model.RescueValue = rescueValue
 	model.BossPower = bossPower
+	model.BossProgress = bossProgress
 	err = model.Save(logger, userId, barrier)
 	if err != nil {
 		logger.ErrorWF("SaveBarrierData save err", zap.Error(err))
