@@ -4,6 +4,7 @@ import (
 	"time"
 
 	"maze_game_server/io/dispatcher"
+	"maze_game_server/io/kafka/kafkacommonstruct"
 
 	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fklog"
 	"go.uber.org/zap"
@@ -11,8 +12,11 @@ import (
 
 // var json = jsoniter.ConfigCompatibleWithStandardLibrary
 
+type KafkaCommon = kafkacommonstruct.KafkaCommon
+
 // 用户打怪变化流水
 type DollMazeFoeRecord struct {
+	KafkaCommon
 	UserId      uint64 `json:"user_id" gorm:"column:user_id"`           // 用户id
 	Barrier     int32  `json:"barrier" gorm:"column:barrier"`           // 关卡id
 	Area        int32  `json:"area" gorm:"column:area"`                 // 区域id
