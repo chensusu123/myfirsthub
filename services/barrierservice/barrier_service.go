@@ -42,23 +42,23 @@ type BarrierService interface {
 	// // TODO 该功能接口依赖比较多，延后
 	// BarrierDeath(logger fklog.FKLogI, userID uint64, barrierID int32) (errinfo *MessageType.ErrorInfo)
 
-	// // GuardDeath 关卡中击杀(守卫)怪物掉落奖励(注意：GuardDeath接口不负责增加奖励，增加操作由调用方处理)
-	// //
-	// // 返回值：
-	// // 	- kongfu: 宝箱掉落通关值
-	// // 	- equips: 宝箱掉落装备
-	// // 	- items: 掉落道具
-	// GuardDeath(logger fklog.FKLogI, userID uint64, barrierID int32, monsterID int32) (
-	// 	kongfu int32, equips map[int32]int32, items map[int32]int64, errinfo *MessageType.ErrorInfo)
+	// GuardDeath 关卡中击杀(守卫)怪物掉落奖励(注意：GuardDeath接口不负责增加奖励，增加操作由调用方处理)
+	//
+	// 返回值：
+	// 	- kongfu: 宝箱掉落通关值
+	// 	- equips: 宝箱掉落装备
+	// 	- items: 掉落道具
+	GuardDeath(logger fklog.FKLogI, userID uint64, barrierID int32, monsterID int32, monsterGuid int32) (
+		kongfu int32, equips map[int32]int32, items map[int32]int64, errinfo *MessageType.ErrorInfo)
 
-	// // OpenBox 关卡中打开宝箱(注意：OpenBox接口不负责增加奖励，增加操作由调用方处理)
-	// //
-	// // 返回值：
-	// // 	- kongfu: 宝箱掉落通关值
-	// // 	- equips: 宝箱掉落装备
-	// // 	- items: 掉落道具
-	// OpenBox(logger fklog.FKLogI, userID uint64, barrierID int32, boxID int32) (
-	// 	kongfu int32, equips map[int32]int32, items map[int32]int64, errinfo *MessageType.ErrorInfo)
+	// OpenBox 关卡中打开宝箱(注意：OpenBox接口不负责增加奖励，增加操作由调用方处理)
+	//
+	// 返回值：
+	// 	- kongfu: 宝箱掉落通关值
+	// 	- equips: 宝箱掉落装备
+	// 	- items: 掉落道具
+	OpenBox(logger fklog.FKLogI, userID uint64, barrierID int32, boxID int32) (
+		kongfu int32, equips map[int32]int32, items map[int32]int64, errinfo *MessageType.ErrorInfo)
 
 	// // GetUserBarrierInfo 获取用户指定关卡的存储信息
 	// GetUserBarrierInfo(logger fklog.FKLogI, userID uint64, barrierID int32) (barrierInfo *MazeBarrierCache.MazeBarrierCache, err error)
