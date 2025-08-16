@@ -1,0 +1,1 @@
+{"code":200000,"info":"execute success","type":"ROUTING","service":{"name":"service_register_url.api","namespace":"adl-cs","revision":"da39a3ee5e6b4b0d3255bfef95601890afd80709"},"routing":{"service":"service_register_url.api","namespace":"platform-cs","revision":"da39a3ee5e6b4b0d3255bfef95601890afd80709"},"aliasFor":{"name":"service_register_url.api","namespace":"platform-cs"}}

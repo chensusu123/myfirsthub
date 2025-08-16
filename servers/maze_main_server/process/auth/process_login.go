@@ -13,6 +13,7 @@ import (
 	"maze_game_server/pb/common/UserLogin"
 	"maze_game_server/usecase/online"
 
+	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fklog"
 	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fkprometheus"
 	"gitlab.ifreetalk.com/maze-plate/freetk/fkserver/appconfig"
 	"gitlab.ifreetalk.com/maze-plate/freetk/fkserver/config_manager"
@@ -20,10 +21,20 @@ import (
 	"google.golang.org/protobuf/proto"
 )
 
+func checkResResult(res *UserLogin.UserLoginRs) bool {
+	if res.Error == nil {
+		return false
+	}
+	if res.GetError().GetErrCode() != 0x80000000 {
+		return false
+	}
+	return true
+}
+
 func (a *Auth) OnLoginRQ_10492_10493(s *session.Session, req *UserLogin.UserLoginRq) (err error) {
 	defer fkprometheus.InfoPMT("OnLoginRQ")()
-
-	logger := log.Clone("Auth", uint64(req.GetAuthId()), 0)
+	ctx := s.Context()
+	logger := fklog.ContextAppLogger(ctx)
 	res := &UserLogin.UserLoginRs{}
 
 	res.Session = req.Session
@@ -32,7 +43,11 @@ func (a *Auth) OnLoginRQ_10492_10493(s *session.Session, req *UserLogin.UserLogi
 
 	defer func() {
 		err = s.Response(res)
-		logger.InfoWF("OnLoginRQ end", zap.Any("req", req), zap.Any("res", res), zap.String("ClientAddr", s.String("ClientAddr")))
+		if !checkResResult(res) {
+			// logger.CtxError(ctx, "OnLoginRQ end", zap.Any("req", req), zap.Any("res", res), zap.String("ClientAddr", s.String("ClientAddr")))
+		} else {
+			logger.CtxInfo(ctx, "OnLoginRQ end", zap.Any("req", req), zap.Any("res", res), zap.String("ClientAddr", s.String("ClientAddr")))
+		}
 	}()
 
 	// 认证

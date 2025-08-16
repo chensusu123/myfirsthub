@@ -21,6 +21,7 @@
 package session
 
 import (
+	"context"
 	"errors"
 	"net"
 	"sync"
@@ -41,10 +42,8 @@ type NetworkEntity interface {
 	RemoteAddr() net.Addr
 }
 
-var (
-	//ErrIllegalUID represents a invalid uid
-	ErrIllegalUID = errors.New("illegal uid")
-)
+// ErrIllegalUID represents a invalid uid
+var ErrIllegalUID = errors.New("illegal uid")
 
 // Session represents a client session which could storage temp data during low-level
 // keep connected, all data will be released when the low-level connection was broken.
@@ -58,6 +57,7 @@ type Session struct {
 	entity       NetworkEntity          // low-level network entity
 	data         map[string]interface{} // session data store
 	router       *Router
+	ctx          context.Context
 }
 
 // New returns a new session instance
@@ -416,4 +416,15 @@ func (s *Session) Clear() {
 
 	s.uid = 0
 	s.data = map[string]interface{}{}
+}
+
+func (s *Session) Context() context.Context {
+	if s.ctx == nil {
+		s.ctx = context.Background()
+	}
+	return s.ctx
+}
+
+func (s *Session) SetContext(ctx context.Context) {
+	s.ctx = ctx
 }
