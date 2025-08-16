@@ -1,8 +1,8 @@
 package game
 
 import (
+	"fmt"
 	"maze_game_server/common/constdef"
-	"maze_game_server/common/errors"
 	"maze_game_server/common/structsdef"
 	"maze_game_server/config/GMazeAttrSkillV8Cfg"
 	"maze_game_server/config/GMazeAttributeV8Cfg"
@@ -47,7 +47,7 @@ func GetUserBattleAttr(logger fklog.FKLogI, userId uint64, userAttrMap map[int32
 		attrCfg := GMazeAttributeV8Cfg.GetMazeAttributeV8Config(attrId)
 		if attrCfg == nil {
 			logger.WarnWF("GetUserBattleAttr GetAttributeConfig error", zap.Uint64("userId", userId), zap.Any("attrId", attrId))
-			return nil, errors.New("配置不存在")
+			return nil, fmt.Errorf("属性配置不存在: %d", attrId)
 		}
 		attrMap[attrId] = &MazeAIBattle.MazeAIAttrInfo{
 			Type:          proto.Int32(attrId),
