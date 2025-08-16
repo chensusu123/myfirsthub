@@ -254,10 +254,9 @@ func (s *service) createOptionalBuffList(logger fklog.FKLogI, buffInfo *tempbuff
 		case 3:
 			posLib = randConfig.Pos_3_lib
 		default:
-			logger.WarnWF("createOptionalBuffList unknown id", zap.Int64("num", i))
+			logger.WarnWF("createOptionalBuffList unknown id", zap.Int64("pos", i))
 			return nil, nil
 		}
-
 		maxRandLibCount := len(posLib)
 		for j := 1; j <= maxRandLibCount; j++ {
 			libraryId, _ = s.randLibraryId(posLib, attrMask)
@@ -285,7 +284,14 @@ func (s *service) createOptionalBuffList(logger fklog.FKLogI, buffInfo *tempbuff
 				break
 			} else {
 				// 这次没随机到就把这个库删掉重新随机
-				delete(posLib, libraryId)
+				tempPosLib := make(map[int32]int32)
+				for k, v := range posLib {
+					if k == libraryId {
+						continue
+					}
+					tempPosLib[k] = v
+				}
+				posLib = tempPosLib
 			}
 		}
 	}
@@ -431,7 +437,7 @@ func (s *service) checkFrontCondition(logger fklog.FKLogI, frontId int32, select
 	}
 
 	if count < frontConfig.Must_num {
-		logger.DebugWF("checkFrontCondition affix id set not enough", zap.Int32("frontId", frontId), zap.Int32("count", count))
+		//logger.DebugWF("checkFrontCondition affix id set not enough", zap.Int32("frontId", frontId), zap.Int32("count", count))
 		return false
 	}
 
