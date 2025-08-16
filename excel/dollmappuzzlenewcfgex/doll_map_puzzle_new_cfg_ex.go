@@ -84,7 +84,7 @@ func GetPassAreaInfos(barrierId, stageId int32) []*AreaInfo {
 	areaInfos := GetBarrierAreaInfos(barrierId)
 	passArea := make([]*AreaInfo, 0)
 	for _, i := range areaInfos {
-		if i.StageId != 0 || i.StageId > stageId {
+		if i.StageId == 0 || i.StageId > stageId {
 			continue
 		}
 		passArea = append(passArea, i)
