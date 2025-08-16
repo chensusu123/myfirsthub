@@ -257,20 +257,22 @@ func (s *service) createOptionalBuffList(logger fklog.FKLogI, buffInfo *tempbuff
 			logger.WarnWF("createOptionalBuffList unknown id", zap.Int64("num", i))
 			return nil, nil
 		}
+
 		maxRandLibCount := len(posLib)
 		for j := 1; j <= maxRandLibCount; j++ {
 			libraryId, _ = s.randLibraryId(posLib, attrMask)
 			if libraryId == 0 {
+				logger.InfoWF("randLibraryId libraryId id=0", zap.Any("posLib", posLib))
 				continue
 			}
 			// 随机库id
-			affixList, certainly_list := mazeenergyaffixlibraryv8config.GetEnergyLibraryAffixList(libraryId)
+			affixList, certainlyList := mazeenergyaffixlibraryv8config.GetEnergyLibraryAffixList(libraryId)
 			if len(affixList) == 0 {
 				return nil, errors.New("affixList is nil")
 			}
 
 			// 过滤出可选择的词条
-			optionalList, totalWeight := s.filterBuffList(logger, optionalMap, affixList, certainly_list, selectedBuffMap, selectedBuffGroupMap)
+			optionalList, totalWeight := s.filterBuffList(logger, optionalMap, affixList, certainlyList, selectedBuffMap, selectedBuffGroupMap)
 			// 随机选择个词条
 			buffId, weight := s.randomId(optionalList, totalWeight)
 
