@@ -33,11 +33,11 @@ import (
 
 // NetworkEntity represent low-level network instance
 type NetworkEntity interface {
-	Push(route string, v interface{}) error
-	RPC(route string, v interface{}) error
+	Push(ctx context.Context, route string, v interface{}) error
+	RPC(ctx context.Context, route string, v interface{}) error
 	LastMid() uint64
-	Response(v interface{}) error
-	ResponseMid(mid uint64, v interface{}) error
+	Response(ctx context.Context, v interface{}) error
+	ResponseMid(ctx context.Context, mid uint64, v interface{}) error
 	Close() error
 	RemoteAddr() net.Addr
 }
@@ -57,7 +57,7 @@ type Session struct {
 	entity       NetworkEntity          // low-level network entity
 	data         map[string]interface{} // session data store
 	router       *Router
-	ctx          context.Context
+	ctx          atomic.Value
 }
 
 // New returns a new session instance
@@ -83,24 +83,26 @@ func (s *Session) Router() *Router {
 }
 
 // RPC sends message to remote server
-func (s *Session) RPC(route string, v interface{}) error {
-	return s.entity.RPC(route, v)
+func (s *Session) RPC(ctx context.Context, route string, v interface{}) error {
+	return s.entity.RPC(ctx, route, v)
 }
 
 // Push message to client
-func (s *Session) Push(route string, v interface{}) error {
-	return s.entity.Push(route, v)
+func (s *Session) Push(ctx context.Context, route string, v interface{}) error {
+	return s.entity.Push(ctx, route, v)
 }
 
 // Response message to client
 func (s *Session) Response(v interface{}) error {
-	return s.entity.Response(v)
+	ctx := s.Context()
+	return s.entity.Response(ctx, v)
 }
 
 // ResponseMID responses message to client, mid is
 // request message ID
-func (s *Session) ResponseMID(mid uint64, v interface{}) error {
-	return s.entity.ResponseMid(mid, v)
+func (s *Session) ResponseMID(ctx context.Context, mid uint64, v interface{}) error {
+	// ctx := s.Context()
+	return s.entity.ResponseMid(ctx, mid, v)
 }
 
 // ID returns the session id
@@ -418,13 +420,19 @@ func (s *Session) Clear() {
 	s.data = map[string]interface{}{}
 }
 
+type SessionContext struct {
+	ctx context.Context
+}
+
 func (s *Session) Context() context.Context {
-	if s.ctx == nil {
-		s.ctx = context.Background()
+	ctx, ok := s.ctx.Load().(SessionContext)
+	if !ok {
+		return context.Background()
 	}
-	return s.ctx
+
+	return ctx.ctx
 }
 
 func (s *Session) SetContext(ctx context.Context) {
-	s.ctx = ctx
+	s.ctx.Store(SessionContext{ctx})
 }

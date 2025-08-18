@@ -1,6 +1,7 @@
 package cluster_test
 
 import (
+	"context"
 	"strings"
 	"testing"
 
@@ -25,11 +26,11 @@ type (
 )
 
 func (c *MasterComponent) Test(session *session.Session, _ []byte) error {
-	return session.Push("test", &testdata.Pong{Content: "master server pong"})
+	return session.Push(context.Background(), "test", &testdata.Pong{Content: "master server pong"})
 }
 
 func (c *GateComponent) Test(session *session.Session, ping *testdata.Ping) error {
-	return session.Push("test", &testdata.Pong{Content: "gate server pong"})
+	return session.Push(context.Background(), "test", &testdata.Pong{Content: "gate server pong"})
 }
 
 func (c *GateComponent) Test2(session *session.Session, ping *testdata.Ping) error {
@@ -37,7 +38,7 @@ func (c *GateComponent) Test2(session *session.Session, ping *testdata.Ping) err
 }
 
 func (c *GameComponent) Test(session *session.Session, _ []byte) error {
-	return session.Push("test", &testdata.Pong{Content: "game server pong"})
+	return session.Push(context.Background(), "test", &testdata.Pong{Content: "game server pong"})
 }
 
 func (c *GameComponent) Test2(session *session.Session, ping *testdata.Ping) error {

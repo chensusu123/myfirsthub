@@ -62,7 +62,7 @@ var (
 	hbd []byte // heartbeat packet data
 )
 
-type rpcHandler func(session *session.Session, msg *message.Message, noCopy bool)
+type rpcHandler func(ctx context.Context, session *session.Session, msg *message.Message, noCopy bool)
 
 // CustomerRemoteServiceRoute customer remote service route
 type CustomerRemoteServiceRoute func(service string, session *session.Session, members []*clusterpb.MemberInfo) *clusterpb.MemberInfo
@@ -431,7 +431,7 @@ func (h *LocalHandler) findMembers(service string) []*clusterpb.MemberInfo {
 	return h.remoteServices[service]
 }
 
-func (h *LocalHandler) remoteProcess(session *session.Session, msg *message.Message, noCopy bool) {
+func (h *LocalHandler) remoteProcess(ctx context.Context, session *session.Session, msg *message.Message, noCopy bool) {
 	index := strings.LastIndex(msg.Route, ".")
 	if index < 0 {
 		log.Println(fmt.Sprintf("nano/handler: invalid route %s", msg.Route))
@@ -500,7 +500,7 @@ func (h *LocalHandler) remoteProcess(session *session.Session, msg *message.Mess
 			Route:     msg.Route,
 			Data:      data,
 		}
-		_, err = client.HandleRequest(context.Background(), request)
+		_, err = client.HandleRequest(ctx, request)
 	case message.Notify:
 		request := &clusterpb.NotifyMessage{
 			GateAddr:  gateAddr,
@@ -508,7 +508,7 @@ func (h *LocalHandler) remoteProcess(session *session.Session, msg *message.Mess
 			Route:     msg.Route,
 			Data:      data,
 		}
-		_, err = client.HandleNotify(context.Background(), request)
+		_, err = client.HandleNotify(ctx, request)
 	}
 	if err != nil {
 		log.Println(fmt.Sprintf("Process remote message (%d:%s) error: %+v", msg.ID, msg.Route, err))
@@ -534,7 +534,7 @@ func (h *LocalHandler) processMessage(ctx context.Context, agent *agent, msg *me
 	handler, found := h.localHandlers[msg.Route]
 	if !found {
 		span.AddEvent("nano.remote.process")
-		h.remoteProcess(agent.session, msg, false)
+		h.remoteProcess(ctx, agent.session, msg, false)
 		span.End()
 	} else {
 		span.AddEvent("nano.local.process")
@@ -600,7 +600,7 @@ func (h *LocalHandler) localProcess(ctx context.Context, handler *component.Hand
 		span.AddEvent("nano.func.call.end")
 		defer func() {
 			span.AddEvent("nano.local.process.end")
-			session.SetContext(context.Background())
+			session.SetContext(context.TODO())
 			span.End()
 		}()
 		if len(result) > 0 {

@@ -1,1 +1,1 @@
-{"code":200000,"info":"execute success","client":{"host":"10.9.1.22","type":"SDK","version":"v1.6.0","id":"adl-user-server-s5-1-72791","stat":[{"target":"prometheus","port":57302,"path":"/metrics","protocol":"http"}]}}
+{"code":200000,"info":"execute success","client":{"host":"10.9.1.134","type":"SDK","version":"v1.6.0","id":"adl-user-server-s5-1-73482"}}
