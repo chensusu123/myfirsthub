@@ -20,6 +20,7 @@ func (g *Game) OnBarrierDamageRQ_10622_10623(s *session.Session, req *MazeGame.B
 	res.Header = req.Header
 	res.ErrInfo = errors.NO_ERROR
 	res.StageId = req.StageId
+	res.BarrierId = req.BarrierId
 
 	logger.InfoWF("OnBarrierDamageRQ start", zap.Any("req", req))
 	defer func() {
