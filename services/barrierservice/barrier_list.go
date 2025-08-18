@@ -5,6 +5,7 @@ import (
 	"maze_game_server/config/GMazeActionCountV8Cfg"
 	"maze_game_server/config/GMazeBarriesV8Cfg"
 	"maze_game_server/config/GMazeConfigV8Cfg"
+	"maze_game_server/io/redis/mazefixedbarrierredis"
 	"maze_game_server/model/userbarriermodel"
 	"maze_game_server/model/userinfomodel"
 	"maze_game_server/pb/common/MazeGame"
@@ -63,10 +64,35 @@ func (b *barrier) GetBarrierInfos(logger fklog.FKLogI, userID uint64) (barrierIn
 		}
 	}
 
+	currBarrier := userInfo.Barrier
+	if userInfo.Barrier == 0 {
+		currBarrier = 1
+	}
+	if userInfo.Barrier == userInfo.PassBarrier && userInfo.Barrier > 0 {
+		cfg := GMazeBarriesV8Cfg.Get(userInfo.Barrier)
+		if cfg != nil {
+			currBarrier = cfg.Next_id
+		}
+	}
+
+	// 检查固定关卡
+	fixedBarrierId, err := mazefixedbarrierredis.GetUserFixedBarrierID(logger, userID)
+	if err != nil {
+		logger.ErrorWF("GetBarrierInfos GetUserFixedBarrierID failed", zap.Error(err), zap.Uint64("userId", userID))
+	} else if fixedBarrierId > 0 && currBarrier == 1 {
+		currBarrier = fixedBarrierId
+		logger.WarnWF("Fix current barrier", zap.Uint64("userId", userID), zap.Int32("currBarrier", currBarrier))
+	}
+
+	passBarrier := userInfo.PassBarrier
+	if currBarrier > 1 {
+		passBarrier = currBarrier - 1
+	}
+
 	totalBarrierNum := passBarrierOffset + newBarrierOffset + 1
 
-	if userInfo.PassBarrier > 0 {
-		i := userInfo.PassBarrier
+	if passBarrier > 0 {
+		i := passBarrier
 		for {
 			if i <= 0 || len(barrierInfos) == int(passBarrierOffset) {
 				break
@@ -87,23 +113,6 @@ func (b *barrier) GetBarrierInfos(logger fklog.FKLogI, userID uint64) (barrierIn
 			barrierInfos = append(barrierInfos, sweepBarrier)
 			i = sweepCfg.Last_id
 		}
-	}
-
-	currBarrier := userInfo.Barrier
-	if userInfo.Barrier == 0 {
-		currBarrier = 1
-	}
-	if userInfo.Barrier == userInfo.PassBarrier && userInfo.Barrier > 0 {
-		cfg := GMazeBarriesV8Cfg.Get(userInfo.Barrier)
-		if cfg != nil {
-			currBarrier = cfg.Next_id
-		}
-	}
-
-	// 检查固定关卡
-	if userInfo.FixedBarrier > 0 && currBarrier == 1 {
-		currBarrier = userInfo.FixedBarrier
-		logger.WarnWF("Fix current barrier", zap.Uint64("userId", userID), zap.Int32("currBarrier", currBarrier))
 	}
 
 	index := currBarrier
