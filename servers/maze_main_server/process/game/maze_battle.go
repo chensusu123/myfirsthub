@@ -317,9 +317,9 @@ func GetUserAttrInfo(logger fklog.FKLogI, userId uint64, userAttrMap map[int32]i
 	// 激活人物技能
 	for _, cfg := range GMazeSkillInfoV8Cfg.GetAll() {
 		if cfg.Skill_attr_id > 0 {
-			_, ok := userAttrMap[cfg.Skill_attr_id]
+			value, ok := userAttrMap[cfg.Skill_attr_id]
 			// 判断是否激活技能
-			if ok {
+			if ok && value > 0 {
 				skillIds = append(skillIds, cfg.Id)
 			}
 		}
