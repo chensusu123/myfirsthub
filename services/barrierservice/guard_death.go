@@ -33,7 +33,7 @@ func (b *barrier) GuardDeath(logger fklog.FKLogI, userID uint64, barrierID int32
 	}
 
 	// 通关值
-	kongfu = foeCfg.Kongfu
+	kongfu = 0 //foeCfg.Kongfu
 
 	// 怪物掉落装备
 	equips = make(map[int32]int32)

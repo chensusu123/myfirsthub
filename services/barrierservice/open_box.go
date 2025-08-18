@@ -46,7 +46,7 @@ func (b *barrier) OpenBox(logger fklog.FKLogI, userID uint64, barrierID int32, b
 	}
 
 	// 奖励通关值
-	kongfu = boxCfg.Add_kongfu
+	kongfu = 0 //boxCfg.Add_kongfu
 
 	var (
 		awardEquip []int32
