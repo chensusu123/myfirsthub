@@ -552,15 +552,19 @@ func (h *LocalHandler) handleWS(conn *websocket.Conn, r *http.Request, pcodec fr
 }
 
 func (h *LocalHandler) localProcess(ctx context.Context, handler *component.Handler, lastMid uint64, session *session.Session, serializer serialize.Serializer, msg *message.Message) {
+	span := trace.SpanFromContext(ctx)
+	span.AddEvent("nano.local.process.begin")
 	if pipe := h.pipeline; pipe != nil {
 		err := pipe.Inbound().Process(session, msg)
 		if err != nil {
 			log.Println("Pipeline process failed: " + err.Error())
+			span.RecordError(err)
+			span.SetStatus(codes.Error, "Inbound().Process")
+			span.End()
 			return
 		}
 	}
-	span := trace.SpanFromContext(ctx)
-	span.AddEvent("nano.local.process.begin")
+
 	payload := msg.Data
 	var data interface{}
 	if handler.IsRawArg {
