@@ -45,6 +45,7 @@ type MazeBarriesV8ConfigRow struct {
 	Item2_nums_per_pile        int32           `json:"item2_nums_per_pile"`        // 掉落道具2强化石单堆数量
 	Demon_num                  int32           `json:"demon_num"`                  // 猪妖值
 	Initial_speed              int32           `json:"initial_speed"`              // 初始速度（万分比)
+	Demon_distance             []int32         `json:"demon_distance"`             // 阶段猪妖距离
 }
 
 // MazeBarriesV8Config from maze_barries_v8【迷宫-关卡信息】.xlsx maze_barries_v8
@@ -885,6 +886,25 @@ func (*gMazeBarriesV8Parser) Parse(logger fklog.FKLogI, data []string, row inter
 		}
 		config.Initial_speed = int32(tmp)
 	}
+
+	// parse column 31 demon_distance : 阶段猪妖距离
+	if data[31] != "" {
+
+		vals := strings.Split(data[31], ",")
+		for k, v := range vals {
+			tmp, err = strconv.ParseInt(v, 10, 64)
+			if err != nil {
+				err = errors.New("parse array field demon_distance 阶段猪妖距离 to []int32 failed")
+				logger.ErrorWF("parse array field demon_distance 阶段猪妖距离 to []int32 failed.",
+					zap.String("xlsx", "maze_barries_v8【迷宫-关卡信息】.xlsx"), zap.String("sheet", "maze_barries_v8"),
+					// zap.String("field_data",data[31]),
+					zap.String("parse_data", v), zap.Int("index", k),
+					zap.Error(err))
+				return
+			}
+			config.Demon_distance = append(config.Demon_distance, int32(tmp))
+		}
+	}
 	return
 }
 
@@ -920,6 +940,7 @@ var gMazeBarriesV8Fields = []string{
 	"item2_nums_per_pile",
 	"demon_num",
 	"initial_speed",
+	"demon_distance",
 }
 
 // LoadDataManual load data for test
