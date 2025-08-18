@@ -108,7 +108,7 @@ func DeleteData(logger fklog.FKLogI, key string) error {
 
 func paddingKey(key string, svr string) string {
 	appConfig := appconfig.GlobalConfig()
-	return fmt.Sprintf("svr%s:%s", appConfig.Global.SectionID, key)
+	return fmt.Sprintf("s:%s:%s", appConfig.Global.SectionID, key)
 }
 
 func LoadSvrData(logger fklog.FKLogI, key string, data interface{}) error {
