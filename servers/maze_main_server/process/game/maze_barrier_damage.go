@@ -29,7 +29,7 @@ func (g *Game) OnBarrierDamageRQ_10622_10623(s *session.Session, req *MazeGame.B
 
 	userId := uint64(s.UID())
 
-	if req.GetStageId() <= 0 || req.GetBarrierId() <= 0 {
+	if req.GetStageId() < 0 || req.GetBarrierId() <= 0 {
 		logger.ErrorWF("OnBarrierDamageRQ req barrier or areaId invalid", zap.Any("req", req))
 		res.ErrInfo = errors.COMMON_ERROR_TIPS.Wrap("关卡id未设置")
 		return

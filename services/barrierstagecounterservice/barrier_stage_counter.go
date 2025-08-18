@@ -37,6 +37,10 @@ func (s service) GetBarrierStageCounter(logger fklog.FKLogI, userId uint64, barr
 }
 
 func (s service) AddKillMonsterNum(logger fklog.FKLogI, userId uint64, barrierId, stageId, monsterId, addVal int32, monsterGuid int64) (killMonsterNum int32, guidList []int64, err error) {
+	if stageId <= 0 {
+		logger.ErrorWF("AddKillMonsterNum stageId is invalid", zap.Int32("stageId", stageId))
+		return
+	}
 	recordModel, err := barrierstagecountermodel.NewBarrierStageCounterModel(logger, userId, barrierId)
 	if err != nil {
 		logger.ErrorWF("AddKillMonsterNum NewBarrierStageCounterModel fail", zap.Error(err))
@@ -84,6 +88,10 @@ func (s service) AddKillMonsterNum(logger fklog.FKLogI, userId uint64, barrierId
 }
 
 func (s service) AddDamage(logger fklog.FKLogI, userId uint64, barrierId, stageId int32, addVal int64) (damage int64, err error) {
+	if stageId <= 0 {
+		logger.ErrorWF("AddDamage fail, stageId <= 0")
+		return
+	}
 	recordModel, err := barrierstagecountermodel.NewBarrierStageCounterModel(logger, userId, barrierId)
 	if err != nil {
 		logger.ErrorWF("AddDamage NewBarrierStageCounterModel fail", zap.Error(err))
