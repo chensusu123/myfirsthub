@@ -77,6 +77,7 @@ func (g *Game) OnMazeBarrierEnterRQ_10447_10448(s *session.Session, req *MazeGam
 
 	energy, _, err := barrierenergyservice.GlobalBarrierEnergyService.GetBarrierEnergy(logger, userId)
 	if err != nil {
+		res.ErrInfo = errors.COMMON_ERROR_TIPS.Wrap("体力不足")
 		return err
 	}
 	energyID.EnergyInfo = &MazeEnergy.EnergyInfo{
