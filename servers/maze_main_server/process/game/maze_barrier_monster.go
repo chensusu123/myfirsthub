@@ -7,16 +7,15 @@ import (
 	"maze_game_server/common/function/addequip"
 	"maze_game_server/common/function/gentradeno"
 	"maze_game_server/common/function/maputil"
-	"maze_game_server/config/GMazeFoeV8Cfg"
 	"maze_game_server/config/GMazeItemsV8Cfg"
 	"maze_game_server/io/kafka/dollmazefoekafka"
 	"maze_game_server/io/mysql/flowrecord"
-	"maze_game_server/io/redis/mazebarrieropstatusredis"
 	"maze_game_server/lib/log"
 	"maze_game_server/lib/nano/session"
 	"maze_game_server/pb/common/MazeCommon"
 	"maze_game_server/pb/common/MazeGame"
 	"maze_game_server/pb/server/MazeEquipSvr"
+	"maze_game_server/services/barrierservice"
 
 	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fkprometheus"
 	"go.uber.org/zap"
@@ -42,46 +41,37 @@ func (g *Game) OnBarrierMonsterDeathRQ_10498_10499(s *session.Session, req *Maze
 	res.OpData = req.OpData
 
 	userId := uint64(s.UID())
+	barrierID := req.GetBarrierId()
+	monsterID := req.GetMonsterId()
+	opData := req.GetOpData()
 
-	foeCfg := GMazeFoeV8Cfg.Get(int32(req.GetMonsterId()))
-	if foeCfg == nil {
-		logger.ErrorWF("OnBarrierMonsterDeathRQ get foe cfg fail", zap.Any("MonsterId", req.GetMonsterId()))
-		res.ErrInfo = errors.CONFIG_NOT_FOUND.ToInfo()
+	// 击杀守卫后，获取守卫死亡奖励
+	kongfu, equips, items, errinfo := barrierservice.Global.GuardDeath(logger, userId, barrierID, int32(monsterID), int32(req.GetMonsterGuid()))
+	if errinfo.GetErrCode() != errors.NO_ERROR_CODE {
+		res.ErrInfo = errinfo
+		logger.ErrorWF("OnBarrierMonsterDeathRQ GuardDeath fail", zap.Error(fmt.Errorf("GuardDeath: %s", errinfo.GetErrMsg())), zap.Any("monsterID", monsterID))
 		return
 	}
 
-	// 防重复操作校验
-	triggered, triggerFn, err := mazebarrieropstatusredis.IsTriggered(logger, userId, req.GetBarrierId(), fmt.Sprintf("monsterid:%d", req.GetMonsterGuid()))
-	if err != nil {
-		logger.ErrorWF("OnBarrierMonsterDeathRQ IsTriggered fail", zap.Error(err), zap.Any("MonsterId", req.GetMonsterId()), zap.Any("barrierId", req.GetBarrierId()))
-		res.ErrInfo = errors.COMMON_ERROR_TIPS.Wrap("数据校验失败")
-	}
-	if triggered {
-		logger.WarnWF("OnBarrierMonsterDeathRQ already killed", zap.Any("MonsterId", req.GetMonsterId()), zap.Any("barrierId", req.GetBarrierId()))
-		res.ErrInfo = errors.COMMON_ERROR_TIPS.Wrap("怪物已击杀")
-	} else {
-		defer triggerFn()
-	}
+	// 通关值
+	res.Kongfu = proto.Int32(kongfu)
+
+	tradeNo := gentradeno.GetTradeNum()
+
+	// TODO 使用equip,item服务增加奖励
 
 	// 怪物掉落装备
-	tradeNo := gentradeno.GetTradeNum()
-	equip := make(map[int32]int32)
-	for _, v := range foeCfg.Drop_equip {
-		if v > 0 {
-			equip[v] += 1
-		}
-	}
-	if len(equip) > 0 {
-		_, err = addequip.AddEquipToBagWithOpdata(logger, userId, int32(MazeEquipSvr.ENUM_EQUIP_BAG_OP_TYPE_MAZE_EQUIP_MONSTER_DEATH_AWARD), req.GetOpData(), tradeNo, equip)
+	if len(equips) > 0 {
+		_, err = addequip.AddEquipToBagWithOpdata(logger, userId, int32(MazeEquipSvr.ENUM_EQUIP_BAG_OP_TYPE_MAZE_EQUIP_MONSTER_DEATH_AWARD), opData, tradeNo, equips)
 		if err != nil {
 			logger.ErrorWF("OnBarrierMonsterDeathRQ addEquipToBag fail", zap.Error(err), zap.Any("optype", int32(MazeEquipSvr.ENUM_EQUIP_BAG_OP_TYPE_MAZE_EQUIP_FOE)),
-				zap.Any("tradeNo", tradeNo), zap.Any("addEquip", equip))
+				zap.Any("tradeNo", tradeNo), zap.Any("addEquip", equips))
 		}
 	}
 
 	var bagItems []*MazeCommon.MazeItem
 	// 增加掉落物品返回
-	for itemID, count := range foeCfg.Drop_item {
+	for itemID, count := range items {
 		if itemID > 0 {
 			itemCfg := GMazeItemsV8Cfg.Get(itemID)
 			if itemCfg == nil {
@@ -108,15 +98,13 @@ func (g *Game) OnBarrierMonsterDeathRQ_10498_10499(s *session.Session, req *Maze
 			logger.ErrorWF("OnBarrierMonsterDeathRQ AddItemEx fail", zap.Any("errInfo", errInfo), zap.Any("bagItems", bagItems))
 		}
 	}
-	// 通关值
-	res.Kongfu = proto.Int32(foeCfg.Kongfu)
 
 	// 打怪流水记录
 	record := &dollmazefoekafka.DollMazeFoeRecord{
 		UserId:   userId,
 		Barrier:  req.GetBarrierId(),
 		MasterId: req.GetMonsterId(),
-		Equips:   maputil.MapToString32(equip),
+		Equips:   maputil.MapToString32(equips),
 	}
 	awards, err := json.Marshal(res.Awards)
 	if err != nil {
