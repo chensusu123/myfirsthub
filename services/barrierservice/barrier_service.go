@@ -32,15 +32,19 @@ type BarrierService interface {
 	// // TODO 该功能接口依赖比较多，延后
 	// BarrierEnter(logger fklog.FKLogI, userID uint64, barrierID int32) (errinfo *MessageType.ErrorInfo)
 
-	// // BarrierPass 通关指定关卡
-	// //
-	// // TODO 该功能接口依赖比较多，延后
-	// BarrierPass(logger fklog.FKLogI, userID uint64, barrierID int32) (errinfo *MessageType.ErrorInfo)
+	// BarrierPass 通关指定关卡
+	//
+	// 参数：
+	//	- userID: 用户ID
+	BarrierPass(logger fklog.FKLogI, header *Common.PacketHeader, userID uint64, barrierID int32, foeExp int32) (
+		killMonsterNum int32, totalDamage int64, awards, rareAwards []*MazeCommon.MazeItem, errinfo *MessageType.ErrorInfo)
 
-	// // BarrierDeath 在指定关卡中死亡
-	// //
-	// // TODO 该功能接口依赖比较多，延后
-	// BarrierDeath(logger fklog.FKLogI, userID uint64, barrierID int32) (errinfo *MessageType.ErrorInfo)
+	// BarrierDeath 在指定关卡中死亡
+	//
+	// 参数：
+	//	- userID: 用户ID
+	BarrierDeath(logger fklog.FKLogI, header *Common.PacketHeader, userID uint64, barrierID int32, foeExp int32) (
+		killMonsterNum int32, totalDamage int64, awards []*MazeCommon.MazeItem, errinfo *MessageType.ErrorInfo)
 
 	// GuardDeath 关卡中击杀(守卫)怪物掉落奖励(注意：GuardDeath接口不负责增加奖励，增加操作由调用方处理)
 	//
