@@ -18,10 +18,10 @@ func agentSendSpan(ctx context.Context, sendType string, mid uint64, uid int64, 
 	sessionID, rqTime, rsID := packCodec.SplitSessionAndPackType(mid)
 	ctx, span := tracer.Start(ctx, "agent.send."+sendType)
 	span.SetAttributes(
-		attribute.Int64("sessionID", int64(sessionID)),
+		attribute.Int64("agent.session", int64(sessionID)),
 		attribute.Int64("rsID", int64(rsID)),
 		attribute.Int64("rqTime", int64(rqTime)),
-		attribute.Int64("uid", uid),
+		attribute.Int64("enduser.id", uid),
 		attribute.Int64("agentSession", agentSession),
 	)
 	span.AddEvent("agent.send.init")

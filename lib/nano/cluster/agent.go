@@ -462,10 +462,10 @@ func sendMsgSpan(data *pendingMessage) (context.Context, trace.Span) {
 	ctx, span := tracer.Start(ctx, "agent.send.msg")
 	span.SetAttributes(attribute.String("route", data.route),
 		attribute.String("message.type", data.typ.String()),
-		attribute.Int64("sessionID", int64(sessionID)),
+		attribute.Int64("agent.session", int64(sessionID)),
 		attribute.Int64("rsID", int64(rsID)),
 		attribute.Int64("rqTime", int64(rqTime)),
-		attribute.Int64("uid", data.uid),
+		attribute.Int64("enduser.id", data.uid),
 	)
 	span.AddEvent("send.init")
 	return ctx, span
