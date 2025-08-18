@@ -1,6 +1,8 @@
 package game
 
 import (
+	"time"
+
 	"maze_game_server/common/errors"
 	"maze_game_server/lib/codec"
 	"maze_game_server/lib/log"
@@ -8,7 +10,6 @@ import (
 	"maze_game_server/pb/common/MazeEnergy"
 	"maze_game_server/pb/common/MazeGame"
 	"maze_game_server/services/barrierservice"
-	"time"
 
 	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fkprometheus"
 	"go.uber.org/zap"
@@ -21,7 +22,7 @@ func (g *Game) OnStartMazeSweepRQ_10471_10472(s *session.Session, req *MazeGame.
 
 	logger := log.Clone("Sweep", uint64(s.UID()), 0)
 	res := &MazeGame.StartMazeSweepRS{}
-	energyID := &MazeEnergy.EnergyChangeID{} //defer时多补一个体力ID包
+	energyID := &MazeEnergy.EnergyChangeID{} // defer时多补一个体力ID包
 
 	res.Header = req.Header
 	res.ErrInfo = errors.NO_ERROR
@@ -29,10 +30,11 @@ func (g *Game) OnStartMazeSweepRQ_10471_10472(s *session.Session, req *MazeGame.
 	userID := uint64(s.UID())
 
 	logger.InfoWF("OnStartMazeSweepRQ start", zap.Any("req", req))
+	ctx := s.Context()
 	defer func() {
 		err = s.Response(res)
 		logger.InfoWF("OnStartMazeSweepRQ end", zap.Any("res", res), zap.Any("errMsg", string(res.GetErrInfo().GetErrMsg())))
-		err = s.ResponseMID(codec.ToMessageID(uint32(time.Now().Unix()), 0, 10610), energyID)
+		err = s.ResponseMID(ctx, codec.ToMessageID(uint32(time.Now().Unix()), 0, 10610), energyID)
 		logger.InfoWF("OnStartMazeSweepRQ end send EnergyChangeID", zap.Any("energyID", energyID))
 	}()
 

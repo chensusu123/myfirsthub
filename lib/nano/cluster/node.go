@@ -416,20 +416,20 @@ func (n *Node) HandleNotify(ctx context.Context, req *clusterpb.NotifyMessage) (
 	return &clusterpb.MemberHandleResponse{}, nil
 }
 
-func (n *Node) HandlePush(_ context.Context, req *clusterpb.PushMessage) (*clusterpb.MemberHandleResponse, error) {
+func (n *Node) HandlePush(ctx context.Context, req *clusterpb.PushMessage) (*clusterpb.MemberHandleResponse, error) {
 	s := n.findSession(req.SessionId)
 	if s == nil {
 		return &clusterpb.MemberHandleResponse{}, fmt.Errorf("session not found: %v", req.SessionId)
 	}
-	return &clusterpb.MemberHandleResponse{}, s.Push(req.Route, req.Data)
+	return &clusterpb.MemberHandleResponse{}, s.Push(ctx, req.Route, req.Data)
 }
 
-func (n *Node) HandleResponse(_ context.Context, req *clusterpb.ResponseMessage) (*clusterpb.MemberHandleResponse, error) {
+func (n *Node) HandleResponse(ctx context.Context, req *clusterpb.ResponseMessage) (*clusterpb.MemberHandleResponse, error) {
 	s := n.findSession(req.SessionId)
 	if s == nil {
 		return &clusterpb.MemberHandleResponse{}, fmt.Errorf("session not found: %v", req.SessionId)
 	}
-	return &clusterpb.MemberHandleResponse{}, s.ResponseMID(req.Id, req.Data)
+	return &clusterpb.MemberHandleResponse{}, s.ResponseMID(ctx, req.Id, req.Data)
 }
 
 func (n *Node) NewMember(_ context.Context, req *clusterpb.NewMemberRequest) (*clusterpb.NewMemberResponse, error) {

@@ -1,19 +1,19 @@
 package online
 
 import (
+	"context"
 	"errors"
-	"maze_game_server/lib/codec"
-	"maze_game_server/lib/nano/session"
 	"sync"
 	"time"
+
+	"maze_game_server/lib/codec"
+	"maze_game_server/lib/nano/session"
 
 	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fklog"
 	"go.uber.org/zap"
 )
 
-var (
-	ErrSessionNotFound = errors.New("session not found")
-)
+var ErrSessionNotFound = errors.New("session not found")
 
 var monitor = new(Monitor)
 
@@ -70,7 +70,7 @@ func Push(logger fklog.FKLogI, userID uint64, packetType uint16, v interface{}) 
 		logger.ErrorWF("Push session not found", zap.Error(ErrSessionNotFound), zap.Uint64("userID", userID), zap.Any("v", v))
 		return ErrSessionNotFound
 	}
-	return s.(*session.Session).ResponseMID(codec.ToMessageID(uint32(time.Now().Unix()), 0, packetType), v)
+	return s.(*session.Session).ResponseMID(context.Background(), codec.ToMessageID(uint32(time.Now().Unix()), 0, packetType), v)
 }
 
 // Scan
