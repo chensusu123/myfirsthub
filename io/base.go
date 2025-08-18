@@ -61,10 +61,12 @@ func InitBackendCoder(backend Backend, coder Coder) {
 }
 
 func LoadData(logger fklog.FKLogI, key string, value interface{}) error {
+
 	// check data is a pointer
 	if reflect.TypeOf(value).Kind() != reflect.Ptr {
 		return errors.New("data is not a pointer")
 	}
+	key = paddingKey(key, "0")
 
 	data, err := defaultBackend.Get(key)
 	if err != nil {
@@ -88,7 +90,7 @@ func SaveData(logger fklog.FKLogI, key string, value interface{}) error {
 	if err != nil {
 		return err
 	}
-
+	key = paddingKey(key, "0")
 	err = defaultBackend.Set(key, data)
 	if err != nil {
 		return err
@@ -98,22 +100,26 @@ func SaveData(logger fklog.FKLogI, key string, value interface{}) error {
 }
 
 func DeleteData(logger fklog.FKLogI, key string) error {
+	key = paddingKey(key, "0")
 	return defaultBackend.Del(key)
 }
 
-func paddingKey(key string) string {
+func paddingKey(key string, svr string) string {
 	appConfig := appconfig.GlobalConfig()
 	return fmt.Sprintf("svr%s:%s", appConfig.Global.SectionID, key)
 }
 
 func LoadSvrData(logger fklog.FKLogI, key string, data interface{}) error {
-	return LoadData(logger, paddingKey(key), data)
+	appConfig := appconfig.GlobalConfig()
+	return LoadData(logger, paddingKey(key, appConfig.Global.SectionID), data)
 }
 
 func SaveSvrData(logger fklog.FKLogI, key string, value interface{}) error {
-	return SaveData(logger, paddingKey(key), value)
+	appConfig := appconfig.GlobalConfig()
+	return SaveData(logger, paddingKey(key, appConfig.Global.SectionID), value)
 }
 
 func DeleteSvrData(logger fklog.FKLogI, key string) error {
-	return DeleteData(logger, paddingKey(key))
+	appConfig := appconfig.GlobalConfig()
+	return DeleteData(logger, paddingKey(key, appConfig.Global.SectionID))
 }
