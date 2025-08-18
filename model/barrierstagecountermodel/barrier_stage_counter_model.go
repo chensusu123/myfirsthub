@@ -7,7 +7,7 @@ import (
 )
 
 func getRedisKey(userId uint64, barrier int32) string {
-	return fmt.Sprintf("maze:u:%d:barrier:%d:stage:record", userId, barrier)
+	return fmt.Sprintf("maze:u:%d:barrier:%d:stage:count:record", userId, barrier)
 }
 
 // 关卡计数器
