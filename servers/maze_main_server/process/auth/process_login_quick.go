@@ -3,6 +3,8 @@ package auth
 
 import (
 	"context"
+	"time"
+
 	"maze_game_server/common/errors"
 	"maze_game_server/io/redis/UnionIDBindRedis"
 	"maze_game_server/io/redis/useridredis"
@@ -11,7 +13,6 @@ import (
 	"maze_game_server/lib/nano/session"
 	"maze_game_server/pb/common/UserLogin"
 	"maze_game_server/usecase/online"
-	"time"
 
 	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fkprometheus"
 	"gitlab.ifreetalk.com/maze-plate/freetk/fkserver/appconfig"
@@ -21,7 +22,7 @@ import (
 
 func (a *Auth) OnLoginQuickRQ_10550_10551(s *session.Session, req *UserLogin.UserLoginRq) (err error) {
 	defer fkprometheus.InfoPMT("OnLoginQuickRQ")()
-
+	ctx := s.Context()
 	logger := log.Clone("Auth", uint64(req.GetAuthId()), 0)
 	res := &UserLogin.UserLoginRs{}
 
@@ -85,7 +86,7 @@ func (a *Auth) OnLoginQuickRQ_10550_10551(s *session.Session, req *UserLogin.Use
 	res.ServerTime = proto.Int64(time.Now().UnixMilli())
 
 	time.AfterFunc(time.Second*2, func() {
-		SendArrivePacket(logger, int64(userID), 111, &UserLogin.UserLiveRs{
+		SendArrivePacketWithContext(ctx, logger, int64(userID), 111, &UserLogin.UserLiveRs{
 			ClientTime: proto.Int64(time.Now().UnixMilli()),
 		})
 	})

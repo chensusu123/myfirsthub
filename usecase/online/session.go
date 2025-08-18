@@ -85,3 +85,12 @@ func IsOnline(userID uint64) bool {
 	_, ok := monitor.online.Load(userID)
 	return ok
 }
+
+func PushWithContext(ctx context.Context, logger fklog.FKLogI, userID uint64, packetType uint16, v interface{}) (err error) {
+	s, found := monitor.online.Load(userID)
+	if !found {
+		logger.CtxError(ctx, "Push session not found", zap.Error(ErrSessionNotFound), zap.Uint64("userID", userID), zap.Any("v", v))
+		return ErrSessionNotFound
+	}
+	return s.(*session.Session).ResponseMID(ctx, codec.ToMessageID(uint32(time.Now().Unix()), 0, packetType), v)
+}

@@ -7,12 +7,10 @@
 package mazebag
 
 import (
-	"maze_game_server/usecase/online"
 	"time"
 
-	"github.com/gogo/protobuf/proto"
-	"gitlab.ifreetalk.com/maze-plate/freetk/fkserver"
-	"go.uber.org/zap"
+	"maze_game_server/usecase/online"
+
 	"maze_game_server/common/additemdefine"
 	"maze_game_server/common/errors"
 	"maze_game_server/common/itemdefine/constdefine"
@@ -23,6 +21,10 @@ import (
 	"maze_game_server/pb/common/MazeBag"
 	"maze_game_server/pb/common/MazeCommon"
 	"maze_game_server/pb/common/MessageType"
+
+	"github.com/gogo/protobuf/proto"
+	"gitlab.ifreetalk.com/maze-plate/freetk/fkserver"
+	"go.uber.org/zap"
 )
 
 var GlobalMazeBag = &class{}
