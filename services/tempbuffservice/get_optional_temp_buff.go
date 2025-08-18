@@ -254,23 +254,24 @@ func (s *service) createOptionalBuffList(logger fklog.FKLogI, buffInfo *tempbuff
 		case 3:
 			posLib = randConfig.Pos_3_lib
 		default:
-			logger.WarnWF("createOptionalBuffList unknown id", zap.Int64("num", i))
+			logger.WarnWF("createOptionalBuffList unknown id", zap.Int64("pos", i))
 			return nil, nil
 		}
 		maxRandLibCount := len(posLib)
 		for j := 1; j <= maxRandLibCount; j++ {
 			libraryId, _ = s.randLibraryId(posLib, attrMask)
 			if libraryId == 0 {
+				logger.InfoWF("randLibraryId libraryId id=0", zap.Any("posLib", posLib))
 				continue
 			}
 			// 随机库id
-			affixList, certainly_list := mazeenergyaffixlibraryv8config.GetEnergyLibraryAffixList(libraryId)
+			affixList, certainlyList := mazeenergyaffixlibraryv8config.GetEnergyLibraryAffixList(libraryId)
 			if len(affixList) == 0 {
 				return nil, errors.New("affixList is nil")
 			}
 
 			// 过滤出可选择的词条
-			optionalList, totalWeight := s.filterBuffList(logger, optionalMap, affixList, certainly_list, selectedBuffMap, selectedBuffGroupMap)
+			optionalList, totalWeight := s.filterBuffList(logger, optionalMap, affixList, certainlyList, selectedBuffMap, selectedBuffGroupMap)
 			// 随机选择个词条
 			buffId, weight := s.randomId(optionalList, totalWeight)
 
@@ -283,7 +284,14 @@ func (s *service) createOptionalBuffList(logger fklog.FKLogI, buffInfo *tempbuff
 				break
 			} else {
 				// 这次没随机到就把这个库删掉重新随机
-				delete(posLib, libraryId)
+				tempPosLib := make(map[int32]int32)
+				for k, v := range posLib {
+					if k == libraryId {
+						continue
+					}
+					tempPosLib[k] = v
+				}
+				posLib = tempPosLib
 			}
 		}
 	}
@@ -429,7 +437,7 @@ func (s *service) checkFrontCondition(logger fklog.FKLogI, frontId int32, select
 	}
 
 	if count < frontConfig.Must_num {
-		logger.DebugWF("checkFrontCondition affix id set not enough", zap.Int32("frontId", frontId), zap.Int32("count", count))
+		//logger.DebugWF("checkFrontCondition affix id set not enough", zap.Int32("frontId", frontId), zap.Int32("count", count))
 		return false
 	}
 
