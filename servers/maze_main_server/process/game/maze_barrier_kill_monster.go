@@ -10,7 +10,7 @@ import (
 	"maze_game_server/lib/nano/session"
 	"maze_game_server/module/mazeuserinfo"
 	"maze_game_server/pb/common/MazeGame"
-	"maze_game_server/services/barrierarearecordservice"
+	"maze_game_server/services/barrierstagecounterservice"
 )
 
 func (g *Game) OnBarrierKillMonsterRQ_10620_10621(s *session.Session, req *MazeGame.BarrierKillMonsterRQ) (err error) {
@@ -30,12 +30,12 @@ func (g *Game) OnBarrierKillMonsterRQ_10620_10621(s *session.Session, req *MazeG
 
 	userId := uint64(s.UID())
 
-	if req.GetStageId() <= 0 || req.GetAreaId() <= 0 {
+	if req.GetBarrierId() <= 0 || req.GetStageId() <= 0 {
 		logger.ErrorWF("OnBarrierKillMonsterRQ req barrier or areaId invalid", zap.Any("req", req))
 		res.ErrInfo = errors.COMMON_ERROR_TIPS.Wrap("关卡id未设置")
 		return
 	}
-	barrierCfg := GMazeBarriesV8Cfg.Get(req.GetStageId())
+	barrierCfg := GMazeBarriesV8Cfg.Get(req.GetBarrierId())
 	if barrierCfg == nil {
 		logger.ErrorWF("OnBarrierKillMonsterRQ get barrier cfg fail", zap.Any("barrier", req.GetStageId()))
 		res.ErrInfo = errors.COMMON_ERROR_TIPS.Wrap("找不到该关卡配置")
@@ -49,13 +49,13 @@ func (g *Game) OnBarrierKillMonsterRQ_10620_10621(s *session.Session, req *MazeG
 		return
 	}
 
-	if userInfo.Barrier != req.GetStageId() {
+	if userInfo.Barrier != req.GetBarrierId() {
 		logger.ErrorWF("OnBarrierKillMonsterRQ barrier err", zap.Any("req", req), zap.Any("barrier", userInfo.Barrier))
 		res.ErrInfo = errors.COMMON_ERROR_TIPS.Wrap("关卡id错误")
 		return
 	}
 
-	totalNum, _, err := barrierarearecordservice.GlobalBarrierAreaRecordService.AddKillMonsterNum(logger, userId, req.GetStageId(), req.GetAreaId(), req.GetAreaIndex(), req.GetMonsterId(), 1, req.GetMonsterGuid())
+	totalNum, _, err := barrierstagecounterservice.GlobalBarrierStageCounterService.AddKillMonsterNum(logger, userId, req.GetBarrierId(), req.GetStageId(), req.GetMonsterId(), 1, req.GetMonsterGuid())
 	if err != nil {
 		logger.ErrorWF("OnBarrierKillMonsterRQ AddKillMonsterNum fail", zap.Any("req", req), zap.Error(err))
 		return err

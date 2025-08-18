@@ -24,9 +24,9 @@ import (
 	"maze_game_server/pb/common/MazeEnergy"
 	"maze_game_server/pb/common/MazeGame"
 	"maze_game_server/servers/maze_main_server/process/game/events"
-	"maze_game_server/services/barrierarearecordservice"
 	"maze_game_server/services/barrierenergyservice"
 	"maze_game_server/services/barriersavedataservice"
+	"maze_game_server/services/barrierstagecounterservice"
 	"maze_game_server/services/tempbuffservice"
 
 	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fklog"
@@ -117,7 +117,7 @@ func (g *Game) OnMazeBarrierEnterRQ_10447_10448(s *session.Session, req *MazeGam
 		}
 
 		// 有存档的情况需要把未通过的区域杀怪记录删除
-		err = barrierarearecordservice.GlobalBarrierAreaRecordService.DelBarrierAreaRecord(logger, userId, req.GetBarrierId(), saveData.StageId)
+		err = barrierstagecounterservice.GlobalBarrierStageCounterService.DelBarrierStageCounter(logger, userId, req.GetBarrierId(), saveData.StageId)
 		if err != nil {
 			logger.ErrorWF("OnMazeBarrierEnterRQ DelBarrierAreaRecord fail", zap.Error(err))
 			res.ErrInfo = errors.MODULE_ERROR.ToInfo()
