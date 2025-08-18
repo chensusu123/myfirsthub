@@ -35,20 +35,12 @@ func (s *service) GetOptionalTempBuffList(logger fklog.FKLogI, userId uint64, st
 		}
 	}
 
-	if len(buffInfo.BuffSequence.OptionalBuffList) == 0 {
-		// 没有可选buff, 生成可选buff列表
-		err = s.genOptionalBuffList(logger, userId, stageId, level, buffType, areaId, areaIndex, attrMask, buffInfo)
-		if err != nil {
-			logger.ErrorWF("GetOptionalMazeTempBuffListRQ getOptionalBuffList", zap.Int32("stageId", stageId),
-				zap.Any("info", buffInfo), zap.Any("err", err.Error()))
-			return nil, err
-		}
-	}
-
-	if buffInfo.BuffSequence.Level != level {
-		logger.WarnWF("GetOptionalMazeTempBuffListRQ level is not need", zap.Int32("level", level),
-			zap.Int32("needLevel", buffInfo.BuffSequence.Level))
-		return nil, fmt.Errorf("buff等级异常")
+	// 生成可选buff列表
+	err = s.genOptionalBuffList(logger, userId, stageId, level, buffType, areaId, areaIndex, attrMask, buffInfo)
+	if err != nil {
+		logger.ErrorWF("GetOptionalMazeTempBuffListRQ getOptionalBuffList", zap.Int32("stageId", stageId),
+			zap.Any("info", buffInfo), zap.Any("err", err.Error()))
+		return nil, err
 	}
 
 	optionalBuffInfo := s.packOptionalInfo(logger, buffInfo)

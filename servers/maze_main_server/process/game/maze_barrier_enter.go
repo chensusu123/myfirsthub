@@ -1,6 +1,8 @@
 package game
 
 import (
+	"time"
+
 	"maze_game_server/common/constdef"
 	"maze_game_server/common/errors"
 	"maze_game_server/common/function/gentradeno"
@@ -26,7 +28,6 @@ import (
 	"maze_game_server/services/barrierenergyservice"
 	"maze_game_server/services/barriersavedataservice"
 	"maze_game_server/services/tempbuffservice"
-	"time"
 
 	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fklog"
 	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fkprometheus"
@@ -39,14 +40,14 @@ func (g *Game) OnMazeBarrierEnterRQ_10447_10448(s *session.Session, req *MazeGam
 
 	logger := log.Clone("Game", uint64(s.UID()), 0)
 	res := &MazeGame.MazeBarrierEnterRS{}
-	energyID := &MazeEnergy.EnergyChangeID{} //defer时多补一个体力ID包
-
+	energyID := &MazeEnergy.EnergyChangeID{} // defer时多补一个体力ID包
+	ctx := s.Context()
 	logger.InfoWF("OnMazeBarrierEnterRQ start", zap.Any("req", req))
 	defer func() {
 		err = s.Response(res)
 		logger.InfoWF("OnMazeBarrierEnterRQ end", zap.Any("res", res))
 
-		err = s.ResponseMID(codec.ToMessageID(uint32(time.Now().Unix()), 0, 10610), energyID)
+		err = s.ResponseMID(ctx, codec.ToMessageID(uint32(time.Now().Unix()), 0, 10610), energyID)
 		logger.InfoWF("OnMazeBarrierEnterRQ end send EnergyChangeID", zap.Any("energyID", energyID))
 	}()
 
@@ -115,7 +116,7 @@ func (g *Game) OnMazeBarrierEnterRQ_10447_10448(s *session.Session, req *MazeGam
 			res.EnergyLevel = proto.Int32(tempBuff.BuffSequence.Level)
 		}
 
-		//有存档的情况需要把未通过的区域杀怪记录删除
+		// 有存档的情况需要把未通过的区域杀怪记录删除
 		err = barrierarearecordservice.GlobalBarrierAreaRecordService.DelBarrierAreaRecord(logger, userId, req.GetBarrierId(), saveData.StageId)
 		if err != nil {
 			logger.ErrorWF("OnMazeBarrierEnterRQ DelBarrierAreaRecord fail", zap.Error(err))
@@ -178,15 +179,15 @@ func (g *Game) OnMazeBarrierEnterRQ_10447_10448(s *session.Session, req *MazeGam
 	}
 
 	var curEnergy int32
-	//进入关卡需要
+	// 进入关卡需要
 
-	//首次进入新关还额外需要
-	//0. 扣次数
-	//1. 更新记录的关卡id
-	//2. 判断是否切换装备序列 清空装备积分 (不需要清 旧关卡积分保留 扫荡会继续加
-	//3. 清临时buff
+	// 首次进入新关还额外需要
+	// 0. 扣次数
+	// 1. 更新记录的关卡id
+	// 2. 判断是否切换装备序列 清空装备积分 (不需要清 旧关卡积分保留 扫荡会继续加
+	// 3. 清临时buff
 	if isNewBarrier {
-		//首次进入判断体力是否足够 直接扣根据错误码判断
+		// 首次进入判断体力是否足够 直接扣根据错误码判断
 		// isEnergyEnough, remainVal, err2 := SubUserEnergy(logger, userId, barrierCfg.Mop_cost)
 		// if err2 != nil {
 		// 	logger.ErrorWF("OnMazeBarrierEnterRQ SubUserEnergy fail", zap.Error(err2))
@@ -200,7 +201,7 @@ func (g *Game) OnMazeBarrierEnterRQ_10447_10448(s *session.Session, req *MazeGam
 		// }
 		// curEnergy = remainVal
 
-		//扣体力
+		// 扣体力
 		curEnergy, err = barrierenergyservice.GlobalBarrierEnergyService.SubEnergy(logger, userId, barrierCfg.Mop_cost)
 		if err != nil {
 			res.ErrInfo = errors.COMMON_ERROR_TIPS.Wrap("体力不足")
@@ -264,7 +265,7 @@ func (g *Game) OnMazeBarrierEnterRQ_10447_10448(s *session.Session, req *MazeGam
 			logger.ErrorWF("OnMazeBarrierEnterRQ SetUserBarrierInfo fail", zap.Error(err))
 		}
 
-		//2. 判断是否切换装备序列 清空装备积分 (不需要清 旧关卡积分保留 扫荡会继续加)
+		// 2. 判断是否切换装备序列 清空装备积分 (不需要清 旧关卡积分保留 扫荡会继续加)
 
 		// //3. 首次进入清临时buff
 		// mazebarriertempbuffredis.ClearBarrierTempBuff(logger, userId, req.GetBarrierId())
@@ -286,8 +287,9 @@ func (g *Game) OnMazeBarrierEnterRQ_10447_10448(s *session.Session, req *MazeGam
 	}
 
 	items := []*MazeCommon.MazeItem{
-		&MazeCommon.MazeItem{ItemId: proto.Int32(constdef.MazeCommonItemCoin)},
-		&MazeCommon.MazeItem{ItemId: proto.Int32(constdef.MazeCommonItemDiamond)}}
+		{ItemId: proto.Int32(constdef.MazeCommonItemCoin)},
+		{ItemId: proto.Int32(constdef.MazeCommonItemDiamond)},
+	}
 	queryItems, errInfo := gentradeno.QueryItems(logger, userId, items...)
 	if errInfo == nil {
 		for _, v := range queryItems {
@@ -408,5 +410,4 @@ func (g *Game) OnGetStorageInfoRQ_10529_10530(s *session.Session, req *MazeGame.
 }
 
 func GetUserMoney(logger fklog.FKLogI, uid uint64) {
-
 }

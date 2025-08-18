@@ -6,11 +6,12 @@ import (
 	"errors"
 	"fmt"
 	"math"
+	"time"
+
 	"maze_game_server/lib/codec/raw_pkg"
 	"maze_game_server/lib/nano/component"
 	"maze_game_server/lib/nano/frame"
 	"maze_game_server/lib/nano/serialize"
-	"time"
 )
 
 // TODO 需要补全日志
@@ -103,7 +104,7 @@ func (c *EsPacketCodec) Decode(data []byte) (msgs []*frame.Message, packets []*r
 			break
 		}
 
-		var packet = make([]byte, packetLen)
+		packet := make([]byte, packetLen)
 		copy(packet, twoBytes[:])
 		copy(packet[2:], c.buf.Next(packetLen-2))
 
@@ -164,3 +165,5 @@ func splitSessionAndPackType(messageID uint64) (sessionID uint32, rqTime uint64,
 	}
 	return
 }
+
+var SplitSessionAndPackType = splitSessionAndPackType

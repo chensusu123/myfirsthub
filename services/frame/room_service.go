@@ -1,18 +1,20 @@
 package frame_service
 
 import (
-	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fklog"
-	"go.uber.org/zap"
-	"google.golang.org/protobuf/proto"
+	"sort"
+	"time"
+
 	"maze_game_server/common/errors"
 	"maze_game_server/model/frame_model"
 	"maze_game_server/pb/common/MazeRoom"
 	"maze_game_server/usecase/online"
-	"sort"
-	"time"
+
+	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fklog"
+	"go.uber.org/zap"
+	"google.golang.org/protobuf/proto"
 )
 
-const GameTickMin = 33 //单位ms
+const GameTickMin = 33 // 单位ms
 
 // 全局服务器实例
 var RoomServer *frame_model.Server
@@ -22,7 +24,7 @@ func init() {
 }
 
 func checkGameTick(logger fklog.FKLogI, gameTick int32) error {
-	//最低帧数限制
+	// 最低帧数限制
 	if gameTick < int32(GameTickMin) {
 		logger.ErrorWF("checkGameTick gameTick invalid", zap.Int32("gameTick", gameTick))
 		return errors.New("game tick invalid")
@@ -177,7 +179,7 @@ func removePlayer(logger fklog.FKLogI, r *frame_model.Room, playerID uint64) {
 
 	if _, exists := r.MemberMap[playerID]; exists {
 		delete(r.MemberMap, playerID)
-		delete(r.InputQueue, playerID) //是否保留之前的同步信息，先按照不保留
+		delete(r.InputQueue, playerID) // 是否保留之前的同步信息，先按照不保留
 		logger.InfoWF("player %s removePlayer in room %s", zap.Uint64("playerId", playerID), zap.String("roomId", r.RoomIdStr))
 		// 如果房间空了，停止房间
 		if len(r.MemberMap) == 0 && r.Running {
@@ -248,7 +250,7 @@ func updateFrame(logger fklog.FKLogI, r *frame_model.Room) {
 		}
 	}
 
-	//缓存每一帧数据
+	// 缓存每一帧数据
 	r.FrameDataList = append(r.FrameDataList, frameData)
 
 	idPack := &MazeRoom.MazeFrameSyncID{
