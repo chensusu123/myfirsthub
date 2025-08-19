@@ -9,7 +9,7 @@ import (
 	"maze_game_server/lib/nano/session"
 	"maze_game_server/module/mazeuserinfo"
 	"maze_game_server/pb/common/MazeGame"
-	"maze_game_server/services/barrierarearecordservice"
+	"maze_game_server/services/barrierstagecounterservice"
 )
 
 func (g *Game) OnBarrierDamageRQ_10622_10623(s *session.Session, req *MazeGame.BarrierDamageRQ) (err error) {
@@ -20,6 +20,7 @@ func (g *Game) OnBarrierDamageRQ_10622_10623(s *session.Session, req *MazeGame.B
 	res.Header = req.Header
 	res.ErrInfo = errors.NO_ERROR
 	res.StageId = req.StageId
+	res.BarrierId = req.BarrierId
 
 	logger.InfoWF("OnBarrierDamageRQ start", zap.Any("req", req))
 	defer func() {
@@ -29,12 +30,12 @@ func (g *Game) OnBarrierDamageRQ_10622_10623(s *session.Session, req *MazeGame.B
 
 	userId := uint64(s.UID())
 
-	if req.GetStageId() <= 0 || req.GetAreaId() <= 0 {
+	if req.GetStageId() < 0 || req.GetBarrierId() <= 0 {
 		logger.ErrorWF("OnBarrierDamageRQ req barrier or areaId invalid", zap.Any("req", req))
 		res.ErrInfo = errors.COMMON_ERROR_TIPS.Wrap("关卡id未设置")
 		return
 	}
-	barrierCfg := GMazeBarriesV8Cfg.Get(req.GetStageId())
+	barrierCfg := GMazeBarriesV8Cfg.Get(req.GetBarrierId())
 	if barrierCfg == nil {
 		logger.ErrorWF("OnBarrierDamageRQ get barrier cfg fail", zap.Any("barrier", req.GetStageId()))
 		res.ErrInfo = errors.COMMON_ERROR_TIPS.Wrap("找不到该关卡配置")
@@ -48,13 +49,13 @@ func (g *Game) OnBarrierDamageRQ_10622_10623(s *session.Session, req *MazeGame.B
 		return
 	}
 
-	if userInfo.Barrier != req.GetStageId() {
+	if userInfo.Barrier != req.GetBarrierId() {
 		logger.ErrorWF("OnBarrierDamageRQ barrier err", zap.Any("req", req), zap.Any("barrier", userInfo.Barrier))
 		res.ErrInfo = errors.COMMON_ERROR_TIPS.Wrap("关卡id错误")
 		return
 	}
 
-	totalDamage, err := barrierarearecordservice.GlobalBarrierAreaRecordService.AddDamage(logger, userId, req.GetStageId(), req.GetAreaId(), req.GetAreaIndex(), req.GetDamage())
+	totalDamage, err := barrierstagecounterservice.GlobalBarrierStageCounterService.AddDamage(logger, userId, req.GetBarrierId(), req.GetStageId(), req.GetDamage())
 	if err != nil {
 		logger.ErrorWF("OnBarrierDamageRQ AddDamage fail", zap.Any("req", req), zap.Error(err))
 		return err

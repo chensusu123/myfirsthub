@@ -21,7 +21,7 @@ import (
 	"maze_game_server/pb/common/MessageType"
 	"maze_game_server/pb/server/MazeEquipSvr"
 	"maze_game_server/services/awardservice"
-	"maze_game_server/services/barrierarearecordservice"
+	"maze_game_server/services/barrierstagecounterservice"
 	"time"
 
 	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fklog"
@@ -190,9 +190,9 @@ func (b *barrier) BarrierPass(logger fklog.FKLogI, header *Common.PacketHeader, 
 		}
 	}
 
-	killMonsterNum, totalDamage, _, err = barrierarearecordservice.GlobalBarrierAreaRecordService.GetBarrierAreaRecord(logger, userID, barrierID)
+	killMonsterNum, totalDamage, _, _, err = barrierstagecounterservice.GlobalBarrierStageCounterService.GetBarrierStageCounter(logger, userID, barrierID)
 	if err != nil {
-		logger.ErrorWF("BarrierPass GetBarrierAreaRecord fail", zap.Error(err), zap.Any("barrier", barrierID), zap.Any("foeExp", foeExp))
+		logger.ErrorWF("OnMazeBarrierPassRQ GetBarrierAreaRecord fail", zap.Error(err))
 		return 0, 0, nil, nil, errors.MODULE_ERROR.ToInfo()
 	}
 
@@ -283,6 +283,7 @@ func (b *barrier) BarrierDeath(logger fklog.FKLogI, header *Common.PacketHeader,
 	}
 
 	// 发送道具和装备奖励
+	// 发送道具和装备奖励
 	tradeNo := gentradeno.GetTradeNum()
 	otherItem := make([]*MazeCommon.MazeItem, 0)
 	if len(realItem) > 0 {
@@ -331,7 +332,7 @@ func (b *barrier) BarrierDeath(logger fklog.FKLogI, header *Common.PacketHeader,
 	logger.InfoWF("OnMazeBarrierDeathRQ showAward", zap.Any("realItem", realItem), zap.Any("realEquip", realEquip))
 	// logger.InfoWF("OnMazeBarrierDeathRQ addItems", zap.Any("addItems", addItems), zap.Any("equipItem", equipItem), zap.Any("expCount", expCount), zap.Any("nowExp", nowExp))
 
-	killMonsterNum, totalDamage, _, err = barrierarearecordservice.GlobalBarrierAreaRecordService.GetBarrierAreaRecord(logger, userID, barrierID)
+	killMonsterNum, totalDamage, _, _, err = barrierstagecounterservice.GlobalBarrierStageCounterService.GetBarrierStageCounter(logger, userID, barrierID)
 	if err != nil {
 		logger.ErrorWF("OnMazeBarrierPassRQ GetBarrierAreaRecord fail", zap.Error(err))
 		return 0, 0, nil, errors.MODULE_ERROR.ToInfo()

@@ -24,7 +24,6 @@ import (
 	"time"
 
 	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fklog"
-
 	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fkprometheus"
 	"go.uber.org/zap"
 	"google.golang.org/protobuf/proto"

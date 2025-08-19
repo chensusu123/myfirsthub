@@ -51,11 +51,11 @@ var defaultBackend Backend = &MemBackend{Data: make(map[string][]byte)}
 
 func InitBackendCoder(backend Backend, coder Coder) {
 	//defaultCoder = coder
-	if coder == nil {
+	if coder != nil {
 		defaultCoder = coder
 	}
 	//defaultBackend = backend
-	if backend == nil {
+	if backend != nil {
 		defaultBackend = backend
 	}
 }
@@ -76,7 +76,9 @@ func LoadData(logger fklog.FKLogI, key string, value interface{}) error {
 	if data == nil {
 		return nil
 	}
-
+	if len(data) == 0 {
+		return nil
+	}
 	err = defaultCoder.Unmarshal(data, value)
 	if err != nil {
 		return err
@@ -106,7 +108,7 @@ func DeleteData(logger fklog.FKLogI, key string) error {
 
 func paddingKey(key string, svr string) string {
 	appConfig := appconfig.GlobalConfig()
-	return fmt.Sprintf("svr%s:%s", appConfig.Global.SectionID, key)
+	return fmt.Sprintf("s:%s:%s", appConfig.Global.SectionID, key)
 }
 
 func LoadSvrData(logger fklog.FKLogI, key string, data interface{}) error {
