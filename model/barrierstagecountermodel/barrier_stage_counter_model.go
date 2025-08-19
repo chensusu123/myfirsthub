@@ -1,6 +1,7 @@
 package barrierstagecountermodel
 
 import (
+	"context"
 	"fmt"
 	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fklog"
 	"maze_game_server/io"
@@ -33,13 +34,13 @@ func NewBarrierStageCounterModel(logger fklog.FKLogI, userID uint64, barrierId i
 }
 
 func (p *BarrierStageCounterModel) load(logger fklog.FKLogI, userID uint64, barrierId int32) (err error) {
-	return io.LoadSvrData(logger, getRedisKey(userID, barrierId), p)
+	return io.LoadSvrData(context.TODO(), getRedisKey(userID, barrierId), p)
 }
 
 func (p *BarrierStageCounterModel) Save(logger fklog.FKLogI, userID uint64, barrierId int32) (err error) {
-	return io.SaveSvrData(logger, getRedisKey(userID, barrierId), p)
+	return io.SaveSvrData(context.TODO(), getRedisKey(userID, barrierId), p)
 }
 
 func (p *BarrierStageCounterModel) Del(logger fklog.FKLogI, userID uint64, barrierId int32) (err error) {
-	return io.DeleteSvrData(logger, getRedisKey(userID, barrierId))
+	return io.DeleteSvrData(context.TODO(), getRedisKey(userID, barrierId))
 }

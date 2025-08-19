@@ -1,6 +1,7 @@
 package mailmodel
 
 import (
+	"context"
 	"fmt"
 	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fklog"
 	"maze_game_server/io"
@@ -46,13 +47,13 @@ func NewMailModel(logger fklog.FKLogI, userID uint64) (*MailModel, error) {
 }
 
 func (p *MailModel) load(logger fklog.FKLogI, userID uint64) (err error) {
-	return io.LoadSvrData(logger, getMailKey(userID), p)
+	return io.LoadSvrData(context.TODO(), getMailKey(userID), p)
 }
 
 func (p *MailModel) Save(logger fklog.FKLogI, userID uint64) (err error) {
-	return io.SaveSvrData(logger, getMailKey(userID), p)
+	return io.SaveSvrData(context.TODO(), getMailKey(userID), p)
 }
 
 func (p *MailModel) Del(logger fklog.FKLogI, userID uint64, stageId int32) (err error) {
-	return io.DeleteSvrData(logger, getMailKey(userID))
+	return io.DeleteSvrData(context.TODO(), getMailKey(userID))
 }

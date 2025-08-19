@@ -1,12 +1,12 @@
 package io
 
 import (
+	"context"
 	"encoding/json"
 	"errors"
 	"fmt"
 	"reflect"
 
-	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fklog"
 	"gitlab.ifreetalk.com/maze-plate/freetk/fkserver/appconfig"
 )
 
@@ -26,25 +26,25 @@ func (JsonCoder) Unmarshal(data []byte, v interface{}) error {
 }
 
 type Backend interface {
-	Set(key string, data []byte) error
-	Get(key string) ([]byte, error)
-	Del(key string) error
+	Set(ctx context.Context, key string, data []byte) error
+	Get(ctx context.Context, key string) ([]byte, error)
+	Del(ctx context.Context, key string) error
 }
 
 type MemBackend struct {
 	Data map[string][]byte
 }
 
-func (m *MemBackend) Set(key string, data []byte) error {
+func (m *MemBackend) Set(ctx context.Context, key string, data []byte) error {
 	m.Data[key] = data
 	return nil
 }
 
-func (m *MemBackend) Get(key string) ([]byte, error) {
+func (m *MemBackend) Get(ctx context.Context, key string) ([]byte, error) {
 	return m.Data[key], nil
 }
 
-func (m *MemBackend) Del(key string) error { delete(m.Data, key); return nil }
+func (m *MemBackend) Del(ctx context.Context, key string) error { delete(m.Data, key); return nil }
 
 var defaultCoder Coder = JsonCoder{}
 var defaultBackend Backend = &MemBackend{Data: make(map[string][]byte)}
@@ -60,15 +60,47 @@ func InitBackendCoder(backend Backend, coder Coder) {
 	}
 }
 
-func LoadData(logger fklog.FKLogI, key string, value interface{}) error {
+func LoadData(ctx context.Context, key string, value interface{}) error {
+	key = paddingKey(key, "0")
+	return loadData(ctx, key, value)
+}
 
+func SaveData(ctx context.Context, key string, value interface{}) error {
+	key = paddingKey(key, "0")
+	return saveData(ctx, key, value)
+}
+
+func DeleteData(ctx context.Context, key string) error {
+	key = paddingKey(key, "0")
+	return deleteData(ctx, key)
+}
+
+func paddingKey(key string, svr string) string {
+	return fmt.Sprintf("s:%s:%s", svr, key)
+}
+
+func LoadSvrData(ctx context.Context, key string, data interface{}) error {
+	key = paddingKey(key, appconfig.GlobalConfig().Global.SectionID)
+	return loadData(ctx, key, data)
+}
+
+func SaveSvrData(ctx context.Context, key string, value interface{}) error {
+	key = paddingKey(key, appconfig.GlobalConfig().Global.SectionID)
+	return saveData(ctx, key, value)
+}
+
+func DeleteSvrData(ctx context.Context, key string) error {
+	key = paddingKey(key, appconfig.GlobalConfig().Global.SectionID)
+	return deleteData(ctx, key)
+}
+
+func loadData(ctx context.Context, key string, value interface{}) error {
 	// check data is a pointer
 	if reflect.TypeOf(value).Kind() != reflect.Ptr {
 		return errors.New("data is not a pointer")
 	}
-	key = paddingKey(key, "0")
 
-	data, err := defaultBackend.Get(key)
+	data, err := defaultBackend.Get(ctx, key)
 	if err != nil {
 		return err
 	}
@@ -87,13 +119,12 @@ func LoadData(logger fklog.FKLogI, key string, value interface{}) error {
 	return nil
 }
 
-func SaveData(logger fklog.FKLogI, key string, value interface{}) error {
+func saveData(ctx context.Context, key string, value interface{}) error {
 	data, err := defaultCoder.Marshal(value)
 	if err != nil {
 		return err
 	}
-	key = paddingKey(key, "0")
-	err = defaultBackend.Set(key, data)
+	err = defaultBackend.Set(ctx, key, data)
 	if err != nil {
 		return err
 	}
@@ -101,27 +132,6 @@ func SaveData(logger fklog.FKLogI, key string, value interface{}) error {
 	return nil
 }
 
-func DeleteData(logger fklog.FKLogI, key string) error {
-	key = paddingKey(key, "0")
-	return defaultBackend.Del(key)
-}
-
-func paddingKey(key string, svr string) string {
-	appConfig := appconfig.GlobalConfig()
-	return fmt.Sprintf("s:%s:%s", appConfig.Global.SectionID, key)
-}
-
-func LoadSvrData(logger fklog.FKLogI, key string, data interface{}) error {
-	appConfig := appconfig.GlobalConfig()
-	return LoadData(logger, paddingKey(key, appConfig.Global.SectionID), data)
-}
-
-func SaveSvrData(logger fklog.FKLogI, key string, value interface{}) error {
-	appConfig := appconfig.GlobalConfig()
-	return SaveData(logger, paddingKey(key, appConfig.Global.SectionID), value)
-}
-
-func DeleteSvrData(logger fklog.FKLogI, key string) error {
-	appConfig := appconfig.GlobalConfig()
-	return DeleteData(logger, paddingKey(key, appConfig.Global.SectionID))
+func deleteData(ctx context.Context, key string) error {
+	return defaultBackend.Del(ctx, key)
 }
