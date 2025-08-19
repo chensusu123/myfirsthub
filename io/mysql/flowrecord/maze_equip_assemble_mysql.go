@@ -7,10 +7,12 @@ import (
 	"maze_game_server/io/kafka"
 	"maze_game_server/io/kafka/dollequipassmeblekakfa"
 	"maze_game_server/io/mysql"
+	"strconv"
 	"strings"
 	"time"
 
 	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fklog"
+	"gitlab.ifreetalk.com/maze-plate/freetk/fkserver/appconfig"
 	"go.uber.org/zap"
 )
 
@@ -21,6 +23,13 @@ func SaveEquipAssembleRecord(logger fklog.FKLogI, record *dollequipassmeblekakfa
 
 	record.DataBase = nowDbTable[0]
 	record.Table = nowDbTable[1]
+
+	groupID, err := strconv.Atoi(appconfig.GlobalConfig().Global.SectionID)
+	if err != nil {
+		logger.ErrorWF("SaveEquipDismantRecord Atoi fail", zap.Error(err))
+		return
+	}
+	record.GroupId = uint32(groupID)
 
 	// 打到kafka 中
 	data, err := json.Marshal(record)
