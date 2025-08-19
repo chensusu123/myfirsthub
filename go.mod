@@ -37,7 +37,10 @@ require (
 	gorm.io/gorm v1.30.0
 )
 
-require go.opentelemetry.io/contrib/instrumentation/net/http/otelhttp v0.62.0
+require (
+	github.com/xuri/excelize/v2 v2.9.1
+	go.opentelemetry.io/contrib/instrumentation/net/http/otelhttp v0.62.0
+)
 
 require (
 	filippo.io/edwards25519 v1.1.0 // indirect
@@ -113,6 +116,8 @@ require (
 	github.com/prometheus/procfs v0.11.1 // indirect
 	github.com/redis/go-redis/extra/rediscmd/v9 v9.12.1 // indirect
 	github.com/redis/go-redis/extra/redisotel/v9 v9.12.1 // indirect
+	github.com/richardlehane/mscfb v1.0.4 // indirect
+	github.com/richardlehane/msoleps v1.0.4 // indirect
 	github.com/russross/blackfriday/v2 v2.1.0 // indirect
 	github.com/samber/lo v1.47.0 // indirect
 	github.com/samber/slog-common v0.18.1 // indirect
@@ -122,8 +127,11 @@ require (
 	github.com/tidwall/gjson v1.17.3 // indirect
 	github.com/tidwall/match v1.1.1 // indirect
 	github.com/tidwall/pretty v1.2.0 // indirect
+	github.com/tiendc/go-deepcopy v1.6.0 // indirect
 	github.com/twitchyliquid64/golang-asm v0.15.1 // indirect
 	github.com/twmb/murmur3 v1.1.8 // indirect
+	github.com/xuri/efp v0.0.1 // indirect
+	github.com/xuri/nfp v0.0.1 // indirect
 	gitlab.ifreetalk.com/maze-plate/extra v1.0.1-0.20250401060651-722653168d37 // indirect
 	gitlab.ifreetalk.com/nano-ecosystem/nlog v0.0.0-20250819084527-a42be07a8d76 // indirect
 	go.opentelemetry.io/auto/sdk v1.1.0 // indirect

@@ -12,7 +12,10 @@ import (
 	"maze_game_server/services/barrierenergyservice"
 	"maze_game_server/services/tempbuffservice"
 	"net/http"
+	"os"
+	"path/filepath"
 	"sort"
+	"strings"
 	"time"
 
 	"maze_game_server/common/function/gentradeno"
@@ -33,6 +36,7 @@ import (
 	"maze_game_server/usecase/online"
 
 	"github.com/gorilla/schema"
+	"github.com/xuri/excelize/v2"
 	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fklog"
 	"gitlab.ifreetalk.com/maze-plate/freetk/fkserver/appconfig"
 	"gitlab.ifreetalk.com/maze-plate/freetk/fkserver/config_manager"
@@ -401,6 +405,94 @@ func RegGm(logger fklog.FKLogI) {
 
 		fmt.Fprintf(writer, "添加[%d]个道具[%s]成功", count, itemCfg.Prop_name)
 	})
+
+	gm.SafeHttpRegister(logger, "/GetExcelList", func(writer http.ResponseWriter, request *http.Request) {
+		entires, err := os.ReadDir("./conf.d/data")
+		if err != nil {
+			writer.Write([]byte(err.Error()))
+			return
+		}
+
+		var records []map[string]interface{}
+		for _, entry := range entires {
+			if strings.Contains(entry.Name(), "black_excel") || strings.Contains(entry.Name(), "column_relation") || strings.Contains(entry.Name(), "git_version_v8") {
+				continue
+			}
+			descRecord := make(map[string]interface{})
+			if strings.ToLower(filepath.Ext(entry.Name())) == ".xlsx" {
+				descRecord["excel"] = entry.Name()
+				records = append(records, descRecord)
+			}
+		}
+
+		output := ExcelOutput{
+			Status: 0,
+			Desc:   "",
+			Data: DynamicData{
+				List:  records,
+				Total: len(records),
+			},
+		}
+		jsonOutput, err := json.Marshal(output)
+		if err != nil {
+			writer.Write([]byte(err.Error()))
+			return
+		}
+
+		writer.Write(jsonOutput)
+	})
+
+	gm.SafeHttpRegister(logger, "/GetExcelSheet", func(writer http.ResponseWriter, request *http.Request) {
+		fileName := request.Form.Get("fileName")
+		sheets, err := GetSheets("./conf.d/data/" + fileName)
+		if err != nil {
+			writer.Write([]byte(err.Error()))
+			return
+		}
+
+		var records []map[string]interface{}
+		for _, sheet := range sheets {
+			descRecord := make(map[string]interface{})
+			descRecord["sheetName"] = sheet
+			records = append(records, descRecord)
+		}
+
+		output := ExcelOutput{
+			Status: 0,
+			Desc:   "",
+			Data: DynamicData{
+				List:  records,
+				Total: len(records),
+			},
+		}
+		jsonOutput, err := json.Marshal(output)
+		if err != nil {
+			writer.Write([]byte(err.Error()))
+			return
+		}
+
+		writer.Write(jsonOutput)
+	})
+
+	gm.SafeHttpRegister(logger, "/GetExcelData", func(writer http.ResponseWriter, request *http.Request) {
+		fileName := request.Form.Get("fileName")
+		sheetName := request.Form.Get("sheetName")
+		tableData, err := readExcelFile("./conf.d/data/"+fileName, sheetName)
+		if err != nil {
+			writer.Write([]byte(err.Error()))
+			return
+		}
+
+		output := convertTableToJSON(tableData)
+		jsonOutput, err := json.Marshal(output)
+		if err != nil {
+			writer.Write([]byte(err.Error()))
+			return
+		}
+
+		writer.Write(jsonOutput)
+	})
+
 }
 
 type ShowSheet struct {
@@ -412,4 +504,121 @@ type GenerateUser struct {
 	ErrorCode uint64 `json:"errorCode"`
 	ErrorMsg  string `json:"errorMsg"`
 	UserId    uint64 `json:"userId"`
+}
+
+func GetSheets(filePath string) ([]string, error) {
+	f, err := excelize.OpenFile(filePath)
+	if err != nil {
+		return nil, fmt.Errorf("无法打开Excel文件: %w", err)
+	}
+	defer f.Close()
+	sheets := make([]string, 0)
+	for _, v := range f.GetSheetList() {
+		sheets = append(sheets, v)
+	}
+	return sheets, nil
+}
+
+// 从Excel文件读取指定工作表数据（默认读取第一个工作表）
+func readExcelFile(filePath, sheetName string) ([][]string, error) {
+	f, err := excelize.OpenFile(filePath)
+	if err != nil {
+		return nil, fmt.Errorf("无法打开Excel文件: %w", err)
+	}
+	defer f.Close()
+
+	if sheetName == "" {
+		sheets := f.GetSheetList()
+		if len(sheets) == 0 {
+			return nil, fmt.Errorf("Excel文件中没有工作表")
+		}
+		sheetName = sheets[0]
+		fmt.Printf("使用工作表: %s\n", sheetName)
+	}
+
+	rows, err := f.GetRows(sheetName)
+	if err != nil {
+		return nil, fmt.Errorf("读取工作表数据失败: %w", err)
+	}
+
+	return rows, nil
+}
+
+// 转换任意行列数的表格数据为指定JSON格式
+func convertTableToJSON(table [][]string) ExcelOutput {
+	if len(table) < 4 {
+		return ExcelOutput{
+			Status: 1,
+			Desc:   "表格数据行数不足，至少需要4行",
+			Data:   DynamicData{},
+		}
+	}
+
+	keys := table[2]
+	if len(keys) == 0 {
+		return ExcelOutput{
+			Status: 2,
+			Desc:   "未找到有效键名（第三行）",
+			Data:   DynamicData{},
+		}
+	}
+
+	var records []map[string]interface{}
+
+	typeRow := table[1]
+	typeRecord := make(map[string]interface{})
+	for i, key := range keys {
+		if i < len(typeRow) {
+			typeRecord[key] = typeRow[i]
+		} else {
+			typeRecord[key] = ""
+		}
+	}
+	records = append(records, typeRecord)
+
+	descRow := table[3]
+	descRecord := make(map[string]interface{})
+	for i, key := range keys {
+		if i < len(descRow) {
+			descRecord[key] = descRow[i]
+		} else {
+			descRecord[key] = ""
+		}
+	}
+	records = append(records, descRecord)
+
+	for i := 4; i < len(table); i++ {
+		dataRow := table[i]
+		dataRecord := make(map[string]interface{})
+
+		for j, key := range keys {
+			if j < len(dataRow) {
+				dataRecord[key] = dataRow[j]
+			} else {
+				dataRecord[key] = ""
+			}
+		}
+
+		records = append(records, dataRecord)
+	}
+
+	return ExcelOutput{
+		Status: 0,
+		Desc:   "",
+		Data: DynamicData{
+			List:  records,
+			Total: len(records),
+		},
+	}
+}
+
+type ExcelOutput struct {
+	Status int         `json:"status"`
+	Desc   string      `json:"desc"`
+	Data   DynamicData `json:"data"`
+}
+
+type DynamicData struct {
+	List  []map[string]interface{} `json:"list"`
+	Total int                      `json:"total"`
 }
