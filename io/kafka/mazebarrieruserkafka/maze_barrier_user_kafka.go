@@ -30,7 +30,6 @@ type MazeBarrierUserGameRecord struct {
 	Awards     string `json:"awards" gorm:"column:awards"`           // 本次获得的奖励
 	GroupID    uint32 `json:"group_id" gorm:"column:group_id"`       // 组id
 	CreateTime int64  `json:"create_time" gorm:"column:create_time"` // 操作时间
-	ServerId   int32  `json:"server_id" gorm:"column:server_id"`
 }
 
 // var gKafka = &fkafka.KafkaProducer{}

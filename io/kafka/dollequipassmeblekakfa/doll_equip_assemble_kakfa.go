@@ -52,7 +52,6 @@ type MazeGameEquipAssembleRecord struct {
 	CodeMask   int32  `json:"code_mask" gorm:"column:code_mask"`       // 业务掩码
 	TransID    uint64 `json:"trans_id" gorm:"column:trans_id"`         // 事务Id
 	OpTime     int64  `json:"create_time" gorm:"column:create_time"`   // 流水时间戳
-	ServerId   int32  `json:"server_id" gorm:"column:server_id"`
 }
 
 func SendMazeGameEquipAssembleRecord(logger fklog.FKLogI, record *MazeGameEquipAssembleRecord) error {

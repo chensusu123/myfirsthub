@@ -11,7 +11,6 @@ import (
 	"time"
 
 	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fklog"
-	"gitlab.ifreetalk.com/maze-plate/freetk/fkserver/appconfig"
 	"go.uber.org/zap"
 )
 
@@ -22,7 +21,6 @@ func SaveEquipAssembleRecord(logger fklog.FKLogI, record *dollequipassmeblekakfa
 
 	record.DataBase = nowDbTable[0]
 	record.Table = nowDbTable[1]
-	record.SectionID = appconfig.GlobalConfig().Global.SectionID
 
 	// 打到kafka 中
 	data, err := json.Marshal(record)

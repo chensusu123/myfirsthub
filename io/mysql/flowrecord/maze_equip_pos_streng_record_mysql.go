@@ -7,6 +7,7 @@ import (
 	"maze_game_server/io/kafka"
 	"maze_game_server/io/kafka/equipposstrengrecordkafka"
 	"maze_game_server/io/mysql"
+	"strconv"
 	"strings"
 	"time"
 
@@ -23,7 +24,12 @@ func SaveEquipPosStrengRecord(logger fklog.FKLogI, record *equipposstrengrecordk
 
 	record.DataBase = nowDbTable[0]
 	record.Table = nowDbTable[1]
-	record.SectionID = appconfig.GlobalConfig().Global.SectionID
+	groupID, err := strconv.Atoi(appconfig.GlobalConfig().Global.SectionID)
+	if err != nil {
+		logger.ErrorWF("SaveEquipDismantRecord Atoi fail", zap.Error(err))
+		return
+	}
+	record.GroupId = uint32(groupID)
 
 	// 打到kafka 中
 	data, err := json.Marshal(record)

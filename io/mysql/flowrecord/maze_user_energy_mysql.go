@@ -4,7 +4,6 @@ import (
 	"maze_game_server/io/kafka/mazeenergyrecord"
 
 	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fklog"
-	"go.uber.org/zap"
 )
 
 const MazeUserEnergyRecordTableName = "maze_user_energy_record"
@@ -32,7 +31,7 @@ func SaveUserEnergyRecord(logger fklog.FKLogI, record *mazeenergyrecord.MazeEner
 	// 	)
 	// 	return
 	// }
-	logger.InfoWF("SaveUserEnergyRecord succ", zap.Any("flowrecord", record))
+	// logger.InfoWF("SaveUserEnergyRecord succ", zap.Any("flowrecord", record))
 
 	return
 }

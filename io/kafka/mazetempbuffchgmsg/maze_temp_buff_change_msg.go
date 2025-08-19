@@ -34,7 +34,6 @@ type MazeTempBuffChangeMsg struct {
 	ChgType     int32          `json:"chg_type" gorm:"column:chg_type"`       // 变化类型
 	ChgDesc     string         `json:"chg_desc" gorm:"column:chg_desc"`       // 原因描述
 	CreateTime  int64          `json:"create_time" gorm:"column:create_time"` // 时间戳 ms
-	ServerId    int32          `json:"server_id" gorm:"column:server_id"`
 }
 
 var d = dispatcher.NewDispatcher[*MazeTempBuffChangeMsg]()

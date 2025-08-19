@@ -32,7 +32,6 @@ type MazeGameEquipBagRecord struct {
 	IsFail        int32  `json:"is_fail" gorm:"column:is_fail"`                 //操作是否失败 0-成功 1-失败
 	GroupID       uint32 `json:"group_id" gorm:"column:group_id"`               // 组id
 	CreateTime    int64  `json:"create_time" gorm:"column:create_time"`         // 操作时间
-	ServerId      int32  `json:"server_id" gorm:"column:server_id"`
 }
 
 // var equipBagChgQueue = &fkafka.KafkaProducer{}

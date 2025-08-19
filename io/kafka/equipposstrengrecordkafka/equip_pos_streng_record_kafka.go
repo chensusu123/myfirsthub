@@ -30,7 +30,6 @@ type EquipPosLevelUpRecord struct {
 	TradeNo   uint64 `json:"trade_no" gorm:"column:trade_no"`     // 扣物品流水号
 	CostItems string `json:"cost_items" gorm:"column:cost_items"` // 扣物品
 	Result    int32  `json:"result" gorm:"column:result"`         // 结果 0:成功 1:强化失败 2:存储武力值属性失败 3:存储非武力值属性失败
-	ServerId  int32  `json:"server_id" gorm:"column:server_id"`
 }
 
 // var logCli = &fkafka.KafkaProducer{}

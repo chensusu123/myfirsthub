@@ -25,7 +25,6 @@ type MazeUserLevelRecord struct {
 	NewTotalExp int32  `json:"new_total_exp" gorm:"column:new_total_exp"` // 新经验总值
 	GroupID     uint32 `json:"group_id" gorm:"column:group_id"`           // 组id
 	CreateTime  int64  `json:"create_time" gorm:"column:create_time"`     // 操作时间 毫秒
-	ServerId    int32  `json:"server_id" gorm:"column:server_id"`
 }
 
 // var gKafka = &fkafka.KafkaProducer{}
