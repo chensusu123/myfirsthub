@@ -62,13 +62,13 @@ func (g *Game) OnBarrierKillMonsterRQ_10620_10621(s *session.Session, req *MazeG
 		return err
 	}
 
-	_, totalDamage, _, _, err := barrierstagecounterservice.GlobalBarrierStageCounterService.GetBarrierStageCounter(logger, userId, req.GetBarrierId())
+	killMonsterNum, _, _, _, err := barrierstagecounterservice.GlobalBarrierStageCounterService.GetBarrierStageCounter(logger, userId, req.GetBarrierId())
 	if err != nil {
 		logger.ErrorWF("OnMazeBarrierPassRQ GetBarrierAreaRecord fail", zap.Error(err))
 		return err
 	}
 
-	res.TotalNum = proto.Int32(int32(totalDamage))
+	res.TotalNum = proto.Int32(int32(killMonsterNum))
 	logger.InfoWF("OnBarrierKillMonsterRQ AddKillMonsterNum success", zap.Any("res", res))
 	return nil
 }

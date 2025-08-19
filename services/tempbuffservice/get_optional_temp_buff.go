@@ -477,6 +477,9 @@ func TestBuffAttrMask(libId, attrMask int32) bool {
 	if attrMask == 0 {
 		return true
 	}
+	if libId < 401 || libId > 408 {
+		return true
+	}
 	// 测试用属性掩码 0-全部 1-冰 2-火 4-电 8-毒
 	if attrMask&IceMask > 0 {
 		if libId == 403 || libId == 404 {
