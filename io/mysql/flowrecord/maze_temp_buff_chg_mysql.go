@@ -32,6 +32,8 @@ func SaveTempBuffChgRecord(logger fklog.FKLogI, record *mazetempbuffchgmsg.MazeT
 	}
 	record.GroupId = uint32(groupID)
 
+	record.ChgAttrsStr = attr2String(record.ChgAttrs)
+
 	// 打到kafka 中
 	data, err := json.Marshal(record)
 	if err != nil {
@@ -50,4 +52,15 @@ func SaveTempBuffChgRecord(logger fklog.FKLogI, record *mazetempbuffchgmsg.MazeT
 	logger.InfoWF("SaveTempBuffChgRecord succ", zap.Any("flowrecord", record))
 
 	return
+}
+
+func attr2String(attrs []*mazetempbuffchgmsg.AttrChgInfo) string {
+	res := ""
+	for _, val := range attrs {
+		if res == "" {
+			res = fmt.Sprintf("%d:%d:%d", val.AttrId, val.OldVal, val.CurVal)
+		}
+		res = fmt.Sprintf("_%d:%d:%d", val.AttrId, val.OldVal, val.CurVal)
+	}
+	return res
 }
