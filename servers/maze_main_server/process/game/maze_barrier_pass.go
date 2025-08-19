@@ -19,6 +19,7 @@ import (
 	"maze_game_server/servers/maze_main_server/process/game/events"
 	"maze_game_server/services/barriersavedataservice"
 	"maze_game_server/services/barrierservice"
+	"maze_game_server/services/barrierstagecounterservice"
 	"maze_game_server/services/tempbuffservice"
 	"strings"
 	"time"
@@ -119,6 +120,8 @@ func ClearBarriersTempData(logger fklog.FKLogI, userId uint64, barrierId int32) 
 	tempbuffservice.GlobalTempBuffService.DelTempBuff(logger, userId, barrierId)
 	// 删除通过的区域
 	tempbuffservice.GlobalTempBuffService.DelPassArea(logger, userId, barrierId)
+	//删除关卡计数
+	barrierstagecounterservice.GlobalBarrierStageCounterService.DelBarrierStageCounterOnPass(logger, userId, barrierId)
 
 	mazebuffinforedis.DelMazeBuffBySrc(logger, userId, constdef.MazeBuffSrcSelectBuffForce)
 	// 推送属性计算消息

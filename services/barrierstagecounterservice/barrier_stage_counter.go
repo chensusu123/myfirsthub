@@ -185,10 +185,25 @@ func (s service) DelBarrierStageCounter(logger fklog.FKLogI, userId uint64, barr
 		if err != nil {
 			logger.ErrorWF("DelBarrierStageCounter Save fail", zap.Error(err))
 		}
-
+		logger.InfoWF("DelBarrierStageCounter success", zap.Uint64("userId", userId), zap.Int32("barrierId", barrierId), zap.Int32("stageId", stageId))
 	}
 
 	return err
+}
+
+func (s service) DelBarrierStageCounterOnPass(logger fklog.FKLogI, userId uint64, barrierId int32) error {
+	recordModel, err := barrierstagecountermodel.NewBarrierStageCounterModel(logger, userId, barrierId)
+	if err != nil {
+		logger.ErrorWF("DelBarrierStageCounter NewBarrierStageCounterModel fail", zap.Error(err))
+		return err
+	}
+	err = recordModel.Del(logger, userId, barrierId)
+	if err != nil {
+		logger.ErrorWF("DelBarrierStageCounter DEL fail", zap.Error(err))
+		return err
+	}
+	logger.InfoWF("DelBarrierStageCounter key", zap.Uint64("userId", userId), zap.Int32("barrierId", barrierId))
+	return nil
 }
 
 // 是否通过关卡区域
