@@ -126,6 +126,7 @@ func (s service) DelBarrierStageCounter(logger fklog.FKLogI, userId uint64, barr
 			logger.ErrorWF("DelBarrierStageCounter DEL fail", zap.Error(err))
 			return err
 		}
+		logger.InfoWF("DelBarrierStageCounter key", zap.Uint64("userId", userId), zap.Int32("barrierId", barrierId), zap.Int32("stageId", stageId))
 	} else {
 		//通过的区域不删除
 		//删除未完成区域经验存档
