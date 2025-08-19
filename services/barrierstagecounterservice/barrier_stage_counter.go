@@ -192,17 +192,19 @@ func (s service) DelBarrierStageCounter(logger fklog.FKLogI, userId uint64, barr
 }
 
 func (s service) DelBarrierStageCounterOnPass(logger fklog.FKLogI, userId uint64, barrierId int32) error {
-	recordModel, err := barrierstagecountermodel.NewBarrierStageCounterModel(logger, userId, barrierId)
-	if err != nil {
-		logger.ErrorWF("DelBarrierStageCounter NewBarrierStageCounterModel fail", zap.Error(err))
-		return err
+	for i := int32(0); i <= barrierId; i++ {
+		recordModel, err := barrierstagecountermodel.NewBarrierStageCounterModel(logger, userId, barrierId)
+		if err != nil {
+			logger.ErrorWF("DelBarrierStageCounter NewBarrierStageCounterModel fail", zap.Error(err))
+			continue
+		}
+		err = recordModel.Del(logger, userId, barrierId)
+		if err != nil {
+			logger.ErrorWF("DelBarrierStageCounter DEL fail", zap.Error(err))
+			continue
+		}
+		logger.InfoWF("DelBarrierStageCounterOnPass key", zap.Uint64("userId", userId), zap.Int32("barrierId", barrierId))
 	}
-	err = recordModel.Del(logger, userId, barrierId)
-	if err != nil {
-		logger.ErrorWF("DelBarrierStageCounter DEL fail", zap.Error(err))
-		return err
-	}
-	logger.InfoWF("DelBarrierStageCounter key", zap.Uint64("userId", userId), zap.Int32("barrierId", barrierId))
 	return nil
 }
 
