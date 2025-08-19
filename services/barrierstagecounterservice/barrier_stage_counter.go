@@ -32,15 +32,12 @@ func (s service) GetBarrierStageCounter(logger fklog.FKLogI, userId uint64, barr
 	for _, guid := range model.KillMonsterGuidMap {
 		guidList = append(guidList, guid...)
 	}
-
+	logger.InfoWF("GetBarrierStageCounter success", zap.Int32("killMonsterNum", killMonsterNum), zap.Int64("totalDamage", totalDamage), zap.Int64("totalExp", totalExp))
 	return
 }
 
 func (s service) AddKillMonsterNum(logger fklog.FKLogI, userId uint64, barrierId, stageId, monsterId, addVal int32, monsterGuid int64) (killMonsterNum int32, guidList []int64, err error) {
-	if stageId <= 0 {
-		logger.ErrorWF("AddKillMonsterNum stageId is invalid", zap.Int32("stageId", stageId))
-		return
-	}
+
 	recordModel, err := barrierstagecountermodel.NewBarrierStageCounterModel(logger, userId, barrierId)
 	if err != nil {
 		logger.ErrorWF("AddKillMonsterNum NewBarrierStageCounterModel fail", zap.Error(err))
@@ -52,9 +49,9 @@ func (s service) AddKillMonsterNum(logger fklog.FKLogI, userId uint64, barrierId
 	if !ok {
 		recordModel.KillMonsterRecordMap[stageId] = addVal
 	} else {
-		killMonsterNum += addVal
 		recordModel.KillMonsterRecordMap[stageId] += addVal
 	}
+	killMonsterNum += addVal
 	logger.InfoWF("AddKillMonsterNum after kill num", zap.Int32("number", killMonsterNum), zap.Int32("stageId", stageId))
 
 	guidList, ok = recordModel.KillMonsterGuidMap[stageId]
@@ -72,9 +69,9 @@ func (s service) AddKillMonsterNum(logger fklog.FKLogI, userId uint64, barrierId
 		if !ok {
 			recordModel.ExpMap[stageId] = addExp
 		} else {
-			expNum += addExp
 			recordModel.ExpMap[stageId] += addExp
 		}
+		expNum += addExp
 		logger.InfoWF("AddKillMonsterNum after exp num", zap.Int64("expNum", expNum), zap.Int32("stageId", stageId))
 	}
 
@@ -88,10 +85,7 @@ func (s service) AddKillMonsterNum(logger fklog.FKLogI, userId uint64, barrierId
 }
 
 func (s service) AddDamage(logger fklog.FKLogI, userId uint64, barrierId, stageId int32, addVal int64) (damage int64, err error) {
-	if stageId <= 0 {
-		logger.ErrorWF("AddDamage fail, stageId <= 0")
-		return
-	}
+
 	recordModel, err := barrierstagecountermodel.NewBarrierStageCounterModel(logger, userId, barrierId)
 	if err != nil {
 		logger.ErrorWF("AddDamage NewBarrierStageCounterModel fail", zap.Error(err))
@@ -103,9 +97,9 @@ func (s service) AddDamage(logger fklog.FKLogI, userId uint64, barrierId, stageI
 	if !ok {
 		recordModel.DamageRecordMap[stageId] = addVal
 	} else {
-		damage += addVal
 		recordModel.DamageRecordMap[stageId] += addVal
 	}
+	damage += addVal
 	logger.InfoWF("AddDamage  after", zap.Int64("damage", damage), zap.Int32("stageId", stageId))
 
 	err = recordModel.Save(logger, userId, barrierId)
@@ -186,19 +180,20 @@ func (s service) DelBarrierStageCounter(logger fklog.FKLogI, userId uint64, barr
 			}
 		}
 
+		err = recordModel.Save(logger, userId, barrierId)
+		if err != nil {
+			logger.ErrorWF("DelBarrierStageCounter Save fail", zap.Error(err))
+		}
+
 	}
 
-	err = recordModel.Save(logger, userId, barrierId)
-	if err != nil {
-		logger.ErrorWF("DelBarrierStageCounter Save fail", zap.Error(err))
-	}
 	return err
 }
 
 // 是否通过关卡区域
 func isPassBarrierArea(stageId int32, passArea []*dollmappuzzlenewcfgex.AreaInfo) bool {
 	for _, info := range passArea {
-		if info.StageId == stageId {
+		if info.StageId == 0 || info.StageId > stageId {
 			return true
 		}
 	}

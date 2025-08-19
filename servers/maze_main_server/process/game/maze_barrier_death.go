@@ -39,10 +39,10 @@ func (g *Game) OnMazeBarrierDeathRQ_10449_10450(s *session.Session, req *MazeGam
 		res.ErrInfo = errors.COMMON_ERROR_TIPS.Wrap("关卡id未设置")
 		return
 	}
-	if req.GetFoeExp() < 0 {
-		res.ErrInfo = errors.COMMON_ERROR_TIPS.Wrap("经验设置错误")
-		return
-	}
+	//if req.GetFoeExp() < 0 {
+	//	res.ErrInfo = errors.COMMON_ERROR_TIPS.Wrap("经验设置错误")
+	//	return
+	//}
 
 	killMonsterNum, totalDamage, awards, errinfo := barrierservice.Global.BarrierDeath(logger, req.GetHeader(), userId, req.GetBarrierId(), req.GetFoeExp())
 	if errinfo != nil {

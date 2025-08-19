@@ -53,11 +53,11 @@ func (g *Game) OnMazeBarrierPassRQ_10459_10460(s *session.Session, req *MazeGame
 		res.ErrInfo = errors.COMMON_ERROR_TIPS.Wrap("关卡id未设置")
 		return
 	}
-	if req.GetFoeExp() < 0 {
-		logger.ErrorWF("OnMazeBarrierPassRQ req barrier invalid", zap.Any("req", req))
-		res.ErrInfo = errors.COMMON_ERROR_TIPS.Wrap("经验参数错误")
-		return
-	}
+	//if req.GetFoeExp() < 0 {
+	//	logger.ErrorWF("OnMazeBarrierPassRQ req barrier invalid", zap.Any("req", req))
+	//	res.ErrInfo = errors.COMMON_ERROR_TIPS.Wrap("经验参数错误")
+	//	return
+	//}
 
 	killMonsterNum, totalDamage, awards, rareAwards, errinfo := barrierservice.Global.BarrierPass(logger, req.GetHeader(), userId, req.GetBarrierId(), req.GetFoeExp())
 	if errinfo != nil {

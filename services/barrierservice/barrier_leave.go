@@ -65,20 +65,26 @@ func (b *barrier) BarrierPass(logger fklog.FKLogI, header *Common.PacketHeader, 
 		return 0, 0, nil, nil, errors.MODULE_ERROR.ToInfo()
 	}
 
+	killMonsterNum, totalDamage, totalExp, _, err := barrierstagecounterservice.GlobalBarrierStageCounterService.GetBarrierStageCounter(logger, userID, barrierID)
+	if err != nil {
+		logger.ErrorWF("OnMazeBarrierPassRQ GetBarrierAreaRecord fail", zap.Error(err))
+		return 0, 0, nil, nil, errors.MODULE_ERROR.ToInfo()
+	}
+
 	// userInfo.SetPassBarrier(barrierID)
 	userInfo.PassBarrier = barrierID
 	// userInfo.SetBarrier(cfg.Next_id)
 	oldLevel := userInfo.Level
 	oldExp := userInfo.TotalExp
-	err = userInfo.AddExp(int64(foeExp))
+	err = userInfo.AddExp(int64(totalExp))
 	if err != nil {
-		logger.ErrorWF("BarrierPass AddExp fail", zap.Error(err), zap.Any("barrier", barrierID), zap.Any("foeExp", foeExp))
+		logger.ErrorWF("BarrierPass AddExp fail", zap.Error(err), zap.Any("barrier", barrierID), zap.Any("totalExp", totalExp))
 		return 0, 0, nil, nil, errors.MODULE_ERROR.ToInfo()
 	}
 	newLevel := userInfo.Level
 	err = userInfo.Save(logger)
 	if err != nil {
-		logger.ErrorWF("BarrierPass SetUserInfoV2 fail", zap.Error(err), zap.Any("barrier", barrierID), zap.Any("foeExp", foeExp))
+		logger.ErrorWF("BarrierPass SetUserInfoV2 fail", zap.Error(err), zap.Any("barrier", barrierID), zap.Any("totalExp", totalExp))
 		return 0, 0, nil, nil, errors.MODULE_ERROR.ToInfo()
 	}
 	mazecommonvalue.HandleUserLevelExpChg(logger, userID, userInfo.Level, userInfo.Exp, header.GetSession())
@@ -96,8 +102,8 @@ func (b *barrier) BarrierPass(logger fklog.FKLogI, header *Common.PacketHeader, 
 		}
 	}()
 
-	if foeExp > 0 {
-		expItem := &MazeCommon.MazeItem{ItemId: proto.Int32(constdef.MazeCommonItemExp), Count: proto.Int64(int64(foeExp))}
+	if totalExp > 0 {
+		expItem := &MazeCommon.MazeItem{ItemId: proto.Int32(constdef.MazeCommonItemExp), Count: proto.Int64(int64(totalExp))}
 		_, ok := rareMap[constdef.MazeCommonItemExp]
 		if ok {
 			rareAwards = append(rareAwards, expItem)
@@ -117,7 +123,7 @@ func (b *barrier) BarrierPass(logger fklog.FKLogI, header *Common.PacketHeader, 
 	userBarrier.EndTime = time.Now().Unix()
 	err = userBarrier.Save(logger)
 	if err != nil {
-		logger.ErrorWF("BarrierPass SetUserBarrierInfo fail", zap.Error(err), zap.Any("barrier", barrierID), zap.Any("foeExp", foeExp))
+		logger.ErrorWF("BarrierPass SetUserBarrierInfo fail", zap.Error(err), zap.Any("barrier", barrierID), zap.Any("totalExp", totalExp))
 		return 0, 0, nil, nil, errors.MODULE_ERROR.ToInfo()
 	}
 
@@ -190,12 +196,6 @@ func (b *barrier) BarrierPass(logger fklog.FKLogI, header *Common.PacketHeader, 
 		}
 	}
 
-	killMonsterNum, totalDamage, _, _, err = barrierstagecounterservice.GlobalBarrierStageCounterService.GetBarrierStageCounter(logger, userID, barrierID)
-	if err != nil {
-		logger.ErrorWF("OnMazeBarrierPassRQ GetBarrierAreaRecord fail", zap.Error(err))
-		return 0, 0, nil, nil, errors.MODULE_ERROR.ToInfo()
-	}
-
 	return killMonsterNum, totalDamage, awards, rareAwards, nil
 }
 
@@ -219,22 +219,28 @@ func (b *barrier) BarrierDeath(logger fklog.FKLogI, header *Common.PacketHeader,
 		return 0, 0, nil, errors.MODULE_ERROR.ToInfo()
 	}
 
+	killMonsterNum, totalDamage, totalExp, _, err := barrierstagecounterservice.GlobalBarrierStageCounterService.GetBarrierStageCounter(logger, userID, barrierID)
+	if err != nil {
+		logger.ErrorWF("OnMazeBarrierPassRQ GetBarrierAreaRecord fail", zap.Error(err))
+		return 0, 0, nil, errors.MODULE_ERROR.ToInfo()
+	}
+
 	// 计算出失败的奖励
 	realItem, showItem, realEquip, showEquip, showExp, err := awardservice.GlobalAwardService.GetBarrierDeathAward(logger, userID, barrierID)
 	if err != nil {
-		logger.ErrorWF("OnMazeBarrierDeathRQ GetBarrierDeathAward fail", zap.Error(err), zap.Any("barrier", barrierID), zap.Any("foeExp", foeExp))
+		logger.ErrorWF("OnMazeBarrierDeathRQ GetBarrierDeathAward fail", zap.Error(err), zap.Any("barrier", barrierID), zap.Any("totalExp", totalExp))
 		return 0, 0, nil, errors.MODULE_ERROR.ToInfo()
 	}
 
 	logger.InfoWF("OnMazeBarrierDeathRQ GetBarrierDeathAward", zap.Any("realItem", realItem), zap.Any("showItem", showItem), zap.Any("realEquip", realEquip), zap.Any("showEquip", showEquip), zap.Any("showExp", showExp))
 
 	var nowExp int64
-	showExp -= int64(foeExp)
+	showExp -= int64(totalExp)
 	if showExp > 0 {
 		tmpSum := int64(showExp) * int64(GMazeConfigV8Cfg.Get(911).Value_int)
-		nowExp = tmpSum/10000 + int64(foeExp)
+		nowExp = tmpSum/10000 + int64(totalExp)
 	} else {
-		nowExp = int64(foeExp)
+		nowExp = int64(totalExp)
 	}
 
 	//更新等级经验
@@ -242,13 +248,13 @@ func (b *barrier) BarrierDeath(logger fklog.FKLogI, header *Common.PacketHeader,
 	oldExp := userInfo.TotalExp
 	err = userInfo.AddExp(nowExp)
 	if err != nil {
-		logger.ErrorWF("OnMazeBarrierDeathRQ addExp fail", zap.Error(err), zap.Any("barrier", barrierID), zap.Any("foeExp", foeExp))
+		logger.ErrorWF("OnMazeBarrierDeathRQ addExp fail", zap.Error(err), zap.Any("barrier", barrierID), zap.Any("totalExp", totalExp))
 		return 0, 0, nil, errors.MODULE_ERROR.ToInfo()
 	}
 	newLevel := userInfo.Level
 	err = userInfo.Save(logger)
 	if err != nil {
-		logger.ErrorWF("OnMazeBarrierDeathRQ SetUserInfoV2 fail", zap.Error(err), zap.Any("barrier", barrierID), zap.Any("foeExp", foeExp))
+		logger.ErrorWF("OnMazeBarrierDeathRQ SetUserInfoV2 fail", zap.Error(err), zap.Any("barrier", barrierID), zap.Any("totalExp", totalExp))
 		return 0, 0, nil, errors.MODULE_ERROR.ToInfo()
 	}
 	mazecommonvalue.HandleUserLevelExpChg(logger, userID, userInfo.Level, userInfo.Exp, header.GetSession())
@@ -278,7 +284,7 @@ func (b *barrier) BarrierDeath(logger fklog.FKLogI, header *Common.PacketHeader,
 	userBarrier.EndTime = time.Now().Unix()
 	err = userBarrier.Save(logger)
 	if err != nil {
-		logger.ErrorWF("OnMazeBarrierDeathRQ SetUserBarrierInfo fail", zap.Error(err), zap.Any("barrier", barrierID), zap.Any("foeExp", foeExp))
+		logger.ErrorWF("OnMazeBarrierDeathRQ SetUserBarrierInfo fail", zap.Error(err), zap.Any("barrier", barrierID), zap.Any("totalExp", totalExp))
 		return 0, 0, nil, errors.MODULE_ERROR.ToInfo()
 	}
 
@@ -331,12 +337,6 @@ func (b *barrier) BarrierDeath(logger fklog.FKLogI, header *Common.PacketHeader,
 
 	logger.InfoWF("OnMazeBarrierDeathRQ showAward", zap.Any("realItem", realItem), zap.Any("realEquip", realEquip))
 	// logger.InfoWF("OnMazeBarrierDeathRQ addItems", zap.Any("addItems", addItems), zap.Any("equipItem", equipItem), zap.Any("expCount", expCount), zap.Any("nowExp", nowExp))
-
-	killMonsterNum, totalDamage, _, _, err = barrierstagecounterservice.GlobalBarrierStageCounterService.GetBarrierStageCounter(logger, userID, barrierID)
-	if err != nil {
-		logger.ErrorWF("OnMazeBarrierPassRQ GetBarrierAreaRecord fail", zap.Error(err))
-		return 0, 0, nil, errors.MODULE_ERROR.ToInfo()
-	}
 
 	return killMonsterNum, totalDamage, awards, nil
 }
