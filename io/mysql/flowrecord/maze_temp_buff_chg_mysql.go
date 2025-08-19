@@ -60,7 +60,7 @@ func attr2String(attrs []*mazetempbuffchgmsg.AttrChgInfo) string {
 		if res == "" {
 			res = fmt.Sprintf("%d:%d:%d", val.AttrId, val.OldVal, val.CurVal)
 		}
-		res = fmt.Sprintf("_%d:%d:%d", val.AttrId, val.OldVal, val.CurVal)
+		res = fmt.Sprintf("%s_%d:%d:%d", res, val.AttrId, val.OldVal, val.CurVal)
 	}
 	return res
 }
