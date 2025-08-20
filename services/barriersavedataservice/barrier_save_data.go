@@ -1,6 +1,7 @@
 package barriersavedataservice
 
 import (
+	"context"
 	"fmt"
 	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fklog"
 	"go.uber.org/zap"
@@ -8,8 +9,11 @@ import (
 	"maze_game_server/module/mazecommonvalue"
 )
 
-func (s *service) SaveBarrierData(logger fklog.FKLogI, userId uint64, barrier, stageId, rescueValue, bossPower int32, bossProgress float32) error {
-	model, err := barriersavedatamodel.NewBarrierSaveDataModel(logger, userId, barrier, false)
+func (s *service) SaveBarrierData(ctx context.Context, userId uint64, barrier, stageId, rescueValue, bossPower int32,
+	bossProgress float32, rescueItems []*barriersavedatamodel.RescueItemInfo) error {
+
+	logger := fklog.ContextAppLogger(ctx)
+	model, err := barriersavedatamodel.NewBarrierSaveDataModel(ctx, userId, barrier, false)
 	if err != nil {
 		logger.ErrorWF("GetBarrierSaveData NewBarrierSaveDataModel err", zap.Error(err))
 		return fmt.Errorf("获取关卡存档失败")
@@ -18,15 +22,17 @@ func (s *service) SaveBarrierData(logger fklog.FKLogI, userId uint64, barrier, s
 	model.RescueValue = rescueValue
 	model.BossPower = bossPower
 	model.BossProgress = bossProgress
-	err = model.Save(logger, userId, barrier)
+	model.RescueItems = rescueItems
+	err = model.Save(ctx, userId, barrier)
 	if err != nil {
 		logger.ErrorWF("SaveBarrierData save err", zap.Error(err))
 	}
 	return nil
 }
 
-func (s *service) GetBarrierSaveData(logger fklog.FKLogI, userId uint64, barrier int32) (*barriersavedatamodel.BarrierSaveDataModel, error) {
-	model, err := barriersavedatamodel.NewBarrierSaveDataModel(logger, userId, barrier, true)
+func (s *service) GetBarrierSaveData(ctx context.Context, userId uint64, barrier int32) (*barriersavedatamodel.BarrierSaveDataModel, error) {
+	logger := fklog.ContextAppLogger(ctx)
+	model, err := barriersavedatamodel.NewBarrierSaveDataModel(ctx, userId, barrier, true)
 	if err != nil {
 		logger.ErrorWF("GetBarrierSaveData NewBarrierSaveDataModel err", zap.Error(err))
 		return nil, fmt.Errorf("获取关卡存档失败")
@@ -35,13 +41,14 @@ func (s *service) GetBarrierSaveData(logger fklog.FKLogI, userId uint64, barrier
 	return model, nil
 }
 
-func (s *service) DelBarrierSaveData(logger fklog.FKLogI, userId uint64, barrier int32) error {
-	model, err := barriersavedatamodel.NewBarrierSaveDataModel(logger, userId, barrier, false)
+func (s *service) DelBarrierSaveData(ctx context.Context, userId uint64, barrier int32) error {
+	logger := fklog.ContextAppLogger(ctx)
+	model, err := barriersavedatamodel.NewBarrierSaveDataModel(ctx, userId, barrier, false)
 	if err != nil {
 		logger.ErrorWF("DelBarrierSaveData NewBarrierSaveDataModel err", zap.Error(err))
 		return nil
 	}
-	err = model.Del(logger, userId, barrier)
+	err = model.Del(ctx, userId, barrier)
 	if err != nil {
 		logger.ErrorWF("DelBarrierSaveData del err", zap.Error(err))
 		return nil
@@ -50,8 +57,9 @@ func (s *service) DelBarrierSaveData(logger fklog.FKLogI, userId uint64, barrier
 	return nil
 }
 
-func (s *service) GetPassValue(logger fklog.FKLogI, userId uint64, barrier int32) (int64, error) {
-	model, err := barriersavedatamodel.NewBarrierSaveDataModel(logger, userId, barrier, true)
+func (s *service) GetPassValue(ctx context.Context, userId uint64, barrier int32) (int64, error) {
+	logger := fklog.ContextAppLogger(ctx)
+	model, err := barriersavedatamodel.NewBarrierSaveDataModel(ctx, userId, barrier, true)
 	if err != nil {
 		logger.ErrorWF("GetPassValue NewBarrierSaveDataModel err", zap.Error(err))
 		return 0, nil

@@ -1,6 +1,7 @@
 package game
 
 import (
+	"context"
 	"fmt"
 	"maze_game_server/common/constdef"
 	"maze_game_server/common/errors"
@@ -115,7 +116,7 @@ func ClearBarriersTempData(logger fklog.FKLogI, userId uint64, barrierId int32) 
 	//清除关卡已获得奖励存档
 	barrierscorerewardredis.DelBarrierScoreReward(logger, userId, barrierId)
 	// 删除关卡存档 new
-	barriersavedataservice.GlobalBarrierSaveDataService.DelBarrierSaveData(logger, userId, barrierId)
+	barriersavedataservice.GlobalBarrierSaveDataService.DelBarrierSaveData(context.TODO(), userId, barrierId)
 	// 删除临时buff
 	tempbuffservice.GlobalTempBuffService.DelTempBuff(logger, userId, barrierId)
 	// 删除通过的区域

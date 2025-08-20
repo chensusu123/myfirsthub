@@ -1,6 +1,7 @@
 package game
 
 import (
+	"context"
 	"maze_game_server/common/errors"
 	"maze_game_server/config/GMazeLevelV8Cfg"
 	"maze_game_server/io/kafka/mazeuserlevelkafka"
@@ -107,7 +108,7 @@ func (g *Game) OnMazeLoginRQ_10451_10452(s *session.Session, req *MazeGame.MazeL
 	// 	return
 	// }
 
-	passValue, err := barriersavedataservice.GlobalBarrierSaveDataService.GetPassValue(logger, userId, userInfo.Barrier)
+	passValue, err := barriersavedataservice.GlobalBarrierSaveDataService.GetPassValue(context.TODO(), userId, userInfo.Barrier)
 	if err != nil {
 		res.ErrInfo = errors.COMMON_ERROR_TIPS.Wrap(err.Error())
 		return nil

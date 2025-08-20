@@ -99,7 +99,7 @@ func (g *Game) OnMazeBarrierEnterRQ_10447_10448(s *session.Session, req *MazeGam
 	storageInfo, _ := syncmazestorageinforedis.GetSyncMazeStorageInfo(userId, req.GetBarrierId())
 
 	// 获取存档数据 new
-	saveData, err := barriersavedataservice.GlobalBarrierSaveDataService.GetBarrierSaveData(logger, userId, req.GetBarrierId())
+	saveData, err := barriersavedataservice.GlobalBarrierSaveDataService.GetBarrierSaveData(ctx, userId, req.GetBarrierId())
 	if err != nil {
 		logger.ErrorWF("OnMazeBarrierEnterRQ GetBarrierSaveData err", zap.Error(err))
 		res.ErrInfo = errors.MODULE_ERROR.ToInfo()
@@ -125,12 +125,18 @@ func (g *Game) OnMazeBarrierEnterRQ_10447_10448(s *session.Session, req *MazeGam
 			return err
 		}
 	}
-
+	rescueItems := make([]*MazeGame.RescueItemInfo, 0, len(saveData.RescueItems))
+	for _, i := range saveData.RescueItems {
+		rescueItems = append(rescueItems, &MazeGame.RescueItemInfo{
+			RescueItemId: proto.Int32(i.RescueItemId),
+		})
+	}
 	res.SaveData = &MazeGame.BarrierSaveData{
 		StageId:      proto.Int32(saveData.StageId),
 		RescueValue:  proto.Int32(saveData.RescueValue),
 		BossPower:    proto.Int32(saveData.BossPower),
 		BossProgress: proto.Float32(saveData.BossProgress),
+		RescueItems:  rescueItems,
 	}
 	initPassValue, err := mazecommonvalue.CalcInitPassValue(logger, req.GetBarrierId())
 	if err != nil {
