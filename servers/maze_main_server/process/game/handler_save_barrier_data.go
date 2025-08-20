@@ -31,8 +31,7 @@ func (g *Game) OnSaveBarrierDataRQ_10624_10625(s *session.Session, req *MazeGame
 	rescueItems := make([]*barriersavedatamodel.RescueItemInfo, 0, len(req.RescueItems))
 	for _, i := range req.RescueItems {
 		rescueItems = append(rescueItems, &barriersavedatamodel.RescueItemInfo{
-			RescueItemId: i.GetRescueItemId(),
-			MapConfigId:  i.GetMapConfigId(),
+			MapConfigId: i.GetMapConfigId(),
 		})
 	}
 	err = barriersavedataservice.GlobalBarrierSaveDataService.SaveBarrierData(ctx, userId, req.GetBarrierId(),
