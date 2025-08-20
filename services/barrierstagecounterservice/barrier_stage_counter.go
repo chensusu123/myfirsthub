@@ -3,6 +3,8 @@ package barrierstagecounterservice
 import (
 	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fklog"
 	"go.uber.org/zap"
+	"maze_game_server/config/GMazeBarriesV8Cfg"
+	"maze_game_server/config/GMazeBrushFoeV8Cfg"
 	"maze_game_server/config/GMazeFoeV8Cfg"
 	"maze_game_server/excel/dollmappuzzlenewcfgex"
 	"maze_game_server/model/barrierstagecountermodel"
@@ -32,7 +34,18 @@ func (s service) GetBarrierStageCounter(logger fklog.FKLogI, userId uint64, barr
 	for _, guid := range model.KillMonsterGuidMap {
 		guidList = append(guidList, guid...)
 	}
-	logger.InfoWF("GetBarrierStageCounter success", zap.Int32("killMonsterNum", killMonsterNum), zap.Int64("totalDamage", totalDamage), zap.Int64("totalExp", totalExp))
+
+	barrierNum, barrierExp := getBarrierMonsterNum(logger, barrierId)
+	if killMonsterNum > barrierNum {
+		logger.InfoWF("GetBarrierStageCounter killMonsterNum > barrierNum", zap.Int32("barrierId", barrierId), zap.Int32("barrierNum", barrierNum), zap.Int32("killMonsterNum", killMonsterNum))
+		killMonsterNum = barrierNum
+	}
+	if totalExp > barrierExp {
+		logger.InfoWF("GetBarrierStageCounter totalExp > barrierExp", zap.Int32("barrierId", barrierId), zap.Int64("barrierExp", barrierExp), zap.Int64("totalExp", totalExp))
+		totalExp = barrierExp
+	}
+
+	logger.InfoWF("GetBarrierStageCounter success", zap.Int32("barrierId", barrierId), zap.Int32("killMonsterNum", killMonsterNum), zap.Int64("totalDamage", totalDamage), zap.Int64("totalExp", totalExp))
 	return
 }
 
@@ -44,6 +57,8 @@ func (s service) AddKillMonsterNum(logger fklog.FKLogI, userId uint64, barrierId
 		return 0, nil, err
 	}
 
+	barrierNum, barrierExp := getBarrierMonsterNum(logger, barrierId)
+
 	killMonsterNum, ok := recordModel.KillMonsterRecordMap[stageId]
 	logger.InfoWF("AddKillMonsterNum before kill num", zap.Int32("number", killMonsterNum), zap.Int32("stageId", stageId))
 	if !ok {
@@ -52,6 +67,11 @@ func (s service) AddKillMonsterNum(logger fklog.FKLogI, userId uint64, barrierId
 		recordModel.KillMonsterRecordMap[stageId] += addVal
 	}
 	killMonsterNum += addVal
+	if killMonsterNum > barrierNum {
+		logger.InfoWF("AddKillMonsterNum killMonsterNum > barrierNum", zap.Int32("barrierId", barrierId), zap.Int32("barrierNum", barrierNum), zap.Int32("killMonsterNum", killMonsterNum))
+		killMonsterNum = barrierNum
+		recordModel.KillMonsterRecordMap[stageId] = barrierNum
+	}
 	logger.InfoWF("AddKillMonsterNum after kill num", zap.Int32("number", killMonsterNum), zap.Int32("stageId", stageId))
 
 	guidList, ok = recordModel.KillMonsterGuidMap[stageId]
@@ -72,6 +92,12 @@ func (s service) AddKillMonsterNum(logger fklog.FKLogI, userId uint64, barrierId
 			recordModel.ExpMap[stageId] += addExp
 		}
 		expNum += addExp
+		if expNum > barrierExp {
+			logger.InfoWF("AddKillMonsterNum killMonsterNum > barrierNum", zap.Int32("barrierId", barrierId), zap.Int32("barrierNum", barrierNum), zap.Int32("killMonsterNum", killMonsterNum))
+			expNum = barrierExp
+			recordModel.ExpMap[stageId] = barrierExp
+		}
+
 		logger.InfoWF("AddKillMonsterNum after exp num", zap.Int64("expNum", expNum), zap.Int32("stageId", stageId))
 	}
 
@@ -225,4 +251,40 @@ func getMonsterExp(logger fklog.FKLogI, monsterId int32) int64 {
 		return 0
 	}
 	return int64(foeCfg.Drop_exp_num)
+}
+
+func getBarrierMonsterNum(logger fklog.FKLogI, barrierId int32) (totalMonsterNum int32, totalExpNum int64) {
+	barrierCfg := GMazeBarriesV8Cfg.Get(barrierId)
+	if barrierCfg == nil {
+		logger.ErrorWF("getBarrierMonsterNum get barrier cfg fail", zap.Any("barrierId", barrierId))
+		return 0, 0
+	}
+
+	allFoe := GMazeBrushFoeV8Cfg.GetAll()
+	if len(allFoe) == 0 {
+		logger.ErrorWF("getBarrierMonsterNum barrier foe empty", zap.Any("barrierId", barrierId))
+		return 0, 0
+	}
+	totalMonsterNum = int32(0)
+	totalExpNum = int64(0)
+	for _, cfg := range allFoe {
+		if cfg.Barries_id != barrierId {
+			continue
+		}
+		for _, foe := range cfg.Monsters_id {
+			if foe > 0 {
+				totalMonsterNum += 1
+				totalExpNum += getMonsterExp(logger, foe)
+			}
+		}
+		for foe, num := range cfg.Monsterslist_ids_and_nums {
+			if foe > 0 {
+				totalMonsterNum += num
+				totalExpNum += getMonsterExp(logger, foe) * int64(num)
+			}
+		}
+	}
+
+	logger.InfoWF("getBarrierMonsterNum ", zap.Int32("barrierId", barrierId), zap.Int32("totalMonsterNum", totalMonsterNum), zap.Int64("totalExpNum", totalExpNum))
+	return totalMonsterNum, totalExpNum
 }
