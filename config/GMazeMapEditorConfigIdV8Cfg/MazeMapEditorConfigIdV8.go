@@ -13,10 +13,12 @@ import (
 
 // MazeMapEditorConfigIdV8ConfigRow from maze_map_editor_config_id_v8【迷宫-地编配置id】.xlsx maze_map_editor_config_id_v8
 type MazeMapEditorConfigIdV8ConfigRow struct {
-	ID         int32 `json:"ID"`         // 唯一ID
-	Level_id   int32 `json:"level_id"`   // 关卡ID
-	Config_id  int32 `json:"config_id"`  // 地编配置id
-	Add_kungfu int32 `json:"add_kungfu"` // 增加通关值
+	ID            int32 `json:"ID"`            // 唯一ID
+	Level_id      int32 `json:"level_id"`      // 关卡ID
+	Config_id     int32 `json:"config_id"`     // 地编配置id
+	Add_kungfu    int32 `json:"add_kungfu"`    // 增加通关值
+	Add_save_item int32 `json:"add_save_item"` // 增加道具id
+	Save_item_pos int32 `json:"save_item_pos"` // 掉落道具位置（万分比）
 }
 
 // MazeMapEditorConfigIdV8Config from maze_map_editor_config_id_v8【迷宫-地编配置id】.xlsx maze_map_editor_config_id_v8
@@ -325,6 +327,34 @@ func (*gMazeMapEditorConfigIdV8Parser) Parse(logger fklog.FKLogI, data []string,
 		}
 		config.Add_kungfu = int32(tmp)
 	}
+
+	// parse column 4 add_save_item : 增加道具id
+	if data[4] != "" {
+		tmp, err = strconv.ParseInt(data[4], 10, 64)
+		if err != nil {
+			err = errors.New("parse field add_save_item 增加道具id to int32 failed")
+			logger.ErrorWF("parse field add_save_item 增加道具id to int32 failed.",
+				zap.String("xlsx", "maze_map_editor_config_id_v8【迷宫-地编配置id】.xlsx"), zap.String("sheet", "maze_map_editor_config_id_v8"),
+				zap.String("parse_data", data[4]),
+				zap.Error(err))
+			return
+		}
+		config.Add_save_item = int32(tmp)
+	}
+
+	// parse column 5 save_item_pos : 掉落道具位置（万分比）
+	if data[5] != "" {
+		tmp, err = strconv.ParseInt(data[5], 10, 64)
+		if err != nil {
+			err = errors.New("parse field save_item_pos 掉落道具位置（万分比） to int32 failed")
+			logger.ErrorWF("parse field save_item_pos 掉落道具位置（万分比） to int32 failed.",
+				zap.String("xlsx", "maze_map_editor_config_id_v8【迷宫-地编配置id】.xlsx"), zap.String("sheet", "maze_map_editor_config_id_v8"),
+				zap.String("parse_data", data[5]),
+				zap.Error(err))
+			return
+		}
+		config.Save_item_pos = int32(tmp)
+	}
 	return
 }
 
@@ -333,6 +363,8 @@ var gMazeMapEditorConfigIdV8Fields = []string{
 	"level_id",
 	"config_id",
 	"add_kungfu",
+	"add_save_item",
+	"save_item_pos",
 }
 
 // LoadDataManual load data for test
