@@ -49,7 +49,7 @@ func Watch(fn func(logger fklog.FKLogI, msg *MazeGameEquipDismantleRecord)) {
 }
 
 func PushDollEquipDismantleRecord(agent fklog.FKLogI, record *MazeGameEquipDismantleRecord) error {
-	record.CreateTime = time.Now().Unix()
+	record.CreateTime = time.Now().UnixNano() / 1e6
 	// record.GroupID = fkconfig.EnvVal.GroupID
 	// cnt, err := json.Marshal(record)
 	// if err != nil {
