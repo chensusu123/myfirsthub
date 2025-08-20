@@ -1,6 +1,7 @@
 package game
 
 import (
+	"strings"
 	"time"
 
 	"maze_game_server/common/constdef"
@@ -153,7 +154,11 @@ func (g *Game) OnMazeBarrierEnterRQ_10447_10448(s *session.Session, req *MazeGam
 	mazeBattleInfo, err3 := GetMazeBattleData(logger, userId, req.GetBarrierId())
 	if err3 != nil {
 		logger.ErrorWF("OnMazeBarrierEnterRQ GetMazeBattleData fail", zap.Error(err3))
-		res.ErrInfo = errors.MODULE_ERROR.ToInfo()
+		if strings.Contains(err3.Error(), "属性配置不存在:") {
+			res.ErrInfo = errors.MODULE_ERROR.Wrap(err3.Error())
+		} else {
+			res.ErrInfo = errors.MODULE_ERROR.ToInfo()
+		}
 		return
 	}
 	res.MazeBarrierInfo = mazeBattleInfo

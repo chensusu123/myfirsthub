@@ -1,6 +1,7 @@
 package game
 
 import (
+	"fmt"
 	"maze_game_server/common/constdef"
 	"maze_game_server/common/errors"
 	"maze_game_server/config/GMazeActInfoV8Cfg"
@@ -13,6 +14,7 @@ import (
 	"maze_game_server/config/GMazeSkillAutoConditionV8Cfg"
 	"maze_game_server/config/GMazeSkillInfoV8Cfg"
 	"maze_game_server/config/GMazeSkilleffectV8Cfg"
+	"maze_game_server/config/GMazeSummonV8Cfg"
 	"maze_game_server/io/redis/mazeboxredis"
 	"maze_game_server/io/redis/mazecalcattrredis"
 	"maze_game_server/pb/common/MazeAIBattle"
@@ -61,7 +63,7 @@ func GetMazeBattleData(logger fklog.FKLogI, userId uint64, barrierId int32) (maz
 		return nil, err
 	}
 	mazeBattleInfo.AreaInfos = areaInfos
-	userAttrInfo, err := GetUserAttrInfo(logger, userId, userAttrMap)
+	userAttrInfo, summonIds, err := GetUserAttrInfo(logger, userId, userAttrMap)
 	if err != nil {
 		logger.ErrorWF("GetMazeBattleData GetUserAttrInfo err", zap.Error(err), zap.Any("userId", userId))
 		return nil, err
@@ -104,6 +106,43 @@ func GetMazeBattleData(logger fklog.FKLogI, userId uint64, barrierId int32) (maz
 			return nil, err
 		}
 		mazeBattleInfo.SkillConfigInfos = append(mazeBattleInfo.SkillConfigInfos, skillConfigInfo)
+	}
+
+	// 召唤物配置
+	for _, summonId := range summonIds {
+		summonCfg := GMazeSummonV8Cfg.Get(summonId)
+		if summonCfg == nil {
+			logger.ErrorWF("GetMazeBattleData GMazeSummonV8Cfg.Get fail", zap.Int32("summonId", summonId))
+			return nil, fmt.Errorf("召唤物配置不存在")
+		}
+		var (
+			skillConfigInfos []*MazeAIBattle.MazeSkillConfigInfo
+		)
+		// 召唤物普通技能
+		if summonCfg.Nor_attack_skill_id > 0 {
+			skillConfigInfo, err := GetFoeSkillConfigInfo(logger, summonCfg.Nor_attack_skill_id)
+			if err != nil {
+				logger.ErrorWF("GetMazeBattleData GetFoeSkillConfigInfo err", zap.Any("Nor_attack_skill_id", summonCfg.Nor_attack_skill_id), zap.Error(err))
+				return nil, err
+			}
+			skillConfigInfos = append(skillConfigInfos, skillConfigInfo)
+		}
+		// // 召唤物技能
+		for _, skillId := range summonCfg.Skill_id {
+			if skillId <= 0 {
+				continue
+			}
+			skillConfigInfo, err := GetFoeSkillConfigInfo(logger, skillId)
+			if err != nil {
+				logger.ErrorWF("GetMazeBattleData GetFoeSkillConfigInfo err", zap.Any("skillId", skillId), zap.Error(err))
+				return nil, err
+			}
+			skillConfigInfos = append(skillConfigInfos, skillConfigInfo)
+		}
+		mazeBattleInfo.SummonConfigInfo = append(mazeBattleInfo.SummonConfigInfo, &MazeAIBattle.MazeAISummonConfigInfo{
+			SummonId:         proto.Int32(summonId),
+			SkillConfigInfos: skillConfigInfos,
+		})
 	}
 
 	// 道具使用配置
@@ -312,8 +351,9 @@ func GetMazeAIMonsterConfig(logger fklog.FKLogI, userId uint64, force int64, foe
 	return monsterConfigInfo, nil
 }
 
-func GetUserAttrInfo(logger fklog.FKLogI, userId uint64, userAttrMap map[int32]int64) (*MazeAIBattle.MazeAIRoleConfigInfo, error) {
+func GetUserAttrInfo(logger fklog.FKLogI, userId uint64, userAttrMap map[int32]int64) (*MazeAIBattle.MazeAIRoleConfigInfo, []int32, error) {
 	skillIds := make([]int32, 0)
+	summonIds := make([]int32, 0)
 	// 激活人物技能
 	for _, cfg := range GMazeSkillInfoV8Cfg.GetAll() {
 		if cfg.Skill_attr_id > 0 {
@@ -321,6 +361,10 @@ func GetUserAttrInfo(logger fklog.FKLogI, userId uint64, userAttrMap map[int32]i
 			// 判断是否激活技能
 			if ok && value > 0 {
 				skillIds = append(skillIds, cfg.Id)
+				// 追加召唤物技能
+				if cfg.Summon_id > 0 {
+					summonIds = append(summonIds, cfg.Summon_id)
+				}
 			}
 		}
 	}
@@ -329,7 +373,7 @@ func GetUserAttrInfo(logger fklog.FKLogI, userId uint64, userAttrMap map[int32]i
 	attrMap, err := GetUserBattleAttr(logger, userId, userAttrMap)
 	if err != nil {
 		logger.WarnWF("GetUserBattleAttr BatchGetDollCalcAttr nil", zap.Uint64("userId", userId))
-		return nil, err
+		return nil, nil, err
 	}
 	if attrMap[constdef.DollFormulaBlood] != nil {
 		// userAttrInfo.UserHp = proto.Int64(int64(attrMap[constdef.DollFormulaBlood].GetUserValue()))
@@ -353,7 +397,7 @@ func GetUserAttrInfo(logger fklog.FKLogI, userId uint64, userAttrMap map[int32]i
 		skillInfo, actDamageConfigs, err := GetUserBattleSkillInfo(logger, skillId, userAttrMap)
 		if err != nil {
 			logger.WarnWF("GetUserBattleAttr GetUserBattleSkillInfo nil", zap.Uint64("userId", userId), zap.Any("skillId", skillId))
-			return nil, err
+			return nil, nil, err
 		}
 		userSkillInfo.SkillInfoList = append(userSkillInfo.SkillInfoList, skillInfo)
 		actDamageConfigList = append(actDamageConfigList, actDamageConfigs...)
@@ -381,7 +425,7 @@ func GetUserAttrInfo(logger fklog.FKLogI, userId uint64, userAttrMap map[int32]i
 
 	roleConfigInfo.UserSkillInfo = userSkillInfo
 	roleConfigInfo.ActDamageConfig = actDamageConfigList
-	return roleConfigInfo, nil
+	return roleConfigInfo, summonIds, nil
 }
 
 func GetUserBattleSkillInfo(logger fklog.FKLogI, skillId int32, attrMap map[int32]int64) (*MazeAIBattle.MazeAISkillInfo, []*MazeAIBattle.MazeAIActAttackValue, error) {
