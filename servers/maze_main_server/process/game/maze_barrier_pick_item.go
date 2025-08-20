@@ -1,9 +1,6 @@
 package game
 
 import (
-	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fkprometheus"
-	"go.uber.org/zap"
-	"google.golang.org/protobuf/proto"
 	"maze_game_server/common/constdef"
 	"maze_game_server/common/errors"
 	"maze_game_server/common/function/gentradeno"
@@ -15,6 +12,10 @@ import (
 	"maze_game_server/pb/common/MazeCommon"
 	"maze_game_server/pb/common/MazeGame"
 	"maze_game_server/services/barrierscorerewardservice"
+
+	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fkprometheus"
+	"go.uber.org/zap"
+	"google.golang.org/protobuf/proto"
 )
 
 func (g *Game) OnBarrierPickItemRQ_10527_10528(s *session.Session, req *MazeGame.BarrierPickItemRQ) (err error) {
@@ -104,7 +105,7 @@ func (g *Game) OnBarrierPickItemRQ_10527_10528(s *session.Session, req *MazeGame
 		}
 		realAddItemList = append(realAddItemList, &MazeCommon.MazeItem{
 			ItemId: proto.Int32(int32(realAddItemId)),
-			Count:  proto.Int64(int64(realCount * 1)),
+			Count:  proto.Int64(int64(realCount * int32(item.GetCount()))),
 		})
 	}
 
