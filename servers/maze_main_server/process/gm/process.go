@@ -166,7 +166,7 @@ func RegGm(logger fklog.FKLogI) {
 		AuthId := fkutil.ToUint64(request.Form.Get("AuthId"))
 		ctx := request.Context()
 		userID := uint64(0)
-
+		callLogger := fklog.ContextAppLogger(ctx)
 		generateUser := &GenerateUser{}
 		defer func() {
 			generateUser.UserId = userID
@@ -184,7 +184,7 @@ func RegGm(logger fklog.FKLogI) {
 			return
 		}
 
-		users, err := UnionIDBindRedis.GetUsersWithUnionID(ctx, logger, uint64(AuthId))
+		users, err := UnionIDBindRedis.GetUsersWithUnionID(ctx, callLogger, uint64(AuthId))
 		if err != nil {
 			generateUser.ErrorCode = 1
 			generateUser.ErrorMsg = err.Error()
@@ -192,19 +192,19 @@ func RegGm(logger fklog.FKLogI) {
 		}
 
 		if len(users) == 0 {
-			newUserID := useridredis.Generate(ctx, logger)
+			newUserID := useridredis.Generate(ctx, callLogger)
 			if newUserID == 0 {
 				generateUser.ErrorCode = 1
 				generateUser.ErrorMsg = "Generate error"
 				return
 			}
-			err = UnionIDBindRedis.AddUnionID2UserID(ctx, logger, uint64(AuthId), newUserID)
+			err = UnionIDBindRedis.AddUnionID2UserID(ctx, callLogger, uint64(AuthId), newUserID)
 			if err != nil {
 				generateUser.ErrorCode = 1
 				generateUser.ErrorMsg = err.Error()
 				return
 			}
-			err = UnionIDBindRedis.AddUserID2UnionID(ctx, logger, newUserID, uint64(AuthId))
+			err = UnionIDBindRedis.AddUserID2UnionID(ctx, callLogger, newUserID, uint64(AuthId))
 			if err != nil {
 				generateUser.ErrorCode = 1
 				generateUser.ErrorMsg = err.Error()
@@ -212,7 +212,7 @@ func RegGm(logger fklog.FKLogI) {
 			}
 			err = usersection.Set(ctx, newUserID, appconfig.GlobalConfig().Global.SectionID)
 			if err != nil {
-				logger.ErrorWF("usersection.Set fail",
+				callLogger.CtxError(ctx, "usersection.Set fail",
 					zap.Uint64("userID", userID),
 					zap.Error(err))
 			}
