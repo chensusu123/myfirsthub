@@ -299,6 +299,7 @@ func (h *LocalHandler) handle(conn net.Conn, r *http.Request, pcodec frame.Packe
 		if agent.pcodec != nil {
 			loggerLoop := logger.Clone("nano")
 			loggerLoop.SetLogId(logidutil.GenerateLogID())
+			loggerLoop.SetUid(uint64(agent.session.UID()))
 			ctx := fklog.ContextWithLogger(context.Background(), loggerLoop)
 			tracer := otel.Tracer("nano.recive")
 			ctx, span := tracer.Start(ctx, "recive_data")
