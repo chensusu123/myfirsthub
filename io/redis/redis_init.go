@@ -3,6 +3,7 @@ package globalredis
 import (
 	"context"
 	"errors"
+
 	"github.com/redis/go-redis/v9"
 	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/database/nanoredis"
 	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/serverdepend"
@@ -13,7 +14,7 @@ type GlobalRedis struct {
 }
 
 func (g *GlobalRedis) Set(ctx context.Context, key string, value []byte) error {
-	db, err := g.NanoRedis.GetDB()
+	db, err := g.GetDBWithCtx(ctx)
 	if err != nil {
 		return err
 	}
@@ -21,7 +22,7 @@ func (g *GlobalRedis) Set(ctx context.Context, key string, value []byte) error {
 }
 
 func (g *GlobalRedis) Get(ctx context.Context, key string) ([]byte, error) {
-	db, err := g.NanoRedis.GetDB()
+	db, err := g.GetDBWithCtx(ctx)
 	if err != nil {
 		return nil, err
 	}
@@ -34,7 +35,7 @@ func (g *GlobalRedis) Get(ctx context.Context, key string) ([]byte, error) {
 }
 
 func (g *GlobalRedis) Del(ctx context.Context, key string) error {
-	db, err := g.NanoRedis.GetDB()
+	db, err := g.GetDBWithCtx(ctx)
 	if err != nil {
 		return err
 	}
