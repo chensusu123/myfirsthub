@@ -1,11 +1,13 @@
 package game
 
 import (
+	"context"
 	"fmt"
 	"maze_game_server/common/constdef"
 	"maze_game_server/common/errors"
 	"maze_game_server/common/function/addequip"
 	"maze_game_server/common/function/gentradeno"
+	"maze_game_server/common/function/itemutil"
 	"maze_game_server/config/GMazeItemsV8Cfg"
 	"maze_game_server/lib/log"
 	"maze_game_server/lib/nano/session"
@@ -14,6 +16,7 @@ import (
 	"maze_game_server/pb/server/MazeEquipSvr"
 	"maze_game_server/services/barrierscorerewardservice"
 	"maze_game_server/services/barrierservice"
+	"maze_game_server/services/itemservice"
 
 	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fkprometheus"
 	"go.uber.org/zap"
@@ -97,7 +100,8 @@ func (g *Game) OnBarrierOpenBoxRQ_10445_10446(s *session.Session, req *MazeGame.
 
 	// 处理需要加入背包的道具
 	if len(bagItems) > 0 {
-		errInfo := gentradeno.AddItemEx(logger, userId, 697, tradeNo, req.GetHeader(), bagItems...)
+		itemList := itemutil.ItemPb2ItemInfo(bagItems)
+		errInfo := itemservice.GlobalItemService.AddItem(context.TODO(), userId, itemservice.ItemOpTypeOpenBox, tradeNo, itemList...)
 		if errInfo != nil {
 			logger.ErrorWF("OnBarrierOpenBoxRQ AddItemEx fail", zap.Any("errInfo", errInfo), zap.Any("bagItems", bagItems))
 		}

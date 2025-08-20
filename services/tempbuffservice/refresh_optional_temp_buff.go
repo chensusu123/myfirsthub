@@ -6,11 +6,13 @@ import (
 	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fklog"
 	"go.uber.org/zap"
 	"maze_game_server/common/errors"
+	"maze_game_server/common/function/itemutil"
+	"maze_game_server/common/tradeno"
 	"maze_game_server/excel/mazebarriesv8config"
 	"maze_game_server/excel/mazeenergyresetcostv8config"
 	"maze_game_server/model/tempbuffmodel"
-	"maze_game_server/module/itemmodule"
 	"maze_game_server/pb/common/MazeCommon"
+	"maze_game_server/services/itemservice"
 )
 
 func (s *service) RefreshOptionalMazeTempBuffList(ctx context.Context, userId uint64, barrierId, level, areaId, attrMask int32, cost []*MazeCommon.MazeItem) (*OptionalBuffInfo, error) {
@@ -49,8 +51,9 @@ func (s *service) RefreshOptionalMazeTempBuffList(ctx context.Context, userId ui
 
 	logger.InfoWF("RefreshOptionalMazeTempBuffListRQ DeductItems start", zap.Any("cost", newCost))
 	if len(newCost) > 0 {
-		err = itemmodule.DeductItems(logger, userId, itemmodule.CostRefreshType, newCost)
-		if err != nil {
+		items := itemutil.ItemPb2ItemInfo(newCost)
+		errInfo := itemservice.GlobalItemService.SubItem(context.TODO(), userId, itemservice.ItemOpTypeRefreshTempBuff, tradeno.GetTradeNum(), items...)
+		if errInfo != nil {
 			logger.ErrorWF("RefreshOptionalMazeTempBuffListRQ DeductItems failed", zap.Error(err))
 			return nil, fmt.Errorf("扣钱失败")
 		}

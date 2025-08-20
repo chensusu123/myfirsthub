@@ -10,6 +10,7 @@ import (
 	"bytes"
 	"fmt"
 	"sort"
+	"strconv"
 
 	"maze_game_server/common/structsdef"
 )
@@ -69,4 +70,48 @@ func MapToString32(items map[int32]int32) string {
 		item64[k] = int64(v)
 	}
 	return MapToString(item64)
+}
+
+func MapStrStrToI32I64(mp map[string]string) (map[int32]int64, error) {
+	res := make(map[int32]int64)
+	for k, v := range mp {
+		ik, err := strconv.ParseInt(k, 10, 32)
+		if err != nil {
+			return nil, err
+		}
+		iv, err := strconv.ParseInt(v, 10, 64)
+		if err != nil {
+			return nil, err
+		}
+		res[int32(ik)] = iv
+	}
+	return res, nil
+}
+
+func SliceInt32ToString(list []int32) []string {
+	res := make([]string, 0, len(list))
+	for _, v := range list {
+		res = append(res, strconv.FormatInt(int64(v), 10))
+	}
+	return res
+}
+
+func SliceToMap(taskTypes []int32, values []interface{}) map[int32]int64 {
+	res := make(map[int32]int64)
+	if len(values) == 0 {
+		return res
+	}
+	for i, j := range taskTypes {
+		if values[i] == nil {
+			res[j] = 0
+		} else {
+			str, ok := values[i].(string)
+			if ok {
+				v, _ := strconv.ParseInt(str, 10, 64)
+				res[j] = v
+				continue
+			}
+		}
+	}
+	return res
 }

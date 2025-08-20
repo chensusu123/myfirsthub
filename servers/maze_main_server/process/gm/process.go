@@ -1,9 +1,12 @@
 package gm
 
 import (
+	"context"
 	"encoding/json"
 	"errors"
 	"fmt"
+	"maze_game_server/common/function/itemutil"
+	"maze_game_server/services/itemservice"
 	"net/http"
 	"os"
 	"path/filepath"
@@ -396,7 +399,8 @@ func RegGm(logger fklog.FKLogI) {
 		header := &Common.PacketHeader{}
 		header.Sharding = proto.Int64(int64(userId))
 
-		errInfo := gentradeno.AddItemEx(logger, userId, 697, tradeNo, header, items...)
+		itemList := itemutil.ItemPb2ItemInfo(items)
+		errInfo := itemservice.GlobalItemService.AddItem(context.TODO(), userId, itemservice.ItemOpTypeGM, tradeNo, itemList...)
 		if errInfo != nil {
 			fmt.Fprintf(writer, "添加道具失败，错误：%s", string(errInfo.GetErrMsg()))
 			logger.ErrorWF("addItem AddItemEx fail", zap.Any("errInfo", errInfo), zap.Any("ItemList", items))

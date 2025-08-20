@@ -9,10 +9,10 @@ import (
 	"maze_game_server/lib/log"
 	"maze_game_server/lib/nano/session"
 	"maze_game_server/module/mazecommonvalue"
-	"maze_game_server/module/mazemoney"
 	"maze_game_server/module/mazeuserinfo"
 	"maze_game_server/pb/common/MazeGame"
 	"maze_game_server/services/barriersavedataservice"
+	"maze_game_server/services/moneyservice"
 
 	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fkprometheus"
 	"go.uber.org/zap"
@@ -68,7 +68,7 @@ func (g *Game) OnMazeLoginRQ_10451_10452(s *session.Session, req *MazeGame.MazeL
 	}
 	expMax = levelCfg.Next_level_need_exp
 
-	money, diamond, err = mazemoney.GetUserMoney(logger, userId)
+	money, diamond, err = moneyservice.GlobalMoneyService.GetUserMoney(context.TODO(), userId)
 	if err != nil {
 		logger.ErrorWF("OnMazeLoginRQ GetUserMoney fail", zap.Error(err))
 		res.ErrInfo = errors.MODULE_ERROR.ToInfo()

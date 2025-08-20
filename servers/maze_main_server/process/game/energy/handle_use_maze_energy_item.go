@@ -1,17 +1,17 @@
 package energy
 
 import (
+	"context"
 	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fkprometheus"
 	"maze_game_server/common/errors"
-	"maze_game_server/common/function/gentradeno"
 	"maze_game_server/common/function/uniqueid"
 	"maze_game_server/io/kafka/mazeenergyrecord"
 	"maze_game_server/lib/log"
 	"maze_game_server/lib/nano/session"
 	"maze_game_server/module/mazeuserinfo"
-	"maze_game_server/pb/common/MazeCommon"
 	"maze_game_server/pb/common/MazeEnergy"
 	"maze_game_server/services/barrierenergyservice"
+	"maze_game_server/services/itemservice"
 	"time"
 
 	"go.uber.org/zap"
@@ -67,26 +67,29 @@ func (e *Energy) OnUseMazeEnergyItemRQ_10611_10612(s *session.Session, req *Maze
 
 	// 扣物品
 	itemId, recoverNum := barrierenergyservice.GlobalBarrierEnergyService.GetEnergyItemCfg()
-	careCost := make([]*MazeCommon.MazeItem, 1)
-	careCost = append(careCost, &MazeCommon.MazeItem{
-		ItemId: proto.Int32(itemId),
-		Count:  proto.Int64(1),
-	})
+	//careCost := make([]*MazeCommon.MazeItem, 1)
+	//careCost = append(careCost, &MazeCommon.MazeItem{
+	//	ItemId: proto.Int32(itemId),
+	//	Count:  proto.Int64(1),
+	//})
 
 	tid := uniqueid.GenUniqueIdUInt64()
-	if len(careCost) > 0 {
-		errInfo := gentradeno.DeductItemsEx(logger, userId, 697, tid, careCost...)
-		if errInfo != nil {
-			logger.ErrorWF("OnUseMazeEnergyItemRQ DeductItemsEx", zap.Any("careCost", careCost), zap.Uint64("tid", tid), zap.Any("errInfo", errInfo))
-
-			if errInfo.GetErrCode() == 50049 {
-				res.ErrInfo = errors.COMMON_ERROR_TIPS.Wrap("物品不足")
-			} else {
-				res.ErrInfo = errors.COMMON_ERROR_TIPS.Wrap("扣物品失败")
-			}
-			return
-		}
+	careCost := &itemservice.ItemInfo{
+		ItemId: itemId,
+		Count:  1,
 	}
+	errInfo := itemservice.GlobalItemService.SubItem(context.TODO(), userId, itemservice.ItemOpTypeUseEnergy, tid, careCost)
+	if errInfo != nil {
+		logger.ErrorWF("OnUseMazeEnergyItemRQ DeductItemsEx", zap.Any("careCost", careCost), zap.Uint64("tid", tid), zap.Any("errInfo", errInfo))
+
+		if errInfo.GetErrCode() == 50049 {
+			res.ErrInfo = errors.COMMON_ERROR_TIPS.Wrap("物品不足")
+		} else {
+			res.ErrInfo = errors.COMMON_ERROR_TIPS.Wrap("扣物品失败")
+		}
+		return
+	}
+
 	logger.InfoWF("OnUseMazeEnergyItemRQ DeductItemsEx succ", zap.Any("careCost", careCost), zap.Uint64("tid", tid))
 
 	energy, nextTime, err := barrierenergyservice.GlobalBarrierEnergyService.AddEnergy(logger, userId, recoverNum)

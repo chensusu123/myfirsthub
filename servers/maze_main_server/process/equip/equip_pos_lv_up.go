@@ -1,14 +1,15 @@
 package equip
 
 import (
+	"context"
 	"fmt"
+	"maze_game_server/services/itemservice"
 	"strings"
 
 	"maze_game_server/common/constdef"
 	"maze_game_server/common/errors"
 	"maze_game_server/common/function/assemble"
 	"maze_game_server/common/function/excelutil"
-	"maze_game_server/common/function/gentradeno"
 	"maze_game_server/common/function/itemutil"
 	"maze_game_server/common/function/maputil"
 	"maze_game_server/common/function/uniqueid"
@@ -219,7 +220,8 @@ func (e *Equip) OnEquipPosLvUpRQ_10425_10426(s *session.Session, rq *MazeEquipPo
 	tid := uniqueid.GenUniqueIdUInt64()
 	if len(careCost) > 0 {
 		// 通用	693	UN_CGK_COMMON_BILL_TYPE_693	迷宫装备位强化		否	马健	2025-03-22 17:28:42
-		errInfo := gentradeno.DeductItemsEx(logger, userId, 693, tid, careCost...)
+		items := itemutil.ItemPb2ItemInfo(careCost)
+		errInfo := itemservice.GlobalItemService.SubItem(context.TODO(), userId, itemservice.ItemOpTypeEquipPosLvUp, tid, items...)
 		if errInfo != nil {
 			logger.ErrorWF("OnEquipPosLvUpRQ DeductItemsEx",
 				zap.Any("svrCost", svrCost),

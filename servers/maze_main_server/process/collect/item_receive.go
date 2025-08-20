@@ -1,9 +1,11 @@
 package collect
 
 import (
+	"context"
 	"fmt"
 	"maze_game_server/common/errors"
 	"maze_game_server/common/function/gentradeno"
+	"maze_game_server/common/function/itemutil"
 	"maze_game_server/config/GMazeBarriesOnHookV8Cfg"
 	"maze_game_server/io/kafka/mazecollectrecord"
 	"maze_game_server/io/redis/mazecollectredis"
@@ -13,6 +15,7 @@ import (
 	"maze_game_server/module/mazeuserinfo"
 	"maze_game_server/pb/common/MazeCollect"
 	"maze_game_server/pb/server/MazeCollectCache"
+	"maze_game_server/services/itemservice"
 	"time"
 
 	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fklog"
@@ -117,7 +120,8 @@ func (c *Collect) OnMazeCollectItemReceiveRQ_10467_10468(s *session.Session, req
 
 	tradeNo := gentradeno.GetTradeNum()
 	items := Map2Common(addItems)
-	errInfo := gentradeno.AddItemEx(logger, userId, 692, tradeNo, req.Header, items...) //进背包
+	awardItems := itemutil.Map2ItemInfo(addItems)
+	errInfo := itemservice.GlobalItemService.AddItem(context.TODO(), userId, itemservice.ItemOpTypeCollect, tradeNo, awardItems...)
 	if errInfo != nil {
 		logger.ErrorWF("GetAllEquipDismantleAward AddItemEx fail", zap.Any("items", items))
 		//res.ErrInfo = errInfo

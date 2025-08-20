@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"maze_game_server/model/equipdropmodel"
 	"maze_game_server/services/equipdropservice"
+	"maze_game_server/services/itemservice"
 	"strings"
 
 	"maze_game_server/common/constdef"
@@ -230,7 +231,9 @@ func CalUserSweepBarrierAward(logger fklog.FKLogI, uid uint64, barrierId int32, 
 	// 发送物品
 	if len(otherItem) > 0 {
 		//697	UN_CGK_COMMON_BILL_TYPE_697	迷宫扫荡
-		errInfo := gentradeno.AddItemEx(logger, uid, 697, tradeNo, header, otherItem...)
+
+		awardItems := itemutil.Map2ItemInfo(addItems)
+		errInfo := itemservice.GlobalItemService.AddItem(context.TODO(), uid, itemservice.ItemOpTypeSweep, tradeNo, awardItems...)
 		if errInfo != nil {
 			logger.ErrorWF("CalUserSweepBarrierAward AddItemEx fail", zap.Any("errInfo", errInfo), zap.Any("otherItem", otherItem))
 		}

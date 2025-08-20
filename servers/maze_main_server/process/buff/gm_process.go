@@ -1,13 +1,14 @@
 package buff
 
 import (
+	"context"
 	"fmt"
+	"maze_game_server/common/tradeno"
 	"maze_game_server/config/GMazeAttributeV8Cfg"
 	"maze_game_server/excel/mazeenergyaffixlvv8config"
 	"maze_game_server/io/kafka/mazetempbuffchgmsg"
 	"maze_game_server/model/tempbuffmodel"
-	"maze_game_server/module/itemmodule"
-	"maze_game_server/pb/common/MazeCommon"
+	"maze_game_server/services/itemservice"
 	"maze_game_server/services/tempbuffservice"
 	"net/http"
 	"sort"
@@ -17,7 +18,6 @@ import (
 	"gitlab.ifreetalk.com/maze-plate/freetk/fkserver/appconfig"
 	"gitlab.ifreetalk.com/maze-plate/freetk/fkutil"
 	"go.uber.org/zap"
-	"google.golang.org/protobuf/proto"
 )
 
 /**
@@ -221,13 +221,11 @@ func InitGM(logger fklog.FKLogI) {
 		itemId := fkutil.ToInt32(request.Form.Get("itemId"))
 		count := fkutil.ToInt64(request.Form.Get("count"))
 		logger.SetUid(userId)
-		items := []*MazeCommon.MazeItem{
-			{
-				ItemId: proto.Int32(itemId),
-				Count:  proto.Int64(count),
-			},
+		item := &itemservice.ItemInfo{
+			ItemId: itemId,
+			Count:  count,
 		}
-		err := itemmodule.AddItems(logger, userId, itemmodule.CostRefreshType, items)
+		err := itemservice.GlobalItemService.AddItem(context.TODO(), userId, itemservice.ItemOpTypeGM, tradeno.GetTradeNum(), item)
 		if err != nil {
 			_, _ = writer.Write([]byte(fmt.Sprintf("add cost failed itemId: %d count:%d", itemId, count)))
 		}

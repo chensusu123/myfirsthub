@@ -7,12 +7,12 @@
 package item
 
 import (
-	"maze_game_server/common/itemclass/mazebag"
-	"maze_game_server/common/itemclass/mazecommonvalue"
+	"maze_game_server/services/bagservice"
+	"maze_game_server/services/itemservice"
+	"maze_game_server/services/moneyservice"
 )
 
 func init() {
-	mazebag.Register(GloRegIns)
-
-	mazecommonvalue.Register(GloRegIns)
+	bagservice.Register(itemservice.GloRegIns)
+	moneyservice.Register(itemservice.GloRegIns)
 }

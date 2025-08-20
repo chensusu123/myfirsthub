@@ -1,10 +1,10 @@
 package equip
 
 import (
+	"context"
 	"fmt"
 	"maze_game_server/common/constdef"
 	"maze_game_server/common/errors"
-	"maze_game_server/common/function/gentradeno"
 	"maze_game_server/common/function/itemutil"
 	"maze_game_server/common/function/uniqueid"
 	"maze_game_server/config/GMazeEquipInfoV8Cfg"
@@ -16,6 +16,7 @@ import (
 	"maze_game_server/lib/nano/session"
 	"maze_game_server/pb/common/MazeGameEquip"
 	"maze_game_server/pb/server/MazeEquipSvr"
+	"maze_game_server/services/itemservice"
 	"strings"
 
 	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fklog"
@@ -192,7 +193,8 @@ func (e *Equip) OnDollEquipDismantleRQ_10410_10411(s *session.Session, req *Maze
 
 	if len(awardItems) > 0 && req.GetDismantleFrom() != 4 {
 		// 699	UN_CGK_COMMON_BILL_TYPE_699	迷宫分解装备
-		errInfo := gentradeno.AddItemEx(logger, userId, 699, tradeNo, req.GetHeader(), awardItems...)
+		items := itemutil.Map2ItemInfo(award)
+		errInfo := itemservice.GlobalItemService.AddItem(context.TODO(), userId, itemservice.ItemOpTypeDismantle, tradeNo, items...)
 		if errInfo != nil {
 			logger.ErrorWF("OnDollEquipDismantleRQ AddItemEx fail", zap.Any("errInfo", errInfo), zap.Any("rq", rqSale))
 		}

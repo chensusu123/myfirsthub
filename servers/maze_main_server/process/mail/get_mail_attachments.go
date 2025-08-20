@@ -1,12 +1,14 @@
 package mail
 
 import (
+	"context"
 	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fkprometheus"
 	"go.uber.org/zap"
 	"google.golang.org/protobuf/proto"
 	"maze_game_server/common/errors"
 	"maze_game_server/common/function/addequip"
 	"maze_game_server/common/function/gentradeno"
+	"maze_game_server/common/function/itemutil"
 	"maze_game_server/lib/log"
 	"maze_game_server/lib/nano/session"
 	"maze_game_server/model/mailmodel"
@@ -14,6 +16,7 @@ import (
 	"maze_game_server/pb/common/MazeCommon"
 	"maze_game_server/pb/common/MazeMail"
 	"maze_game_server/pb/server/MazeEquipSvr"
+	"maze_game_server/services/itemservice"
 	"maze_game_server/services/mailservice"
 )
 
@@ -102,7 +105,8 @@ func (g *Mail) OnMazeGetMailAttachmentsRQ_10630_10631(s *session.Session, req *M
 			})
 		}
 
-		errInfo := gentradeno.AddItemEx(logger, userId, 695, tradeNo, req.GetHeader(), realAddItemList...)
+		itemList := itemutil.Map2ItemInfo(itemMap)
+		errInfo := itemservice.GlobalItemService.AddItem(context.TODO(), userId, itemservice.ItemOpTypeMail, tradeNo, itemList...)
 		if errInfo != nil {
 			logger.ErrorWF("OnMazeGetMailAttachmentsRQ AddItemEx fail", zap.Any("errInfo", errInfo), zap.Any("ItemList", realAddItemList))
 		}

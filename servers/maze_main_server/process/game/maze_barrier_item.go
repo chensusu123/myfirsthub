@@ -5,6 +5,7 @@ import (
 	"maze_game_server/common/constdef"
 	"maze_game_server/common/errors"
 	"maze_game_server/common/function/gentradeno"
+	"maze_game_server/common/function/itemutil"
 	"maze_game_server/config/GMazeBarriesV8Cfg"
 	"maze_game_server/config/GMazeConfigV8Cfg"
 	"maze_game_server/config/GMazeItemsV8Cfg"
@@ -15,6 +16,7 @@ import (
 	"maze_game_server/pb/common/MazeTempBuff"
 	"maze_game_server/servers/maze_main_server/process/buff"
 	"maze_game_server/services/barrierscorerewardservice"
+	"maze_game_server/services/itemservice"
 	"maze_game_server/services/tempbuffservice"
 	"maze_game_server/usecase/online"
 
@@ -210,7 +212,8 @@ func (g *Game) OnBarrierUseItemRQ_10550_10551(s *session.Session, req *MazeGame.
 
 	// 处理需要加入背包的道具
 	if len(items) > 0 {
-		errInfo := gentradeno.AddItemEx(logger, userId, 697, tradeNo, req.GetHeader(), items...)
+		itemList := itemutil.ItemPb2ItemInfo(items)
+		errInfo := itemservice.GlobalItemService.AddItem(context.TODO(), userId, itemservice.ItemOpTypeUseItem, tradeNo, itemList...)
 		if errInfo != nil {
 			logger.ErrorWF("OnBarrierUseItemRQ AddItemEx fail", zap.Any("errInfo", errInfo), zap.Any("ItemList", items))
 		}

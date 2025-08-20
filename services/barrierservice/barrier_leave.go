@@ -1,6 +1,7 @@
 package barrierservice
 
 import (
+	"context"
 	"maze_game_server/common/constdef"
 	"maze_game_server/common/errors"
 	"maze_game_server/common/function/addequip"
@@ -22,6 +23,7 @@ import (
 	"maze_game_server/pb/server/MazeEquipSvr"
 	"maze_game_server/services/awardservice"
 	"maze_game_server/services/barrierstagecounterservice"
+	"maze_game_server/services/itemservice"
 	"time"
 
 	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fklog"
@@ -157,7 +159,8 @@ func (b *barrier) BarrierPass(logger fklog.FKLogI, header *Common.PacketHeader, 
 		tradeNo := gentradeno.GetTradeNum()
 		if len(awardMap) > 0 {
 			awardItems := itemutil.Map2Common(awardMap)
-			errInfo := gentradeno.AddItemEx(logger, userID, 696, tradeNo, header, awardItems...)
+			itemList := itemutil.Map2ItemInfo(awardMap)
+			errInfo := itemservice.GlobalItemService.AddItem(context.TODO(), userID, itemservice.ItemOpTypePass, tradeNo, itemList...)
 			if errInfo != nil {
 				logger.ErrorWF("BarrierPass AddItemEx fail", zap.Any("errInfo", errInfo), zap.Any("awardItems", awardItems))
 			}
@@ -299,7 +302,8 @@ func (b *barrier) BarrierDeath(logger fklog.FKLogI, header *Common.PacketHeader,
 
 	if len(otherItem) > 0 {
 		//697	UN_CGK_COMMON_BILL_TYPE_697	迷宫扫荡
-		errInfo := gentradeno.AddItemEx(logger, userID, 697, tradeNo, header, otherItem...)
+		itemList := itemutil.Map2ItemInfo(realItem)
+		errInfo := itemservice.GlobalItemService.AddItem(context.TODO(), userID, itemservice.ItemOpTypeDeath, tradeNo, itemList...)
 		if errInfo != nil {
 			logger.ErrorWF("CalUserSweepBarrierAward AddItemEx fail", zap.Any("errInfo", errInfo), zap.Any("otherItem", otherItem))
 			return 0, 0, nil, errors.MODULE_ERROR.ToInfo()

@@ -1,8 +1,16 @@
 package interact
 
 import (
+	"context"
 	"fmt"
+	"maze_game_server/common/function/itemutil"
+	"maze_game_server/services/itemservice"
 
+	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fklog"
+	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fkprometheus"
+	"gitlab.ifreetalk.com/maze-plate/freetk/fkutil/saferand"
+	"go.uber.org/zap"
+	"google.golang.org/protobuf/proto"
 	"maze_game_server/common/cache/simCache"
 	"maze_game_server/common/equipmix"
 	"maze_game_server/common/errors"
@@ -18,15 +26,7 @@ import (
 	"maze_game_server/pb/common/MazeEquipMix"
 	"maze_game_server/pb/common/MessageType"
 	"maze_game_server/pb/server/MazeEquipSvr"
-	"maze_game_server/pb/server/MazeItemSvr"
 	equiprpc "maze_game_server/servers/maze_main_server/process/equip"
-	itemrpc "maze_game_server/servers/maze_main_server/process/item"
-
-	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fklog"
-	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fkprometheus"
-	"gitlab.ifreetalk.com/maze-plate/freetk/fkutil/saferand"
-	"go.uber.org/zap"
-	"google.golang.org/protobuf/proto"
 )
 
 type Interact struct {
@@ -218,28 +218,13 @@ func (*Interact) OnMazeEquipMixRQ_10443_10444(s *session.Session, req *MazeEquip
 		cost := cfg.Cost
 
 		var errorInfo *MessageType.ErrorInfo
-
-		rpcreq := &MazeItemSvr.ConsumeItemRQ{
-			UserId:      proto.Uint64(uid),
-			Items:       cost,
-			OpType:      proto.Int32(695),
-			TradeNumber: proto.Uint64(tradeNo),
-		}
-		rpcres := &MazeItemSvr.ConsumeItemRS{}
-
-		err = itemrpc.OnAddItemRQ(logger, rpcreq, rpcres)
+		items := itemutil.ItemPb2ItemInfo(cfg.Cost)
+		itemservice.GlobalItemService.SubItem(context.TODO(), uid, itemservice.ItemOpTypeEquipMix, tradeNo, items...)
 		if err != nil {
 			logger.ErrorWF("OnMazeEquipMixRQ DeductItems err", zap.Uint64("tradeNo", tradeNo), zap.Any("cost", cost),
 				zap.Any("errorInfo", errorInfo), zap.Error(err),
 			)
 			res.ErrInfo = errors.NewCommonCodeError("sub item err")
-			return
-		}
-		if rpcres.ErrInfo != nil {
-			logger.WarnWF("OnMazeEquipMixRQ DeductItems invalid", zap.Uint64("tradeNo", tradeNo), zap.Any("cost", cost),
-				zap.Any("errorInfo", errorInfo), zap.Error(err),
-			)
-			res.ErrInfo = errorInfo
 			return
 		}
 	}

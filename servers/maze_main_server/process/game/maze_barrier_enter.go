@@ -1,12 +1,11 @@
 package game
 
 import (
-	"strings"
+    "strings"
 	"time"
-
+    "maze_game_server/services/itemservice"
 	"maze_game_server/common/constdef"
 	"maze_game_server/common/errors"
-	"maze_game_server/common/function/gentradeno"
 	"maze_game_server/config/GMazeBarriesV8Cfg"
 	"maze_game_server/config/GMazeLevelV8Cfg"
 	"maze_game_server/io/kafka/mazeenergyrecord"
@@ -298,17 +297,17 @@ func (g *Game) OnMazeBarrierEnterRQ_10447_10448(s *session.Session, req *MazeGam
 		expMax = levelCfg.Next_level_need_exp
 	}
 
-	items := []*MazeCommon.MazeItem{
-		{ItemId: proto.Int32(constdef.MazeCommonItemCoin)},
-		{ItemId: proto.Int32(constdef.MazeCommonItemDiamond)},
+	items := []*itemservice.ItemInfo{
+		{ItemId: constdef.MazeCommonItemCoin},
+		{ItemId: constdef.MazeCommonItemDiamond},
 	}
-	queryItems, errInfo := gentradeno.QueryItems(logger, userId, items...)
+	queryItems, errInfo := itemservice.GlobalItemService.QueryItems(ctx, userId, items...)
 	if errInfo == nil {
 		for _, v := range queryItems {
-			if v.GetItemId() == constdef.MazeCommonItemCoin {
-				money = v.GetCount()
-			} else if v.GetItemId() == constdef.MazeCommonItemDiamond {
-				diamond = v.GetCount()
+			if v.ItemId == constdef.MazeCommonItemCoin {
+				money = v.Count
+			} else if v.ItemId == constdef.MazeCommonItemDiamond {
+				diamond = v.Count
 			}
 		}
 	}

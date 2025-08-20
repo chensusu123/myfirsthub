@@ -1,6 +1,7 @@
 package game
 
 import (
+	"context"
 	"maze_game_server/common/constdef"
 	"maze_game_server/common/errors"
 	"maze_game_server/io/kafka/mazemoneykafka"
@@ -9,10 +10,10 @@ import (
 	"maze_game_server/lib/nano/session"
 	"maze_game_server/model/equipdropmodel"
 	"maze_game_server/module/mazecommonvalue"
-	"maze_game_server/module/mazemoney"
 	"maze_game_server/module/mazeuserinfo"
 	"maze_game_server/pb/common/MazeGame"
 	"maze_game_server/services/equipdropservice"
+	"maze_game_server/services/moneyservice"
 
 	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fkprometheus"
 	"go.uber.org/zap"
@@ -109,14 +110,14 @@ func (g *Game) OnReportDataRQ_10453_10454(s *session.Session, req *MazeGame.Repo
 
 	if reportInfo.GetReportMask()&2 == 2 {
 		var oldCoin int64
-		oldCoin, _, err = mazemoney.GetUserMoney(logger, userId)
+		oldCoin, _, err = moneyservice.GlobalMoneyService.GetUserMoney(context.TODO(), userId)
 		if err != nil {
 			logger.ErrorWF("MazeCommonValueQueryRQ GetUserMoney fail", zap.Error(err))
 			res.ErrInfo = errors.MODULE_ERROR.ToInfo()
 		}
 
 		// rpc不支持set 他们也需要加锁 目前先自己直接设置
-		err = mazemoney.SetUserMoney(logger, userId, reportInfo.GetMoneyCount())
+		err = moneyservice.GlobalMoneyService.SetMoney(context.TODO(), userId, constdef.MazeCommonItemCoin, reportInfo.GetMoneyCount())
 		if err != nil {
 			logger.ErrorWF("ReportDataRQ SetMoney fail", zap.Error(err))
 			res.ErrInfo = errors.MODULE_ERROR.ToInfo()

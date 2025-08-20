@@ -1,11 +1,11 @@
 package game
 
 import (
+	"context"
 	"maze_game_server/common/constdef"
 	"maze_game_server/common/errors"
 	"maze_game_server/io/kafka/mazeenergyrecord"
 	"maze_game_server/io/redis/barrierscorerewardredis"
-	"maze_game_server/io/redis/mazebarriermoneyredis"
 	"maze_game_server/io/redis/mazeboxredis"
 	"maze_game_server/io/redis/mazechallengenumredis"
 	"maze_game_server/io/redis/mazecollectredis"
@@ -19,6 +19,7 @@ import (
 	"maze_game_server/module/mazeuserinfo"
 	"maze_game_server/pb/common/MazeGame"
 	"maze_game_server/services/barrierenergyservice"
+	"maze_game_server/services/moneyservice"
 	"strings"
 	"time"
 
@@ -183,20 +184,17 @@ func ParseCmd(logger fklog.FKLogI, uid uint64, cmdCode int32, cmd string, sessio
 }
 
 func SetMazeMoney(logger fklog.FKLogI, uid uint64, diamond int32, money int64, session string) (err error) {
-
 	if uid <= 0 || diamond < 0 || money < 0 {
 		logger.ErrorWF("userId不能小于等于0,diamond、moneyCount不能小于0")
 		err = errors.New("userId不能小于等于0,diamond、moneyCount不能小于0")
 		return
 	}
-
-	err = mazebarriermoneyredis.GMSet(logger, uint64(uid), int32(constdef.MazeCommonItemCoin), money)
+	err = moneyservice.GlobalMoneyService.SetMoney(context.TODO(), uid, constdef.MazeCommonItemCoin, money)
 	if err != nil {
 		logger.ErrorWF("SetMazeMoney GMSet fail", zap.Error(err))
 		return
 	}
-
-	err = mazebarriermoneyredis.GMSet(logger, uint64(uid), int32(constdef.MazeCommonItemDiamond), money)
+	err = moneyservice.GlobalMoneyService.SetMoney(context.TODO(), uid, constdef.MazeCommonItemDiamond, int64(diamond))
 	if err != nil {
 		logger.ErrorWF("SetMazeMoney GMSet fail", zap.Error(err))
 		return
