@@ -108,6 +108,8 @@ func GetMazeBattleData(logger fklog.FKLogI, userId uint64, barrierId int32) (maz
 		mazeBattleInfo.SkillConfigInfos = append(mazeBattleInfo.SkillConfigInfos, skillConfigInfo)
 	}
 
+	summonAttrMap := make(map[int32]int64)
+
 	// 召唤物配置
 	for _, summonId := range summonIds {
 		summonCfg := GMazeSummonV8Cfg.Get(summonId)
@@ -115,34 +117,42 @@ func GetMazeBattleData(logger fklog.FKLogI, userId uint64, barrierId int32) (maz
 			logger.ErrorWF("GetMazeBattleData GMazeSummonV8Cfg.Get fail", zap.Int32("summonId", summonId))
 			return nil, fmt.Errorf("召唤物配置不存在")
 		}
+
 		var (
-			skillConfigInfos []*MazeAIBattle.MazeSkillConfigInfo
+			skillIds = make([]int32, 0)
 		)
+		summonConfigInfo := &MazeAIBattle.MazeAISummonConfigInfo{
+			SummonId: proto.Int32(summonId),
+		}
+
 		// 召唤物普通技能
 		if summonCfg.Nor_attack_skill_id > 0 {
-			skillConfigInfo, err := GetFoeSkillConfigInfo(logger, summonCfg.Nor_attack_skill_id)
-			if err != nil {
-				logger.ErrorWF("GetMazeBattleData GetFoeSkillConfigInfo err", zap.Any("Nor_attack_skill_id", summonCfg.Nor_attack_skill_id), zap.Error(err))
-				return nil, err
-			}
-			skillConfigInfos = append(skillConfigInfos, skillConfigInfo)
+			skillIds = append(skillIds, summonCfg.Nor_attack_skill_id)
 		}
 		// // 召唤物技能
 		for _, skillId := range summonCfg.Skill_id {
 			if skillId <= 0 {
 				continue
 			}
+			skillIds = append(skillIds, skillId)
+		}
+		for _, skillId := range skillIds {
+			// 技能配置
 			skillConfigInfo, err := GetFoeSkillConfigInfo(logger, skillId)
 			if err != nil {
 				logger.ErrorWF("GetMazeBattleData GetFoeSkillConfigInfo err", zap.Any("skillId", skillId), zap.Error(err))
 				return nil, err
 			}
-			skillConfigInfos = append(skillConfigInfos, skillConfigInfo)
+			summonConfigInfo.SkillConfigInfos = append(summonConfigInfo.SkillConfigInfos, skillConfigInfo)
+			// 技能信息
+			skillInfo, err := GetFoeBattleSkillInfo(logger, skillId, summonAttrMap)
+			if err != nil {
+				logger.ErrorWF("GetMazeBattleData GetFoeBattleSkillInfo err", zap.Any("skillId", skillId), zap.Error(err))
+				return nil, err
+			}
+			summonConfigInfo.SkillInfos = append(summonConfigInfo.SkillInfos, skillInfo)
 		}
-		mazeBattleInfo.SummonConfigInfo = append(mazeBattleInfo.SummonConfigInfo, &MazeAIBattle.MazeAISummonConfigInfo{
-			SummonId:         proto.Int32(summonId),
-			SkillConfigInfos: skillConfigInfos,
-		})
+		mazeBattleInfo.SummonConfigInfo = append(mazeBattleInfo.SummonConfigInfo, summonConfigInfo)
 	}
 
 	// 道具使用配置
