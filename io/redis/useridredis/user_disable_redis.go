@@ -23,7 +23,7 @@ var gRegionID = 0
 const maxUserID = 10000000
 
 // 获取用户信息是否封禁
-func Generate(logger fklog.FKLogI) uint64 {
+func Generate(ctx context.Context, logger fklog.FKLogI) uint64 {
 	if gRegionID == 0 {
 		tmpVal, err := strconv.ParseUint(appconfig.GlobalConfig().Global.SectionID, 10, 32)
 		if err != nil {
@@ -34,16 +34,16 @@ func Generate(logger fklog.FKLogI) uint64 {
 	}
 
 	key := "uid:generate"
-	userId, err := redis.Int64(gRedis.Do(context.TODO(), "INCR", key))
+	userId, err := redis.Int64(gRedis.Do(ctx, "INCR", key))
 	if err != nil {
 		logger.ErrorWF("Generate error", zap.Error(err))
 		return 0
 	}
 	if userId <= maxUserID {
 		begin := gRegionID * maxUserID
-		gRedis.Do(context.TODO(), "SET", key, begin)
+		gRedis.Do(ctx, "SET", key, begin)
 	}
-	userId, err = redis.Int64(gRedis.Do(context.TODO(), "INCR", key))
+	userId, err = redis.Int64(gRedis.Do(ctx, "INCR", key))
 	if err != nil {
 		logger.ErrorWF("Generate error", zap.Error(err))
 		return 0

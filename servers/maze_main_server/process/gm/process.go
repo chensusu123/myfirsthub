@@ -1,22 +1,22 @@
 package gm
 
 import (
-	"context"
 	"encoding/json"
 	"errors"
 	"fmt"
-	"maze_game_server/excel/mazeenergyaffixlvv8config"
-	"maze_game_server/model/tempbuffmodel"
-	"maze_game_server/pb/common/Common"
-	"maze_game_server/pb/common/MazeCommon"
-	"maze_game_server/services/barrierenergyservice"
-	"maze_game_server/services/tempbuffservice"
 	"net/http"
 	"os"
 	"path/filepath"
 	"sort"
 	"strings"
 	"time"
+
+	"maze_game_server/excel/mazeenergyaffixlvv8config"
+	"maze_game_server/model/tempbuffmodel"
+	"maze_game_server/pb/common/Common"
+	"maze_game_server/pb/common/MazeCommon"
+	"maze_game_server/services/barrierenergyservice"
+	"maze_game_server/services/tempbuffservice"
 
 	"maze_game_server/common/function/gentradeno"
 	"maze_game_server/common/function/gm"
@@ -164,7 +164,7 @@ func RegGm(logger fklog.FKLogI) {
 	gm.SafeHttpRegister(logger, "/generateUser", func(writer http.ResponseWriter, request *http.Request) {
 		logger.SetLogId(time.Now().UnixNano())
 		AuthId := fkutil.ToUint64(request.Form.Get("AuthId"))
-
+		ctx := request.Context()
 		userID := uint64(0)
 
 		generateUser := &GenerateUser{}
@@ -184,7 +184,7 @@ func RegGm(logger fklog.FKLogI) {
 			return
 		}
 
-		users, err := UnionIDBindRedis.GetUsersWithUnionID(logger, uint64(AuthId))
+		users, err := UnionIDBindRedis.GetUsersWithUnionID(ctx, logger, uint64(AuthId))
 		if err != nil {
 			generateUser.ErrorCode = 1
 			generateUser.ErrorMsg = err.Error()
@@ -192,25 +192,25 @@ func RegGm(logger fklog.FKLogI) {
 		}
 
 		if len(users) == 0 {
-			newUserID := useridredis.Generate(logger)
+			newUserID := useridredis.Generate(ctx, logger)
 			if newUserID == 0 {
 				generateUser.ErrorCode = 1
 				generateUser.ErrorMsg = "Generate error"
 				return
 			}
-			err = UnionIDBindRedis.AddUnionID2UserID(logger, uint64(AuthId), newUserID)
+			err = UnionIDBindRedis.AddUnionID2UserID(ctx, logger, uint64(AuthId), newUserID)
 			if err != nil {
 				generateUser.ErrorCode = 1
 				generateUser.ErrorMsg = err.Error()
 				return
 			}
-			err = UnionIDBindRedis.AddUserID2UnionID(logger, newUserID, uint64(AuthId))
+			err = UnionIDBindRedis.AddUserID2UnionID(ctx, logger, newUserID, uint64(AuthId))
 			if err != nil {
 				generateUser.ErrorCode = 1
 				generateUser.ErrorMsg = err.Error()
 				return
 			}
-			err = usersection.Set(context.TODO(), newUserID, appconfig.GlobalConfig().Global.SectionID)
+			err = usersection.Set(ctx, newUserID, appconfig.GlobalConfig().Global.SectionID)
 			if err != nil {
 				logger.ErrorWF("usersection.Set fail",
 					zap.Uint64("userID", userID),
@@ -268,9 +268,7 @@ func RegGm(logger fklog.FKLogI) {
 			return
 		}
 
-		var (
-			tempBuffInfo *tempbuffmodel.TempBuffInfoModel
-		)
+		var tempBuffInfo *tempbuffmodel.TempBuffInfoModel
 		if barrierId > 0 {
 			tempBuffInfo, err = tempbuffservice.GlobalTempBuffService.GetTempBuffInfo(logger, userId, barrierId)
 			if err != nil {
@@ -492,7 +490,6 @@ func RegGm(logger fklog.FKLogI) {
 
 		writer.Write(jsonOutput)
 	})
-
 }
 
 type ShowSheet struct {

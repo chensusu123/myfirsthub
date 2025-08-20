@@ -1,7 +1,6 @@
 package auth
 
 import (
-	"context"
 	"time"
 
 	"maze_game_server/common/errors"
@@ -57,7 +56,7 @@ func (a *Auth) OnLoginRQ_10492_10493(s *session.Session, req *UserLogin.UserLogi
 		return nil
 	}
 
-	users, err := UnionIDBindRedis.GetUsersWithUnionID(logger, uint64(req.GetAuthId()))
+	users, err := UnionIDBindRedis.GetUsersWithUnionID(ctx, logger, uint64(req.GetAuthId()))
 	if err != nil {
 		res.Error = errors.COMMON_ERROR_TIPS.Wrap("get users with unionID fail")
 		return nil
@@ -65,22 +64,22 @@ func (a *Auth) OnLoginRQ_10492_10493(s *session.Session, req *UserLogin.UserLogi
 
 	userID := uint64(0)
 	if len(users) == 0 {
-		newUserID := useridredis.Generate(logger)
+		newUserID := useridredis.Generate(ctx, logger)
 		if newUserID == 0 {
 			res.Error = errors.COMMON_ERROR_TIPS.Wrap("generate userID fail")
 			return nil
 		}
-		err = UnionIDBindRedis.AddUnionID2UserID(logger, uint64(req.GetAuthId()), newUserID)
+		err = UnionIDBindRedis.AddUnionID2UserID(ctx, logger, uint64(req.GetAuthId()), newUserID)
 		if err != nil {
 			res.Error = errors.COMMON_ERROR_TIPS.Wrap("add unionID to userID fail")
 			return nil
 		}
-		err = UnionIDBindRedis.AddUserID2UnionID(logger, newUserID, uint64(req.GetAuthId()))
+		err = UnionIDBindRedis.AddUserID2UnionID(ctx, logger, newUserID, uint64(req.GetAuthId()))
 		if err != nil {
 			res.Error = errors.COMMON_ERROR_TIPS.Wrap("add userID to unionID fail")
 			return nil
 		}
-		err = usersection.Set(context.TODO(), newUserID, appconfig.GlobalConfig().Global.SectionID)
+		err = usersection.Set(ctx, newUserID, appconfig.GlobalConfig().Global.SectionID)
 		if err != nil {
 			logger.ErrorWF("usersection.Set fail",
 				zap.Uint64("userID", userID),

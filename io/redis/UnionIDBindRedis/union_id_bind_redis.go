@@ -21,9 +21,7 @@ func init() {
 	fkconfig.RegisterIO(gRedisCli, 16895 /*cgk数据库类型*/)
 }
 
-func AddUnionID2UserID(logger fklog.FKLogI, unionID, userID uint64) error {
-	ctx := context.TODO()
-
+func AddUnionID2UserID(ctx context.Context, logger fklog.FKLogI, unionID, userID uint64) error {
 	key := fkutil.K_str("paipai:unionid:%d:to:userid:set", unionID)
 
 	_, err := gRedisCli.Do(ctx, "SADD", key, userID)
@@ -39,8 +37,7 @@ func AddUnionID2UserID(logger fklog.FKLogI, unionID, userID uint64) error {
 	return nil
 }
 
-func AddUserID2UnionID(logger fklog.FKLogI, userID, unionID uint64) error {
-	ctx := context.TODO()
+func AddUserID2UnionID(ctx context.Context, logger fklog.FKLogI, userID, unionID uint64) error {
 	key := fkutil.K_str("paipai:userid:%d:to:unionid:string", userID)
 
 	_, err := gRedisCli.Do(ctx, "SET", key, unionID)
@@ -56,8 +53,7 @@ func AddUserID2UnionID(logger fklog.FKLogI, userID, unionID uint64) error {
 	return nil
 }
 
-func GetUsersWithUnionID(logger fklog.FKLogI, unionID uint64) (users []uint64, err error) {
-	ctx := context.TODO()
+func GetUsersWithUnionID(ctx context.Context, logger fklog.FKLogI, unionID uint64) (users []uint64, err error) {
 	key := fkutil.K_str("paipai:unionid:%d:to:userid:set", unionID)
 	ret, err := redis.Strings(gRedisCli.Do(ctx, "SMEMBERS", key))
 
@@ -93,8 +89,7 @@ func GetUsersWithUnionID(logger fklog.FKLogI, unionID uint64) (users []uint64, e
 	return users, nil
 }
 
-func GetUserID2UnionID(logger fklog.FKLogI, userID uint64) (unionID uint64, err error) {
-	ctx := context.TODO()
+func GetUserID2UnionID(ctx context.Context, logger fklog.FKLogI, userID uint64) (unionID uint64, err error) {
 	key := fkutil.K_str("paipai:userid:%d:to:unionid:string", userID)
 	ret, err := redis.String(gRedisCli.Do(ctx, "GET", key))
 
