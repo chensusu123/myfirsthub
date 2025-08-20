@@ -12,6 +12,7 @@ func getKey(userId uint64, barrier int32) string {
 
 type RescueItemInfo struct {
 	RescueItemId int32 `json:"rescue_item_id,omitempty"`
+	MapConfigId  int32 `json:"map_config_id,omitempty"`
 }
 
 // 关卡存档数据

@@ -130,6 +130,7 @@ func (g *Game) OnMazeBarrierEnterRQ_10447_10448(s *session.Session, req *MazeGam
 	for _, i := range saveData.RescueItems {
 		rescueItems = append(rescueItems, &MazeGame.RescueItemInfo{
 			RescueItemId: proto.Int32(i.RescueItemId),
+			MapConfigId:  proto.Int32(i.MapConfigId),
 		})
 	}
 	res.SaveData = &MazeGame.BarrierSaveData{
