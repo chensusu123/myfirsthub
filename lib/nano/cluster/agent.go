@@ -578,6 +578,7 @@ func processDataWrite(a *agent, dataWrite *WriteItem) (err error) {
 	if wCount, err := a.conn.Write(data); err != nil {
 		fklog.ContextAppLogger(ctx).CtxError(ctx, "nano write packet failed",
 			zap.Int("data_len", len(data)),
+			zap.Int64("userID", a.session.UID()),
 			zap.String("remote_addr", a.conn.RemoteAddr().String()),
 			zap.Int("write_count", wCount), zap.Error(err),
 			zap.Int64("userID", userID),
