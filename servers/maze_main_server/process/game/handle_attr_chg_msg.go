@@ -7,14 +7,15 @@
 package game
 
 import (
-	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fklog"
-	"go.uber.org/zap"
 	"maze_game_server/common/constdef"
 	"maze_game_server/common/structsdef"
 	"maze_game_server/io/redis/mazecalcattrredis"
 	"maze_game_server/module/mazecommonvalue"
 	"maze_game_server/module/mazeuserinfo"
 	"maze_game_server/pb/common/MazeGame"
+
+	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fklog"
+	"go.uber.org/zap"
 )
 
 func HandleUserAttrMsg(logger fklog.FKLogI, msg *structsdef.DollAttrChgNotify) {
@@ -166,12 +167,14 @@ func handleMazeBattleNotify(logger fklog.FKLogI, userId uint64, msg *structsdef.
 			logger.ErrorWF("handleMazeBattleNotify GetUserInfoV2 fail", zap.Error(err))
 			return
 		}
-		mazeBattleInfo, err := GetMazeBattleData(logger, userId, userInfo.Barrier)
-		if err != nil {
-			logger.ErrorWF("handleMazeBattleNotify GetMazeBattleData fail", zap.Error(err))
-			return
+		if userInfo.Barrier > 0 { // 关卡ID为空时不推，可能还未进过关卡
+			mazeBattleInfo, err := GetMazeBattleData(logger, userId, userInfo.Barrier)
+			if err != nil {
+				logger.ErrorWF("handleMazeBattleNotify GetMazeBattleData fail", zap.Error(err))
+				return
+			}
+			SendMazeBarrierChgPack(logger, userId, mazeBattleInfo)
 		}
-		SendMazeBarrierChgPack(logger, userId, mazeBattleInfo)
 	}
 	return
 }
