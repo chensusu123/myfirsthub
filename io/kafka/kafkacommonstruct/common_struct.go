@@ -18,9 +18,16 @@ func (s ServerID) MarshalJSON() ([]byte, error) {
 	return json.Marshal(appconfig.GlobalConfig().Global.SectionID)
 }
 
+type ServiceName string
+
+func (s ServiceName) MarshalJSON() ([]byte, error) {
+	return json.Marshal(appconfig.GlobalConfig().Server.AppName)
+}
+
 type KafkaCommon struct {
-	DataBase  string    `json:"database"`   // 库名
-	Table     string    `json:"table"`      // 表名
-	ProductID ProductID `json:"product_id"` // 产品ID
-	ServerID  ServerID  `json:"server_id"`  // 区服id
+	ServiceName string    `json:"service_name"`
+	DataBase    string    `json:"database"`   // 库名
+	Table       string    `json:"table"`      // 表名
+	ProductID   ProductID `json:"product_id"` // 产品ID
+	ServerID    ServerID  `json:"server_id"`  // 区服id
 }
