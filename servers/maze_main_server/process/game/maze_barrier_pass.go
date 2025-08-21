@@ -6,7 +6,6 @@ import (
 	"maze_game_server/common/constdef"
 	"maze_game_server/common/errors"
 	"maze_game_server/common/structsdef"
-	"maze_game_server/config/GMazeItemsV8Cfg"
 	"maze_game_server/io/kafka/mazebarrieruserkafka"
 	"maze_game_server/io/redis/barrierscorerewardredis"
 	"maze_game_server/io/redis/mazeattrcalcnotifyqueue"
@@ -103,13 +102,7 @@ func getAwards(logger fklog.FKLogI, awards ...[]*MazeCommon.MazeItem) string {
 	awardStr := make([]string, 0)
 	for _, award := range awards {
 		for _, v := range award {
-			itemCfg := GMazeItemsV8Cfg.Get(v.GetItemId())
-			if itemCfg != nil {
-				awardStr = append(awardStr, fmt.Sprintf("%s:%d", itemCfg.Prop_name, v.GetCount()))
-			} else {
-				logger.WarnWF("getAwards get fail",
-					zap.Int32("itemID", v.GetItemId()))
-			}
+			awardStr = append(awardStr, fmt.Sprintf("%d:%d", v.GetItemId(), v.GetCount()))
 		}
 	}
 	return strings.Join(awardStr, "_")

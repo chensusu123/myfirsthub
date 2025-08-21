@@ -17,7 +17,6 @@ import (
 	"maze_game_server/config/GMazeBrushFoeV8Cfg"
 	"maze_game_server/config/GMazeConfigV8Cfg"
 	"maze_game_server/config/GMazeFoeV8Cfg"
-	"maze_game_server/config/GMazeItemsV8Cfg"
 	"maze_game_server/config/GMazeShopV8Cfg"
 	"maze_game_server/io/kafka/mazebarrieruserkafka"
 	"maze_game_server/io/kafka/mazeuserlevelkafka"
@@ -306,23 +305,11 @@ func getAwards(logger fklog.FKLogI, awardMap []*MazeCommon.MazeItem, awardEquip 
 	awardStr := make([]string, 0)
 
 	for _, v := range awardMap {
-		itemCfg := GMazeItemsV8Cfg.Get(v.GetItemId())
-		if itemCfg != nil {
-			awardStr = append(awardStr, fmt.Sprintf("%s:%d", itemCfg.Prop_name, v.GetCount()))
-		} else {
-			logger.WarnWF("getAwards get fail",
-				zap.Int32("itemID", v.GetItemId()))
-		}
+		awardStr = append(awardStr, fmt.Sprintf("%d:%d", v.GetItemId(), v.GetCount()))
 	}
 
 	for _, v := range awardEquip {
-		itemCfg := GMazeItemsV8Cfg.Get(v.GetItemId())
-		if itemCfg != nil {
-			awardStr = append(awardStr, fmt.Sprintf("%s:%d", itemCfg.Prop_name, v.GetCount()))
-		} else {
-			logger.WarnWF("getAwards get fail",
-				zap.Int32("itemID", v.GetItemId()))
-		}
+		awardStr = append(awardStr, fmt.Sprintf("%d:%d", v.GetItemId(), v.GetCount()))
 	}
 	return strings.Join(awardStr, "_")
 }
