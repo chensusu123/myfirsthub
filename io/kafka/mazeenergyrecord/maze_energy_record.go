@@ -33,8 +33,8 @@ const (
 // 迷宫体力变化流水
 type MazeEnergyChgRecord struct {
 	KafkaCommon
-	UserId uint64 `json:"user_id"` // 用户id
-	OldVal int32  `json:"old_val"` // 旧值
+	UserId uint64 `json:"user_id" gorm:"column:user_id"` // 用户id
+	OldVal int32  `json:"old_val" `                      // 旧值
 	//ChgVal   int32  `json:"chg_val"`   // 变化值
 	NewVal   int32 `json:"new_val"`   // 新值
 	LastTime int64 `json:"last_time"` // 上次恢复时间
