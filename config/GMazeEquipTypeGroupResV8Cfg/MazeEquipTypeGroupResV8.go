@@ -1,6 +1,7 @@
 package GMazeEquipTypeGroupResV8Cfg
 
 import (
+	"context"
 	"errors"
 	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fklog"
 	"gitlab.ifreetalk.com/maze-plate/freetk/fkserver/config_manager"
@@ -80,7 +81,16 @@ func GetMazeEquipTypeGroupResV8Config(configId int32) *MazeEquipTypeGroupResV8Co
 
 // Get pkg func. get one config by configId
 func Get(configId int32) *MazeEquipTypeGroupResV8ConfigRow {
-	return gConfigData.Get(configId)
+	return GetWithCtx(context.Background(), configId)
+}
+
+// GetWithCtx pkg func. get one config by configId
+func GetWithCtx(ctx context.Context, configId int32, otps ...config_manager.QueryOption) *MazeEquipTypeGroupResV8ConfigRow {
+	cfg := gConfigData.Get(configId)
+	if cfg == nil {
+		config_manager.MissRecord(ctx, "maze_equip_type_group_res_v8", configId, otps...)
+	}
+	return cfg
 }
 
 // GetAllMazeEquipTypeGroupResV8Config pkg func. get all config slice

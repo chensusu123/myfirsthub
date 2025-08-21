@@ -1,6 +1,7 @@
 package GMazeBrushPointConditionV8Cfg
 
 import (
+	"context"
 	"errors"
 	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fklog"
 	"gitlab.ifreetalk.com/maze-plate/freetk/fkserver/config_manager"
@@ -81,7 +82,16 @@ func GetMazeBrushPointConditionV8Config(configId int32) *MazeBrushPointCondition
 
 // Get pkg func. get one config by configId
 func Get(configId int32) *MazeBrushPointConditionV8ConfigRow {
-	return gConfigData.Get(configId)
+	return GetWithCtx(context.Background(), configId)
+}
+
+// GetWithCtx pkg func. get one config by configId
+func GetWithCtx(ctx context.Context, configId int32, otps ...config_manager.QueryOption) *MazeBrushPointConditionV8ConfigRow {
+	cfg := gConfigData.Get(configId)
+	if cfg == nil {
+		config_manager.MissRecord(ctx, "maze_brush_point_condition_v8", configId, otps...)
+	}
+	return cfg
 }
 
 // GetAllMazeBrushPointConditionV8Config pkg func. get all config slice

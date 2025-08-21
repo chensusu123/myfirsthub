@@ -1,6 +1,7 @@
 package GMazeToastMsgInfoCfg
 
 import (
+	"context"
 	"errors"
 	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fklog"
 	"gitlab.ifreetalk.com/maze-plate/freetk/fkserver/config_manager"
@@ -83,7 +84,16 @@ func GetMazeToastMsgInfoConfig(configId int32) *MazeToastMsgInfoConfigRow {
 
 // Get pkg func. get one config by configId
 func Get(configId int32) *MazeToastMsgInfoConfigRow {
-	return gConfigData.Get(configId)
+	return GetWithCtx(context.Background(), configId)
+}
+
+// GetWithCtx pkg func. get one config by configId
+func GetWithCtx(ctx context.Context, configId int32, otps ...config_manager.QueryOption) *MazeToastMsgInfoConfigRow {
+	cfg := gConfigData.Get(configId)
+	if cfg == nil {
+		config_manager.MissRecord(ctx, "maze_toast_msg_info", configId, otps...)
+	}
+	return cfg
 }
 
 // GetAllMazeToastMsgInfoConfig pkg func. get all config slice

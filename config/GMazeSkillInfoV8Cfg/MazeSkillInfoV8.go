@@ -1,6 +1,7 @@
 package GMazeSkillInfoV8Cfg
 
 import (
+	"context"
 	"errors"
 	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fklog"
 	"gitlab.ifreetalk.com/maze-plate/freetk/fkserver/config_manager"
@@ -110,7 +111,16 @@ func GetMazeSkillInfoV8Config(configId int32) *MazeSkillInfoV8ConfigRow {
 
 // Get pkg func. get one config by configId
 func Get(configId int32) *MazeSkillInfoV8ConfigRow {
-	return gConfigData.Get(configId)
+	return GetWithCtx(context.Background(), configId)
+}
+
+// GetWithCtx pkg func. get one config by configId
+func GetWithCtx(ctx context.Context, configId int32, otps ...config_manager.QueryOption) *MazeSkillInfoV8ConfigRow {
+	cfg := gConfigData.Get(configId)
+	if cfg == nil {
+		config_manager.MissRecord(ctx, "maze_skill_info_v8", configId, otps...)
+	}
+	return cfg
 }
 
 // GetAllMazeSkillInfoV8Config pkg func. get all config slice

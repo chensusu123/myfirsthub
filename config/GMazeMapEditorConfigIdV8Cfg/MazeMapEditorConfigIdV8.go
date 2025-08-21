@@ -1,6 +1,7 @@
 package GMazeMapEditorConfigIdV8Cfg
 
 import (
+	"context"
 	"errors"
 	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fklog"
 	"gitlab.ifreetalk.com/maze-plate/freetk/fkserver/config_manager"
@@ -83,7 +84,16 @@ func GetMazeMapEditorConfigIdV8Config(configId int32) *MazeMapEditorConfigIdV8Co
 
 // Get pkg func. get one config by configId
 func Get(configId int32) *MazeMapEditorConfigIdV8ConfigRow {
-	return gConfigData.Get(configId)
+	return GetWithCtx(context.Background(), configId)
+}
+
+// GetWithCtx pkg func. get one config by configId
+func GetWithCtx(ctx context.Context, configId int32, otps ...config_manager.QueryOption) *MazeMapEditorConfigIdV8ConfigRow {
+	cfg := gConfigData.Get(configId)
+	if cfg == nil {
+		config_manager.MissRecord(ctx, "maze_map_editor_config_id_v8", configId, otps...)
+	}
+	return cfg
 }
 
 // GetAllMazeMapEditorConfigIdV8Config pkg func. get all config slice
