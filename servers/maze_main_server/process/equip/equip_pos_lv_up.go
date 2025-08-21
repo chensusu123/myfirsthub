@@ -296,6 +296,9 @@ func (e *Equip) OnEquipPosLvUpRQ_10425_10426(s *session.Session, rq *MazeEquipPo
 	var rsNextCfg *GMazeEquipPosLvV8Cfg.MazeEquipPosLvV8ConfigRow
 	if rsCurCfg.Next_order > 0 {
 		rsNextCfg = equipposexcel.GetPosStrengthCfgByKey(rsCurCfg.Next_order)
+	} else {
+		//最大等级了
+		rs.StLevel.NextVal = proto.Int64(int64(-1))
 	}
 
 	rs.StLevel = &Common.AttrChgInfo{
