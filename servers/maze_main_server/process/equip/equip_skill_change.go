@@ -135,6 +135,7 @@ func GetUserBattleSkillInfo(logger fklog.FKLogI, skillId int32, attrMap map[int3
 		SecondTargetDamageRates:      GetElementAttrValue(skillCfg.Second_target_damage, skillCfg.Damage_element_adjust, attrMap),
 		Priority:                     proto.Int32(skillCfg.Priority),
 		SummonId:                     proto.Int32(skillCfg.Summon_id),
+		SummonNum:                    GetSkillAttr(skillCfg.Summon_num, attrMap),
 		Duration:                     GetSkillAttr(skillCfg.Duration, attrMap),
 		Interval:                     GetSkillAttr(skillCfg.Interval, attrMap),
 		DamageAdjustment:             GetSkillAttr(skillCfg.Damage_adjustment, attrMap),
