@@ -48,6 +48,7 @@ func InitGM(logger fklog.FKLogI) {
 	// 设置buff
 	SafeHttpRegister(logger, "/setMazeTempBuff", func(writer http.ResponseWriter, request *http.Request) {
 		// 外网线上环境不允许使用GM
+		ctx := request.Context()
 		request.ParseForm()
 		userId := fkutil.ToUint64(request.Form.Get("userid"))
 		stageId := fkutil.ToInt32(request.Form.Get("stageId"))
@@ -72,7 +73,7 @@ func InitGM(logger fklog.FKLogI) {
 
 		logger.InfoWF("setMazeTempBuff start", zap.Uint64("userId", userId),
 			zap.Int32("stageId", stageId), zap.Int32s("buffList", buffList))
-		buffInfo, err := tempbuffservice.GlobalTempBuffService.GetTempBuffInfo(logger, userId, stageId)
+		buffInfo, err := tempbuffservice.GlobalTempBuffService.GetTempBuffInfo(ctx, userId, stageId)
 		if err != nil {
 			logger.ErrorWF("setMazeTempBuff GetMazeTempBuff", zap.Error(err))
 			_, _ = writer.Write([]byte("get user buff failed"))
@@ -106,7 +107,7 @@ func InitGM(logger fklog.FKLogI) {
 		var errs []string
 		var successList, failedList []string
 		for _, buffId := range buffList {
-			buffWeight := tempbuffservice.GlobalTempBuffService.GetOptionBuffWeightInfo(logger, buffId, selectedBuffMap, selectedBuffGroupMap)
+			buffWeight := tempbuffservice.GlobalTempBuffService.GetOptionBuffWeightInfo(ctx, buffId, selectedBuffMap, selectedBuffGroupMap)
 			if err != nil {
 				failedList = append(failedList, fmt.Sprintf("%d", buffId))
 				errs = append(errs, err.Error())
@@ -144,10 +145,10 @@ func InitGM(logger fklog.FKLogI) {
 		}
 
 		var totalMap map[int32]int64
-		totalMap, buffInfo.TotalBuff = tempbuffservice.GlobalTempBuffService.GetTotalBuff(logger, buffInfo.SelectedBuff)
+		totalMap, buffInfo.TotalBuff = tempbuffservice.GlobalTempBuffService.GetTotalBuff(ctx, buffInfo.SelectedBuff)
 
 		// 更新buff信息
-		err = buffInfo.Save(logger, userId, stageId)
+		err = buffInfo.Save(ctx, userId, stageId)
 		if err != nil {
 			logger.ErrorWF("setMazeTempBuff SetMazeTempBuff failed", zap.Any("info", buffInfo), zap.Error(err))
 			_, _ = writer.Write([]byte("save buff failed"))

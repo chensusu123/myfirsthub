@@ -108,7 +108,7 @@ func (g *Game) OnMazeBarrierEnterRQ_10447_10448(s *session.Session, req *MazeGam
 	}
 	if storageInfo != nil || saveData.StageId != 0 {
 		// 有存档的情况需要检查三选一是否有问题
-		tempBuff, err := tempbuffservice.GlobalTempBuffService.CheckTempBuff(logger, userId, req.GetBarrierId(), saveData.StageId)
+		tempBuff, err := tempbuffservice.GlobalTempBuffService.CheckTempBuff(ctx, userId, req.GetBarrierId(), saveData.StageId)
 		if err != nil {
 			logger.ErrorWF("OnMazeBarrierEnterRQ checkTempBuff", zap.Error(err))
 			res.ErrInfo = errors.MODULE_ERROR.ToInfo()

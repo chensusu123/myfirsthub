@@ -24,6 +24,7 @@ import (
 
 func RegBattleDataGm(logger fklog.FKLogI) {
 	gm.SafeHttpRegister(logger, "/DumpBattleData", func(writer http.ResponseWriter, request *http.Request) {
+		ctx := request.Context()
 		userId := fkutil.ToUint64(request.Form.Get("userId"))
 		barrierId := fkutil.ToInt32(request.Form.Get("barrierId"))
 		logger.SetLogId(time.Now().UnixNano())
@@ -43,7 +44,7 @@ func RegBattleDataGm(logger fklog.FKLogI) {
 		em, _ := json.Marshal(battleData.GetEliteMonsterInfos())
 		bs.WriteString(fmt.Sprintf("精英怪数据:%s\n", string(em)))
 
-		tempBuffInfo, err := tempbuffservice.GlobalTempBuffService.GetTempBuffInfo(logger, userId, barrierId)
+		tempBuffInfo, err := tempbuffservice.GlobalTempBuffService.GetTempBuffInfo(ctx, userId, barrierId)
 		if err != nil {
 			logger.ErrorWF("DumpBattleData GetBarrierTempBuff err", zap.Error(err))
 		} else {

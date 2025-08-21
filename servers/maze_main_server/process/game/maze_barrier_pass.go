@@ -126,9 +126,9 @@ func ClearBarriersTempData(logger fklog.FKLogI, userId uint64, barrierId int32) 
 	// 删除关卡存档 new
 	barriersavedataservice.GlobalBarrierSaveDataService.DelBarrierSaveData(context.TODO(), userId, barrierId)
 	// 删除临时buff
-	tempbuffservice.GlobalTempBuffService.DelTempBuff(logger, userId, barrierId)
+	tempbuffservice.GlobalTempBuffService.DelTempBuff(context.TODO(), userId, barrierId)
 	// 删除通过的区域
-	tempbuffservice.GlobalTempBuffService.DelPassArea(logger, userId, barrierId)
+	tempbuffservice.GlobalTempBuffService.DelPassArea(context.TODO(), userId, barrierId)
 	//删除关卡计数
 	barrierstagecounterservice.GlobalBarrierStageCounterService.DelBarrierStageCounterOnPass(logger, userId, barrierId)
 

@@ -1,10 +1,10 @@
 package buff
 
 import (
+	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fklog"
 	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fkprometheus"
 	"go.uber.org/zap"
 	"maze_game_server/common/errors"
-	"maze_game_server/lib/log"
 	"maze_game_server/lib/nano/session"
 	"maze_game_server/pb/common/MazeTempBuff"
 	"maze_game_server/services/tempbuffservice"
@@ -15,7 +15,8 @@ func (b *Buff) SelectMazeTempBuffRQ_10437_10438(s *session.Session, req *MazeTem
 	defer fkprometheus.InfoPMT("SelectMazeTempBuffRQ")()
 
 	start := time.Now()
-	logger := log.Clone("Buff", uint64(s.UID()), 0)
+	ctx := s.Context()
+	logger := fklog.ContextAppLogger(ctx)
 	logger.InfoWF("SelectMazeTempBuffRQ start", zap.Any("req", req))
 	res := &MazeTempBuff.SelectMazeTempBuffRS{}
 	res.ErrInfo = errors.NO_ERROR
@@ -42,7 +43,7 @@ func (b *Buff) SelectMazeTempBuffRQ_10437_10438(s *session.Session, req *MazeTem
 		return nil
 	}
 
-	buffList, err := tempbuffservice.GlobalTempBuffService.SelectMazeTempBuff(logger, userId, stageId, level, buffId, buffType)
+	buffList, err := tempbuffservice.GlobalTempBuffService.SelectMazeTempBuff(ctx, userId, stageId, level, buffId, buffType)
 	if err != nil {
 		res.ErrInfo = errors.COMMON_ERROR_TIPS.Wrap(err.Error())
 		return nil

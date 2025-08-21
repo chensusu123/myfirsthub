@@ -1,8 +1,8 @@
 package buff
 
 import (
+	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fklog"
 	"maze_game_server/common/errors"
-	"maze_game_server/lib/log"
 	"maze_game_server/lib/nano/session"
 	"maze_game_server/pb/common/MazeCommon"
 	"maze_game_server/pb/common/MazeTempBuff"
@@ -18,7 +18,8 @@ func (b *Buff) GetOptionalMazeTempBuffListRQ_10435_10436(s *session.Session, req
 	defer fkprometheus.InfoPMT("GetOptionalMazeTempBuffListRQ")()
 	start := time.Now()
 
-	logger := log.Clone("Buff", uint64(s.UID()), 0)
+	ctx := s.Context()
+	logger := fklog.ContextAppLogger(ctx)
 	logger.InfoWF("GetOptionalMazeTempBuffListRQ start", zap.Any("req", req))
 	res := &MazeTempBuff.GetOptionalMazeTempBuffListRS{}
 	res.ErrInfo = errors.NO_ERROR
@@ -35,8 +36,8 @@ func (b *Buff) GetOptionalMazeTempBuffListRQ_10435_10436(s *session.Session, req
 			zap.Duration("costTime", time.Now().Sub(start)))
 	}()
 
-	userId, stageId, level, buffType, areaId := uint64(s.UID()), req.GetStageId(), req.GetLevel(), int32(req.GetType()), req.GetAreaId()
-	if userId == 0 || stageId == 0 || level == 0 {
+	userId, barrierId, level, buffType, areaId := uint64(s.UID()), req.GetStageId(), req.GetLevel(), int32(req.GetType()), req.GetAreaId()
+	if userId == 0 || barrierId == 0 || level == 0 {
 		logger.WarnWF("GetOptionalMazeTempBuffListRQ args error", zap.Any("req", req))
 		res.ErrInfo = errors.COMMON_ERROR_TIPS.Wrap("参数错误")
 		return nil
@@ -51,7 +52,7 @@ func (b *Buff) GetOptionalMazeTempBuffListRQ_10435_10436(s *session.Session, req
 		res.ErrInfo = errors.COMMON_ERROR_TIPS.Wrap("areaId参数错误")
 		return nil
 	}
-	optionalBuffInfo, err := tempbuffservice.GlobalTempBuffService.GetOptionalTempBuffList(logger, userId, stageId, level, int32(req.GetType()), areaId, req.GetAreaIndex(), req.GetAttrMask())
+	optionalBuffInfo, err := tempbuffservice.GlobalTempBuffService.GetOptionalTempBuffList(ctx, userId, barrierId, level, int32(req.GetType()), areaId, req.GetAreaIndex(), req.GetAttrMask())
 	if err != nil {
 		res.ErrInfo = errors.COMMON_ERROR_TIPS.Wrap(err.Error())
 		return nil

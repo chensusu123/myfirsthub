@@ -1,6 +1,7 @@
 package equip
 
 import (
+	"context"
 	"maze_game_server/common/errors"
 	"maze_game_server/config/GMazeActInfoV8Cfg"
 	"maze_game_server/config/GMazeSkillActV8Cfg"
@@ -479,7 +480,7 @@ func GetEquipSkillInfoChange(logger fklog.FKLogI, userID uint64, oldEquip, newEq
 		return nil, false, err
 	}
 
-	tempBuffInfo, err := tempbuffservice.GlobalTempBuffService.GetTempBuffInfo(logger, userID, userInfo.Barrier)
+	tempBuffInfo, err := tempbuffservice.GlobalTempBuffService.GetTempBuffInfo(context.TODO(), userID, userInfo.Barrier)
 	if err != nil {
 		logger.ErrorWF("GetMazeBattleData GetBarrierTempBuff err", zap.Error(err))
 		return nil, false, err

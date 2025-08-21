@@ -1,6 +1,7 @@
 package tempbuffservice
 
 import (
+	"context"
 	"fmt"
 	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fklog"
 	"go.uber.org/zap"
@@ -12,8 +13,9 @@ import (
 	"maze_game_server/pb/common/MazeCommon"
 )
 
-func (s *service) RefreshOptionalMazeTempBuffList(logger fklog.FKLogI, userId uint64, stageId, level, areaId, attrMask int32, cost []*MazeCommon.MazeItem) (*OptionalBuffInfo, error) {
-	buffInfo, err := tempbuffmodel.NewTempBuffInfoModel(logger, userId, stageId)
+func (s *service) RefreshOptionalMazeTempBuffList(ctx context.Context, userId uint64, barrierId, level, areaId, attrMask int32, cost []*MazeCommon.MazeItem) (*OptionalBuffInfo, error) {
+	logger := fklog.ContextAppLogger(ctx)
+	buffInfo, err := tempbuffmodel.NewTempBuffInfoModel(ctx, userId, barrierId)
 	if err != nil {
 		logger.ErrorWF("RefreshOptionalMazeTempBuffListRQ GetMazeTempBuff failed", zap.Error(err))
 		return nil, fmt.Errorf("获取用户buff信息失败")
@@ -55,7 +57,7 @@ func (s *service) RefreshOptionalMazeTempBuffList(logger fklog.FKLogI, userId ui
 	}
 
 	// 刷新可选buff
-	err = s.refreshOptionalBuff(logger, userId, stageId, level, areaId, attrMask, buffInfo)
+	err = s.refreshOptionalBuff(ctx, userId, barrierId, level, areaId, attrMask, buffInfo)
 	if err != nil {
 		logger.ErrorWF("RefreshOptionalMazeTempBuffListRQ refreshOptionalBuff failed", zap.Error(err))
 		return nil, fmt.Errorf("刷新buff失败")
@@ -88,8 +90,9 @@ func (s *service) checkCost(costMap map[int32]int64, costList []*MazeCommon.Maze
 	return true
 }
 
-func (s *service) refreshOptionalBuff(logger fklog.FKLogI, userId uint64, stageId, level, areaId, attrMask int32,
+func (s *service) refreshOptionalBuff(ctx context.Context, userId uint64, stageId, level, areaId, attrMask int32,
 	buffInfo *tempbuffmodel.TempBuffInfoModel) (err error) {
+	logger := fklog.ContextAppLogger(ctx)
 	stageConfig := mazebarriesv8config.GetStageConfig(stageId)
 	if stageConfig == nil {
 		logger.WarnWF("getOptionalBuffList stage config unknown", zap.Int32("stageId", stageId))
@@ -97,13 +100,13 @@ func (s *service) refreshOptionalBuff(logger fklog.FKLogI, userId uint64, stageI
 	}
 
 	buffInfo.BuffSequence.RefreshCount = buffInfo.BuffSequence.RefreshCount + 1
-	buffInfo.BuffSequence.OptionalBuffList, err = s.createOptionalBuffList(logger, buffInfo, level, areaId, attrMask, stageConfig)
+	buffInfo.BuffSequence.OptionalBuffList, err = s.createOptionalBuffList(ctx, buffInfo, level, areaId, attrMask, stageConfig)
 	if err != nil {
 		logger.ErrorWF("refreshOptionalBuff createOptionalBuffList failed", zap.Error(err))
 		return err
 	}
 
-	err = buffInfo.Save(logger, userId, stageId)
+	err = buffInfo.Save(ctx, userId, stageId)
 	if err != nil {
 		logger.ErrorWF("refreshOptionalBuff SetMazeTempBuff failed",
 			zap.Int32("stageId", stageId), zap.Any("info", buffInfo), zap.Error(err))

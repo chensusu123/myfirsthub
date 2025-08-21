@@ -1,6 +1,7 @@
 package tempbuffservice
 
 import (
+	"context"
 	"fmt"
 	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fklog"
 	"go.uber.org/zap"
@@ -19,8 +20,9 @@ import (
 	"maze_game_server/pb/common/MazeTempBuff"
 )
 
-func (s *service) GetOptionalTempBuffList(logger fklog.FKLogI, userId uint64, stageId, level, buffType, areaId, areaIndex, attrMask int32) (*OptionalBuffInfo, error) {
-	buffInfo, err := tempbuffmodel.NewTempBuffInfoModel(logger, userId, stageId)
+func (s *service) GetOptionalTempBuffList(ctx context.Context, userId uint64, barrierId, level, buffType, areaId, areaIndex, attrMask int32) (*OptionalBuffInfo, error) {
+	logger := fklog.ContextAppLogger(ctx)
+	buffInfo, err := tempbuffmodel.NewTempBuffInfoModel(ctx, userId, barrierId)
 	if err != nil {
 		logger.ErrorWF("GetOptionalMazeTempBuffListRQ GetMazeTempBuff failed", zap.Error(err))
 		return nil, fmt.Errorf("获取用户buff信息失败")
@@ -36,9 +38,9 @@ func (s *service) GetOptionalTempBuffList(logger fklog.FKLogI, userId uint64, st
 	}
 
 	// 生成可选buff列表
-	err = s.genOptionalBuffList(logger, userId, stageId, level, buffType, areaId, areaIndex, attrMask, buffInfo)
+	err = s.genOptionalBuffList(ctx, userId, barrierId, level, buffType, areaId, areaIndex, attrMask, buffInfo)
 	if err != nil {
-		logger.ErrorWF("GetOptionalMazeTempBuffListRQ getOptionalBuffList", zap.Int32("stageId", stageId),
+		logger.ErrorWF("GetOptionalMazeTempBuffListRQ getOptionalBuffList", zap.Int32("barrierId", barrierId),
 			zap.Any("info", buffInfo), zap.Any("err", err.Error()))
 		return nil, err
 	}
@@ -57,8 +59,9 @@ func (s *service) GetOptionalTempBuffList(logger fklog.FKLogI, userId uint64, st
 }
 
 // 生成可选buff列表
-func (s *service) genOptionalBuffList(logger fklog.FKLogI, userId uint64, stageId, level, buffType, areaId, areaIndex, attrMask int32,
+func (s *service) genOptionalBuffList(ctx context.Context, userId uint64, stageId, level, buffType, areaId, areaIndex, attrMask int32,
 	buffInfo *tempbuffmodel.TempBuffInfoModel) error {
+	logger := fklog.ContextAppLogger(ctx)
 	if level < buffInfo.BuffSequence.Level {
 		logger.WarnWF("genOptionalBuffList level already select", zap.Int32("level", level),
 			zap.Int32("needLevel", buffInfo.BuffSequence.Level))
@@ -92,7 +95,7 @@ func (s *service) genOptionalBuffList(logger fklog.FKLogI, userId uint64, stageI
 
 	buffInfo.BuffSequence.Level = level
 	// 生成可选的buff列表
-	buffList, err := s.createOptionalBuffList(logger, buffInfo, level, areaId, attrMask, stageConfig)
+	buffList, err := s.createOptionalBuffList(ctx, buffInfo, level, areaId, attrMask, stageConfig)
 	if err != nil {
 		logger.ErrorWF("genOptionalBuffList createOptionalBuffList failed", zap.Error(err))
 		return fmt.Errorf("创建可选buff列表失败")
@@ -101,7 +104,7 @@ func (s *service) genOptionalBuffList(logger fklog.FKLogI, userId uint64, stageI
 	buffInfo.BuffSequence.OptionalBuffList = buffList
 	buffInfo.BuffSequence.AreaId = areaId
 	buffInfo.BuffSequence.AreaIndex = areaIndex
-	err = buffInfo.Save(logger, userId, stageId)
+	err = buffInfo.Save(ctx, userId, stageId)
 	if err != nil {
 		logger.ErrorWF("genOptionalBuffList SetMazeTempBuff failed", zap.Int32("stageId", stageId),
 			zap.Any("info", buffInfo), zap.Error(err))
@@ -202,9 +205,9 @@ func (s *service) packSelectBuffList(logger fklog.FKLogI, buffList []int32) []*B
 }
 
 // 生成可选的buff列表
-func (s *service) createOptionalBuffList(logger fklog.FKLogI, buffInfo *tempbuffmodel.TempBuffInfoModel,
+func (s *service) createOptionalBuffList(ctx context.Context, buffInfo *tempbuffmodel.TempBuffInfoModel,
 	level, areaId, attrMask int32, stageConfig *GMazeBarriesV8Cfg.MazeBarriesV8ConfigRow) ([]int32, error) {
-
+	logger := fklog.ContextAppLogger(ctx)
 	ruleId, ok := stageConfig.Energy_affix_rand_rule[areaId]
 	if !ok || ruleId <= 0 {
 		logger.ErrorWF("genOptionalBuffList stageConfig.Energy_affix_rand_rule not found",
@@ -263,7 +266,7 @@ func (s *service) createOptionalBuffList(logger fklog.FKLogI, buffInfo *tempbuff
 			}
 
 			// 过滤出可选择的词条
-			optionalList, totalWeight := s.filterBuffList(logger, optionalMap, affixList, certainlyList, selectedBuffMap, selectedBuffGroupMap)
+			optionalList, totalWeight := s.filterBuffList(ctx, optionalMap, affixList, certainlyList, selectedBuffMap, selectedBuffGroupMap)
 			// 随机选择个词条
 			buffId, weight := s.randomId(optionalList, totalWeight)
 
@@ -325,7 +328,7 @@ type WeightInfo struct {
 }
 
 // 过滤本次可选的词条
-func (s *service) filterBuffList(logger fklog.FKLogI, optionalMap map[int32]struct{}, buffList, ce_buffList []int32,
+func (s *service) filterBuffList(ctx context.Context, optionalMap map[int32]struct{}, buffList, ce_buffList []int32,
 	selectedBuffMap, selectedBuffGroupMap map[int32]int32) ([]*WeightInfo, int32) {
 
 	var (
@@ -341,7 +344,7 @@ func (s *service) filterBuffList(logger fklog.FKLogI, optionalMap map[int32]stru
 		if _, ok := optionalMap[buffId]; ok {
 			continue
 		}
-		buffWeight := s.GetOptionBuffWeightInfo(logger, buffId, selectedBuffMap, selectedBuffGroupMap)
+		buffWeight := s.GetOptionBuffWeightInfo(ctx, buffId, selectedBuffMap, selectedBuffGroupMap)
 		if buffWeight == nil {
 			continue
 		}
@@ -359,7 +362,7 @@ func (s *service) filterBuffList(logger fklog.FKLogI, optionalMap map[int32]stru
 			continue
 		}
 
-		buffWeight := s.GetOptionBuffWeightInfo(logger, buffId, selectedBuffMap, selectedBuffGroupMap)
+		buffWeight := s.GetOptionBuffWeightInfo(ctx, buffId, selectedBuffMap, selectedBuffGroupMap)
 		if buffWeight == nil {
 			continue
 		}
@@ -372,7 +375,8 @@ func (s *service) filterBuffList(logger fklog.FKLogI, optionalMap map[int32]stru
 }
 
 // 检查buff是否满足可选条件， 获取可选buff的权重信息
-func (s *service) GetOptionBuffWeightInfo(logger fklog.FKLogI, buffId int32, selectedBuffMap, selectedBuffGroupMap map[int32]int32) *WeightInfo {
+func (s *service) GetOptionBuffWeightInfo(ctx context.Context, buffId int32, selectedBuffMap, selectedBuffGroupMap map[int32]int32) *WeightInfo {
+	logger := fklog.ContextAppLogger(ctx)
 	buffConfig := mazeenergyaffixlvv8config.GetAffixConfig(buffId)
 	if buffConfig == nil {
 		logger.WarnWF("getOptionBuffWeightInfo buffConfig is nil", zap.Int32("buffId", buffId))

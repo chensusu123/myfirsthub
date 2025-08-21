@@ -1,6 +1,7 @@
 package game
 
 import (
+	"context"
 	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fklog"
 	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fkprometheus"
 	"go.uber.org/zap"
@@ -49,7 +50,7 @@ func (g *Game) OnEndAreaBattleRQ_10525_10526(s *session.Session, req *MazeGame.E
 		return
 	}
 
-	passAreaModel, err := passareamodel.NewPassAreaModel(logger, userId, req.GetStageId())
+	passAreaModel, err := passareamodel.NewPassAreaModel(context.TODO(), userId, req.GetStageId())
 	if err != nil {
 		logger.ErrorWF("OnEndAreaBattleRQ GetBarrierPassArea fail", zap.Error(err))
 		res.ErrInfo = errors.MODULE_ERROR.ToInfo()
@@ -71,7 +72,7 @@ func (g *Game) OnEndAreaBattleRQ_10525_10526(s *session.Session, req *MazeGame.E
 		AreaIndex: req.GetAreaIndex(),
 	})
 
-	err = passAreaModel.Save(logger, userId, req.GetStageId())
+	err = passAreaModel.Save(context.TODO(), userId, req.GetStageId())
 	if err != nil {
 		logger.ErrorWF("OnEndAreaBattleRQ SetBarrierPassArea fail", zap.Error(err))
 		res.ErrInfo = errors.MODULE_ERROR.ToInfo()

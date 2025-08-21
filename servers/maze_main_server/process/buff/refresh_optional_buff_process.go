@@ -1,8 +1,8 @@
 package buff
 
 import (
+	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fklog"
 	"maze_game_server/common/errors"
-	"maze_game_server/lib/log"
 	"maze_game_server/lib/nano/session"
 	"maze_game_server/pb/common/MazeTempBuff"
 	"maze_game_server/services/tempbuffservice"
@@ -16,7 +16,8 @@ func (b *Buff) RefreshOptionalMazeTempBuffListRQ_10439_10440(s *session.Session,
 	defer fkprometheus.InfoPMT("RefreshOptionalMazeTempBuffListRQ")()
 	start := time.Now()
 
-	logger := log.Clone("Buff", uint64(s.UID()), 0)
+	ctx := s.Context()
+	logger := fklog.ContextAppLogger(ctx)
 	logger.InfoWF("RefreshOptionalMazeTempBuffListRQ start", zap.Any("req", req))
 	res := &MazeTempBuff.RefreshOptionalMazeTempBuffListRS{}
 	res.ErrInfo = errors.NO_ERROR
@@ -30,8 +31,8 @@ func (b *Buff) RefreshOptionalMazeTempBuffListRQ_10439_10440(s *session.Session,
 			zap.Duration("costTime", time.Now().Sub(start)))
 	}()
 
-	userId, stageId, level, cost, areaId, buffType := uint64(s.UID()), req.GetStageId(), req.GetLevel(), req.GetCost(), req.GetAreaId(), int32(req.GetType())
-	if userId == 0 || stageId == 0 || level == 0 {
+	userId, barrierId, level, cost, areaId, buffType := uint64(s.UID()), req.GetStageId(), req.GetLevel(), req.GetCost(), req.GetAreaId(), int32(req.GetType())
+	if userId == 0 || barrierId == 0 || level == 0 {
 		logger.WarnWF("RefreshOptionalMazeTempBuffListRQ args error", zap.Any("req", req))
 		res.ErrInfo = errors.COMMON_ERROR_TIPS.Wrap("参数错误")
 		return nil
@@ -47,7 +48,7 @@ func (b *Buff) RefreshOptionalMazeTempBuffListRQ_10439_10440(s *session.Session,
 		return nil
 	}
 
-	optionalBuffInfo, err := tempbuffservice.GlobalTempBuffService.RefreshOptionalMazeTempBuffList(logger, userId, stageId, level, areaId, req.GetAttrMask(), cost)
+	optionalBuffInfo, err := tempbuffservice.GlobalTempBuffService.RefreshOptionalMazeTempBuffList(ctx, userId, barrierId, level, areaId, req.GetAttrMask(), cost)
 	if err != nil {
 		res.ErrInfo = errors.COMMON_ERROR_TIPS.Wrap(err.Error())
 		return nil

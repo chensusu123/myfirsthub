@@ -255,6 +255,7 @@ func RegGm(logger fklog.FKLogI) {
 	})
 
 	gm.SafeHttpRegister(logger, "/attrs", func(writer http.ResponseWriter, request *http.Request) {
+		ctx := request.Context()
 		logger.SetLogId(time.Now().UnixNano())
 		var (
 			userId    = fkutil.ToUint64(request.Form.Get("user_id"))
@@ -270,7 +271,7 @@ func RegGm(logger fklog.FKLogI) {
 
 		var tempBuffInfo *tempbuffmodel.TempBuffInfoModel
 		if barrierId > 0 {
-			tempBuffInfo, err = tempbuffservice.GlobalTempBuffService.GetTempBuffInfo(logger, userId, barrierId)
+			tempBuffInfo, err = tempbuffservice.GlobalTempBuffService.GetTempBuffInfo(ctx, userId, barrierId)
 			if err != nil {
 				logger.ErrorWF("GetBarrierTempBuff err", zap.Error(err))
 				fmt.Fprintf(writer, "获取临时BUFF失败: %s\n", err.Error())

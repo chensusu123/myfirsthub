@@ -1,6 +1,7 @@
 package tempbuffservice
 
 import (
+	"context"
 	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fklog"
 	"go.uber.org/zap"
 	"maze_game_server/excel/dollmappuzzlenewcfgex"
@@ -10,8 +11,9 @@ import (
 )
 
 // 进入关卡前检查关卡的buff情况，因为可能会有清除部分buff的情况
-func (s *service) CheckTempBuff(logger fklog.FKLogI, userId uint64, barrierId int32, stage int32) (*tempbuffmodel.TempBuffInfoModel, error) {
-	tempBuff, err := tempbuffmodel.NewTempBuffInfoModel(logger, userId, barrierId)
+func (s *service) CheckTempBuff(ctx context.Context, userId uint64, barrierId int32, stage int32) (*tempbuffmodel.TempBuffInfoModel, error) {
+	logger := fklog.ContextAppLogger(ctx)
+	tempBuff, err := tempbuffmodel.NewTempBuffInfoModel(ctx, userId, barrierId)
 	if err != nil {
 		logger.ErrorWF("checkTempBuff GetMazeTempBuff", zap.Error(err))
 		return nil, err
@@ -55,9 +57,9 @@ func (s *service) CheckTempBuff(logger fklog.FKLogI, userId uint64, barrierId in
 		Level: int32(selectBuffCount) + 1,
 	}
 	var totalMap map[int32]int64
-	totalMap, tempBuff.TotalBuff = s.GetTotalBuff(logger, tempBuff.SelectedBuff)
+	totalMap, tempBuff.TotalBuff = s.GetTotalBuff(ctx, tempBuff.SelectedBuff)
 	// 更新buff信息
-	err = tempBuff.Save(logger, userId, barrierId)
+	err = tempBuff.Save(ctx, userId, barrierId)
 	if err != nil {
 		logger.ErrorWF("checkTempBuff SetMazeTempBuff failed", zap.Any("info", tempBuff), zap.Error(err))
 		return nil, err

@@ -1,6 +1,7 @@
 package tempbuffservice
 
 import (
+	"context"
 	"fmt"
 	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fklog"
 	"go.uber.org/zap"
@@ -9,8 +10,9 @@ import (
 	"maze_game_server/model/tempbuffmodel"
 )
 
-func (s *service) GetMazeTempBuffList(logger fklog.FKLogI, userId uint64, stageId int32) ([]*BuffInfo, error) {
-	buffInfo, err := tempbuffmodel.NewTempBuffInfoModel(logger, userId, stageId)
+func (s *service) GetMazeTempBuffList(ctx context.Context, userId uint64, barrierId int32) ([]*BuffInfo, error) {
+	logger := fklog.ContextAppLogger(ctx)
+	buffInfo, err := tempbuffmodel.NewTempBuffInfoModel(ctx, userId, barrierId)
 	if err != nil {
 		logger.ErrorWF("GetMazeTempBuffListRQ GetMazeTempBuff", zap.Error(err))
 		return nil, fmt.Errorf("获取用户buff信息失败")

@@ -10,6 +10,7 @@ import (
 	"gitlab.ifreetalk.com/maze-plate/freetk/fkserver/config_manager/loadconfigapi"
 	fileResolver "gitlab.ifreetalk.com/maze-plate/freetk/registry/fileresolver"
 	"go.uber.org/zap"
+	"maze_game_server/io"
 	"maze_game_server/io/redis"
 	"maze_game_server/lib/log"
 	"maze_game_server/model/passareamodel"
@@ -48,6 +49,7 @@ func TestMain(m *testing.M) {
 		logger.ErrorWF("parse excel failed", zap.Error(err))
 		return
 	}
+	io.InitBackendCoder(globalredis.GCli, nil)
 	m.Run()
 }
 
@@ -66,7 +68,7 @@ func TestRedis(t *testing.T) {
 	fmt.Println(res)
 }
 func TestTempBuffRedis(t *testing.T) {
-	err, model := tempbuffmodel.NewTempBuffInfoModel(logger, 40000001, 31)
+	err, model := tempbuffmodel.NewTempBuffInfoModel(context.TODO(), 40000001, 31)
 	if err != nil {
 		fmt.Println(err)
 		return
@@ -75,18 +77,28 @@ func TestTempBuffRedis(t *testing.T) {
 }
 
 func TestPassAreaRedis(t *testing.T) {
-	err, model := passareamodel.NewPassAreaModel(logger, 40000001, 31)
+	err, model := passareamodel.NewPassAreaModel(context.TODO(), 40000001, 31)
 	if err != nil {
 		fmt.Println(err)
 		return
 	}
 	fmt.Println(model)
 }
+
 func TestGetOptionalTempBuff(t *testing.T) {
-	optionalBuffInfo, err := GlobalTempBuffService.GetOptionalTempBuffList(logger, 40000001, 1, 2, 1, 10001, 0, 1)
+	optionalBuffInfo, err := GlobalTempBuffService.GetOptionalTempBuffList(context.TODO(), 40000001, 1, 2, 1, 10001, 0, 1)
 	if err != nil {
 		fmt.Println(err)
 		return
 	}
 	_ = optionalBuffInfo
+}
+
+func TestGetTempBuffGroupList(t *testing.T) {
+	groupList, err := GlobalTempBuffService.GetTempBuffGroupList(context.TODO(), 50000001, 1)
+	if err != nil {
+		fmt.Println(err)
+		return
+	}
+	_ = groupList
 }

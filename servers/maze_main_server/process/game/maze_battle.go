@@ -1,6 +1,7 @@
 package game
 
 import (
+	"context"
 	"fmt"
 	"maze_game_server/common/constdef"
 	"maze_game_server/common/errors"
@@ -47,7 +48,7 @@ func GetMazeBattleData(logger fklog.FKLogI, userId uint64, barrierId int32) (maz
 		return nil, err
 	}
 
-	tempBuffInfo, err := tempbuffservice.GlobalTempBuffService.GetTempBuffInfo(logger, userId, barrierId)
+	tempBuffInfo, err := tempbuffservice.GlobalTempBuffService.GetTempBuffInfo(context.TODO(), userId, barrierId)
 	if err != nil {
 		logger.ErrorWF("GetMazeBattleData GetBarrierTempBuff err", zap.Error(err))
 		return nil, err

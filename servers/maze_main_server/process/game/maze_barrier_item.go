@@ -1,6 +1,7 @@
 package game
 
 import (
+	"context"
 	"maze_game_server/common/constdef"
 	"maze_game_server/common/errors"
 	"maze_game_server/common/function/gentradeno"
@@ -73,7 +74,7 @@ func UseQianghuashiPile(logger fklog.FKLogI, userID uint64, barrierId int32, are
 
 // TriggerTempBuff 触发三选一
 func TriggerTempBuff(logger fklog.FKLogI, userID uint64, barrierId int32, areaId int32, areaIndex int32, itemId int32, count int64) (err error) {
-	optionalBuffInfo, err := tempbuffservice.GlobalTempBuffService.GetOptionalTempBuffList(logger, userID, barrierId, 0, int32(MazeTempBuff.Type_USE_ITEM), areaId, areaIndex, 0)
+	optionalBuffInfo, err := tempbuffservice.GlobalTempBuffService.GetOptionalTempBuffList(context.TODO(), userID, barrierId, 0, int32(MazeTempBuff.Type_USE_ITEM), areaId, areaIndex, 0)
 	if err != nil {
 		logger.ErrorWF("TriggerTempBuff GetOptionalTempBuffList fail",
 			zap.Error(err),
