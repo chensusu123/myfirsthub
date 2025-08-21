@@ -16,6 +16,7 @@ import (
 	"regexp"
 
 	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fklog"
+	"gitlab.ifreetalk.com/maze-plate/freetk/fkserver/config_manager"
 	"gitlab.ifreetalk.com/maze-plate/freetk/fkutil"
 	"go.uber.org/zap"
 	"google.golang.org/protobuf/proto"
@@ -60,7 +61,7 @@ func GetUserBattleSkillInfo(logger fklog.FKLogI, skillId int32, attrMap map[int3
 		effectID         int32
 		actDamageConfigs = make([]*MazeAIBattle.MazeAIActAttackValue, 0)
 	)
-	skillActCfg := GMazeSkillActV8Cfg.Get(skillId)
+	skillActCfg := GMazeSkillActV8Cfg.GetWithCtx(context.Background(), skillId, config_manager.QueryNullable())
 	if skillActCfg != nil {
 		if len(skillActCfg.Act_id) > 0 {
 			for _, actId := range skillActCfg.Act_id {
