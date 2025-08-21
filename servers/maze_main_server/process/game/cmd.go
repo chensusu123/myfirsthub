@@ -154,7 +154,9 @@ func ParseCmd(logger fklog.FKLogI, uid uint64, cmdCode int32, cmd string, sessio
 			logger.ErrorWF("ParseCmd ClearOpenBoxTime fail", zap.Error(err), zap.Uint64("userID", fkutil.ToUint64(params["user"])))
 		}
 		err = ClearBarrier(logger, fkutil.ToUint64(params["user"]))
-		logger.ErrorWF("ParseCmd End ClearOpenBoxTime", zap.Error(err), zap.Uint64("userID", fkutil.ToUint64(params["user"])))
+		if err != nil {
+			logger.ErrorWF("ParseCmd End ClearOpenBoxTime failed", zap.Error(err), zap.Uint64("userID", fkutil.ToUint64(params["user"])))
+		}
 		return
 	case 1005:
 		cmdParams := strings.Split(cmd, "&")
@@ -293,7 +295,7 @@ func ClearBarrier(logger fklog.FKLogI, userId uint64) (err error) {
 	if err != nil {
 		return
 	}
-	
+
 	ClearBarriersTempData(logger, userId, userInfo.Barrier)
 	return
 
