@@ -84,10 +84,10 @@ func (a *Auth) OnLoginQuickRQ_10550_10551(s *session.Session, req *UserLogin.Use
 
 	res.ServerTime = proto.Int64(time.Now().UnixMilli())
 
-	time.AfterFunc(time.Second*2, func() {
-		SendArrivePacketWithContext(ctx, logger, int64(userID), 111, &UserLogin.UserLiveRs{
-			ClientTime: proto.Int64(time.Now().UnixMilli()),
-		})
-	})
+	// time.AfterFunc(time.Second*2, func() {
+	// 	SendArrivePacketWithContext(ctx, logger, int64(userID), 111, &UserLogin.UserLiveRs{
+	// 		ClientTime: proto.Int64(time.Now().UnixMilli()),
+	// 	})
+	// })
 	return nil
 }
