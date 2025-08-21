@@ -109,6 +109,7 @@ func GetMazeBarriesV8Config(configId int32) *MazeBarriesV8ConfigRow {
 	return gConfigData.GetMazeBarriesV8Config(configId)
 }
 
+// Deprecated: 链路追踪信息缺失。推荐使用GetWithCtx
 // Get pkg func. get one config by configId
 func Get(configId int32) *MazeBarriesV8ConfigRow {
 	return GetWithCtx(context.Background(), configId)
