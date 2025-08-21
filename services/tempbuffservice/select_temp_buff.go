@@ -226,10 +226,10 @@ func (s *service) pushGroupChange(logger fklog.FKLogI, userId uint64, buffModel 
 	}
 	res := &MazeTempBuff.TempBuffGroupChangeID{}
 	res.BuffGroupList = make([]*MazeTempBuff.TempBuffGroupInfo, 0, len(groupList))
-	for k, v := range groupList {
+	for _, i := range groupList {
 		res.BuffGroupList = append(res.BuffGroupList, &MazeTempBuff.TempBuffGroupInfo{
-			BuffId: proto.Int32(k),
-			Count:  proto.Int64(int64(v)),
+			BuffId: proto.Int32(i.BuffId),
+			Count:  proto.Int64(int64(i.Count)),
 		})
 	}
 

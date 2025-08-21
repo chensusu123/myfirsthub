@@ -10,7 +10,7 @@ import (
 	"maze_game_server/model/tempbuffmodel"
 )
 
-func (s *service) GetTempBuffGroupList(ctx context.Context, userId uint64, barrier int32) (map[int32]int32, error) {
+func (s *service) GetTempBuffGroupList(ctx context.Context, userId uint64, barrier int32) ([]*GroupInfo, error) {
 	logger := fklog.ContextAppLogger(ctx)
 	buffInfo, err := tempbuffmodel.NewTempBuffInfoModel(ctx, userId, barrier)
 	if err != nil {
@@ -21,9 +21,15 @@ func (s *service) GetTempBuffGroupList(ctx context.Context, userId uint64, barri
 	return s.getGroupList(logger, buffInfo)
 }
 
-func (s *service) getGroupList(logger fklog.FKLogI, buffModel *tempbuffmodel.TempBuffInfoModel) (map[int32]int32, error) {
+type GroupInfo struct {
+	BuffId  int32
+	Count   int32
+	GroupId int32
+}
+
+func (s *service) getGroupList(logger fklog.FKLogI, buffModel *tempbuffmodel.TempBuffInfoModel) ([]*GroupInfo, error) {
 	groupCount := make(map[int32]int32)
-	groupFirstAffix := make(map[int32]int32)
+	groupFirstAffixList := make([]*GroupInfo, 0)
 	for _, i := range buffModel.SelectedBuff {
 		buffConfig := mazeenergyaffixlvv8config.GetAffixConfig(i.BuffId)
 		if buffConfig == nil {
@@ -34,7 +40,10 @@ func (s *service) getGroupList(logger fklog.FKLogI, buffModel *tempbuffmodel.Tem
 		for _, j := range buffConfig.Font_affix_condition {
 			if j == 0 {
 				// 找到词条组的第一个词条
-				groupFirstAffix[i.BuffId] = buffConfig.Affix_group_id
+				groupFirstAffixList = append(groupFirstAffixList, &GroupInfo{
+					BuffId:  i.BuffId,
+					GroupId: buffConfig.Affix_group_id,
+				})
 				continue
 			}
 			frontConfig := mazeenergyaffixfrontv8config.GetMazeEnergyAffixFrontConfig(j)
@@ -46,9 +55,9 @@ func (s *service) getGroupList(logger fklog.FKLogI, buffModel *tempbuffmodel.Tem
 		}
 	}
 
-	for k, v := range groupFirstAffix {
-		groupFirstAffix[k] = groupCount[v]
+	for _, i := range groupFirstAffixList {
+		i.Count = groupCount[i.GroupId]
 	}
 
-	return groupFirstAffix, nil
+	return groupFirstAffixList, nil
 }

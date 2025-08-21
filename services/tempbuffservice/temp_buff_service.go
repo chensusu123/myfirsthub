@@ -42,7 +42,7 @@ type TempBuffService interface {
 	DelPassArea(ctx context.Context, userID uint64, barrierId int32) error
 
 	// 获取已选择的词条组列表
-	GetTempBuffGroupList(ctx context.Context, userId uint64, barrierId int32) (map[int32]int32, error)
+	GetTempBuffGroupList(ctx context.Context, userId uint64, barrierId int32) ([]*GroupInfo, error)
 }
 
 // GlobalTempBuffService 临时buff可用全局唯一对象
