@@ -79,6 +79,7 @@ func GetMazeInitialAttrV8Config(configId int32) *MazeInitialAttrV8ConfigRow {
 	return gConfigData.GetMazeInitialAttrV8Config(configId)
 }
 
+// Deprecated: 链路追踪信息缺失。推荐使用GetWithCtx
 // Get pkg func. get one config by configId
 func Get(configId int32) *MazeInitialAttrV8ConfigRow {
 	return GetWithCtx(context.Background(), configId)

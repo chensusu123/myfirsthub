@@ -89,6 +89,7 @@ func GetMazeAttributeFormulaV8Config(configId int32) *MazeAttributeFormulaV8Conf
 	return gConfigData.GetMazeAttributeFormulaV8Config(configId)
 }
 
+// Deprecated: 链路追踪信息缺失。推荐使用GetWithCtx
 // Get pkg func. get one config by configId
 func Get(configId int32) *MazeAttributeFormulaV8ConfigRow {
 	return GetWithCtx(context.Background(), configId)
