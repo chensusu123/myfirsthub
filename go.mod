@@ -25,7 +25,7 @@ require (
 	github.com/samber/slog-zap/v2 v2.6.2
 	github.com/spf13/cast v1.9.2
 	github.com/urfave/cli v1.22.16
-	gitlab.ifreetalk.com/maze-plate/freetk v1.0.1-0.20250820140922-41c8a8f9afc1
+	gitlab.ifreetalk.com/maze-plate/freetk v1.0.1-0.20250821055511-d6d0a2d2bc4f
 	gitlab.ifreetalk.com/nano-ecosystem/fklog v0.0.0-20250813072008-4577841956ed
 	go.opentelemetry.io/otel v1.37.0
 	go.opentelemetry.io/otel/trace v1.37.0
