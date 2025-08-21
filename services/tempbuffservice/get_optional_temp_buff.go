@@ -328,7 +328,7 @@ type WeightInfo struct {
 }
 
 // 过滤本次可选的词条
-func (s *service) filterBuffList(ctx context.Context, optionalMap map[int32]struct{}, buffList, ce_buffList []int32,
+func (s *service) filterBuffList(ctx context.Context, optionalMap map[int32]struct{}, buffList, certainlyList []int32,
 	selectedBuffMap, selectedBuffGroupMap map[int32]int32) ([]*WeightInfo, int32) {
 
 	var (
@@ -337,14 +337,14 @@ func (s *service) filterBuffList(ctx context.Context, optionalMap map[int32]stru
 	)
 
 	// 先添加必选buff
-	for _, buffId := range ce_buffList {
+	for _, buffId := range certainlyList {
 		if buffId == 0 {
 			continue
 		}
 		if _, ok := optionalMap[buffId]; ok {
 			continue
 		}
-		buffWeight := s.GetOptionBuffWeightInfo(ctx, buffId, selectedBuffMap, selectedBuffGroupMap)
+		buffWeight := s.GetOptionBuffWeightInfo(ctx, buffId, selectedBuffMap, selectedBuffGroupMap, optionalMap)
 		if buffWeight == nil {
 			continue
 		}
@@ -362,7 +362,7 @@ func (s *service) filterBuffList(ctx context.Context, optionalMap map[int32]stru
 			continue
 		}
 
-		buffWeight := s.GetOptionBuffWeightInfo(ctx, buffId, selectedBuffMap, selectedBuffGroupMap)
+		buffWeight := s.GetOptionBuffWeightInfo(ctx, buffId, selectedBuffMap, selectedBuffGroupMap, optionalMap)
 		if buffWeight == nil {
 			continue
 		}
@@ -375,7 +375,7 @@ func (s *service) filterBuffList(ctx context.Context, optionalMap map[int32]stru
 }
 
 // 检查buff是否满足可选条件， 获取可选buff的权重信息
-func (s *service) GetOptionBuffWeightInfo(ctx context.Context, buffId int32, selectedBuffMap, selectedBuffGroupMap map[int32]int32) *WeightInfo {
+func (s *service) GetOptionBuffWeightInfo(ctx context.Context, buffId int32, selectedBuffMap, selectedBuffGroupMap map[int32]int32, optionalMap map[int32]struct{}) *WeightInfo {
 	logger := fklog.ContextAppLogger(ctx)
 	buffConfig := mazeenergyaffixlvv8config.GetAffixConfig(buffId)
 	if buffConfig == nil {
@@ -399,7 +399,7 @@ func (s *service) GetOptionBuffWeightInfo(ctx context.Context, buffId int32, sel
 		if frontId == 0 {
 			continue
 		}
-		isOk := s.checkFrontCondition(logger, frontId, selectedBuffMap, selectedBuffGroupMap)
+		isOk := s.checkFrontCondition(logger, frontId, selectedBuffMap, selectedBuffGroupMap, optionalMap)
 		if !isOk {
 			return nil
 		}
@@ -412,10 +412,18 @@ func (s *service) GetOptionBuffWeightInfo(ctx context.Context, buffId int32, sel
 }
 
 // 检查前置条件
-func (s *service) checkFrontCondition(logger fklog.FKLogI, frontId int32, selectedBuffMap, selectedBuffGroupMap map[int32]int32) bool {
+func (s *service) checkFrontCondition(logger fklog.FKLogI, frontId int32, selectedBuffMap, selectedBuffGroupMap map[int32]int32,
+	optionalMap map[int32]struct{}) bool {
 	frontConfig := mazeenergyaffixfrontv8config.GetMazeEnergyAffixFrontConfig(frontId)
 	if frontConfig == nil {
 		return false
+	}
+
+	if frontConfig.Exclusive_affix__id != 0 {
+		// 检查互斥词条
+		if _, ok := optionalMap[frontConfig.Exclusive_affix__id]; ok {
+			return false
+		}
 	}
 
 	// 检查前置词条是否满足

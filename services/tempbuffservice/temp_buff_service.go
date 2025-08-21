@@ -33,7 +33,7 @@ type TempBuffService interface {
 	GetTempBuffInfo(ctx context.Context, userID uint64, barrierId int32) (*tempbuffmodel.TempBuffInfoModel, error)
 
 	// 获取buff权重
-	GetOptionBuffWeightInfo(ctx context.Context, buffId int32, selectedBuffMap, selectedBuffGroupMap map[int32]int32) *WeightInfo
+	GetOptionBuffWeightInfo(ctx context.Context, buffId int32, selectedBuffMap, selectedBuffGroupMap map[int32]int32, optionalMap map[int32]struct{}) *WeightInfo
 
 	// 根据选择的buff获取全部buff属性
 	GetTotalBuff(ctx context.Context, buffList []*tempbuffmodel.SelectedBuffInfo) (map[int32]int64, []*tempbuffmodel.TotalBuffInfo)
