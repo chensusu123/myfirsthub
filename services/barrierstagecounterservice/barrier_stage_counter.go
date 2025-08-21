@@ -237,7 +237,7 @@ func (s service) DelBarrierStageCounterOnPass(logger fklog.FKLogI, userId uint64
 // 是否通过关卡区域
 func isPassBarrierArea(stageId int32, passArea []*dollmappuzzlenewcfgex.AreaInfo) bool {
 	for _, info := range passArea {
-		if info.StageId == 0 || info.StageId > stageId {
+		if stageId > 0 && info.StageId > stageId {
 			return true
 		}
 	}
