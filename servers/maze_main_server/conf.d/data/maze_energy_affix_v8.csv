@@ -440,7 +440,7 @@ order,affix_group_id,affix_group_order,affix_lv,font_affix_condition,use_num_max
 600600301,6006,8,4,600600301,2,600,7920102:22000_9920102:22000,强化冲击,冲击波的伤害增加100%,,SkillBuffIcon_atlas0,huoyanchongji
 600600302,6006,9,4,600600302,1,600,4920102:900_3920102:1400,冲击范围,冲击波的攻击范围增加100%,,SkillBuffIcon_atlas0,huoyanchongji
 600600303,6006,10,4,600600303,2,600,7920103:3200_9920103:3200,强化引燃,引燃的火焰伤害提升80%,,SkillBuffIcon_atlas0,yinran
-600600401,6006,11,5,600600401,2,800,1920102:750,极速冲击,火焰冲击波的冷却时间减少25%,,SkillBuffIcon_atlas0,huoyanchongji
+600600401,6006,11,5,600600401,2,800,1920102:-750,极速冲击,火焰冲击波的冷却时间减少25%,,SkillBuffIcon_atlas0,huoyanchongji
 600600501,6006,12,6,600600501,1,1600,920104:1,毁灭风暴,每攻击10次，化身火焰大风车，施展旋风斩攻击敌人，持续8s,,SkillBuffIcon_atlas0,huimiefengbao
 600700001,6007,1,1,0,1,200,3080001:1_7000303:4500,毒雾,"释放一片持续5s的毒雾并造成持续伤害，有20%的概率使目标进入""中毒""状态（临时测试）",,SkillBuffIcon_atlas0,duwu
 600700101,6007,2,2,600700101,2,200,3080001:4000,毒系增伤,毒系效果伤害提高60%（临时测试）,,SkillBuffIcon_atlas0,duxizengshang
