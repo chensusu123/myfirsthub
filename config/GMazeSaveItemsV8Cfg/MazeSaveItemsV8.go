@@ -7,6 +7,7 @@ import (
 	"gitlab.ifreetalk.com/maze-plate/freetk/fkserver/config_manager"
 	"go.uber.org/zap"
 	"strconv"
+	"strings"
 	"sync"
 	"sync/atomic"
 	"unsafe"
@@ -14,11 +15,11 @@ import (
 
 // MazeSaveItemsV8ConfigRow from maze_save_items_v8【迷宫-救援道具】.xlsx maze_save_items_v8
 type MazeSaveItemsV8ConfigRow struct {
-	Id        int32  `json:"id"`        // 道具id
-	IconAtlas string `json:"iconAtlas"` // icon图集文件夹
-	Icon      string `json:"icon"`      // 图标
-	Type      int32  `json:"type"`      // 道具类型
-	Argument  int32  `json:"argument"`  // 效果参数
+	Id        int32   `json:"id"`        // 道具id
+	IconAtlas string  `json:"iconAtlas"` // icon图集文件夹
+	Icon      string  `json:"icon"`      // 图标
+	Type      int32   `json:"type"`      // 道具类型
+	Argument  []int32 `json:"argument"`  // 效果参数
 }
 
 // MazeSaveItemsV8Config from maze_save_items_v8【迷宫-救援道具】.xlsx maze_save_items_v8
@@ -322,16 +323,21 @@ func (*gMazeSaveItemsV8Parser) Parse(logger fklog.FKLogI, data []string, row int
 
 	// parse column 4 argument : 效果参数
 	if data[4] != "" {
-		tmp, err = strconv.ParseInt(data[4], 10, 64)
-		if err != nil {
-			err = errors.New("parse field argument 效果参数 to int32 failed")
-			logger.ErrorWF("parse field argument 效果参数 to int32 failed.",
-				zap.String("xlsx", "maze_save_items_v8【迷宫-救援道具】.xlsx"), zap.String("sheet", "maze_save_items_v8"),
-				zap.String("parse_data", data[4]),
-				zap.Error(err))
-			return
+
+		vals := strings.Split(data[4], ",")
+		for k, v := range vals {
+			tmp, err = strconv.ParseInt(v, 10, 64)
+			if err != nil {
+				err = errors.New("parse array field argument 效果参数 to []int32 failed")
+				logger.ErrorWF("parse array field argument 效果参数 to []int32 failed.",
+					zap.String("xlsx", "maze_save_items_v8【迷宫-救援道具】.xlsx"), zap.String("sheet", "maze_save_items_v8"),
+					// zap.String("field_data",data[4]),
+					zap.String("parse_data", v), zap.Int("index", k),
+					zap.Error(err))
+				return
+			}
+			config.Argument = append(config.Argument, int32(tmp))
 		}
-		config.Argument = int32(tmp)
 	}
 	return
 }
