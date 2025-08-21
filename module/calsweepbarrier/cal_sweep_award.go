@@ -293,7 +293,7 @@ func CalUserSweepBarrierAward(logger fklog.FKLogI, uid uint64, barrierId int32, 
 		UserId:         uid,
 		Barrier:        barrierId,
 		GameRet:        mazebarrieruserkafka.GameRetSweep,
-		Awards:         getAwards(rareItem, awardItem),
+		Awards:         getAwards(logger, rareItem, awardItem),
 		KillMonsterNum: GetBarrirerMonsterNum(context.TODO(), barrierId),
 	}
 
@@ -302,17 +302,27 @@ func CalUserSweepBarrierAward(logger fklog.FKLogI, uid uint64, barrierId int32, 
 	return
 }
 
-func getAwards(awardMap []*MazeCommon.MazeItem, awardEquip []*MazeCommon.MazeItem) string {
+func getAwards(logger fklog.FKLogI, awardMap []*MazeCommon.MazeItem, awardEquip []*MazeCommon.MazeItem) string {
 	awardStr := make([]string, 0)
 
 	for _, v := range awardMap {
 		itemCfg := GMazeItemsV8Cfg.Get(v.GetItemId())
-		awardStr = append(awardStr, fmt.Sprintf("%s:%d", itemCfg.Prop_name, v.GetCount()))
+		if itemCfg != nil {
+			awardStr = append(awardStr, fmt.Sprintf("%s:%d", itemCfg.Prop_name, v.GetCount()))
+		} else {
+			logger.WarnWF("getAwards get fail",
+				zap.Int32("itemID", v.GetItemId()))
+		}
 	}
 
 	for _, v := range awardEquip {
 		itemCfg := GMazeItemsV8Cfg.Get(v.GetItemId())
-		awardStr = append(awardStr, fmt.Sprintf("%s:%d", itemCfg.Prop_name, v.GetCount()))
+		if itemCfg != nil {
+			awardStr = append(awardStr, fmt.Sprintf("%s:%d", itemCfg.Prop_name, v.GetCount()))
+		} else {
+			logger.WarnWF("getAwards get fail",
+				zap.Int32("itemID", v.GetItemId()))
+		}
 	}
 	return strings.Join(awardStr, "_")
 }

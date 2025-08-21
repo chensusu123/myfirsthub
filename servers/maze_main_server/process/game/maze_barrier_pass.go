@@ -90,7 +90,7 @@ func (g *Game) OnMazeBarrierPassRQ_10459_10460(s *session.Session, req *MazeGame
 		UserId:         userId,
 		Barrier:        req.GetBarrierId(),
 		GameRet:        mazebarrieruserkafka.GameRetSucc,
-		Awards:         getAwards(awards, rareAwards),
+		Awards:         getAwards(logger, awards, rareAwards),
 		KillMonsterNum: int64(killMonsterNum),
 	}
 
@@ -99,12 +99,17 @@ func (g *Game) OnMazeBarrierPassRQ_10459_10460(s *session.Session, req *MazeGame
 	return nil
 }
 
-func getAwards(awards ...[]*MazeCommon.MazeItem) string {
+func getAwards(logger fklog.FKLogI, awards ...[]*MazeCommon.MazeItem) string {
 	awardStr := make([]string, 0)
 	for _, award := range awards {
 		for _, v := range award {
 			itemCfg := GMazeItemsV8Cfg.Get(v.GetItemId())
-			awardStr = append(awardStr, fmt.Sprintf("%s:%d", itemCfg.Prop_name, v.GetCount()))
+			if itemCfg != nil {
+				awardStr = append(awardStr, fmt.Sprintf("%s:%d", itemCfg.Prop_name, v.GetCount()))
+			} else {
+				logger.WarnWF("getAwards get fail",
+					zap.Int32("itemID", v.GetItemId()))
+			}
 		}
 	}
 	return strings.Join(awardStr, "_")

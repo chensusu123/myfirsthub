@@ -66,7 +66,7 @@ func (g *Game) OnMazeBarrierDeathRQ_10449_10450(s *session.Session, req *MazeGam
 		UserId:         userId,
 		Barrier:        req.GetBarrierId(),
 		GameRet:        mazebarrieruserkafka.GameRetDeath,
-		Awards:         getAwards(awards),
+		Awards:         getAwards(logger, awards),
 		KillMonsterNum: int64(killMonsterNum),
 	}
 
