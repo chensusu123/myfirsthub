@@ -1,6 +1,7 @@
 package calsweepbarrier
 
 import (
+	"context"
 	"errors"
 	"fmt"
 	"maze_game_server/model/equipdropmodel"
@@ -16,6 +17,7 @@ import (
 	"maze_game_server/config/GMazeBrushFoeV8Cfg"
 	"maze_game_server/config/GMazeConfigV8Cfg"
 	"maze_game_server/config/GMazeFoeV8Cfg"
+	"maze_game_server/config/GMazeItemsV8Cfg"
 	"maze_game_server/config/GMazeShopV8Cfg"
 	"maze_game_server/io/kafka/mazebarrieruserkafka"
 	"maze_game_server/io/kafka/mazeuserlevelkafka"
@@ -288,10 +290,11 @@ func CalUserSweepBarrierAward(logger fklog.FKLogI, uid uint64, barrierId int32, 
 	}
 
 	sweepRecord := &mazebarrieruserkafka.MazeBarrierUserGameRecord{
-		UserId:  uid,
-		Barrier: barrierId,
-		GameRet: mazebarrieruserkafka.GameRetSweep,
-		Awards:  getAwards(rareItem, awardItem),
+		UserId:         uid,
+		Barrier:        barrierId,
+		GameRet:        mazebarrieruserkafka.GameRetSweep,
+		Awards:         getAwards(rareItem, awardItem),
+		KillMonsterNum: GetBarrirerMonsterNum(context.TODO(), barrierId),
 	}
 
 	mazebarrieruserkafka.PushMazeBarrierUserRecord(logger, sweepRecord)
@@ -303,11 +306,52 @@ func getAwards(awardMap []*MazeCommon.MazeItem, awardEquip []*MazeCommon.MazeIte
 	awardStr := make([]string, 0)
 
 	for _, v := range awardMap {
-		awardStr = append(awardStr, fmt.Sprintf("%d:%d", v.GetItemId(), v.GetCount()))
+		itemCfg := GMazeItemsV8Cfg.Get(v.GetItemId())
+		awardStr = append(awardStr, fmt.Sprintf("%s:%d", itemCfg.Prop_name, v.GetCount()))
 	}
 
 	for _, v := range awardEquip {
-		awardStr = append(awardStr, fmt.Sprintf("%d:%d", v.GetItemId(), v.GetCount()))
+		itemCfg := GMazeItemsV8Cfg.Get(v.GetItemId())
+		awardStr = append(awardStr, fmt.Sprintf("%s:%d", itemCfg.Prop_name, v.GetCount()))
 	}
 	return strings.Join(awardStr, "_")
+}
+
+func GetBarrirerMonsterNum(ctx context.Context, barrierID int32) (monsterNum int64) {
+	logger := fklog.ContextAppLogger(ctx)
+	logger.CtxInfo(ctx, "GetBarrirerMonsterNum Start",
+		zap.Int32("barrierID", barrierID),
+	)
+
+	defer func() {
+		logger.CtxInfo(ctx, "GetBarrirerMonsterNum End",
+			zap.Int32("barrierID", barrierID),
+			zap.Int64("monsterNum", monsterNum),
+		)
+	}()
+
+	//获取关卡所有怪物集合
+	allFoe := GMazeBrushFoeV8Cfg.GetAll()
+	if len(allFoe) == 0 {
+		logger.CtxError(ctx, "GetBarrirerMonsterNum barrier foe empty", zap.Any("barrierID", barrierID))
+		return
+	}
+
+	for _, cfg := range allFoe {
+		if cfg.Barries_id != barrierID {
+			continue
+		}
+		for _, foe := range cfg.Monsters_id {
+			if foe > 0 {
+				monsterNum += 1
+			}
+		}
+		for foe, num := range cfg.Monsterslist_ids_and_nums {
+			if foe > 0 {
+				monsterNum += int64(num)
+			}
+		}
+	}
+
+	return
 }

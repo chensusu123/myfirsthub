@@ -24,12 +24,13 @@ type KafkaCommon = kafkacommonstruct.KafkaCommon
 // 用户迷宫闯关纪录
 type MazeBarrierUserGameRecord struct {
 	KafkaCommon
-	UserId     uint64 `json:"user_id" gorm:"column:user_id"`         // 用户id
-	Barrier    int32  `json:"barrier" gorm:"column:barrier"`         // 关卡id
-	GameRet    int32  `json:"game_ret" gorm:"column:game_ret"`       // 用户闯关结果 1-通关成功 2-死亡失败 3-扫荡
-	Awards     string `json:"awards" gorm:"column:awards"`           // 本次获得的奖励
-	GroupID    uint32 `json:"group_id" gorm:"column:group_id"`       // 组id
-	CreateTime int64  `json:"create_time" gorm:"column:create_time"` // 操作时间
+	UserId         uint64 `json:"user_id" gorm:"column:user_id"`         // 用户id
+	Barrier        int32  `json:"barrier" gorm:"column:barrier"`         // 关卡id
+	GameRet        int32  `json:"game_ret" gorm:"column:game_ret"`       // 用户闯关结果 1-通关成功 2-死亡失败 3-扫荡
+	Awards         string `json:"awards" gorm:"column:awards"`           // 本次获得的奖励
+	GroupID        uint32 `json:"group_id" gorm:"column:group_id"`       // 组id
+	CreateTime     int64  `json:"create_time" gorm:"column:create_time"` // 操作时间
+	KillMonsterNum int64  `json:"kill_monster_num" gorm:"kill_monster_num"`
 }
 
 // var gKafka = &fkafka.KafkaProducer{}

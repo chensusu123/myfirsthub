@@ -63,10 +63,11 @@ func (g *Game) OnMazeBarrierDeathRQ_10449_10450(s *session.Session, req *MazeGam
 	events.OnLeaveBarrier(logger, userId, 0, time.Now().UnixMilli(), &MazeGame.BattleEventLeaveBarrier{BarrierId: proto.Int32(req.GetBarrierId()), Result: MazeGame.BarrierResult_DEATH.Enum()})
 
 	passRecord := &mazebarrieruserkafka.MazeBarrierUserGameRecord{
-		UserId:  userId,
-		Barrier: req.GetBarrierId(),
-		GameRet: mazebarrieruserkafka.GameRetDeath,
-		Awards:  getAwards(awards),
+		UserId:         userId,
+		Barrier:        req.GetBarrierId(),
+		GameRet:        mazebarrieruserkafka.GameRetDeath,
+		Awards:         getAwards(awards),
+		KillMonsterNum: int64(killMonsterNum),
 	}
 
 	mazebarrieruserkafka.PushMazeBarrierUserRecord(logger, passRecord)

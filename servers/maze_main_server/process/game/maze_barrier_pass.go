@@ -6,6 +6,7 @@ import (
 	"maze_game_server/common/constdef"
 	"maze_game_server/common/errors"
 	"maze_game_server/common/structsdef"
+	"maze_game_server/config/GMazeItemsV8Cfg"
 	"maze_game_server/io/kafka/mazebarrieruserkafka"
 	"maze_game_server/io/redis/barrierscorerewardredis"
 	"maze_game_server/io/redis/mazeattrcalcnotifyqueue"
@@ -86,10 +87,11 @@ func (g *Game) OnMazeBarrierPassRQ_10459_10460(s *session.Session, req *MazeGame
 	logger.InfoWF("OnMazeBarrierPassRQ award dump", zap.Any("exp", req.GetFoeExp()), zap.Any("awards", awards), zap.Any("rareAwards", rareAwards))
 
 	passRecord := &mazebarrieruserkafka.MazeBarrierUserGameRecord{
-		UserId:  userId,
-		Barrier: req.GetBarrierId(),
-		GameRet: mazebarrieruserkafka.GameRetSucc,
-		Awards:  getAwards(awards, rareAwards),
+		UserId:         userId,
+		Barrier:        req.GetBarrierId(),
+		GameRet:        mazebarrieruserkafka.GameRetSucc,
+		Awards:         getAwards(awards, rareAwards),
+		KillMonsterNum: int64(killMonsterNum),
 	}
 
 	mazebarrieruserkafka.PushMazeBarrierUserRecord(logger, passRecord)
@@ -101,7 +103,8 @@ func getAwards(awards ...[]*MazeCommon.MazeItem) string {
 	awardStr := make([]string, 0)
 	for _, award := range awards {
 		for _, v := range award {
-			awardStr = append(awardStr, fmt.Sprintf("%d:%d", v.GetItemId(), v.GetCount()))
+			itemCfg := GMazeItemsV8Cfg.Get(v.GetItemId())
+			awardStr = append(awardStr, fmt.Sprintf("%s:%d", itemCfg.Prop_name, v.GetCount()))
 		}
 	}
 	return strings.Join(awardStr, "_")
