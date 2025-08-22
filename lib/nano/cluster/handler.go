@@ -31,6 +31,7 @@ import (
 	"sort"
 	"strings"
 	"sync"
+	"sync/atomic"
 	"time"
 
 	"maze_game_server/lib/nano/cluster/clusterpb"
@@ -117,7 +118,8 @@ type LocalHandler struct {
 	pipeline    pipeline.Pipeline
 	currentNode *Node
 	// Custom packet encoder/decoder
-	pcodec frame.PacketCodec
+	pcodec    frame.PacketCodec
+	taskCount atomic.Int64
 }
 
 func NewHandler(currentNode *Node, pipeline pipeline.Pipeline, pcodec frame.PacketCodec) *LocalHandler {
@@ -607,6 +609,7 @@ func (h *LocalHandler) localProcess(ctx context.Context, handler *component.Hand
 			span.AddEvent("nano.local.process.end")
 			session.SetContext(context.TODO())
 			span.End()
+			h.taskCount.Add(-1)
 		}()
 		if len(result) > 0 {
 			if err := result[0].Interface(); err != nil {
@@ -644,10 +647,16 @@ func (h *LocalHandler) localProcess(ctx context.Context, handler *component.Hand
 			span.End()
 			return
 		}
-		span.AddEvent("nano.local.schedule.task")
+		span.AddEvent("nano.schedule.task")
+		taskCount := h.taskCount.Add(1)
+		span.SetAttributes(attribute.Int64("current.task.count", taskCount))
+		span.SetAttributes(attribute.String("task.scheduler.name", service))
 		local.Schedule(task)
 	} else {
 		span.AddEvent("nano.schedule.task")
+		taskCount := h.taskCount.Add(1)
+		span.SetAttributes(attribute.Int64("current.task.count", taskCount))
+		span.SetAttributes(attribute.String("task.scheduler.name", "global"))
 		scheduler.PushTask(task)
 	}
 }
