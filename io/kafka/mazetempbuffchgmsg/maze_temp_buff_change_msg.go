@@ -49,7 +49,6 @@ func PushTempBuffChangeMsg(logger fklog.FKLogI, msg *MazeTempBuffChangeMsg) erro
 	if msg.CreateTime == 0 {
 		msg.CreateTime = time.Now().UnixNano() / 1000000
 	}
-	msg.ChgAttrs = nil
 	// cnt, err := json.Marshal(msg)
 	// if err != nil {
 	// 	logger.ErrorWF("PushTempBuffChangeMsg marshal failed", zap.Uint64("uid", msg.UserId), zap.Error(err))

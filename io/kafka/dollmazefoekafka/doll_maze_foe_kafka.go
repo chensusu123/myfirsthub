@@ -44,7 +44,6 @@ func Watch(fn func(logger fklog.FKLogI, msg *DollMazeFoeRecord)) {
 
 func PushDollMazeFoeRecord(agent fklog.FKLogI, record *DollMazeFoeRecord) error {
 	record.CreateTime = time.Now().UnixNano() / 1e6
-	record.FoeList = ""
 	// record.GroupID = fkconfig.EnvVal.GroupID
 	// cnt, err := json.Marshal(record)
 	// if err != nil {

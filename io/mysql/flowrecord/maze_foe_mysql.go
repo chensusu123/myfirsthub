@@ -27,6 +27,8 @@ func SaveFoeRecord(logger fklog.FKLogI, record *dollmazefoekafka.DollMazeFoeReco
 		record.CreateTime = time.Now().UnixNano() / 1000000
 	}
 
+	record.FoeList = ""
+
 	nowDbTable := strings.Split(mysql.GetFullyQualifiedTableName(MazeFoeRecordTableName), ".")
 	record.DataBase = nowDbTable[0]
 	record.Table = nowDbTable[1]
