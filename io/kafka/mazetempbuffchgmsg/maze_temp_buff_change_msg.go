@@ -29,7 +29,7 @@ type MazeTempBuffChangeMsg struct {
 	UserId      uint64         `json:"user_id" gorm:"column:user_id"`         // 用户Id
 	GroupId     uint32         `json:"group_id" gorm:"column:group_id"`       // 分组Id
 	StageId     int32          `json:"stage_id" gorm:"column:stage_id"`       // 关卡id
-	ChgAttrs    []*AttrChgInfo `json:"chg_attr" gorm:"-"`                     // 变化的属性
+	ChgAttrs    []*AttrChgInfo `json:"chg_attr,omitempty" gorm:"-"`           // 变化的属性
 	ChgAttrsStr string         `json:"chg_attrs" gorm:"column:chg_attrs"`     // 变化的属性 ChgAttrs的json格式，数据库存储字段
 	ChgType     int32          `json:"chg_type" gorm:"column:chg_type"`       // 变化类型
 	ChgDesc     string         `json:"chg_desc" gorm:"column:chg_desc"`       // 原因描述
@@ -46,11 +46,10 @@ func init() {
 }
 
 func PushTempBuffChangeMsg(logger fklog.FKLogI, msg *MazeTempBuffChangeMsg) error {
-	// msg.GroupId = fkconfig.EnvVal.GroupID
 	if msg.CreateTime == 0 {
 		msg.CreateTime = time.Now().UnixNano() / 1000000
 	}
-
+	msg.ChgAttrs = nil
 	// cnt, err := json.Marshal(msg)
 	// if err != nil {
 	// 	logger.ErrorWF("PushTempBuffChangeMsg marshal failed", zap.Uint64("uid", msg.UserId), zap.Error(err))
