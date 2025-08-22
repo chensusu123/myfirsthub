@@ -9,6 +9,7 @@ import (
 type ProductID uint32
 
 func (f ProductID) MarshalJSON() ([]byte, error) {
+	// 爱地牢产品id 100010
 	return json.Marshal(100010)
 }
 
@@ -25,9 +26,9 @@ func (s ServiceName) MarshalJSON() ([]byte, error) {
 }
 
 type KafkaCommon struct {
-	ServiceName string    `json:"service_name"`
-	DataBase    string    `json:"database"`   // 库名
-	Table       string    `json:"table"`      // 表名
-	ProductID   ProductID `json:"product_id"` // 产品ID
-	ServerID    ServerID  `json:"server_id"`  // 区服id
+	ServiceName ServiceName `json:"service_name"`
+	DataBase    string      `json:"database"`   // 库名
+	Table       string      `json:"table"`      // 表名
+	ProductID   ProductID   `json:"product_id"` // 产品ID
+	ServerID    ServerID    `json:"server_id"`  // 区服id
 }
