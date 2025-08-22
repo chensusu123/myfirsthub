@@ -35,7 +35,7 @@ func SaveTempBuffChgRecord(logger fklog.FKLogI, record *mazetempbuffchgmsg.MazeT
 	record.ChgAttrsStr = attr2String(record.ChgAttrs)
 
 	// 防止该字段多余序列化 导致流水打点误插入数据库
-	record.ChgAttrs = nil
+	//record.ChgAttrs = nil
 
 	// 打到kafka 中
 	data, err := json.Marshal(record)
