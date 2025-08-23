@@ -58,6 +58,7 @@ type Session struct {
 	data         map[string]interface{} // session data store
 	router       *Router
 	ctx          atomic.Value
+	taskCount    atomic.Int64
 }
 
 // New returns a new session instance
@@ -435,4 +436,12 @@ func (s *Session) Context() context.Context {
 
 func (s *Session) SetContext(ctx context.Context) {
 	s.ctx.Store(SessionContext{ctx})
+}
+
+func (s *Session) TaskCountInc() int64 {
+	return s.taskCount.Add(1)
+}
+
+func (s *Session) TaskCountDec() int64 {
+	return s.taskCount.Add(-1)
 }

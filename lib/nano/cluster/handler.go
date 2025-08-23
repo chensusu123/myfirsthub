@@ -610,6 +610,7 @@ func (h *LocalHandler) localProcess(ctx context.Context, handler *component.Hand
 			session.SetContext(context.TODO())
 			span.End()
 			h.taskCount.Add(-1)
+			session.TaskCountDec()
 		}()
 		if len(result) > 0 {
 			if err := result[0].Interface(); err != nil {
@@ -649,13 +650,17 @@ func (h *LocalHandler) localProcess(ctx context.Context, handler *component.Hand
 		}
 		span.AddEvent("nano.schedule.task")
 		taskCount := h.taskCount.Add(1)
+		sesstionTaskCount := session.TaskCountInc()
 		span.SetAttributes(attribute.Int64("nano.current.task.count", taskCount))
+		span.SetAttributes(attribute.Int64("nano.session.task.count", sesstionTaskCount))
 		span.SetAttributes(attribute.String("nano.task.scheduler.name", service))
 		local.Schedule(task)
 	} else {
 		span.AddEvent("nano.schedule.task")
 		taskCount := h.taskCount.Add(1)
+		sesstionTaskCount := session.TaskCountInc()
 		span.SetAttributes(attribute.Int64("nano.current.task.count", taskCount))
+		span.SetAttributes(attribute.Int64("nano.session.task.count", sesstionTaskCount))
 		span.SetAttributes(attribute.String("nano.task.scheduler.name", "global"))
 		scheduler.PushTask(task)
 	}
