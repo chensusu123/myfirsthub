@@ -94,3 +94,11 @@ func PushWithContext(ctx context.Context, logger fklog.FKLogI, userID uint64, pa
 	}
 	return s.(*session.Session).ResponseMID(ctx, codec.ToMessageID(uint32(time.Now().Unix()), 0, packetType), v)
 }
+
+func GetOnlineUsers() (userIDs []uint64) {
+	monitor.online.Range(func(key, value interface{}) bool {
+		userIDs = append(userIDs, key.(uint64))
+		return true
+	})
+	return
+}

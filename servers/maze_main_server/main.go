@@ -2,12 +2,14 @@ package main
 
 import (
 	"fmt"
+	"os"
+
 	"maze_game_server/io"
 	globalredis "maze_game_server/io/redis"
-	"os"
 
 	"maze_game_server/io/mysql"
 	"maze_game_server/servers/maze_main_server/process"
+	_ "maze_game_server/servers/maze_main_server/process/mazeadmin"
 	"maze_game_server/usecase/business"
 	"maze_game_server/usecase/tasktimer"
 
@@ -41,6 +43,5 @@ func main() {
 	fkserver.AppServer.AddBasicService(&process.NanoInitService{})
 	// fkserver.AddBusiness(&business.GCustomBusiness)
 	fkserver.AddBusiness(tasktimer.GTaskTimerBusiness)
-
 	fkserver.Run()
 }
