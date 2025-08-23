@@ -27,3 +27,14 @@ func agentSendSpan(ctx context.Context, sendType string, mid uint64, uid int64, 
 	span.AddEvent("agent.send.init")
 	return ctx, span
 }
+
+func receiveSpan(ctx context.Context, msgLen int) (context.Context, trace.Span) {
+	if msgLen <= 0 {
+		span := trace.SpanFromContext(ctx)
+		return ctx, span
+	}
+	tracer := otel.Tracer("nano.recive")
+	ctx, span := tracer.Start(ctx, "recive_data")
+	span.AddEvent("nano.receive.span.init")
+	return ctx, span
+}

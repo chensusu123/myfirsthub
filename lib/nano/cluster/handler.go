@@ -42,6 +42,7 @@ import (
 	"maze_game_server/lib/nano/internal/log"
 	"maze_game_server/lib/nano/internal/message"
 	"maze_game_server/lib/nano/internal/packet"
+	"maze_game_server/lib/nano/nanometrics"
 	"maze_game_server/lib/nano/pipeline"
 	"maze_game_server/lib/nano/scheduler"
 	"maze_game_server/lib/nano/serialize"
@@ -120,6 +121,7 @@ type LocalHandler struct {
 	// Custom packet encoder/decoder
 	pcodec    frame.PacketCodec
 	taskCount atomic.Int64
+	userCount atomic.Int64
 }
 
 func NewHandler(currentNode *Node, pipeline pipeline.Pipeline, pcodec frame.PacketCodec) *LocalHandler {
@@ -216,6 +218,12 @@ func (h *LocalHandler) RemoteService() []string {
 }
 
 func (h *LocalHandler) handle(conn net.Conn, r *http.Request, pcodec frame.PacketCodec) {
+	uerCount := h.userCount.Add(1)
+	nanometrics.UserCountGauge.Set(float64(uerCount))
+	defer func() {
+		uerCount = h.userCount.Add(-1)
+		nanometrics.UserCountGauge.Set(float64(uerCount))
+	}()
 	// Select a packet codec
 	if pcodec == nil {
 		pcodec = h.pcodec
@@ -303,8 +311,8 @@ func (h *LocalHandler) handle(conn net.Conn, r *http.Request, pcodec frame.Packe
 			loggerLoop.SetLogId(logidutil.GenerateLogID())
 			loggerLoop.SetUid(uint64(agent.session.UID()))
 			ctx := fklog.ContextWithLogger(context.Background(), loggerLoop)
-			tracer := otel.Tracer("nano.recive")
-			ctx, span := tracer.Start(ctx, "recive_data")
+
+			ctx, span := receiveSpan(ctx, n)
 
 			// Must working
 			agent.setStatus(statusWorking)
@@ -610,6 +618,7 @@ func (h *LocalHandler) localProcess(ctx context.Context, handler *component.Hand
 			session.SetContext(context.TODO())
 			span.End()
 			h.taskCount.Add(-1)
+			session.TaskCountDec()
 		}()
 		if len(result) > 0 {
 			if err := result[0].Interface(); err != nil {
@@ -649,14 +658,18 @@ func (h *LocalHandler) localProcess(ctx context.Context, handler *component.Hand
 		}
 		span.AddEvent("nano.schedule.task")
 		taskCount := h.taskCount.Add(1)
-		span.SetAttributes(attribute.Int64("current.task.count", taskCount))
-		span.SetAttributes(attribute.String("task.scheduler.name", service))
+		sesstionTaskCount := session.TaskCountInc()
+		span.SetAttributes(attribute.Int64("nano.current.task.count", taskCount))
+		span.SetAttributes(attribute.Int64("nano.session.task.count", sesstionTaskCount))
+		span.SetAttributes(attribute.String("nano.task.scheduler.name", service))
 		local.Schedule(task)
 	} else {
 		span.AddEvent("nano.schedule.task")
 		taskCount := h.taskCount.Add(1)
-		span.SetAttributes(attribute.Int64("current.task.count", taskCount))
-		span.SetAttributes(attribute.String("task.scheduler.name", "global"))
+		sesstionTaskCount := session.TaskCountInc()
+		span.SetAttributes(attribute.Int64("nano.current.task.count", taskCount))
+		span.SetAttributes(attribute.Int64("nano.session.task.count", sesstionTaskCount))
+		span.SetAttributes(attribute.String("nano.task.scheduler.name", "global"))
 		scheduler.PushTask(task)
 	}
 }
