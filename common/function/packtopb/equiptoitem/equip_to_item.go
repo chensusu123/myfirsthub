@@ -46,6 +46,7 @@ func PackEquipToItem(equip *MazeEquipSvr.MazeEquipInfoSvr) (item *MazeCommon.Maz
 	}
 	item = &MazeCommon.MazeItem{
 		ItemId:    proto.Int32(equip.GetEquipId()),
+		Count:     proto.Int64(1),
 		ItemName:  proto.String(equip.GetEquipName()),
 		Guid:      proto.Int64(equip.GetEquipGuid()),
 		IconName:  proto.String(equipResCfg.Icon),
