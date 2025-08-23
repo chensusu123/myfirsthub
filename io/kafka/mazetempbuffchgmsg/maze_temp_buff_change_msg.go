@@ -83,6 +83,7 @@ func Buff2String(buff []*AttrChgInfo) string {
 	for _, val := range buff {
 		if res == "" {
 			res = fmt.Sprintf("%d:%d:%d", val.AttrId, val.OldVal, val.CurVal)
+			continue
 		}
 		res = fmt.Sprintf("%s_%d:%d:%d", res, val.AttrId, val.OldVal, val.CurVal)
 	}
