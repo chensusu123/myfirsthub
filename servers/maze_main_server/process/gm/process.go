@@ -51,7 +51,7 @@ func RegGm(logger fklog.FKLogI) {
 	cmdbattledata.RegBattleDataGm(logger)
 
 	gm.SafeHttpRegister(logger, "/AddExp", func(writer http.ResponseWriter, request *http.Request) {
-		userId := fkutil.ToUint64(request.Form.Get("userId"))
+		userId := fkutil.ToUint64(request.Form.Get("user_id"))
 		exp := fkutil.ToInt64(request.Form.Get("exp"))
 		logger.SetLogId(time.Now().UnixNano())
 
@@ -97,7 +97,7 @@ func RegGm(logger fklog.FKLogI) {
 	})
 
 	type SetBarrierParams struct {
-		UserID    uint64 `schema:"userId,required"`
+		UserID    uint64 `schema:"user_id,required"`
 		BarrierID int32  `schema:"barrierId,required"`
 		Lock      int32  `schema:"lock"` // 如果提供这个参数，则设置的关卡会记录下来，重置游戏数据也会继续生效
 	}
@@ -163,7 +163,7 @@ func RegGm(logger fklog.FKLogI) {
 
 	gm.SafeHttpRegister(logger, "/generateUser", func(writer http.ResponseWriter, request *http.Request) {
 		logger.SetLogId(time.Now().UnixNano())
-		AuthId := fkutil.ToUint64(request.Form.Get("AuthId"))
+		AuthId := fkutil.ToUint64(request.Form.Get("user_id"))
 		ctx := request.Context()
 		userID := uint64(0)
 		callLogger := fklog.ContextAppLogger(ctx)
@@ -346,7 +346,7 @@ func RegGm(logger fklog.FKLogI) {
 	gm.SafeHttpRegister(logger, "/addEnergy", func(writer http.ResponseWriter, request *http.Request) {
 		logger.SetLogId(time.Now().UnixNano())
 		var (
-			userId = fkutil.ToUint64(request.Form.Get("userId"))
+			userId = fkutil.ToUint64(request.Form.Get("user_id"))
 			count  = fkutil.ToInt32(request.Form.Get("count"))
 		)
 		if count > barrierenergyservice.GlobalBarrierEnergyService.GetEnergyMaxValue() {
@@ -363,7 +363,7 @@ func RegGm(logger fklog.FKLogI) {
 	gm.SafeHttpRegister(logger, "/addItem", func(writer http.ResponseWriter, request *http.Request) {
 		logger.SetLogId(time.Now().UnixNano())
 		var (
-			userId = fkutil.ToUint64(request.Form.Get("userId"))
+			userId = fkutil.ToUint64(request.Form.Get("user_id"))
 			itemId = fkutil.ToInt32(request.Form.Get("itemId"))
 			count  = fkutil.ToInt64(request.Form.Get("count"))
 		)

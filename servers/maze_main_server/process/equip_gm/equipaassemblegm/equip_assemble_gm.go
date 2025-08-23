@@ -8,9 +8,6 @@ import (
 	"sync/atomic"
 	"time"
 
-	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fklog"
-	"gitlab.ifreetalk.com/maze-plate/freetk/fkutil"
-	"go.uber.org/zap"
 	"maze_game_server/common/function/fileio"
 	"maze_game_server/common/function/gm"
 	"maze_game_server/io/redis/mazebuffinforedis"
@@ -19,13 +16,17 @@ import (
 	"maze_game_server/module/dollassembleinfo"
 	"maze_game_server/servers/maze_main_server/process/equip"
 	"maze_game_server/servers/maze_main_server/process/equip_gm/equipbaggm"
+
+	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fklog"
+	"gitlab.ifreetalk.com/maze-plate/freetk/fkutil"
+	"go.uber.org/zap"
 )
 
 var EndLine = "-----------------------------------------------------------\n"
 
 func RegGm(logger fklog.FKLogI) {
 	gm.SafeHttpRegister(logger, "/LookAssembleInfo", func(writer http.ResponseWriter, request *http.Request) {
-		userId := fkutil.ToUint64(request.Form.Get("userId"))
+		userId := fkutil.ToUint64(request.Form.Get("user_id"))
 
 		logger.SetLogId(time.Now().UnixNano())
 		logger.SetUid(userId)
@@ -93,7 +94,7 @@ func RegGm(logger fklog.FKLogI) {
 	})
 
 	gm.SafeHttpRegister(logger, "/GetEquipInfoByCfgId", func(writer http.ResponseWriter, request *http.Request) {
-		userId := fkutil.ToUint64(request.Form.Get("userId"))
+		userId := fkutil.ToUint64(request.Form.Get("user_id"))
 		equipId := fkutil.ToInt32(request.Form.Get("equipId"))
 		pos := fkutil.ToInt32(request.Form.Get("pos"))
 		minLv := fkutil.ToInt32(request.Form.Get("minLv"))
@@ -141,7 +142,7 @@ func RegGm(logger fklog.FKLogI) {
 	})
 
 	gm.SafeHttpRegister(logger, "/GetEquipInfoByGuid", func(writer http.ResponseWriter, request *http.Request) {
-		userId := fkutil.ToUint64(request.Form.Get("userId"))
+		userId := fkutil.ToUint64(request.Form.Get("user_id"))
 		guid := fkutil.ToInt64(request.Form.Get("guid"))
 		rs, err := GetEquipInfoByGuid(logger, userId, guid)
 		if err != nil {
@@ -202,7 +203,7 @@ func RegGm(logger fklog.FKLogI) {
 	})
 
 	gm.SafeHttpRegister(logger, "/SendOneSuitEquip", func(writer http.ResponseWriter, request *http.Request) {
-		userId := fkutil.ToUint64(request.Form.Get("userId"))
+		userId := fkutil.ToUint64(request.Form.Get("user_id"))
 		dressLv := fkutil.ToInt32(request.Form.Get("dressLv"))
 		LvDis := fkutil.ToInt32(request.Form.Get("LvDis"))
 		suitId := fkutil.ToInt32(request.Form.Get("suitId"))
@@ -359,7 +360,7 @@ func RegGm(logger fklog.FKLogI) {
 	})
 
 	gm.SafeHttpRegister(logger, "/ReInitDollEquip", func(writer http.ResponseWriter, request *http.Request) {
-		uid := fkutil.ToUint64(request.Form.Get("uid"))
+		uid := fkutil.ToUint64(request.Form.Get("user_id"))
 		clear := fkutil.ToBool(request.Form.Get("clear"))
 		if clear {
 			e := equipbaggm.ClearUserBag(logger, uid)
@@ -497,7 +498,7 @@ func RegGm(logger fklog.FKLogI) {
 	// })
 
 	gm.SafeHttpRegister(logger, "/FixDollAttr", func(writer http.ResponseWriter, request *http.Request) {
-		uid := fkutil.ToUint64(request.Form.Get("uid"))
+		uid := fkutil.ToUint64(request.Form.Get("user_id"))
 		fixType := fkutil.ToInt32(request.Form.Get("fixType"))
 		logger.SetUid(uid)
 		e := ReCalcDollEquipAttr(logger, uid, fixType)
@@ -599,7 +600,7 @@ func RegGm(logger fklog.FKLogI) {
 	// })
 
 	gm.SafeHttpRegister(logger, "/FixEquipPosUnlock", func(writer http.ResponseWriter, request *http.Request) {
-		uid := fkutil.ToUint64(request.Form.Get("uid"))
+		uid := fkutil.ToUint64(request.Form.Get("user_id"))
 		logger.SetUid(uid)
 		cnt, e := UnlockPosByEquip(logger, uid)
 		if e == nil {
@@ -663,7 +664,7 @@ func RegGm(logger fklog.FKLogI) {
 	// })
 
 	gm.SafeHttpRegister(logger, "/FixAssembleEquipInfo", func(writer http.ResponseWriter, request *http.Request) {
-		uid := fkutil.ToUint64(request.Form.Get("uid"))
+		uid := fkutil.ToUint64(request.Form.Get("user_id"))
 		logger.SetUid(uid)
 		fixCnt, e := FixAssembleEquipInfo(logger, uid)
 		if e == nil {
@@ -674,7 +675,7 @@ func RegGm(logger fklog.FKLogI) {
 	})
 
 	gm.SafeHttpRegister(logger, "/GmDressBagEquip", func(writer http.ResponseWriter, request *http.Request) {
-		uid := fkutil.ToUint64(request.Form.Get("uid"))
+		uid := fkutil.ToUint64(request.Form.Get("user_id"))
 		logger.SetUid(uid)
 		pos := fkutil.ToInt32(request.Form.Get("pos"))
 		guid := fkutil.ToInt64(request.Form.Get("guid"))
@@ -687,7 +688,7 @@ func RegGm(logger fklog.FKLogI) {
 	})
 
 	gm.SafeHttpRegister(logger, "/GmEquipPosLvUp", func(writer http.ResponseWriter, request *http.Request) {
-		uid := fkutil.ToUint64(request.Form.Get("uid"))
+		uid := fkutil.ToUint64(request.Form.Get("user_id"))
 		logger.SetUid(uid)
 		targetLv := fkutil.ToInt32(request.Form.Get("lv"))
 		e := equip.OnGmEquipPosLvUp(logger, uid, targetLv)

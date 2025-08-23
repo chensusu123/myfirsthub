@@ -50,7 +50,7 @@ func InitGM(logger fklog.FKLogI) {
 		// 外网线上环境不允许使用GM
 		ctx := request.Context()
 		request.ParseForm()
-		userId := fkutil.ToUint64(request.Form.Get("userid"))
+		userId := fkutil.ToUint64(request.Form.Get("user_id"))
 		stageId := fkutil.ToInt32(request.Form.Get("stageId"))
 		buffs := request.Form.Get("buffs")
 		logger.SetUid(userId)
@@ -217,7 +217,7 @@ func InitGM(logger fklog.FKLogI) {
 	SafeHttpRegister(logger, "/addRefreshCost", func(writer http.ResponseWriter, request *http.Request) {
 		// 外网线上环境不允许使用GM
 		request.ParseForm()
-		userId := fkutil.ToUint64(request.Form.Get("userid"))
+		userId := fkutil.ToUint64(request.Form.Get("user_id"))
 		itemId := fkutil.ToInt32(request.Form.Get("itemId"))
 		count := fkutil.ToInt64(request.Form.Get("count"))
 		logger.SetUid(userId)

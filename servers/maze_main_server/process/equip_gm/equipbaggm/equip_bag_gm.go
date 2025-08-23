@@ -27,7 +27,7 @@ func Reg(logger fklog.FKLogI) {
 		// 外网线上环境不允许使用GM
 		request.ParseForm()
 
-		userId := fkutil.ToUint64(request.Form.Get("userId"))
+		userId := fkutil.ToUint64(request.Form.Get("user_id"))
 		equipId := fkutil.ToInt32(request.Form.Get("equipId"))
 		ruleId := fkutil.ToInt32(request.Form.Get("ruleId"))
 		subType := fkutil.ToInt32(request.Form.Get("subType"))
@@ -87,7 +87,7 @@ func Reg(logger fklog.FKLogI) {
 		// 外网线上环境不允许使用GM
 		request.ParseForm()
 
-		userId := fkutil.ToUint64(request.Form.Get("userId"))
+		userId := fkutil.ToUint64(request.Form.Get("user_id"))
 
 		err := ClearUserBag(logger, userId)
 		if err != nil {
@@ -481,7 +481,7 @@ func Reg(logger fklog.FKLogI) {
 		// 外网线上环境不允许使用GM
 		request.ParseForm()
 
-		uid := fkutil.ToUint64(request.Form.Get("uid"))
+		uid := fkutil.ToUint64(request.Form.Get("user_id"))
 		equipId := fkutil.ToInt32(request.Form.Get("equipId"))
 		score := fkutil.ToInt32(request.Form.Get("score"))
 
@@ -511,7 +511,7 @@ func Reg(logger fklog.FKLogI) {
 		// 外网线上环境不允许使用GM
 		request.ParseForm()
 
-		uid := fkutil.ToUint64(request.Form.Get("uid"))
+		uid := fkutil.ToUint64(request.Form.Get("user_id"))
 
 		if uid == 0 {
 			writer.Write([]byte("uid 不能为0"))
@@ -566,7 +566,7 @@ func Reg(logger fklog.FKLogI) {
 		// 外网线上环境不允许使用GM
 		request.ParseForm()
 
-		uid := fkutil.ToUint64(request.Form.Get("uid"))
+		uid := fkutil.ToUint64(request.Form.Get("user_id"))
 		param := request.Form.Get("equips")
 		rp := request.Form.Get("rules")
 		if uid <= 0 {
@@ -625,7 +625,7 @@ func Reg(logger fklog.FKLogI) {
 	})
 
 	gm.SafeHttpRegister(logger, "/fixAllEquipAttrLimit", func(writer http.ResponseWriter, request *http.Request) {
-		userId := fkutil.ToUint64(request.Form.Get("userId"))
+		userId := fkutil.ToUint64(request.Form.Get("user_id"))
 		logger.SetUid(userId)
 		e := fixAllEquipAttrLimit(logger, userId)
 		if e == nil {

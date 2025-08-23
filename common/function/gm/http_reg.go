@@ -21,7 +21,7 @@ import (
 	"go.uber.org/zap"
 )
 
-const USER_ID_FIELD = "userId"
+const USER_ID_FIELD = "user_id"
 
 func SafeHttpRegisterBack(logger fklog.FKLogI, pattern string, handler func(http.ResponseWriter, *http.Request)) {
 	appConfig := appconfig.GlobalConfig()
@@ -37,7 +37,7 @@ func SafeHttpRegisterBack(logger fklog.FKLogI, pattern string, handler func(http
 		//	return
 		//}
 
-		logger.WarnWF("execute gm", zap.Uint64("userId", uid),
+		logger.WarnWF("execute gm", zap.Uint64("user_id", uid),
 			zap.String("pattern", pattern), zap.Any("header", request.Header),
 			zap.Any("host", request.Host), zap.Any("remoteAddr", request.RemoteAddr))
 		handler(writer, request)

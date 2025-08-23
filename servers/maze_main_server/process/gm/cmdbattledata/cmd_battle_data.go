@@ -14,18 +14,19 @@ import (
 	"net/http"
 	"time"
 
-	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fklog"
-	"gitlab.ifreetalk.com/maze-plate/freetk/fkutil"
-	"go.uber.org/zap"
 	"maze_game_server/common/function/gm"
 	"maze_game_server/config/GMazeAttributeV8Cfg"
 	"maze_game_server/servers/maze_main_server/process/game"
+
+	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fklog"
+	"gitlab.ifreetalk.com/maze-plate/freetk/fkutil"
+	"go.uber.org/zap"
 )
 
 func RegBattleDataGm(logger fklog.FKLogI) {
 	gm.SafeHttpRegister(logger, "/DumpBattleData", func(writer http.ResponseWriter, request *http.Request) {
 		ctx := request.Context()
-		userId := fkutil.ToUint64(request.Form.Get("userId"))
+		userId := fkutil.ToUint64(request.Form.Get("user_id"))
 		barrierId := fkutil.ToInt32(request.Form.Get("barrierId"))
 		logger.SetLogId(time.Now().UnixNano())
 		logger.SetUid(userId)
