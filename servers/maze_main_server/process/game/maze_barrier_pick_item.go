@@ -7,8 +7,8 @@ import (
 	"google.golang.org/protobuf/proto"
 	"maze_game_server/common/constdef"
 	"maze_game_server/common/errors"
-	"maze_game_server/common/function/gentradeno"
 	"maze_game_server/common/function/itemutil"
+	"maze_game_server/common/tradeno"
 	"maze_game_server/config/GMazeBarriesV8Cfg"
 	"maze_game_server/config/GMazeConfigV8Cfg"
 	"maze_game_server/config/GMazeItemsV8Cfg"
@@ -65,7 +65,7 @@ func (g *Game) OnBarrierPickItemRQ_10527_10528(s *session.Session, req *MazeGame
 	//	equip[eq.GetItemId()] += int32(eq.GetCount())
 	//}
 
-	tradeNo := gentradeno.GetTradeNum()
+	tradeNo := tradeno.GetTradeNum()
 
 	//if len(equip) > 0 {
 	//	_, err = addequip.AddEquipToBagWithOpdata(logger, userId, int32(MazeEquipSvr.ENUM_EQUIP_BAG_OP_TYPE_MAZE_EQUIP_BOX_AWARD), req.GetOpData(), tradeNo, equip)

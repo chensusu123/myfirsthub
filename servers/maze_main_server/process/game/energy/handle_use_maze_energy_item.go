@@ -4,7 +4,7 @@ import (
 	"context"
 	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fkprometheus"
 	"maze_game_server/common/errors"
-	"maze_game_server/common/function/uniqueid"
+	"maze_game_server/common/tradeno"
 	"maze_game_server/io/kafka/mazeenergyrecord"
 	"maze_game_server/lib/log"
 	"maze_game_server/lib/nano/session"
@@ -73,7 +73,7 @@ func (e *Energy) OnUseMazeEnergyItemRQ_10611_10612(s *session.Session, req *Maze
 	//	Count:  proto.Int64(1),
 	//})
 
-	tid := uniqueid.GenUniqueIdUInt64()
+	tid := tradeno.GetTradeNum()
 	careCost := &itemservice.ItemInfo{
 		ItemId: itemId,
 		Count:  1,

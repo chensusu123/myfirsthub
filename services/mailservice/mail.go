@@ -4,7 +4,7 @@ import (
 	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fklog"
 	"go.uber.org/zap"
 	"maze_game_server/common/errors"
-	"maze_game_server/common/function/uniqueid"
+	"maze_game_server/common/tradeno"
 	"maze_game_server/model/mailmodel"
 	"maze_game_server/usecase/online"
 	"sort"
@@ -315,7 +315,7 @@ func newMail(logger fklog.FKLogI, title, context, senderName string, label int32
 		attachments = make([]*mailmodel.Attachment, 0)
 	}
 	return &mailmodel.MailInfo{
-		ID:          uniqueid.GenUniqueIdUInt64(),
+		ID:          tradeno.GetTradeNum(),
 		Title:       title,
 		Content:     context,
 		Label:       label,

@@ -4,8 +4,8 @@ import (
 	"context"
 	"fmt"
 	"maze_game_server/common/errors"
-	"maze_game_server/common/function/gentradeno"
 	"maze_game_server/common/function/itemutil"
+	"maze_game_server/common/tradeno"
 	"maze_game_server/config/GMazeBarriesOnHookV8Cfg"
 	"maze_game_server/io/kafka/mazecollectrecord"
 	"maze_game_server/io/redis/mazecollectredis"
@@ -118,7 +118,7 @@ func (c *Collect) OnMazeCollectItemReceiveRQ_10467_10468(s *session.Session, req
 
 	res.FreshTime = proto.Int64(GetFreshTime(resetCollectInfo))
 
-	tradeNo := gentradeno.GetTradeNum()
+	tradeNo := tradeno.GetTradeNum()
 	items := Map2Common(addItems)
 	awardItems := itemutil.Map2ItemInfo(addItems)
 	errInfo := itemservice.GlobalItemService.AddItem(context.TODO(), userId, itemservice.ItemOpTypeCollect, tradeNo, awardItems...)

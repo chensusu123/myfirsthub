@@ -6,8 +6,8 @@ import (
 	"maze_game_server/common/constdef"
 	"maze_game_server/common/errors"
 	"maze_game_server/common/function/addequip"
-	"maze_game_server/common/function/gentradeno"
 	"maze_game_server/common/function/itemutil"
+	"maze_game_server/common/tradeno"
 	"maze_game_server/config/GMazeItemsV8Cfg"
 	"maze_game_server/lib/log"
 	"maze_game_server/lib/nano/session"
@@ -54,7 +54,7 @@ func (g *Game) OnBarrierOpenBoxRQ_10445_10446(s *session.Session, req *MazeGame.
 	// 通关值
 	res.Kongfu = proto.Int32(kongfu)
 
-	tradeNo := gentradeno.GetTradeNum()
+	tradeNo := tradeno.GetTradeNum()
 
 	// TODO 使用equip,item服务增加奖励
 

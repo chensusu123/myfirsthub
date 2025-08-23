@@ -11,7 +11,7 @@ import (
 	"context"
 	"maze_game_server/common/errors"
 	"maze_game_server/common/function/itemutil"
-	"maze_game_server/common/function/uniqueid"
+	"maze_game_server/common/tradeno"
 	"maze_game_server/config/GMazeRebornCostV8Cfg"
 	"maze_game_server/excel/mazeconfigv8"
 	"maze_game_server/io/kafka/mazerebornkafka"
@@ -130,7 +130,7 @@ func (g *Game) OnMazeBarrierRebornRQ_10461_10462(s *session.Session, req *MazeGa
 		}
 
 		// 扣除消耗
-		tid := uniqueid.GenUniqueIdUInt64()
+		tid := tradeno.GetTradeNum()
 		if len(svrCost) > 0 {
 			// 通用	698	UN_CGK_COMMON_BILL_TYPE_698	迷宫挑战复活		否	马健	2025-03-25 13:48:10
 			items := itemutil.ItemPb2ItemInfo(svrCost)

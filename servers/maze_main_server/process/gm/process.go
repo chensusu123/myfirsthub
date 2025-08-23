@@ -6,6 +6,7 @@ import (
 	"errors"
 	"fmt"
 	"maze_game_server/common/function/itemutil"
+	"maze_game_server/common/tradeno"
 	"maze_game_server/services/itemservice"
 	"net/http"
 	"os"
@@ -21,7 +22,6 @@ import (
 	"maze_game_server/services/barrierenergyservice"
 	"maze_game_server/services/tempbuffservice"
 
-	"maze_game_server/common/function/gentradeno"
 	"maze_game_server/common/function/gm"
 	"maze_game_server/config/GMazeAttributeV8Cfg"
 	"maze_game_server/config/GMazeBarriesV8Cfg"
@@ -372,7 +372,7 @@ func RegGm(logger fklog.FKLogI) {
 			count  = fkutil.ToInt64(request.Form.Get("count"))
 		)
 
-		tradeNo := gentradeno.GetTradeNum()
+		tradeNo := tradeno.GetTradeNum()
 		items := make([]*MazeCommon.MazeItem, 0)
 
 		if userId <= 0 {

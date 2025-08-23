@@ -2,7 +2,7 @@ package barrierservice
 
 import (
 	"maze_game_server/common/errors"
-	"maze_game_server/common/function/uniqueid"
+	"maze_game_server/common/tradeno"
 	"maze_game_server/config/GMazeBarriesV8Cfg"
 	"maze_game_server/io/kafka/mazeenergyrecord"
 	"maze_game_server/module/calsweepbarrier"
@@ -59,7 +59,7 @@ func (b *barrier) SweepBarrier(logger fklog.FKLogI, header *Common.PacketHeader,
 		return
 	}
 	// make gameID
-	gameID = uniqueid.GenUniqueIdUInt64()
+	gameID = tradeno.GetTradeNum()
 
 	energyInfo = &MazeEnergy.EnergyInfo{
 		CurVal:           proto.Int32(remainVal),

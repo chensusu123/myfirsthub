@@ -11,8 +11,6 @@ import (
 
 	"maze_game_server/pb/common/MazeCommon"
 
-	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fkconfig"
-	"gitlab.ifreetalk.com/maze-plate/freetk/fkutil/uniqueid"
 	"google.golang.org/protobuf/proto"
 )
 
@@ -113,15 +111,6 @@ func CheckItemMatchEx(items []*MazeCommon.MazeItem, cost []*MazeCommon.MazeItem)
 	}
 
 	return true
-}
-
-func GetTradeNum() (tradeNum uint64) {
-	m := uniqueid.NewTradeNoMaker(uint64(fkconfig.GetServerConfig().ServerID))
-	if m == nil {
-		return
-	}
-	tradeNum = m.MakeTradeNo()
-	return
 }
 
 // 道具转为字符串

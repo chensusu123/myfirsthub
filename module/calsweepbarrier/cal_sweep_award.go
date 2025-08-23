@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"maze_game_server/common/tradeno"
 	"maze_game_server/model/equipdropmodel"
 	"maze_game_server/services/equipdropservice"
 	"maze_game_server/services/itemservice"
@@ -11,7 +12,6 @@ import (
 
 	"maze_game_server/common/constdef"
 	"maze_game_server/common/function/addequip"
-	"maze_game_server/common/function/gentradeno"
 	"maze_game_server/common/function/itemutil"
 	"maze_game_server/common/function/packtopb/equiptoitem"
 	"maze_game_server/config/GMazeBarriesV8Cfg"
@@ -226,7 +226,7 @@ func CalUserSweepBarrierAward(logger fklog.FKLogI, uid uint64, barrierId int32, 
 		awardItem = append(awardItem, expItem)
 	}
 
-	tradeNo := gentradeno.GetTradeNum()
+	tradeNo := tradeno.GetTradeNum()
 
 	// 发送物品
 	if len(otherItem) > 0 {

@@ -7,8 +7,8 @@ import (
 	"google.golang.org/protobuf/proto"
 	"maze_game_server/common/errors"
 	"maze_game_server/common/function/addequip"
-	"maze_game_server/common/function/gentradeno"
 	"maze_game_server/common/function/itemutil"
+	"maze_game_server/common/tradeno"
 	"maze_game_server/lib/log"
 	"maze_game_server/lib/nano/session"
 	"maze_game_server/model/mailmodel"
@@ -85,7 +85,7 @@ func (g *Mail) OnMazeGetMailAttachmentsRQ_10630_10631(s *session.Session, req *M
 		}
 	}
 
-	tradeNo := gentradeno.GetTradeNum()
+	tradeNo := tradeno.GetTradeNum()
 	if len(equipMap) > 0 {
 		//TODO 差一个邮件领取枚举，看业务是否需要邮件支持发装备附件
 		_, err := addequip.AddEquipToBag(logger, userId, int32(MazeEquipSvr.ENUM_EQUIP_BAG_OP_TYPE_MAZE_EQUIP_SWEEP_AWARD), tradeNo, equipMap)

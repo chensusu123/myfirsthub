@@ -6,9 +6,9 @@ import (
 	"fmt"
 	"maze_game_server/common/errors"
 	"maze_game_server/common/function/addequip"
-	"maze_game_server/common/function/gentradeno"
 	"maze_game_server/common/function/itemutil"
 	"maze_game_server/common/function/maputil"
+	"maze_game_server/common/tradeno"
 	"maze_game_server/config/GMazeItemsV8Cfg"
 	"maze_game_server/io/kafka/dollmazefoekafka"
 	"maze_game_server/lib/log"
@@ -58,7 +58,7 @@ func (g *Game) OnBarrierMonsterDeathRQ_10498_10499(s *session.Session, req *Maze
 	// 通关值
 	res.Kongfu = proto.Int32(kongfu)
 
-	tradeNo := gentradeno.GetTradeNum()
+	tradeNo := tradeno.GetTradeNum()
 
 	// TODO 使用equip,item服务增加奖励
 

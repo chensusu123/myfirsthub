@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"maze_game_server/common/function/fileio"
 	"maze_game_server/common/function/gm"
-	"maze_game_server/common/function/uniqueid"
+	"maze_game_server/common/tradeno"
 	"maze_game_server/config/GMazeEquipInfoV8Cfg"
 	"maze_game_server/io/redis/dollassemblesuitredis"
 	"maze_game_server/io/redis/mazebagequipredis"
@@ -73,7 +73,7 @@ func Reg(logger fklog.FKLogI) {
 		req.EquipList = append(req.EquipList, equipInfo)
 		res := &MazeEquipSvr.SvrAddMazeEquipRS{}
 		req.OpType = proto.Int32(int32(MazeEquipSvr.ENUM_EQUIP_BAG_OP_TYPE_MAZE_EQUIP_FOE))
-		req.TradeNumber = proto.Uint64(uniqueid.GenUniqueIdUInt64())
+		req.TradeNumber = proto.Uint64(tradeno.GetTradeNum())
 		err := dollequipbagrpc.MazeBagAddRQ(logger, req, res)
 		if err != nil {
 			writer.Write([]byte(err.Error()))
@@ -615,7 +615,7 @@ func Reg(logger fklog.FKLogI) {
 		req.EquipList = append(req.EquipList, equipConds...)
 		res := &MazeEquipSvr.SvrAddMazeEquipRS{}
 		req.OpType = proto.Int32(int32(MazeEquipSvr.ENUM_EQUIP_BAG_OP_TYPE_MAZE_EQUIP_FOE))
-		req.TradeNumber = proto.Uint64(uniqueid.GenUniqueIdUInt64())
+		req.TradeNumber = proto.Uint64(tradeno.GetTradeNum())
 		err := dollequipbagrpc.MazeBagAddRQ(logger, req, res)
 		if err != nil {
 			writer.Write([]byte(err.Error()))

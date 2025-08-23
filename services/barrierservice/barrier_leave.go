@@ -5,9 +5,9 @@ import (
 	"maze_game_server/common/constdef"
 	"maze_game_server/common/errors"
 	"maze_game_server/common/function/addequip"
-	"maze_game_server/common/function/gentradeno"
 	"maze_game_server/common/function/itemutil"
 	"maze_game_server/common/function/packtopb/equiptoitem"
+	"maze_game_server/common/tradeno"
 	"maze_game_server/config/GMazeActionCountV8Cfg"
 	"maze_game_server/config/GMazeBarriesV8Cfg"
 	"maze_game_server/config/GMazeConfigV8Cfg"
@@ -156,7 +156,7 @@ func (b *barrier) BarrierPass(logger fklog.FKLogI, header *Common.PacketHeader, 
 		logger.ErrorWF("BarrierPass GetBarrierPassAwardWithFirst fail", zap.Error(err), zap.Any("barrier", barrierID))
 	} else {
 		//696	UN_CGK_COMMON_BILL_TYPE_696	迷宫通关
-		tradeNo := gentradeno.GetTradeNum()
+		tradeNo := tradeno.GetTradeNum()
 		if len(awardMap) > 0 {
 			awardItems := itemutil.Map2Common(awardMap)
 			itemList := itemutil.Map2ItemInfo(awardMap)
@@ -293,7 +293,7 @@ func (b *barrier) BarrierDeath(logger fklog.FKLogI, header *Common.PacketHeader,
 
 	// 发送道具和装备奖励
 	// 发送道具和装备奖励
-	tradeNo := gentradeno.GetTradeNum()
+	tradeNo := tradeno.GetTradeNum()
 	otherItem := make([]*MazeCommon.MazeItem, 0)
 	if len(realItem) > 0 {
 		awardItems := itemutil.Map2Common(realItem)

@@ -6,8 +6,8 @@ import (
 	"go.uber.org/zap"
 	"google.golang.org/protobuf/proto"
 	"maze_game_server/common/constdef"
-	"maze_game_server/common/function/gentradeno"
 	"maze_game_server/common/jwt"
+	"maze_game_server/common/tradeno"
 	"maze_game_server/config/GMazeChargeV8Cfg"
 	"maze_game_server/pb/common/MazePay"
 	"maze_game_server/services/itemservice"
@@ -81,7 +81,7 @@ func RegPayDelivery(logger fklog.FKLogI) {
 			}
 			// 要优化：发货逻辑和订单状态修改不是事务的，所以存在极限情况多发货  例如：发货后，服务挂掉，支付服务器没收到发货回复认为没有发货成功，将进行发货重试
 			// todo 充值表要调整可能，目前没法通过maze_charge_v8找到具体的道具id,就临时用rmb的数量了
-			tradeNo := gentradeno.GetTradeNum()
+			tradeNo := tradeno.GetTradeNum()
 			item := &itemservice.ItemInfo{
 				ItemId: constdef.MazeCommonItemDiamond,
 				Count:  int64(chargeCfg.Currency_num),

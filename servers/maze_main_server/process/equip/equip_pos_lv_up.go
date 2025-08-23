@@ -3,6 +3,7 @@ package equip
 import (
 	"context"
 	"fmt"
+	"maze_game_server/common/tradeno"
 	"maze_game_server/services/itemservice"
 	"strings"
 
@@ -12,7 +13,6 @@ import (
 	"maze_game_server/common/function/excelutil"
 	"maze_game_server/common/function/itemutil"
 	"maze_game_server/common/function/maputil"
-	"maze_game_server/common/function/uniqueid"
 	"maze_game_server/common/structsdef"
 	"maze_game_server/config/GMazeEquipPosLvSuiteV8Cfg"
 	"maze_game_server/config/GMazeEquipPosLvV8Cfg"
@@ -217,7 +217,7 @@ func (e *Equip) OnEquipPosLvUpRQ_10425_10426(s *session.Session, rq *MazeEquipPo
 	}
 
 	// 扣物品
-	tid := uniqueid.GenUniqueIdUInt64()
+	tid := tradeno.GetTradeNum()
 	if len(careCost) > 0 {
 		// 通用	693	UN_CGK_COMMON_BILL_TYPE_693	迷宫装备位强化		否	马健	2025-03-22 17:28:42
 		items := itemutil.ItemPb2ItemInfo(careCost)

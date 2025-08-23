@@ -6,7 +6,7 @@ import (
 	"maze_game_server/common/constdef"
 	"maze_game_server/common/errors"
 	"maze_game_server/common/function/itemutil"
-	"maze_game_server/common/function/uniqueid"
+	"maze_game_server/common/tradeno"
 	"maze_game_server/config/GMazeEquipInfoV8Cfg"
 	"maze_game_server/excel/toastmsgtipexcel"
 	"maze_game_server/io/kafka/dollequipdismantlekafka"
@@ -159,7 +159,7 @@ func (e *Equip) OnDollEquipDismantleRQ_10410_10411(s *session.Session, req *Maze
 		res.DismantleAward = awardItems
 	}
 
-	tradeNo := uniqueid.GenUniqueIdUInt64()
+	tradeNo := tradeno.GetTradeNum()
 	// 分解装备
 	rqSale := &MazeEquipSvr.SvrMazeEquipSaleRQ{
 		UserId:     proto.Uint64(userId),

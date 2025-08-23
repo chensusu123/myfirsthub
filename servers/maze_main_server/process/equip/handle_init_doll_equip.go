@@ -9,8 +9,8 @@ package equip
 import (
 	"maze_game_server/common/constdef"
 	"maze_game_server/common/errors"
-	"maze_game_server/common/function/uniqueid"
 	"maze_game_server/common/structsdef"
+	"maze_game_server/common/tradeno"
 	"maze_game_server/config/GMazeConfigV8Cfg"
 	"maze_game_server/config/GMazeEquipConfigV8Cfg"
 	"maze_game_server/config/GMazeEquipInfoV8Cfg"
@@ -188,7 +188,7 @@ func doInitDollEquip(logger fklog.FKLogI, userId uint64, state int64, equips map
 
 // 添加初始化装备到背包
 func addInitEquipToBag(logger fklog.FKLogI, userId uint64, equips map[int32]int64) (err error) {
-	tradeNo := uniqueid.GenUniqueIdUInt64()
+	tradeNo := tradeno.GetTradeNum()
 	rqAdd := &MazeEquipSvr.SvrAddMazeEquipRQ{
 		UserId:      proto.Uint64(userId),
 		OpType:      proto.Int32(int32(MazeEquipSvr.ENUM_EQUIP_BAG_OP_TYPE_MAZE_INIT_EQUIP)),
