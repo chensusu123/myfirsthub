@@ -36,6 +36,7 @@ import (
 	"maze_game_server/usecase/online"
 
 	"github.com/gorilla/schema"
+	"github.com/iancoleman/orderedmap"
 	"github.com/xuri/excelize/v2"
 	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fklog"
 	"gitlab.ifreetalk.com/maze-plate/freetk/fkserver/appconfig"
@@ -405,21 +406,27 @@ func RegGm(logger fklog.FKLogI) {
 		fmt.Fprintf(writer, "添加[%d]个道具[%s]成功", count, itemCfg.Prop_name)
 	})
 
+	// 注册获取Excel文件列表的HTTP接口
 	gm.SafeHttpRegister(logger, "/GetExcelList", func(writer http.ResponseWriter, request *http.Request) {
-		entires, err := os.ReadDir("./conf.d/data")
+		entries, err := os.ReadDir("./conf.d/data")
 		if err != nil {
 			writer.Write([]byte(err.Error()))
 			return
 		}
 
-		var records []map[string]interface{}
-		for _, entry := range entires {
-			if strings.Contains(entry.Name(), "black_excel") || strings.Contains(entry.Name(), "column_relation") || strings.Contains(entry.Name(), "git_version_v8") {
+		var records []*orderedmap.OrderedMap // 改为有序map切片
+		for _, entry := range entries {
+			// 过滤不需要的文件
+			if strings.Contains(entry.Name(), "black_excel") ||
+				strings.Contains(entry.Name(), "column_relation") ||
+				strings.Contains(entry.Name(), "git_version_v8") {
 				continue
 			}
-			descRecord := make(map[string]interface{})
+
+			// 只处理xlsx文件
 			if strings.ToLower(filepath.Ext(entry.Name())) == ".xlsx" {
-				descRecord["excel"] = entry.Name()
+				descRecord := orderedmap.New()        // 使用有序map
+				descRecord.Set("excel", entry.Name()) // 按顺序设置键值对
 				records = append(records, descRecord)
 			}
 		}
@@ -428,19 +435,23 @@ func RegGm(logger fklog.FKLogI) {
 			Status: 0,
 			Desc:   "",
 			Data: DynamicData{
-				List:  records,
+				List:  records, // 适配有序map类型
 				Total: len(records),
 			},
 		}
+
+		// 使用orderedmap的MarshalJSON方法确保顺序
 		jsonOutput, err := json.Marshal(output)
 		if err != nil {
 			writer.Write([]byte(err.Error()))
 			return
 		}
 
+		writer.Header().Set("Content-Type", "application/json")
 		writer.Write(jsonOutput)
 	})
 
+	// 注册获取Excel工作表列表的HTTP接口
 	gm.SafeHttpRegister(logger, "/GetExcelSheet", func(writer http.ResponseWriter, request *http.Request) {
 		fileName := request.Form.Get("fileName")
 		sheets, err := GetSheets("./conf.d/data/" + fileName)
@@ -449,10 +460,10 @@ func RegGm(logger fklog.FKLogI) {
 			return
 		}
 
-		var records []map[string]interface{}
+		var records []*orderedmap.OrderedMap // 改为有序map切片
 		for _, sheet := range sheets {
-			descRecord := make(map[string]interface{})
-			descRecord["sheetName"] = sheet
+			descRecord := orderedmap.New()     // 使用有序map
+			descRecord.Set("sheetName", sheet) // 按顺序设置键值对
 			records = append(records, descRecord)
 		}
 
@@ -460,16 +471,19 @@ func RegGm(logger fklog.FKLogI) {
 			Status: 0,
 			Desc:   "",
 			Data: DynamicData{
-				List:  records,
+				List:  records, // 适配有序map类型
 				Total: len(records),
 			},
 		}
+
+		// 使用orderedmap的MarshalJSON方法确保顺序
 		jsonOutput, err := json.Marshal(output)
 		if err != nil {
 			writer.Write([]byte(err.Error()))
 			return
 		}
 
+		writer.Header().Set("Content-Type", "application/json")
 		writer.Write(jsonOutput)
 	})
 
@@ -542,7 +556,7 @@ func readExcelFile(filePath, sheetName string) ([][]string, error) {
 	return rows, nil
 }
 
-// 转换任意行列数的表格数据为指定JSON格式
+// 转换任意行列数的表格数据为指定JSON格式（保持对象格式和顺序）
 func convertTableToJSON(table [][]string) ExcelOutput {
 	if len(table) < 4 {
 		return ExcelOutput{
@@ -561,40 +575,41 @@ func convertTableToJSON(table [][]string) ExcelOutput {
 		}
 	}
 
-	var records []map[string]interface{}
+	var records []*orderedmap.OrderedMap
 
-	typeRow := table[1]
-	typeRecord := make(map[string]interface{})
+	// 处理类型行（第二行）
+	typeRecord := orderedmap.New()
 	for i, key := range keys {
-		if i < len(typeRow) {
-			typeRecord[key] = typeRow[i]
-		} else {
-			typeRecord[key] = ""
+		val := ""
+		if i < len(table[1]) {
+			val = table[1][i]
 		}
+		typeRecord.Set(key, val) // 按顺序插入键值对
 	}
 	records = append(records, typeRecord)
 
-	descRow := table[3]
-	descRecord := make(map[string]interface{})
+	// 处理描述行（第四行）
+	descRecord := orderedmap.New()
 	for i, key := range keys {
-		if i < len(descRow) {
-			descRecord[key] = descRow[i]
-		} else {
-			descRecord[key] = ""
+		val := ""
+		if i < len(table[3]) {
+			val = table[3][i]
 		}
+		descRecord.Set(key, val) // 按顺序插入键值对
 	}
 	records = append(records, descRecord)
 
+	// 处理数据行（从第五行开始）
 	for i := 4; i < len(table); i++ {
 		dataRow := table[i]
-		dataRecord := make(map[string]interface{})
+		dataRecord := orderedmap.New()
 
 		for j, key := range keys {
+			val := ""
 			if j < len(dataRow) {
-				dataRecord[key] = dataRow[j]
-			} else {
-				dataRecord[key] = ""
+				val = dataRow[j]
 			}
+			dataRecord.Set(key, val) // 按顺序插入键值对
 		}
 
 		records = append(records, dataRecord)
@@ -616,7 +631,8 @@ type ExcelOutput struct {
 	Data   DynamicData `json:"data"`
 }
 
+// 调整DynamicData以使用有序map
 type DynamicData struct {
-	List  []map[string]interface{} `json:"list"`
+	List  []*orderedmap.OrderedMap `json:"list"` // 有序map切片，保证对象格式和顺序
 	Total int                      `json:"total"`
 }

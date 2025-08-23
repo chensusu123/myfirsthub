@@ -13,13 +13,13 @@ ENV_CONFIG = {
         "redis_host": "10.101.110.239",
         "redis_port": 65001,
         "http_url": "https://test-reg.midudutech.com/user/register/mail",
-        "gm_url_template": "http://test-gm.midudutech.com/s5/%s/generateUser?AuthId=%s"
+        "gm_url_template": "http://test-gm.midudutech.com/s5/%s/generateUser?user_id=%s"
     },
     "play": {
         "redis_host": "10.101.110.239",
         "redis_port": 65002,
         "http_url": "https://play-reg.midudutech.com/user/register/mail",
-        "gm_url_template": "http://play-gm.midudutech.com/s4/%s/generateUser?AuthId=%s"
+        "gm_url_template": "http://play-gm.midudutech.com/s4/%s/generateUser?user_id=%s"
     }
 }
 

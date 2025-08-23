@@ -500,6 +500,8 @@ github.com/hertz-contrib/pprof v0.1.2/go.mod h1:OKXw5wCUcy1OVwgQLsoCS9JzfcdjoofP
 github.com/hertz-contrib/websocket v0.2.0 h1:ulY/VRHr4iQQ9A0JjdX04Vmz/z5tbsJHIExftF4HTfk=
 github.com/hertz-contrib/websocket v0.2.0/go.mod h1:+xUh5RJ1uaWiKKU5gKy+0iBw7TrcdS1HZbt5RBoK0iI=
 github.com/hpcloud/tail v1.0.0/go.mod h1:ab1qPbhIpdTxEkNHXyeSf5vhxWSCs/tWer42PpOxQnU=
+github.com/iancoleman/orderedmap v0.3.0 h1:5cbR2grmZR/DiVt+VJopEhtVs9YGInGIxAoMJn+Ichc=
+github.com/iancoleman/orderedmap v0.3.0/go.mod h1:XuLcCUkdL5owUCQeF2Ue9uuw1EptkJDkXXS7VoV7XGE=
 github.com/ianlancetaylor/demangle v0.0.0-20181102032728-5e5cf60278f6/go.mod h1:aSSvb/t6k1mPoxDqO4vJh6VOCGPwU4O0C2/Eqndh1Sc=
 github.com/ianlancetaylor/demangle v0.0.0-20200824232613-28f6c0f3b639/go.mod h1:aSSvb/t6k1mPoxDqO4vJh6VOCGPwU4O0C2/Eqndh1Sc=
 github.com/ianlancetaylor/demangle v0.0.0-20210905161508-09a460cdf81d/go.mod h1:aYm2/VgdVmcIU8iMfdMvDMsRAQjcfZSKFby6HOFvi/w=
@@ -776,8 +778,6 @@ github.com/yuin/goldmark v1.3.5/go.mod h1:mwnBkeHKe2W/ZEtQ+71ViKU8L12m81fl3OWwC1
 github.com/yuin/goldmark v1.4.13/go.mod h1:6yULJ656Px+3vBD8DxQVa3kxgyrAnzto9xy5taEt/CY=
 gitlab.ifreetalk.com/maze-plate/extra v1.0.1-0.20250401060651-722653168d37 h1:lyB5pFQppuBFwhWaEaJN54c9dNnKVjoJoS9ZMezSfhc=
 gitlab.ifreetalk.com/maze-plate/extra v1.0.1-0.20250401060651-722653168d37/go.mod h1:ZHwfNF+727RvJctXbXHW/8kdkKBMIyUNHgUdwjqZ9E0=
-gitlab.ifreetalk.com/maze-plate/freetk v1.0.1-0.20250822061415-ca9bd04b0150 h1:GBlZ5KujGkIkBw4OGzb7nXWmQ+ymPZ12spNUAbKkqos=
-gitlab.ifreetalk.com/maze-plate/freetk v1.0.1-0.20250822061415-ca9bd04b0150/go.mod h1:lknJXjYuFqg/hFhpx0kb6y7KzkQpqX4TtSZGVy0h2q8=
 gitlab.ifreetalk.com/maze-plate/freetk v1.0.1-0.20250822084315-023fa4c12e44 h1:BfrEMqiAgWYG7izOxCMA6V3qry9hrVcnosSb2dWHsvY=
 gitlab.ifreetalk.com/maze-plate/freetk v1.0.1-0.20250822084315-023fa4c12e44/go.mod h1:lknJXjYuFqg/hFhpx0kb6y7KzkQpqX4TtSZGVy0h2q8=
 gitlab.ifreetalk.com/nano-ecosystem/fklog v0.0.0-20250813072008-4577841956ed h1:vi1Miaxky3Agh7JC3t6LP6/BBfEA5AdYXf6QdGzevUA=

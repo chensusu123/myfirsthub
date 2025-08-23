@@ -82,6 +82,7 @@ require (
 	github.com/hertz-contrib/obs-opentelemetry/provider v0.3.0 // indirect
 	github.com/hertz-contrib/obs-opentelemetry/tracing v0.4.1 // indirect
 	github.com/hertz-contrib/pprof v0.1.2 // indirect
+	github.com/iancoleman/orderedmap v0.3.0 // indirect
 	github.com/jinzhu/inflection v1.0.0 // indirect
 	github.com/jinzhu/now v1.1.5 // indirect
 	github.com/jmoiron/sqlx v1.4.0 // indirect
