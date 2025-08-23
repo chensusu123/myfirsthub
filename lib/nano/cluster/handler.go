@@ -42,6 +42,7 @@ import (
 	"maze_game_server/lib/nano/internal/log"
 	"maze_game_server/lib/nano/internal/message"
 	"maze_game_server/lib/nano/internal/packet"
+	"maze_game_server/lib/nano/nanometrics"
 	"maze_game_server/lib/nano/pipeline"
 	"maze_game_server/lib/nano/scheduler"
 	"maze_game_server/lib/nano/serialize"
@@ -120,6 +121,7 @@ type LocalHandler struct {
 	// Custom packet encoder/decoder
 	pcodec    frame.PacketCodec
 	taskCount atomic.Int64
+	userCount atomic.Int64
 }
 
 func NewHandler(currentNode *Node, pipeline pipeline.Pipeline, pcodec frame.PacketCodec) *LocalHandler {
@@ -216,6 +218,12 @@ func (h *LocalHandler) RemoteService() []string {
 }
 
 func (h *LocalHandler) handle(conn net.Conn, r *http.Request, pcodec frame.PacketCodec) {
+	uerCount := h.userCount.Add(1)
+	nanometrics.UserCountGauge.Set(float64(uerCount))
+	defer func() {
+		uerCount = h.userCount.Add(-1)
+		nanometrics.UserCountGauge.Set(float64(uerCount))
+	}()
 	// Select a packet codec
 	if pcodec == nil {
 		pcodec = h.pcodec
