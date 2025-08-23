@@ -1,13 +1,13 @@
 package mazemoneykafka
 
 import (
-	"time"
-
+	"context"
 	"maze_game_server/io/dispatcher"
 	"maze_game_server/io/kafka/kafkacommonstruct"
+	"maze_game_server/model/flowmodel/mazemoneyrecordmodel"
+	"maze_game_server/services/flowservice"
 
 	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fklog"
-	"go.uber.org/zap"
 )
 
 // var json = jsoniter.ConfigCompatibleWithStandardLibrary
@@ -40,15 +40,17 @@ func Watch(fn func(logger fklog.FKLogI, msg *MazeMoneyRecord)) {
 	d.Watch(fn)
 }
 
+// 流水打点使用
 func PushMazeMoneyRecord(agent fklog.FKLogI, record *MazeMoneyRecord) error {
-	record.CreateTime = time.Now().UnixNano() / 1e6
+	flowData := mazemoneyrecordmodel.NewMazeMoneyRecord(record.UserId, record.OldMoneyId, record.OldMoneyCount, record.NewMoneyId, record.NewMoneyCount, record.TradeNo, record.ChgReason)
+	flowservice.GflowService.SendFlowData(context.TODO(), flowData)
 	// record.GroupID = fkconfig.EnvVal.GroupID
 	// cnt, err := json.Marshal(record)
 	// if err != nil {
 	// 	return err
 	// }
-	d.Push(agent, record)
-	agent.InfoWF("PushMazeMoneyRecord data", zap.Any("userId", record.UserId), zap.Any("record", record))
+	// d.Push(agent, record)
+	// agent.InfoWF("PushMazeMoneyRecord data", zap.Any("userId", record.UserId), zap.Any("record", record))
 	// return gKafka.SendWithUserID(record.UserId, cnt)
 	return nil
 }

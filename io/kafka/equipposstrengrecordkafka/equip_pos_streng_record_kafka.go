@@ -1,15 +1,15 @@
 package equipposstrengrecordkafka
 
 import (
-	"time"
-
+	"context"
 	"maze_game_server/common/function/itemutil"
 	"maze_game_server/io/dispatcher"
 	"maze_game_server/io/kafka/kafkacommonstruct"
+	"maze_game_server/model/flowmodel/mazeequipposleveluprecordmodel"
 	"maze_game_server/pb/common/MazeCommon"
+	"maze_game_server/services/flowservice"
 
 	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fklog"
-	"go.uber.org/zap"
 )
 
 type KafkaCommon = kafkacommonstruct.KafkaCommon
@@ -52,25 +52,12 @@ func Watch(fn func(logger fklog.FKLogI, msg *EquipPosLevelUpRecord)) {
 // return logCli.SendWithUserID(data.UserId, msg)
 // }
 
+// 流水打点使用
 func PushEquipPosStrengRecord(logger fklog.FKLogI, userId uint64, posId,
 	oldPosLv, newPosLv, oldPosSuitId, newPosSuitId int32, tradeNo uint64, items []*MazeCommon.MazeItem, result, mask int32,
 ) error {
-	data := &EquipPosLevelUpRecord{
-		UserId: userId,
-		// GroupId:      fkconfig.EnvVal.GroupID,
-		OpTime:       time.Now().UnixMilli(),
-		PosId:        posId,
-		OldPosLv:     oldPosLv,
-		NewPosLv:     newPosLv,
-		OldPosSuitId: oldPosSuitId,
-		NewPosSuitId: newPosSuitId,
-		// OldPkLv:      oldPkLv,
-		// NewPkLv:      newPkLv,
-		TradeNo:   tradeNo,
-		CostItems: itemutil.CommonItemsToString(items),
-		Result:    result,
-	}
-	logger.InfoWF("PushEquipPosStrengRecord", zap.Any("data", data))
-	d.Push(logger, data)
+	flowData := mazeequipposleveluprecordmodel.NewEquipPosLevelUpRecord(userId, posId, oldPosLv, newPosLv, oldPosSuitId, newPosSuitId,
+		tradeNo, itemutil.CommonItemsToString(items), result)
+	flowservice.GflowService.SendFlowData(context.TODO(), flowData)
 	return nil
 }

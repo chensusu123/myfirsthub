@@ -1,13 +1,13 @@
 package dollmazefoekafka
 
 import (
-	"time"
-
+	"context"
 	"maze_game_server/io/dispatcher"
 	"maze_game_server/io/kafka/kafkacommonstruct"
+	"maze_game_server/model/flowmodel/mazefoerecordmodel"
+	"maze_game_server/services/flowservice"
 
 	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fklog"
-	"go.uber.org/zap"
 )
 
 // var json = jsoniter.ConfigCompatibleWithStandardLibrary
@@ -42,15 +42,9 @@ func Watch(fn func(logger fklog.FKLogI, msg *DollMazeFoeRecord)) {
 	d.Watch(fn)
 }
 
+// 流水打点使用
 func PushDollMazeFoeRecord(agent fklog.FKLogI, record *DollMazeFoeRecord) error {
-	record.CreateTime = time.Now().UnixNano() / 1e6
-	// record.GroupID = fkconfig.EnvVal.GroupID
-	// cnt, err := json.Marshal(record)
-	// if err != nil {
-	// return err
-	// }
-	d.Push(agent, record)
-	agent.InfoWF("PushDollMazeFoeRecord data", zap.Any("userId", record.UserId), zap.Any("record", record))
-	// return gKafka.SendWithUserID(record.UserId, cnt)
+	flowData := mazefoerecordmodel.NewDollMazeFoeRecord(record.UserId, record.Barrier, record.Area, record.Level, record.AwardList, record.Equips, record.EquipPoints, record.MasterId)
+	flowservice.GflowService.SendFlowData(context.TODO(), flowData)
 	return nil
 }

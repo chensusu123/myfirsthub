@@ -1,13 +1,14 @@
 package dollequipdismantlekafka
 
 import (
-	"time"
+	"context"
 
 	"maze_game_server/io/dispatcher"
 	"maze_game_server/io/kafka/kafkacommonstruct"
+	"maze_game_server/model/flowmodel/mazeequipdismantrecordmodel"
+	"maze_game_server/services/flowservice"
 
 	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fklog"
-	"go.uber.org/zap"
 )
 
 const (
@@ -48,15 +49,10 @@ func Watch(fn func(logger fklog.FKLogI, msg *MazeGameEquipDismantleRecord)) {
 	d.Watch(fn)
 }
 
+// 流水打点使用
 func PushDollEquipDismantleRecord(agent fklog.FKLogI, record *MazeGameEquipDismantleRecord) error {
-	record.CreateTime = time.Now().UnixNano() / 1e6
-	// record.GroupID = fkconfig.EnvVal.GroupID
-	// cnt, err := json.Marshal(record)
-	// if err != nil {
-	// 	return err
-	// }
-	// return gKafka.SendWithUserID(record.UserId, cnt)
-	d.Push(agent, record)
-	agent.InfoWF("PushDollEquipDismantleRecord data", zap.Any("userId", record.UserId), zap.Any("record", record))
+	flowData := mazeequipdismantrecordmodel.NewMazeGameEquipDismantleRecord(record.UserId, record.EquipGuids, record.TradeNum, record.Award, record.OpType, record.IsFail)
+	flowservice.GflowService.SendFlowData(context.TODO(), flowData)
+	// agent.InfoWF("PushDollEquipDismantleRecord data", zap.Any("userId", record.UserId), zap.Any("record", record))
 	return nil
 }

@@ -1,10 +1,13 @@
 package mazeuserlevelkafka
 
 import (
+	"context"
 	"time"
 
 	"maze_game_server/io/dispatcher"
 	"maze_game_server/io/kafka/kafkacommonstruct"
+	"maze_game_server/model/flowmodel/mazeuserlevelrecordmodel"
+	"maze_game_server/services/flowservice"
 
 	jsoniter "github.com/json-iterator/go"
 	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fklog"
@@ -34,6 +37,7 @@ func init() {
 	// fkconfig.RegisterNameNode("mazeuserlevelkafka", 1001084, gKafka)
 }
 
+// 流水和通知均使用
 func PushMazeLevelRecord(agent fklog.FKLogI, record *MazeUserLevelRecord) error {
 	record.CreateTime = time.Now().UnixNano() / 1e6
 	// record.GroupID = fkconfig.EnvVal.GroupID
@@ -41,6 +45,10 @@ func PushMazeLevelRecord(agent fklog.FKLogI, record *MazeUserLevelRecord) error 
 	// if err != nil {
 	// 	return err
 	// }
+
+	flowData := mazeuserlevelrecordmodel.NewMazeUserLevelRecord(record.UserId, record.OldLevel, record.OldTotalExp, record.NewLevel, record.NewTotalExp)
+	flowservice.GflowService.SendFlowData(context.TODO(), flowData)
+
 	agent.InfoWF("PushMazeLevelRecord data", zap.Any("userId", record.UserId), zap.Any("record", record))
 
 	// ctx := context.TODO()

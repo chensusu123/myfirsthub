@@ -1,10 +1,14 @@
 package mazetempbuffchgmsg
 
 import (
+	"context"
+	"fmt"
 	"time"
 
 	"maze_game_server/io/dispatcher"
 	"maze_game_server/io/kafka/kafkacommonstruct"
+	"maze_game_server/model/flowmodel/mazetempbuffchangerecordmodel"
+	"maze_game_server/services/flowservice"
 
 	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fklog"
 	"go.uber.org/zap"
@@ -45,10 +49,14 @@ func init() {
 	// _ = fkconfig.RegisterNameNode("mazeTempBuffChangeKafka", 1001104, mazeTempBuffChangeKafka)
 }
 
+// 流水和通知均使用
 func PushTempBuffChangeMsg(logger fklog.FKLogI, msg *MazeTempBuffChangeMsg) error {
 	if msg.CreateTime == 0 {
 		msg.CreateTime = time.Now().UnixNano() / 1000000
 	}
+
+	flowData := mazetempbuffchangerecordmodel.NewMazeTempBuffChangeMsg(msg.UserId, msg.StageId, Buff2String(msg.ChgAttrs), msg.ChgType, msg.ChgDesc)
+	flowservice.GflowService.SendFlowData(context.TODO(), flowData)
 	// cnt, err := json.Marshal(msg)
 	// if err != nil {
 	// 	logger.ErrorWF("PushTempBuffChangeMsg marshal failed", zap.Uint64("uid", msg.UserId), zap.Error(err))
@@ -68,4 +76,16 @@ func PushTempBuffChangeMsg(logger fklog.FKLogI, msg *MazeTempBuffChangeMsg) erro
 
 func Watch(fn func(logger fklog.FKLogI, msg *MazeTempBuffChangeMsg)) {
 	d.Watch(fn)
+}
+
+func Buff2String(buff []*AttrChgInfo) string {
+	res := ""
+	for _, val := range buff {
+		if res == "" {
+			res = fmt.Sprintf("%d:%d:%d", val.AttrId, val.OldVal, val.CurVal)
+		}
+		res = fmt.Sprintf("%s_%d:%d:%d", res, val.AttrId, val.OldVal, val.CurVal)
+	}
+	return res
+
 }

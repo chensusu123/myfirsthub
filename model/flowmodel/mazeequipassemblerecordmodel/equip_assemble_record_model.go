@@ -1,29 +1,10 @@
-package dollequipassmeblekakfa
+package mazeequipassemblerecordmodel
 
 import (
-	"context"
-	"maze_game_server/io/dispatcher"
 	"maze_game_server/io/kafka/kafkacommonstruct"
-	"maze_game_server/model/flowmodel/mazeequipassemblerecordmodel"
-	"maze_game_server/services/flowservice"
-
-	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fklog"
+	"maze_game_server/io/mysql"
+	"strings"
 )
-
-var d = dispatcher.NewDispatcher[*MazeGameEquipAssembleRecord]()
-
-func Watch(fn func(logger fklog.FKLogI, msg *MazeGameEquipAssembleRecord)) {
-	d.Watch(fn)
-}
-
-// var kp = &fkafka.KafkaProducer{}
-// var json = jsoniter.ConfigCompatibleWithStandardLibrary
-
-func init() {
-	// 1001087 topic-maze-game-equip-assemble-chg-record 迷宫游戏装备装配流水
-	// 3548  db_doll_equip_assemble_chg_log 人偶装备装配流水
-	// fkconfig.RegisterNameNode("dollequipassmeblekakfa", 1001087, kp)
-}
 
 const (
 	DollEquipAssembleOpDress    int32 = 1    // 穿戴装备
@@ -36,10 +17,11 @@ const (
 
 type KafkaCommon = kafkacommonstruct.KafkaCommon
 
+const MazeEquipAssembleRecordTableName = "maze_equip_assemble_record"
+
 type MazeGameEquipAssembleRecord struct {
 	KafkaCommon
 	UserId     uint64 `json:"user_id" gorm:"column:user_id"`           // 用户Id
-	GroupId    uint32 `json:"group_id" gorm:"column:group_id"`         // 分组ID  当时服务分片所属分组
 	EquipPos   int32  `json:"equip_pos" gorm:"column:equip_pos"`       // 装备位ID
 	OpType     int32  `json:"op_type" gorm:"column:op_type"`           // 穿戴装备/更换装备/卸下装备
 	NewEquipId int32  `json:"new_equip_id" gorm:"column:new_equip_id"` // 穿戴装备配置ID
@@ -51,13 +33,27 @@ type MazeGameEquipAssembleRecord struct {
 	RetCode    int32  `json:"ret_code" gorm:"column:ret_code"`         // 0:成功  其他失败
 	CodeMask   int32  `json:"code_mask" gorm:"column:code_mask"`       // 业务掩码
 	TransID    uint64 `json:"trans_id" gorm:"column:trans_id"`         // 事务Id
-	OpTime     int64  `json:"create_time" gorm:"column:create_time"`   // 流水时间戳
 }
 
-// 流水打点使用
-func SendMazeGameEquipAssembleRecord(logger fklog.FKLogI, record *MazeGameEquipAssembleRecord) error {
-	flowData := mazeequipassemblerecordmodel.NewMazeGameEquipAssembleRecord(record.UserId, record.EquipPos, record.OpType, record.NewEquipId, record.NewGuid, record.OldEquipId, record.OldGuid,
-		record.OldFElem, record.NewFElem, record.RetCode, record.CodeMask, record.TransID)
-	flowservice.GflowService.SendFlowData(context.TODO(), flowData)
-	return nil
+func NewMazeGameEquipAssembleRecord(userID uint64, equipPos int32, opType int32, newEquipID int32, newGuid uint64, oldEquipID int32, oldGuid uint64, oldFelem string, newFelem string,
+	retCode int32, codeMask int32, transID uint64) *MazeGameEquipAssembleRecord {
+	res := &MazeGameEquipAssembleRecord{
+		UserId:     userID,
+		EquipPos:   equipPos,
+		OpType:     opType,
+		NewEquipId: newEquipID,
+		NewGuid:    newGuid,
+		OldEquipId: oldEquipID,
+		OldGuid:    oldGuid,
+		OldFElem:   oldFelem,
+		NewFElem:   newFelem,
+		RetCode:    retCode,
+		CodeMask:   codeMask,
+		TransID:    transID,
+	}
+	nowDbTable := strings.Split(mysql.GetFullyQualifiedTableName(MazeEquipAssembleRecordTableName), ".")
+
+	res.DataBase = nowDbTable[0]
+	res.Table = nowDbTable[1]
+	return res
 }

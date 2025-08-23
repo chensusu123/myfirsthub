@@ -9,7 +9,6 @@ import (
 	"maze_game_server/common/function/maputil"
 	"maze_game_server/config/GMazeItemsV8Cfg"
 	"maze_game_server/io/kafka/dollmazefoekafka"
-	"maze_game_server/io/mysql/flowrecord"
 	"maze_game_server/lib/log"
 	"maze_game_server/lib/nano/session"
 	"maze_game_server/pb/common/MazeCommon"
@@ -111,7 +110,8 @@ func (g *Game) OnBarrierMonsterDeathRQ_10498_10499(s *session.Session, req *Maze
 		logger.ErrorWF("OnBarrierMonsterDeathRQ json marshal fail", zap.Error(err), zap.Any("res", res))
 	}
 	record.AwardList = string(awards)
-	flowrecord.SaveFoeRecord(logger, record)
+	dollmazefoekafka.PushDollMazeFoeRecord(logger, record)
+	// flowrecord.SaveFoeRecord(logger, record)
 
 	return
 }

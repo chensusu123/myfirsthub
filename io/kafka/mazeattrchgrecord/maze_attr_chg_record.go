@@ -7,13 +7,13 @@
 package mazeattrchgrecord
 
 import (
-	"time"
-
+	"context"
 	"maze_game_server/common/structsdef"
 	"maze_game_server/io/dispatcher"
+	"maze_game_server/model/flowmodel/mazeattrchgrecordmodel"
+	"maze_game_server/services/flowservice"
 
 	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fklog"
-	"go.uber.org/zap"
 )
 
 // var kp = &fkafka.KafkaProducer{}
@@ -30,23 +30,10 @@ func Watch(fn func(logger fklog.FKLogI, msg *structsdef.MazeGameAttrChgRecord)) 
 	d.Watch(fn)
 }
 
+// 流水打点使用
 func SendMazeGameAttrChgRecord(logger fklog.FKLogI, record *structsdef.MazeGameAttrChgRecord) error {
-	// record.GroupId = fkconfig.EnvVal.GroupID
-	if record.CreateTime == 0 {
-		record.CreateTime = time.Now().UnixNano() / 1000000
-	}
-
-	// jbs, e := json.Marshal(record)
-	// if e != nil {
-	// 	logger.ErrorWF("SendMazeGameAttrChgRecord Marshal fail", zap.Error(e), zap.Any("record", record))
-	// 	return e
-	// }
-	// e = kp.SendWithUserID(record.UserId, jbs)
-	// if e != nil {
-	// 	logger.ErrorWF("SendMazeGameAttrChgRecord SendWithUserID fail", zap.Error(e), zap.Any("record", record))
-	// 	return e
-	// }
-	logger.InfoWF("SendMazeGameAttrChgRecord SendWithUserID succ", zap.Any("record", record))
-	d.Push(logger, record)
+	flowData := mazeattrchgrecordmodel.NewMazeGameAttrChgRecordFlow(record.UserId, record.AttrId, record.AttrType, record.NewVal, record.OldVal,
+		record.ChgType, record.ChgSubType, record.ChgDesc, record.Extra)
+	flowservice.GflowService.SendFlowData(context.TODO(), flowData)
 	return nil
 }

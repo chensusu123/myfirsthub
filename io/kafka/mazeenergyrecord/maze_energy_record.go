@@ -7,13 +7,13 @@
 package mazeenergyrecord
 
 import (
-	"time"
-
+	"context"
 	"maze_game_server/io/dispatcher"
 	"maze_game_server/io/kafka/kafkacommonstruct"
+	"maze_game_server/model/flowmodel/mazeuserenergylogmodel"
+	"maze_game_server/services/flowservice"
 
 	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fklog"
-	"go.uber.org/zap"
 )
 
 // var json = jsoniter.ConfigCompatibleWithStandardLibrary
@@ -60,9 +60,9 @@ func Watch(fn func(logger fklog.FKLogI, msg *MazeEnergyChgRecord)) {
 	d.Watch(fn)
 }
 
+// 流水打点使用
 func PushMazeEnergyChgRecord(agent fklog.FKLogI, record *MazeEnergyChgRecord) error {
-	record.CreateTime = time.Now().UnixNano() / 1e6
-	d.Push(agent, record)
-	agent.InfoWF("SendMazeEnergyChgRecord data", zap.Any("record", record))
+	flowData := mazeuserenergylogmodel.NewMazeEnergyChgRecord(record.UserId, record.OldVal, record.NewVal, record.LastTime, record.OpType)
+	flowservice.GflowService.SendFlowData(context.TODO(), flowData)
 	return nil
 }

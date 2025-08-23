@@ -1,16 +1,10 @@
-package mazecollectrecord
+package mazecollectchgrecordmodel
 
 import (
-	"context"
-	"maze_game_server/io/dispatcher"
 	"maze_game_server/io/kafka/kafkacommonstruct"
-	"maze_game_server/model/flowmodel/mazecollectchgrecordmodel"
-	"maze_game_server/services/flowservice"
-
-	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fklog"
+	"maze_game_server/io/mysql"
+	"strings"
 )
-
-// var json = jsoniter.ConfigCompatibleWithStandardLibrary
 
 const (
 	MazeCollectInit    = 1 // 迷宫挂机初始化
@@ -19,6 +13,8 @@ const (
 )
 
 type KafkaCommon = kafkacommonstruct.KafkaCommon
+
+const MazeCollectChgRecordTableName = "maze_collect_chg_record"
 
 // 迷宫挂机变化流水
 type MazeCollectChgRecord struct {
@@ -37,26 +33,30 @@ type MazeCollectChgRecord struct {
 	AddItems      string `json:"add_items" gorm:"column:add_items"`           // 收集的道具/领取的道具
 	RemainItems   string `json:"remain_items" gorm:"column:remain_items"`     // 累计产出道具/领取后遗留的道具
 	RetCode       int64  `json:"ret_code" gorm:"column:ret_code"`             // 0:成功  其他失败
-	GroupID       uint32 `json:"group_id" gorm:"column:group_id"`             // 组id
-	CreateTime    int64  `json:"create_time" gorm:"column:create_time"`       // 操作时间
 }
 
-// var gKafka = &fkafka.KafkaProducer{}
+func NewMazeCollectChgRecord(userID uint64, opType int32, startTime int64, lastTime int64, newLastTime int64, availableTime int64, endTime int64,
+	periodTime int32, collectTimes int64, barrierId int32, tradeNo uint64, addItems string, remainItems string, retCode int64) *MazeCollectChgRecord {
+	res := &MazeCollectChgRecord{
+		UserId:        userID,
+		OpType:        opType,
+		StartTime:     startTime,
+		LastTime:      lastTime,
+		NewLastTime:   newLastTime,
+		AvailableTime: availableTime,
+		EndTime:       endTime,
+		PeriodTime:    periodTime,
+		CollectTimes:  collectTimes,
+		BarrierId:     barrierId,
+		TradeNo:       tradeNo,
+		AddItems:      addItems,
+		RemainItems:   remainItems,
+		RetCode:       retCode,
+	}
 
-func init() {
-	// fkconfig.RegisterNameNode("mazecollectrecord", 1001106, gKafka)
-}
+	nowDbTable := strings.Split(mysql.GetFullyQualifiedTableName(MazeCollectChgRecordTableName), ".")
 
-var d = dispatcher.NewDispatcher[*MazeCollectChgRecord]()
-
-func Watch(fn func(logger fklog.FKLogI, msg *MazeCollectChgRecord)) {
-	d.Watch(fn)
-}
-
-// 流水使用
-func PushMazeCollectChgRecord(agent fklog.FKLogI, record *MazeCollectChgRecord) error {
-	flowData := mazecollectchgrecordmodel.NewMazeCollectChgRecord(record.UserId, record.OpType, record.StartTime, record.LastTime, record.NewLastTime, record.AvailableTime,
-		record.EndTime, record.PeriodTime, record.CollectTimes, record.BarrierId, record.TradeNo, record.AddItems, record.RemainItems, record.RetCode)
-	flowservice.GflowService.SendFlowData(context.TODO(), flowData)
-	return nil
+	res.DataBase = nowDbTable[0]
+	res.Table = nowDbTable[1]
+	return res
 }
