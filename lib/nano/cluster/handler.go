@@ -303,8 +303,8 @@ func (h *LocalHandler) handle(conn net.Conn, r *http.Request, pcodec frame.Packe
 			loggerLoop.SetLogId(logidutil.GenerateLogID())
 			loggerLoop.SetUid(uint64(agent.session.UID()))
 			ctx := fklog.ContextWithLogger(context.Background(), loggerLoop)
-			tracer := otel.Tracer("nano.recive")
-			ctx, span := tracer.Start(ctx, "recive_data")
+
+			ctx, span := receiveSpan(ctx, n)
 
 			// Must working
 			agent.setStatus(statusWorking)
@@ -649,14 +649,14 @@ func (h *LocalHandler) localProcess(ctx context.Context, handler *component.Hand
 		}
 		span.AddEvent("nano.schedule.task")
 		taskCount := h.taskCount.Add(1)
-		span.SetAttributes(attribute.Int64("current.task.count", taskCount))
-		span.SetAttributes(attribute.String("task.scheduler.name", service))
+		span.SetAttributes(attribute.Int64("nano.current.task.count", taskCount))
+		span.SetAttributes(attribute.String("nano.task.scheduler.name", service))
 		local.Schedule(task)
 	} else {
 		span.AddEvent("nano.schedule.task")
 		taskCount := h.taskCount.Add(1)
-		span.SetAttributes(attribute.Int64("current.task.count", taskCount))
-		span.SetAttributes(attribute.String("task.scheduler.name", "global"))
+		span.SetAttributes(attribute.Int64("nano.current.task.count", taskCount))
+		span.SetAttributes(attribute.String("nano.task.scheduler.name", "global"))
 		scheduler.PushTask(task)
 	}
 }
