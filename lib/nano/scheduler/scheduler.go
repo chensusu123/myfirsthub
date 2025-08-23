@@ -28,6 +28,8 @@ import (
 
 	"maze_game_server/lib/nano/internal/env"
 	"maze_game_server/lib/nano/internal/log"
+
+	"gitlab.ifreetalk.com/maze-plate/freetk/pkg/metrics"
 )
 
 const (
@@ -45,15 +47,18 @@ type Task func()
 type Hook func()
 
 var (
-	chDie   = make(chan struct{})
-	chExit  = make(chan struct{})
-	chTasks = make(chan Task, 1<<8)
-	started int32
-	closed  int32
+	chDie     = make(chan struct{})
+	chExit    = make(chan struct{})
+	chTasks   = make(chan Task, 1<<8)
+	started   int32
+	closed    int32
+	taskCount atomic.Int64
 )
 
 func try(f func()) {
 	defer func() {
+		c := taskCount.Add(-1)
+		metrics.SetGauge(taskCountKey, float64(c))
 		if err := recover(); err != nil {
 			log.Println(fmt.Sprintf("Handle message panic: %+v\n%s", err, debug.Stack()))
 		}
@@ -96,5 +101,17 @@ func Close() {
 }
 
 func PushTask(task Task) {
+	c := taskCount.Add(1)
+	metrics.SetGauge(taskCountKey, float64(c))
 	chTasks <- task
+}
+
+const (
+	taskCountKey = "nano.global.task_count"
+)
+
+var _ = metrics.Gauge(taskCountKey)
+
+func TaskCount() int64 {
+	return taskCount.Load()
 }
