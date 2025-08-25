@@ -9,7 +9,7 @@ import (
 	"maze_game_server/common/constdef"
 	"maze_game_server/common/structsdef"
 	"maze_game_server/config/GMazeAttributeV8Cfg"
-	"maze_game_server/excel/mazeenergyaffixlvv8config"
+	"maze_game_server/config/GMazeEnergyAffixV8Cfg"
 	"maze_game_server/io/kafka/mazetempbuffchgmsg"
 	"maze_game_server/io/redis/mazeattrcalcnotifyqueue"
 	"maze_game_server/io/redis/mazebuffinforedis"
@@ -23,37 +23,37 @@ func (s *service) SelectMazeTempBuff(ctx context.Context, userId uint64, barrier
 	logger := fklog.ContextAppLogger(ctx)
 	buffInfo, err := tempbuffmodel.NewTempBuffInfoModel(ctx, userId, barrierId)
 	if err != nil {
-		logger.ErrorWF("SelectMazeTempBuffRQ GetMazeTempBuff", zap.Error(err))
+		logger.CtxError(ctx, "SelectMazeTempBuffRQ GetMazeTempBuff", zap.Error(err))
 		return nil, fmt.Errorf("获取用户buff信息失败")
 	}
 
 	if buffInfo == nil {
-		logger.WarnWF("SelectMazeTempBuffRQ buff is nil", zap.Error(err))
+		logger.CtxError(ctx, "SelectMazeTempBuffRQ buff is nil", zap.Error(err))
 		return nil, fmt.Errorf("获取用户buff信息失败")
 	}
 
 	// 检查是否可选，选的buff是否为当次可选buff
-	if !s.checkSelectBuff(logger, level, buffId, buffInfo) {
+	if !s.checkSelectBuff(ctx, logger, level, buffId, buffInfo) {
 		return nil, fmt.Errorf("buff信息异常")
 	}
 
 	err = s.updateBuffInfo(ctx, userId, barrierId, level, buffId, buffType, buffInfo)
 	if err != nil {
-		logger.ErrorWF("SelectMazeTempBuffRQ updateBuffInfo failed", zap.Error(err))
+		logger.CtxError(ctx, "SelectMazeTempBuffRQ updateBuffInfo failed", zap.Error(err))
 		return nil, err
 	}
 
-	buffList := s.packShowBuffList(logger, buffInfo)
+	buffList := s.packShowBuffList(ctx, buffInfo)
 
-	s.pushGroupChange(logger, userId, buffInfo)
+	s.pushGroupChange(ctx, logger, userId, buffInfo)
 
 	return buffList, nil
 }
 
-func (s *service) checkSelectBuff(logger fklog.FKLogI, level, buffId int32, buffInfo *tempbuffmodel.TempBuffInfoModel) bool {
+func (s *service) checkSelectBuff(ctx context.Context, logger fklog.FKLogI, level, buffId int32, buffInfo *tempbuffmodel.TempBuffInfoModel) bool {
 	// 检查是否可选，选的buff是否为当次可选buff
 	if level != buffInfo.BuffSequence.Level {
-		logger.WarnWF("checkSelectBuff level unknown", zap.Int32("level", level),
+		logger.CtxError(ctx, "checkSelectBuff level unknown", zap.Int32("level", level),
 			zap.Int32("needLevel", buffInfo.BuffSequence.Level))
 		return false
 	}
@@ -64,7 +64,7 @@ func (s *service) checkSelectBuff(logger fklog.FKLogI, level, buffId int32, buff
 		}
 	}
 
-	logger.WarnWF("checkSelectBuff buffId unknown", zap.Int32("buffId", buffId),
+	logger.CtxError(ctx, "checkSelectBuff buffId unknown", zap.Int32("buffId", buffId),
 		zap.Int32s("buffList", buffInfo.BuffSequence.OptionalBuffList))
 	return false
 }
@@ -91,7 +91,7 @@ func (s *service) updateBuffInfo(ctx context.Context, userId uint64, stageId, le
 	// 更新buff信息
 	err := buffInfo.Save(ctx, userId, stageId)
 	if err != nil {
-		logger.ErrorWF("updateBuffInfo SetMazeTempBuff failed", zap.Any("info", buffInfo), zap.Error(err))
+		logger.CtxError(ctx, "updateBuffInfo SetMazeTempBuff failed", zap.Any("info", buffInfo), zap.Error(err))
 		return err
 	}
 
@@ -104,7 +104,7 @@ func (s *service) updateBuffInfo(ctx context.Context, userId uint64, stageId, le
 	}
 
 	// 计算buff变化
-	config := mazeenergyaffixlvv8config.GetAffixConfig(buffId)
+	config := GMazeEnergyAffixV8Cfg.GetWithCtx(ctx, buffId)
 	if config != nil {
 		chgAttrs := make([]*mazetempbuffchgmsg.AttrChgInfo, 0, len(config.Add_attr))
 		for id, value := range config.Add_attr {
@@ -121,16 +121,16 @@ func (s *service) updateBuffInfo(ctx context.Context, userId uint64, stageId, le
 	_ = mazetempbuffchgmsg.PushTempBuffChangeMsg(logger, msg)
 
 	// 同步到buff中心
-	s.TempBuffChangeSync(logger, userId, buffInfo)
+	s.TempBuffChangeSync(ctx, logger, userId, buffInfo)
 
 	return nil
 }
 
 // 同步到buff中心
-func (s *service) TempBuffChangeSync(logger fklog.FKLogI, userId uint64, buffInfo *tempbuffmodel.TempBuffInfoModel) error {
-	forceAttr, err := s.getSelectBuffForceAttr(buffInfo.TotalBuff)
+func (s *service) TempBuffChangeSync(ctx context.Context, logger fklog.FKLogI, userId uint64, buffInfo *tempbuffmodel.TempBuffInfoModel) error {
+	forceAttr, err := s.getSelectBuffForceAttr(ctx, buffInfo.TotalBuff)
 	if err != nil {
-		logger.ErrorWF("updateBuffInfo GetSelectBuffForceAttr failed", zap.Error(err))
+		logger.CtxError(ctx, "updateBuffInfo GetSelectBuffForceAttr failed", zap.Error(err))
 		return err
 	}
 	attrDb := &MazeBuffData.MazeBuffDb{
@@ -161,7 +161,7 @@ func (s *service) GetTotalBuff(ctx context.Context, buffList []*tempbuffmodel.Se
 	totalMap := make(map[int32]int64)
 	for _, info := range buffList {
 		// 获取buff实际加成
-		config := mazeenergyaffixlvv8config.GetAffixConfig(info.BuffId)
+		config := GMazeEnergyAffixV8Cfg.GetWithCtx(ctx, info.BuffId)
 		if config != nil {
 			for id, value := range config.Add_attr {
 				totalMap[id] += value
@@ -180,14 +180,14 @@ func (s *service) GetTotalBuff(ctx context.Context, buffList []*tempbuffmodel.Se
 	return totalMap, totalList
 }
 
-func (s *service) getSelectBuffForceAttr(buffInfo []*tempbuffmodel.TotalBuffInfo) (forceAttr map[int32]int64, err error) {
+func (s *service) getSelectBuffForceAttr(ctx context.Context, buffInfo []*tempbuffmodel.TotalBuffInfo) (forceAttr map[int32]int64, err error) {
 	if buffInfo == nil {
 		return
 	}
 	forceAttr = make(map[int32]int64)
 	for _, v := range buffInfo {
 		// 读属性表
-		cfg := GMazeAttributeV8Cfg.Get(v.BuffId)
+		cfg := GMazeAttributeV8Cfg.GetWithCtx(ctx, v.BuffId)
 		if cfg == nil {
 			err = fmt.Errorf("GetSelectBuffForceAttr GetMazeAttributeFormulaV8Cfg nil, attrID: %d", v.BuffId)
 			return
@@ -218,10 +218,10 @@ func (s *service) packMazeBuff(buffMap map[int32]int64) []*MazeBuffData.MazeBuff
 const forceAttrType = 5
 
 // 推送组变化包
-func (s *service) pushGroupChange(logger fklog.FKLogI, userId uint64, buffModel *tempbuffmodel.TempBuffInfoModel) {
-	groupList, err := s.getGroupList(logger, buffModel)
+func (s *service) pushGroupChange(ctx context.Context, logger fklog.FKLogI, userId uint64, buffModel *tempbuffmodel.TempBuffInfoModel) {
+	groupList, err := s.getGroupList(ctx, logger, buffModel)
 	if err != nil {
-		logger.ErrorWF("getGroupList failed", zap.Error(err))
+		logger.CtxError(ctx, "getGroupList failed", zap.Error(err))
 		return
 	}
 	res := &MazeTempBuff.TempBuffGroupChangeID{}
@@ -233,5 +233,5 @@ func (s *service) pushGroupChange(logger fklog.FKLogI, userId uint64, buffModel 
 		})
 	}
 
-	online.Push(logger, userId, 10642, res)
+	online.PushWithContext(ctx, logger, userId, 10642, res)
 }

@@ -1,11 +1,11 @@
 package buff
 
 import (
-	"context"
 	"fmt"
+	"maze_game_server/common/function/gm"
 	"maze_game_server/common/tradeno"
 	"maze_game_server/config/GMazeAttributeV8Cfg"
-	"maze_game_server/excel/mazeenergyaffixlvv8config"
+	"maze_game_server/config/GMazeEnergyAffixV8Cfg"
 	"maze_game_server/io/kafka/mazetempbuffchgmsg"
 	"maze_game_server/model/tempbuffmodel"
 	"maze_game_server/services/itemservice"
@@ -15,40 +15,16 @@ import (
 	"strings"
 
 	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fklog"
-	"gitlab.ifreetalk.com/maze-plate/freetk/fkserver/appconfig"
 	"gitlab.ifreetalk.com/maze-plate/freetk/fkutil"
 	"go.uber.org/zap"
 )
 
-/**
- * @Author: liushuhang
- * @Date: 2025/3/31 16:30
- * @Description:
- */
-
-func SafeHttpRegister(logger fklog.FKLogI, pattern string, handler func(http.ResponseWriter, *http.Request)) {
-	appConfig := appconfig.GlobalConfig()
-	// /s4/AddExp
-	pattern = "/s" + appConfig.Global.SectionID + pattern
-	http.HandleFunc(pattern, func(writer http.ResponseWriter, request *http.Request) {
-		defer fkutil.CaptureException()
-		logger.DebugWF("execute gm", zap.String("pattern", pattern), zap.Any("header", request.Header),
-			zap.Any("host", request.Host), zap.Any("remoteAddr", request.RemoteAddr))
-		// if !CheckGM.CheckGMOnline(context.Background(), logger, 10000, pattern, request.RemoteAddr) {
-		// 	return
-		// }
-		logger.WarnWF("execute gm", zap.String("pattern", pattern), zap.Any("header", request.Header),
-			zap.Any("host", request.Host), zap.Any("remoteAddr", request.RemoteAddr))
-
-		handler(writer, request)
-	})
-}
-
 func InitGM(logger fklog.FKLogI) {
 	// 设置buff
-	SafeHttpRegister(logger, "/setMazeTempBuff", func(writer http.ResponseWriter, request *http.Request) {
+	gm.SafeHttpRegister(logger, "/setMazeTempBuff", func(writer http.ResponseWriter, request *http.Request) {
 		// 外网线上环境不允许使用GM
 		ctx := request.Context()
+		logger = fklog.ContextAppLogger(ctx)
 		request.ParseForm()
 		userId := fkutil.ToUint64(request.Form.Get("user_id"))
 		stageId := fkutil.ToInt32(request.Form.Get("stageId"))
@@ -66,16 +42,16 @@ func InitGM(logger fklog.FKLogI) {
 		})
 
 		if userId == 0 || stageId == 0 || len(buffs) == 0 {
-			logger.WarnWF("setMazeTempBuff args is error")
+			logger.CtxError(ctx, "setMazeTempBuff args is error")
 			_, _ = writer.Write([]byte("set maze temp buff args is error"))
 			return
 		}
 
-		logger.InfoWF("setMazeTempBuff start", zap.Uint64("userId", userId),
+		logger.CtxInfo(ctx, "setMazeTempBuff start", zap.Uint64("userId", userId),
 			zap.Int32("stageId", stageId), zap.Int32s("buffList", buffList))
 		buffInfo, err := tempbuffservice.GlobalTempBuffService.GetTempBuffInfo(ctx, userId, stageId)
 		if err != nil {
-			logger.ErrorWF("setMazeTempBuff GetMazeTempBuff", zap.Error(err))
+			logger.CtxError(ctx, "setMazeTempBuff GetMazeTempBuff", zap.Error(err))
 			_, _ = writer.Write([]byte("get user buff failed"))
 			return
 		}
@@ -96,9 +72,9 @@ func InitGM(logger fklog.FKLogI) {
 		// 统计词条组以及选择的次数
 		selectedBuffGroupMap := make(map[int32]int32)
 		for _, i := range buffInfo.SelectedBuff {
-			buffConfig := mazeenergyaffixlvv8config.GetAffixConfig(i.BuffId)
+			buffConfig := GMazeEnergyAffixV8Cfg.GetWithCtx(ctx, i.BuffId)
 			if buffConfig == nil {
-				logger.WarnWF("createOptionalBuffList GetAffixConfig is nil", zap.Int32("buffId", i.BuffId))
+				logger.CtxWarn(ctx, "createOptionalBuffList GetAffixConfig is nil", zap.Int32("buffId", i.BuffId))
 				continue
 			}
 			selectedBuffGroupMap[buffConfig.Affix_group_id] += 1
@@ -124,7 +100,7 @@ func InitGM(logger fklog.FKLogI) {
 		}
 
 		if len(successList) == 0 {
-			logger.WarnWF("setMazeTempBuff optionalList is nil")
+			logger.CtxWarn(ctx, "setMazeTempBuff optionalList is nil")
 			_, _ = writer.Write([]byte("not have optional buff, failed buff:" + strings.Join(failedList, ",") + " errs:" + strings.Join(errs, ",")))
 			return
 		}
@@ -132,7 +108,7 @@ func InitGM(logger fklog.FKLogI) {
 		// 校验属性配置
 		for _, info := range buffInfo.SelectedBuff {
 			// 获取buff实际加成
-			config := mazeenergyaffixlvv8config.GetAffixConfig(info.BuffId)
+			config := GMazeEnergyAffixV8Cfg.GetWithCtx(ctx, info.BuffId)
 			if config != nil {
 				for id := range config.Add_attr {
 					attrCfg := GMazeAttributeV8Cfg.Get(id)
@@ -150,7 +126,7 @@ func InitGM(logger fklog.FKLogI) {
 		// 更新buff信息
 		err = buffInfo.Save(ctx, userId, stageId)
 		if err != nil {
-			logger.ErrorWF("setMazeTempBuff SetMazeTempBuff failed", zap.Any("info", buffInfo), zap.Error(err))
+			logger.CtxError(ctx, "setMazeTempBuff SetMazeTempBuff failed", zap.Any("info", buffInfo), zap.Error(err))
 			_, _ = writer.Write([]byte("save buff failed"))
 			return
 		}
@@ -214,8 +190,9 @@ func InitGM(logger fklog.FKLogI) {
 		return
 	})
 
-	SafeHttpRegister(logger, "/addRefreshCost", func(writer http.ResponseWriter, request *http.Request) {
-		// 外网线上环境不允许使用GM
+	gm.SafeHttpRegister(logger, "/addRefreshCost", func(writer http.ResponseWriter, request *http.Request) {
+		ctx := request.Context()
+		logger = fklog.ContextAppLogger(ctx)
 		request.ParseForm()
 		userId := fkutil.ToUint64(request.Form.Get("user_id"))
 		itemId := fkutil.ToInt32(request.Form.Get("itemId"))
@@ -225,7 +202,7 @@ func InitGM(logger fklog.FKLogI) {
 			ItemId: itemId,
 			Count:  count,
 		}
-		err := itemservice.GlobalItemService.AddItem(context.TODO(), userId, itemservice.ItemOpTypeGM, tradeno.GetTradeNum(), item)
+		err := itemservice.GlobalItemService.AddItem(ctx, userId, itemservice.ItemOpTypeGM, tradeno.GetTradeNum(), item)
 		if err != nil {
 			_, _ = writer.Write([]byte(fmt.Sprintf("add cost failed itemId: %d count:%d", itemId, count)))
 		}
