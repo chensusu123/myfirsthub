@@ -7,6 +7,7 @@
 package mazeconfigv8
 
 import (
+	"context"
 	"maze_game_server/common/constdef"
 	"maze_game_server/config/GMazeConfigV8Cfg"
 )
@@ -79,4 +80,22 @@ func GetUserReviveTime() int64 {
 		return row.Value_int
 	}
 	return 60
+}
+
+// 获取最大buff组数量
+func GetMaxBuffGroupCount(ctx context.Context) int64 {
+	row := GMazeConfigV8Cfg.GetWithCtx(ctx, constdef.MazeCfgId941)
+	if row != nil {
+		return row.Value_int
+	}
+	return 4
+}
+
+// 获取不算组数量的组id
+func GetSpecialBuffGroupId(ctx context.Context) int64 {
+	row := GMazeConfigV8Cfg.GetWithCtx(ctx, constdef.MazeCfgId942)
+	if row != nil {
+		return row.Value_int
+	}
+	return 6009
 }

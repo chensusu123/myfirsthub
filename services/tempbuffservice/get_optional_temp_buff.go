@@ -13,6 +13,7 @@ import (
 	"maze_game_server/config/GMazeEnergyAffixRandRuleV8Cfg"
 	"maze_game_server/config/GMazeEnergyAffixV8Cfg"
 	"maze_game_server/config/GMazeEnergyLevelV8Cfg"
+	"maze_game_server/excel/mazeconfigv8"
 	"maze_game_server/excel/mazeconfigv8config"
 	"maze_game_server/excel/mazeenergyaffixrandrulev8config"
 	"maze_game_server/excel/mazeenergylevelv8config"
@@ -387,6 +388,14 @@ func (s *service) GetOptionBuffWeightInfo(ctx context.Context, buffId int32, sel
 	if buffConfig.Weight == 0 {
 		logger.CtxWarn(ctx, "getOptionBuffWeightInfo buff weight is 0", zap.Int32("buffId", buffId))
 		return nil
+	}
+	// 如果已选择的组数量达到了
+	if len(selectedBuffGroupMap) >= int(mazeconfigv8.GetMaxBuffGroupCount(ctx)) {
+		// 不是已选择的组，也不是无关组，直接返回
+		_, exist := selectedBuffGroupMap[buffConfig.Affix_group_id]
+		if !exist && buffConfig.Affix_group_id != int32(mazeconfigv8.GetSpecialBuffGroupId(ctx)) {
+			return nil
+		}
 	}
 
 	// 检查选择数量
