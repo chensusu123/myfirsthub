@@ -7,7 +7,6 @@ import (
 	"maze_game_server/common/errors"
 	"maze_game_server/common/structsdef"
 	"maze_game_server/io/kafka/mazebarrieruserkafka"
-	"maze_game_server/io/redis/barrierscorerewardredis"
 	"maze_game_server/io/redis/mazeattrcalcnotifyqueue"
 	"maze_game_server/io/redis/mazebarriereventredis"
 	"maze_game_server/io/redis/mazebarrieropstatusredis"
@@ -19,6 +18,7 @@ import (
 	"maze_game_server/pb/common/MazeGame"
 	"maze_game_server/servers/maze_main_server/process/game/events"
 	"maze_game_server/services/barriersavedataservice"
+	"maze_game_server/services/barrierscorerewardservice"
 	"maze_game_server/services/barrierservice"
 	"maze_game_server/services/barrierstagecounterservice"
 	"maze_game_server/services/tempbuffservice"
@@ -115,7 +115,7 @@ func ClearBarriersTempData(logger fklog.FKLogI, userId uint64, barrierId int32) 
 	// 清理关卡操作状态
 	mazebarrieropstatusredis.ClearOpStatus(logger, userId, barrierId)
 	//清除关卡已获得奖励存档
-	barrierscorerewardredis.DelBarrierScoreReward(logger, userId, barrierId)
+	barrierscorerewardservice.GlobalScoreRewardService.DelBarrierScoreRewardItem(context.TODO(), userId, barrierId)
 	// 删除关卡存档 new
 	barriersavedataservice.GlobalBarrierSaveDataService.DelBarrierSaveData(context.TODO(), userId, barrierId)
 	// 删除临时buff

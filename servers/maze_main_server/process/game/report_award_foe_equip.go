@@ -1,6 +1,7 @@
 package game
 
 import (
+	"context"
 	"maze_game_server/common/errors"
 	"maze_game_server/common/function/addequip"
 	"maze_game_server/common/tradeno"
@@ -76,7 +77,7 @@ func (g *Game) OnReportAwardFoeEquipRQ_10455_10456(s *session.Session, req *Maze
 	}
 	// PushDollMazeShopInfoLog(logger, userId, int32(level), shopInfo, rs.EquipList, 19, tradeNo, 0)
 
-	if err = barrierscorerewardservice.GlobalScoreRewardService.SaveBarrierScoreRewardEquip(logger, userId, req.GetBarrierId(), addEquipMap); err != nil {
+	if err = barrierscorerewardservice.GlobalScoreRewardService.SaveBarrierScoreRewardEquip(context.TODO(), userId, req.GetBarrierId(), addEquipMap); err != nil {
 		logger.ErrorWF("OnReportAwardFoeEquipRQ SaveBarrierScoreRewardEquip err", zap.Error(err), zap.Any("barrier", req.GetBarrierId()))
 		res.ErrInfo = errors.MODULE_ERROR.ToInfo()
 	}
