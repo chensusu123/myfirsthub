@@ -1,6 +1,7 @@
 package frame_service
 
 import (
+	"context"
 	"sort"
 	"time"
 
@@ -266,7 +267,7 @@ func updateFrame(logger fklog.FKLogI, r *frame_model.Room) {
 	// 广播帧数据给所有玩家
 	for _, player := range r.MemberMap {
 		// push其他人
-		_ = online.Push(player.Logger, player.ID, 10544, idPack)
+		_ = online.ClusterPush(context.TODO(), player.ID, 10544, idPack)
 	}
 }
 
