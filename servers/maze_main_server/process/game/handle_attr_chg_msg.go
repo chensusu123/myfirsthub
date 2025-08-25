@@ -7,6 +7,7 @@
 package game
 
 import (
+	"context"
 	"maze_game_server/common/constdef"
 	"maze_game_server/common/structsdef"
 	"maze_game_server/io/redis/mazecalcattrredis"
@@ -18,7 +19,8 @@ import (
 	"go.uber.org/zap"
 )
 
-func HandleUserAttrMsg(logger fklog.FKLogI, msg *structsdef.DollAttrChgNotify) {
+func HandleUserAttrMsg(ctx context.Context, msg *structsdef.DollAttrChgNotify) {
+	logger := fklog.ContextAppLogger(ctx)
 	// msg := &structsdef.DollAttrChgNotify{}
 	// err = json.Unmarshal(data, msg)
 	// if err != nil {

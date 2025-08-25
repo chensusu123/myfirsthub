@@ -5,7 +5,6 @@ import (
 	"maze_game_server/common/errors"
 	"maze_game_server/common/function/addequip"
 	"maze_game_server/common/tradeno"
-	"maze_game_server/lib/log"
 	"maze_game_server/lib/nano/session"
 	"maze_game_server/module/mazeuserinfo"
 	"maze_game_server/pb/common/MazeGame"
@@ -13,6 +12,7 @@ import (
 	"maze_game_server/services/barrierscorerewardservice"
 	"maze_game_server/services/equipdropservice"
 
+	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fklog"
 	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fkprometheus"
 	"go.uber.org/zap"
 )
@@ -20,7 +20,8 @@ import (
 func (g *Game) OnReportAwardFoeEquipRQ_10455_10456(s *session.Session, req *MazeGame.ReportAwardFoeEquipRQ) (err error) {
 	defer fkprometheus.InfoPMT("OnReportAwardFoeEquipRQ")()
 
-	logger := log.Clone("Game", uint64(s.UID()), 0)
+	ctx := s.Context()
+	logger := fklog.ContextAppLogger(ctx)
 	res := &MazeGame.ReportAwardFoeEquipRS{}
 
 	logger.InfoWF("OnReportAwardFoeEquipRQ start", zap.Any("req", req))
@@ -70,7 +71,7 @@ func (g *Game) OnReportAwardFoeEquipRQ_10455_10456(s *session.Session, req *Maze
 
 	tradeNo := tradeno.GetTradeNum()
 	//rs, err2 := addequip.InstanceEquip(logger, userId, int32(MazeEquipSvr.ENUM_EQUIP_BAG_OP_TYPE_MAZE_EQUIP_FOE), tradeNo, equipNumPerCycle, addEquipMap)
-	rs, err2 := addequip.AddEquipToBag(logger, userId, int32(MazeEquipSvr.ENUM_EQUIP_BAG_OP_TYPE_MAZE_EQUIP_FOE), tradeNo, addEquipMap)
+	rs, err2 := addequip.AddEquipToBag(ctx, userId, int32(MazeEquipSvr.ENUM_EQUIP_BAG_OP_TYPE_MAZE_EQUIP_FOE), tradeNo, addEquipMap)
 	if err2 != nil {
 		logger.ErrorWF("OnReportAwardFoeEquipRQ addEquipToBag fail", zap.Error(err2), zap.Any("optype", MazeEquipSvr.ENUM_EQUIP_BAG_OP_TYPE_MAZE_EQUIP_FOE),
 			zap.Any("tradeNo", tradeNo), zap.Any("addEquip", addEquipMap), zap.Any("rs", rs))

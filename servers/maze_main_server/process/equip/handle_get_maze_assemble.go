@@ -7,6 +7,7 @@
 package equip
 
 import (
+	"context"
 	"maze_game_server/common/constdef"
 	"maze_game_server/common/errors"
 	"maze_game_server/common/function/assemble"
@@ -18,7 +19,6 @@ import (
 	"maze_game_server/io/redis/dollassemblesuitredis"
 	"maze_game_server/io/redis/mazeattrcalcnotifyqueue"
 	"maze_game_server/io/redis/mazebuffinforedis"
-	"maze_game_server/lib/log"
 	"maze_game_server/lib/nano/session"
 	"maze_game_server/module/assembleidpack"
 	"maze_game_server/module/calcassembleattr"
@@ -40,7 +40,8 @@ import (
 func (e *Equip) OnGetMazeAssembleRQ_10414_10415(s *session.Session, req *MazeGameEquip.GetMazeGameAssembleInfoRQ) (err error) {
 	defer fkprometheus.DebugPMT("OnGetDollAssembleRQ")()
 
-	logger := log.Clone("Equip", uint64(s.UID()), 0)
+	ctx := s.Context()
+	logger := fklog.ContextAppLogger(ctx)
 	res := &MazeGameEquip.GetMazeGameAssembleInfoRS{}
 
 	res.ErrInfo = errors.NO_ERROR
@@ -61,10 +62,10 @@ func (e *Equip) OnGetMazeAssembleRQ_10414_10415(s *session.Session, req *MazeGam
 	InitDollEquipSuitSeq(logger, userId)
 
 	// 处理初始化装备
-	HandleDollEquipInit(logger, userId, false)
+	HandleDollEquipInit(ctx, userId, false)
 
 	// 人偶属性初始化
-	HandleDollAttrInit(logger, userId, req.GetHeader().GetSession())
+	HandleDollAttrInit(ctx, userId, req.GetHeader().GetSession())
 
 	assembleInfo, effect, err := dollassembleinfo.GetDollAssembleInfoEx(logger, userId)
 	if err != nil {
@@ -203,7 +204,8 @@ func checkAssembleEquipConsistent(logger fklog.FKLogI, userId uint64, assembleIn
 }
 
 // 检查装配的装备是否存在，已测ok
-func checkAssembleEquipLose(logger fklog.FKLogI, userId uint64, assembleInfo *MazeEquipCache.MazeAssembleDb, effectOld *calcassembleattr.EquipmentEffectInfo) error {
+func checkAssembleEquipLose(ctx context.Context, userId uint64, assembleInfo *MazeEquipCache.MazeAssembleDb, effectOld *calcassembleattr.EquipmentEffectInfo) error {
+	logger := fklog.ContextAppLogger(ctx)
 	var needUpdateEquipPos []*MazeEquipCache.MazeEquipPosInfo
 	var recordList []*dollequipassmeblekakfa.MazeGameEquipAssembleRecord
 	for _, equipPos := range assembleInfo.GetMazeEquips() {
@@ -239,9 +241,9 @@ func checkAssembleEquipLose(logger fklog.FKLogI, userId uint64, assembleInfo *Ma
 				calcAttrNotify.UserId = userId
 				calcAttrNotify.ChgType = constdef.MazeBuffEquipFix
 				calcAttrNotify.BuffSrc = constdef.MazeBuffSrcEquip
-				mazeattrcalcnotifyqueue.SendMazeAttrCalcNotify(logger, calcAttrNotify)
+				mazeattrcalcnotifyqueue.SendMazeAttrCalcNotify(ctx, calcAttrNotify)
 
-				mazebuffchgrrecordapi.SendMazeBuffChgRecord(logger, userId,
+				mazebuffchgrrecordapi.SendMazeBuffChgRecord(ctx, userId,
 					constdef.MazeBuffSrcEquip,
 					constdef.MazeBuffEquipFix,
 					effectOld.Other, effectInfo.Other)
@@ -249,7 +251,7 @@ func checkAssembleEquipLose(logger fklog.FKLogI, userId uint64, assembleInfo *Ma
 		}
 		// 记录流水
 		for _, record := range recordList {
-			EndEquipAssmebleRecord(logger, record, 0, 0, effectInfo)
+			EndEquipAssmebleRecord(ctx, record, 0, 0, effectInfo)
 		}
 	}
 	return nil

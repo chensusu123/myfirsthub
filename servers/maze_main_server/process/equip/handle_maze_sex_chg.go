@@ -4,10 +4,11 @@ import (
 	"encoding/json"
 
 	"context"
+	"maze_game_server/common/structsdef"
+
 	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fklog"
 	"gitlab.ifreetalk.com/maze-plate/freetk/fkutil"
 	"go.uber.org/zap"
-	"maze_game_server/common/structsdef"
 )
 
 // 处理人偶性别变化消息
@@ -48,9 +49,9 @@ func HandleDollSexChg(ctx context.Context, logger fklog.FKLogI, index int, key, 
 	InitDollEquipSuitSeq(logger, userId)
 
 	// 处理初始化装备
-	HandleDollEquipInit(logger, userId, false)
+	HandleDollEquipInit(ctx, userId, false)
 
 	// 人偶属性初始化
-	HandleDollAttrInit(logger, userId, "")
+	HandleDollAttrInit(ctx, userId, "")
 	return nil
 }

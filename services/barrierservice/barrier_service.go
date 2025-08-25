@@ -1,6 +1,7 @@
 package barrierservice
 
 import (
+	"context"
 	"maze_game_server/pb/common/Common"
 	"maze_game_server/pb/common/MazeCommon"
 	"maze_game_server/pb/common/MazeEnergy"
@@ -18,7 +19,7 @@ type BarrierService interface {
 	//	- header: 请求包头
 	//	- userID: 用户ID
 	//	- barrierID: 关卡ID
-	SweepBarrier(logger fklog.FKLogI, header *Common.PacketHeader, userID uint64, barrierID int32) (
+	SweepBarrier(ctx context.Context, header *Common.PacketHeader, userID uint64, barrierID int32) (
 		energyInfo *MazeEnergy.EnergyInfo, remainVal int32, gameID uint64, awardItem, rareItem []*MazeCommon.MazeItem, errinfo *MessageType.ErrorInfo)
 
 	// GetBarrierInfos 获取用户对应关卡列表信息，返回挑战次数与挑战刷新时间
@@ -36,14 +37,14 @@ type BarrierService interface {
 	//
 	// 参数：
 	//	- userID: 用户ID
-	BarrierPass(logger fklog.FKLogI, header *Common.PacketHeader, userID uint64, barrierID int32, foeExp int32) (
+	BarrierPass(ctx context.Context, header *Common.PacketHeader, userID uint64, barrierID int32, foeExp int32) (
 		killMonsterNum int32, totalDamage int64, awards, rareAwards []*MazeCommon.MazeItem, errinfo *MessageType.ErrorInfo)
 
 	// BarrierDeath 在指定关卡中死亡
 	//
 	// 参数：
 	//	- userID: 用户ID
-	BarrierDeath(logger fklog.FKLogI, header *Common.PacketHeader, userID uint64, barrierID int32, foeExp int32) (
+	BarrierDeath(ctx context.Context, header *Common.PacketHeader, userID uint64, barrierID int32, foeExp int32) (
 		killMonsterNum int32, totalDamage int64, awards []*MazeCommon.MazeItem, errinfo *MessageType.ErrorInfo)
 
 	// GuardDeath 关卡中击杀(守卫)怪物掉落奖励(注意：GuardDeath接口不负责增加奖励，增加操作由调用方处理)

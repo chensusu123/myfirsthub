@@ -75,7 +75,7 @@ func (g *Game) OnMazeBarrierEnterRQ_10447_10448(s *session.Session, req *MazeGam
 		return
 	}
 
-	energy, _, err := barrierenergyservice.GlobalBarrierEnergyService.GetBarrierEnergy(logger, userId)
+	energy, _, err := barrierenergyservice.GlobalBarrierEnergyService.GetBarrierEnergy(ctx, userId)
 	if err != nil {
 		res.ErrInfo = errors.COMMON_ERROR_TIPS.Wrap("体力不足")
 		return err
@@ -213,7 +213,7 @@ func (g *Game) OnMazeBarrierEnterRQ_10447_10448(s *session.Session, req *MazeGam
 		// curEnergy = remainVal
 
 		// 扣体力
-		curEnergy, err = barrierenergyservice.GlobalBarrierEnergyService.SubEnergy(logger, userId, barrierCfg.Mop_cost)
+		curEnergy, err = barrierenergyservice.GlobalBarrierEnergyService.SubEnergy(ctx, userId, barrierCfg.Mop_cost)
 		if err != nil {
 			res.ErrInfo = errors.COMMON_ERROR_TIPS.Wrap("体力不足")
 			logger.ErrorWF("OnMazeBarrierEnterRQ SubEnergy fail", zap.Error(err))
@@ -227,7 +227,7 @@ func (g *Game) OnMazeBarrierEnterRQ_10447_10448(s *session.Session, req *MazeGam
 		}
 
 		defer func() {
-			barrierenergyservice.GlobalBarrierEnergyService.PushEnergyRecord(logger, userId, oldEnergy, curEnergy, mazeenergyrecord.EnterBarrier, userInfo.EnergyLastTime)
+			barrierenergyservice.GlobalBarrierEnergyService.PushEnergyRecord(ctx, userId, oldEnergy, curEnergy, mazeenergyrecord.EnterBarrier, userInfo.EnergyLastTime)
 		}()
 		//扣次数
 		//var maxNum int32

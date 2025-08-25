@@ -2,6 +2,7 @@ package equipaassemblegm
 
 import (
 	"bytes"
+	"context"
 	"fmt"
 	"net/http"
 	"sort"
@@ -230,7 +231,7 @@ func RegGm(logger fklog.FKLogI) {
 			writer.Write([]byte(e.Error()))
 			return
 		}
-		equips, err := AddEquipByCond(logger, userId, p)
+		equips, err := AddEquipByCond(context.TODO(), userId, p)
 		if err != nil {
 			writer.Write([]byte(fmt.Sprintf("执行失败: %s", err.Error())))
 		} else {
@@ -331,7 +332,7 @@ func RegGm(logger fklog.FKLogI) {
 				return true
 			}
 			uid := line[0]
-			e := equipbaggm.ClearUserBag(logger, uid)
+			e := equipbaggm.ClearUserBag(context.TODO(), uid)
 			if e != nil {
 				atomic.AddInt32(&fail, 1)
 				return true
@@ -348,7 +349,7 @@ func RegGm(logger fklog.FKLogI) {
 				return true
 			}
 			// 处理初始化装备
-			e = equip.HandleDollEquipInit(logger, uid, true)
+			e = equip.HandleDollEquipInit(context.TODO(), uid, true)
 			if e != nil {
 				atomic.AddInt32(&fail, 1)
 				return true
@@ -363,7 +364,7 @@ func RegGm(logger fklog.FKLogI) {
 		uid := fkutil.ToUint64(request.Form.Get("user_id"))
 		clear := fkutil.ToBool(request.Form.Get("clear"))
 		if clear {
-			e := equipbaggm.ClearUserBag(logger, uid)
+			e := equipbaggm.ClearUserBag(context.TODO(), uid)
 			if e != nil {
 				writer.Write([]byte(fmt.Sprintf("删除装备失败:%s", e.Error())))
 				return
@@ -381,7 +382,7 @@ func RegGm(logger fklog.FKLogI) {
 			return
 		}
 		// 处理初始化装备
-		e = equip.HandleDollEquipInit(logger, uid, true)
+		e = equip.HandleDollEquipInit(context.TODO(), uid, true)
 		if e != nil {
 			writer.Write([]byte(fmt.Sprintf("初始化装备失败:%s", e.Error())))
 			return
@@ -501,7 +502,7 @@ func RegGm(logger fklog.FKLogI) {
 		uid := fkutil.ToUint64(request.Form.Get("user_id"))
 		fixType := fkutil.ToInt32(request.Form.Get("fixType"))
 		logger.SetUid(uid)
-		e := ReCalcDollEquipAttr(logger, uid, fixType)
+		e := ReCalcDollEquipAttr(context.TODO(), uid, fixType)
 		if e != nil {
 			writer.Write([]byte(fmt.Sprintf("执行结果:%s", e.Error())))
 		} else {
@@ -531,7 +532,7 @@ func RegGm(logger fklog.FKLogI) {
 			}
 			uid := line[0]
 
-			e := ReCalcDollEquipAttr(logger, uid, fixType)
+			e := ReCalcDollEquipAttr(context.TODO(), uid, fixType)
 			if e == nil {
 				atomic.AddInt32(&succ, 1)
 			} else {
@@ -666,7 +667,7 @@ func RegGm(logger fklog.FKLogI) {
 	gm.SafeHttpRegister(logger, "/FixAssembleEquipInfo", func(writer http.ResponseWriter, request *http.Request) {
 		uid := fkutil.ToUint64(request.Form.Get("user_id"))
 		logger.SetUid(uid)
-		fixCnt, e := FixAssembleEquipInfo(logger, uid)
+		fixCnt, e := FixAssembleEquipInfo(context.TODO(), uid)
 		if e == nil {
 			writer.Write([]byte(fmt.Sprintf("fixed:%d个", fixCnt)))
 		} else {
@@ -691,7 +692,7 @@ func RegGm(logger fklog.FKLogI) {
 		uid := fkutil.ToUint64(request.Form.Get("user_id"))
 		logger.SetUid(uid)
 		targetLv := fkutil.ToInt32(request.Form.Get("lv"))
-		e := equip.OnGmEquipPosLvUp(logger, uid, targetLv)
+		e := equip.OnGmEquipPosLvUp(context.TODO(), uid, targetLv)
 		if e == nil {
 			writer.Write([]byte(string("ok")))
 		} else {

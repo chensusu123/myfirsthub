@@ -2,13 +2,10 @@ package dollequipdismantlekafka
 
 import (
 	"context"
-
 	"maze_game_server/io/dispatcher"
 	"maze_game_server/io/kafka/kafkacommonstruct"
 	"maze_game_server/model/flowmodel/mazeequipdismantrecordmodel"
 	"maze_game_server/services/flowservice"
-
-	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fklog"
 )
 
 const (
@@ -45,14 +42,14 @@ func init() {
 
 var d = dispatcher.NewDispatcher[*MazeGameEquipDismantleRecord]()
 
-func Watch(fn func(logger fklog.FKLogI, msg *MazeGameEquipDismantleRecord)) {
+func Watch(fn func(ctx context.Context, msg *MazeGameEquipDismantleRecord)) {
 	d.Watch(fn)
 }
 
 // 流水打点使用
-func PushDollEquipDismantleRecord(agent fklog.FKLogI, record *MazeGameEquipDismantleRecord) error {
+func PushDollEquipDismantleRecord(ctx context.Context, record *MazeGameEquipDismantleRecord) error {
 	flowData := mazeequipdismantrecordmodel.NewMazeGameEquipDismantleRecord(record.UserId, record.EquipGuids, record.TradeNum, record.Award, record.OpType, record.IsFail)
-	flowservice.GflowService.SendFlowData(context.TODO(), flowData)
+	flowservice.GflowService.SendFlowData(ctx, flowData)
 	// agent.InfoWF("PushDollEquipDismantleRecord data", zap.Any("userId", record.UserId), zap.Any("record", record))
 	return nil
 }

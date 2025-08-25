@@ -88,7 +88,7 @@ func ItemCollectCallback(logger fklog.FKLogI, userId uint64, bs []byte) error {
 			zap.Error(err))
 		return nil
 	}
-	err = ItemCollect(logger, userId, collectInfo)
+	err = ItemCollect(context.TODO(), userId, collectInfo)
 	if err != nil {
 		logger.ErrorWF("ItemCollectCallback ItemCollect", zap.Error(err))
 		return err
@@ -96,7 +96,8 @@ func ItemCollectCallback(logger fklog.FKLogI, userId uint64, bs []byte) error {
 	return nil
 }
 
-func ItemCollect(logger fklog.FKLogI, userId uint64, collectInfo *MazeCollectCache.MazeCollectInfo) (err error) {
+func ItemCollect(ctx context.Context, userId uint64, collectInfo *MazeCollectCache.MazeCollectInfo) (err error) {
+	logger := fklog.ContextAppLogger(ctx)
 	startTime := collectInfo.GetStartTime() // 收集开始时间
 	lastTime := collectInfo.GetLastTime()   // 上次收集结算时间
 	endTime := collectInfo.GetEndTime()     // 收集停止时间
@@ -208,7 +209,7 @@ func ItemCollect(logger fklog.FKLogI, userId uint64, collectInfo *MazeCollectCac
 		return
 	}
 
-	err = PushDollMazeCollectInfoLog(logger, userId, collectInfo, lastTime, collectTimes, mazecollectrecord.MazeCollectTimeOut, 0, nil, 0)
+	err = PushDollMazeCollectInfoLog(ctx, userId, collectInfo, lastTime, collectTimes, mazecollectrecord.MazeCollectTimeOut, 0, nil, 0)
 	if err != nil {
 		logger.ErrorWF("ItemCollect PushDollMazeCollectInfoLog err", zap.Any("collectInfo", collectInfo), zap.Error(err))
 		return
@@ -243,14 +244,15 @@ func SetCollectTimer(logger fklog.FKLogI, userId uint64, info *MazeCollectCache.
 	return
 }
 
-func NewCollectAfter(logger fklog.FKLogI, userId uint64, collectInfo *MazeCollectCache.MazeCollectInfo) {
+func NewCollectAfter(ctx context.Context, userId uint64, collectInfo *MazeCollectCache.MazeCollectInfo) {
+	logger := fklog.ContextAppLogger(ctx)
 	// 设置下一周期定时器
 	err := SetCollectTimer(logger, userId, collectInfo)
 	if err != nil {
 		logger.ErrorWF("NewCollectAfter SetCollectTimer err", zap.Any("collectInfo", collectInfo), zap.Error(err))
 		return
 	}
-	err = PushDollMazeCollectInfoLog(logger, userId, collectInfo, collectInfo.GetLastTime(), 0, mazecollectrecord.MazeCollectInit, 0, nil, 0)
+	err = PushDollMazeCollectInfoLog(ctx, userId, collectInfo, collectInfo.GetLastTime(), 0, mazecollectrecord.MazeCollectInit, 0, nil, 0)
 	if err != nil {
 		logger.ErrorWF("NewCollectAfter PushDollMazeCollectInfoLog err", zap.Any("collectInfo", collectInfo), zap.Error(err))
 		return

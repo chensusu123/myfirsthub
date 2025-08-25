@@ -1,6 +1,7 @@
 package dollequipbagrpc
 
 import (
+	"context"
 	"maze_game_server/common/errors"
 	"maze_game_server/pb/server/MazeEquipSvr"
 	"maze_game_server/servers/maze_main_server/process/equip"
@@ -19,9 +20,10 @@ func init() {
 }
 
 // 添加装备
-func MazeBagAddRQ(logger fklog.FKLogI, req *MazeEquipSvr.SvrAddMazeEquipRQ, res *MazeEquipSvr.SvrAddMazeEquipRS) error {
+func MazeBagAddRQ(ctx context.Context, req *MazeEquipSvr.SvrAddMazeEquipRQ, res *MazeEquipSvr.SvrAddMazeEquipRS) error {
+	logger := fklog.ContextAppLogger(ctx)
 	logger.InfoWF("MazeBagAddRQ start", zap.Any("req", req))
-	err := equip.OnSvrAddMazeEquipRQ(logger, int64(req.GetUserId()), req, res, "")
+	err := equip.OnSvrAddMazeEquipRQ(ctx, int64(req.GetUserId()), req, res, "")
 	if err != nil {
 		logger.ErrorWF("MazeBagAddRQ OnSvrAddMazeEquipRQ failed", zap.Any("req", req), zap.Error(err))
 		return err
@@ -34,9 +36,10 @@ func MazeBagAddRQ(logger fklog.FKLogI, req *MazeEquipSvr.SvrAddMazeEquipRQ, res 
 }
 
 // 添加装备
-func MazeBagAddRQWithOpData(logger fklog.FKLogI, req *MazeEquipSvr.SvrAddMazeEquipRQ, res *MazeEquipSvr.SvrAddMazeEquipRS, opData string) error {
+func MazeBagAddRQWithOpData(ctx context.Context, req *MazeEquipSvr.SvrAddMazeEquipRQ, res *MazeEquipSvr.SvrAddMazeEquipRS, opData string) error {
+	logger := fklog.ContextAppLogger(ctx)
 	logger.InfoWF("MazeBagAddRQWithOpData start", zap.Any("req", req))
-	err := equip.OnSvrAddMazeEquipRQ(logger, int64(req.GetUserId()), req, res, opData)
+	err := equip.OnSvrAddMazeEquipRQ(ctx, int64(req.GetUserId()), req, res, opData)
 	if err != nil {
 		logger.ErrorWF("MazeBagAddRQWithOpData OnSvrAddMazeEquipRQ failed", zap.Any("req", req), zap.Error(err))
 		return err
@@ -81,7 +84,7 @@ func MazeEquipAssembleRQ(logger fklog.FKLogI, req *MazeEquipSvr.SvrMazeEquipAsse
 // 出售装备rpc
 func MazeEquipSaleRQ(logger fklog.FKLogI, req *MazeEquipSvr.SvrMazeEquipSaleRQ, res *MazeEquipSvr.SvrMazeEquipSaleRS) error {
 	logger.InfoWF("MazeEquipSaleRQ start", zap.Any("req", req))
-	err := equip.OnSvrDollEquipSaleRQ(logger, int64(req.GetUserId()), req, res)
+	err := equip.OnSvrDollEquipSaleRQ(context.TODO(), int64(req.GetUserId()), req, res)
 	if err != nil {
 		logger.ErrorWF("MazeEquipSaleRQ OnSvrDollEquipSaleRQ failed", zap.Any("req", req), zap.Error(err))
 		return err

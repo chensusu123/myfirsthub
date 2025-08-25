@@ -12,7 +12,6 @@ import (
 	"maze_game_server/io/kafka/dollequipdismantlekafka"
 	"maze_game_server/io/redis/dollassemblesuitredis"
 	"maze_game_server/io/redis/mazebagequipredis"
-	"maze_game_server/lib/log"
 	"maze_game_server/lib/nano/session"
 	"maze_game_server/pb/common/MazeGameEquip"
 	"maze_game_server/pb/server/MazeEquipSvr"
@@ -28,7 +27,8 @@ import (
 func (e *Equip) OnDollEquipDismantleRQ_10410_10411(s *session.Session, req *MazeGameEquip.MazeEquipDismantleRQ) (err error) {
 	defer fkprometheus.DebugPMT("OnDollEquipDismantleRQ")()
 
-	logger := log.Clone("Equip", uint64(s.UID()), 0)
+	ctx := s.Context()
+	logger := fklog.ContextAppLogger(ctx)
 	res := &MazeGameEquip.MazeEquipDismantleRS{}
 
 	res.ErrInfo = errors.NO_ERROR
@@ -169,7 +169,7 @@ func (e *Equip) OnDollEquipDismantleRQ_10410_10411(s *session.Session, req *Maze
 	rsSale := &MazeEquipSvr.SvrMazeEquipSaleRS{}
 	logger.DebugWF("OnDollEquipDismantleRQ SvrDollEquipSaleRS dump", zap.Any("rqSale", rqSale), zap.Any("rsSale", rsSale))
 	// err = dollequipbagrpc.MazeEquipSaleRQ(logger, rqSale, rsSale)
-	err = OnSvrDollEquipSaleRQ(logger, int64(userId), rqSale, rsSale)
+	err = OnSvrDollEquipSaleRQ(ctx, int64(userId), rqSale, rsSale)
 	if err != nil {
 		logger.ErrorWF("OnDollEquipDismantleRQ SvrDollEquipSaleRS fail", zap.Error(err), zap.Any("rq", rqSale))
 		res.ErrInfo = errors.MODULE_ERROR.ToInfo()
@@ -200,7 +200,7 @@ func (e *Equip) OnDollEquipDismantleRQ_10410_10411(s *session.Session, req *Maze
 		}
 	}
 
-	DismantleRecordPush(logger, record, guidsBag, []int64{}, awardBag, map[int32]int64{}, equipGuid2EquipId)
+	DismantleRecordPush(ctx, record, guidsBag, []int64{}, awardBag, map[int32]int64{}, equipGuid2EquipId)
 
 	return
 }
@@ -220,7 +220,7 @@ func getEquipDismantle(logger fklog.FKLogI, equipGuid, equipId int64, cfg *GMaze
 	return
 }
 
-func DismantleRecordPush(logger fklog.FKLogI, record *dollequipdismantlekafka.MazeGameEquipDismantleRecord,
+func DismantleRecordPush(ctx context.Context, record *dollequipdismantlekafka.MazeGameEquipDismantleRecord,
 	guidsBag, guidsTempBag []int64, awardBag, awardTempBag map[int32]int64, equipGuid2EquipId map[int64]int32) {
 
 	equipGuidStr := make([]string, 0)
@@ -232,14 +232,14 @@ func DismantleRecordPush(logger fklog.FKLogI, record *dollequipdismantlekafka.Ma
 			equipGuidStr = append(equipGuidStr, fmt.Sprintf("%d:%d", guidsBag[i], equipGuid2EquipId[guidsBag[i]]))
 			if len(equipGuidStr) >= 80 {
 				record.EquipGuids = strings.Join(equipGuidStr, ",")
-				dollequipdismantlekafka.PushDollEquipDismantleRecord(logger, record)
+				dollequipdismantlekafka.PushDollEquipDismantleRecord(ctx, record)
 				equipGuidStr = make([]string, 0)
 			}
 		}
 
 		if len(equipGuidStr) > 0 {
 			record.EquipGuids = strings.Join(equipGuidStr, ",")
-			dollequipdismantlekafka.PushDollEquipDismantleRecord(logger, record)
+			dollequipdismantlekafka.PushDollEquipDismantleRecord(ctx, record)
 		}
 	}
 
@@ -252,13 +252,13 @@ func DismantleRecordPush(logger fklog.FKLogI, record *dollequipdismantlekafka.Ma
 			equipGuidStr = append(equipGuidStr, fmt.Sprintf("%d:%d", guidsTempBag[i], equipGuid2EquipId[guidsTempBag[i]]))
 			if len(equipGuidStr) >= 80 {
 				record.EquipGuids = strings.Join(equipGuidStr, ",")
-				dollequipdismantlekafka.PushDollEquipDismantleRecord(logger, record)
+				dollequipdismantlekafka.PushDollEquipDismantleRecord(ctx, record)
 				equipGuidStr = make([]string, 0)
 			}
 		}
 		if len(equipGuidStr) > 0 {
 			record.EquipGuids = strings.Join(equipGuidStr, ",")
-			dollequipdismantlekafka.PushDollEquipDismantleRecord(logger, record)
+			dollequipdismantlekafka.PushDollEquipDismantleRecord(ctx, record)
 		}
 	}
 }

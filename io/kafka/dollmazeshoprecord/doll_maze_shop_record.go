@@ -1,6 +1,7 @@
 package dollmazeshoprecord
 
 import (
+	"context"
 	"time"
 
 	"maze_game_server/io/dispatcher"
@@ -37,18 +38,19 @@ func init() {
 
 var d = dispatcher.NewDispatcher[*DollMazeShopRecord]()
 
-func Watch(fn func(logger fklog.FKLogI, msg *DollMazeShopRecord)) {
+func Watch(fn func(ctx context.Context, msg *DollMazeShopRecord)) {
 	d.Watch(fn)
 }
 
-func PushDollMazeShopRecord(agent fklog.FKLogI, data *DollMazeShopRecord) (err error) {
+func PushDollMazeShopRecord(ctx context.Context, data *DollMazeShopRecord) (err error) {
+	agent := fklog.ContextAppLogger(ctx)
 	data.CreateTime = time.Now().UnixNano() / 1000000
 	// data.GroupID = fkconfig.EnvVal.GroupID
 	// cnt, err := json.Marshal(data)
 	// if err != nil {
 	// 	return err
 	// }
-	d.Push(agent, data)
+	d.Push(ctx, data)
 	agent.DebugWF("PushDollMazeShopRecord data", zap.Any("userId", data.UserId), zap.Any("detail", data))
 	// err = mazeShopQueue.SendWithUserID(data.UserId, cnt)
 	// if err != nil {

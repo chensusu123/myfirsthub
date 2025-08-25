@@ -7,6 +7,7 @@
 package equip
 
 import (
+	"context"
 	"maze_game_server/common/constdef"
 	"maze_game_server/common/errors"
 	"maze_game_server/common/structsdef"
@@ -68,7 +69,8 @@ func getInitquipFromBag(logger fklog.FKLogI, userId uint64, equipIds map[int32]i
 	return equipInfoMap, nil
 }
 
-func HandleDollEquipInit(logger fklog.FKLogI, userId uint64, needNotify bool) error {
+func HandleDollEquipInit(ctx context.Context, userId uint64, needNotify bool) error {
+	logger := fklog.ContextAppLogger(ctx)
 	state, e := GetEquipInitState(logger, userId)
 	if e != nil {
 		logger.ErrorWF("HandleDollEquipInit get init state fail", zap.Error(e))
@@ -99,7 +101,7 @@ func HandleDollEquipInit(logger fklog.FKLogI, userId uint64, needNotify bool) er
 	if len(initEquips) == 0 {
 		return NoEquipInit(logger, userId)
 	}
-	return doInitDollEquip(logger, userId, state, initEquips, needNotify)
+	return doInitDollEquip(ctx, userId, state, initEquips, needNotify)
 }
 
 func NoEquipInit(logger fklog.FKLogI, userId uint64) error {
@@ -113,7 +115,8 @@ func NoEquipInit(logger fklog.FKLogI, userId uint64) error {
 	return err
 }
 
-func doInitDollEquip(logger fklog.FKLogI, userId uint64, state int64, equips map[int32]int64, needNotify bool) error {
+func doInitDollEquip(ctx context.Context, userId uint64, state int64, equips map[int32]int64, needNotify bool) error {
+	logger := fklog.ContextAppLogger(ctx)
 	// 先加入背包
 	var err error
 
@@ -158,7 +161,7 @@ func doInitDollEquip(logger fklog.FKLogI, userId uint64, state int64, equips map
 	if len(initEquipInfoMap) == 0 {
 		if state&constdef.DollEquipInitStateBag == 0 {
 			// 添加到背包后，再次查询装备
-			addInitEquipToBag(logger, userId, equips)
+			addInitEquipToBag(ctx, userId, equips)
 			initEquipInfoMap, err = getInitquipFromBag(logger, userId, equips)
 		}
 	}
@@ -178,7 +181,7 @@ func doInitDollEquip(logger fklog.FKLogI, userId uint64, state int64, equips map
 	}
 
 	// 穿戴到身上
-	err = dressInitEquip(logger, userId, initEquipInfoMap, needNotify)
+	err = dressInitEquip(ctx, userId, initEquipInfoMap, needNotify)
 	if err != nil {
 		return err
 	}
@@ -187,7 +190,8 @@ func doInitDollEquip(logger fklog.FKLogI, userId uint64, state int64, equips map
 }
 
 // 添加初始化装备到背包
-func addInitEquipToBag(logger fklog.FKLogI, userId uint64, equips map[int32]int64) (err error) {
+func addInitEquipToBag(ctx context.Context, userId uint64, equips map[int32]int64) (err error) {
+	logger := fklog.ContextAppLogger(ctx)
 	tradeNo := tradeno.GetTradeNum()
 	rqAdd := &MazeEquipSvr.SvrAddMazeEquipRQ{
 		UserId:      proto.Uint64(userId),
@@ -207,7 +211,7 @@ func addInitEquipToBag(logger fklog.FKLogI, userId uint64, equips map[int32]int6
 
 	rsAdd := &MazeEquipSvr.SvrAddMazeEquipRS{}
 	// err = dollequipbagrpc.MazeBagAddRQ(logger, rqAdd, rsAdd)
-	err = OnSvrAddMazeEquipRQ(logger, int64(userId), rqAdd, rsAdd, "")
+	err = OnSvrAddMazeEquipRQ(ctx, int64(userId), rqAdd, rsAdd, "")
 	if err != nil {
 		logger.ErrorWF("addInitEquipToBag MazeBagAddRQ fail", zap.Error(err), zap.Any("req", rqAdd), zap.Any("rs", rsAdd))
 	} else {
@@ -219,7 +223,8 @@ func addInitEquipToBag(logger fklog.FKLogI, userId uint64, equips map[int32]int6
 }
 
 // 穿戴初始化装备
-func dressInitEquip(logger fklog.FKLogI, userId uint64, equipInfoMap map[int32]*MazeEquipCache.MazeEquipInfoDb, needNotify bool) error {
+func dressInitEquip(ctx context.Context, userId uint64, equipInfoMap map[int32]*MazeEquipCache.MazeEquipInfoDb, needNotify bool) error {
+	logger := fklog.ContextAppLogger(ctx)
 	var (
 		chgEquipPosList []*MazeEquipCache.MazeEquipPosInfo
 		recordList      []*dollequipassmeblekakfa.MazeGameEquipAssembleRecord
@@ -297,7 +302,7 @@ func dressInitEquip(logger fklog.FKLogI, userId uint64, equipInfoMap map[int32]*
 				}
 			}
 			// 记录流水
-			EndEquipAssmebleRecord(logger, record, opCode, tmpMask, effect)
+			EndEquipAssmebleRecord(ctx, record, opCode, tmpMask, effect)
 		}
 	}()
 	// 保存装配数据
@@ -323,13 +328,13 @@ func dressInitEquip(logger fklog.FKLogI, userId uint64, equipInfoMap map[int32]*
 			calcAttrNotify.UserId = userId
 			calcAttrNotify.ChgType = constdef.MazeBuffChgTypeEquipInit
 			calcAttrNotify.BuffSrc = constdef.MazeBuffSrcEquip
-			e = mazeattrcalcnotifyqueue.SendMazeAttrCalcNotify(logger, calcAttrNotify)
+			e = mazeattrcalcnotifyqueue.SendMazeAttrCalcNotify(ctx, calcAttrNotify)
 			if e != nil {
 				opMask |= demconstdef.DollEquipAssembleOpMaskCalcAttr
 				logger.ErrorWF("dressInitEquip SendDollAttrCalcNotify fail", zap.Error(e))
 			}
 
-			mazebuffchgrrecordapi.SendMazeBuffChgRecord(logger, userId,
+			mazebuffchgrrecordapi.SendMazeBuffChgRecord(ctx, userId,
 				constdef.MazeBuffSrcEquip,
 				constdef.MazeBuffChgTypeEquipInit,
 				oldEffect.Other, effect.Other)
@@ -376,7 +381,8 @@ func InitDollEquipSuitSeq(logger fklog.FKLogI, userId uint64) error {
 }
 
 // 人偶属性初始化
-func HandleDollAttrInit(logger fklog.FKLogI, userId uint64, session string) {
+func HandleDollAttrInit(ctx context.Context, userId uint64, session string) {
+	logger := fklog.ContextAppLogger(ctx)
 	slen, err := mazecalcattrredis.HlenMazeCalcAttr(logger, userId)
 	if err != nil {
 		return
@@ -392,5 +398,5 @@ func HandleDollAttrInit(logger fklog.FKLogI, userId uint64, session string) {
 	calcAttrNotify.UserId = userId
 	calcAttrNotify.ChgType = constdef.MazeBuffChgTypeEquipInit
 	calcAttrNotify.Session = session
-	_ = mazeattrcalcnotifyqueue.SendMazeAttrCalcNotify(logger, calcAttrNotify)
+	_ = mazeattrcalcnotifyqueue.SendMazeAttrCalcNotify(ctx, calcAttrNotify)
 }

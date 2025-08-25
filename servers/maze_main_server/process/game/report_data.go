@@ -6,7 +6,6 @@ import (
 	"maze_game_server/common/errors"
 	"maze_game_server/io/kafka/mazemoneykafka"
 	"maze_game_server/io/kafka/mazeuserlevelkafka"
-	"maze_game_server/lib/log"
 	"maze_game_server/lib/nano/session"
 	"maze_game_server/model/equipdropmodel"
 	"maze_game_server/module/mazecommonvalue"
@@ -15,6 +14,7 @@ import (
 	"maze_game_server/services/equipdropservice"
 	"maze_game_server/services/moneyservice"
 
+	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fklog"
 	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fkprometheus"
 	"go.uber.org/zap"
 )
@@ -22,7 +22,9 @@ import (
 func (g *Game) OnReportDataRQ_10453_10454(s *session.Session, req *MazeGame.ReportDataRQ) (err error) {
 	defer fkprometheus.InfoPMT("ReportDataRQ")()
 
-	logger := log.Clone("Game", uint64(s.UID()), 0)
+	ctx := s.Context()
+	logger := fklog.ContextAppLogger(ctx)
+
 	res := &MazeGame.ReportDataRS{}
 
 	logger.InfoWF("ReportDataRQ start", zap.Any("req", req))
@@ -103,7 +105,7 @@ func (g *Game) OnReportDataRQ_10453_10454(s *session.Session, req *MazeGame.Repo
 		}
 		mazecommonvalue.HandleUserLevelExpChg(logger, userId, userInfo.Level, userInfo.Exp, req.GetHeader().GetSession())
 		if levelRecord.OldLevel != levelRecord.NewLevel {
-			mazeuserlevelkafka.PushMazeLevelRecord(logger, levelRecord)
+			mazeuserlevelkafka.PushMazeLevelRecord(ctx, levelRecord)
 		}
 
 	}
@@ -135,7 +137,7 @@ func (g *Game) OnReportDataRQ_10453_10454(s *session.Session, req *MazeGame.Repo
 				TradeNo:       int64(0),
 				ChgReason:     0,
 			}
-			mazemoneykafka.PushMazeMoneyRecord(logger, record)
+			mazemoneykafka.PushMazeMoneyRecord(ctx, record)
 		}
 	}
 

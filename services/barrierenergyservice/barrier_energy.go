@@ -17,28 +17,30 @@ import (
 	"google.golang.org/protobuf/proto"
 )
 
-func (s service) GetBarrierEnergy(logger fklog.FKLogI, userId uint64) (curEnergy int32, nextTime int64, err error) {
+func (s service) GetBarrierEnergy(ctx context.Context, userId uint64) (curEnergy int32, nextTime int64, err error) {
+	logger := fklog.ContextAppLogger(ctx)
 	uInfo, err := mazeuserinfo.GetUserInfoV2(logger, userId)
 	if err != nil {
 		logger.ErrorWF("GetBarrierEnergy GetUserInfoV2 fail", zap.Error(err))
 		return 0, 0, errors.New("userInfo not find")
 	}
 
-	curEnergy, nextUpdateTime, err := s.calEnergy(logger, userId)
+	curEnergy, nextUpdateTime, err := s.calEnergy(ctx, userId)
 	if err != nil {
 		logger.ErrorWF("GetBarrierEnergy calEnergy fail", zap.Error(err))
 		return uInfo.Energy, uInfo.EnergyLastTime, err
 	}
 
 	// 服务器添加定时器,补发ID包
-	s.startUserRecoverEnergy(logger, userId, nextUpdateTime)
+	s.startUserRecoverEnergy(ctx, userId, nextUpdateTime)
 
 	logger.InfoWF("GetBarrierEnergy success", zap.Any("userId", userId), zap.Any("curEnergy", uInfo.Energy), zap.Any("nextUpdateTime", nextUpdateTime))
 	return curEnergy, nextUpdateTime, err
 }
 
 // 增加体力，结果大于最大值时体力等于最大值
-func (s service) AddEnergy(logger fklog.FKLogI, userId uint64, addVal int32) (curEnergy int32, nextTime int64, err error) {
+func (s service) AddEnergy(ctx context.Context, userId uint64, addVal int32) (curEnergy int32, nextTime int64, err error) {
+	logger := fklog.ContextAppLogger(ctx)
 	uInfo, err := mazeuserinfo.GetUserInfoV2(logger, userId)
 	if err != nil {
 		logger.ErrorWF("AddEnergy GetUserInfoV2 fail", zap.Error(err))
@@ -46,7 +48,7 @@ func (s service) AddEnergy(logger fklog.FKLogI, userId uint64, addVal int32) (cu
 	}
 	maxVal := GetEnergyMax() // 体力最大值
 
-	cur, nextTime, err := s.GetBarrierEnergy(logger, userId)
+	cur, nextTime, err := s.GetBarrierEnergy(ctx, userId)
 	if err != nil {
 		logger.ErrorWF("AddEnergy GetBarrierEnergy fail", zap.Error(err))
 		return uInfo.Energy, uInfo.EnergyLastTime, err
@@ -69,14 +71,15 @@ func (s service) AddEnergy(logger fklog.FKLogI, userId uint64, addVal int32) (cu
 }
 
 // 减少体力
-func (s service) SubEnergy(logger fklog.FKLogI, userId uint64, subVal int32) (int32, error) {
+func (s service) SubEnergy(ctx context.Context, userId uint64, subVal int32) (int32, error) {
+	logger := fklog.ContextAppLogger(ctx)
 	uInfo, err := mazeuserinfo.GetUserInfoV2(logger, userId)
 	if err != nil {
 		logger.ErrorWF("AddEnergy GetUserInfoV2 fail", zap.Error(err))
 		return 0, errors.New("userInfo not find")
 	}
 
-	curEnergy, _, err := s.GetBarrierEnergy(logger, userId)
+	curEnergy, _, err := s.GetBarrierEnergy(ctx, userId)
 	if err != nil {
 		logger.ErrorWF("SubEnergy GetBarrierEnergy fail", zap.Error(err))
 		return uInfo.Energy, err
@@ -194,7 +197,8 @@ func GetEnergyItemCfg() (id, count int32) {
 }
 
 // 计算体力
-func (s service) calEnergy(logger fklog.FKLogI, userId uint64) (curEnergy int32, nextTime int64, err error) {
+func (s service) calEnergy(ctx context.Context, userId uint64) (curEnergy int32, nextTime int64, err error) {
+	logger := fklog.ContextAppLogger(ctx)
 	uInfo, err := mazeuserinfo.GetUserInfoV2(logger, userId)
 	if err != nil {
 		logger.ErrorWF("GetBarrierEnergy GetUserInfoV2 fail", zap.Error(err))
@@ -216,7 +220,7 @@ func (s service) calEnergy(logger fklog.FKLogI, userId uint64) (curEnergy int32,
 		uInfo.SetEnergy(initVal)
 		updateFlag = 1
 		nextUpdateTime = now + int64(cost)
-		s.PushEnergyRecord(logger, userId, oldEnergy, uInfo.Energy, mazeenergyrecord.InitEnergy, nextUpdateTime)
+		s.PushEnergyRecord(ctx, userId, oldEnergy, uInfo.Energy, mazeenergyrecord.InitEnergy, nextUpdateTime)
 
 	} else {
 		curVal := uInfo.Energy
@@ -236,7 +240,7 @@ func (s service) calEnergy(logger fklog.FKLogI, userId uint64) (curEnergy int32,
 				uInfo.SetEnergyLastTime(lastUpdateTime)
 				uInfo.SetEnergy(curVal)
 				updateFlag = 2
-				s.PushEnergyRecord(logger, userId, oldEnergy, uInfo.Energy, mazeenergyrecord.TimerRecovery, nextUpdateTime)
+				s.PushEnergyRecord(ctx, userId, oldEnergy, uInfo.Energy, mazeenergyrecord.TimerRecovery, nextUpdateTime)
 			}
 		} else {
 			nextUpdateTime = now + int64(cost)
@@ -259,7 +263,8 @@ func (s service) calEnergy(logger fklog.FKLogI, userId uint64) (curEnergy int32,
 	return uInfo.Energy, nextUpdateTime, nil
 }
 
-func (s service) ResetEnergy(logger fklog.FKLogI, userId uint64) (err error) {
+func (s service) ResetEnergy(ctx context.Context, userId uint64) (err error) {
+	logger := fklog.ContextAppLogger(ctx)
 	uInfo, err := mazeuserinfo.GetUserInfoV2(logger, userId)
 	if err != nil {
 		logger.ErrorWF("ResetEnergy GetUserInfoV2 fail", zap.Error(err))
@@ -282,12 +287,13 @@ func (s service) ResetEnergy(logger fklog.FKLogI, userId uint64) (err error) {
 	}
 	s.SendEnergyChgPack(logger, userId, uInfo.Energy, nextUpdateTime)
 
-	s.PushEnergyRecord(logger, userId, oldEnergy, uInfo.Energy, mazeenergyrecord.Reset, nextUpdateTime)
+	s.PushEnergyRecord(ctx, userId, oldEnergy, uInfo.Energy, mazeenergyrecord.Reset, nextUpdateTime)
 
 	return nil
 }
 
-func (s service) PushEnergyRecord(logger fklog.FKLogI, userId uint64, oldEnergy, newEnergy, opType int32, lastTime int64) {
+func (s service) PushEnergyRecord(ctx context.Context, userId uint64, oldEnergy, newEnergy, opType int32, lastTime int64) {
+	logger := fklog.ContextAppLogger(ctx)
 	if oldEnergy != newEnergy {
 		record := &mazeenergyrecord.MazeEnergyChgRecord{
 			UserId:   userId,
@@ -296,7 +302,7 @@ func (s service) PushEnergyRecord(logger fklog.FKLogI, userId uint64, oldEnergy,
 			LastTime: lastTime,
 			OpType:   opType,
 		}
-		err := mazeenergyrecord.PushMazeEnergyChgRecord(logger, record)
+		err := mazeenergyrecord.PushMazeEnergyChgRecord(ctx, record)
 		if err != nil {
 			logger.ErrorWF("OnUseMazeEnergyItemRQ PushMazeEnergyChgRecord fail", zap.Error(err))
 		}

@@ -2,12 +2,12 @@ package equip_gm
 
 import (
 	"maze_game_server/common/errors"
-	"maze_game_server/lib/log"
 	"maze_game_server/lib/nano/component"
 	"maze_game_server/lib/nano/session"
 	"maze_game_server/pb/common/MazeGameEquip"
 	"maze_game_server/servers/maze_main_server/process/equip_gm/resetequipcmd"
 
+	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fklog"
 	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fkprometheus"
 	"gitlab.ifreetalk.com/maze-plate/freetk/fkutil"
 	"go.uber.org/zap"
@@ -30,7 +30,8 @@ func RegTcpHandler() {
 func (eg *EquipGM) OnSendMazeEquipCmdRQ_10412_10413(s *session.Session, req *MazeGameEquip.SendMazeEquipCmdRQ) (err error) {
 	defer fkprometheus.DebugPMT("OnSendMazeEquipCmdRQ")()
 
-	logger := log.Clone("EquipGM", uint64(s.UID()), 0)
+	ctx := s.Context()
+	logger := fklog.ContextAppLogger(ctx)
 	res := &MazeGameEquip.SendMazeEquipCmdRS{}
 
 	res.ErrInfo = errors.NO_ERROR
@@ -51,7 +52,7 @@ func (eg *EquipGM) OnSendMazeEquipCmdRQ_10412_10413(s *session.Session, req *Maz
 	code := fkutil.ToInt32(codeS)
 	switch code {
 	case 1001:
-		err = resetequipcmd.RunCmd1001(logger, userId, req.GetHeader().GetSession(), req.GetCmdParam())
+		err = resetequipcmd.RunCmd1001(ctx, userId, req.GetHeader().GetSession(), req.GetCmdParam())
 		if err != nil {
 			err = errors.New("执行失败")
 		}

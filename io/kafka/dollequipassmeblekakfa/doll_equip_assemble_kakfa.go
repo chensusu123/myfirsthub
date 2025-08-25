@@ -6,13 +6,11 @@ import (
 	"maze_game_server/io/kafka/kafkacommonstruct"
 	"maze_game_server/model/flowmodel/mazeequipassemblerecordmodel"
 	"maze_game_server/services/flowservice"
-
-	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fklog"
 )
 
 var d = dispatcher.NewDispatcher[*MazeGameEquipAssembleRecord]()
 
-func Watch(fn func(logger fklog.FKLogI, msg *MazeGameEquipAssembleRecord)) {
+func Watch(fn func(ctx context.Context, msg *MazeGameEquipAssembleRecord)) {
 	d.Watch(fn)
 }
 
@@ -55,9 +53,9 @@ type MazeGameEquipAssembleRecord struct {
 }
 
 // 流水打点使用
-func SendMazeGameEquipAssembleRecord(logger fklog.FKLogI, record *MazeGameEquipAssembleRecord) error {
+func SendMazeGameEquipAssembleRecord(ctx context.Context, record *MazeGameEquipAssembleRecord) error {
 	flowData := mazeequipassemblerecordmodel.NewMazeGameEquipAssembleRecord(record.UserId, record.EquipPos, record.OpType, record.NewEquipId, record.NewGuid, record.OldEquipId, record.OldGuid,
 		record.OldFElem, record.NewFElem, record.RetCode, record.CodeMask, record.TransID)
-	flowservice.GflowService.SendFlowData(context.TODO(), flowData)
+	flowservice.GflowService.SendFlowData(ctx, flowData)
 	return nil
 }

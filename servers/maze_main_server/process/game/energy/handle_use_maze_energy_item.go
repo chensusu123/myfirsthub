@@ -2,17 +2,18 @@ package energy
 
 import (
 	"context"
-	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fkprometheus"
 	"maze_game_server/common/errors"
 	"maze_game_server/common/tradeno"
 	"maze_game_server/io/kafka/mazeenergyrecord"
-	"maze_game_server/lib/log"
 	"maze_game_server/lib/nano/session"
 	"maze_game_server/module/mazeuserinfo"
 	"maze_game_server/pb/common/MazeEnergy"
 	"maze_game_server/services/barrierenergyservice"
 	"maze_game_server/services/itemservice"
 	"time"
+
+	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fklog"
+	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fkprometheus"
 
 	"go.uber.org/zap"
 	"google.golang.org/protobuf/proto"
@@ -21,7 +22,8 @@ import (
 func (e *Energy) OnUseMazeEnergyItemRQ_10611_10612(s *session.Session, req *MazeEnergy.UseMazeEnergyItemRQ) (err error) {
 	defer fkprometheus.DebugPMT("OnUseMazeEnergyItemRQ")()
 
-	logger := log.Clone("Energy", uint64(s.UID()), 0)
+	ctx := s.Context()
+	logger := fklog.ContextAppLogger(ctx)
 	res := &MazeEnergy.UseMazeEnergyItemRS{}
 
 	res.ErrInfo = errors.NO_ERROR
@@ -92,7 +94,7 @@ func (e *Energy) OnUseMazeEnergyItemRQ_10611_10612(s *session.Session, req *Maze
 
 	logger.InfoWF("OnUseMazeEnergyItemRQ DeductItemsEx succ", zap.Any("careCost", careCost), zap.Uint64("tid", tid))
 
-	energy, nextTime, err := barrierenergyservice.GlobalBarrierEnergyService.AddEnergy(logger, userId, recoverNum)
+	energy, nextTime, err := barrierenergyservice.GlobalBarrierEnergyService.AddEnergy(ctx, userId, recoverNum)
 	if err != nil {
 		logger.ErrorWF("OnUseMazeEnergyItemRQ AddEnergy fail", zap.Error(err))
 		return err
@@ -104,7 +106,7 @@ func (e *Energy) OnUseMazeEnergyItemRQ_10611_10612(s *session.Session, req *Maze
 		NextRecoveryTime: proto.Int64(nextTime)}
 
 	defer func() {
-		barrierenergyservice.GlobalBarrierEnergyService.PushEnergyRecord(logger, userId, oldEnergy, energy, mazeenergyrecord.ItemEnergy, uInfo.EnergyLastTime)
+		barrierenergyservice.GlobalBarrierEnergyService.PushEnergyRecord(ctx, userId, oldEnergy, energy, mazeenergyrecord.ItemEnergy, uInfo.EnergyLastTime)
 	}()
 
 	return

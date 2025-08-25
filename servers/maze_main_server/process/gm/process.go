@@ -92,7 +92,7 @@ func RegGm(logger fklog.FKLogI) {
 					NewLevel:    int32(userInfo.Level),
 					NewTotalExp: int32(userInfo.TotalExp),
 				}
-				mazeuserlevelkafka.PushMazeLevelRecord(logger, levelRecord)
+				mazeuserlevelkafka.PushMazeLevelRecord(context.TODO(), levelRecord)
 			}
 		}()
 
@@ -355,7 +355,7 @@ func RegGm(logger fklog.FKLogI) {
 		if count > barrierenergyservice.GlobalBarrierEnergyService.GetEnergyMaxValue() {
 			return
 		}
-		curEnergy, _, err := barrierenergyservice.GlobalBarrierEnergyService.AddEnergy(logger, userId, count)
+		curEnergy, _, err := barrierenergyservice.GlobalBarrierEnergyService.AddEnergy(context.TODO(), userId, count)
 		if err != nil {
 			return
 		}
@@ -476,13 +476,23 @@ func RegGm(logger fklog.FKLogI) {
 	gm.SafeHttpRegister(logger, "/GetExcelData", func(writer http.ResponseWriter, request *http.Request) {
 		fileName := request.Form.Get("fileName")
 		sheetName := request.Form.Get("sheetName")
-		tableData, err := readExcelFile("./conf.d/data/"+fileName, sheetName)
-		if err != nil {
-			writer.Write([]byte(err.Error()))
-			return
+		var output ExcelOutput
+
+		if data, ok := sheetDataCache[sheetName]; ok {
+			output = ExcelOutput{
+				Status: 0,
+				Desc:   "",
+				Data:   data,
+			}
+		} else {
+			tableData, err := readExcelFile("./conf.d/data/"+fileName, sheetName)
+			if err != nil {
+				writer.Write([]byte(err.Error()))
+				return
+			}
+			output = convertTableToJSON(tableData)
 		}
 
-		output := convertTableToJSON(tableData)
 		jsonOutput, err := json.Marshal(output)
 		if err != nil {
 			writer.Write([]byte(err.Error()))
@@ -618,4 +628,10 @@ type ExcelOutput struct {
 type DynamicData struct {
 	List  []*orderedmap.OrderedMap `json:"list"` // 有序map切片，保证对象格式和顺序
 	Total int                      `json:"total"`
+}
+
+var sheetDataCache map[string]DynamicData
+
+func init() {
+	sheetDataCache = make(map[string]DynamicData)
 }

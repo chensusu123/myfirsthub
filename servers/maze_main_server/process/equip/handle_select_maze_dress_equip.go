@@ -17,7 +17,6 @@ import (
 	"maze_game_server/io/redis/mazeattrcalcnotifyqueue"
 	"maze_game_server/io/redis/mazebuffinforedis"
 	"maze_game_server/io/redis/mazeuserlevelredis"
-	"maze_game_server/lib/log"
 	"maze_game_server/lib/nano/session"
 	"maze_game_server/module/assembleidpack"
 	"maze_game_server/module/calcassembleattr"
@@ -39,7 +38,8 @@ import (
 func (ep *Equip) OnSelectDressMazeEquipRQ_10420_10421(s *session.Session, req *MazeGameEquip.SelectDressMazeEquipRQ) (err error) {
 	defer fkprometheus.DebugPMT("OnSelectDressMazeEquipRQ")()
 
-	logger := log.Clone("Equip", uint64(s.UID()), 0)
+	ctx := s.Context()
+	logger := fklog.ContextAppLogger(ctx)
 	res := &MazeGameEquip.SelectDressMazeEquipRS{}
 
 	res.ErrInfo = errors.NO_ERROR
@@ -221,7 +221,7 @@ func (ep *Equip) OnSelectDressMazeEquipRQ_10420_10421(s *session.Session, req *M
 	var opMask int32
 
 	defer func() {
-		EndEquipAssmebleRecord(logger, record, opCode, opMask, effectInfo)
+		EndEquipAssmebleRecord(ctx, record, opCode, opMask, effectInfo)
 	}()
 	// 保存装配数据
 	err = dollassemblesuitredis.SaveEquipAssembleInfoV2(logger, userId, assembleInfo.GetCurSuitIndex(), updateEquipPos)
@@ -256,13 +256,13 @@ func (ep *Equip) OnSelectDressMazeEquipRQ_10420_10421(s *session.Session, req *M
 		calcAttrNotify.BuffSrc = constdef.MazeBuffSrcEquip
 
 		calcAttrNotify.Session = req.GetHeader().GetSession()
-		e = mazeattrcalcnotifyqueue.SendMazeAttrCalcNotify(logger, calcAttrNotify)
+		e = mazeattrcalcnotifyqueue.SendMazeAttrCalcNotify(ctx, calcAttrNotify)
 		if e != nil {
 			opMask |= demconstdef.DollEquipAssembleOpMaskCalcAttr
 			logger.ErrorWF("OnSelectDressMazeEquipRQ SendDollAttrCalcNotify fail", zap.Error(e))
 		}
 
-		mazebuffchgrrecordapi.SendMazeBuffChgRecord(logger, userId,
+		mazebuffchgrrecordapi.SendMazeBuffChgRecord(ctx, userId,
 			constdef.MazeBuffSrcEquip,
 			constdef.MazeBuffChgTypeEquipDress,
 			oldEffect.Other, effectInfo.Other)

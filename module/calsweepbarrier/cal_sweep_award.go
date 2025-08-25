@@ -153,7 +153,8 @@ func GetSweepBarrierAward(logger fklog.FKLogI, uid uint64, barrierId int32) (equ
 }
 
 // 发送扫荡奖励
-func CalUserSweepBarrierAward(logger fklog.FKLogI, uid uint64, barrierId int32, header *Common.PacketHeader) (awardItem []*MazeCommon.MazeItem, rareItem []*MazeCommon.MazeItem, err error) {
+func CalUserSweepBarrierAward(ctx context.Context, uid uint64, barrierId int32, header *Common.PacketHeader) (awardItem []*MazeCommon.MazeItem, rareItem []*MazeCommon.MazeItem, err error) {
+	logger := fklog.ContextAppLogger(ctx)
 	// 获取扫荡奖励
 	equipItem, addItems, expItem, equipNum, err := GetSweepBarrierAward(logger, uid, barrierId)
 	if err != nil {
@@ -214,7 +215,7 @@ func CalUserSweepBarrierAward(logger fklog.FKLogI, uid uint64, barrierId int32, 
 					NewLevel:    int32(newLevel),
 					NewTotalExp: int32(userInfo.TotalExp),
 				}
-				mazeuserlevelkafka.PushMazeLevelRecord(logger, levelRecord)
+				mazeuserlevelkafka.PushMazeLevelRecord(ctx, levelRecord)
 			}
 		}()
 	}
@@ -233,7 +234,7 @@ func CalUserSweepBarrierAward(logger fklog.FKLogI, uid uint64, barrierId int32, 
 		//697	UN_CGK_COMMON_BILL_TYPE_697	迷宫扫荡
 
 		awardItems := itemutil.Map2ItemInfo(addItems)
-		errInfo := itemservice.GlobalItemService.AddItem(context.TODO(), uid, itemservice.ItemOpTypeSweep, tradeNo, awardItems...)
+		errInfo := itemservice.GlobalItemService.AddItem(ctx, uid, itemservice.ItemOpTypeSweep, tradeNo, awardItems...)
 		if errInfo != nil {
 			logger.ErrorWF("CalUserSweepBarrierAward AddItemEx fail", zap.Any("errInfo", errInfo), zap.Any("otherItem", otherItem))
 		}
@@ -270,7 +271,7 @@ func CalUserSweepBarrierAward(logger fklog.FKLogI, uid uint64, barrierId int32, 
 
 	// 发送装备
 	if len(equipItem) > 0 {
-		rs, err := addequip.AddEquipToBag(logger, uid, int32(MazeEquipSvr.ENUM_EQUIP_BAG_OP_TYPE_MAZE_EQUIP_SWEEP_AWARD), tradeNo, equipItem)
+		rs, err := addequip.AddEquipToBag(ctx, uid, int32(MazeEquipSvr.ENUM_EQUIP_BAG_OP_TYPE_MAZE_EQUIP_SWEEP_AWARD), tradeNo, equipItem)
 		if err != nil {
 			logger.ErrorWF("CalUserSweepBarrierAward addEquipToBag fail", zap.Error(err), zap.Any("optype", int32(MazeEquipSvr.ENUM_EQUIP_BAG_OP_TYPE_MAZE_EQUIP_BOX_AWARD)),
 				zap.Any("tradeNo", tradeNo), zap.Any("addEquip", equipItem))
@@ -296,10 +297,10 @@ func CalUserSweepBarrierAward(logger fklog.FKLogI, uid uint64, barrierId int32, 
 		Barrier:        barrierId,
 		GameRet:        mazebarrieruserkafka.GameRetSweep,
 		Awards:         getAwards(logger, rareItem, awardItem),
-		KillMonsterNum: GetBarrirerMonsterNum(context.TODO(), barrierId),
+		KillMonsterNum: GetBarrirerMonsterNum(ctx, barrierId),
 	}
 
-	mazebarrieruserkafka.PushMazeBarrierUserRecord(logger, sweepRecord)
+	mazebarrieruserkafka.PushMazeBarrierUserRecord(ctx, sweepRecord)
 
 	return
 }

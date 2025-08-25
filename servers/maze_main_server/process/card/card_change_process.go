@@ -63,10 +63,11 @@ func OnMazeCardChangeProcess(c context.Context, logger fklog.FKLogI, index int, 
 		return nil
 	}
 
-	return AddMazeCard(logger, userId, expirationTime)
+	return AddMazeCard(c, userId, expirationTime)
 }
 
-func AddMazeCard(logger fklog.FKLogI, userId uint64, expirationTime int64) error {
+func AddMazeCard(ctx context.Context, userId uint64, expirationTime int64) error {
+	logger := fklog.ContextAppLogger(ctx)
 	logger.DebugWF("AddMazeCard start", zap.Uint64("userId", userId), zap.Int64("time", expirationTime))
 	realBuff, showBuff := mazeconfigv8config.GetMazeConfig(100), mazeconfigv8config.GetMazeConfig(101)
 	if len(realBuff) != 0 || len(showBuff) != 0 {
@@ -90,7 +91,7 @@ func AddMazeCard(logger fklog.FKLogI, userId uint64, expirationTime int64) error
 			ChgType:    constdef.MazeBuffChgTypeCardOpen,
 		}
 
-		err = mazeattrcalcnotifyqueue.SendMazeAttrCalcNotify(logger, msg)
+		err = mazeattrcalcnotifyqueue.SendMazeAttrCalcNotify(ctx, msg)
 		if err != nil {
 			logger.ErrorWF("AddMazeCard SendMazeAttrCalcNotify failed", zap.Any("msg", msg), zap.Error(err))
 			return err
@@ -111,7 +112,8 @@ func AddMazeCard(logger fklog.FKLogI, userId uint64, expirationTime int64) error
 	return nil
 }
 
-func DeleteMazeCard(logger fklog.FKLogI, userId uint64) error {
+func DeleteMazeCard(ctx context.Context, userId uint64) error {
+	logger := fklog.ContextAppLogger(ctx)
 	logger.DebugWF("DeleteMazeCard start", zap.Uint64("userId", userId))
 	// 删除月卡buff
 	err := mazebuffinforedis.DelMazeBuffBySrc(logger, userId, constdef.MazeBuffSrcMonthCard)
@@ -135,7 +137,7 @@ func DeleteMazeCard(logger fklog.FKLogI, userId uint64) error {
 		return err
 	}
 
-	err = mazeattrcalcnotifyqueue.SendMazeAttrCalcNotify(logger, msg)
+	err = mazeattrcalcnotifyqueue.SendMazeAttrCalcNotify(ctx, msg)
 	if err != nil {
 		logger.ErrorWF("DeleteMazeCard SendMazeAttrCalcNotify failed", zap.Any("msg", msg), zap.Error(err))
 		return err

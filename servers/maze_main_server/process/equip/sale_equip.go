@@ -16,8 +16,9 @@ import (
 	"google.golang.org/protobuf/proto"
 )
 
-func OnSvrDollEquipSaleRQ(ctx fklog.FKLogI, shardingID int64, rqMsg proto.Message, rsMsg proto.Message) (err error) {
-	agent := fkserver.NewUserContext(context.TODO(), uint64(shardingID), ctx)
+func OnSvrDollEquipSaleRQ(ctx context.Context, shardingID int64, rqMsg proto.Message, rsMsg proto.Message) (err error) {
+	logger := fklog.ContextAppLogger(ctx)
+	agent := fkserver.NewUserContext(context.TODO(), uint64(shardingID), logger)
 	req := rqMsg.(*MazeEquipSvr.SvrMazeEquipSaleRQ)
 	res := rsMsg.(*MazeEquipSvr.SvrMazeEquipSaleRS)
 	res.ErrInfo = errors.NO_ERROR
@@ -53,7 +54,7 @@ func OnSvrDollEquipSaleRQ(ctx fklog.FKLogI, shardingID int64, rqMsg proto.Messag
 	if err != nil {
 		agent.ErrorWF("OnSvrDollEquipSaleRQ SaveBagInfoToRedis error!", zap.Error(err))
 		res.ErrInfo = errors.DB_SAVE_ERROR.ToInfo()
-		PushMazeEquipBagLogEx(agent, agent.UserID, nil, equipList, req.GetTradeNum(), 5, mazeequipbagrecord.MazeDelEquip, 0, 1)
+		PushMazeEquipBagLogEx(ctx, agent.UserID, nil, equipList, req.GetTradeNum(), 5, mazeequipbagrecord.MazeDelEquip, 0, 1)
 		return
 	}
 	equipCliList := make([]*MazeGameEquip.MazeEquipInfo, 0)

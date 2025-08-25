@@ -28,9 +28,10 @@ import (
 	"google.golang.org/protobuf/proto"
 )
 
-func OnSvrAddMazeEquipRQ(ctx fklog.FKLogI, shardingID int64, rqMsg proto.Message, rsMsg proto.Message, opData string) (err error) {
+func OnSvrAddMazeEquipRQ(ctx context.Context, shardingID int64, rqMsg proto.Message, rsMsg proto.Message, opData string) (err error) {
 	defer fkprometheus.DebugPMT("OnSvrAddMazeEquipRQ")()
-	userCtx := fkserver.NewUserContext(context.TODO(), uint64(shardingID), ctx)
+	logger := fklog.ContextAppLogger(ctx)
+	userCtx := fkserver.NewUserContext(ctx, uint64(shardingID), logger)
 	req := rqMsg.(*MazeEquipSvr.SvrAddMazeEquipRQ)
 	res := rsMsg.(*MazeEquipSvr.SvrAddMazeEquipRS)
 	res.ErrInfo = errors.NO_ERROR
@@ -41,7 +42,7 @@ func OnSvrAddMazeEquipRQ(ctx fklog.FKLogI, shardingID int64, rqMsg proto.Message
 		costTime := time.Since(addStartTime).Seconds()
 		userCtx.WarnWF("OnSvrAddMazeEquipRQ end ", zap.Any("req", req), zap.Any("res", res), zap.Float64("costTime", costTime))
 		if costTime >= 0.5 {
-			ctx.ErrorWF("OnSvrAddMazeEquipRQ timeout", zap.Any("req", req), zap.Any("res", res), zap.Float64("costTime", costTime))
+			userCtx.ErrorWF("OnSvrAddMazeEquipRQ timeout", zap.Any("req", req), zap.Any("res", res), zap.Float64("costTime", costTime))
 		}
 	}()
 
@@ -59,44 +60,44 @@ func OnSvrAddMazeEquipRQ(ctx fklog.FKLogI, shardingID int64, rqMsg proto.Message
 		return err
 	}
 
-	bagEquipMgr := bagmodule.NewBagEquipMgr(ctx, uint64(shardingID))
+	bagEquipMgr := bagmodule.NewBagEquipMgr(logger, uint64(shardingID))
 	err = bagEquipMgr.LoadBagFromRedis()
 	if err != nil {
 		res.ErrInfo = errors.MODULE_ERROR.ToInfo()
-		ctx.ErrorWF("OnSvrAddMazeEquipRQ LoadBagFromRedis fail", zap.Error(err))
+		userCtx.ErrorWF("OnSvrAddMazeEquipRQ LoadBagFromRedis fail", zap.Error(err))
 		return err
 	}
 
 	stageAddition, err := GetUserEquipAddition(userCtx, userCtx.UserID)
 	if err != nil {
 		res.ErrInfo = errors.MODULE_ERROR.ToInfo()
-		ctx.ErrorWF("OnSvrAddMazeEquipRQ GetUserEquipAddition fail", zap.Error(err))
+		userCtx.ErrorWF("OnSvrAddMazeEquipRQ GetUserEquipAddition fail", zap.Error(err))
 		return
 	}
 
 	attrStageRow := GMazeEquipAttrStageV8Cfg.Get(stageAddition)
 	if attrStageRow == nil {
 		res.ErrInfo = errors.CONFIG_NOT_FOUND.ToInfo()
-		ctx.ErrorWF("OnSvrAddMazeEquipRQ GMazeEquipAttrStageV8Cfg fail", zap.Int32("tap", stageAddition))
+		userCtx.ErrorWF("OnSvrAddMazeEquipRQ GMazeEquipAttrStageV8Cfg fail", zap.Int32("tap", stageAddition))
 		return
 	}
 	totalScoreMap, err := GetTotalScoreAndBarrierMap(userCtx, userCtx.UserID, req.EquipList)
 	if err != nil {
 		res.ErrInfo = errors.MODULE_ERROR.ToInfo()
-		ctx.ErrorWF("OnSvrAddMazeEquipRQ GetTotalScoreMap fail", zap.Error(err))
+		userCtx.ErrorWF("OnSvrAddMazeEquipRQ GetTotalScoreMap fail", zap.Error(err))
 		return
 	}
 
 	allotGuids, err := AddEquipAllotGuid(userCtx, userCtx.UserID, int32(len(req.EquipList)))
 	if err != nil {
 		res.ErrInfo = errors.MODULE_ERROR.ToInfo()
-		ctx.ErrorWF("OnSvrAddMazeEquipRQ AddEquipAllotGuid fail", zap.Error(err))
+		userCtx.ErrorWF("OnSvrAddMazeEquipRQ AddEquipAllotGuid fail", zap.Error(err))
 		return
 	}
 	// 检查guid分配数量是否充足
 	if len(allotGuids) != len(req.EquipList) {
 		res.ErrInfo = errors.COMMON_ERROR_TIPS.Wrap("alloc guid fail")
-		ctx.ErrorWF("OnSvrAddMazeEquipRQ alloc guid less",
+		userCtx.ErrorWF("OnSvrAddMazeEquipRQ alloc guid less",
 			zap.Int("need", len(req.EquipList)), zap.Int("alloc", len(allotGuids)))
 		return
 	}
@@ -122,7 +123,7 @@ func OnSvrAddMazeEquipRQ(ctx fklog.FKLogI, shardingID int64, rqMsg proto.Message
 			totalScoreMap[equipCfg.Score_group] += attrStageRow.Score
 		} else {
 			res.ErrInfo = errors.CONFIG_NOT_FOUND.ToInfo()
-			ctx.ErrorWF("OnSvrAddMazeEquipRQ less equip cfg",
+			userCtx.ErrorWF("OnSvrAddMazeEquipRQ less equip cfg",
 				zap.Int32("equipId", equipInfo.GetEquipId()))
 			return
 		}
@@ -156,7 +157,7 @@ func OnSvrAddMazeEquipRQ(ctx fklog.FKLogI, shardingID int64, rqMsg proto.Message
 	userCtx.InfoWF("OnSvrAddMazeEquipRQ total", zap.Duration("cost", time.Since(now)))
 	if len(result) != len(req.EquipList) {
 		res.ErrInfo = errors.COMMON_ERROR_TIPS.Wrap("insEquip fail")
-		ctx.ErrorWF("OnSvrAddMazeEquipRQ insEquip fail",
+		userCtx.ErrorWF("OnSvrAddMazeEquipRQ insEquip fail",
 			zap.Any("result", len(result)), zap.Any("equipList", len(req.EquipList)))
 		return
 	}

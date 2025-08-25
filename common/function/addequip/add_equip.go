@@ -1,6 +1,7 @@
 package addequip
 
 import (
+	"context"
 	"maze_game_server/common/errors"
 	"maze_game_server/io/rpc/dollequipbagrpc"
 	"maze_game_server/pb/server/MazeEquipSvr"
@@ -11,7 +12,8 @@ import (
 )
 
 // 商城购买装备
-func AddEquipToBag(logger fklog.FKLogI, userId uint64, opType int32, tradeNo uint64, equipMap map[int32]int32) (rsAdd *MazeEquipSvr.SvrAddMazeEquipRS, err error) {
+func AddEquipToBag(ctx context.Context, userId uint64, opType int32, tradeNo uint64, equipMap map[int32]int32) (rsAdd *MazeEquipSvr.SvrAddMazeEquipRS, err error) {
+	logger := fklog.ContextAppLogger(ctx)
 	rqAdd := &MazeEquipSvr.SvrAddMazeEquipRQ{
 		UserId:      proto.Uint64(userId),
 		OpType:      proto.Int32(opType),
@@ -36,7 +38,7 @@ func AddEquipToBag(logger fklog.FKLogI, userId uint64, opType int32, tradeNo uin
 	// rqAdd.NotNotify = proto.Bool(true)
 
 	rsAdd = &MazeEquipSvr.SvrAddMazeEquipRS{}
-	err = dollequipbagrpc.MazeBagAddRQ(logger, rqAdd, rsAdd)
+	err = dollequipbagrpc.MazeBagAddRQ(ctx, rqAdd, rsAdd)
 	if err != nil {
 		logger.ErrorWF("addEquipToBag fail", zap.Error(err), zap.Any("req", rqAdd), zap.Any("rs", rsAdd))
 	} else {
@@ -48,7 +50,8 @@ func AddEquipToBag(logger fklog.FKLogI, userId uint64, opType int32, tradeNo uin
 	return
 }
 
-func AddEquipToBagWithOpdata(logger fklog.FKLogI, userId uint64, opType int32, opData string, tradeNo uint64, equipMap map[int32]int32) (rsAdd *MazeEquipSvr.SvrAddMazeEquipRS, err error) {
+func AddEquipToBagWithOpdata(ctx context.Context, userId uint64, opType int32, opData string, tradeNo uint64, equipMap map[int32]int32) (rsAdd *MazeEquipSvr.SvrAddMazeEquipRS, err error) {
+	logger := fklog.ContextAppLogger(ctx)
 	rqAdd := &MazeEquipSvr.SvrAddMazeEquipRQ{
 		UserId:      proto.Uint64(userId),
 		OpType:      proto.Int32(opType),
@@ -73,7 +76,7 @@ func AddEquipToBagWithOpdata(logger fklog.FKLogI, userId uint64, opType int32, o
 	// rqAdd.NotNotify = proto.Bool(true)
 
 	rsAdd = &MazeEquipSvr.SvrAddMazeEquipRS{}
-	err = dollequipbagrpc.MazeBagAddRQWithOpData(logger, rqAdd, rsAdd, opData)
+	err = dollequipbagrpc.MazeBagAddRQWithOpData(ctx, rqAdd, rsAdd, opData)
 	if err != nil {
 		logger.ErrorWF("AddEquipToBagWithOpdata fail", zap.Error(err), zap.Any("req", rqAdd), zap.Any("rs", rsAdd))
 	} else {

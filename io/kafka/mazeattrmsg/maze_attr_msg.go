@@ -7,12 +7,11 @@
 package mazeattrmsg
 
 import (
+	"context"
 	"time"
 
 	"maze_game_server/common/structsdef"
 	"maze_game_server/io/dispatcher"
-
-	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fklog"
 )
 
 // var kp = &fkafka.KafkaProducer{}
@@ -25,7 +24,7 @@ func init() {
 	// fkconfig.RegisterNameNode("mazeattrmsg", 1001083, kp)
 }
 
-func SendMazeAttrChgNotify(logger fklog.FKLogI, msg *structsdef.DollAttrChgNotify) error {
+func SendMazeAttrChgNotify(ctx context.Context, msg *structsdef.DollAttrChgNotify) error {
 	// msg.GroupId = fkconfig.EnvVal.GroupID
 	if msg.CreateTime == 0 {
 		msg.CreateTime = time.Now().UnixNano() / 1000000
@@ -42,10 +41,10 @@ func SendMazeAttrChgNotify(logger fklog.FKLogI, msg *structsdef.DollAttrChgNotif
 	// 	return e
 	// }
 	// logger.InfoWF("SendMazeAttrChgNotify SendWithUserID succ", zap.Any("msg", msg))
-	d.Push(logger, msg)
+	d.Push(ctx, msg)
 	return nil
 }
 
-func Watch(fn func(logger fklog.FKLogI, msg *structsdef.DollAttrChgNotify)) {
+func Watch(fn func(ctx context.Context, msg *structsdef.DollAttrChgNotify)) {
 	d.Watch(fn)
 }

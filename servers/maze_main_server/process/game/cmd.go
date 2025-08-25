@@ -13,7 +13,6 @@ import (
 	"maze_game_server/io/redis/mazeuserbarrierredis"
 	"maze_game_server/io/redis/mazeuserlevelredis"
 	"maze_game_server/io/redis/syncmazestorageinforedis"
-	"maze_game_server/lib/log"
 	"maze_game_server/lib/nano/session"
 	"maze_game_server/module/mazeuserinfo"
 	"maze_game_server/pb/common/MazeGame"
@@ -32,7 +31,8 @@ import (
 func (g *Game) OnSendDollMazeCmdRQ_10463_10464(s *session.Session, req *MazeGame.SendDollMazeCmdRQ) (err error) {
 	defer fkprometheus.DebugPMT("OnSendDollMazeCmdRQ")()
 
-	logger := log.Clone("Game", uint64(s.UID()), 0)
+	ctx := s.Context()
+	logger := fklog.ContextAppLogger(ctx)
 	res := &MazeGame.SendDollMazeCmdRS{}
 
 	res.ErrInfo = errors.NO_ERROR
@@ -62,27 +62,27 @@ func (g *Game) OnSendDollMazeCmdRQ_10463_10464(s *session.Session, req *MazeGame
 	// 		err = errors.New("执行失败")
 	// 	}
 	case 1002:
-		err = ParseCmd(logger, userId, code, req.GetCmdParam(), req.GetHeader().GetSession())
+		err = ParseCmd(ctx, userId, code, req.GetCmdParam(), req.GetHeader().GetSession())
 		if err != nil {
 			err = errors.New("执行失败")
 		}
 	case 1003:
-		err = ParseCmd(logger, userId, code, req.GetCmdParam(), req.GetHeader().GetSession())
+		err = ParseCmd(ctx, userId, code, req.GetCmdParam(), req.GetHeader().GetSession())
 		if err != nil {
 			err = errors.New("执行失败")
 		}
 	case 1004:
-		err = ParseCmd(logger, userId, code, req.GetCmdParam(), req.GetHeader().GetSession())
+		err = ParseCmd(ctx, userId, code, req.GetCmdParam(), req.GetHeader().GetSession())
 		if err != nil {
 			err = errors.New("执行失败")
 		}
 	case 1005:
-		err = ParseCmd(logger, userId, code, req.GetCmdParam(), req.GetHeader().GetSession())
+		err = ParseCmd(ctx, userId, code, req.GetCmdParam(), req.GetHeader().GetSession())
 		if err != nil {
 			err = errors.New("执行失败")
 		}
 	case 1006: // 添加体力
-		err = CmdAddEnergy(logger, userId, args)
+		err = CmdAddEnergy(ctx, userId, args)
 		if err != nil {
 			err = errors.New("执行失败")
 		}
@@ -95,8 +95,8 @@ func (g *Game) OnSendDollMazeCmdRQ_10463_10464(s *session.Session, req *MazeGame
 	return nil
 }
 
-func ParseCmd(logger fklog.FKLogI, uid uint64, cmdCode int32, cmd string, session string) (err error) {
-
+func ParseCmd(ctx context.Context, uid uint64, cmdCode int32, cmd string, session string) (err error) {
+	logger := fklog.ContextAppLogger(ctx)
 	switch cmdCode {
 	case 1002:
 		cmdParams := strings.Split(cmd, "&")
@@ -154,7 +154,7 @@ func ParseCmd(logger fklog.FKLogI, uid uint64, cmdCode int32, cmd string, sessio
 		if err != nil {
 			logger.ErrorWF("ParseCmd ClearOpenBoxTime fail", zap.Error(err), zap.Uint64("userID", fkutil.ToUint64(params["user"])))
 		}
-		err = ClearBarrier(logger, fkutil.ToUint64(params["user"]))
+		err = ClearBarrier(ctx, fkutil.ToUint64(params["user"]))
 		if err != nil {
 			logger.ErrorWF("ParseCmd End ClearOpenBoxTime failed", zap.Error(err), zap.Uint64("userID", fkutil.ToUint64(params["user"])))
 		}
@@ -219,7 +219,8 @@ func SetMazeBarrier(logger fklog.FKLogI, userId uint64, barrierId int32) (err er
 	return
 }
 
-func ClearBarrier(logger fklog.FKLogI, userId uint64) (err error) {
+func ClearBarrier(ctx context.Context, userId uint64) (err error) {
+	logger := fklog.ContextAppLogger(ctx)
 	if userId <= 0 {
 		err = errors.New("userId不能小于等于0")
 		return
@@ -289,12 +290,12 @@ func ClearBarrier(logger fklog.FKLogI, userId uint64) (err error) {
 	}
 
 	//重置体力
-	err = barrierenergyservice.GlobalBarrierEnergyService.ResetEnergy(logger, userId)
+	err = barrierenergyservice.GlobalBarrierEnergyService.ResetEnergy(ctx, userId)
 	if err != nil {
 		return
 	}
 
-	ClearBarriersTempData(logger, userId, userInfo.Barrier)
+	ClearBarriersTempData(ctx, userId, userInfo.Barrier)
 	return
 
 }
@@ -345,7 +346,8 @@ func ParseCmdParam(p string) map[string]string {
 	return args
 }
 
-func CmdAddEnergy(logger fklog.FKLogI, userId uint64, args map[string]string) error {
+func CmdAddEnergy(ctx context.Context, userId uint64, args map[string]string) error {
+	logger := fklog.ContextAppLogger(ctx)
 	var vInt int32
 	if v, ok := args["add_cnt"]; ok {
 		vInt = fkutil.ToInt32(v)
@@ -354,18 +356,18 @@ func CmdAddEnergy(logger fklog.FKLogI, userId uint64, args map[string]string) er
 		logger.WarnWF("CmdAddEnergy vInt=0", zap.Any("args", args))
 		return errors.New("加体力参数错误")
 	}
-	oldEnergy, _, err := barrierenergyservice.GlobalBarrierEnergyService.GetBarrierEnergy(logger, userId)
+	oldEnergy, _, err := barrierenergyservice.GlobalBarrierEnergyService.GetBarrierEnergy(ctx, userId)
 	if err != nil {
 		logger.ErrorWF("CmdAddEnergy GetBarrierEnergy failed", zap.Error(err))
 		return err
 	}
 
-	newEnergy, nextUpdateTime, err := barrierenergyservice.GlobalBarrierEnergyService.AddEnergy(logger, userId, vInt)
+	newEnergy, nextUpdateTime, err := barrierenergyservice.GlobalBarrierEnergyService.AddEnergy(ctx, userId, vInt)
 	if err != nil {
 		logger.ErrorWF("CmdAddEnergy AddEnergy failed", zap.Error(err))
 		return err
 	}
-	barrierenergyservice.GlobalBarrierEnergyService.PushEnergyRecord(logger, userId, oldEnergy, newEnergy, mazeenergyrecord.GMAdd, nextUpdateTime)
+	barrierenergyservice.GlobalBarrierEnergyService.PushEnergyRecord(ctx, userId, oldEnergy, newEnergy, mazeenergyrecord.GMAdd, nextUpdateTime)
 
 	//rq := &MazeEnergySvr.AddMazeEnergyRQ{}
 	//rs := &MazeEnergySvr.AddMazeEnergyRS{}

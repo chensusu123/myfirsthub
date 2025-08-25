@@ -1,6 +1,7 @@
 package buff
 
 import (
+	"context"
 	"fmt"
 	"maze_game_server/common/function/gm"
 	"maze_game_server/common/tradeno"
@@ -150,7 +151,7 @@ func InitGM(logger fklog.FKLogI) {
 		}
 
 		msg.ChgAttrs = chgAttrs
-		_ = mazetempbuffchgmsg.PushTempBuffChangeMsg(logger, msg)
+		_ = mazetempbuffchgmsg.PushTempBuffChangeMsg(context.TODO(), msg)
 		_, _ = writer.Write([]byte("set success buff:" + strings.Join(successList, ",")))
 		if len(failedList) > 0 {
 			_, _ = writer.Write([]byte("failed buff:" + strings.Join(failedList, ",")))

@@ -2,14 +2,10 @@ package mail
 
 import (
 	"context"
-	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fkprometheus"
-	"go.uber.org/zap"
-	"google.golang.org/protobuf/proto"
 	"maze_game_server/common/errors"
 	"maze_game_server/common/function/addequip"
 	"maze_game_server/common/function/itemutil"
 	"maze_game_server/common/tradeno"
-	"maze_game_server/lib/log"
 	"maze_game_server/lib/nano/session"
 	"maze_game_server/model/mailmodel"
 	"maze_game_server/module/mazeuserinfo"
@@ -18,13 +14,19 @@ import (
 	"maze_game_server/pb/server/MazeEquipSvr"
 	"maze_game_server/services/itemservice"
 	"maze_game_server/services/mailservice"
+
+	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fklog"
+	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fkprometheus"
+	"go.uber.org/zap"
+	"google.golang.org/protobuf/proto"
 )
 
 // 邮件附件领取
 func (g *Mail) OnMazeGetMailAttachmentsRQ_10630_10631(s *session.Session, req *MazeMail.MazeGetMailAttachmentsRQ) (err error) {
 	defer fkprometheus.InfoPMT("OnMazeGetMailAttachmentsRQ")()
 
-	logger := log.Clone("Frame", uint64(s.UID()), 0)
+	ctx := s.Context()
+	logger := fklog.ContextAppLogger(ctx)
 	res := &MazeMail.MazeGetMailAttachmentsRS{}
 
 	logger.InfoWF("OnMazeGetMailAttachmentsRQ start", zap.Any("req", req))
@@ -88,7 +90,7 @@ func (g *Mail) OnMazeGetMailAttachmentsRQ_10630_10631(s *session.Session, req *M
 	tradeNo := tradeno.GetTradeNum()
 	if len(equipMap) > 0 {
 		//TODO 差一个邮件领取枚举，看业务是否需要邮件支持发装备附件
-		_, err := addequip.AddEquipToBag(logger, userId, int32(MazeEquipSvr.ENUM_EQUIP_BAG_OP_TYPE_MAZE_EQUIP_SWEEP_AWARD), tradeNo, equipMap)
+		_, err := addequip.AddEquipToBag(ctx, userId, int32(MazeEquipSvr.ENUM_EQUIP_BAG_OP_TYPE_MAZE_EQUIP_SWEEP_AWARD), tradeNo, equipMap)
 		if err != nil {
 			logger.ErrorWF("OnMazeGetMailAttachmentsRQ addEquipToBag fail", zap.Error(err), zap.Any("optype", int32(MazeEquipSvr.ENUM_EQUIP_BAG_OP_TYPE_MAZE_EQUIP_BOX_AWARD)),
 				zap.Any("tradeNo", tradeNo), zap.Any("addEquip", equipMap))
