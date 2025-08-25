@@ -257,8 +257,8 @@ func (s *service) createOptionalBuffList(ctx context.Context, buffInfo *tempbuff
 		for j := 1; j <= maxRandLibCount; j++ {
 			libraryId, _ = s.randLibraryId(posLib, attrMask)
 			if libraryId == 0 {
-				logger.CtxError(ctx, "randLibraryId libraryId id=0", zap.Any("posLib", posLib))
-				continue
+				logger.CtxError(ctx, "randLibraryId libraryId id=0", zap.Any("posLib", posLib), zap.Any("configId", configId))
+				break
 			}
 			// 随机库id
 			libraryConfig := GMazeEnergyAffixLibraryV8Cfg.GetWithCtx(ctx, libraryId)
