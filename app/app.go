@@ -47,6 +47,10 @@ type App interface {
 	Name() string
 }
 
+var (
+	Maze = &app{appID: 1001, name: "爱地牢重生"}
+)
+
 type app struct {
 	appID int32
 	name  string

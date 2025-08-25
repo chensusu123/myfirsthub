@@ -16,6 +16,7 @@ import (
 	"maze_game_server/servers/maze_main_server/process/frame"
 	"maze_game_server/servers/maze_main_server/process/game"
 	"maze_game_server/servers/maze_main_server/process/game/energy"
+	"maze_game_server/servers/maze_main_server/process/im"
 	"maze_game_server/servers/maze_main_server/process/interact"
 	"maze_game_server/servers/maze_main_server/process/item"
 	"maze_game_server/servers/maze_main_server/process/mail"
@@ -51,6 +52,7 @@ func Components() (comps *component.Components, routes *codec.Routes) {
 		reg(costume.NewCostumeComponent()) // 装扮组件
 		reg(frame.NewFrame())              // 帧同步组件
 		reg(mail.NewMail())                // 邮箱组件
+		reg(im.NewIM())                    // IM聊天组件
 	}
 
 	return
