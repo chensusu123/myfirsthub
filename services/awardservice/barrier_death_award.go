@@ -1,6 +1,7 @@
 package awardservice
 
 import (
+	"context"
 	"errors"
 	"maze_game_server/config/GMazeBarriesV8Cfg"
 	"maze_game_server/config/GMazeBoxV8Cfg"
@@ -28,7 +29,7 @@ func (s *service) GetBarrierDeathAward(logger fklog.FKLogI, userId uint64, barri
 	logger.InfoWF("GetBarrierDeathAward GetSweepBarrierAward", zap.Any("equipItem", equipItem), zap.Any("ohterItem", ohterItem), zap.Any("expItem", expItem), zap.Any("equipNum", equipNum))
 
 	// 获取存储的当前关卡的奖励数据
-	nowBarrierEquipList, nowBarrierItemList, err := barrierscorerewardservice.GlobalScoreRewardService.GetBarrierScoreReward(logger, userId, barrier)
+	nowBarrierEquipList, nowBarrierItemList, err := barrierscorerewardservice.GlobalScoreRewardService.GetBarrierScoreReward(context.TODO(), userId, barrier)
 	if err != nil {
 		logger.ErrorWF("GetBarrierDeathAward GetBarrierScoreReward err", zap.Error(err),
 			zap.Any("barrier", barrier),

@@ -108,7 +108,7 @@ func (g *Game) OnBarrierOpenBoxRQ_10445_10446(s *session.Session, req *MazeGame.
 	}
 
 	// 保存到已获取的道具
-	if err = barrierscorerewardservice.GlobalScoreRewardService.SaveBarrierScoreReward(logger, userId, req.GetBarrierId(), equips, items); err != nil {
+	if err = barrierscorerewardservice.GlobalScoreRewardService.SaveBarrierScoreReward(context.TODO(), userId, req.GetBarrierId(), equips, items); err != nil {
 		logger.ErrorWF("OnBarrierPickItemRQ SaveBarrierScoreRewardItem err", zap.Error(err), zap.Any("barrier", req.GetBarrierId()))
 		res.ErrInfo = errors.MODULE_ERROR.ToInfo()
 	}

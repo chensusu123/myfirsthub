@@ -8,11 +8,12 @@ import (
 	"math/rand"
 	"maze_game_server/common/errors"
 	"maze_game_server/config/GMazeBarriesV8Cfg"
-	"maze_game_server/excel/mazebarriesv8config"
+	"maze_game_server/config/GMazeEnergyAffixFrontV8Cfg"
+	"maze_game_server/config/GMazeEnergyAffixLibraryV8Cfg"
+	"maze_game_server/config/GMazeEnergyAffixRandRuleV8Cfg"
+	"maze_game_server/config/GMazeEnergyAffixV8Cfg"
+	"maze_game_server/config/GMazeEnergyLevelV8Cfg"
 	"maze_game_server/excel/mazeconfigv8config"
-	"maze_game_server/excel/mazeenergyaffixfrontv8config"
-	"maze_game_server/excel/mazeenergyaffixlibraryv8config"
-	"maze_game_server/excel/mazeenergyaffixlvv8config"
 	"maze_game_server/excel/mazeenergyaffixrandrulev8config"
 	"maze_game_server/excel/mazeenergylevelv8config"
 	"maze_game_server/excel/mazeenergyresetcostv8config"
@@ -24,7 +25,7 @@ func (s *service) GetOptionalTempBuffList(ctx context.Context, userId uint64, ba
 	logger := fklog.ContextAppLogger(ctx)
 	buffInfo, err := tempbuffmodel.NewTempBuffInfoModel(ctx, userId, barrierId)
 	if err != nil {
-		logger.ErrorWF("GetOptionalMazeTempBuffListRQ GetMazeTempBuff failed", zap.Error(err))
+		logger.CtxError(ctx, "GetOptionalMazeTempBuffListRQ GetMazeTempBuff failed", zap.Error(err))
 		return nil, fmt.Errorf("获取用户buff信息失败")
 	}
 
@@ -40,12 +41,12 @@ func (s *service) GetOptionalTempBuffList(ctx context.Context, userId uint64, ba
 	// 生成可选buff列表
 	err = s.genOptionalBuffList(ctx, userId, barrierId, level, buffType, areaId, areaIndex, attrMask, buffInfo)
 	if err != nil {
-		logger.ErrorWF("GetOptionalMazeTempBuffListRQ getOptionalBuffList", zap.Int32("barrierId", barrierId),
+		logger.CtxError(ctx, "GetOptionalMazeTempBuffListRQ getOptionalBuffList", zap.Int32("barrierId", barrierId),
 			zap.Any("info", buffInfo), zap.Any("err", err.Error()))
 		return nil, err
 	}
 
-	optionalBuffInfo := s.packOptionalInfo(logger, buffInfo)
+	optionalBuffInfo := s.packOptionalInfo(ctx, buffInfo)
 	if optionalBuffInfo != nil {
 		return optionalBuffInfo, nil
 	}
@@ -59,35 +60,35 @@ func (s *service) GetOptionalTempBuffList(ctx context.Context, userId uint64, ba
 }
 
 // 生成可选buff列表
-func (s *service) genOptionalBuffList(ctx context.Context, userId uint64, stageId, level, buffType, areaId, areaIndex, attrMask int32,
+func (s *service) genOptionalBuffList(ctx context.Context, userId uint64, barrierId, level, buffType, areaId, areaIndex, attrMask int32,
 	buffInfo *tempbuffmodel.TempBuffInfoModel) error {
 	logger := fklog.ContextAppLogger(ctx)
 	if level < buffInfo.BuffSequence.Level {
-		logger.WarnWF("genOptionalBuffList level already select", zap.Int32("level", level),
+		logger.CtxWarn(ctx, "genOptionalBuffList level already select", zap.Int32("level", level),
 			zap.Int32("needLevel", buffInfo.BuffSequence.Level))
 		return fmt.Errorf("当前等级已选择过buff")
 	}
 
 	// 校验选择buff数量
-	stageConfig := mazebarriesv8config.GetStageConfig(stageId)
-	if stageConfig == nil {
-		logger.WarnWF("genOptionalBuffList stage config unknown", zap.Int32("stageId", stageId))
+	barrierConfig := GMazeBarriesV8Cfg.GetWithCtx(ctx, barrierId)
+	if barrierConfig == nil {
+		logger.CtxWarn(ctx, "genOptionalBuffList barrier config unknown", zap.Int32("barrierId", barrierId))
 		return fmt.Errorf("关卡配置异常")
 	}
 
-	energyId, ok := stageConfig.Energy_id[areaId]
+	energyId, ok := barrierConfig.Energy_id[areaId]
 	if !ok || energyId <= 0 {
-		logger.WarnWF("genOptionalBuffList energyId unknown", zap.Bool("findEnergyId", ok), zap.Int32("areaId", areaId))
+		logger.CtxError(ctx, "genOptionalBuffList energyId unknown", zap.Bool("findEnergyId", ok), zap.Int32("areaId", areaId))
 		return fmt.Errorf("找不到当前区域能力配置")
 	}
 
 	if buffType == int32(MazeTempBuff.Type_UP_LEVEL) {
-		checkErr := s.checkUpLevelSelectBuff(logger, level, energyId, buffInfo)
+		checkErr := s.checkUpLevelSelectBuff(ctx, logger, level, energyId, buffInfo)
 		if checkErr != nil {
 			return checkErr
 		}
 	} else if buffType == int32(MazeTempBuff.Type_USE_ITEM) {
-		checkErr := s.checkUseItemLevelSelectBuff(logger, level, energyId, buffInfo)
+		checkErr := s.checkUseItemLevelSelectBuff(ctx, logger, level, energyId, buffInfo)
 		if checkErr != nil {
 			return checkErr
 		}
@@ -95,18 +96,18 @@ func (s *service) genOptionalBuffList(ctx context.Context, userId uint64, stageI
 
 	buffInfo.BuffSequence.Level = level
 	// 生成可选的buff列表
-	buffList, err := s.createOptionalBuffList(ctx, buffInfo, level, areaId, attrMask, stageConfig)
+	buffList, err := s.createOptionalBuffList(ctx, buffInfo, level, areaId, attrMask, barrierConfig)
 	if err != nil {
-		logger.ErrorWF("genOptionalBuffList createOptionalBuffList failed", zap.Error(err))
+		logger.CtxError(ctx, "genOptionalBuffList createOptionalBuffList failed", zap.Error(err))
 		return fmt.Errorf("创建可选buff列表失败")
 	}
 
 	buffInfo.BuffSequence.OptionalBuffList = buffList
 	buffInfo.BuffSequence.AreaId = areaId
 	buffInfo.BuffSequence.AreaIndex = areaIndex
-	err = buffInfo.Save(ctx, userId, stageId)
+	err = buffInfo.Save(ctx, userId, barrierId)
 	if err != nil {
-		logger.ErrorWF("genOptionalBuffList SetMazeTempBuff failed", zap.Int32("stageId", stageId),
+		logger.CtxError(ctx, "genOptionalBuffList SetMazeTempBuff failed", zap.Int32("barrierId", barrierId),
 			zap.Any("info", buffInfo), zap.Error(err))
 		return fmt.Errorf("保存buff信息失败")
 	}
@@ -114,11 +115,11 @@ func (s *service) genOptionalBuffList(ctx context.Context, userId uint64, stageI
 	return nil
 }
 
-func (s *service) checkUpLevelSelectBuff(logger fklog.FKLogI, level, energyID int32, buffInfo *tempbuffmodel.TempBuffInfoModel) error {
+func (s *service) checkUpLevelSelectBuff(ctx context.Context, logger fklog.FKLogI, level, energyID int32, buffInfo *tempbuffmodel.TempBuffInfoModel) error {
 	configId := mazeenergylevelv8config.GetKey(energyID, level)
-	config := mazeenergylevelv8config.GetEnergyLevelConfig(configId)
+	config := GMazeEnergyLevelV8Cfg.GetWithCtx(ctx, configId)
 	if config == nil {
-		logger.WarnWF("checkUpLevelSelectBuff level config unknown", zap.Int32("level", level), zap.Int32("configId", configId))
+		logger.CtxError(ctx, "checkUpLevelSelectBuff level config unknown", zap.Int32("level", level), zap.Int32("configId", configId))
 		return fmt.Errorf("当前等级无法选择buff")
 	}
 	var count int32
@@ -129,18 +130,18 @@ func (s *service) checkUpLevelSelectBuff(logger fklog.FKLogI, level, energyID in
 	}
 
 	if count >= config.Energy_select {
-		logger.WarnWF("checkUpLevelSelectBuff buff count select max", zap.Int32("count", count),
+		logger.CtxError(ctx, "checkUpLevelSelectBuff buff count select max", zap.Int32("count", count),
 			zap.Int32("maxCount", config.Energy_select))
 		return fmt.Errorf("当前等级已选择完buff")
 	}
 	return nil
 }
 
-func (s *service) checkUseItemLevelSelectBuff(logger fklog.FKLogI, level, energyID int32, buffInfo *tempbuffmodel.TempBuffInfoModel) error {
+func (s *service) checkUseItemLevelSelectBuff(ctx context.Context, logger fklog.FKLogI, level, energyID int32, buffInfo *tempbuffmodel.TempBuffInfoModel) error {
 	configId := mazeenergylevelv8config.GetKey(energyID, level)
-	config := mazeenergylevelv8config.GetEnergyLevelConfig(configId)
+	config := GMazeEnergyLevelV8Cfg.GetWithCtx(ctx, configId)
 	if config == nil {
-		logger.WarnWF("checkUseItemLevelSelectBuff level config unknown", zap.Int32("configId", configId))
+		logger.CtxError(ctx, "checkUseItemLevelSelectBuff level config unknown", zap.Int32("configId", configId))
 		return fmt.Errorf("读取buff能力配置失败")
 	}
 	var count int32
@@ -151,17 +152,17 @@ func (s *service) checkUseItemLevelSelectBuff(logger fklog.FKLogI, level, energy
 	}
 
 	if count >= config.Energy_item_select {
-		logger.WarnWF("checkUseItemLevelSelectBuff buff count select max", zap.Int32("count", count),
+		logger.CtxError(ctx, "checkUseItemLevelSelectBuff buff count select max", zap.Int32("count", count),
 			zap.Int32("maxCount", config.Energy_item_select))
 		return fmt.Errorf("道具选择buff次数已用完")
 	}
 	return nil
 }
 
-func (s *service) packOptionalInfo(logger fklog.FKLogI, info *tempbuffmodel.TempBuffInfoModel) *OptionalBuffInfo {
+func (s *service) packOptionalInfo(ctx context.Context, info *tempbuffmodel.TempBuffInfoModel) *OptionalBuffInfo {
 	optionalInfo := &OptionalBuffInfo{
-		SelectBuffList: s.packSelectBuffList(logger, info.BuffSequence.OptionalBuffList),
-		SelectBuffTime: mazeconfigv8config.GetBuffSelectTime(),
+		SelectBuffList: s.packSelectBuffList(ctx, info.BuffSequence.OptionalBuffList),
+		SelectBuffTime: mazeconfigv8config.GetBuffSelectTime(ctx),
 	}
 
 	if len(optionalInfo.SelectBuffList) == 0 {
@@ -185,7 +186,7 @@ func (s *service) packOptionalInfo(logger fklog.FKLogI, info *tempbuffmodel.Temp
 	return optionalInfo
 }
 
-func (s *service) packSelectBuffList(logger fklog.FKLogI, buffList []int32) []*BuffInfo {
+func (s *service) packSelectBuffList(ctx context.Context, buffList []int32) []*BuffInfo {
 	if len(buffList) == 0 {
 		return nil
 	}
@@ -196,7 +197,7 @@ func (s *service) packSelectBuffList(logger fklog.FKLogI, buffList []int32) []*B
 			continue
 		}
 
-		if showBuff := s.packShowBuff(logger, buffId, 1); showBuff != nil {
+		if showBuff := s.packShowBuff(ctx, buffId, 1); showBuff != nil {
 			showBuffList = append(showBuffList, showBuff)
 		}
 	}
@@ -206,17 +207,17 @@ func (s *service) packSelectBuffList(logger fklog.FKLogI, buffList []int32) []*B
 
 // 生成可选的buff列表
 func (s *service) createOptionalBuffList(ctx context.Context, buffInfo *tempbuffmodel.TempBuffInfoModel,
-	level, areaId, attrMask int32, stageConfig *GMazeBarriesV8Cfg.MazeBarriesV8ConfigRow) ([]int32, error) {
+	level, areaId, attrMask int32, barrierConfig *GMazeBarriesV8Cfg.MazeBarriesV8ConfigRow) ([]int32, error) {
 	logger := fklog.ContextAppLogger(ctx)
-	ruleId, ok := stageConfig.Energy_affix_rand_rule[areaId]
+	ruleId, ok := barrierConfig.Energy_affix_rand_rule[areaId]
 	if !ok || ruleId <= 0 {
-		logger.ErrorWF("genOptionalBuffList stageConfig.Energy_affix_rand_rule not found",
+		logger.CtxError(ctx, "genOptionalBuffList barrierConfig.Energy_affix_rand_rule not found",
 			zap.Int32("level", level), zap.Int32("areaId", areaId))
 		return nil, fmt.Errorf("找不到当前区域能力随机规则")
 	}
 	configId := mazeenergyaffixrandrulev8config.GetKey(ruleId, level)
 
-	randConfig := mazeenergyaffixrandrulev8config.GetEnergyAffixRandRuleConfig(configId)
+	randConfig := GMazeEnergyAffixRandRuleV8Cfg.GetWithCtx(ctx, configId)
 	if randConfig == nil {
 		return nil, nil
 	}
@@ -228,9 +229,9 @@ func (s *service) createOptionalBuffList(ctx context.Context, buffInfo *tempbuff
 	// 统计词条组以及选择的次数
 	selectedBuffGroupMap := make(map[int32]int32)
 	for _, i := range buffInfo.SelectedBuff {
-		buffConfig := mazeenergyaffixlvv8config.GetAffixConfig(i.BuffId)
+		buffConfig := GMazeEnergyAffixV8Cfg.GetWithCtx(ctx, i.BuffId)
 		if buffConfig == nil {
-			logger.WarnWF("createOptionalBuffList GetAffixConfig is nil", zap.Int32("buffId", i.BuffId))
+			logger.CtxError(ctx, "createOptionalBuffList GetAffixConfig is nil", zap.Int32("buffId", i.BuffId))
 			continue
 		}
 		selectedBuffGroupMap[buffConfig.Affix_group_id] += 1
@@ -249,29 +250,29 @@ func (s *service) createOptionalBuffList(ctx context.Context, buffInfo *tempbuff
 		case 3:
 			posLib = randConfig.Pos_3_lib
 		default:
-			logger.WarnWF("createOptionalBuffList unknown id", zap.Int64("pos", i))
+			logger.CtxError(ctx, "createOptionalBuffList unknown id", zap.Int64("pos", i))
 			return nil, nil
 		}
 		maxRandLibCount := len(posLib)
 		for j := 1; j <= maxRandLibCount; j++ {
 			libraryId, _ = s.randLibraryId(posLib, attrMask)
 			if libraryId == 0 {
-				logger.InfoWF("randLibraryId libraryId id=0", zap.Any("posLib", posLib))
-				continue
+				logger.CtxError(ctx, "randLibraryId libraryId id=0", zap.Any("posLib", posLib), zap.Any("configId", configId))
+				break
 			}
 			// 随机库id
-			affixList, certainlyList := mazeenergyaffixlibraryv8config.GetEnergyLibraryAffixList(libraryId)
-			if len(affixList) == 0 {
+			libraryConfig := GMazeEnergyAffixLibraryV8Cfg.GetWithCtx(ctx, libraryId)
+			if libraryConfig == nil || len(libraryConfig.Affix_id_list) == 0 {
 				return nil, errors.New("affixList is nil")
 			}
 
 			// 过滤出可选择的词条
-			optionalList, totalWeight := s.filterBuffList(ctx, optionalMap, affixList, certainlyList, selectedBuffMap, selectedBuffGroupMap)
+			optionalList, totalWeight := s.filterBuffList(ctx, optionalMap, libraryConfig.Affix_id_list, libraryConfig.Certainly_affix_id_list, selectedBuffMap, selectedBuffGroupMap)
 			// 随机选择个词条
 			buffId, weight := s.randomId(optionalList, totalWeight)
 
-			logger.DebugWF("createOptionalBuffList random", zap.Int64("pos", i), zap.Int32("libraryId", libraryId),
-				zap.Int32s("affixList", affixList), zap.Any("optionalList", optionalList),
+			logger.CtxDebug(ctx, "createOptionalBuffList random", zap.Int64("pos", i), zap.Int32("libraryId", libraryId),
+				zap.Int32s("affixList", libraryConfig.Affix_id_list), zap.Any("optionalList", optionalList),
 				zap.Int32("weight", weight), zap.Int32("id", buffId), zap.Int("randLibCount", j))
 
 			if buffId != 0 {
@@ -296,7 +297,7 @@ func (s *service) createOptionalBuffList(ctx context.Context, buffInfo *tempbuff
 		optionalList = append(optionalList, optionId)
 	}
 
-	logger.InfoWF("createOptionalBuffList end", zap.Int32s("optionalList", optionalList))
+	logger.CtxInfo(ctx, "createOptionalBuffList end", zap.Int32s("optionalList", optionalList))
 	return optionalList, nil
 }
 
@@ -377,14 +378,14 @@ func (s *service) filterBuffList(ctx context.Context, optionalMap map[int32]stru
 // 检查buff是否满足可选条件， 获取可选buff的权重信息
 func (s *service) GetOptionBuffWeightInfo(ctx context.Context, buffId int32, selectedBuffMap, selectedBuffGroupMap map[int32]int32, optionalMap map[int32]struct{}) *WeightInfo {
 	logger := fklog.ContextAppLogger(ctx)
-	buffConfig := mazeenergyaffixlvv8config.GetAffixConfig(buffId)
+	buffConfig := GMazeEnergyAffixV8Cfg.GetWithCtx(ctx, buffId)
 	if buffConfig == nil {
-		logger.WarnWF("getOptionBuffWeightInfo buffConfig is nil", zap.Int32("buffId", buffId))
+		logger.CtxWarn(ctx, "getOptionBuffWeightInfo buffConfig is nil", zap.Int32("buffId", buffId))
 		return nil
 	}
 
 	if buffConfig.Weight == 0 {
-		logger.WarnWF("getOptionBuffWeightInfo buff weight is 0", zap.Int32("buffId", buffId))
+		logger.CtxWarn(ctx, "getOptionBuffWeightInfo buff weight is 0", zap.Int32("buffId", buffId))
 		return nil
 	}
 
@@ -399,7 +400,7 @@ func (s *service) GetOptionBuffWeightInfo(ctx context.Context, buffId int32, sel
 		if frontId == 0 {
 			continue
 		}
-		isOk := s.checkFrontCondition(logger, frontId, selectedBuffMap, selectedBuffGroupMap, optionalMap)
+		isOk := s.checkFrontCondition(ctx, logger, frontId, selectedBuffMap, selectedBuffGroupMap, optionalMap)
 		if !isOk {
 			return nil
 		}
@@ -412,9 +413,9 @@ func (s *service) GetOptionBuffWeightInfo(ctx context.Context, buffId int32, sel
 }
 
 // 检查前置条件
-func (s *service) checkFrontCondition(logger fklog.FKLogI, frontId int32, selectedBuffMap, selectedBuffGroupMap map[int32]int32,
+func (s *service) checkFrontCondition(ctx context.Context, logger fklog.FKLogI, frontId int32, selectedBuffMap, selectedBuffGroupMap map[int32]int32,
 	optionalMap map[int32]struct{}) bool {
-	frontConfig := mazeenergyaffixfrontv8config.GetMazeEnergyAffixFrontConfig(frontId)
+	frontConfig := GMazeEnergyAffixFrontV8Cfg.GetWithCtx(ctx, frontId)
 	if frontConfig == nil {
 		return false
 	}
@@ -452,7 +453,7 @@ func (s *service) checkFrontCondition(logger fklog.FKLogI, frontId int32, select
 		}
 		groupCount, _ := selectedBuffGroupMap[k]
 		if groupCount < v {
-			logger.DebugWF("checkFrontCondition groupCount not enough", zap.Int32("frontId", frontId), zap.Int32("groupCount", groupCount))
+			logger.CtxDebug(ctx, "checkFrontCondition groupCount not enough", zap.Int32("frontId", frontId), zap.Int32("groupCount", groupCount))
 			return false
 		}
 	}

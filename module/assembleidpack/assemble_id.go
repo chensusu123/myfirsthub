@@ -7,6 +7,8 @@
 package assembleidpack
 
 import (
+	"context"
+
 	"maze_game_server/common/function/packtopb/asequipsuittopb"
 	"maze_game_server/common/function/packtopb/packequipostopb"
 	"maze_game_server/module/equippossuit"
@@ -75,7 +77,7 @@ func SendAssembleChgID(logger fklog.FKLogI, userId uint64, assembleInfo *MazeEqu
 	}
 	idp.Mask = proto.Int32(mask)
 	idp.Token = proto.Int64(GetAssembleToken())
-	err := online.Push(logger, uint64(userId), 10422, idp)
+	err := online.ClusterPush(context.TODO(), uint64(userId), 10422, idp)
 	if err != nil {
 		logger.ErrorWF("SendAssembleChgID SendArrivePacket err", zap.Error(err))
 		return err

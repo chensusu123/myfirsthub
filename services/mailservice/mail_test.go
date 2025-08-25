@@ -3,14 +3,16 @@ package mailservice
 import (
 	"context"
 	"fmt"
+	"os"
+	"testing"
+
+	globalredis "maze_game_server/io/redis"
+	"maze_game_server/lib/log"
+	"maze_game_server/model/mailmodel"
+
 	"github.com/redis/go-redis/v9"
 	"gitlab.ifreetalk.com/maze-plate/freetk/fkserver"
 	fileResolver "gitlab.ifreetalk.com/maze-plate/freetk/registry/fileresolver"
-	"maze_game_server/io/redis"
-	"maze_game_server/lib/log"
-	"maze_game_server/model/mailmodel"
-	"os"
-	"testing"
 )
 
 var logger = log.Clone("EquipDropTest", 0, 0)
@@ -61,12 +63,12 @@ func TestGetMailList(t *testing.T) {
 
 func TestMail(t *testing.T) {
 	attachments := []*mailmodel.Attachment{
-		&mailmodel.Attachment{
+		{
 			ItemID: 46700001,
 			Count:  10,
 			Extra:  "equip",
 		},
-		&mailmodel.Attachment{
+		{
 			ItemID: 46200001,
 			Count:  10,
 			Extra:  "item",
@@ -112,5 +114,4 @@ func TestMail(t *testing.T) {
 		return
 	}
 	fmt.Println(mailMap)
-
 }

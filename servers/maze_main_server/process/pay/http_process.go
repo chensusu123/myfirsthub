@@ -114,7 +114,7 @@ func PushPaySuccess(logger fklog.FKLogI, userId int64, tradeNo string) {
 			TradeNo: proto.String(tradeNo),
 		}
 		// 通知用户发货成功
-		err := online.Push(logger, uint64(userId), 10509, push)
+		err := online.ClusterPush(context.TODO(), uint64(userId), 10509, push)
 		if err != nil {
 			logger.ErrorWF("PushPay error", zap.Error(err), zap.Int64("userId", userId), zap.String("tradeNo", tradeNo))
 		} else {

@@ -1,11 +1,13 @@
 package barrierenergyservice
 
 import (
-	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fklog"
-	"go.uber.org/zap"
-	"maze_game_server/usecase/online"
 	"sync"
 	"time"
+
+	"maze_game_server/usecase/online"
+
+	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fklog"
+	"go.uber.org/zap"
 )
 
 // 审核版本用于自动恢复体力
@@ -21,7 +23,7 @@ func (s service) startUserRecoverEnergy(logger fklog.FKLogI, userId uint64, next
 
 	// 若已有 timer，跳过
 	if timer, ok := userMap[userId]; ok {
-		//timer.Stop()
+		// timer.Stop()
 		_ = timer
 		return
 	}
@@ -51,7 +53,6 @@ func (s service) safeTimer(logger fklog.FKLogI, userID uint64) {
 
 // 自动恢复体力
 func (s service) handleRecoverUserEnergy(logger fklog.FKLogI, userID uint64) {
-
 	defer func() {
 		// 重新设置timer
 		mu.Lock()
@@ -78,7 +79,7 @@ func (s service) handleRecoverUserEnergy(logger fklog.FKLogI, userID uint64) {
 	if err != nil {
 		err = nil
 		logger.ErrorWF("handleRecoverUserEnergy SendEnergyChgPack fail", zap.Error(err), zap.Any("userID", userID), zap.Int32("curEnergy", curEnergy), zap.Int64("nextTime", nextTime))
-		//return
+		// return
 	}
 }
 

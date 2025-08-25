@@ -1,9 +1,6 @@
 package game
 
 import (
-    "strings"
-	"time"
-    "maze_game_server/services/itemservice"
 	"maze_game_server/common/constdef"
 	"maze_game_server/common/errors"
 	"maze_game_server/config/GMazeBarriesV8Cfg"
@@ -27,7 +24,10 @@ import (
 	"maze_game_server/services/barrierenergyservice"
 	"maze_game_server/services/barriersavedataservice"
 	"maze_game_server/services/barrierstagecounterservice"
+	"maze_game_server/services/itemservice"
 	"maze_game_server/services/tempbuffservice"
+	"strings"
+	"time"
 
 	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fklog"
 	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fkprometheus"
@@ -138,7 +138,7 @@ func (g *Game) OnMazeBarrierEnterRQ_10447_10448(s *session.Session, req *MazeGam
 		BossProgress: proto.Float32(saveData.BossProgress),
 		RescueItems:  rescueItems,
 	}
-	initPassValue, err := mazecommonvalue.CalcInitPassValue(logger, req.GetBarrierId())
+	initPassValue, err := mazecommonvalue.CalcInitPassValue(ctx, logger, req.GetBarrierId())
 	if err != nil {
 		logger.ErrorWF("OnMazeBarrierEnterRQ CalcInitPassvalue fail", zap.Error(err))
 		res.ErrInfo = errors.MODULE_ERROR.ToInfo()
@@ -146,7 +146,7 @@ func (g *Game) OnMazeBarrierEnterRQ_10447_10448(s *session.Session, req *MazeGam
 	}
 	res.InitPassValue = proto.Int32(int32(initPassValue))
 	// 推送通关值
-	mazecommonvalue.SendPassValueIdPack(logger, userId, req.GetBarrierId(), saveData.StageId)
+	mazecommonvalue.SendPassValueIdPack(ctx, logger, userId, req.GetBarrierId(), saveData.StageId)
 	// 清理关卡操作状态
 	mazebarrieropstatusredis.ClearOpStatus(logger, userId, req.GetBarrierId())
 
