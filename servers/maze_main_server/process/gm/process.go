@@ -2,6 +2,7 @@ package gm
 
 import (
 	"context"
+	"encoding/csv"
 	"encoding/json"
 	"errors"
 	"fmt"
@@ -10,9 +11,7 @@ import (
 	"maze_game_server/services/itemservice"
 	"net/http"
 	"os"
-	"path/filepath"
 	"sort"
-	"strings"
 	"time"
 
 	"maze_game_server/excel/mazeenergyaffixlvv8config"
@@ -412,39 +411,25 @@ func RegGm(logger fklog.FKLogI) {
 
 	// 注册获取Excel文件列表的HTTP接口
 	gm.SafeHttpRegister(logger, "/GetExcelList", func(writer http.ResponseWriter, request *http.Request) {
-		entries, err := os.ReadDir("./conf.d/data")
-		if err != nil {
-			writer.Write([]byte(err.Error()))
-			return
-		}
+		datas := config_manager.ShowSheet()
 
-		var records []*orderedmap.OrderedMap // 改为有序map切片
-		for _, entry := range entries {
-			// 过滤不需要的文件
-			if strings.Contains(entry.Name(), "black_excel") ||
-				strings.Contains(entry.Name(), "column_relation") ||
-				strings.Contains(entry.Name(), "git_version_v8") {
-				continue
-			}
+		var records []*orderedmap.OrderedMap
+		for _, entry := range datas {
+			descRecord := orderedmap.New()
+			descRecord.Set("excel", entry.XlsxFile)
+			records = append(records, descRecord)
 
-			// 只处理xlsx文件
-			if strings.ToLower(filepath.Ext(entry.Name())) == ".xlsx" {
-				descRecord := orderedmap.New()        // 使用有序map
-				descRecord.Set("excel", entry.Name()) // 按顺序设置键值对
-				records = append(records, descRecord)
-			}
 		}
 
 		output := ExcelOutput{
 			Status: 0,
 			Desc:   "",
 			Data: DynamicData{
-				List:  records, // 适配有序map类型
+				List:  records,
 				Total: len(records),
 			},
 		}
 
-		// 使用orderedmap的MarshalJSON方法确保顺序
 		jsonOutput, err := json.Marshal(output)
 		if err != nil {
 			writer.Write([]byte(err.Error()))
@@ -458,36 +443,33 @@ func RegGm(logger fklog.FKLogI) {
 	// 注册获取Excel工作表列表的HTTP接口
 	gm.SafeHttpRegister(logger, "/GetExcelSheet", func(writer http.ResponseWriter, request *http.Request) {
 		fileName := request.Form.Get("fileName")
-		sheets, err := GetSheets("./conf.d/data/" + fileName)
-		if err != nil {
-			writer.Write([]byte(err.Error()))
-			return
-		}
 
-		var records []*orderedmap.OrderedMap // 改为有序map切片
-		for _, sheet := range sheets {
-			descRecord := orderedmap.New()     // 使用有序map
-			descRecord.Set("sheetName", sheet) // 按顺序设置键值对
-			records = append(records, descRecord)
+		datas := config_manager.ShowSheet()
+
+		var records []*orderedmap.OrderedMap
+		for _, entry := range datas {
+			if entry.XlsxFile == fileName {
+				descRecord := orderedmap.New()
+				descRecord.Set("sheetName", entry.XlsxSheet)
+				records = append(records, descRecord)
+			}
 		}
 
 		output := ExcelOutput{
 			Status: 0,
 			Desc:   "",
 			Data: DynamicData{
-				List:  records, // 适配有序map类型
+				List:  records,
 				Total: len(records),
 			},
 		}
 
-		// 使用orderedmap的MarshalJSON方法确保顺序
 		jsonOutput, err := json.Marshal(output)
 		if err != nil {
 			writer.Write([]byte(err.Error()))
 			return
 		}
 
-		writer.Header().Set("Content-Type", "application/json")
 		writer.Write(jsonOutput)
 	})
 
@@ -535,26 +517,23 @@ func GetSheets(filePath string) ([]string, error) {
 	return sheets, nil
 }
 
-// 从Excel文件读取指定工作表数据（默认读取第一个工作表）
 func readExcelFile(filePath, sheetName string) ([][]string, error) {
-	f, err := excelize.OpenFile(filePath)
-	if err != nil {
-		return nil, fmt.Errorf("无法打开Excel文件: %w", err)
-	}
-	defer f.Close()
+	csvFileName := fmt.Sprintf("./conf.d/data/%s.csv", sheetName)
 
-	if sheetName == "" {
-		sheets := f.GetSheetList()
-		if len(sheets) == 0 {
-			return nil, fmt.Errorf("Excel文件中没有工作表")
-		}
-		sheetName = sheets[0]
-		fmt.Printf("使用工作表: %s\n", sheetName)
+	file, err := os.Open(csvFileName)
+	if err != nil {
+		return nil, fmt.Errorf("无法打开CSV文件: %w", err)
+	}
+	defer file.Close()
+
+	reader := csv.NewReader(file)
+	rows, err := reader.ReadAll()
+	if err != nil {
+		return nil, fmt.Errorf("读取CSV数据失败: %w", err)
 	}
 
-	rows, err := f.GetRows(sheetName)
-	if err != nil {
-		return nil, fmt.Errorf("读取工作表数据失败: %w", err)
+	if len(rows) == 0 {
+		return nil, fmt.Errorf("CSV文件为空")
 	}
 
 	return rows, nil
