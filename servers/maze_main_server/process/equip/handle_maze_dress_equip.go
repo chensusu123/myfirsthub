@@ -7,6 +7,7 @@
 package equip
 
 import (
+	"context"
 	"fmt"
 	"maze_game_server/common/constdef"
 	"maze_game_server/common/errors"
@@ -359,7 +360,7 @@ func (ep *Equip) OnDressMazeEquipRQ_10418_10419(s *session.Session, req *MazeGam
 		constdef.DollAssembleChgTypeReplaceEquip)
 
 	// 换装备推送装扮变化id包
-	costumeservice.GlobalCostumeService.ChangeCostume(logger, userId)
+	costumeservice.GlobalCostumeService.ChangeCostume(context.TODO(), userId)
 	return nil
 }
 

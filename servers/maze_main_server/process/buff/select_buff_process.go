@@ -24,8 +24,8 @@ func (b *Buff) SelectMazeTempBuffRQ_10437_10438(s *session.Session, req *MazeTem
 		logger.CtxInfo(ctx, "SelectMazeTempBuffRQ end", zap.Any("req", req), zap.Any("res", res))
 	}()
 
-	userId, stageId, level, buffId, buffType := uint64(s.UID()), req.GetStageId(), req.GetLevel(), req.GetBuffId(), int32(req.GetType())
-	if userId == 0 || stageId == 0 || level == 0 || buffId == 0 {
+	userId, barrierId, level, buffId, buffType := uint64(s.UID()), req.GetStageId(), req.GetLevel(), req.GetBuffId(), int32(req.GetType())
+	if userId == 0 || barrierId == 0 || level == 0 || buffId == 0 {
 		logger.CtxError(ctx, "SelectMazeTempBuffRQ args error", zap.Any("req", req))
 		res.ErrInfo = errors.COMMON_ERROR_TIPS.Wrap("参数错误")
 		return nil
@@ -37,7 +37,7 @@ func (b *Buff) SelectMazeTempBuffRQ_10437_10438(s *session.Session, req *MazeTem
 		return nil
 	}
 
-	buffList, err := tempbuffservice.GlobalTempBuffService.SelectMazeTempBuff(ctx, userId, stageId, level, buffId, buffType)
+	buffList, err := tempbuffservice.GlobalTempBuffService.SelectMazeTempBuff(ctx, userId, barrierId, level, buffId, buffType)
 	if err != nil {
 		res.ErrInfo = errors.COMMON_ERROR_TIPS.Wrap(err.Error())
 		return nil

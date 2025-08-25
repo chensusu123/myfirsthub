@@ -70,13 +70,13 @@ func (s *service) genOptionalBuffList(ctx context.Context, userId uint64, barrie
 	}
 
 	// 校验选择buff数量
-	stageConfig := GMazeBarriesV8Cfg.GetWithCtx(ctx, barrierId)
-	if stageConfig == nil {
-		logger.CtxWarn(ctx, "genOptionalBuffList stage config unknown", zap.Int32("barrierId", barrierId))
+	barrierConfig := GMazeBarriesV8Cfg.GetWithCtx(ctx, barrierId)
+	if barrierConfig == nil {
+		logger.CtxWarn(ctx, "genOptionalBuffList barrier config unknown", zap.Int32("barrierId", barrierId))
 		return fmt.Errorf("关卡配置异常")
 	}
 
-	energyId, ok := stageConfig.Energy_id[areaId]
+	energyId, ok := barrierConfig.Energy_id[areaId]
 	if !ok || energyId <= 0 {
 		logger.CtxError(ctx, "genOptionalBuffList energyId unknown", zap.Bool("findEnergyId", ok), zap.Int32("areaId", areaId))
 		return fmt.Errorf("找不到当前区域能力配置")
@@ -96,7 +96,7 @@ func (s *service) genOptionalBuffList(ctx context.Context, userId uint64, barrie
 
 	buffInfo.BuffSequence.Level = level
 	// 生成可选的buff列表
-	buffList, err := s.createOptionalBuffList(ctx, buffInfo, level, areaId, attrMask, stageConfig)
+	buffList, err := s.createOptionalBuffList(ctx, buffInfo, level, areaId, attrMask, barrierConfig)
 	if err != nil {
 		logger.CtxError(ctx, "genOptionalBuffList createOptionalBuffList failed", zap.Error(err))
 		return fmt.Errorf("创建可选buff列表失败")
@@ -207,11 +207,11 @@ func (s *service) packSelectBuffList(ctx context.Context, buffList []int32) []*B
 
 // 生成可选的buff列表
 func (s *service) createOptionalBuffList(ctx context.Context, buffInfo *tempbuffmodel.TempBuffInfoModel,
-	level, areaId, attrMask int32, stageConfig *GMazeBarriesV8Cfg.MazeBarriesV8ConfigRow) ([]int32, error) {
+	level, areaId, attrMask int32, barrierConfig *GMazeBarriesV8Cfg.MazeBarriesV8ConfigRow) ([]int32, error) {
 	logger := fklog.ContextAppLogger(ctx)
-	ruleId, ok := stageConfig.Energy_affix_rand_rule[areaId]
+	ruleId, ok := barrierConfig.Energy_affix_rand_rule[areaId]
 	if !ok || ruleId <= 0 {
-		logger.CtxError(ctx, "genOptionalBuffList stageConfig.Energy_affix_rand_rule not found",
+		logger.CtxError(ctx, "genOptionalBuffList barrierConfig.Energy_affix_rand_rule not found",
 			zap.Int32("level", level), zap.Int32("areaId", areaId))
 		return nil, fmt.Errorf("找不到当前区域能力随机规则")
 	}

@@ -69,7 +69,7 @@ func (s *service) checkSelectBuff(ctx context.Context, logger fklog.FKLogI, leve
 	return false
 }
 
-func (s *service) updateBuffInfo(ctx context.Context, userId uint64, stageId, level, buffId, buffType int32,
+func (s *service) updateBuffInfo(ctx context.Context, userId uint64, barrierId, level, buffId, buffType int32,
 	buffInfo *tempbuffmodel.TempBuffInfoModel) error {
 	logger := fklog.ContextAppLogger(ctx)
 	areaId := buffInfo.BuffSequence.AreaId
@@ -89,7 +89,7 @@ func (s *service) updateBuffInfo(ctx context.Context, userId uint64, stageId, le
 	var totalMap map[int32]int64
 	totalMap, buffInfo.TotalBuff = s.GetTotalBuff(ctx, buffInfo.SelectedBuff)
 	// 更新buff信息
-	err := buffInfo.Save(ctx, userId, stageId)
+	err := buffInfo.Save(ctx, userId, barrierId)
 	if err != nil {
 		logger.CtxError(ctx, "updateBuffInfo SetMazeTempBuff failed", zap.Any("info", buffInfo), zap.Error(err))
 		return err
@@ -98,7 +98,7 @@ func (s *service) updateBuffInfo(ctx context.Context, userId uint64, stageId, le
 	// 推送buff变化信息
 	msg := &mazetempbuffchgmsg.MazeTempBuffChangeMsg{
 		UserId:  userId,
-		StageId: stageId,
+		StageId: barrierId,
 		ChgType: 1,
 		ChgDesc: "选择buff",
 	}

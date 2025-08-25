@@ -27,7 +27,7 @@ func InitGM(logger fklog.FKLogI) {
 		logger = fklog.ContextAppLogger(ctx)
 		request.ParseForm()
 		userId := fkutil.ToUint64(request.Form.Get("user_id"))
-		stageId := fkutil.ToInt32(request.Form.Get("stageId"))
+		barrierId := fkutil.ToInt32(request.Form.Get("stageId"))
 		buffs := request.Form.Get("buffs")
 		logger.SetUid(userId)
 		var buffList []int32
@@ -41,15 +41,15 @@ func InitGM(logger fklog.FKLogI) {
 			return buffList[i] < buffList[j]
 		})
 
-		if userId == 0 || stageId == 0 || len(buffs) == 0 {
+		if userId == 0 || barrierId == 0 || len(buffs) == 0 {
 			logger.CtxError(ctx, "setMazeTempBuff args is error")
 			_, _ = writer.Write([]byte("set maze temp buff args is error"))
 			return
 		}
 
 		logger.CtxInfo(ctx, "setMazeTempBuff start", zap.Uint64("userId", userId),
-			zap.Int32("stageId", stageId), zap.Int32s("buffList", buffList))
-		buffInfo, err := tempbuffservice.GlobalTempBuffService.GetTempBuffInfo(ctx, userId, stageId)
+			zap.Int32("barrierId", barrierId), zap.Int32s("buffList", buffList))
+		buffInfo, err := tempbuffservice.GlobalTempBuffService.GetTempBuffInfo(ctx, userId, barrierId)
 		if err != nil {
 			logger.CtxError(ctx, "setMazeTempBuff GetMazeTempBuff", zap.Error(err))
 			_, _ = writer.Write([]byte("get user buff failed"))
@@ -124,7 +124,7 @@ func InitGM(logger fklog.FKLogI) {
 		totalMap, buffInfo.TotalBuff = tempbuffservice.GlobalTempBuffService.GetTotalBuff(ctx, buffInfo.SelectedBuff)
 
 		// 更新buff信息
-		err = buffInfo.Save(ctx, userId, stageId)
+		err = buffInfo.Save(ctx, userId, barrierId)
 		if err != nil {
 			logger.CtxError(ctx, "setMazeTempBuff SetMazeTempBuff failed", zap.Any("info", buffInfo), zap.Error(err))
 			_, _ = writer.Write([]byte("save buff failed"))
@@ -134,7 +134,7 @@ func InitGM(logger fklog.FKLogI) {
 		// 推送buff变化信息
 		msg := &mazetempbuffchgmsg.MazeTempBuffChangeMsg{
 			UserId:  userId,
-			StageId: stageId,
+			StageId: barrierId,
 			ChgType: 1,
 			ChgDesc: "gm添加buff",
 		}

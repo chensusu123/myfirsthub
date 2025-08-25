@@ -1,6 +1,7 @@
 package costumeservice
 
 import (
+	"context"
 	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fklog"
 	"go.uber.org/zap"
 	"google.golang.org/protobuf/proto"
@@ -9,11 +10,12 @@ import (
 )
 
 // 换装
-func (s service) ChangeCostume(logger fklog.FKLogI, userId uint64) {
+func (s *service) ChangeCostume(ctx context.Context, userId uint64) {
+	logger := fklog.ContextAppLogger(ctx)
 	// todo: 获取装备的逻辑比较复杂，就在这重新获取了
-	res, err := s.GetUserCostume(logger, userId)
+	res, err := s.GetUserCostume(ctx, userId)
 	if err != nil {
-		logger.ErrorWF("ChangeCostume GetUserCostume err", zap.Error(err))
+		logger.CtxError(ctx, "ChangeCostume GetUserCostume err", zap.Error(err))
 		return
 	}
 	push := &Costume.ChangeCostumeID{}
@@ -24,7 +26,7 @@ func (s service) ChangeCostume(logger fklog.FKLogI, userId uint64) {
 			ModelId: proto.Int32(v),
 		})
 	}
-	online.Push(logger, userId, 10615, push)
+	online.PushWithContext(ctx, logger, userId, 10615, push)
 
 	return
 }
