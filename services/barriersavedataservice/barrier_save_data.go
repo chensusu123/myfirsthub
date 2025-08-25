@@ -15,7 +15,7 @@ func (s *service) SaveBarrierData(ctx context.Context, userId uint64, barrier, s
 	logger := fklog.ContextAppLogger(ctx)
 	model, err := barriersavedatamodel.NewBarrierSaveDataModel(ctx, userId, barrier, false)
 	if err != nil {
-		logger.ErrorWF("GetBarrierSaveData NewBarrierSaveDataModel err", zap.Error(err))
+		logger.CtxError(ctx, "GetBarrierSaveData NewBarrierSaveDataModel err", zap.Error(err))
 		return fmt.Errorf("获取关卡存档失败")
 	}
 	model.StageId = stageId
@@ -25,7 +25,7 @@ func (s *service) SaveBarrierData(ctx context.Context, userId uint64, barrier, s
 	model.RescueItems = rescueItems
 	err = model.Save(ctx, userId, barrier)
 	if err != nil {
-		logger.ErrorWF("SaveBarrierData save err", zap.Error(err))
+		logger.CtxError(ctx, "SaveBarrierData save err", zap.Error(err))
 	}
 	return nil
 }
@@ -34,7 +34,7 @@ func (s *service) GetBarrierSaveData(ctx context.Context, userId uint64, barrier
 	logger := fklog.ContextAppLogger(ctx)
 	model, err := barriersavedatamodel.NewBarrierSaveDataModel(ctx, userId, barrier, true)
 	if err != nil {
-		logger.ErrorWF("GetBarrierSaveData NewBarrierSaveDataModel err", zap.Error(err))
+		logger.CtxError(ctx, "GetBarrierSaveData NewBarrierSaveDataModel err", zap.Error(err))
 		return nil, fmt.Errorf("获取关卡存档失败")
 	}
 
@@ -45,12 +45,12 @@ func (s *service) DelBarrierSaveData(ctx context.Context, userId uint64, barrier
 	logger := fklog.ContextAppLogger(ctx)
 	model, err := barriersavedatamodel.NewBarrierSaveDataModel(ctx, userId, barrier, false)
 	if err != nil {
-		logger.ErrorWF("DelBarrierSaveData NewBarrierSaveDataModel err", zap.Error(err))
+		logger.CtxError(ctx, "DelBarrierSaveData NewBarrierSaveDataModel err", zap.Error(err))
 		return nil
 	}
 	err = model.Del(ctx, userId, barrier)
 	if err != nil {
-		logger.ErrorWF("DelBarrierSaveData del err", zap.Error(err))
+		logger.CtxError(ctx, "DelBarrierSaveData del err", zap.Error(err))
 		return nil
 	}
 
@@ -61,12 +61,12 @@ func (s *service) GetPassValue(ctx context.Context, userId uint64, barrier int32
 	logger := fklog.ContextAppLogger(ctx)
 	model, err := barriersavedatamodel.NewBarrierSaveDataModel(ctx, userId, barrier, true)
 	if err != nil {
-		logger.ErrorWF("GetPassValue NewBarrierSaveDataModel err", zap.Error(err))
+		logger.CtxError(ctx, "GetPassValue NewBarrierSaveDataModel err", zap.Error(err))
 		return 0, nil
 	}
-	passValue, err := mazecommonvalue.CalcPassValue(logger, barrier, model.StageId)
+	passValue, err := mazecommonvalue.CalcPassValue(ctx, logger, barrier, model.StageId)
 	if err != nil {
-		logger.ErrorWF("GetPassValue calcPassValue err", zap.Error(err))
+		logger.CtxError(ctx, "GetPassValue calcPassValue err", zap.Error(err))
 		return 0, err
 	}
 	return passValue, nil
