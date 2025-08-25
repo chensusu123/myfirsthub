@@ -435,7 +435,7 @@ func (x *SendMessageRS) GetMsgId() uint64 {
 	return 0
 }
 
-//##
+//## 10647 UN_TCP_PACK_CLI_QUERY_GROUP_MESSAGE_LIST_RQ
 // 查询群聊消息请求包
 type QueryGroupMessagesRQ struct {
 	state         protoimpl.MessageState
@@ -500,7 +500,7 @@ func (x *QueryGroupMessagesRQ) GetLastMsgId() uint64 {
 	return 0
 }
 
-//##
+//## 10648 UN_TCP_PACK_CLI_QUERY_GROUP_MESSAGE_LIST_RS
 // 查询群聊消息响应包
 type QueryGroupMessagesRS struct {
 	state         protoimpl.MessageState
@@ -565,7 +565,7 @@ func (x *QueryGroupMessagesRS) GetMsgList() []*Message {
 	return nil
 }
 
-//##
+//## 10649 UN_TCP_PACK_CLI_SEND_GROUP_MESSAGE_RQ
 // 发送群聊消息请求包
 type SendGroupMessageRQ struct {
 	state         protoimpl.MessageState
@@ -638,7 +638,7 @@ func (x *SendGroupMessageRQ) GetContent() string {
 	return ""
 }
 
-//##
+//## 10650 UN_TCP_PACK_CLI_SEND_GROUP_MESSAGE_RS
 // 发送群聊消息响应包
 type SendGroupMessageRS struct {
 	state         protoimpl.MessageState
