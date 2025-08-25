@@ -7,6 +7,8 @@
 package game
 
 import (
+	"context"
+
 	"maze_game_server/common/structsdef"
 	"maze_game_server/excel/mazeconfigv8"
 	"maze_game_server/io/redis/mazeuserlevelredis"
@@ -55,8 +57,7 @@ func HandleMazeLvUpgradeAttrChgId(logger fklog.FKLogI, userId uint64, msg *struc
 
 	logger.InfoWF("HandleMazeLvUpgradeAttrChgId send client with",
 		zap.Any("mazeLvChgIDMsg", mazeLvChgIDMsg), zap.Uint64("userId", userId))
-	online.Push(logger, uint64(userId), 10479, mazeLvChgIDMsg)
-
+	online.ClusterPush(context.TODO(), uint64(userId), 10479, mazeLvChgIDMsg)
 }
 
 // func IsMazeUpgradeCareAttr(attrId int32) bool {

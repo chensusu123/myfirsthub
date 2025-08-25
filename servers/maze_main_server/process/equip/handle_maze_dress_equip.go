@@ -288,7 +288,7 @@ func (ep *Equip) OnDressMazeEquipRQ_10418_10419(s *session.Session, req *MazeGam
 		)
 	} else if changed {
 		defer func() {
-			online.Push(logger, userId, 10510, equipSkillInfoChange)
+			online.ClusterPush(context.TODO(), userId, 10510, equipSkillInfoChange)
 		}()
 	}
 

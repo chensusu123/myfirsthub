@@ -95,7 +95,7 @@ func TriggerTempBuff(logger fklog.FKLogI, userID uint64, barrierId int32, areaId
 		OptionalBuffInfo: buff.OptionalBuffInfo2PbOptionalBuffInfo(optionalBuffInfo),
 	}
 	// Push
-	err = online.Push(logger, userID, 10552, optionalTempBuffListID)
+	err = online.ClusterPush(context.TODO(), userID, 10552, optionalTempBuffListID)
 	if err != nil {
 		logger.ErrorWF("TriggerTempBuff Push fail",
 			zap.Error(err),

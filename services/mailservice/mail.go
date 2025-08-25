@@ -1,14 +1,17 @@
 package mailservice
 
 import (
-	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fklog"
-	"go.uber.org/zap"
+	"context"
+	"sort"
+	"time"
+
 	"maze_game_server/common/errors"
 	"maze_game_server/common/tradeno"
 	"maze_game_server/model/mailmodel"
 	"maze_game_server/usecase/online"
-	"sort"
-	"time"
+
+	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fklog"
+	"go.uber.org/zap"
 )
 
 func (s service) GetMailListByLabel(logger fklog.FKLogI, userId uint64, label, start, end int32) (mailList []*mailmodel.MailInfo, err error) {
@@ -34,7 +37,7 @@ func (s service) GetMailListByLabel(logger fklog.FKLogI, userId uint64, label, s
 
 	mailList = mailList[start:end]
 
-	//获取的时候检测过期邮件
+	// 获取的时候检测过期邮件
 	if len(delList) > 0 {
 		for _, mailId := range delList {
 			delete(model.MailMap[label], mailId)
@@ -283,7 +286,7 @@ func (s service) PushMailToReciver(logger fklog.FKLogI, userId uint64, packetTyp
 		return
 	}
 
-	err := online.Push(logger, userId, packetType, v)
+	err := online.ClusterPush(context.TODO(), userId, packetType, v)
 	if err != nil {
 		logger.ErrorWF("PushMailToReciver fail", zap.Error(err))
 	}
@@ -299,7 +302,7 @@ func (s service) GetMailAttachmentAfter(logger fklog.FKLogI, userId uint64, mail
 	for _, info := range mailList {
 		mailModel.MailMap[info.Label][info.ID].IsRead = true
 		mailModel.MailMap[info.Label][info.ID].IsGetAttach = true
-		//mailModel.MailMap[info.ID].Status = int32(MailStatusReadClaimed)
+		// mailModel.MailMap[info.ID].Status = int32(MailStatusReadClaimed)
 	}
 
 	err = mailModel.Save(logger, userId)

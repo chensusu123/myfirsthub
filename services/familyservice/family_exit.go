@@ -1,7 +1,9 @@
 package familyservice
 
 import (
+	"context"
 	"errors"
+
 	"maze_game_server/model/familymodel"
 	"maze_game_server/pb/common/MazeFamily"
 	"maze_game_server/usecase/online"
@@ -13,7 +15,8 @@ import (
 
 // OnKickFamilyRQ 踢出家族
 func (r *service) KickFamily(logger fklog.FKLogI, userID uint64, familyID int32,
-	kickUsers []uint64) error {
+	kickUsers []uint64,
+) error {
 	familyInfoModel, err := familymodel.LoadFamilyInfoModel(logger, familyID)
 	if err != nil {
 		logger.ErrorWF("KickFamily LoadFamilyInfoModel err",
@@ -39,7 +42,8 @@ func (r *service) KickFamily(logger fklog.FKLogI, userID uint64, familyID int32,
 
 // SendKickFamilyID 踢出家族id包
 func (r *service) SendKickFamilyID(logger fklog.FKLogI, userID uint64, familyID int32,
-	kickUsers []uint64) error {
+	kickUsers []uint64,
+) error {
 	familymodel, err := familymodel.LoadFamilyInfoModel(logger, familyID)
 	if err != nil {
 		logger.ErrorWF("SendKickFamilyID LoadFamilyInfoModel err",
@@ -54,7 +58,7 @@ func (r *service) SendKickFamilyID(logger fklog.FKLogI, userID uint64, familyID 
 	// todo 包id统一换掉
 	familyMembers := familymodel.DataToFamilyMembersPb(logger)
 	for _, v := range familyMembers {
-		online.Push(logger, v.GetUserId(), 0, pack)
+		online.ClusterPush(context.TODO(), v.GetUserId(), 0, pack)
 	}
 	return nil
 }
@@ -92,7 +96,7 @@ func (r *service) SendExitFamilyID(logger fklog.FKLogI, userID uint64, familyID 
 	// todo 包id统一换掉
 	familyMembers := familymodel.DataToFamilyMembersPb(logger)
 	for _, v := range familyMembers {
-		online.Push(logger, v.GetUserId(), 0, pack)
+		online.ClusterPush(context.TODO(), v.GetUserId(), 0, pack)
 	}
 	return nil
 }

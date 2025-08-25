@@ -1,8 +1,11 @@
 package collect
 
 import (
+	"context"
 	"fmt"
-	"gitlab.ifreetalk.com/maze-plate/freetk/fkutil"
+	"strings"
+	"time"
+
 	"maze_game_server/common/constdef"
 	"maze_game_server/common/errors"
 	"maze_game_server/common/function/settimer"
@@ -14,8 +17,8 @@ import (
 	"maze_game_server/pb/common/MazeCollect"
 	"maze_game_server/pb/server/MazeCollectCache"
 	"maze_game_server/usecase/online"
-	"strings"
-	"time"
+
+	"gitlab.ifreetalk.com/maze-plate/freetk/fkutil"
 
 	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fklog"
 	"go.uber.org/zap"
@@ -262,7 +265,7 @@ func NewCollectAfter(logger fklog.FKLogI, userId uint64, collectInfo *MazeCollec
 		return
 	}
 	pack.MazeCollectInfo = mazeCollectInfoPb
-	err = online.Push(logger, uint64(userId), 10480, pack)
+	err = online.ClusterPush(context.TODO(), uint64(userId), 10480, pack)
 	if err != nil {
 		logger.ErrorWF("NewCollectAfter SendArrivePacket", zap.Any("pack", pack), zap.Error(err))
 		return

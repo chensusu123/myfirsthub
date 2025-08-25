@@ -70,7 +70,7 @@ func Push(logger fklog.FKLogI, userID uint64, packetType uint16, v interface{}) 
 		logger.ErrorWF("Push session not found", zap.Error(ErrSessionNotFound), zap.Uint64("userID", userID), zap.Any("v", v))
 		return ErrSessionNotFound
 	}
-	return s.(*session.Session).ResponseMID(context.Background(), codec.ToMessageID(uint32(time.Now().Unix()), 0, packetType), v)
+	return s.(*session.Session).ResponseMID(context.TODO(), codec.ToMessageID(uint32(time.Now().Unix()), 0, packetType), v)
 }
 
 // Scan
