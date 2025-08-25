@@ -6,6 +6,7 @@ import (
 
 	"maze_game_server/io"
 	globalredis "maze_game_server/io/redis"
+	"maze_game_server/services/broadcastservice"
 
 	"maze_game_server/io/mysql"
 	"maze_game_server/servers/maze_main_server/process"
@@ -44,6 +45,11 @@ func main() {
 	fkserver.AppServer.AddBasicService(&process.NanoInitService{})
 	// fkserver.AddBusiness(&business.GCustomBusiness)
 	fkserver.AddBusiness(tasktimer.GTaskTimerBusiness)
+
 	clusterusermsg.Register()
+
+	// 注册广播服务. 目前是向当前在线的用户广播, 后续换成实现了BroadcastUsers接口的对象。按照广播ID返回需要广播的用户即可
+	broadcastservice.Register(broadcastservice.NewNormalBroadcast())
+
 	fkserver.Run()
 }

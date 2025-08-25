@@ -51,7 +51,7 @@ func ClusterPush(ctx context.Context, userID uint64, packetType uint16, v interf
 		cSpan.SetAttributes(
 			attribute.Int64("enduser.id", int64(userID)),
 			attribute.Int("packet.id", int(packetType)),
-			attribute.String("packet.id", "maze.user.msg.*"),
+			attribute.String("nats.subject", "maze.user.msg.*"),
 		)
 		data, err := clusterpaket.MakeClusterPacket(packetType, v)
 		if err != nil {
