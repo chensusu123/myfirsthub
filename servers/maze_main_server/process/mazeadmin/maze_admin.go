@@ -15,6 +15,7 @@ import (
 func init() {
 	admin.HandleFunc(admin.MethodGet, "/cmds/users/show", showusers)
 	admin.HandleFunc(admin.MethodGet, "/cmds/users/isonline", isonline)
+	admin.HandleFunc(admin.MethodGet, "/cmds/users/pushmsg", pushMsg)
 }
 
 type ReturnMsg struct {
@@ -56,4 +57,20 @@ func isonline(ctx context.Context, c *app.RequestContext) {
 	}
 	isOnline := online.IsOnline(uint64(userIDUint64))
 	c.JSON(consts.StatusOK, MakeSuccessReturnMsg(isOnline))
+}
+
+func pushMsg(ctx context.Context, c *app.RequestContext) {
+	userID := c.Query("userID")
+	if userID == "" {
+		c.JSON(consts.StatusOK, MakeErrReturnMsg(400, "userID is empty"))
+		return
+	}
+	userIDUint64, err := strconv.ParseUint(userID, 10, 64)
+	if err != nil {
+		c.JSON(consts.StatusOK, MakeErrReturnMsg(400, "userID is invalid"))
+		return
+	}
+	msg := c.Query("msg")
+	err = online.PushToClusterTest(ctx, uint64(userIDUint64), 222, []byte(msg))
+	c.JSON(consts.StatusOK, MakeSuccessReturnMsg(err))
 }

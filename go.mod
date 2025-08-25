@@ -25,7 +25,7 @@ require (
 	github.com/samber/slog-zap/v2 v2.6.2
 	github.com/spf13/cast v1.9.2
 	github.com/urfave/cli v1.22.16
-	gitlab.ifreetalk.com/maze-plate/freetk v1.0.1-0.20250822084315-023fa4c12e44
+	gitlab.ifreetalk.com/maze-plate/freetk v1.0.1-0.20250825083839-413c71a63538
 	gitlab.ifreetalk.com/nano-ecosystem/fklog v0.0.0-20250813072008-4577841956ed
 	go.opentelemetry.io/otel v1.37.0
 	go.opentelemetry.io/otel/trace v1.37.0
@@ -38,6 +38,7 @@ require (
 )
 
 require (
+	github.com/iancoleman/orderedmap v0.3.0
 	github.com/xuri/excelize/v2 v2.9.1
 	go.opentelemetry.io/contrib/instrumentation/net/http/otelhttp v0.62.0
 )
@@ -82,7 +83,6 @@ require (
 	github.com/hertz-contrib/obs-opentelemetry/provider v0.3.0 // indirect
 	github.com/hertz-contrib/obs-opentelemetry/tracing v0.4.1 // indirect
 	github.com/hertz-contrib/pprof v0.1.2 // indirect
-	github.com/iancoleman/orderedmap v0.3.0 // indirect
 	github.com/jinzhu/inflection v1.0.0 // indirect
 	github.com/jinzhu/now v1.1.5 // indirect
 	github.com/jmoiron/sqlx v1.4.0 // indirect
