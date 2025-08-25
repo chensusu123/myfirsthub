@@ -2,9 +2,8 @@ package bagservice
 
 import (
 	"context"
-	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fklog"
-	"go.uber.org/zap"
-	"google.golang.org/protobuf/proto"
+	"time"
+
 	"maze_game_server/common/errors"
 	"maze_game_server/common/function/itemutil"
 	"maze_game_server/model/bagmodel"
@@ -12,7 +11,10 @@ import (
 	"maze_game_server/pb/common/MessageType"
 	"maze_game_server/services/itemservice"
 	"maze_game_server/usecase/online"
-	"time"
+
+	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fklog"
+	"go.uber.org/zap"
+	"google.golang.org/protobuf/proto"
 )
 
 // GatherItem 加道具
@@ -156,5 +158,5 @@ func (s *service) sendBagItemChgID(ctx context.Context, userId uint64, items []*
 	for _, item := range items {
 		idPack.Items = append(idPack.Items, itemutil.BuildMazeBagItem(logger, item.ItemId, item.Count))
 	}
-	_ = online.PushWithContext(ctx, logger, userId, 10404, idPack)
+	_ = online.PushWithContext(ctx, userId, 10404, idPack)
 }

@@ -3,9 +3,7 @@ package tempbuffservice
 import (
 	"context"
 	"fmt"
-	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fklog"
-	"go.uber.org/zap"
-	"google.golang.org/protobuf/proto"
+
 	"maze_game_server/common/constdef"
 	"maze_game_server/common/structsdef"
 	"maze_game_server/config/GMazeAttributeV8Cfg"
@@ -17,6 +15,10 @@ import (
 	"maze_game_server/pb/common/MazeTempBuff"
 	"maze_game_server/pb/server/MazeBuffData"
 	"maze_game_server/usecase/online"
+
+	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fklog"
+	"go.uber.org/zap"
+	"google.golang.org/protobuf/proto"
 )
 
 func (s *service) SelectMazeTempBuff(ctx context.Context, userId uint64, barrierId, level, buffId, buffType int32) ([]*BuffInfo, error) {
@@ -70,7 +72,8 @@ func (s *service) checkSelectBuff(ctx context.Context, logger fklog.FKLogI, leve
 }
 
 func (s *service) updateBuffInfo(ctx context.Context, userId uint64, barrierId, level, buffId, buffType int32,
-	buffInfo *tempbuffmodel.TempBuffInfoModel) error {
+	buffInfo *tempbuffmodel.TempBuffInfoModel,
+) error {
 	logger := fklog.ContextAppLogger(ctx)
 	areaId := buffInfo.BuffSequence.AreaId
 	areaIndex := buffInfo.BuffSequence.AreaIndex
@@ -157,7 +160,8 @@ func (s *service) TempBuffChangeSync(ctx context.Context, logger fklog.FKLogI, u
 }
 
 func (s *service) GetTotalBuff(ctx context.Context, buffList []*tempbuffmodel.SelectedBuffInfo) (
-	map[int32]int64, []*tempbuffmodel.TotalBuffInfo) {
+	map[int32]int64, []*tempbuffmodel.TotalBuffInfo,
+) {
 	totalMap := make(map[int32]int64)
 	for _, info := range buffList {
 		// 获取buff实际加成
@@ -233,5 +237,5 @@ func (s *service) pushGroupChange(ctx context.Context, logger fklog.FKLogI, user
 		})
 	}
 
-	online.PushWithContext(ctx, logger, userId, 10642, res)
+	online.PushWithContext(ctx, userId, 10642, res)
 }

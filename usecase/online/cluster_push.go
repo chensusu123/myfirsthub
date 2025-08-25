@@ -40,6 +40,7 @@ func MakeNormalPushData(packetType uint16, payload interface{}, isBytes bool) *s
 }
 
 // ClusterPush push data to cluster
+// 注意： 如果用户不在当前分片。 则会往其他分片广播，由其他分片发送给用户
 func ClusterPush(ctx context.Context, userID uint64, packetType uint16, v interface{}) (err error) {
 	s, found := monitor.online.Load(userID)
 	if !found {

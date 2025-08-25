@@ -2,11 +2,13 @@ package costumeservice
 
 import (
 	"context"
+
+	"maze_game_server/pb/common/Costume"
+	"maze_game_server/usecase/online"
+
 	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fklog"
 	"go.uber.org/zap"
 	"google.golang.org/protobuf/proto"
-	"maze_game_server/pb/common/Costume"
-	"maze_game_server/usecase/online"
 )
 
 // 换装
@@ -26,7 +28,7 @@ func (s *service) ChangeCostume(ctx context.Context, userId uint64) {
 			ModelId: proto.Int32(v),
 		})
 	}
-	online.PushWithContext(ctx, logger, userId, 10615, push)
+	online.PushWithContext(ctx, userId, 10615, push)
 
 	return
 }
