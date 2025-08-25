@@ -75,6 +75,9 @@ func (s *service) getGroupList(ctx context.Context, logger fklog.FKLogI, buffMod
 			res = append(res, &GroupInfo{})
 		}
 	}
+	if specialBuffGroup == nil {
+		specialBuffGroup = &GroupInfo{}
+	}
 	res = append(res, specialBuffGroup)
 
 	return res, nil
