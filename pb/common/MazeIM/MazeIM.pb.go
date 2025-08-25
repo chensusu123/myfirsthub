@@ -26,19 +26,19 @@ const (
 type MessageNotificationType int32
 
 const (
-	MessageNotificationType_NORMAL MessageNotificationType = 1 // 私聊消息
-	MessageNotificationType_GROUP  MessageNotificationType = 2 // 群聊消息
+	MessageNotificationType_FROM_NORMAL MessageNotificationType = 1 // 私聊消息
+	MessageNotificationType_FROM_GROUP  MessageNotificationType = 2 // 群聊消息
 )
 
 // Enum value maps for MessageNotificationType.
 var (
 	MessageNotificationType_name = map[int32]string{
-		1: "NORMAL",
-		2: "GROUP",
+		1: "FROM_NORMAL",
+		2: "FROM_GROUP",
 	}
 	MessageNotificationType_value = map[string]int32{
-		"NORMAL": 1,
-		"GROUP":  2,
+		"FROM_NORMAL": 1,
+		"FROM_GROUP":  2,
 	}
 )
 
@@ -77,6 +77,62 @@ func (x *MessageNotificationType) UnmarshalJSON(b []byte) error {
 // Deprecated: Use MessageNotificationType.Descriptor instead.
 func (MessageNotificationType) EnumDescriptor() ([]byte, []int) {
 	return file_common_MazeIM_proto_rawDescGZIP(), []int{0}
+}
+
+type SessionType int32
+
+const (
+	SessionType_NORMAL_SESSION SessionType = 1 // 私聊会话
+	SessionType_GROUP_SESSION  SessionType = 2 // 群组会话
+)
+
+// Enum value maps for SessionType.
+var (
+	SessionType_name = map[int32]string{
+		1: "NORMAL_SESSION",
+		2: "GROUP_SESSION",
+	}
+	SessionType_value = map[string]int32{
+		"NORMAL_SESSION": 1,
+		"GROUP_SESSION":  2,
+	}
+)
+
+func (x SessionType) Enum() *SessionType {
+	p := new(SessionType)
+	*p = x
+	return p
+}
+
+func (x SessionType) String() string {
+	return protoimpl.X.EnumStringOf(x.Descriptor(), protoreflect.EnumNumber(x))
+}
+
+func (SessionType) Descriptor() protoreflect.EnumDescriptor {
+	return file_common_MazeIM_proto_enumTypes[1].Descriptor()
+}
+
+func (SessionType) Type() protoreflect.EnumType {
+	return &file_common_MazeIM_proto_enumTypes[1]
+}
+
+func (x SessionType) Number() protoreflect.EnumNumber {
+	return protoreflect.EnumNumber(x)
+}
+
+// Deprecated: Do not use.
+func (x *SessionType) UnmarshalJSON(b []byte) error {
+	num, err := protoimpl.X.UnmarshalJSONEnum(x.Descriptor(), b)
+	if err != nil {
+		return err
+	}
+	*x = SessionType(num)
+	return nil
+}
+
+// Deprecated: Use SessionType.Descriptor instead.
+func (SessionType) EnumDescriptor() ([]byte, []int) {
+	return file_common_MazeIM_proto_rawDescGZIP(), []int{1}
 }
 
 // 用户标识
@@ -864,6 +920,207 @@ func (x *SendGroupMessageRS) GetMsgId() uint64 {
 	return 0
 }
 
+type Session struct {
+	state         protoimpl.MessageState
+	sizeCache     protoimpl.SizeCache
+	unknownFields protoimpl.UnknownFields
+
+	Type       *int32     `protobuf:"varint,1,opt,name=type" json:"type,omitempty"`
+	PeerId     *uint64    `protobuf:"varint,2,opt,name=peer_id,json=peerId" json:"peer_id,omitempty"`
+	GroupId    *int32     `protobuf:"varint,3,opt,name=group_id,json=groupId" json:"group_id,omitempty"`
+	Top        *bool      `protobuf:"varint,4,opt,name=top" json:"top,omitempty"`                                 // 置顶会话
+	Recent     []*Message `protobuf:"bytes,5,rep,name=recent" json:"recent,omitempty"`                            // 当前会话中最近的聊天消息
+	CreateTime *int64     `protobuf:"varint,6,opt,name=create_time,json=createTime" json:"create_time,omitempty"` // 会话创建时间
+}
+
+func (x *Session) Reset() {
+	*x = Session{}
+	if protoimpl.UnsafeEnabled {
+		mi := &file_common_MazeIM_proto_msgTypes[11]
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		ms.StoreMessageInfo(mi)
+	}
+}
+
+func (x *Session) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*Session) ProtoMessage() {}
+
+func (x *Session) ProtoReflect() protoreflect.Message {
+	mi := &file_common_MazeIM_proto_msgTypes[11]
+	if protoimpl.UnsafeEnabled && x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use Session.ProtoReflect.Descriptor instead.
+func (*Session) Descriptor() ([]byte, []int) {
+	return file_common_MazeIM_proto_rawDescGZIP(), []int{11}
+}
+
+func (x *Session) GetType() int32 {
+	if x != nil && x.Type != nil {
+		return *x.Type
+	}
+	return 0
+}
+
+func (x *Session) GetPeerId() uint64 {
+	if x != nil && x.PeerId != nil {
+		return *x.PeerId
+	}
+	return 0
+}
+
+func (x *Session) GetGroupId() int32 {
+	if x != nil && x.GroupId != nil {
+		return *x.GroupId
+	}
+	return 0
+}
+
+func (x *Session) GetTop() bool {
+	if x != nil && x.Top != nil {
+		return *x.Top
+	}
+	return false
+}
+
+func (x *Session) GetRecent() []*Message {
+	if x != nil {
+		return x.Recent
+	}
+	return nil
+}
+
+func (x *Session) GetCreateTime() int64 {
+	if x != nil && x.CreateTime != nil {
+		return *x.CreateTime
+	}
+	return 0
+}
+
+//## 10652 UN_TCP_PACK_CLI_QUERY_RECENT_SESSION_LIST_RQ
+// 查询最近活跃的会话列表请求包
+type QueryRecentSessionsRQ struct {
+	state         protoimpl.MessageState
+	sizeCache     protoimpl.SizeCache
+	unknownFields protoimpl.UnknownFields
+
+	Header *Common.PacketHeader `protobuf:"bytes,1,opt,name=header" json:"header,omitempty"`
+}
+
+func (x *QueryRecentSessionsRQ) Reset() {
+	*x = QueryRecentSessionsRQ{}
+	if protoimpl.UnsafeEnabled {
+		mi := &file_common_MazeIM_proto_msgTypes[12]
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		ms.StoreMessageInfo(mi)
+	}
+}
+
+func (x *QueryRecentSessionsRQ) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*QueryRecentSessionsRQ) ProtoMessage() {}
+
+func (x *QueryRecentSessionsRQ) ProtoReflect() protoreflect.Message {
+	mi := &file_common_MazeIM_proto_msgTypes[12]
+	if protoimpl.UnsafeEnabled && x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use QueryRecentSessionsRQ.ProtoReflect.Descriptor instead.
+func (*QueryRecentSessionsRQ) Descriptor() ([]byte, []int) {
+	return file_common_MazeIM_proto_rawDescGZIP(), []int{12}
+}
+
+func (x *QueryRecentSessionsRQ) GetHeader() *Common.PacketHeader {
+	if x != nil {
+		return x.Header
+	}
+	return nil
+}
+
+//## 10653 UN_TCP_PACK_CLI_QUERY_RECENT_SESSION_LIST_RS
+// 查询最近活跃的会话列表响应包
+type QueryRecentSessionsRS struct {
+	state         protoimpl.MessageState
+	sizeCache     protoimpl.SizeCache
+	unknownFields protoimpl.UnknownFields
+
+	Header      *Common.PacketHeader   `protobuf:"bytes,1,opt,name=header" json:"header,omitempty"`
+	ErrInfo     *MessageType.ErrorInfo `protobuf:"bytes,2,opt,name=err_info,json=errInfo" json:"err_info,omitempty"`
+	SessionList []*Session             `protobuf:"bytes,3,rep,name=session_list,json=sessionList" json:"session_list,omitempty"` // 会话列表
+}
+
+func (x *QueryRecentSessionsRS) Reset() {
+	*x = QueryRecentSessionsRS{}
+	if protoimpl.UnsafeEnabled {
+		mi := &file_common_MazeIM_proto_msgTypes[13]
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		ms.StoreMessageInfo(mi)
+	}
+}
+
+func (x *QueryRecentSessionsRS) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*QueryRecentSessionsRS) ProtoMessage() {}
+
+func (x *QueryRecentSessionsRS) ProtoReflect() protoreflect.Message {
+	mi := &file_common_MazeIM_proto_msgTypes[13]
+	if protoimpl.UnsafeEnabled && x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use QueryRecentSessionsRS.ProtoReflect.Descriptor instead.
+func (*QueryRecentSessionsRS) Descriptor() ([]byte, []int) {
+	return file_common_MazeIM_proto_rawDescGZIP(), []int{13}
+}
+
+func (x *QueryRecentSessionsRS) GetHeader() *Common.PacketHeader {
+	if x != nil {
+		return x.Header
+	}
+	return nil
+}
+
+func (x *QueryRecentSessionsRS) GetErrInfo() *MessageType.ErrorInfo {
+	if x != nil {
+		return x.ErrInfo
+	}
+	return nil
+}
+
+func (x *QueryRecentSessionsRS) GetSessionList() []*Session {
+	if x != nil {
+		return x.SessionList
+	}
+	return nil
+}
+
 var File_common_MazeIM_proto protoreflect.FileDescriptor
 
 var file_common_MazeIM_proto_rawDesc = []byte{
@@ -973,14 +1230,44 @@ var file_common_MazeIM_proto_rawDesc = []byte{
 	0x6e, 0x66, 0x6f, 0x52, 0x07, 0x65, 0x72, 0x72, 0x49, 0x6e, 0x66, 0x6f, 0x12, 0x19, 0x0a, 0x08,
 	0x67, 0x72, 0x6f, 0x75, 0x70, 0x5f, 0x69, 0x64, 0x18, 0x03, 0x20, 0x01, 0x28, 0x05, 0x52, 0x07,
 	0x67, 0x72, 0x6f, 0x75, 0x70, 0x49, 0x64, 0x12, 0x15, 0x0a, 0x06, 0x6d, 0x73, 0x67, 0x5f, 0x69,
-	0x64, 0x18, 0x04, 0x20, 0x01, 0x28, 0x04, 0x52, 0x05, 0x6d, 0x73, 0x67, 0x49, 0x64, 0x2a, 0x30,
-	0x0a, 0x17, 0x4d, 0x65, 0x73, 0x73, 0x61, 0x67, 0x65, 0x4e, 0x6f, 0x74, 0x69, 0x66, 0x69, 0x63,
-	0x61, 0x74, 0x69, 0x6f, 0x6e, 0x54, 0x79, 0x70, 0x65, 0x12, 0x0a, 0x0a, 0x06, 0x4e, 0x4f, 0x52,
-	0x4d, 0x41, 0x4c, 0x10, 0x01, 0x12, 0x09, 0x0a, 0x05, 0x47, 0x52, 0x4f, 0x55, 0x50, 0x10, 0x02,
-	0x42, 0x2f, 0x5a, 0x21, 0x6d, 0x61, 0x7a, 0x65, 0x5f, 0x67, 0x61, 0x6d, 0x65, 0x5f, 0x73, 0x65,
-	0x72, 0x76, 0x65, 0x72, 0x2f, 0x70, 0x62, 0x2f, 0x63, 0x6f, 0x6d, 0x6d, 0x6f, 0x6e, 0x2f, 0x4d,
-	0x61, 0x7a, 0x65, 0x49, 0x4d, 0xaa, 0x02, 0x09, 0x50, 0x62, 0x2e, 0x4d, 0x61, 0x7a, 0x65, 0x49,
-	0x4d,
+	0x64, 0x18, 0x04, 0x20, 0x01, 0x28, 0x04, 0x52, 0x05, 0x6d, 0x73, 0x67, 0x49, 0x64, 0x22, 0xad,
+	0x01, 0x0a, 0x07, 0x53, 0x65, 0x73, 0x73, 0x69, 0x6f, 0x6e, 0x12, 0x12, 0x0a, 0x04, 0x74, 0x79,
+	0x70, 0x65, 0x18, 0x01, 0x20, 0x01, 0x28, 0x05, 0x52, 0x04, 0x74, 0x79, 0x70, 0x65, 0x12, 0x17,
+	0x0a, 0x07, 0x70, 0x65, 0x65, 0x72, 0x5f, 0x69, 0x64, 0x18, 0x02, 0x20, 0x01, 0x28, 0x04, 0x52,
+	0x06, 0x70, 0x65, 0x65, 0x72, 0x49, 0x64, 0x12, 0x19, 0x0a, 0x08, 0x67, 0x72, 0x6f, 0x75, 0x70,
+	0x5f, 0x69, 0x64, 0x18, 0x03, 0x20, 0x01, 0x28, 0x05, 0x52, 0x07, 0x67, 0x72, 0x6f, 0x75, 0x70,
+	0x49, 0x64, 0x12, 0x10, 0x0a, 0x03, 0x74, 0x6f, 0x70, 0x18, 0x04, 0x20, 0x01, 0x28, 0x08, 0x52,
+	0x03, 0x74, 0x6f, 0x70, 0x12, 0x27, 0x0a, 0x06, 0x72, 0x65, 0x63, 0x65, 0x6e, 0x74, 0x18, 0x05,
+	0x20, 0x03, 0x28, 0x0b, 0x32, 0x0f, 0x2e, 0x4d, 0x61, 0x7a, 0x65, 0x49, 0x4d, 0x2e, 0x4d, 0x65,
+	0x73, 0x73, 0x61, 0x67, 0x65, 0x52, 0x06, 0x72, 0x65, 0x63, 0x65, 0x6e, 0x74, 0x12, 0x1f, 0x0a,
+	0x0b, 0x63, 0x72, 0x65, 0x61, 0x74, 0x65, 0x5f, 0x74, 0x69, 0x6d, 0x65, 0x18, 0x06, 0x20, 0x01,
+	0x28, 0x03, 0x52, 0x0a, 0x63, 0x72, 0x65, 0x61, 0x74, 0x65, 0x54, 0x69, 0x6d, 0x65, 0x22, 0x45,
+	0x0a, 0x15, 0x51, 0x75, 0x65, 0x72, 0x79, 0x52, 0x65, 0x63, 0x65, 0x6e, 0x74, 0x53, 0x65, 0x73,
+	0x73, 0x69, 0x6f, 0x6e, 0x73, 0x52, 0x51, 0x12, 0x2c, 0x0a, 0x06, 0x68, 0x65, 0x61, 0x64, 0x65,
+	0x72, 0x18, 0x01, 0x20, 0x01, 0x28, 0x0b, 0x32, 0x14, 0x2e, 0x43, 0x6f, 0x6d, 0x6d, 0x6f, 0x6e,
+	0x2e, 0x50, 0x61, 0x63, 0x6b, 0x65, 0x74, 0x48, 0x65, 0x61, 0x64, 0x65, 0x72, 0x52, 0x06, 0x68,
+	0x65, 0x61, 0x64, 0x65, 0x72, 0x22, 0xac, 0x01, 0x0a, 0x15, 0x51, 0x75, 0x65, 0x72, 0x79, 0x52,
+	0x65, 0x63, 0x65, 0x6e, 0x74, 0x53, 0x65, 0x73, 0x73, 0x69, 0x6f, 0x6e, 0x73, 0x52, 0x53, 0x12,
+	0x2c, 0x0a, 0x06, 0x68, 0x65, 0x61, 0x64, 0x65, 0x72, 0x18, 0x01, 0x20, 0x01, 0x28, 0x0b, 0x32,
+	0x14, 0x2e, 0x43, 0x6f, 0x6d, 0x6d, 0x6f, 0x6e, 0x2e, 0x50, 0x61, 0x63, 0x6b, 0x65, 0x74, 0x48,
+	0x65, 0x61, 0x64, 0x65, 0x72, 0x52, 0x06, 0x68, 0x65, 0x61, 0x64, 0x65, 0x72, 0x12, 0x31, 0x0a,
+	0x08, 0x65, 0x72, 0x72, 0x5f, 0x69, 0x6e, 0x66, 0x6f, 0x18, 0x02, 0x20, 0x01, 0x28, 0x0b, 0x32,
+	0x16, 0x2e, 0x4d, 0x65, 0x73, 0x73, 0x61, 0x67, 0x65, 0x54, 0x79, 0x70, 0x65, 0x2e, 0x45, 0x72,
+	0x72, 0x6f, 0x72, 0x49, 0x6e, 0x66, 0x6f, 0x52, 0x07, 0x65, 0x72, 0x72, 0x49, 0x6e, 0x66, 0x6f,
+	0x12, 0x32, 0x0a, 0x0c, 0x73, 0x65, 0x73, 0x73, 0x69, 0x6f, 0x6e, 0x5f, 0x6c, 0x69, 0x73, 0x74,
+	0x18, 0x03, 0x20, 0x03, 0x28, 0x0b, 0x32, 0x0f, 0x2e, 0x4d, 0x61, 0x7a, 0x65, 0x49, 0x4d, 0x2e,
+	0x53, 0x65, 0x73, 0x73, 0x69, 0x6f, 0x6e, 0x52, 0x0b, 0x73, 0x65, 0x73, 0x73, 0x69, 0x6f, 0x6e,
+	0x4c, 0x69, 0x73, 0x74, 0x2a, 0x3a, 0x0a, 0x17, 0x4d, 0x65, 0x73, 0x73, 0x61, 0x67, 0x65, 0x4e,
+	0x6f, 0x74, 0x69, 0x66, 0x69, 0x63, 0x61, 0x74, 0x69, 0x6f, 0x6e, 0x54, 0x79, 0x70, 0x65, 0x12,
+	0x0f, 0x0a, 0x0b, 0x46, 0x52, 0x4f, 0x4d, 0x5f, 0x4e, 0x4f, 0x52, 0x4d, 0x41, 0x4c, 0x10, 0x01,
+	0x12, 0x0e, 0x0a, 0x0a, 0x46, 0x52, 0x4f, 0x4d, 0x5f, 0x47, 0x52, 0x4f, 0x55, 0x50, 0x10, 0x02,
+	0x2a, 0x34, 0x0a, 0x0b, 0x53, 0x65, 0x73, 0x73, 0x69, 0x6f, 0x6e, 0x54, 0x79, 0x70, 0x65, 0x12,
+	0x12, 0x0a, 0x0e, 0x4e, 0x4f, 0x52, 0x4d, 0x41, 0x4c, 0x5f, 0x53, 0x45, 0x53, 0x53, 0x49, 0x4f,
+	0x4e, 0x10, 0x01, 0x12, 0x11, 0x0a, 0x0d, 0x47, 0x52, 0x4f, 0x55, 0x50, 0x5f, 0x53, 0x45, 0x53,
+	0x53, 0x49, 0x4f, 0x4e, 0x10, 0x02, 0x42, 0x2f, 0x5a, 0x21, 0x6d, 0x61, 0x7a, 0x65, 0x5f, 0x67,
+	0x61, 0x6d, 0x65, 0x5f, 0x73, 0x65, 0x72, 0x76, 0x65, 0x72, 0x2f, 0x70, 0x62, 0x2f, 0x63, 0x6f,
+	0x6d, 0x6d, 0x6f, 0x6e, 0x2f, 0x4d, 0x61, 0x7a, 0x65, 0x49, 0x4d, 0xaa, 0x02, 0x09, 0x50, 0x62,
+	0x2e, 0x4d, 0x61, 0x7a, 0x65, 0x49, 0x4d,
 }
 
 var (
@@ -995,45 +1282,54 @@ func file_common_MazeIM_proto_rawDescGZIP() []byte {
 	return file_common_MazeIM_proto_rawDescData
 }
 
-var file_common_MazeIM_proto_enumTypes = make([]protoimpl.EnumInfo, 1)
-var file_common_MazeIM_proto_msgTypes = make([]protoimpl.MessageInfo, 11)
+var file_common_MazeIM_proto_enumTypes = make([]protoimpl.EnumInfo, 2)
+var file_common_MazeIM_proto_msgTypes = make([]protoimpl.MessageInfo, 14)
 var file_common_MazeIM_proto_goTypes = []interface{}{
 	(MessageNotificationType)(0),  // 0: MazeIM.MessageNotificationType
-	(*User)(nil),                  // 1: MazeIM.User
-	(*Message)(nil),               // 2: MazeIM.Message
-	(*MessageNotificationID)(nil), // 3: MazeIM.MessageNotificationID
-	(*QueryMessagesRQ)(nil),       // 4: MazeIM.QueryMessagesRQ
-	(*QueryMessagesRS)(nil),       // 5: MazeIM.QueryMessagesRS
-	(*SendMessageRQ)(nil),         // 6: MazeIM.SendMessageRQ
-	(*SendMessageRS)(nil),         // 7: MazeIM.SendMessageRS
-	(*QueryGroupMessagesRQ)(nil),  // 8: MazeIM.QueryGroupMessagesRQ
-	(*QueryGroupMessagesRS)(nil),  // 9: MazeIM.QueryGroupMessagesRS
-	(*SendGroupMessageRQ)(nil),    // 10: MazeIM.SendGroupMessageRQ
-	(*SendGroupMessageRS)(nil),    // 11: MazeIM.SendGroupMessageRS
-	(*Common.PacketHeader)(nil),   // 12: Common.PacketHeader
-	(*MessageType.ErrorInfo)(nil), // 13: MessageType.ErrorInfo
+	(SessionType)(0),              // 1: MazeIM.SessionType
+	(*User)(nil),                  // 2: MazeIM.User
+	(*Message)(nil),               // 3: MazeIM.Message
+	(*MessageNotificationID)(nil), // 4: MazeIM.MessageNotificationID
+	(*QueryMessagesRQ)(nil),       // 5: MazeIM.QueryMessagesRQ
+	(*QueryMessagesRS)(nil),       // 6: MazeIM.QueryMessagesRS
+	(*SendMessageRQ)(nil),         // 7: MazeIM.SendMessageRQ
+	(*SendMessageRS)(nil),         // 8: MazeIM.SendMessageRS
+	(*QueryGroupMessagesRQ)(nil),  // 9: MazeIM.QueryGroupMessagesRQ
+	(*QueryGroupMessagesRS)(nil),  // 10: MazeIM.QueryGroupMessagesRS
+	(*SendGroupMessageRQ)(nil),    // 11: MazeIM.SendGroupMessageRQ
+	(*SendGroupMessageRS)(nil),    // 12: MazeIM.SendGroupMessageRS
+	(*Session)(nil),               // 13: MazeIM.Session
+	(*QueryRecentSessionsRQ)(nil), // 14: MazeIM.QueryRecentSessionsRQ
+	(*QueryRecentSessionsRS)(nil), // 15: MazeIM.QueryRecentSessionsRS
+	(*Common.PacketHeader)(nil),   // 16: Common.PacketHeader
+	(*MessageType.ErrorInfo)(nil), // 17: MessageType.ErrorInfo
 }
 var file_common_MazeIM_proto_depIdxs = []int32{
-	2,  // 0: MazeIM.MessageNotificationID.message:type_name -> MazeIM.Message
-	12, // 1: MazeIM.QueryMessagesRQ.header:type_name -> Common.PacketHeader
-	12, // 2: MazeIM.QueryMessagesRS.header:type_name -> Common.PacketHeader
-	13, // 3: MazeIM.QueryMessagesRS.err_info:type_name -> MessageType.ErrorInfo
-	2,  // 4: MazeIM.QueryMessagesRS.msg_list:type_name -> MazeIM.Message
-	12, // 5: MazeIM.SendMessageRQ.header:type_name -> Common.PacketHeader
-	12, // 6: MazeIM.SendMessageRS.header:type_name -> Common.PacketHeader
-	13, // 7: MazeIM.SendMessageRS.err_info:type_name -> MessageType.ErrorInfo
-	12, // 8: MazeIM.QueryGroupMessagesRQ.header:type_name -> Common.PacketHeader
-	12, // 9: MazeIM.QueryGroupMessagesRS.header:type_name -> Common.PacketHeader
-	13, // 10: MazeIM.QueryGroupMessagesRS.err_info:type_name -> MessageType.ErrorInfo
-	2,  // 11: MazeIM.QueryGroupMessagesRS.msg_list:type_name -> MazeIM.Message
-	12, // 12: MazeIM.SendGroupMessageRQ.header:type_name -> Common.PacketHeader
-	12, // 13: MazeIM.SendGroupMessageRS.header:type_name -> Common.PacketHeader
-	13, // 14: MazeIM.SendGroupMessageRS.err_info:type_name -> MessageType.ErrorInfo
-	15, // [15:15] is the sub-list for method output_type
-	15, // [15:15] is the sub-list for method input_type
-	15, // [15:15] is the sub-list for extension type_name
-	15, // [15:15] is the sub-list for extension extendee
-	0,  // [0:15] is the sub-list for field type_name
+	3,  // 0: MazeIM.MessageNotificationID.message:type_name -> MazeIM.Message
+	16, // 1: MazeIM.QueryMessagesRQ.header:type_name -> Common.PacketHeader
+	16, // 2: MazeIM.QueryMessagesRS.header:type_name -> Common.PacketHeader
+	17, // 3: MazeIM.QueryMessagesRS.err_info:type_name -> MessageType.ErrorInfo
+	3,  // 4: MazeIM.QueryMessagesRS.msg_list:type_name -> MazeIM.Message
+	16, // 5: MazeIM.SendMessageRQ.header:type_name -> Common.PacketHeader
+	16, // 6: MazeIM.SendMessageRS.header:type_name -> Common.PacketHeader
+	17, // 7: MazeIM.SendMessageRS.err_info:type_name -> MessageType.ErrorInfo
+	16, // 8: MazeIM.QueryGroupMessagesRQ.header:type_name -> Common.PacketHeader
+	16, // 9: MazeIM.QueryGroupMessagesRS.header:type_name -> Common.PacketHeader
+	17, // 10: MazeIM.QueryGroupMessagesRS.err_info:type_name -> MessageType.ErrorInfo
+	3,  // 11: MazeIM.QueryGroupMessagesRS.msg_list:type_name -> MazeIM.Message
+	16, // 12: MazeIM.SendGroupMessageRQ.header:type_name -> Common.PacketHeader
+	16, // 13: MazeIM.SendGroupMessageRS.header:type_name -> Common.PacketHeader
+	17, // 14: MazeIM.SendGroupMessageRS.err_info:type_name -> MessageType.ErrorInfo
+	3,  // 15: MazeIM.Session.recent:type_name -> MazeIM.Message
+	16, // 16: MazeIM.QueryRecentSessionsRQ.header:type_name -> Common.PacketHeader
+	16, // 17: MazeIM.QueryRecentSessionsRS.header:type_name -> Common.PacketHeader
+	17, // 18: MazeIM.QueryRecentSessionsRS.err_info:type_name -> MessageType.ErrorInfo
+	13, // 19: MazeIM.QueryRecentSessionsRS.session_list:type_name -> MazeIM.Session
+	20, // [20:20] is the sub-list for method output_type
+	20, // [20:20] is the sub-list for method input_type
+	20, // [20:20] is the sub-list for extension type_name
+	20, // [20:20] is the sub-list for extension extendee
+	0,  // [0:20] is the sub-list for field type_name
 }
 
 func init() { file_common_MazeIM_proto_init() }
@@ -1174,14 +1470,50 @@ func file_common_MazeIM_proto_init() {
 				return nil
 			}
 		}
+		file_common_MazeIM_proto_msgTypes[11].Exporter = func(v interface{}, i int) interface{} {
+			switch v := v.(*Session); i {
+			case 0:
+				return &v.state
+			case 1:
+				return &v.sizeCache
+			case 2:
+				return &v.unknownFields
+			default:
+				return nil
+			}
+		}
+		file_common_MazeIM_proto_msgTypes[12].Exporter = func(v interface{}, i int) interface{} {
+			switch v := v.(*QueryRecentSessionsRQ); i {
+			case 0:
+				return &v.state
+			case 1:
+				return &v.sizeCache
+			case 2:
+				return &v.unknownFields
+			default:
+				return nil
+			}
+		}
+		file_common_MazeIM_proto_msgTypes[13].Exporter = func(v interface{}, i int) interface{} {
+			switch v := v.(*QueryRecentSessionsRS); i {
+			case 0:
+				return &v.state
+			case 1:
+				return &v.sizeCache
+			case 2:
+				return &v.unknownFields
+			default:
+				return nil
+			}
+		}
 	}
 	type x struct{}
 	out := protoimpl.TypeBuilder{
 		File: protoimpl.DescBuilder{
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
 			RawDescriptor: file_common_MazeIM_proto_rawDesc,
-			NumEnums:      1,
-			NumMessages:   11,
+			NumEnums:      2,
+			NumMessages:   14,
 			NumExtensions: 0,
 			NumServices:   0,
 		},
