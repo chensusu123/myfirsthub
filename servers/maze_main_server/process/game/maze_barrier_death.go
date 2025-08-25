@@ -4,13 +4,13 @@ import (
 	"maze_game_server/common/errors"
 	"maze_game_server/io/kafka/mazebarrieruserkafka"
 	"maze_game_server/io/redis/mazebarriereventredis"
-	"maze_game_server/lib/log"
 	"maze_game_server/lib/nano/session"
 	"maze_game_server/pb/common/MazeGame"
 	"maze_game_server/servers/maze_main_server/process/game/events"
 	"maze_game_server/services/barrierservice"
 	"time"
 
+	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fklog"
 	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fkprometheus"
 	"go.uber.org/zap"
 	"google.golang.org/protobuf/proto"
@@ -19,7 +19,8 @@ import (
 func (g *Game) OnMazeBarrierDeathRQ_10449_10450(s *session.Session, req *MazeGame.BarrierDeathRQ) (err error) {
 	defer fkprometheus.InfoPMT("OnMazeBarrierDeathRQ")()
 
-	logger := log.Clone("Game", uint64(s.UID()), 0)
+	ctx := s.Context()
+	logger := fklog.ContextAppLogger(ctx)
 	res := &MazeGame.BarrierDeathRS{}
 
 	logger.InfoWF("OnMazeBarrierDeathRQ start", zap.Any("req", req))
@@ -44,7 +45,7 @@ func (g *Game) OnMazeBarrierDeathRQ_10449_10450(s *session.Session, req *MazeGam
 	//	return
 	//}
 
-	killMonsterNum, totalDamage, awards, errinfo := barrierservice.Global.BarrierDeath(logger, req.GetHeader(), userId, req.GetBarrierId(), req.GetFoeExp())
+	killMonsterNum, totalDamage, awards, errinfo := barrierservice.Global.BarrierDeath(ctx, req.GetHeader(), userId, req.GetBarrierId(), req.GetFoeExp())
 	if errinfo != nil {
 		res.ErrInfo = errinfo
 		return
@@ -70,7 +71,7 @@ func (g *Game) OnMazeBarrierDeathRQ_10449_10450(s *session.Session, req *MazeGam
 		KillMonsterNum: int64(killMonsterNum),
 	}
 
-	mazebarrieruserkafka.PushMazeBarrierUserRecord(logger, passRecord)
+	mazebarrieruserkafka.PushMazeBarrierUserRecord(ctx, passRecord)
 
 	return nil
 }

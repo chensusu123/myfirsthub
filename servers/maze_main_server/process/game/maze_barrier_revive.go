@@ -16,7 +16,6 @@ import (
 	"maze_game_server/excel/mazeconfigv8"
 	"maze_game_server/io/kafka/mazerebornkafka"
 	"maze_game_server/io/redis/mazeuserbarrierredis"
-	"maze_game_server/lib/log"
 	"maze_game_server/lib/nano/session"
 	"maze_game_server/pb/common/MazeCommon"
 	"maze_game_server/pb/common/MazeGame"
@@ -24,6 +23,7 @@ import (
 	"sort"
 	"time"
 
+	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fklog"
 	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fkprometheus"
 	"go.uber.org/zap"
 	"google.golang.org/protobuf/proto"
@@ -32,7 +32,8 @@ import (
 func (g *Game) OnMazeBarrierRebornRQ_10461_10462(s *session.Session, req *MazeGame.MazeBarrierRebornRQ) (err error) {
 	defer fkprometheus.InfoPMT("OnMazeBarrierRebornRQ")()
 
-	logger := log.Clone("Game", uint64(s.UID()), 0)
+	ctx := s.Context()
+	logger := fklog.ContextAppLogger(ctx)
 	res := &MazeGame.MazeBarrierRebornRS{}
 
 	logger.InfoWF("OnMazeBarrierRebornRQ start", zap.Any("req", req))
@@ -167,7 +168,7 @@ func (g *Game) OnMazeBarrierRebornRQ_10461_10462(s *session.Session, req *MazeGa
 			RebornCount: int64(barrierInfo.GetRebornCount()),
 			RebornCost:  itemutil.CommonItemsToString(svrCost),
 		}
-		mazerebornkafka.PushMazeRebornRecord(logger, record)
+		mazerebornkafka.PushMazeRebornRecord(ctx, record)
 	}
 	return nil
 }

@@ -23,7 +23,6 @@ import (
 	"maze_game_server/io/redis/mazeattrcalcnotifyqueue"
 	"maze_game_server/io/redis/mazebuffinforedis"
 	"maze_game_server/io/redis/mazeuserlevelredis"
-	"maze_game_server/lib/log"
 	"maze_game_server/lib/nano/session"
 	"maze_game_server/module/assembleidpack"
 	"maze_game_server/module/calcassembleattr"
@@ -44,7 +43,8 @@ import (
 func (e *Equip) OnEquipPosLvUpRQ_10425_10426(s *session.Session, rq *MazeEquipPos.MazeEquipPosLvUpRQ) (err error) {
 	defer fkprometheus.DebugPMT("OnEquipPosLvUpRQ")()
 
-	logger := log.Clone("Equip", uint64(s.UID()), 0)
+	ctx := s.Context()
+	logger := fklog.ContextAppLogger(ctx)
 	rs := &MazeEquipPos.MazeEquipPosLvUpRS{}
 
 	rs.ErrInfo = errors.NO_ERROR
@@ -270,7 +270,7 @@ func (e *Equip) OnEquipPosLvUpRQ_10425_10426(s *session.Session, rq *MazeEquipPo
 	var result int32 = 1
 	var retMask int32 = 0
 	defer func() {
-		if err := equipposstrengrecordkafka.PushEquipPosStrengRecord(logger, userId,
+		if err := equipposstrengrecordkafka.PushEquipPosStrengRecord(ctx, userId,
 			posId, curLv, nextCfg.Level, curSuitId, newSuitId, tid, svrCost, result, retMask); err != nil {
 			logger.ErrorWF("OnEquipPosLvUpRQ PushEquipPosStrengRecord", zap.Error(err))
 		}
@@ -286,7 +286,7 @@ func (e *Equip) OnEquipPosLvUpRQ_10425_10426(s *session.Session, rq *MazeEquipPo
 	}
 	logger.InfoWF("OnEquipPosLvUpRQ SetAssembleInfoByFields succ", zap.Any("chgAssemDb", chgAssemDb))
 	// 计算属性加成
-	retMask |= UpdateEquipPosBuff(logger, userId, curSuitId, newSuitId,
+	retMask |= UpdateEquipPosBuff(ctx, userId, curSuitId, newSuitId,
 		assembleDb.GetMazeEquips(), posCurAttrs, rq.GetHeader().GetSession())
 
 	// 推装配信息变化包
@@ -343,8 +343,9 @@ func (e *Equip) OnEquipPosLvUpRQ_10425_10426(s *session.Session, rq *MazeEquipPo
 	return
 }
 
-func UpdateEquipPosBuff(logger fklog.FKLogI, userId uint64,
+func UpdateEquipPosBuff(ctx context.Context, userId uint64,
 	curSuitId, newSuitId int32, posInfo []*MazeEquipCache.MazeEquipPosInfo, posCurAttrs map[int32]int64, session string) (result int32) {
+	logger := fklog.ContextAppLogger(ctx)
 	reals, shows := CalcEquipPosBuffs(posInfo)
 	posNewAttrs := map[int32]int64{} // 装备位升级后属性
 	posNewShowAttrs := map[int32]int64{}
@@ -367,7 +368,7 @@ func UpdateEquipPosBuff(logger fklog.FKLogI, userId uint64,
 		calcAttrNotify.UserId = userId
 		calcAttrNotify.ChgType = constdef.MazeBuffEquipPosUpgrade
 		calcAttrNotify.Session = session
-		err = mazeattrcalcnotifyqueue.SendMazeAttrCalcNotify(logger, calcAttrNotify)
+		err = mazeattrcalcnotifyqueue.SendMazeAttrCalcNotify(ctx, calcAttrNotify)
 		if err != nil {
 			result |= MazeEquipPosErrBuffNotify
 			logger.ErrorWF("UpdateEquipPosBuff SendMazeAttrCalcNotify fail", zap.Error(err))

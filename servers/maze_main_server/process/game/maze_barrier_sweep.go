@@ -5,12 +5,12 @@ import (
 
 	"maze_game_server/common/errors"
 	"maze_game_server/lib/codec"
-	"maze_game_server/lib/log"
 	"maze_game_server/lib/nano/session"
 	"maze_game_server/pb/common/MazeEnergy"
 	"maze_game_server/pb/common/MazeGame"
 	"maze_game_server/services/barrierservice"
 
+	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fklog"
 	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fkprometheus"
 	"go.uber.org/zap"
 	"google.golang.org/protobuf/proto"
@@ -20,7 +20,8 @@ import (
 func (g *Game) OnStartMazeSweepRQ_10471_10472(s *session.Session, req *MazeGame.StartMazeSweepRQ) (err error) {
 	defer fkprometheus.InfoPMT("OnStartMazeSweepRQ")()
 
-	logger := log.Clone("Sweep", uint64(s.UID()), 0)
+	ctx := s.Context()
+	logger := fklog.ContextAppLogger(ctx)
 	res := &MazeGame.StartMazeSweepRS{}
 	energyID := &MazeEnergy.EnergyChangeID{} // defer时多补一个体力ID包
 
@@ -29,8 +30,8 @@ func (g *Game) OnStartMazeSweepRQ_10471_10472(s *session.Session, req *MazeGame.
 
 	userID := uint64(s.UID())
 
-	logger.InfoWF("OnStartMazeSweepRQ start", zap.Any("req", req))
-	ctx := s.Context()
+	logger.CtxInfo(ctx, "OnStartMazeSweepRQ start", zap.Any("req", req))
+
 	defer func() {
 		err = s.Response(res)
 		logger.InfoWF("OnStartMazeSweepRQ end", zap.Any("res", res), zap.Any("errMsg", string(res.GetErrInfo().GetErrMsg())))
@@ -53,7 +54,7 @@ func (g *Game) OnStartMazeSweepRQ_10471_10472(s *session.Session, req *MazeGame.
 	}
 
 	// 扫荡关卡
-	energyInfo, remainVal, gameID, awardItem, rareItem, errinfo := barrierservice.Global.SweepBarrier(logger, req.GetHeader(), userID, barrierId)
+	energyInfo, remainVal, gameID, awardItem, rareItem, errinfo := barrierservice.Global.SweepBarrier(ctx, req.GetHeader(), userID, barrierId)
 	if errinfo != nil {
 		res.ErrInfo = errinfo
 	} else {

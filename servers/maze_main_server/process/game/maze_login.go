@@ -6,7 +6,6 @@ import (
 	"maze_game_server/config/GMazeLevelV8Cfg"
 	"maze_game_server/io/kafka/mazeuserlevelkafka"
 	"maze_game_server/io/redis/mazecalcattrredis"
-	"maze_game_server/lib/log"
 	"maze_game_server/lib/nano/session"
 	"maze_game_server/module/mazecommonvalue"
 	"maze_game_server/module/mazeuserinfo"
@@ -14,6 +13,7 @@ import (
 	"maze_game_server/services/barriersavedataservice"
 	"maze_game_server/services/moneyservice"
 
+	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fklog"
 	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fkprometheus"
 	"go.uber.org/zap"
 )
@@ -21,7 +21,8 @@ import (
 func (g *Game) OnMazeLoginRQ_10451_10452(s *session.Session, req *MazeGame.MazeLoginRQ) (err error) {
 	defer fkprometheus.InfoPMT("OnMazeLoginRQ")()
 
-	logger := log.Clone("Game", uint64(s.UID()), 0)
+	ctx := s.Context()
+	logger := fklog.ContextAppLogger(ctx)
 	res := &MazeGame.MazeLoginRS{}
 
 	logger.InfoWF("OnMazeLoginRQ start", zap.Any("req", req))
@@ -54,7 +55,7 @@ func (g *Game) OnMazeLoginRQ_10451_10452(s *session.Session, req *MazeGame.MazeL
 		}
 		defer func() {
 			if err == nil {
-				mazeuserlevelkafka.PushMazeLevelRecord(logger, levelRecord)
+				mazeuserlevelkafka.PushMazeLevelRecord(ctx, levelRecord)
 			}
 		}()
 		userInfo.SetLevel(1)

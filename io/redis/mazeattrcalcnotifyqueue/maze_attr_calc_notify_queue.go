@@ -17,9 +17,10 @@ import (
 
 	"context"
 
-	"go.uber.org/zap"
 	"maze_game_server/common/structsdef"
 	"maze_game_server/servers/maze_main_server/process/attr_calc"
+
+	"go.uber.org/zap"
 )
 
 var (
@@ -43,9 +44,10 @@ type MazeCalcAttrNotifyMsg struct {
 	RetryFlag  int32  `json:"retry_flag"`  // 失败重试用,内部用不用设置
 }
 
-func SendMazeAttrCalcNotify(agent fklog.FKLogI, msg *structsdef.MazeCalcAttrNotifyMsg) error {
+func SendMazeAttrCalcNotify(ctx context.Context, msg *structsdef.MazeCalcAttrNotifyMsg) error {
+	agent := fklog.ContextAppLogger(ctx)
 	agent.InfoWF("SendMazeAttrCalcNotify start", zap.Any("msg", msg))
-	return attr_calc.OnMazeAttrCalcMsg(context.TODO(), agent, 0, msg)
+	return attr_calc.OnMazeAttrCalcMsg(ctx, agent, 0, msg)
 	if msg.Stamp == 0 {
 		msg.Stamp = time.Now().UnixNano() / 1000000
 	}

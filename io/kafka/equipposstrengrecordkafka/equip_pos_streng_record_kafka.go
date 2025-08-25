@@ -8,8 +8,6 @@ import (
 	"maze_game_server/model/flowmodel/mazeequipposleveluprecordmodel"
 	"maze_game_server/pb/common/MazeCommon"
 	"maze_game_server/services/flowservice"
-
-	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fklog"
 )
 
 type KafkaCommon = kafkacommonstruct.KafkaCommon
@@ -40,7 +38,7 @@ func init() {
 
 var d = dispatcher.NewDispatcher[*EquipPosLevelUpRecord]()
 
-func Watch(fn func(logger fklog.FKLogI, msg *EquipPosLevelUpRecord)) {
+func Watch(fn func(ctx context.Context, msg *EquipPosLevelUpRecord)) {
 	d.Watch(fn)
 }
 
@@ -53,11 +51,11 @@ func Watch(fn func(logger fklog.FKLogI, msg *EquipPosLevelUpRecord)) {
 // }
 
 // 流水打点使用
-func PushEquipPosStrengRecord(logger fklog.FKLogI, userId uint64, posId,
+func PushEquipPosStrengRecord(ctx context.Context, userId uint64, posId,
 	oldPosLv, newPosLv, oldPosSuitId, newPosSuitId int32, tradeNo uint64, items []*MazeCommon.MazeItem, result, mask int32,
 ) error {
 	flowData := mazeequipposleveluprecordmodel.NewEquipPosLevelUpRecord(userId, posId, oldPosLv, newPosLv, oldPosSuitId, newPosSuitId,
 		tradeNo, itemutil.CommonItemsToString(items), result)
-	flowservice.GflowService.SendFlowData(context.TODO(), flowData)
+	flowservice.GflowService.SendFlowData(ctx, flowData)
 	return nil
 }

@@ -11,7 +11,6 @@ import (
 	"maze_game_server/common/tradeno"
 	"maze_game_server/config/GMazeItemsV8Cfg"
 	"maze_game_server/io/kafka/dollmazefoekafka"
-	"maze_game_server/lib/log"
 	"maze_game_server/lib/nano/session"
 	"maze_game_server/pb/common/MazeCommon"
 	"maze_game_server/pb/common/MazeGame"
@@ -19,6 +18,7 @@ import (
 	"maze_game_server/services/barrierservice"
 	"maze_game_server/services/itemservice"
 
+	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fklog"
 	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fkprometheus"
 	"go.uber.org/zap"
 	"google.golang.org/protobuf/proto"
@@ -27,7 +27,8 @@ import (
 func (g *Game) OnBarrierMonsterDeathRQ_10498_10499(s *session.Session, req *MazeGame.BarrierMonsterDeathRQ) (err error) {
 	defer fkprometheus.InfoPMT("OnBarrierMonsterDeathRQ")()
 
-	logger := log.Clone("Game", uint64(s.UID()), 0)
+	ctx := s.Context()
+	logger := fklog.ContextAppLogger(ctx)
 	res := &MazeGame.BarrierMonsterDeathRS{}
 
 	logger.InfoWF("OnBarrierMonsterDeathRQ start", zap.Any("req", req))
@@ -64,7 +65,7 @@ func (g *Game) OnBarrierMonsterDeathRQ_10498_10499(s *session.Session, req *Maze
 
 	// 怪物掉落装备
 	if len(equips) > 0 {
-		_, err = addequip.AddEquipToBagWithOpdata(logger, userId, int32(MazeEquipSvr.ENUM_EQUIP_BAG_OP_TYPE_MAZE_EQUIP_MONSTER_DEATH_AWARD), opData, tradeNo, equips)
+		_, err = addequip.AddEquipToBagWithOpdata(ctx, userId, int32(MazeEquipSvr.ENUM_EQUIP_BAG_OP_TYPE_MAZE_EQUIP_MONSTER_DEATH_AWARD), opData, tradeNo, equips)
 		if err != nil {
 			logger.ErrorWF("OnBarrierMonsterDeathRQ addEquipToBag fail", zap.Error(err), zap.Any("optype", int32(MazeEquipSvr.ENUM_EQUIP_BAG_OP_TYPE_MAZE_EQUIP_FOE)),
 				zap.Any("tradeNo", tradeNo), zap.Any("addEquip", equips))
@@ -114,7 +115,7 @@ func (g *Game) OnBarrierMonsterDeathRQ_10498_10499(s *session.Session, req *Maze
 		logger.ErrorWF("OnBarrierMonsterDeathRQ json marshal fail", zap.Error(err), zap.Any("res", res))
 	}
 	record.AwardList = string(awards)
-	dollmazefoekafka.PushDollMazeFoeRecord(logger, record)
+	dollmazefoekafka.PushDollMazeFoeRecord(ctx, record)
 	// flowrecord.SaveFoeRecord(logger, record)
 
 	return

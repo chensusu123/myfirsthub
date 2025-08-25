@@ -1,6 +1,7 @@
 package mazerebornkafka
 
 import (
+	"context"
 	"time"
 
 	"maze_game_server/io/dispatcher"
@@ -33,18 +34,19 @@ func init() {
 
 var d = dispatcher.NewDispatcher[*MazeRebornRecord]()
 
-func Watch(fn func(logger fklog.FKLogI, msg *MazeRebornRecord)) {
+func Watch(fn func(ctx context.Context, msg *MazeRebornRecord)) {
 	d.Watch(fn)
 }
 
-func PushMazeRebornRecord(agent fklog.FKLogI, record *MazeRebornRecord) error {
+func PushMazeRebornRecord(ctx context.Context, record *MazeRebornRecord) error {
+	agent := fklog.ContextAppLogger(ctx)
 	record.CreateTime = time.Now().UnixNano() / 1e6
 	// record.GroupID = fkconfig.EnvVal.GroupID
 	// cnt, err := json.Marshal(record)
 	// if err != nil {
 	// 	return err
 	// }
-	d.Push(agent, record)
+	d.Push(ctx, record)
 	agent.InfoWF("PushMazeRebornRecord data", zap.Any("userId", record.UserId), zap.Any("record", record))
 	// return gKafka.SendWithUserID(record.UserId, cnt)
 	return nil

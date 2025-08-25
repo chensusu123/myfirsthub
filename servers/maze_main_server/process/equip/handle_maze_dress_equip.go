@@ -22,7 +22,6 @@ import (
 	"maze_game_server/io/redis/mazeattrcalcnotifyqueue"
 	"maze_game_server/io/redis/mazebuffinforedis"
 	"maze_game_server/io/redis/mazeuserlevelredis"
-	"maze_game_server/lib/log"
 	"maze_game_server/lib/nano/session"
 	"maze_game_server/module/assembleidpack"
 	"maze_game_server/module/calcassembleattr"
@@ -46,7 +45,8 @@ import (
 func (ep *Equip) OnDressMazeEquipRQ_10418_10419(s *session.Session, req *MazeGameEquip.MazeDressEquipRQ) (err error) {
 	defer fkprometheus.DebugPMT("OnDressMazeEquipRQ")()
 
-	logger := log.Clone("Equip", uint64(s.UID()), 0)
+	ctx := s.Context()
+	logger := fklog.ContextAppLogger(ctx)
 	res := &MazeGameEquip.MazeDressEquipRS{}
 
 	res.ErrInfo = errors.NO_ERROR
@@ -299,7 +299,7 @@ func (ep *Equip) OnDressMazeEquipRQ_10418_10419(s *session.Session, req *MazeGam
 	var opMask int32
 
 	defer func() {
-		EndEquipAssmebleRecord(logger, record, opCode, opMask, effectInfo)
+		EndEquipAssmebleRecord(ctx, record, opCode, opMask, effectInfo)
 	}()
 	// 保存装配数据
 	err = dollassemblesuitredis.SaveEquipAssembleInfoV2(logger, userId, assembleInfo.GetCurSuitIndex(), updateEquipPos)
@@ -334,13 +334,13 @@ func (ep *Equip) OnDressMazeEquipRQ_10418_10419(s *session.Session, req *MazeGam
 		calcAttrNotify.BuffSrc = constdef.MazeBuffSrcEquip
 
 		calcAttrNotify.Session = req.GetHeader().GetSession()
-		e = mazeattrcalcnotifyqueue.SendMazeAttrCalcNotify(logger, calcAttrNotify)
+		e = mazeattrcalcnotifyqueue.SendMazeAttrCalcNotify(ctx, calcAttrNotify)
 		if e != nil {
 			opMask |= demconstdef.DollEquipAssembleOpMaskCalcAttr
 			logger.ErrorWF("OnDressMazeEquipRQ SendDollAttrCalcNotify fail", zap.Error(e))
 		}
 
-		mazebuffchgrrecordapi.SendMazeBuffChgRecord(logger, userId,
+		mazebuffchgrrecordapi.SendMazeBuffChgRecord(ctx, userId,
 			constdef.MazeBuffSrcEquip,
 			constdef.MazeBuffChgTypeEquipDress,
 			oldEffect.Other, effectInfo.Other)
@@ -406,7 +406,7 @@ func StartEquipAssmebleRecord(userId uint64, pos, op int32, newEquip, oldEquip *
 	return record
 }
 
-func EndEquipAssmebleRecord(logger fklog.FKLogI, record *dollequipassmeblekakfa.MazeGameEquipAssembleRecord,
+func EndEquipAssmebleRecord(ctx context.Context, record *dollequipassmeblekakfa.MazeGameEquipAssembleRecord,
 	opRet, oMask int32, newEffect *calcassembleattr.EquipmentEffectInfo) {
 	record.RetCode = opRet
 	record.CodeMask = oMask
@@ -414,7 +414,7 @@ func EndEquipAssmebleRecord(logger fklog.FKLogI, record *dollequipassmeblekakfa.
 	// fiveElemStr := maputil.MapToString32(newEffect.FiveStateMap)
 	hsStr := maputil.MapToString32(newEffect.GetSuitCalc().GetSuitNumMap())
 	record.NewFElem = fmt.Sprintf("hurtSuit:%s|%s", hsStr, record.NewFElem)
-	dollequipassmeblekakfa.SendMazeGameEquipAssembleRecord(logger, record)
+	dollequipassmeblekakfa.SendMazeGameEquipAssembleRecord(ctx, record)
 }
 
 func MakeExtra(resId int32, equipName string) string {

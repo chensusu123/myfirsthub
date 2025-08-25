@@ -1,6 +1,7 @@
 package barrierservice
 
 import (
+	"context"
 	"maze_game_server/common/errors"
 	"maze_game_server/common/tradeno"
 	"maze_game_server/config/GMazeBarriesV8Cfg"
@@ -19,7 +20,8 @@ import (
 )
 
 // SweepBarrier implements BarrierService.
-func (b *barrier) SweepBarrier(logger fklog.FKLogI, header *Common.PacketHeader, userID uint64, barrierID int32) (energyInfo *MazeEnergy.EnergyInfo, remainVal int32, gameID uint64, awardItem, rareItem []*MazeCommon.MazeItem, errinfo *MessageType.ErrorInfo) {
+func (b *barrier) SweepBarrier(ctx context.Context, header *Common.PacketHeader, userID uint64, barrierID int32) (energyInfo *MazeEnergy.EnergyInfo, remainVal int32, gameID uint64, awardItem, rareItem []*MazeCommon.MazeItem, errinfo *MessageType.ErrorInfo) {
+	logger := fklog.ContextAppLogger(ctx)
 	barrierCfg := GMazeBarriesV8Cfg.Get(barrierID)
 	if barrierCfg == nil {
 		logger.ErrorWF("OnStartMazeSweepRQ get barrier cfg fail", zap.Int32("barrierId", barrierID))
@@ -34,7 +36,7 @@ func (b *barrier) SweepBarrier(logger fklog.FKLogI, header *Common.PacketHeader,
 		return
 	}
 
-	energy, _, err := barrierenergyservice.GlobalBarrierEnergyService.GetBarrierEnergy(logger, userID)
+	energy, _, err := barrierenergyservice.GlobalBarrierEnergyService.GetBarrierEnergy(ctx, userID)
 	if err != nil {
 		errinfo = errors.COMMON_ERROR_TIPS.Wrap("获取体力信息失败")
 		logger.ErrorWF("SweepBarrier GetBarrierEnergy fail", zap.Error(err), zap.Uint64("userID", userID))
@@ -52,7 +54,7 @@ func (b *barrier) SweepBarrier(logger fklog.FKLogI, header *Common.PacketHeader,
 		return
 	}
 	// check and cost energy
-	remainVal, err = barrierenergyservice.GlobalBarrierEnergyService.SubEnergy(logger, userID, barrierCfg.Mop_cost)
+	remainVal, err = barrierenergyservice.GlobalBarrierEnergyService.SubEnergy(ctx, userID, barrierCfg.Mop_cost)
 	if err != nil {
 		errinfo = errors.COMMON_ERROR_TIPS.Wrap("体力不足")
 		logger.ErrorWF("SweepBarrier SubEnergy fail", zap.Error(err), zap.Uint64("userID", userID), zap.Any("Mop_cost", barrierCfg.Mop_cost))
@@ -68,11 +70,11 @@ func (b *barrier) SweepBarrier(logger fklog.FKLogI, header *Common.PacketHeader,
 	}
 
 	defer func() {
-		barrierenergyservice.GlobalBarrierEnergyService.PushEnergyRecord(logger, userID, energy, remainVal, mazeenergyrecord.SweepBarrier, userInfo.EnergyLastTime)
+		barrierenergyservice.GlobalBarrierEnergyService.PushEnergyRecord(ctx, userID, energy, remainVal, mazeenergyrecord.SweepBarrier, userInfo.EnergyLastTime)
 	}()
 
 	// query sweep award
-	awardItem, rareItem, err = calsweepbarrier.CalUserSweepBarrierAward(logger, userID, barrierID, header)
+	awardItem, rareItem, err = calsweepbarrier.CalUserSweepBarrierAward(ctx, userID, barrierID, header)
 	if err != nil {
 		errinfo = errors.COMMON_ERROR_TIPS.Wrap("获取扫荡奖励失败")
 		logger.ErrorWF("SweepBarrier CalUserSweepBarrierAward fail", zap.Int32("barrierId", barrierID), zap.Error(err))

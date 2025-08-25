@@ -2,12 +2,13 @@ package tempbuffservice
 
 import (
 	"context"
-	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fklog"
-	"go.uber.org/zap"
 	"maze_game_server/config/GMazeEnergyAffixV8Cfg"
 	"maze_game_server/excel/dollmappuzzlenewcfgex"
 	"maze_game_server/io/kafka/mazetempbuffchgmsg"
 	"maze_game_server/model/tempbuffmodel"
+
+	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fklog"
+	"go.uber.org/zap"
 )
 
 // 进入关卡前检查关卡的buff情况，因为可能会有清除部分buff的情况
@@ -94,7 +95,7 @@ func (s *service) CheckTempBuff(ctx context.Context, userId uint64, barrierId in
 	}
 
 	msg.ChgAttrs = chgAttrs
-	_ = mazetempbuffchgmsg.PushTempBuffChangeMsg(logger, msg)
+	_ = mazetempbuffchgmsg.PushTempBuffChangeMsg(ctx, msg)
 
 	// 同步到buff中心
 	s.TempBuffChangeSync(ctx, logger, userId, tempBuff)

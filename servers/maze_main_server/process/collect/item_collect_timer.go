@@ -45,7 +45,7 @@ func OnTimeOut(ctx fknet.TCPContext, shardingID uint64, request proto.Message, r
 		res.ErrInfo = errors.COMMON_ERROR_TIPS.Wrap("task typ not match")
 		return
 	}
-	return ItemCollectCallback(agent, agent.UserID, taskInfo.GetContext())
+	return ItemCollectCallback(ctx, agent.UserID, taskInfo.GetContext())
 }
 
 func ProcessTimeOut(logger fklog.FKLogI, shardingID uint64, req SeaTaskSvr.TaskExpireNotifyRQ) (res SeaTaskSvr.TaskExpireNotifyRS, err error) {

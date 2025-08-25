@@ -6,8 +6,6 @@ import (
 	"maze_game_server/io/kafka/kafkacommonstruct"
 	"maze_game_server/model/flowmodel/mazemoneyrecordmodel"
 	"maze_game_server/services/flowservice"
-
-	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fklog"
 )
 
 // var json = jsoniter.ConfigCompatibleWithStandardLibrary
@@ -36,14 +34,14 @@ func init() {
 
 var d = dispatcher.NewDispatcher[*MazeMoneyRecord]()
 
-func Watch(fn func(logger fklog.FKLogI, msg *MazeMoneyRecord)) {
+func Watch(fn func(ctx context.Context, msg *MazeMoneyRecord)) {
 	d.Watch(fn)
 }
 
 // 流水打点使用
-func PushMazeMoneyRecord(agent fklog.FKLogI, record *MazeMoneyRecord) error {
+func PushMazeMoneyRecord(ctx context.Context, record *MazeMoneyRecord) error {
 	flowData := mazemoneyrecordmodel.NewMazeMoneyRecord(record.UserId, record.OldMoneyId, record.OldMoneyCount, record.NewMoneyId, record.NewMoneyCount, record.TradeNo, record.ChgReason)
-	flowservice.GflowService.SendFlowData(context.TODO(), flowData)
+	flowservice.GflowService.SendFlowData(ctx, flowData)
 	// record.GroupID = fkconfig.EnvVal.GroupID
 	// cnt, err := json.Marshal(record)
 	// if err != nil {

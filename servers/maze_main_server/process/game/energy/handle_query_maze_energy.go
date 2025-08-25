@@ -7,20 +7,22 @@
 package energy
 
 import (
-	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fkprometheus"
-	"go.uber.org/zap"
-	"google.golang.org/protobuf/proto"
 	"maze_game_server/common/errors"
-	"maze_game_server/lib/log"
 	"maze_game_server/lib/nano/session"
 	"maze_game_server/pb/common/MazeEnergy"
 	"maze_game_server/services/barrierenergyservice"
+
+	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fklog"
+	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fkprometheus"
+	"go.uber.org/zap"
+	"google.golang.org/protobuf/proto"
 )
 
 func (e *Energy) OnQueryMazeEnergyRQ_10469_10470(s *session.Session, req *MazeEnergy.QueryMazeEnergyRQ) (err error) {
 	defer fkprometheus.DebugPMT("OnQueryMazeEnergyRQ")()
 
-	logger := log.Clone("Energy", uint64(s.UID()), 0)
+	ctx := s.Context()
+	logger := fklog.ContextAppLogger(ctx)
 	res := &MazeEnergy.QueryMazeEnergyRS{}
 
 	res.ErrInfo = errors.NO_ERROR
@@ -35,7 +37,7 @@ func (e *Energy) OnQueryMazeEnergyRQ_10469_10470(s *session.Session, req *MazeEn
 
 	logger.InfoWF("OnQueryMazeEnergyRQ with", zap.Any("req", req))
 
-	energy, nextTime, err := barrierenergyservice.GlobalBarrierEnergyService.GetBarrierEnergy(logger, userId)
+	energy, nextTime, err := barrierenergyservice.GlobalBarrierEnergyService.GetBarrierEnergy(ctx, userId)
 	if err != nil {
 		logger.ErrorWF("OnQueryMazeEnergyRQ SetUserInfoV2 fail", zap.Error(err))
 		res.ErrInfo = errors.DB_SAVE_ERROR.ToInfo()

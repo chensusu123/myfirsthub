@@ -1,6 +1,7 @@
 package mazebarrierareakafka
 
 import (
+	"context"
 	"time"
 
 	"maze_game_server/io/dispatcher"
@@ -30,11 +31,12 @@ func init() {
 
 var d = dispatcher.NewDispatcher[*MazeBarrierAreaRecord]()
 
-func Watch(fn func(logger fklog.FKLogI, msg *MazeBarrierAreaRecord)) {
+func Watch(fn func(ctx context.Context, msg *MazeBarrierAreaRecord)) {
 	d.Watch(fn)
 }
 
-func PushMazeBarrierAreaRecord(agent fklog.FKLogI, record *MazeBarrierAreaRecord) error {
+func PushMazeBarrierAreaRecord(ctx context.Context, record *MazeBarrierAreaRecord) error {
+	agent := fklog.ContextAppLogger(ctx)
 	record.CreateTime = time.Now().UnixNano() / 1e6
 	// record.GroupID = fkconfig.EnvVal.GroupID
 	// cnt, err := json.Marshal(record)
@@ -42,6 +44,6 @@ func PushMazeBarrierAreaRecord(agent fklog.FKLogI, record *MazeBarrierAreaRecord
 	// 	return err
 	// }
 	agent.InfoWF("PushMazeBarrierAreaRecord data", zap.Any("userId", record.UserId), zap.Any("record", record))
-	d.Push(agent, record)
+	d.Push(ctx, record)
 	return nil
 }

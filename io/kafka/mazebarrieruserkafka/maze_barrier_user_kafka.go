@@ -9,8 +9,6 @@ import (
 	"maze_game_server/model/flowmodel/mazebarrieruserrecordmodel"
 	"maze_game_server/model/flowmodel/mazesweeprecordmodel"
 	"maze_game_server/services/flowservice"
-
-	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fklog"
 )
 
 const (
@@ -44,14 +42,14 @@ func init() {
 }
 
 // 流水和通知均使用
-func PushMazeBarrierUserRecord(agent fklog.FKLogI, record *MazeBarrierUserGameRecord) error {
+func PushMazeBarrierUserRecord(ctx context.Context, record *MazeBarrierUserGameRecord) error {
 	if record.GameRet == 3 {
 		flowData := mazesweeprecordmodel.NewMazeBarrierSweepRecord(record.UserId, record.Barrier, record.Awards)
-		flowservice.GflowService.SendFlowData(context.TODO(), flowData)
+		flowservice.GflowService.SendFlowData(ctx, flowData)
 	}
 	record.CreateTime = time.Now().UnixNano() / 1e6
 	flowData := mazebarrieruserrecordmodel.NewMazeBarrierUserGameRecord(record.UserId, record.Barrier, record.GameRet, record.Awards, record.KillMonsterNum)
-	flowservice.GflowService.SendFlowData(context.TODO(), flowData)
+	flowservice.GflowService.SendFlowData(ctx, flowData)
 	// record.GroupID = fkconfig.EnvVal.GroupID
 	// cnt, err := json.Marshal(record)
 	// if err != nil {
@@ -59,10 +57,10 @@ func PushMazeBarrierUserRecord(agent fklog.FKLogI, record *MazeBarrierUserGameRe
 	// }
 	// agent.InfoWF("PushMazeBarrierUserRecord data", zap.Any("userId", record.UserId), zap.Any("record", record))
 	// return gKafka.SendWithUserID(record.UserId, cnt)
-	d.Push(agent, record)
+	d.Push(ctx, record)
 	return nil
 }
 
-func Watch(fn func(logger fklog.FKLogI, msg *MazeBarrierUserGameRecord)) {
+func Watch(fn func(ctx context.Context, msg *MazeBarrierUserGameRecord)) {
 	d.Watch(fn)
 }
