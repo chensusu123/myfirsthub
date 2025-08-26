@@ -33,4 +33,5 @@ service:
     add: "127.0.0.1:6379"
   - name: maze_main_server_flow.kafka
     addr: "127.0.0.1:9092"
-
+  - name: maze.usermsg.route.nats
+    addr: "127.0.0.1:4111"
