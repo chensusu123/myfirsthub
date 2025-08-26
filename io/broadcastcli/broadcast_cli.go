@@ -4,14 +4,16 @@ import (
 	"context"
 	"encoding/binary"
 	"fmt"
+	"strconv"
 
 	"maze_game_server/common/function/clusterpaket"
 
+	"gitlab.ifreetalk.com/maze-plate/freetk/common/commonconst"
+	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/client/natsproduceroption"
 	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/database"
 	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fklog"
 	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/serverdepend"
 	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/simpleclient/simplenatsproducer"
-	"gitlab.ifreetalk.com/maze-plate/freetk/fkserver/appconfig"
 	"gitlab.ifreetalk.com/maze-plate/freetk/pkg/nanotrace"
 	"go.opentelemetry.io/otel/attribute"
 	"go.uber.org/zap"
@@ -34,14 +36,16 @@ func Broadcast(ctx context.Context, broadcastID uint64, packetType uint16, v int
 	cSpan.SetAttributes(
 		attribute.Int64("broadcast.id", int64(broadcastID)),
 		attribute.Int("packet.id", int(packetType)),
-		attribute.String("nats.subject", "maze.broadcast.cluster.msg.>"),
+		attribute.String("nats.subject", "maze.broadcast.cluster.msg.*"),
 	)
 	data, err := clusterpaket.MakeClusterPacket(packetType, v)
 	if err != nil {
 		return err
 	}
-	subject := fmt.Sprintf("maze.broadcast.cluster.msg.%s.%d", appconfig.GlobalConfig().Global.SectionID, broadcastID)
-	err = gNatsproducer.Publish(ctx, subject, data)
+
+	subject := "maze.broadcast.cluster.msg"
+	err = gNatsproducer.Publish(ctx, subject, data, natsproduceroption.WithSectionSubject(),
+		natsproduceroption.WithTag(commonconst.NatsMsgHeaderPrimaryKey, strconv.Itoa(int(broadcastID))))
 	fklog.ContextAppLogger(ctx).CtxInfo(ctx, "broadcastcli publish to nats",
 		zap.String("subject", subject),
 		zap.Uint64("broadcastID", broadcastID),
