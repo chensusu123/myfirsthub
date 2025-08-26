@@ -1,11 +1,12 @@
 package alliancemodel
 
 import (
+	"context"
 	"maze_game_server/io/redis/allianceredis"
 	"maze_game_server/lib/serialize"
 	"maze_game_server/pb/common/MazeFamily"
 
-	"gitlab.ifreetalk.com/nano-ecosystem/fklog"
+	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fklog"
 	"go.uber.org/zap"
 	"google.golang.org/protobuf/proto"
 )
@@ -21,17 +22,18 @@ type AllianceInfoModel struct {
 	FamilyIDs          []int32 `json:"family_ids"`           // 联盟中家族ID列表
 }
 
-func LoadAllianceInfoModel(logger fklog.FKLogI, allianceID int32) (r *AllianceInfoModel, err error) {
+func LoadAllianceInfoModel(ctx context.Context, allianceID int32) (r *AllianceInfoModel, err error) {
+	logger := fklog.ContextAppLogger(ctx)
 	r = &AllianceInfoModel{}
-	if err = r.load(logger, allianceID); err != nil {
-		logger.ErrorWF("LoadAllianceInfoModel err",
+	if err = r.load(ctx, allianceID); err != nil {
+		logger.CtxError(ctx, "LoadAllianceInfoModel err",
 			zap.Int32("allianceID", allianceID), zap.Error(err))
 		return nil, err
 	}
 	return
 }
 
-func NewAllianceInfoModel(logger fklog.FKLogI, allianceID int32, allianceName string) *AllianceInfoModel {
+func NewAllianceInfoModel(ctx context.Context, allianceID int32, allianceName string) *AllianceInfoModel {
 	return &AllianceInfoModel{
 		AllianceID:         allianceID,
 		AllianceName:       allianceName,
@@ -39,10 +41,11 @@ func NewAllianceInfoModel(logger fklog.FKLogI, allianceID int32, allianceName st
 		FamilyIDs:          []int32{},
 	}
 }
-func (r *AllianceInfoModel) load(logger fklog.FKLogI, allianceID int32) (err error) {
+func (r *AllianceInfoModel) load(ctx context.Context, allianceID int32) (err error) {
+	logger := fklog.ContextAppLogger(ctx)
 	value, err := allianceredis.GetAllianceInfo(allianceID)
 	if err != nil {
-		logger.ErrorWF("LoadAllianceInfoModel err",
+		logger.CtxError(ctx, "LoadAllianceInfoModel err",
 			zap.Int32("allianceID", allianceID), zap.Error(err))
 		return err
 	}
@@ -51,17 +54,18 @@ func (r *AllianceInfoModel) load(logger fklog.FKLogI, allianceID int32) (err err
 	}
 	err = serialize.Unmarshal(value, r)
 	if err != nil {
-		logger.ErrorWF("LoadAllianceInfoModel err",
+		logger.CtxError(ctx, "LoadAllianceInfoModel err",
 			zap.Int32("allianceID", allianceID), zap.Error(err))
 		return err
 	}
 	return
 }
 
-func (r *AllianceInfoModel) Save(logger fklog.FKLogI) (err error) {
+func (r *AllianceInfoModel) Save(ctx context.Context) (err error) {
+	logger := fklog.ContextAppLogger(ctx)
 	value, err := serialize.Marshal(r)
 	if err != nil {
-		logger.ErrorWF("Save err", zap.Error(err))
+		logger.CtxError(ctx, "Save err", zap.Error(err))
 		return err
 	}
 	return allianceredis.SetAllianceInfo(r.AllianceID, value)
@@ -76,16 +80,16 @@ func (r *AllianceInfoModel) DataToAllianceInfoPb() *MazeFamily.AllianceInfo {
 	}
 }
 
-func (r *AllianceInfoModel) AddFamilyID(logger fklog.FKLogI, familyID int32) error {
+func (r *AllianceInfoModel) AddFamilyID(ctx context.Context, familyID int32) error {
 	r.FamilyIDs = append(r.FamilyIDs, familyID)
-	return r.Save(logger)
+	return r.Save(ctx)
 }
 
-func (r *AllianceInfoModel) RemoveFamilyID(logger fklog.FKLogI, familyID int32) error {
+func (r *AllianceInfoModel) RemoveFamilyID(ctx context.Context, familyID int32) error {
 	for i, id := range r.FamilyIDs {
 		if id == familyID {
 			r.FamilyIDs = append(r.FamilyIDs[:i], r.FamilyIDs[i+1:]...)
-			return r.Save(logger)
+			return r.Save(ctx)
 		}
 	}
 	return nil

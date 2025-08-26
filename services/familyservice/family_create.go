@@ -1,54 +1,56 @@
 package familyservice
 
 import (
+	"context"
 	"maze_game_server/model/alliancemodel"
 	"maze_game_server/model/familymodel"
 
-	"gitlab.ifreetalk.com/nano-ecosystem/fklog"
+	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fklog"
 	"go.uber.org/zap"
 )
 
 // CreateFamily 创建家族
-func (r *service) CreateFamily(logger fklog.FKLogI, userID uint64, allianceID int32, familyName string,
+func (r *service) CreateFamily(ctx context.Context, userID uint64, allianceID int32, familyName string,
 	familySetting int32, userInfo familymodel.FamilyMember) (*familymodel.FamilyInfoModel, error) {
+	logger := fklog.ContextAppLogger(ctx)
 	// 创建新家族
-	familyInfoModel, err := familymodel.NewFamilyInfoModel(logger, familyName, familySetting)
+	familyInfoModel, err := familymodel.NewFamilyInfoModel(ctx, familyName, familySetting)
 	if err != nil {
-		logger.ErrorWF("CreateFamily NewFamilyInfoModel failed",
+		logger.CtxError(ctx, "CreateFamily NewFamilyInfoModel failed",
 			zap.Any("familyName", familyName), zap.Any("familySetting", familySetting))
 		return nil, err
 	}
 	// 加入成员
-	familyInfoModel.AddMember(logger, userInfo)
+	familyInfoModel.AddMember(ctx, userInfo)
 	// 保存家族信息
-	err = familyInfoModel.Save(logger, familyInfoModel.FamilyID)
+	err = familyInfoModel.Save(ctx, familyInfoModel.FamilyID)
 	if err != nil {
-		logger.ErrorWF("CreateFamily model.Save failed",
+		logger.CtxError(ctx, "CreateFamily model.Save failed",
 			zap.Any("familyName", familyName), zap.Any("familySetting", familySetting),
 			zap.Error(err))
 		return nil, err
 	}
 
 	// 把家族id加入家族列表
-	familyListModel, err := familymodel.LoadFamilyListModel(logger)
+	familyListModel, err := familymodel.LoadFamilyListModel(ctx)
 	if err != nil {
-		logger.ErrorWF("CreateFamily LoadFamilyListModel err",
+		logger.CtxError(ctx, "CreateFamily LoadFamilyListModel err",
 			zap.Error(err))
 		return nil, err
 	}
-	familyListModel.AddFamily(logger, familyInfoModel.FamilyID)
-	err = familyListModel.Save(logger)
+	familyListModel.AddFamily(ctx, familyInfoModel.FamilyID)
+	err = familyListModel.Save(ctx)
 	if err != nil {
-		logger.ErrorWF("CreateFamily familyListModel.Save err",
+		logger.CtxError(ctx, "CreateFamily familyListModel.Save err",
 			zap.Error(err))
 		return nil, err
 	}
 
 	// 设置家族对应联盟
-	familyToAllianceModel := alliancemodel.NewFamilyToAllianceModel(logger, familyInfoModel.FamilyID)
-	err = familyToAllianceModel.SetUserAlliance(logger, allianceID)
+	familyToAllianceModel := alliancemodel.NewFamilyToAllianceModel(ctx, familyInfoModel.FamilyID)
+	err = familyToAllianceModel.SetUserAlliance(ctx, allianceID)
 	if err != nil {
-		logger.ErrorWF("CreateFamily familyToAllianceModel.SetUserAlliance err",
+		logger.CtxError(ctx, "CreateFamily familyToAllianceModel.SetUserAlliance err",
 			zap.Int32("allianceID", allianceID),
 			zap.Int32("familyID", familyInfoModel.FamilyID),
 			zap.Error(err))
@@ -56,17 +58,17 @@ func (r *service) CreateFamily(logger fklog.FKLogI, userID uint64, allianceID in
 	}
 
 	// 联盟中增加该家族id
-	allianceModel, err := alliancemodel.LoadAllianceInfoModel(logger, allianceID)
+	allianceModel, err := alliancemodel.LoadAllianceInfoModel(ctx, allianceID)
 	if err != nil {
-		logger.ErrorWF("CreateFamily LoadAllianceInfoModel err",
+		logger.CtxError(ctx, "CreateFamily LoadAllianceInfoModel err",
 			zap.Int32("allianceID", allianceID),
 			zap.Error(err))
 		return nil, err
 	}
 
-	err = allianceModel.AddFamilyID(logger, familyInfoModel.FamilyID)
+	err = allianceModel.AddFamilyID(ctx, familyInfoModel.FamilyID)
 	if err != nil {
-		logger.ErrorWF("CreateFamily allianceModel.AddFamilyID err",
+		logger.CtxError(ctx, "CreateFamily allianceModel.AddFamilyID err",
 			zap.Int32("allianceID", allianceID),
 			zap.Int32("familyID", familyInfoModel.FamilyID),
 			zap.Error(err))
@@ -77,21 +79,21 @@ func (r *service) CreateFamily(logger fklog.FKLogI, userID uint64, allianceID in
 }
 
 // DeductCreateFamilyCost 创建家族扣物品
-func (r *service) DeductCreateFamilyCost(logger fklog.FKLogI, cost map[int32]int64) error {
+func (r *service) DeductCreateFamilyCost(ctx context.Context, cost map[int32]int64) error {
 	// todo 待补充，读表
 
 	return nil
 }
 
 // 查询创建家族消耗
-func (r *service) QueryCreateFamilyCost(logger fklog.FKLogI) (map[int32]int64, error) {
+func (r *service) QueryCreateFamilyCost(ctx context.Context) (map[int32]int64, error) {
 	// todo 待补充，读表
 
 	return nil, nil
 }
 
 // CheckCreateFamilyCost 检查创建家族消耗
-func (r *service) CheckCreateFamilyCost(logger fklog.FKLogI) (bool, error) {
+func (r *service) CheckCreateFamilyCost(ctx context.Context) (bool, error) {
 	// todo 待补充，读表
 
 	return true, nil

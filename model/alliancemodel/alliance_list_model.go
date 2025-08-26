@@ -1,11 +1,12 @@
 package alliancemodel
 
 import (
+	"context"
 	"maze_game_server/io/redis/allianceredis"
 	"maze_game_server/lib/serialize"
 	"maze_game_server/pb/common/MazeFamily"
 
-	"gitlab.ifreetalk.com/nano-ecosystem/fklog"
+	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fklog"
 	"go.uber.org/zap"
 )
 
@@ -13,19 +14,21 @@ type AllianceListModel struct {
 	Alliances []int32 `json:"alliances,omitempty"`
 }
 
-func LoadAllianceListModel(logger fklog.FKLogI) (r *AllianceListModel, err error) {
+func LoadAllianceListModel(ctx context.Context) (r *AllianceListModel, err error) {
+	logger := fklog.ContextAppLogger(ctx)
 	r = &AllianceListModel{}
-	if err = r.load(logger); err != nil {
-		logger.ErrorWF("LoadAllianceListModel err", zap.Error(err))
+	if err = r.load(ctx); err != nil {
+		logger.CtxError(ctx, "LoadAllianceListModel err", zap.Error(err))
 		return nil, err
 	}
 	return
 }
 
-func (r *AllianceListModel) load(logger fklog.FKLogI) (err error) {
+func (r *AllianceListModel) load(ctx context.Context) (err error) {
+	logger := fklog.ContextAppLogger(ctx)
 	value, err := allianceredis.GetAllianceList()
 	if err != nil {
-		logger.ErrorWF("LoadAllianceListModel err", zap.Error(err))
+		logger.CtxError(ctx, "LoadAllianceListModel err", zap.Error(err))
 		return err
 	}
 	if value == nil {
@@ -33,46 +36,48 @@ func (r *AllianceListModel) load(logger fklog.FKLogI) (err error) {
 	}
 	err = serialize.Unmarshal(value, r)
 	if err != nil {
-		logger.ErrorWF("LoadAllianceListModel err", zap.Error(err))
+		logger.CtxError(ctx, "LoadAllianceListModel err", zap.Error(err))
 		return err
 	}
 	return
 }
 
-func (r *AllianceListModel) Save(logger fklog.FKLogI) (err error) {
+func (r *AllianceListModel) Save(ctx context.Context) (err error) {
+	logger := fklog.ContextAppLogger(ctx)
 	value, err := serialize.Marshal(r)
 	if err != nil {
-		logger.ErrorWF("Save err", zap.Error(err))
+		logger.CtxError(ctx, "Save err", zap.Error(err))
 		return err
 	}
 	return allianceredis.SetAllianceList(value)
 }
 
-func (r *AllianceListModel) Delete(logger fklog.FKLogI) (err error) {
+func (r *AllianceListModel) Delete(ctx context.Context) (err error) {
 	return allianceredis.DelAllianceList()
 }
 
-func (r *AllianceListModel) AddAlliance(logger fklog.FKLogI, allianceID int32) error {
+func (r *AllianceListModel) AddAlliance(ctx context.Context, allianceID int32) error {
 	r.Alliances = append(r.Alliances, allianceID)
-	return r.Save(logger)
+	return r.Save(ctx)
 }
 
-func (r *AllianceListModel) RemoveAlliance(logger fklog.FKLogI, allianceID int32) error {
+func (r *AllianceListModel) RemoveAlliance(ctx context.Context, allianceID int32) error {
 	for i, v := range r.Alliances {
 		if v == allianceID {
 			r.Alliances = append(r.Alliances[:i], r.Alliances[i+1:]...)
-			return r.Save(logger)
+			return r.Save(ctx)
 		}
 	}
 	return nil
 }
 
-func (r *AllianceListModel) DataToAllianceListPb(logger fklog.FKLogI) []*MazeFamily.AllianceInfo {
+func (r *AllianceListModel) DataToAllianceListPb(ctx context.Context) []*MazeFamily.AllianceInfo {
+	logger := fklog.ContextAppLogger(ctx)
 	allianceList := make([]*MazeFamily.AllianceInfo, 0)
 	for _, allianceID := range r.Alliances {
-		allianceInfo, err := LoadAllianceInfoModel(logger, allianceID)
+		allianceInfo, err := LoadAllianceInfoModel(ctx, allianceID)
 		if err != nil {
-			logger.ErrorWF("DataToAllianceListPb LoadAllianceInfoModel err", zap.Error(err))
+			logger.CtxError(ctx, "DataToAllianceListPb LoadAllianceInfoModel err", zap.Error(err))
 			continue
 		}
 		allianceList = append(allianceList, allianceInfo.DataToAllianceInfoPb())
