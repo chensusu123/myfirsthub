@@ -1,6 +1,7 @@
 package costumeservice
 
 import (
+	"context"
 	"fmt"
 	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fklog"
 	"go.uber.org/zap"
@@ -10,11 +11,12 @@ import (
 	"maze_game_server/module/dollassembleinfo"
 )
 
-func (s service) GetUserCostume(logger fklog.FKLogI, userId uint64) (map[int32]int32, error) {
+func (s *service) GetUserCostume(ctx context.Context, userId uint64) (map[int32]int32, error) {
+	logger := fklog.ContextAppLogger(ctx)
 	res := make(map[int32]int32)
 	assembleInfo, effect, err := dollassembleinfo.GetDollAssembleInfoEx(logger, userId)
 	if err != nil {
-		logger.ErrorWF("OnGetMazeAssembleRQ Get Assemble info fail", zap.Error(err))
+		logger.CtxError(ctx, "OnGetMazeAssembleRQ Get Assemble info fail", zap.Error(err))
 		return nil, err
 	}
 	_ = effect
@@ -33,13 +35,13 @@ func (s service) GetUserCostume(logger fklog.FKLogI, userId uint64) (map[int32]i
 				}
 				equipTypeResCfg := mazeequiptyperesv8.GetEquipTypeResCfg(equipId, 0, 0)
 				if equipTypeResCfg == nil {
-					logger.ErrorWF("OnGetMazeAssembleRQ GetEquipTypeResCfg failed", zap.Int32("equipId", equipId))
+					logger.CtxError(ctx, "OnGetMazeAssembleRQ GetEquipTypeResCfg failed", zap.Int32("equipId", equipId))
 					return nil, fmt.Errorf("装备id找不到")
 				}
 				if equipTypeResCfg.Maze_model_group_id != 0 {
-					groupResCfg := GMazeEquipTypeGroupResV8Cfg.Get(equipTypeResCfg.Maze_model_group_id)
+					groupResCfg := GMazeEquipTypeGroupResV8Cfg.GetWithCtx(ctx, equipTypeResCfg.Maze_model_group_id)
 					if groupResCfg == nil {
-						logger.ErrorWF("OnGetMazeAssembleRQ GMazeEquipTypeGroupResV8Cfg failed", zap.Int32("Maze_model_group_id", equipTypeResCfg.Maze_model_group_id))
+						logger.CtxError(ctx, "OnGetMazeAssembleRQ GMazeEquipTypeGroupResV8Cfg failed", zap.Int32("Maze_model_group_id", equipTypeResCfg.Maze_model_group_id))
 						return nil, fmt.Errorf("配置找不到")
 					}
 					groupModel = groupResCfg.Maze_model_group

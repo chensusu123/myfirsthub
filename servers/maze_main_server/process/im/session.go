@@ -39,3 +39,32 @@ func (im *IM) OnQueryRecentSessions_10652_10653(s *session.Session, req *MazeIM.
 	_ = messages
 	return
 }
+
+func (im *IM) OnRemoveSession_10654_10655(s *session.Session, req *MazeIM.RemoveSessionRQ) (err error) {
+	defer fkprometheus.InfoPMT("OnRemoveSession")()
+
+	logger := log.Clone("Game", uint64(s.UID()), 0)
+	res := &MazeIM.RemoveSessionRS{}
+	res.Header = req.Header
+	res.ErrInfo = errors.NO_ERROR
+
+	logger.InfoWF("OnRemoveSession start", zap.Any("req", req))
+	defer func() {
+		err = s.Response(res)
+		logger.InfoWF("OnRemoveSession end", zap.Any("res", res))
+	}()
+
+	var (
+		userId    = uint64(s.UID())
+		sessionID = req.GetSessionId()
+	)
+
+	user, err := app.WrapUser(userId, "")
+	if err != nil {
+		return err
+	}
+
+	err = sessionservice.Default.RemoveSession(s.Context(), logger, app.Maze, user, sessionID)
+	_ = err
+	return
+}

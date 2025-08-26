@@ -22,8 +22,7 @@ func init() {
 	GlobalBarrierEnergyService = newBarrierEnergyService()
 }
 
-type service struct {
-}
+type service struct{}
 
 func newBarrierEnergyService() BarrierEnergyService {
 	return &service{}

@@ -12,11 +12,11 @@ func (s *service) GetTempBuffAttr(ctx context.Context, userID uint64, barrierId 
 	logger := fklog.ContextAppLogger(ctx)
 	buffInfo, err := tempbuffmodel.NewTempBuffInfoModel(ctx, userID, barrierId)
 	if err != nil {
-		logger.ErrorWF("SelectMazeTempBuffRQ GetMazeTempBuff", zap.Error(err))
+		logger.CtxError(ctx, "SelectMazeTempBuffRQ GetMazeTempBuff", zap.Error(err))
 		return nil, fmt.Errorf("获取用户buff信息失败")
 	}
 	if buffInfo == nil {
-		logger.WarnWF("SelectMazeTempBuffRQ buff is nil", zap.Error(err))
+		logger.CtxError(ctx, "SelectMazeTempBuffRQ buff is nil", zap.Error(err))
 		return nil, fmt.Errorf("获取用户buff信息失败")
 	}
 	attr := make(map[int32]int64)
@@ -31,11 +31,11 @@ func (s *service) GetTempBuffInfo(ctx context.Context, userID uint64, barrierId 
 	logger := fklog.ContextAppLogger(ctx)
 	buffInfo, err := tempbuffmodel.NewTempBuffInfoModel(ctx, userID, barrierId)
 	if err != nil {
-		logger.ErrorWF("SelectMazeTempBuffRQ GetMazeTempBuff", zap.Error(err))
+		logger.CtxError(ctx, "SelectMazeTempBuffRQ GetMazeTempBuff", zap.Error(err))
 		return nil, fmt.Errorf("获取用户buff信息失败")
 	}
 	if buffInfo == nil {
-		logger.WarnWF("SelectMazeTempBuffRQ buff is nil", zap.Error(err))
+		logger.CtxError(ctx, "SelectMazeTempBuffRQ buff is nil", zap.Error(err))
 		return nil, fmt.Errorf("获取用户buff信息失败")
 	}
 

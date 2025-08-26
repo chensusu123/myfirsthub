@@ -2,25 +2,19 @@ package buff
 
 import (
 	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fklog"
+	"go.uber.org/zap"
+	"google.golang.org/protobuf/proto"
 	"maze_game_server/common/errors"
 	"maze_game_server/lib/nano/session"
 	"maze_game_server/pb/common/MazeCommon"
 	"maze_game_server/pb/common/MazeTempBuff"
 	"maze_game_server/services/tempbuffservice"
-	"time"
-
-	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fkprometheus"
-	"go.uber.org/zap"
-	"google.golang.org/protobuf/proto"
 )
 
 func (b *Buff) GetOptionalMazeTempBuffListRQ_10435_10436(s *session.Session, req *MazeTempBuff.GetOptionalMazeTempBuffListRQ) (err error) {
-	defer fkprometheus.InfoPMT("GetOptionalMazeTempBuffListRQ")()
-	start := time.Now()
-
 	ctx := s.Context()
 	logger := fklog.ContextAppLogger(ctx)
-	logger.InfoWF("GetOptionalMazeTempBuffListRQ start", zap.Any("req", req))
+	logger.CtxInfo(ctx, "GetOptionalMazeTempBuffListRQ start", zap.Any("req", req))
 	res := &MazeTempBuff.GetOptionalMazeTempBuffListRS{}
 	res.ErrInfo = errors.NO_ERROR
 	res.Header = req.Header
@@ -32,23 +26,22 @@ func (b *Buff) GetOptionalMazeTempBuffListRQ_10435_10436(s *session.Session, req
 
 	defer func() {
 		err = s.Response(res)
-		logger.InfoWF("GetOptionalMazeTempBuffListRQ end", zap.Any("req", req), zap.Any("res", res),
-			zap.Duration("costTime", time.Now().Sub(start)))
+		logger.CtxInfo(ctx, "GetOptionalMazeTempBuffListRQ end", zap.Any("req", req), zap.Any("res", res))
 	}()
 
 	userId, barrierId, level, buffType, areaId := uint64(s.UID()), req.GetStageId(), req.GetLevel(), int32(req.GetType()), req.GetAreaId()
 	if userId == 0 || barrierId == 0 || level == 0 {
-		logger.WarnWF("GetOptionalMazeTempBuffListRQ args error", zap.Any("req", req))
+		logger.CtxError(ctx, "GetOptionalMazeTempBuffListRQ args error", zap.Any("req", req))
 		res.ErrInfo = errors.COMMON_ERROR_TIPS.Wrap("参数错误")
 		return nil
 	}
 	if buffType != int32(MazeTempBuff.Type_UP_LEVEL) && buffType != int32(MazeTempBuff.Type_USE_ITEM) {
-		logger.ErrorWF("GetOptionalMazeTempBuffListRQ buffType args error", zap.Any("req", req))
+		logger.CtxError(ctx, "GetOptionalMazeTempBuffListRQ buffType args error", zap.Any("req", req))
 		res.ErrInfo = errors.COMMON_ERROR_TIPS.Wrap("buff类型参数错误")
 		return nil
 	}
 	if buffType == int32(MazeTempBuff.Type_UP_LEVEL) && areaId == 0 {
-		logger.WarnWF("GetOptionalMazeTempBuffListRQ areaId error", zap.Any("req", req))
+		logger.CtxError(ctx, "GetOptionalMazeTempBuffListRQ areaId error", zap.Any("req", req))
 		res.ErrInfo = errors.COMMON_ERROR_TIPS.Wrap("areaId参数错误")
 		return nil
 	}

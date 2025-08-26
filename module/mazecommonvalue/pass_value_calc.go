@@ -1,6 +1,7 @@
 package mazecommonvalue
 
 import (
+	"context"
 	"fmt"
 	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fklog"
 	"go.uber.org/zap"
@@ -14,8 +15,8 @@ import (
 )
 
 // 计算通关值
-func CalcPassValue(logger fklog.FKLogI, barrier, stage int32) (int64, error) {
-	passValue, err := CalcInitPassValue(logger, barrier)
+func CalcPassValue(ctx context.Context, logger fklog.FKLogI, barrier, stage int32) (int64, error) {
+	passValue, err := CalcInitPassValue(ctx, logger, barrier)
 	if err != nil {
 		return 0, err
 	}
@@ -31,7 +32,7 @@ func CalcPassValue(logger fklog.FKLogI, barrier, stage int32) (int64, error) {
 			for _, j := range mazemapeditorconfigidcfgex.GetBarrierConfigs(barrier) {
 				configId, err := strconv.ParseInt(i.Config_id, 10, 32)
 				if err != nil {
-					logger.ErrorWF("calcPassValue Parse config id err", zap.String("configId", i.Config_id))
+					logger.CtxError(ctx, "calcPassValue Parse config id err", zap.String("configId", i.Config_id))
 					return 0, err
 				}
 				if j.Config_id == int32(configId) {
@@ -46,10 +47,10 @@ func CalcPassValue(logger fklog.FKLogI, barrier, stage int32) (int64, error) {
 	return passValue, nil
 }
 
-func CalcInitPassValue(logger fklog.FKLogI, barrier int32) (int64, error) {
-	cfg := GMazeConfigV8Cfg.Get(constdef.PassValueInitCfgId)
+func CalcInitPassValue(ctx context.Context, logger fklog.FKLogI, barrier int32) (int64, error) {
+	cfg := GMazeConfigV8Cfg.GetWithCtx(ctx, constdef.PassValueInitCfgId)
 	if cfg == nil {
-		logger.ErrorWF("calcPassValue PassValueInitCfgId not exist", zap.Int32("cfgId", constdef.PassValueInitCfgId))
+		logger.CtxError(ctx, "calcPassValue PassValueInitCfgId not exist", zap.Int32("cfgId", constdef.PassValueInitCfgId))
 		return 0, fmt.Errorf("%d config not exist", constdef.PassValueInitCfgId)
 	}
 	passValue := cfg.Value_int
@@ -63,8 +64,8 @@ func CalcInitPassValue(logger fklog.FKLogI, barrier int32) (int64, error) {
 }
 
 // 发送通关值变化id包
-func SendPassValueIdPack(logger fklog.FKLogI, userId uint64, barrierId, stage int32) error {
-	passValue, err := CalcPassValue(logger, barrierId, stage)
+func SendPassValueIdPack(ctx context.Context, logger fklog.FKLogI, userId uint64, barrierId, stage int32) error {
+	passValue, err := CalcPassValue(ctx, logger, barrierId, stage)
 	if err != nil {
 
 		return err
@@ -78,7 +79,7 @@ func SendPassValueIdPack(logger fklog.FKLogI, userId uint64, barrierId, stage in
 	}
 	err = SendCommonValueIdPack(logger, userId, commonList)
 	if err != nil {
-		logger.ErrorWF("SendCommonValueIdPack err", zap.Error(err))
+		logger.CtxError(ctx, "SendCommonValueIdPack err", zap.Error(err))
 	}
 	return nil
 }

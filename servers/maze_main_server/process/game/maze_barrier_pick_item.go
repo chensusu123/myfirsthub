@@ -125,7 +125,7 @@ func (g *Game) OnBarrierPickItemRQ_10527_10528(s *session.Session, req *MazeGame
 	for _, i := range realAddItemList {
 		itemMap[i.GetItemId()] += i.GetCount()
 	}
-	if err = barrierscorerewardservice.GlobalScoreRewardService.SaveBarrierScoreRewardItem(logger, userId, req.GetBarrierId(), itemMap); err != nil {
+	if err = barrierscorerewardservice.GlobalScoreRewardService.SaveBarrierScoreRewardItem(context.TODO(), userId, req.GetBarrierId(), itemMap); err != nil {
 		logger.ErrorWF("OnBarrierPickItemRQ SaveBarrierScoreRewardItem err", zap.Error(err), zap.Any("barrier", req.GetBarrierId()))
 		res.ErrInfo = errors.MODULE_ERROR.ToInfo()
 	}

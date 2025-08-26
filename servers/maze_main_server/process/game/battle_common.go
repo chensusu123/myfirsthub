@@ -1,7 +1,9 @@
 package game
 
 import (
+	"context"
 	"fmt"
+
 	"maze_game_server/common/constdef"
 	"maze_game_server/common/structsdef"
 	"maze_game_server/config/GMazeAttrSkillV8Cfg"
@@ -241,7 +243,7 @@ func SendMazeBarrierChgPack(logger fklog.FKLogI, userId uint64, mazeBattleInfo *
 		MazeBarrierInfo: mazeBattleInfo,
 	}
 	logger.InfoWF("SendMazeBarrierChgPack send client with", zap.Uint64("userId", userId), zap.Any("moneyPack", moneyPack))
-	return online.Push(logger, uint64(userId), 10485, moneyPack)
+	return online.ClusterPush(context.TODO(), uint64(userId), 10485, moneyPack)
 }
 
 func GetEffectAttrValue(attrValue int32, attrValueVariableId map[int32]int32, userAttrMap map[int32]int64) int64 {

@@ -5,7 +5,6 @@ import (
 	"maze_game_server/common/constdef"
 	"maze_game_server/common/errors"
 	"maze_game_server/io/kafka/mazeenergyrecord"
-	"maze_game_server/io/redis/barrierscorerewardredis"
 	"maze_game_server/io/redis/mazeboxredis"
 	"maze_game_server/io/redis/mazechallengenumredis"
 	"maze_game_server/io/redis/mazecollectredis"
@@ -19,6 +18,7 @@ import (
 	"maze_game_server/module/mazeuserinfo"
 	"maze_game_server/pb/common/MazeGame"
 	"maze_game_server/services/barrierenergyservice"
+	"maze_game_server/services/barrierscorerewardservice"
 	"maze_game_server/services/moneyservice"
 	"strings"
 	"time"
@@ -283,7 +283,7 @@ func ClearBarrier(logger fklog.FKLogI, userId uint64) (err error) {
 	}
 
 	//清除关卡已获得奖励存档
-	err = barrierscorerewardredis.DelBarrierScoreReward(logger, userId, userInfo.Barrier)
+	err = barrierscorerewardservice.GlobalScoreRewardService.DelBarrierScoreRewardItem(context.TODO(), userId, userInfo.Barrier)
 	if err != nil {
 		return
 	}

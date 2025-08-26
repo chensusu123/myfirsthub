@@ -1,6 +1,8 @@
 package familyservice
 
 import (
+	"context"
+
 	"maze_game_server/model/familymodel"
 	"maze_game_server/pb/common/MazeFamily"
 	"maze_game_server/usecase/online"
@@ -44,7 +46,7 @@ func (r *service) SendUpgradeFamilyIDPack(logger fklog.FKLogI, familyID int32) e
 
 	familyMembers := familymodel.DataToFamilyMembersPb(logger)
 	for _, v := range familyMembers {
-		online.Push(logger, v.GetUserId(), 0, pack)
+		online.ClusterPush(context.TODO(), v.GetUserId(), 0, pack)
 	}
 	return nil
 }

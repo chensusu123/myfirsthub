@@ -1,6 +1,9 @@
 package equip
 
 import (
+	"context"
+	"time"
+
 	"maze_game_server/common/constdef"
 	"maze_game_server/common/errors"
 	"maze_game_server/common/function/grouplock"
@@ -10,7 +13,6 @@ import (
 	"maze_game_server/pb/common/MessageType"
 	"maze_game_server/pb/server/MazeEquipSvr"
 	"maze_game_server/usecase/online"
-	"time"
 
 	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fklog"
 	"go.uber.org/zap"
@@ -19,9 +21,7 @@ import (
 
 var globalLock = grouplock.NewGroupLock(10240)
 
-var (
-	EQUIP_BAG_FULL_ERROR = &MessageType.ErrorInfo{ErrCode: proto.Int64(81001), ErrMsg: []byte("装备背包已满")}
-)
+var EQUIP_BAG_FULL_ERROR = &MessageType.ErrorInfo{ErrCode: proto.Int64(81001), ErrMsg: []byte("装备背包已满")}
 
 func GetEquipSuitRemGroupMap(suitId int32) (map[int32]struct{}, error) {
 	attrMap := make(map[int32]struct{})
@@ -78,7 +78,7 @@ func SendMazeBagEquipChgIDEx(logger fklog.FKLogI, userId uint64, addList, delLis
 		req.NeedRefreshForce = proto.Int32(0)
 	}
 	logger.InfoWF("SendMazeBagEquipChgIDEx send client with", zap.Any("res", req))
-	err := online.Push(logger, uint64(userId), 10409, req)
+	err := online.ClusterPush(context.TODO(), uint64(userId), 10409, req)
 	if err != nil {
 		logger.ErrorWF("SendMazeBagEquipChgIDEx SendArrivePacket error", zap.Error(err))
 	} else {

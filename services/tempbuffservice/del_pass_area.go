@@ -9,7 +9,7 @@ import (
 
 func (s *service) DelPassArea(ctx context.Context, userID uint64, barrierId int32) error {
 	logger := fklog.ContextAppLogger(ctx)
-	logger.InfoWF("DelPassArea", zap.Int32("barrierId", barrierId))
+	logger.CtxInfo(ctx, "DelPassArea", zap.Int32("barrierId", barrierId))
 	var model = &passareamodel.PassAreaModel{}
 	return model.Del(ctx, userID, barrierId)
 }

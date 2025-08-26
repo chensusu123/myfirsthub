@@ -1,17 +1,20 @@
 package barrierenergyservice
 
 import (
+	"context"
 	"errors"
-	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fklog"
-	"go.uber.org/zap"
-	"google.golang.org/protobuf/proto"
+	"time"
+
 	"maze_game_server/common/constdef"
 	"maze_game_server/config/GMazeConfigV8Cfg"
 	"maze_game_server/io/kafka/mazeenergyrecord"
 	"maze_game_server/module/mazeuserinfo"
 	"maze_game_server/pb/common/MazeEnergy"
 	"maze_game_server/usecase/online"
-	"time"
+
+	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fklog"
+	"go.uber.org/zap"
+	"google.golang.org/protobuf/proto"
 )
 
 func (s service) GetBarrierEnergy(logger fklog.FKLogI, userId uint64) (curEnergy int32, nextTime int64, err error) {
@@ -27,7 +30,7 @@ func (s service) GetBarrierEnergy(logger fklog.FKLogI, userId uint64) (curEnergy
 		return uInfo.Energy, uInfo.EnergyLastTime, err
 	}
 
-	//服务器添加定时器,补发ID包
+	// 服务器添加定时器,补发ID包
 	s.startUserRecoverEnergy(logger, userId, nextUpdateTime)
 
 	logger.InfoWF("GetBarrierEnergy success", zap.Any("userId", userId), zap.Any("curEnergy", uInfo.Energy), zap.Any("nextUpdateTime", nextUpdateTime))
@@ -99,7 +102,7 @@ func (s service) SubEnergy(logger fklog.FKLogI, userId uint64, subVal int32) (in
 	if err != nil {
 		logger.ErrorWF("SubEnergy SendEnergyChgPack fail", zap.Error(err), zap.Any("uInfo", uInfo))
 		err = nil
-		//return uInfo.Energy, err
+		// return uInfo.Energy, err
 	}
 	logger.InfoWF("SubEnergy success", zap.Any("userId", userId), zap.Any("uInfo", uInfo), zap.Any("curEnergy", remain), zap.Int32("subVal", subVal))
 	return uInfo.Energy, err
@@ -130,7 +133,7 @@ func (s service) SendEnergyChgPack(logger fklog.FKLogI, userId uint64, curEnergy
 			NextRecoveryTime: proto.Int64(nextRecoverTime),
 		},
 	}
-	err := online.Push(logger, userId, 10610, energyPack)
+	err := online.ClusterPush(context.TODO(), userId, 10610, energyPack)
 	if err != nil {
 		logger.ErrorWF("SendEnergyChgPack send client failed", zap.Uint64("userID", userId), zap.Error(err), zap.Any("energyPack", energyPack))
 	} else {
@@ -172,7 +175,7 @@ func GetEnergyRate() (costTime, recoverVal int32) {
 func GetEnergyRecoverCfg() int64 {
 	row := GMazeConfigV8Cfg.GetMazeConfigV8Config(constdef.MazeCfgId303)
 	if row != nil {
-		for k, _ := range row.Value_map {
+		for k := range row.Value_map {
 			return int64(k)
 		}
 	}
@@ -199,17 +202,17 @@ func (s service) calEnergy(logger fklog.FKLogI, userId uint64) (curEnergy int32,
 	}
 
 	oldEnergy := uInfo.Energy
-	var updateFlag int32 //是否需要更新
+	var updateFlag int32 // 是否需要更新
 	now := time.Now().Unix()
 	maxVal := GetEnergyMax()     // 体力最大值
 	cost, val := GetEnergyRate() // 每n秒回复多少体力
 	var nextUpdateTime int64     // 下次更新时间
-	//var chgVal int32             // 变化值
+	// var chgVal int32             // 变化值
 
 	if uInfo.EnergyLastTime == 0 { // 首次初始化
 		uInfo.SetEnergyLastTime(now)
 		initVal := GetEnergyInitVal()
-		//chgVal = initVal - uInfo.Energy
+		// chgVal = initVal - uInfo.Energy
 		uInfo.SetEnergy(initVal)
 		updateFlag = 1
 		nextUpdateTime = now + int64(cost)
@@ -223,7 +226,7 @@ func (s service) calEnergy(logger fklog.FKLogI, userId uint64) (curEnergy int32,
 			lastUpdateTime := uInfo.EnergyLastTime + cycleNum*int64(cost) // 计算上次更新时间
 			nextUpdateTime = lastUpdateTime + int64(cost)
 			if addVal > 0 {
-				//chgVal = int32(addVal)
+				// chgVal = int32(addVal)
 				curVal += int32(addVal)
 				if curVal >= maxVal { // 如果恢复到满值,上次恢复时间设置为当前时间
 					curVal = maxVal
@@ -245,12 +248,12 @@ func (s service) calEnergy(logger fklog.FKLogI, userId uint64) (curEnergy int32,
 			logger.ErrorWF("OnQueryMazeEnergyRQ SetUserInfoV2 fail", zap.Error(err))
 			return uInfo.Energy, nextUpdateTime, errors.New("保存数据错误")
 		}
-		//nextTime := uInfo.EnergyLastTime + GetEnergyRecoverCfg() - time.Now().Unix()
+		// nextTime := uInfo.EnergyLastTime + GetEnergyRecoverCfg() - time.Now().Unix()
 		err := s.SendEnergyChgPack(logger, userId, uInfo.Energy, nextUpdateTime)
 		if err != nil {
 			err = nil
 			logger.ErrorWF("OnQueryMazeEnergyRQ SendEnergyChgPack fail", zap.Error(err))
-			//return uInfo.Energy, nextUpdateTime, err
+			// return uInfo.Energy, nextUpdateTime, err
 		}
 	}
 	return uInfo.Energy, nextUpdateTime, nil

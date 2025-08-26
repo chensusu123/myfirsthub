@@ -4,8 +4,8 @@ import (
 	"context"
 	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fklog"
 	"go.uber.org/zap"
+	"maze_game_server/config/GMazeEnergyAffixV8Cfg"
 	"maze_game_server/excel/dollmappuzzlenewcfgex"
-	"maze_game_server/excel/mazeenergyaffixlvv8config"
 	"maze_game_server/io/kafka/mazetempbuffchgmsg"
 	"maze_game_server/model/tempbuffmodel"
 )
@@ -15,11 +15,11 @@ func (s *service) CheckTempBuff(ctx context.Context, userId uint64, barrierId in
 	logger := fklog.ContextAppLogger(ctx)
 	tempBuff, err := tempbuffmodel.NewTempBuffInfoModel(ctx, userId, barrierId)
 	if err != nil {
-		logger.ErrorWF("checkTempBuff GetMazeTempBuff", zap.Error(err))
+		logger.CtxError(ctx, "checkTempBuff GetMazeTempBuff", zap.Error(err))
 		return nil, err
 	}
 	if tempBuff == nil || len(tempBuff.SelectedBuff) == 0 {
-		logger.InfoWF("checkTempBuff not need delete buff")
+		logger.CtxInfo(ctx, "checkTempBuff not need delete buff")
 		return nil, nil
 	}
 	// 已选择的buff不是0，就需要检查了
@@ -48,7 +48,7 @@ func (s *service) CheckTempBuff(ctx context.Context, userId uint64, barrierId in
 	tempBuff.SelectedBuff = tempBuff.SelectedBuff[:j]
 	selectBuffCount := len(tempBuff.SelectedBuff)
 	if len(deleteBuffIds) == 0 {
-		logger.InfoWF("checkTempBuff deleteBuffIds==0 not need delete buff")
+		logger.CtxInfo(ctx, "checkTempBuff deleteBuffIds==0 not need delete buff")
 		return tempBuff, nil
 	}
 
@@ -61,7 +61,7 @@ func (s *service) CheckTempBuff(ctx context.Context, userId uint64, barrierId in
 	// 更新buff信息
 	err = tempBuff.Save(ctx, userId, barrierId)
 	if err != nil {
-		logger.ErrorWF("checkTempBuff SetMazeTempBuff failed", zap.Any("info", tempBuff), zap.Error(err))
+		logger.CtxError(ctx, "checkTempBuff SetMazeTempBuff failed", zap.Any("info", tempBuff), zap.Error(err))
 		return nil, err
 	}
 
@@ -77,7 +77,7 @@ func (s *service) CheckTempBuff(ctx context.Context, userId uint64, barrierId in
 	// 计算buff变化
 	attrMap := make(map[int32]int64)
 	for _, buffId := range deleteBuffIds {
-		config := mazeenergyaffixlvv8config.GetAffixConfig(buffId)
+		config := GMazeEnergyAffixV8Cfg.GetWithCtx(ctx, buffId)
 		if config != nil {
 			for id, value := range config.Add_attr {
 				attrMap[id] += value
@@ -97,9 +97,9 @@ func (s *service) CheckTempBuff(ctx context.Context, userId uint64, barrierId in
 	_ = mazetempbuffchgmsg.PushTempBuffChangeMsg(logger, msg)
 
 	// 同步到buff中心
-	s.TempBuffChangeSync(logger, userId, tempBuff)
+	s.TempBuffChangeSync(ctx, logger, userId, tempBuff)
 
-	logger.InfoWF("checkTempBuff delete buff success ", zap.Any("info", tempBuff), zap.Any("deleteBuffIds", deleteBuffIds))
+	logger.CtxInfo(ctx, "checkTempBuff delete buff success ", zap.Any("info", tempBuff), zap.Any("deleteBuffIds", deleteBuffIds))
 
 	return tempBuff, nil
 }

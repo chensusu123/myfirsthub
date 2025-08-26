@@ -89,6 +89,7 @@ type (
 		route   string       // message route(push)
 		mid     uint64       // response message id(response)
 		payload interface{}  // payload
+		isBytes bool
 	}
 )
 
@@ -134,7 +135,18 @@ func (a *agent) LastMid() uint64 {
 func (a *agent) Push(ctx context.Context, route string, v interface{}) error {
 	userID := a.session.UID()
 	agentSession := a.session.ID()
-	ctx, span := agentSendSpan(ctx, "push", 0, userID, agentSession)
+	var payload interface{}
+	var mid uint64
+	var isBytes bool
+	if pushData, ok := v.(*session.NormalPushData); ok {
+		payload = pushData.Payload
+		isBytes = pushData.IsBytes
+		mid = pushData.Mid
+	} else {
+		payload = v
+	}
+
+	ctx, span := agentSendSpan(ctx, "push", mid, userID, agentSession)
 	defer span.End()
 	if a.status() == statusClosed {
 		span.RecordError(ErrBrokenPipe)
@@ -159,7 +171,7 @@ func (a *agent) Push(ctx context.Context, route string, v interface{}) error {
 		}
 	}
 
-	err := a.send(pendingMessage{ctx: ctx, typ: message.Push, route: route, payload: v, uid: userID})
+	err := a.send(pendingMessage{ctx: ctx, typ: message.Push, route: route, mid: mid, payload: payload, isBytes: isBytes, uid: userID})
 	if err != nil {
 		span.RecordError(err)
 		span.SetStatus(codes.Error, err.Error())
@@ -474,7 +486,13 @@ func sendMsgSpan(data *pendingMessage) (context.Context, trace.Span) {
 func processPendingMessage(a *agent, data pendingMessage, chWrite chan WriteItem) (err error) {
 	ctx, span := sendMsgSpan(&data)
 	span.AddEvent("send.serialize")
-	payload, err := message.Serialize(data.payload, a.serializer)
+	var payload []byte
+	if data.isBytes {
+		payload = data.payload.([]byte)
+	} else {
+		payload, err = message.Serialize(data.payload, a.serializer)
+	}
+
 	allOK := false
 	defer func() {
 		if !allOK {

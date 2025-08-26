@@ -95,7 +95,7 @@ func TriggerTempBuff(logger fklog.FKLogI, userID uint64, barrierId int32, areaId
 		OptionalBuffInfo: buff.OptionalBuffInfo2PbOptionalBuffInfo(optionalBuffInfo),
 	}
 	// Push
-	err = online.Push(logger, userID, 10552, optionalTempBuffListID)
+	err = online.ClusterPush(context.TODO(), userID, 10552, optionalTempBuffListID)
 	if err != nil {
 		logger.ErrorWF("TriggerTempBuff Push fail",
 			zap.Error(err),
@@ -227,7 +227,7 @@ func (g *Game) OnBarrierUseItemRQ_10550_10551(s *session.Session, req *MazeGame.
 	for _, i := range items {
 		itemMap[i.GetItemId()] += i.GetCount()
 	}
-	if err = barrierscorerewardservice.GlobalScoreRewardService.SaveBarrierScoreRewardItem(logger, userId, req.GetBarrierId(), itemMap); err != nil {
+	if err = barrierscorerewardservice.GlobalScoreRewardService.SaveBarrierScoreRewardItem(context.TODO(), userId, req.GetBarrierId(), itemMap); err != nil {
 		logger.ErrorWF("OnBarrierUseItemRQ SaveBarrierScoreRewardItem err", zap.Error(err), zap.Any("barrier", req.GetBarrierId()))
 		res.ErrInfo = errors.MODULE_ERROR.ToInfo()
 	}

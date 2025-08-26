@@ -33,12 +33,3 @@ func LordMazeEnergyAffixLvConfig(cfg *GMazeEnergyAffixV8Cfg.MazeEnergyAffixV8Con
 	g.ConfigRowMap = affixMap
 	atomic.StorePointer((*unsafe.Pointer)(unsafe.Pointer(&gConfigData)), unsafe.Pointer(g))
 }
-
-func GetAffixConfig(configId int32) *GMazeEnergyAffixV8Cfg.MazeEnergyAffixV8ConfigRow {
-	config := GMazeEnergyAffixV8Cfg.Get(configId)
-	if config == nil {
-		return nil
-	}
-
-	return config
-}

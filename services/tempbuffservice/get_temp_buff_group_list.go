@@ -5,8 +5,8 @@ import (
 	"fmt"
 	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fklog"
 	"go.uber.org/zap"
-	"maze_game_server/excel/mazeenergyaffixfrontv8config"
-	"maze_game_server/excel/mazeenergyaffixlvv8config"
+	"maze_game_server/config/GMazeEnergyAffixFrontV8Cfg"
+	"maze_game_server/config/GMazeEnergyAffixV8Cfg"
 	"maze_game_server/model/tempbuffmodel"
 )
 
@@ -14,11 +14,11 @@ func (s *service) GetTempBuffGroupList(ctx context.Context, userId uint64, barri
 	logger := fklog.ContextAppLogger(ctx)
 	buffInfo, err := tempbuffmodel.NewTempBuffInfoModel(ctx, userId, barrier)
 	if err != nil {
-		logger.ErrorWF("GetMazeTempBuffListRQ GetMazeTempBuff", zap.Error(err))
+		logger.CtxError(ctx, "GetMazeTempBuffListRQ GetMazeTempBuff", zap.Error(err))
 		return nil, fmt.Errorf("获取用户buff信息失败")
 	}
 
-	return s.getGroupList(logger, buffInfo)
+	return s.getGroupList(ctx, logger, buffInfo)
 }
 
 type GroupInfo struct {
@@ -27,13 +27,13 @@ type GroupInfo struct {
 	GroupId int32
 }
 
-func (s *service) getGroupList(logger fklog.FKLogI, buffModel *tempbuffmodel.TempBuffInfoModel) ([]*GroupInfo, error) {
+func (s *service) getGroupList(ctx context.Context, logger fklog.FKLogI, buffModel *tempbuffmodel.TempBuffInfoModel) ([]*GroupInfo, error) {
 	groupCount := make(map[int32]int32)
 	groupFirstAffixList := make([]*GroupInfo, 0)
 	for _, i := range buffModel.SelectedBuff {
-		buffConfig := mazeenergyaffixlvv8config.GetAffixConfig(i.BuffId)
+		buffConfig := GMazeEnergyAffixV8Cfg.GetWithCtx(ctx, i.BuffId)
 		if buffConfig == nil {
-			logger.WarnWF("GetTempBuffGroupList buffConfig is nil", zap.Int32("buffId", i.BuffId))
+			logger.CtxError(ctx, "GetTempBuffGroupList buffConfig is nil", zap.Int32("buffId", i.BuffId))
 			return nil, fmt.Errorf("能力词条不存在")
 		}
 		groupCount[buffConfig.Affix_group_id] += 1
@@ -46,7 +46,7 @@ func (s *service) getGroupList(logger fklog.FKLogI, buffModel *tempbuffmodel.Tem
 				})
 				continue
 			}
-			frontConfig := mazeenergyaffixfrontv8config.GetMazeEnergyAffixFrontConfig(j)
+			frontConfig := GMazeEnergyAffixFrontV8Cfg.GetWithCtx(ctx, j)
 			if frontConfig.Extra_affix_group_id == 0 {
 				continue
 			}

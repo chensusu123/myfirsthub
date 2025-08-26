@@ -8,13 +8,13 @@ import (
 	"fmt"
 	"maze_game_server/common/function/itemutil"
 	"maze_game_server/common/tradeno"
+	"maze_game_server/config/GMazeEnergyAffixV8Cfg"
 	"maze_game_server/services/itemservice"
 	"net/http"
 	"os"
 	"sort"
 	"time"
 
-	"maze_game_server/excel/mazeenergyaffixlvv8config"
 	"maze_game_server/model/tempbuffmodel"
 	"maze_game_server/pb/common/Common"
 	"maze_game_server/pb/common/MazeCommon"
@@ -318,7 +318,7 @@ func RegGm(logger fklog.FKLogI) {
 		if tempBuffInfo != nil {
 			fmt.Fprintf(writer, "----------------临时词条列表----------------\n")
 			for _, info := range tempBuffInfo.SelectedBuff {
-				cfg := mazeenergyaffixlvv8config.GetAffixConfig(info.BuffId)
+				cfg := GMazeEnergyAffixV8Cfg.GetWithCtx(ctx, info.BuffId)
 				if cfg != nil {
 					fmt.Fprintf(writer, "[%d]%s 描述: %s\n", info.BuffId, cfg.Affix_name, cfg.Affix_desc)
 				} else {

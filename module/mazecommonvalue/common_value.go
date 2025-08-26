@@ -1,9 +1,11 @@
 package mazecommonvalue
 
 import (
+	"context"
+	"time"
+
 	"maze_game_server/pb/common/MazeGame"
 	"maze_game_server/usecase/online"
-	"time"
 
 	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fklog"
 	"go.uber.org/zap"
@@ -56,7 +58,7 @@ func SendCommonValueIdPack(logger fklog.FKLogI, userId uint64, commonList []*Com
 	}
 
 	logger.InfoWF("sendCommonValueIdPack send client with", zap.Any("commonList", commonList), zap.Any("commonValuePack", commonValuePack))
-	return online.Push(logger, uint64(userId), 10478, commonValuePack)
+	return online.ClusterPush(context.TODO(), uint64(userId), 10478, commonValuePack)
 }
 
 func MakeCommonValueList(logger fklog.FKLogI, commonValue map[int32]int64, commonReason map[int32]int32, commonSession map[int32]string) (commonList []*CommonValueStruct) {

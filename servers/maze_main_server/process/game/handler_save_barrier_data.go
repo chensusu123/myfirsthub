@@ -19,10 +19,10 @@ func (g *Game) OnSaveBarrierDataRQ_10624_10625(s *session.Session, req *MazeGame
 	res := &MazeGame.SaveBarrierDataRS{}
 	ctx := s.Context()
 	logger := fklog.ContextAppLogger(ctx)
-	logger.InfoWF("OnSaveBarrierDataRQ start", zap.Any("req", req))
+	logger.CtxInfo(ctx, "OnSaveBarrierDataRQ start", zap.Any("req", req))
 	defer func() {
 		err = s.Response(res)
-		logger.InfoWF("OnSaveBarrierDataRQ end", zap.Any("res", res))
+		logger.CtxInfo(ctx, "OnSaveBarrierDataRQ end", zap.Any("res", res))
 	}()
 
 	res.Header = req.Header
@@ -41,7 +41,7 @@ func (g *Game) OnSaveBarrierDataRQ_10624_10625(s *session.Session, req *MazeGame
 		return nil
 	}
 
-	mazecommonvalue.SendPassValueIdPack(logger, userId, req.GetBarrierId(), req.GetStageId())
+	mazecommonvalue.SendPassValueIdPack(ctx, logger, userId, req.GetBarrierId(), req.GetStageId())
 
 	return
 }
