@@ -4,7 +4,6 @@ import (
 	"context"
 	"encoding/binary"
 	"errors"
-	"fmt"
 	"strconv"
 	"time"
 
@@ -116,5 +115,8 @@ func PushToClusterTest(ctx context.Context, userID uint64, packetType uint16, da
 	fklog.ContextAppLogger(ctx).CtxInfo(ctx, "PushToClusterTest",
 		zap.Uint64("userID", userID),
 		zap.Uint16("packetType", packetType))
-	return gNatsproducer.Publish(ctx, fmt.Sprintf("maze.user.msg.%d", userID), ret)
+	subject := "maze.user.cluster.msg"
+	return gNatsproducer.Publish(ctx, subject, ret,
+		natsproduceroption.WithSkipSelfConsumer(), natsproduceroption.WithSectionSubject(),
+		natsproduceroption.WithTag(commonconst.NatsMsgHeaderPrimaryKey, strconv.Itoa(int(userID))))
 }
