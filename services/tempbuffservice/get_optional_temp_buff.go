@@ -389,12 +389,19 @@ func (s *service) GetOptionBuffWeightInfo(ctx context.Context, buffId int32, sel
 		logger.CtxWarn(ctx, "getOptionBuffWeightInfo buff weight is 0", zap.Int32("buffId", buffId))
 		return nil
 	}
-	// 如果已选择的组数量达到了
-	if len(selectedBuffGroupMap) >= int(mazeconfigv8.GetMaxBuffGroupCount(ctx)) {
-		// 不是已选择的组，也不是无关组，直接返回
+
+	if buffConfig.Affix_group_id != int32(mazeconfigv8.GetSpecialBuffGroupId(ctx)) {
 		_, exist := selectedBuffGroupMap[buffConfig.Affix_group_id]
-		if !exist && buffConfig.Affix_group_id != int32(mazeconfigv8.GetSpecialBuffGroupId(ctx)) {
-			return nil
+		if !exist {
+			maxCount := int(mazeconfigv8.GetMaxBuffGroupCount(ctx))
+			if len(selectedBuffGroupMap) > maxCount {
+				return nil
+			} else if len(selectedBuffGroupMap) == maxCount {
+				_, exist = selectedBuffGroupMap[int32(mazeconfigv8.GetSpecialBuffGroupId(ctx))]
+				if !exist {
+					return nil
+				}
+			}
 		}
 	}
 
