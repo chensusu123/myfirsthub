@@ -24,25 +24,25 @@ type Monitor struct {
 }
 
 // OnCreate implements session.Monitor.
-func (m *Monitor) OnCreate(s *session.Session) {
+func (m *Monitor) OnCreate(ctx context.Context, s *session.Session) {
 	m.sessions.Store(s.ID(), s)
-	m.logger.InfoWF("Monitor OnCreate session created", zap.Int64("SessionID", s.ID()))
+	fklog.ContextAppLogger(ctx).CtxInfo(ctx, "Monitor OnCreate session created", zap.Int64("SessionID", s.ID()))
 }
 
 // OnClose implements session.Monitor.
-func (m *Monitor) OnClose(s *session.Session, err error) {
+func (m *Monitor) OnClose(ctx context.Context, s *session.Session, err error) {
 	value, loaded := m.sessions.LoadAndDelete(s.ID())
 	if loaded {
 		if userID := value.(*session.Session).UID(); userID > 0 {
 			m.online.Delete(uint64(userID))
-			m.logger.InfoWF("Monitor OnClose user offline", zap.Int64("SessionID", s.ID()), zap.Int64("UID", s.UID()))
+			fklog.ContextAppLogger(ctx).CtxInfo(ctx, "Monitor OnClose user offline", zap.Int64("SessionID", s.ID()), zap.Int64("UID", s.UID()))
 		}
 	}
 	var lastErr string
 	if err != nil {
 		lastErr = err.Error()
 	}
-	m.logger.InfoWF("Monitor OnClose session closed", zap.Int64("SessionID", s.ID()), zap.Int64("UID", s.UID()), zap.String("lastErr", lastErr))
+	fklog.ContextAppLogger(ctx).CtxInfo(ctx, "Monitor OnClose session closed", zap.Int64("SessionID", s.ID()), zap.Int64("UID", s.UID()), zap.String("lastErr", lastErr))
 }
 
 // SessionMonitor returns a session monitor.

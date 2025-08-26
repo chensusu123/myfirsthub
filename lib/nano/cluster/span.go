@@ -38,3 +38,15 @@ func receiveSpan(ctx context.Context, msgLen int) (context.Context, trace.Span) 
 	span.AddEvent("nano.receive.span.init")
 	return ctx, span
 }
+
+func closeHandleSpan(ctx context.Context, a *agent, closeName string) (context.Context, trace.Span) {
+	tracer := otel.Tracer("nano.close")
+	ctx, span := tracer.Start(ctx, "nano.close.handle")
+	span.AddEvent("nano.close.span.init")
+	span.SetAttributes(attribute.String("remote_addr", a.session.RemoteAddr().String()),
+		attribute.Int64("agent.session", a.session.ID()),
+		attribute.Int64("enduser.id", a.session.UID()),
+		attribute.String("nano.close.name", closeName),
+	)
+	return ctx, span
+}

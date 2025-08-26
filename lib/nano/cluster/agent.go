@@ -43,6 +43,7 @@ import (
 	packCodec "maze_game_server/lib/codec"
 
 	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fklog"
+	"gitlab.ifreetalk.com/maze-plate/freetk/pkg/logidutil"
 	"go.opentelemetry.io/otel"
 	"go.opentelemetry.io/otel/attribute"
 	"go.opentelemetry.io/otel/codes"
@@ -309,16 +310,22 @@ func (a *agent) write() {
 		close(chWrite)
 		closeWriteSpan(chWrite)
 		closeSendMsgSpan(a.chSend)
+		closelogger := logger.Clone("nano")
+		closelogger.SetLogId(logidutil.GenerateLogID())
+		closelogger.SetUid(uint64(a.session.UID()))
+		ctx := fklog.ContextWithLogger(context.Background(), closelogger)
 
+		ctx, span := closeHandleSpan(ctx, a, "write.close")
+		defer span.End()
 		if env.SessionMonitor != nil {
-			env.SessionMonitor.OnClose(a.session, lastErr)
+			env.SessionMonitor.OnClose(ctx, a.session, lastErr)
 		}
 
 		a.Close()
-		if env.Debug {
-			log.Println(fmt.Sprintf("Session write goroutine exit, SessionID=%d, UID=%d", a.session.ID(), a.session.UID()))
-		}
-		logger.DebugWF("session write goroutine exit",
+		// if env.Debug {
+		// 	log.Println(fmt.Sprintf("Session write goroutine exit, SessionID=%d, UID=%d", a.session.ID(), a.session.UID()))
+		// }
+		closelogger.CtxDebug(ctx, "session write goroutine exit",
 			zap.Int64("session_id", a.session.ID()),
 			zap.Int64("uid", a.session.UID()))
 	}()

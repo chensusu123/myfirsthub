@@ -247,7 +247,7 @@ func (h *LocalHandler) handle(conn net.Conn, r *http.Request, pcodec frame.Packe
 	h.currentNode.storeSession(agent.session)
 
 	if env.SessionMonitor != nil {
-		env.SessionMonitor.OnCreate(agent.session)
+		env.SessionMonitor.OnCreate(context.Background(), agent.session)
 	}
 
 	var lastErr error
@@ -261,37 +261,40 @@ func (h *LocalHandler) handle(conn net.Conn, r *http.Request, pcodec frame.Packe
 
 	// guarantee agent related resource be destroyed
 	defer func() {
+		closelogger := logger.Clone("nano")
+		closelogger.SetLogId(logidutil.GenerateLogID())
+		closelogger.SetUid(uint64(agent.session.UID()))
+		ctx := fklog.ContextWithLogger(context.Background(), closelogger)
+
+		ctx, span := closeHandleSpan(ctx, agent, "read.close")
+		defer span.End()
 		request := &clusterpb.SessionClosedRequest{
 			SessionId: agent.session.ID(),
 		}
-
 		members := h.currentNode.cluster.remoteAddrs()
 		for _, remote := range members {
-			log.Println("Notify remote server", remote)
 			pool, err := h.currentNode.rpcClient.getConnPool(remote)
 			if err != nil {
-				log.Println("Cannot retrieve connection pool for address", remote, err)
+				closelogger.CtxWarn(ctx, "Cannot retrieve connection pool for address", zap.Error(err), zap.String("remote", remote))
 				continue
 			}
 			client := clusterpb.NewMemberClient(pool.Get())
-			_, err = client.SessionClosed(context.Background(), request)
+			_, err = client.SessionClosed(ctx, request)
 			if err != nil {
-				log.Println("Cannot closed session in remote address", remote, err)
+				closelogger.CtxWarn(ctx, "Cannot closed session in remote address", zap.Error(err), zap.String("remote", remote))
 				continue
-			}
-			if env.Debug {
-				log.Println("Notify remote server success", remote)
 			}
 		}
 
 		if env.SessionMonitor != nil {
-			env.SessionMonitor.OnClose(agent.session, lastErr)
+			env.SessionMonitor.OnClose(ctx, agent.session, lastErr)
 		}
 
 		agent.Close()
-		if env.Debug {
-			log.Println(fmt.Sprintf("Session read goroutine exit, SessionID=%d, UID=%d", agent.session.ID(), agent.session.UID()))
-		}
+		closelogger.CtxDebug(ctx, "Session read goroutine exit",
+			zap.Int64("agent.session", agent.session.ID()),
+			zap.Int64("enduser.id", agent.session.UID()),
+		)
 	}()
 
 	// read loop
