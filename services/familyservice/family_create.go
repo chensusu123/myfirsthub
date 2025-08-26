@@ -5,6 +5,10 @@ import (
 	"maze_game_server/model/alliancemodel"
 	"maze_game_server/model/familymodel"
 
+	grouppkg "maze_game_server/io/redis/im/group"
+
+	"maze_game_server/app"
+
 	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fklog"
 	"go.uber.org/zap"
 )
@@ -71,6 +75,14 @@ func (r *service) CreateFamily(ctx context.Context, userID uint64, allianceID in
 		logger.CtxError(ctx, "CreateFamily allianceModel.AddFamilyID err",
 			zap.Int32("allianceID", allianceID),
 			zap.Int32("familyID", familyInfoModel.FamilyID),
+			zap.Error(err))
+		return nil, err
+	}
+
+	//加入联盟群聊
+	err = grouppkg.InviteMember(logger, app.Maze.ID(), allianceID, userID)
+	if err != nil {
+		logger.CtxError(ctx, "CreateFamily InviteMember alliance err",
 			zap.Error(err))
 		return nil, err
 	}

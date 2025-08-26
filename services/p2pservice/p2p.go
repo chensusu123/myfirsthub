@@ -7,7 +7,14 @@ import (
 	"maze_game_server/lib/idgenerator"
 	"time"
 
+	"maze_game_server/pb/common/MazeIM"
+
 	"gitlab.ifreetalk.com/nano-ecosystem/fklog"
+
+	"maze_game_server/usecase/online"
+
+	"go.uber.org/zap"
+	"google.golang.org/protobuf/proto"
 )
 
 type P2PService interface {
@@ -81,14 +88,47 @@ func (p *p2p) SendMessage(ctx context.Context, logger fklog.FKLogI, a app.App, u
 	message.CreateTime = time.Now().Unix()
 	message.Type = _type
 	message.Content = content
+	//发送者的记录
 	err = p2pmsg.SaveMessage(logger, a.ID(), user.UserID(), peerID, message)
-	if err == nil {
-		err = p2pmsg.SaveMessage(logger, a.ID(), peerID, user.UserID(), message)
+	if err != nil {
+		logger.ErrorWF("SaveMessage sender error", zap.Error(err))
 	}
-	return
+	//接收者的记录
+	err = p2pmsg.SaveMessage(logger, a.ID(), peerID, user.UserID(), message)
+	if err != nil {
+		logger.ErrorWF("SaveMessage peer error", zap.Error(err))
+	}
+	// 通知接收者
+	err = p.notifyMessage(ctx, logger, user.UserID(), peerID, messageID, _type, content)
+	if err != nil {
+		logger.ErrorWF("notifyMessage error", zap.Error(err))
+	}
+	return messageID, nil
 }
 
 // RemoveMessage implements P2PService.
 func (p *p2p) RemoveMessage(ctx context.Context, logger fklog.FKLogI, a app.App, user app.User, peerID uint64, messageID uint64) (err error) {
 	return
+}
+
+func (p *p2p) notifyMessage(ctx context.Context, logger fklog.FKLogI, userId uint64, peerID uint64, messageID uint64, _type int32, content string) error {
+	// 推送消息给集群
+	notifyMessage := &MazeIM.MessageNotificationID{
+		From:    proto.Int32(1),
+		UserId:  proto.Uint64(peerID),
+		GroupId: proto.Int32(0),
+		Message: &MazeIM.Message{
+			MsgId:      proto.Uint64(messageID),
+			Type:       proto.Int32(_type),
+			Content:    proto.String(content),
+			Sender:     proto.Uint64(userId),
+			CreateTime: proto.Int64(time.Now().Unix()),
+		},
+	}
+	logger.DebugWF("notifyMessage", zap.Any("notifyMessage", notifyMessage))
+	err := online.ClusterPush(ctx, userId, 10651, notifyMessage)
+	if err != nil {
+		logger.ErrorWF("notifyMessage error", zap.Error(err), zap.Any("notifyMessage", notifyMessage))
+	}
+	return err
 }

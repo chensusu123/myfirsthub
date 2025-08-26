@@ -20,6 +20,7 @@ type AllianceInfoModel struct {
 	AllianceName       string  `json:"alliance_name"`
 	AllianceCountLimit int32   `json:"alliance_count_limit"` // 联盟中家族数量限制
 	FamilyIDs          []int32 `json:"family_ids"`           // 联盟中家族ID列表
+	AllianceGroupID    int32   `json:"alliance_group_id"`    // 联盟所属组ID
 }
 
 func LoadAllianceInfoModel(ctx context.Context, allianceID int32) (r *AllianceInfoModel, err error) {
@@ -39,6 +40,7 @@ func NewAllianceInfoModel(ctx context.Context, allianceID int32, allianceName st
 		AllianceName:       allianceName,
 		AllianceCountLimit: allianceCountLimit,
 		FamilyIDs:          []int32{},
+		AllianceGroupID:    0,
 	}
 }
 func (r *AllianceInfoModel) load(ctx context.Context, allianceID int32) (err error) {
@@ -93,4 +95,12 @@ func (r *AllianceInfoModel) RemoveFamilyID(ctx context.Context, familyID int32) 
 		}
 	}
 	return nil
+}
+
+func (r *AllianceInfoModel) SetAllianceGroupID(ctx context.Context, allianceGroupID int32) error {
+	if r.AllianceGroupID != 0 {
+		return nil
+	}
+	r.AllianceGroupID = allianceGroupID
+	return r.Save(ctx)
 }

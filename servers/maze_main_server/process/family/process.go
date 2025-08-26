@@ -11,6 +11,8 @@ import (
 	"maze_game_server/services/familyservice"
 	"maze_game_server/services/groupservice"
 
+	"maze_game_server/model/alliancemodel"
+
 	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fklog"
 	"go.uber.org/zap"
 	"google.golang.org/protobuf/proto"
@@ -454,6 +456,18 @@ func (f *Family) OnConfirmApplyFamilyRQ_10589_10590(s *session.Session, req *Maz
 		err = groupservice.Default.InviteMember(s.Context(), logger, app.Maze, familyInfo.FamilyGroupID, req.GetApplyUser().GetUserId())
 		if err != nil {
 			res.ErrInfo = errors.MODULE_ERROR.Wrap("加入家族群聊失败")
+			return err
+		}
+		//加入联盟群聊
+		alliance := alliancemodel.NewFamilyToAllianceModel(ctx, req.GetFamilyId())
+		allianceID, err := alliance.GetUserAlliance(ctx)
+		if err != nil {
+			res.ErrInfo = errors.MODULE_ERROR.Wrap("获取联盟ID失败")
+			return err
+		}
+		err = groupservice.Default.InviteMember(s.Context(), logger, app.Maze, allianceID, req.GetApplyUser().GetUserId())
+		if err != nil {
+			res.ErrInfo = errors.MODULE_ERROR.Wrap("加入联盟群聊失败")
 			return err
 		}
 

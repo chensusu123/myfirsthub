@@ -9,6 +9,13 @@ import (
 	"time"
 
 	"gitlab.ifreetalk.com/nano-ecosystem/fklog"
+
+	"maze_game_server/pb/common/MazeIM"
+
+	"maze_game_server/usecase/online"
+
+	"go.uber.org/zap"
+	"google.golang.org/protobuf/proto"
 )
 
 type GroupService interface {
@@ -96,7 +103,16 @@ func (g *group) SendMessage(ctx context.Context, logger fklog.FKLogI, a app.App,
 	message.Type = _type
 	message.Content = content
 	err = groupmsg.SaveMessage(logger, a.ID(), groupID, message)
-	return
+	if err != nil {
+		logger.ErrorWF("SendMessage error", zap.Error(err), zap.Uint64("sender", sender), zap.Int32("_type", _type), zap.String("content", content))
+		return 0, err
+	}
+	err = g.notifyGroupMessage(ctx, logger, a, sender, messageID, _type, groupID, content)
+	if err != nil {
+		logger.ErrorWF("notifyGroupMessage error", zap.Error(err), zap.Uint64("sender", sender), zap.Int32("_type", _type), zap.String("content", content))
+		return 0, err
+	}
+	return messageID, nil
 }
 
 // GetGroupInfo implements GroupService.
@@ -114,4 +130,37 @@ func (*group) CreateGroup(ctx context.Context, logger fklog.FKLogI, a app.App, u
 // InviteMember implements GroupService.
 func (g *group) InviteMember(ctx context.Context, logger fklog.FKLogI, a app.App, groupID int32, memberID uint64) (err error) {
 	return grouppkg.InviteMember(logger, a.ID(), groupID, memberID)
+}
+
+func (g *group) notifyGroupMessage(ctx context.Context, logger fklog.FKLogI, a app.App, userId uint64, messageID uint64, _type int32, groupID int32, content string) error {
+	groupInfo, err := g.GetGroupInfo(ctx, logger, a, groupID)
+	if err != nil {
+		logger.ErrorWF("notifyGroupMessage error", zap.Error(err), zap.Uint64("userId", userId), zap.Uint64("messageID", messageID), zap.Int32("_type", _type), zap.Int32("groupID", groupID), zap.String("content", content))
+		return err
+	}
+
+	for _, member := range groupInfo.Members {
+		if member.UserID == userId || member.UserID <= 0 {
+			continue
+		}
+		// 推送消息给集群
+		notifyMessage := &MazeIM.MessageNotificationID{
+			From:    proto.Int32(2),
+			UserId:  proto.Uint64(member.UserID),
+			GroupId: proto.Int32(groupID),
+			Message: &MazeIM.Message{
+				MsgId:      proto.Uint64(messageID),
+				Type:       proto.Int32(_type),
+				Content:    proto.String(content),
+				Sender:     proto.Uint64(userId),
+				CreateTime: proto.Int64(time.Now().Unix()),
+			},
+		}
+		logger.DebugWF("notifyMessage group", zap.Any("notifyMessage group", notifyMessage))
+		err = online.ClusterPush(ctx, userId, 10651, notifyMessage)
+		if err != nil {
+			logger.ErrorWF("notifyMessage error", zap.Error(err), zap.Any("notifyMessage", notifyMessage))
+		}
+	}
+	return nil
 }
