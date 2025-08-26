@@ -3,6 +3,7 @@ package online
 import (
 	"context"
 	"encoding/binary"
+	"errors"
 	"fmt"
 	"strconv"
 	"time"
@@ -44,6 +45,14 @@ func MakeNormalPushData(packetType uint16, payload interface{}, isBytes bool) *s
 // ClusterPush push data to cluster
 // 注意： 如果用户不在当前分片。 则会往其他分片广播，由其他分片发送给用户
 func ClusterPush(ctx context.Context, userID uint64, packetType uint16, v interface{}) (err error) {
+	if userID == 0 || packetType == 0 {
+		fklog.ContextAppLogger(ctx).CtxError(ctx, "ClusterPush invalid",
+			zap.Uint64("userID", userID),
+			zap.Uint16("packetType", packetType),
+		)
+		return errors.New("userID is invalid")
+	}
+
 	s, found := monitor.online.Load(userID)
 	if !found {
 		span := nanotrace.NewSimpleTrace("UserMsgPushToOtherServer")
