@@ -36,7 +36,7 @@ func Register(broadcastUsers BroadcastUsers) {
 
 func StandaloneConsumerBytesConsumer() *simplenatsconsumer.SimpleConsumerProcessor {
 	return simplenatsconsumer.New(
-		simplenatsconsumer.WithSubject("maze.broadcast.msg.>"),
+		simplenatsconsumer.WithSubject("maze.broadcast.cluster.msg.>"),
 		simplenatsconsumer.WithProcessorFunc(gStandaloneConsumer.Processor),
 		simplenatsconsumer.WithStandaloneConsumer(),
 	)

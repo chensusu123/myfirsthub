@@ -34,13 +34,13 @@ func Broadcast(ctx context.Context, broadcastID uint64, packetType uint16, v int
 	cSpan.SetAttributes(
 		attribute.Int64("broadcast.id", int64(broadcastID)),
 		attribute.Int("packet.id", int(packetType)),
-		attribute.String("nats.subject", "maze.broadcast.msg.>"),
+		attribute.String("nats.subject", "maze.broadcast.cluster.msg.>"),
 	)
 	data, err := clusterpaket.MakeClusterPacket(packetType, v)
 	if err != nil {
 		return err
 	}
-	subject := fmt.Sprintf("maze.broadcast.msg.%s.%d", appconfig.GlobalConfig().Global.SectionID, broadcastID)
+	subject := fmt.Sprintf("maze.broadcast.cluster.msg.%s.%d", appconfig.GlobalConfig().Global.SectionID, broadcastID)
 	err = gNatsproducer.Publish(ctx, subject, data)
 	fklog.ContextAppLogger(ctx).CtxInfo(ctx, "broadcastcli publish to nats",
 		zap.String("subject", subject),
