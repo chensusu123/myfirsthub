@@ -76,6 +76,19 @@ func (r *service) CreateFamily(logger fklog.FKLogI, userID uint64, allianceID in
 	return familyInfoModel, nil
 }
 
+// 设置家族群组id
+func (r *service) SetFamilyGroupID(logger fklog.FKLogI, familyID int32, groupID int32) error {
+	familymodel, err := familymodel.LoadFamilyInfoModel(logger, familyID)
+	if err != nil {
+		logger.ErrorWF("UpgradeFamily familymodel.LoadFamilyInfoModel err",
+			zap.Int32("familyID", familyID), zap.Error(err))
+		return err
+	}
+	familymodel.SetFamilyGroupID(logger, groupID)
+	familymodel.Save(logger, familyID)
+	return nil
+}
+
 // DeductCreateFamilyCost 创建家族扣物品
 func (r *service) DeductCreateFamilyCost(logger fklog.FKLogI, cost map[int32]int64) error {
 	// todo 待补充，读表

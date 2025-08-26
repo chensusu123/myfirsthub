@@ -1,6 +1,7 @@
 package family
 
 import (
+	"maze_game_server/app"
 	"maze_game_server/common/errors"
 	"maze_game_server/lib/log"
 	"maze_game_server/lib/nano/component"
@@ -9,6 +10,7 @@ import (
 	"maze_game_server/pb/common/MazeCommon"
 	"maze_game_server/pb/common/MazeFamily"
 	"maze_game_server/services/familyservice"
+	"maze_game_server/services/groupservice"
 
 	"go.uber.org/zap"
 	"google.golang.org/protobuf/proto"
@@ -136,10 +138,22 @@ func (f *Family) OnCreateFamilyRQ_10585_10586(s *session.Session, req *MazeFamil
 		res.ErrInfo = errors.MODULE_ERROR.Wrap("创建家族失败")
 		return
 	}
+	user, err := app.WrapUser(uid, "")
+	if err != nil {
+		logger.ErrorWF("OnQueryMessages WrapUser error", zap.Error(err), zap.Any("req", req))
+		return err
+	}
+	//创建家族群聊
+	groupInfo, err := groupservice.Default.CreateGroup(s.Context(), logger, app.Maze, user, make([]uint64, 0))
+	if err != nil {
+		res.ErrInfo = errors.MODULE_ERROR.Wrap("设置玩家所在家族失败")
+		return err
+	}
+	familyservice.GlobalFamilyService.SetFamilyGroupID(logger, res.FamilyInfo.GetFamilyId(), groupInfo.ID)
 
 	res.FamilyInfo = familyInfo.DataToFamilyInfoPb(logger)
 	res.MemberList = familyInfo.DataToFamilyMembersPb(logger)
-
+	res.GroupId = proto.Int32(groupInfo.ID)
 	// 设置玩家所在家族
 	err = familyservice.GlobalFamilyService.SetUserFamily(logger, uid, res.FamilyInfo.GetFamilyId())
 	if err != nil {
@@ -425,6 +439,12 @@ func (f *Family) OnConfirmApplyFamilyRQ_10589_10590(s *session.Session, req *Maz
 		err = familyservice.GlobalFamilyService.SetUserFamily(logger, req.GetApplyUser().GetUserId(), req.GetFamilyId())
 		if err != nil {
 			res.ErrInfo = errors.MODULE_ERROR.Wrap("设置玩家所在家族失败")
+			return err
+		}
+		//加入家族群聊
+		err = groupservice.Default.InviteMember(s.Context(), logger, app.Maze, familyInfo.FamilyGroupID, req.GetApplyUser().GetUserId())
+		if err != nil {
+			res.ErrInfo = errors.MODULE_ERROR.Wrap("加入家族群聊失败")
 			return err
 		}
 
