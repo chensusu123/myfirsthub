@@ -48,6 +48,16 @@ var (
 type p2p struct {
 }
 
+var GlobalP2PService P2PService
+
+func init() {
+	GlobalP2PService = newP2PService()
+}
+
+func newP2PService() P2PService {
+	return &p2p{}
+}
+
 // QueryMessages implements P2PService.
 func (p *p2p) QueryMessages(ctx context.Context, logger fklog.FKLogI, a app.App, user app.User, peerID uint64, lastID uint64, limit int) (messages []app.Message, err error) {
 	if lastID <= 0 {

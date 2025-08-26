@@ -10,6 +10,7 @@ import (
 
 	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fkprometheus"
 	"go.uber.org/zap"
+	"google.golang.org/protobuf/proto"
 )
 
 func (im *IM) OnQueryMessages_10643_10644(s *session.Session, req *MazeIM.QueryMessagesRQ) (err error) {
@@ -34,12 +35,20 @@ func (im *IM) OnQueryMessages_10643_10644(s *session.Session, req *MazeIM.QueryM
 
 	user, err := app.WrapUser(userId, "")
 	if err != nil {
+		logger.ErrorWF("OnQueryMessages WrapUser error", zap.Error(err), zap.Any("req", req))
 		return err
 	}
 
 	messages, err := p2pservice.Default.QueryMessages(s.Context(), logger, app.Maze, user, peerId, lastMsgID, 20)
-	_ = messages
-	return
+	if err != nil {
+		logger.ErrorWF("OnQueryMessages QueryMessages error", zap.Error(err), zap.Any("req", req))
+		return err
+	}
+	res.PeerId = proto.Uint64(peerId)
+	for _, message := range messages {
+		res.MsgList = append(res.MsgList, PbMessage(message))
+	}
+	return nil
 }
 
 func (im *IM) OnSendMessage_10645_10646(s *session.Session, req *MazeIM.SendMessageRQ) (err error) {
@@ -65,10 +74,16 @@ func (im *IM) OnSendMessage_10645_10646(s *session.Session, req *MazeIM.SendMess
 
 	user, err := app.WrapUser(userId, "")
 	if err != nil {
+		logger.ErrorWF("OnSendMessage WrapUser error", zap.Error(err), zap.Any("req", req))
 		return err
 	}
 
 	messageID, err := p2pservice.Default.SendMessage(s.Context(), logger, app.Maze, user, peerId, _type, content)
-	_ = messageID
-	return
+	if err != nil {
+		logger.ErrorWF("OnSendMessage SendMessage error", zap.Error(err), zap.Any("req", req))
+		return err
+	}
+	res.MsgId = proto.Uint64(messageID)
+	res.PeerId = proto.Uint64(peerId)
+	return nil
 }

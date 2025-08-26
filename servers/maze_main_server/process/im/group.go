@@ -10,6 +10,7 @@ import (
 
 	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fkprometheus"
 	"go.uber.org/zap"
+	"google.golang.org/protobuf/proto"
 )
 
 func (im *IM) OnQueryGroupMessages_10647_10648(s *session.Session, req *MazeIM.QueryGroupMessagesRQ) (err error) {
@@ -27,15 +28,18 @@ func (im *IM) OnQueryGroupMessages_10647_10648(s *session.Session, req *MazeIM.Q
 	}()
 
 	var (
-		userId    = uint64(s.UID())
 		groupId   = req.GetGroupId()
 		lastMsgID = req.GetLastMsgId()
 	)
 
-	_ = userId
-
 	messages, err := groupservice.Default.QueryMessages(s.Context(), logger, app.Maze, groupId, lastMsgID, 20)
-	_ = messages
+	if err != nil {
+		logger.ErrorWF("OnQueryGroupMessages QueryMessages error", zap.Error(err))
+		return
+	}
+	for _, message := range messages {
+		res.MsgList = append(res.MsgList, PbMessage(message))
+	}
 	return
 }
 
@@ -61,6 +65,11 @@ func (im *IM) OnSendGroupMessage_10649_10650(s *session.Session, req *MazeIM.Sen
 	)
 
 	messageID, err := groupservice.Default.SendMessage(s.Context(), logger, app.Maze, groupId, userId, _type, content)
-	_ = messageID
+	if err != nil {
+		logger.ErrorWF("OnSendGroupMessage SendMessage error", zap.Error(err))
+		return
+	}
+	res.GroupId = proto.Int32(groupId)
+	res.MsgId = proto.Uint64(messageID)
 	return
 }
