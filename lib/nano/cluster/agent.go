@@ -327,7 +327,7 @@ func (a *agent) write() {
 		// }
 		closelogger.CtxDebug(ctx, "session write goroutine exit",
 			zap.Int64("session_id", a.session.ID()),
-			zap.Int64("uid", a.session.UID()))
+			zap.Int64("uid", a.session.UID()), zap.Any("lastErr", lastErr))
 	}()
 
 	for {
