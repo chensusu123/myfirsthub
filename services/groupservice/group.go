@@ -62,6 +62,16 @@ var (
 type group struct {
 }
 
+var GlobalGroupService = newGroupService()
+
+func init() {
+	GlobalGroupService = newGroupService()
+}
+
+func newGroupService() GroupService {
+	return &group{}
+}
+
 // QueryMessages implements GroupService.
 func (g *group) QueryMessages(ctx context.Context, logger fklog.FKLogI, a app.App, groupID int32, lastID uint64, limit int) (messages []app.Message, err error) {
 	if lastID <= 0 {
