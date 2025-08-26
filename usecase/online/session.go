@@ -52,14 +52,14 @@ func SessionMonitor(logger fklog.FKLogI) *Monitor {
 }
 
 // Bind
-func Bind(logger fklog.FKLogI, s *session.Session, userID uint64) (err error) {
+func Bind(ctx context.Context, s *session.Session, userID uint64) (err error) {
 	value, found := monitor.sessions.Load(s.ID())
 	if !found {
-		logger.ErrorWF("Bind session not found", zap.Error(ErrSessionNotFound), zap.Int64("ID", s.ID()), zap.Uint64("userID", userID))
+		fklog.ContextAppLogger(ctx).CtxError(ctx, "Bind session not found", zap.Error(ErrSessionNotFound), zap.Int64("ID", s.ID()), zap.Uint64("userID", userID))
 		return ErrSessionNotFound
 	}
 	monitor.online.Store(userID, value)
-	logger.InfoWF("Monitor session bound", zap.Int64("SessionID", s.ID()), zap.Uint64("userID", userID))
+	fklog.ContextAppLogger(ctx).CtxInfo(ctx, "Monitor session bound", zap.Int64("SessionID", s.ID()), zap.Uint64("userID", userID))
 	return
 }
 

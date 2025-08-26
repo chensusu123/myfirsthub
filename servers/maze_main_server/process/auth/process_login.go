@@ -95,7 +95,7 @@ func (a *Auth) OnLoginRQ_10492_10493(s *session.Session, req *UserLogin.UserLogi
 
 	// ctx.SetTag("userID", userID)
 	s.Bind(int64(userID))
-	online.Bind(logger, s, userID)
+	online.Bind(ctx, s, userID)
 
 	res.ServerTime = proto.Int64(time.Now().UnixMilli())
 

@@ -80,7 +80,7 @@ func (a *Auth) OnLoginQuickRQ_10550_10551(s *session.Session, req *UserLogin.Use
 
 	// ctx.SetTag("userID", userID)
 	s.Bind(int64(userID))
-	online.Bind(logger, s, userID)
+	online.Bind(ctx, s, userID)
 
 	res.ServerTime = proto.Int64(time.Now().UnixMilli())
 
