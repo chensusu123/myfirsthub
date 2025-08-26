@@ -15,6 +15,7 @@ import (
 	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fklog"
 	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/serverdepend"
 	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/simpleclient/simplenatsproducer"
+	"gitlab.ifreetalk.com/maze-plate/freetk/fkserver/appconfig"
 	"gitlab.ifreetalk.com/maze-plate/freetk/pkg/nanotrace"
 	"go.opentelemetry.io/otel/attribute"
 	"go.uber.org/zap"
@@ -48,16 +49,17 @@ func ClusterPush(ctx context.Context, userID uint64, packetType uint16, v interf
 		ctx = span.Start(ctx)
 		defer span.Finish(ctx)
 		cSpan := nanotrace.SpanFromContext(ctx)
+		subject := fmt.Sprintf("maze.user.cluster.msg.%s.%d", appconfig.GlobalConfig().Global.SectionID, userID)
 		cSpan.SetAttributes(
 			attribute.Int64("enduser.id", int64(userID)),
 			attribute.Int("packet.id", int(packetType)),
-			attribute.String("nats.subject", "maze.user.msg.*"),
+			attribute.String("nats.subject", "maze.user.cluster.msg.>"),
 		)
 		data, err := clusterpaket.MakeClusterPacket(packetType, v)
 		if err != nil {
 			return err
 		}
-		subject := fmt.Sprintf("maze.user.msg.%d", userID)
+
 		err = gNatsproducer.Publish(ctx, subject, data, natsproduceroption.WithSkipSelfConsumer())
 		fklog.ContextAppLogger(ctx).CtxInfo(ctx, "ClusterPush publish to nats",
 			zap.String("subject", subject),

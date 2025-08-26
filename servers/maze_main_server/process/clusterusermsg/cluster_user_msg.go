@@ -3,6 +3,7 @@ package clusterusermsg
 import (
 	"context"
 	"strconv"
+	"strings"
 
 	"maze_game_server/common/function/clusterpaket"
 	"maze_game_server/usecase/online"
@@ -28,7 +29,7 @@ func StandaloneConsumerBytesConsumer() *simplenatsconsumer.SimpleConsumerProcess
 		nameLen: len("maze.user.msg."),
 	}
 	return simplenatsconsumer.New(
-		simplenatsconsumer.WithSubject("maze.user.msg.*"),
+		simplenatsconsumer.WithSubject("maze.user.cluster.msg.>"),
 		simplenatsconsumer.WithProcessorFunc(sc.Processor),
 		simplenatsconsumer.WithStandaloneConsumer(),
 	)
@@ -42,13 +43,10 @@ func (s *StandaloneConsumer) Processor(ctx context.Context, obj any, opts ...nat
 	data, _ := obj.([]byte)
 	logger := fklog.ContextAppLogger(ctx)
 	cfg := natsmsgoption.NewNatsMsgOpts(opts...)
-	if len(cfg.Subject) <= s.nameLen {
-		logger.CtxWarn(ctx, "clusterusermsg Processor Subject is invalid",
-			zap.String("subject", cfg.Subject),
-		)
-		return nil, nil
-	}
-	userID := cfg.Subject[s.nameLen:]
+
+	parts := strings.Split(cfg.Subject, ".")
+	userID := parts[len(parts)-1] //
+
 	packetType, data, err := clusterpaket.SplitClusterPacket(data)
 	if err != nil {
 		logger.CtxWarn(ctx, "clusterusermsg Processor SplitClusterPacket failed",
