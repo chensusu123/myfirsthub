@@ -24,35 +24,27 @@ func Register() {
 }
 
 func StandaloneConsumerBytesConsumer() *simplenatsconsumer.SimpleConsumerProcessor {
-	sc := &StandaloneConsumer{
-		nameLen: len("maze.user.msg."),
-	}
+	sc := &StandaloneConsumer{}
 	return simplenatsconsumer.New(
-		simplenatsconsumer.WithSubject("maze.user.msg.*"),
+		simplenatsconsumer.WithSubject("maze.user.cluster.msg"),
 		simplenatsconsumer.WithProcessorFunc(sc.Processor),
+		simplenatsconsumer.WithSectionSubject(),
 		simplenatsconsumer.WithStandaloneConsumer(),
 	)
 }
 
-type StandaloneConsumer struct {
-	nameLen int
-}
+type StandaloneConsumer struct{}
 
 func (s *StandaloneConsumer) Processor(ctx context.Context, obj any, opts ...natsmsgoption.NatsMsgOption) (any, error) {
 	data, _ := obj.([]byte)
 	logger := fklog.ContextAppLogger(ctx)
 	cfg := natsmsgoption.NewNatsMsgOpts(opts...)
-	if len(cfg.Subject) <= s.nameLen {
-		logger.CtxWarn(ctx, "clusterusermsg Processor Subject is invalid",
-			zap.String("subject", cfg.Subject),
-		)
-		return nil, nil
-	}
-	userID := cfg.Subject[s.nameLen:]
+
 	packetType, data, err := clusterpaket.SplitClusterPacket(data)
 	if err != nil {
 		logger.CtxWarn(ctx, "clusterusermsg Processor SplitClusterPacket failed",
 			zap.String("subject", cfg.Subject),
+			zap.String("PrimaryKey", cfg.PrimaryKey),
 			zap.Any("err", err),
 		)
 		return nil, nil
@@ -64,25 +56,32 @@ func (s *StandaloneConsumer) Processor(ctx context.Context, obj any, opts ...nat
 		return nil, nil
 	}
 
-	userIDUint, err := strconv.ParseUint(userID, 10, 64)
+	userIDUint, err := strconv.ParseUint(cfg.PrimaryKey, 10, 64)
 	if err != nil {
 		logger.CtxWarn(ctx, "clusterusermsg Processor ParseUint failed",
 			zap.String("subject", cfg.Subject),
+			zap.String("PrimaryKey", cfg.PrimaryKey),
 			zap.Any("err", err),
 		)
 		return nil, nil
 	}
-
+	if userIDUint == 0 {
+		logger.CtxWarn(ctx, "clusterusermsg Processor PrimaryKey is invalid",
+			zap.String("subject", cfg.Subject),
+			zap.String("PrimaryKey", cfg.PrimaryKey),
+		)
+		return nil, nil
+	}
 	err = online.PushBytes(ctx, userIDUint, packetType, data)
 	if err != nil {
 		logger.CtxWarn(ctx, "clusterusermsg Processor PushBytes failed",
 			zap.String("subject", cfg.Subject),
+			zap.String("PrimaryKey", cfg.PrimaryKey),
 			zap.Any("err", err),
 		)
 		return nil, nil
 	}
 	logger.CtxInfo(ctx, "clusterusermsg Success",
-		zap.Uint64("userIDUint", userIDUint),
 		zap.Uint64("userIDUint", userIDUint),
 		zap.Uint16("packetType", packetType),
 		zap.Int("dataLen", len(data)),

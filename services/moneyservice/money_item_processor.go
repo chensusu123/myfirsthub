@@ -2,8 +2,6 @@ package moneyservice
 
 import (
 	"context"
-	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fklog"
-	"go.uber.org/zap"
 	"maze_game_server/common/constdef"
 	"maze_game_server/common/errors"
 	"maze_game_server/io/kafka/mazemoneykafka"
@@ -12,6 +10,9 @@ import (
 	"maze_game_server/pb/common/MazeGame"
 	"maze_game_server/pb/common/MessageType"
 	"maze_game_server/services/itemservice"
+
+	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fklog"
+	"go.uber.org/zap"
 )
 
 // GatherItem 加道具
@@ -47,7 +48,7 @@ func (s *service) GatherItem(ctx context.Context, userId uint64, opType int32, t
 	// 货币变化推包
 	s.sendMoneyItemChgID(logger, userId, moneyMap)
 	// 流水
-	s.sendFlow(logger, userId, items, oldMap, moneyMap, tradeNo, opType)
+	s.sendFlow(ctx, userId, items, oldMap, moneyMap, tradeNo, opType)
 
 	return
 }
@@ -84,7 +85,7 @@ func (s *service) DeductItem(ctx context.Context, userId uint64, opType int32, t
 	// 货币变化推包
 	s.sendMoneyItemChgID(logger, userId, moneyMap)
 	// 流水
-	s.sendFlow(logger, userId, items, oldMap, moneyMap, tradeNo, opType)
+	s.sendFlow(ctx, userId, items, oldMap, moneyMap, tradeNo, opType)
 
 	deductRes.SucItem = items
 	return
@@ -165,7 +166,7 @@ func (s *service) sendMoneyItemChgID(logger fklog.FKLogI, userId uint64, moneyMa
 }
 
 // 流水
-func (s *service) sendFlow(logger fklog.FKLogI, userId uint64, items []*itemservice.ItemInfo, oldMap, moneyMap map[int32]int64, tradeNo uint64, opType int32) {
+func (s *service) sendFlow(ctx context.Context, userId uint64, items []*itemservice.ItemInfo, oldMap, moneyMap map[int32]int64, tradeNo uint64, opType int32) {
 	for _, i := range items {
 		record := &mazemoneykafka.MazeMoneyRecord{
 			UserId:        userId,
@@ -176,6 +177,6 @@ func (s *service) sendFlow(logger fklog.FKLogI, userId uint64, items []*itemserv
 			TradeNo:       int64(tradeNo),
 			ChgReason:     opType,
 		}
-		mazemoneykafka.PushMazeMoneyRecord(logger, record)
+		mazemoneykafka.PushMazeMoneyRecord(ctx, record)
 	}
 }

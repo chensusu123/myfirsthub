@@ -1,18 +1,21 @@
 package collect
 
 import (
-	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fklog"
-	"go.uber.org/zap"
+	"context"
 	"maze_game_server/io/kafka/mazebarrieruserkafka"
 	"maze_game_server/module/funcopencheck"
 	"maze_game_server/module/mazecollect"
 	"maze_game_server/module/mazeuserinfo"
+
+	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fklog"
+	"go.uber.org/zap"
 )
 
 // 用户迷宫闯关纪录
 type MazeBarrierUserGameRecord = mazebarrieruserkafka.MazeBarrierUserGameRecord
 
-func HandleMazeBarrierMsg(logger fklog.FKLogI, msg *MazeBarrierUserGameRecord) {
+func HandleMazeBarrierMsg(ctx context.Context, msg *MazeBarrierUserGameRecord) {
+	logger := fklog.ContextAppLogger(ctx)
 	// msg := &MazeBarrierUserGameRecord{}
 	// err = json.Unmarshal(data, msg)
 	// if err != nil {
@@ -62,7 +65,7 @@ func HandleMazeBarrierMsg(logger fklog.FKLogI, msg *MazeBarrierUserGameRecord) {
 		return
 	}
 
-	NewCollectAfter(logger, userId, collectInfo)
+	NewCollectAfter(ctx, userId, collectInfo)
 
 	return
 }

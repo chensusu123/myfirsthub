@@ -7,15 +7,18 @@
 package game
 
 import (
-	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fklog"
-	"go.uber.org/zap"
+	"context"
 	"maze_game_server/io/kafka/mazetempbuffchgmsg"
 	"maze_game_server/module/mazeuserinfo"
+
+	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fklog"
+	"go.uber.org/zap"
 )
 
 type MazeTempBuffChangeMsg = mazetempbuffchgmsg.MazeTempBuffChangeMsg
 
-func HandleTempBuffMsg(logger fklog.FKLogI, msg *MazeTempBuffChangeMsg) {
+func HandleTempBuffMsg(ctx context.Context, msg *MazeTempBuffChangeMsg) {
+	logger := fklog.ContextAppLogger(ctx)
 	// msg := &structsdef.MazeTempBuffChangeMsg{}
 	// err = json.Unmarshal(data, msg)
 	// if err != nil {

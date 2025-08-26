@@ -121,7 +121,7 @@ func (s *service) updateBuffInfo(ctx context.Context, userId uint64, barrierId, 
 		msg.ChgAttrs = chgAttrs
 	}
 
-	_ = mazetempbuffchgmsg.PushTempBuffChangeMsg(logger, msg)
+	_ = mazetempbuffchgmsg.PushTempBuffChangeMsg(ctx, msg)
 
 	// 同步到buff中心
 	s.TempBuffChangeSync(ctx, logger, userId, buffInfo)
@@ -155,7 +155,7 @@ func (s *service) TempBuffChangeSync(ctx context.Context, logger fklog.FKLogI, u
 		Session: "buff",
 		BuffSrc: constdef.MazeBuffSrcSelectBuffForce,
 	}
-	mazeattrcalcnotifyqueue.SendMazeAttrCalcNotify(logger, calcAttrNotify)
+	mazeattrcalcnotifyqueue.SendMazeAttrCalcNotify(ctx, calcAttrNotify)
 	return nil
 }
 

@@ -3,13 +3,15 @@ package online
 import (
 	"context"
 	"encoding/binary"
-	"fmt"
+	"errors"
+	"strconv"
 	"time"
 
 	"maze_game_server/common/function/clusterpaket"
 	"maze_game_server/lib/codec"
 	"maze_game_server/lib/nano/session"
 
+	"gitlab.ifreetalk.com/maze-plate/freetk/common/commonconst"
 	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/client/natsproduceroption"
 	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/database"
 	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fklog"
@@ -42,23 +44,36 @@ func MakeNormalPushData(packetType uint16, payload interface{}, isBytes bool) *s
 // ClusterPush push data to cluster
 // 注意： 如果用户不在当前分片。 则会往其他分片广播，由其他分片发送给用户
 func ClusterPush(ctx context.Context, userID uint64, packetType uint16, v interface{}) (err error) {
+	if userID == 0 || packetType == 0 {
+		fklog.ContextAppLogger(ctx).CtxError(ctx, "ClusterPush invalid",
+			zap.Uint64("userID", userID),
+			zap.Uint16("packetType", packetType),
+		)
+		return errors.New("userID is invalid")
+	}
+
 	s, found := monitor.online.Load(userID)
 	if !found {
 		span := nanotrace.NewSimpleTrace("UserMsgPushToOtherServer")
 		ctx = span.Start(ctx)
 		defer span.Finish(ctx)
 		cSpan := nanotrace.SpanFromContext(ctx)
+
+		subject := "maze.user.cluster.msg"
 		cSpan.SetAttributes(
 			attribute.Int64("enduser.id", int64(userID)),
 			attribute.Int("packet.id", int(packetType)),
-			attribute.String("nats.subject", "maze.user.msg.*"),
+			attribute.String("nats.subject", "maze.user.cluster.msg.*"),
 		)
 		data, err := clusterpaket.MakeClusterPacket(packetType, v)
 		if err != nil {
 			return err
 		}
-		subject := fmt.Sprintf("maze.user.msg.%d", userID)
-		err = gNatsproducer.Publish(ctx, subject, data, natsproduceroption.WithSkipSelfConsumer())
+
+		err = gNatsproducer.Publish(ctx, subject, data,
+			natsproduceroption.WithSkipSelfConsumer(), natsproduceroption.WithSectionSubject(),
+			natsproduceroption.WithTag(commonconst.NatsMsgHeaderPrimaryKey, strconv.Itoa(int(userID))))
+
 		fklog.ContextAppLogger(ctx).CtxInfo(ctx, "ClusterPush publish to nats",
 			zap.String("subject", subject),
 			zap.Uint64("userID", userID),
@@ -100,5 +115,8 @@ func PushToClusterTest(ctx context.Context, userID uint64, packetType uint16, da
 	fklog.ContextAppLogger(ctx).CtxInfo(ctx, "PushToClusterTest",
 		zap.Uint64("userID", userID),
 		zap.Uint16("packetType", packetType))
-	return gNatsproducer.Publish(ctx, fmt.Sprintf("maze.user.msg.%d", userID), ret)
+	subject := "maze.user.cluster.msg"
+	return gNatsproducer.Publish(ctx, subject, ret,
+		natsproduceroption.WithSkipSelfConsumer(), natsproduceroption.WithSectionSubject(),
+		natsproduceroption.WithTag(commonconst.NatsMsgHeaderPrimaryKey, strconv.Itoa(int(userID))))
 }

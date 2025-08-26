@@ -6,8 +6,6 @@ import (
 	"maze_game_server/io/kafka/kafkacommonstruct"
 	"maze_game_server/model/flowmodel/mazeequipbagrecordmodel"
 	"maze_game_server/services/flowservice"
-
-	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fklog"
 )
 
 // var json = jsoniter.ConfigCompatibleWithStandardLibrary
@@ -45,19 +43,19 @@ func init() {
 
 var d = dispatcher.NewDispatcher[*MazeGameEquipBagRecord]()
 
-func Watch(fn func(logger fklog.FKLogI, msg *MazeGameEquipBagRecord)) {
+func Watch(fn func(ctx context.Context, msg *MazeGameEquipBagRecord)) {
 	d.Watch(fn)
 }
 
 // 流水打点使用
-func PushMazeGameEquipBagRecord(agent fklog.FKLogI, data *MazeGameEquipBagRecord) error {
+func PushMazeGameEquipBagRecord(ctx context.Context, data *MazeGameEquipBagRecord) error {
 	flowData := mazeequipbagrecordmodel.NewMazeGameEquipBagRecord(data.UserId, data.ChgType, data.TradeNum, data.AddEquipGuids, data.DelEquipGuids,
 		data.OpType, data.IsFail)
 	// cnt, err := json.Marshal(data)
 	// if err != nil {
 	// 	return err
 	// }
-	flowservice.GflowService.SendFlowData(context.TODO(), flowData)
+	flowservice.GflowService.SendFlowData(ctx, flowData)
 	// d.Push(agent, data)
 	// agent.InfoWF("PushMazeGameEquipBagRecord data", zap.Any("userId", data.UserId), zap.Any("detail", data))
 	// return equipBagChgQueue.SendWithUserID(data.UserId, cnt)

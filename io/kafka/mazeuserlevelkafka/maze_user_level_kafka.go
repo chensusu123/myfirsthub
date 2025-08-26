@@ -38,7 +38,8 @@ func init() {
 }
 
 // 流水和通知均使用
-func PushMazeLevelRecord(agent fklog.FKLogI, record *MazeUserLevelRecord) error {
+func PushMazeLevelRecord(ctx context.Context, record *MazeUserLevelRecord) error {
+	agent := fklog.ContextAppLogger(ctx)
 	record.CreateTime = time.Now().UnixNano() / 1e6
 	// record.GroupID = fkconfig.EnvVal.GroupID
 	// cnt, err := json.Marshal(record)
@@ -47,7 +48,7 @@ func PushMazeLevelRecord(agent fklog.FKLogI, record *MazeUserLevelRecord) error 
 	// }
 
 	flowData := mazeuserlevelrecordmodel.NewMazeUserLevelRecord(record.UserId, record.OldLevel, record.OldTotalExp, record.NewLevel, record.NewTotalExp)
-	flowservice.GflowService.SendFlowData(context.TODO(), flowData)
+	flowservice.GflowService.SendFlowData(ctx, flowData)
 
 	agent.InfoWF("PushMazeLevelRecord data", zap.Any("userId", record.UserId), zap.Any("record", record))
 
@@ -62,10 +63,10 @@ func PushMazeLevelRecord(agent fklog.FKLogI, record *MazeUserLevelRecord) error 
 	// 	agent.ErrorWF("PushMazeLevelRecord HandleMazeLvChg", zap.Any("cnt", cnt), zap.Error(err))
 	// 	return err
 	// }
-	d.Push(agent, record)
+	d.Push(ctx, record)
 	return nil
 }
 
-func Watch(fn func(logger fklog.FKLogI, record *MazeUserLevelRecord)) {
+func Watch(fn func(ctx context.Context, record *MazeUserLevelRecord)) {
 	d.Watch(fn)
 }

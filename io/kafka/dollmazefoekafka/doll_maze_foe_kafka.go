@@ -6,8 +6,6 @@ import (
 	"maze_game_server/io/kafka/kafkacommonstruct"
 	"maze_game_server/model/flowmodel/mazefoerecordmodel"
 	"maze_game_server/services/flowservice"
-
-	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fklog"
 )
 
 // var json = jsoniter.ConfigCompatibleWithStandardLibrary
@@ -38,13 +36,13 @@ func init() {
 
 var d = dispatcher.NewDispatcher[*DollMazeFoeRecord]()
 
-func Watch(fn func(logger fklog.FKLogI, msg *DollMazeFoeRecord)) {
+func Watch(fn func(ctx context.Context, msg *DollMazeFoeRecord)) {
 	d.Watch(fn)
 }
 
 // 流水打点使用
-func PushDollMazeFoeRecord(agent fklog.FKLogI, record *DollMazeFoeRecord) error {
+func PushDollMazeFoeRecord(ctx context.Context, record *DollMazeFoeRecord) error {
 	flowData := mazefoerecordmodel.NewDollMazeFoeRecord(record.UserId, record.Barrier, record.Area, record.Level, record.AwardList, record.Equips, record.EquipPoints, record.MasterId)
-	flowservice.GflowService.SendFlowData(context.TODO(), flowData)
+	flowservice.GflowService.SendFlowData(ctx, flowData)
 	return nil
 }

@@ -50,13 +50,14 @@ func init() {
 }
 
 // 流水和通知均使用
-func PushTempBuffChangeMsg(logger fklog.FKLogI, msg *MazeTempBuffChangeMsg) error {
+func PushTempBuffChangeMsg(ctx context.Context, msg *MazeTempBuffChangeMsg) error {
+	logger := fklog.ContextAppLogger(ctx)
 	if msg.CreateTime == 0 {
 		msg.CreateTime = time.Now().UnixNano() / 1000000
 	}
 
 	flowData := mazetempbuffchangerecordmodel.NewMazeTempBuffChangeMsg(msg.UserId, msg.StageId, Buff2String(msg.ChgAttrs), msg.ChgType, msg.ChgDesc)
-	flowservice.GflowService.SendFlowData(context.TODO(), flowData)
+	flowservice.GflowService.SendFlowData(ctx, flowData)
 	// cnt, err := json.Marshal(msg)
 	// if err != nil {
 	// 	logger.ErrorWF("PushTempBuffChangeMsg marshal failed", zap.Uint64("uid", msg.UserId), zap.Error(err))
@@ -69,12 +70,12 @@ func PushTempBuffChangeMsg(logger fklog.FKLogI, msg *MazeTempBuffChangeMsg) erro
 	// 		zap.Any("msg", msg), zap.Error(err))
 	// 	return err
 	// }
-	d.Push(logger, msg)
+	d.Push(ctx, msg)
 	logger.DebugWF("PushTempBuffChangeMsg end", zap.Any("pushData", msg))
 	return nil
 }
 
-func Watch(fn func(logger fklog.FKLogI, msg *MazeTempBuffChangeMsg)) {
+func Watch(fn func(ctx context.Context, msg *MazeTempBuffChangeMsg)) {
 	d.Watch(fn)
 }
 

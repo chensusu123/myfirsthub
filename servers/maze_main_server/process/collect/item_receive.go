@@ -9,7 +9,6 @@ import (
 	"maze_game_server/config/GMazeBarriesOnHookV8Cfg"
 	"maze_game_server/io/kafka/mazecollectrecord"
 	"maze_game_server/io/redis/mazecollectredis"
-	"maze_game_server/lib/log"
 	"maze_game_server/lib/nano/session"
 	"maze_game_server/module/mazecollect"
 	"maze_game_server/module/mazeuserinfo"
@@ -26,7 +25,8 @@ import (
 // 挂机道具领取
 func (c *Collect) OnMazeCollectItemReceiveRQ_10467_10468(s *session.Session, req *MazeCollect.MazeCollectItemReceiveRQ) (err error) {
 
-	logger := log.Clone("Collect", uint64(s.UID()), 0)
+	ctx := s.Context()
+	logger := fklog.ContextAppLogger(ctx)
 	res := &MazeCollect.MazeCollectItemReceiveRS{}
 	res.Header = req.Header
 	res.ErrInfo = errors.NO_ERROR
@@ -134,7 +134,7 @@ func (c *Collect) OnMazeCollectItemReceiveRQ_10467_10468(s *session.Session, req
 		return
 	}
 	res.MazeCollectInfo = mazeCollectInfoPb
-	err = PushDollMazeCollectInfoLog(logger, userId, resetCollectInfo, collectInfo.GetLastTime(), 0, mazecollectrecord.MazeCollectReceive, tradeNo, items, 0)
+	err = PushDollMazeCollectInfoLog(ctx, userId, resetCollectInfo, collectInfo.GetLastTime(), 0, mazecollectrecord.MazeCollectReceive, tradeNo, items, 0)
 	if err != nil {
 		logger.ErrorWF("ItemCollect PushDollMazeCollectInfoLog err", zap.Any("collectInfo", collectInfo), zap.Error(err))
 		return

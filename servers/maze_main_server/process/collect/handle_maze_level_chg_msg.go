@@ -1,18 +1,21 @@
 package collect
 
 import (
-	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fklog"
-	"go.uber.org/zap"
+	"context"
 	"maze_game_server/io/kafka/mazeuserlevelkafka"
 	"maze_game_server/module/funcopencheck"
 	"maze_game_server/module/mazecollect"
 	"maze_game_server/module/mazeuserinfo"
+
+	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fklog"
+	"go.uber.org/zap"
 )
 
 // 用户等级变化流水
 type MazeUserLevelRecord = mazeuserlevelkafka.MazeUserLevelRecord
 
-func HandleMazeLevelMsg(logger fklog.FKLogI, msg *MazeUserLevelRecord) {
+func HandleMazeLevelMsg(ctx context.Context, msg *MazeUserLevelRecord) {
+	logger := fklog.ContextAppLogger(ctx)
 	// msg := &MazeUserLevelRecord{}
 	// err = json.Unmarshal(data, msg)
 	// if err != nil {
@@ -59,6 +62,6 @@ func HandleMazeLevelMsg(logger fklog.FKLogI, msg *MazeUserLevelRecord) {
 		logger.ErrorWF("HandleMazeLevelMsg InitMazeCollectLand", zap.Error(err))
 		return
 	}
-	NewCollectAfter(logger, userId, collectInfo)
+	NewCollectAfter(ctx, userId, collectInfo)
 	return
 }

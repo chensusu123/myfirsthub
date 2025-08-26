@@ -1,6 +1,7 @@
 package equipbaggm
 
 import (
+	"context"
 	"fmt"
 	"maze_game_server/common/function/fileio"
 	"maze_game_server/common/function/gm"
@@ -74,7 +75,7 @@ func Reg(logger fklog.FKLogI) {
 		res := &MazeEquipSvr.SvrAddMazeEquipRS{}
 		req.OpType = proto.Int32(int32(MazeEquipSvr.ENUM_EQUIP_BAG_OP_TYPE_MAZE_EQUIP_FOE))
 		req.TradeNumber = proto.Uint64(tradeno.GetTradeNum())
-		err := dollequipbagrpc.MazeBagAddRQ(logger, req, res)
+		err := dollequipbagrpc.MazeBagAddRQ(context.TODO(), req, res)
 		if err != nil {
 			writer.Write([]byte(err.Error()))
 			return
@@ -89,7 +90,7 @@ func Reg(logger fklog.FKLogI) {
 
 		userId := fkutil.ToUint64(request.Form.Get("user_id"))
 
-		err := ClearUserBag(logger, userId)
+		err := ClearUserBag(context.TODO(), userId)
 		if err != nil {
 			writer.Write([]byte(err.Error()))
 			return
@@ -127,7 +128,7 @@ func Reg(logger fklog.FKLogI) {
 			}
 			userId := line[0]
 
-			err := ClearUserBag(logger, userId)
+			err := ClearUserBag(context.TODO(), userId)
 			if err != nil {
 				logger.ErrorWF("BatchClearBag ClearUserBag fail", zap.Error(err), zap.Uint64("uid", userId))
 				return false
@@ -616,7 +617,7 @@ func Reg(logger fklog.FKLogI) {
 		res := &MazeEquipSvr.SvrAddMazeEquipRS{}
 		req.OpType = proto.Int32(int32(MazeEquipSvr.ENUM_EQUIP_BAG_OP_TYPE_MAZE_EQUIP_FOE))
 		req.TradeNumber = proto.Uint64(tradeno.GetTradeNum())
-		err := dollequipbagrpc.MazeBagAddRQ(logger, req, res)
+		err := dollequipbagrpc.MazeBagAddRQ(context.TODO(), req, res)
 		if err != nil {
 			writer.Write([]byte(err.Error()))
 			return
@@ -646,9 +647,10 @@ func Reg(logger fklog.FKLogI) {
 	// })
 }
 
-func ClearUserBag(logger fklog.FKLogI, userId uint64) (err error) {
+func ClearUserBag(ctx context.Context, userId uint64) (err error) {
+	logger := fklog.ContextAppLogger(ctx)
 	// todo 找装配的删除
-	err = ClearDollAssembleInfo(logger, userId)
+	err = ClearDollAssembleInfo(ctx, userId)
 	if err != nil {
 		return
 	}

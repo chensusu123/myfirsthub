@@ -32,8 +32,9 @@ import (
 )
 
 // BarrierPass implements BarrierService.
-func (b *barrier) BarrierPass(logger fklog.FKLogI, header *Common.PacketHeader, userID uint64, barrierID int32, foeExp int32) (
+func (b *barrier) BarrierPass(ctx context.Context, header *Common.PacketHeader, userID uint64, barrierID int32, foeExp int32) (
 	killMonsterNum int32, totalDamage int64, awards, rareAwards []*MazeCommon.MazeItem, errinfo *MessageType.ErrorInfo) {
+	logger := fklog.ContextAppLogger(ctx)
 	cfg := GMazeBarriesV8Cfg.Get(barrierID)
 	if cfg == nil {
 		logger.ErrorWF("BarrierPass get barrier cfg fail", zap.Any("barrier", barrierID), zap.Any("foeExp", foeExp))
@@ -100,7 +101,7 @@ func (b *barrier) BarrierPass(logger fklog.FKLogI, header *Common.PacketHeader, 
 				NewLevel:    int32(newLevel),
 				NewTotalExp: int32(userInfo.TotalExp),
 			}
-			mazeuserlevelkafka.PushMazeLevelRecord(logger, levelRecord)
+			mazeuserlevelkafka.PushMazeLevelRecord(ctx, levelRecord)
 		}
 	}()
 
@@ -177,7 +178,7 @@ func (b *barrier) BarrierPass(logger fklog.FKLogI, header *Common.PacketHeader, 
 
 		if len(equipMap) > 0 {
 			//MAZE_EQUIP_PASS_AWARD = 9;//迷宫通关奖励 张登元
-			rs, err := addequip.AddEquipToBag(logger, userID, int32(MazeEquipSvr.ENUM_EQUIP_BAG_OP_TYPE_MAZE_EQUIP_PASS_AWARD), tradeNo, equipMap)
+			rs, err := addequip.AddEquipToBag(ctx, userID, int32(MazeEquipSvr.ENUM_EQUIP_BAG_OP_TYPE_MAZE_EQUIP_PASS_AWARD), tradeNo, equipMap)
 			if err != nil {
 				logger.ErrorWF("BarrierPass addEquipToBag fail", zap.Error(err), zap.Any("optype", int32(MazeEquipSvr.ENUM_EQUIP_BAG_OP_TYPE_MAZE_EQUIP_BOX_AWARD)),
 					zap.Any("tradeNo", tradeNo), zap.Any("addEquip", equipMap))
@@ -203,8 +204,9 @@ func (b *barrier) BarrierPass(logger fklog.FKLogI, header *Common.PacketHeader, 
 }
 
 // BarrierDeath implements BarrierService.
-func (b *barrier) BarrierDeath(logger fklog.FKLogI, header *Common.PacketHeader, userID uint64, barrierID int32, foeExp int32) (
+func (b *barrier) BarrierDeath(ctx context.Context, header *Common.PacketHeader, userID uint64, barrierID int32, foeExp int32) (
 	killMonsterNum int32, totalDamage int64, awards []*MazeCommon.MazeItem, errinfo *MessageType.ErrorInfo) {
+	logger := fklog.ContextAppLogger(ctx)
 	userInfo, err := userinfomodel.NewUserInfoModel(logger, userID)
 	if err != nil {
 		logger.ErrorWF("OnMazeBarrierDeathRQ GetUserInfoV2 fail", zap.Error(err), zap.Any("barrier", barrierID), zap.Any("foeExp", foeExp))
@@ -276,7 +278,7 @@ func (b *barrier) BarrierDeath(logger fklog.FKLogI, header *Common.PacketHeader,
 				NewLevel:    int32(newLevel),
 				NewTotalExp: int32(userInfo.TotalExp),
 			}
-			mazeuserlevelkafka.PushMazeLevelRecord(logger, levelRecord)
+			mazeuserlevelkafka.PushMazeLevelRecord(ctx, levelRecord)
 		}
 	}()
 
@@ -313,7 +315,7 @@ func (b *barrier) BarrierDeath(logger fklog.FKLogI, header *Common.PacketHeader,
 
 	// 发送装备
 	if len(realEquip) > 0 {
-		_, err := addequip.AddEquipToBag(logger, userID, int32(MazeEquipSvr.ENUM_EQUIP_BAG_OP_TYPE_MAZE_EQUIP_SWEEP_AWARD), tradeNo, realEquip)
+		_, err := addequip.AddEquipToBag(ctx, userID, int32(MazeEquipSvr.ENUM_EQUIP_BAG_OP_TYPE_MAZE_EQUIP_SWEEP_AWARD), tradeNo, realEquip)
 		if err != nil {
 			logger.ErrorWF("CalUserSweepBarrierAward addEquipToBag fail", zap.Error(err), zap.Any("optype", int32(MazeEquipSvr.ENUM_EQUIP_BAG_OP_TYPE_MAZE_EQUIP_BOX_AWARD)),
 				zap.Any("tradeNo", tradeNo), zap.Any("addEquip", realEquip))

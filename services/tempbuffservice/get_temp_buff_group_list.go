@@ -7,6 +7,7 @@ import (
 	"go.uber.org/zap"
 	"maze_game_server/config/GMazeEnergyAffixFrontV8Cfg"
 	"maze_game_server/config/GMazeEnergyAffixV8Cfg"
+	"maze_game_server/excel/mazeconfigv8"
 	"maze_game_server/model/tempbuffmodel"
 )
 
@@ -58,6 +59,26 @@ func (s *service) getGroupList(ctx context.Context, logger fklog.FKLogI, buffMod
 	for _, i := range groupFirstAffixList {
 		i.Count = groupCount[i.GroupId]
 	}
+	var specialBuffGroup *GroupInfo
+	res := make([]*GroupInfo, 0, len(groupFirstAffixList))
+	for _, i := range groupFirstAffixList {
+		if i.GroupId == int32(mazeconfigv8.GetSpecialBuffGroupId(ctx)) {
+			specialBuffGroup = i
+		} else {
+			res = append(res, i)
+		}
+	}
 
-	return groupFirstAffixList, nil
+	difference := int(mazeconfigv8.GetMaxBuffGroupCount(ctx)) - len(res)
+	if difference > 0 {
+		for i := 0; i < difference; i++ {
+			res = append(res, &GroupInfo{})
+		}
+	}
+	if specialBuffGroup == nil {
+		specialBuffGroup = &GroupInfo{}
+	}
+	res = append(res, specialBuffGroup)
+
+	return res, nil
 }

@@ -1,13 +1,14 @@
 package familymodel
 
 import (
+	"context"
 	"errors"
 	"maze_game_server/io/redis/familyredis"
 	"maze_game_server/lib/serialize"
 	"maze_game_server/pb/common/MazeFamily"
 	"time"
 
-	"gitlab.ifreetalk.com/nano-ecosystem/fklog"
+	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fklog"
 	"go.uber.org/zap"
 	"google.golang.org/protobuf/proto"
 )
@@ -66,20 +67,22 @@ type FamilyInfoModel struct {
 
 type FamilysInfoModel []*FamilyInfoModel
 
-func LoadFamilyInfoModel(logger fklog.FKLogI, familyID int32) (r *FamilyInfoModel, err error) {
+func LoadFamilyInfoModel(ctx context.Context, familyID int32) (r *FamilyInfoModel, err error) {
+	logger := fklog.ContextAppLogger(ctx)
 	r = &FamilyInfoModel{}
-	if err = r.load(logger, familyID); err != nil {
-		logger.ErrorWF("LoadFamilyModel err",
+	if err = r.load(ctx, familyID); err != nil {
+		logger.CtxError(ctx, "LoadFamilyModel err",
 			zap.Int32("familyID", familyID), zap.Error(err))
 		return nil, err
 	}
 	return
 }
 
-func LoadFamilyListInfoModel(logger fklog.FKLogI, familyIDs []int32) (r FamilysInfoModel, err error) {
+func LoadFamilyListInfoModel(ctx context.Context, familyIDs []int32) (r FamilysInfoModel, err error) {
+	logger := fklog.ContextAppLogger(ctx)
 	result, err := familyredis.BatchGetFamilyInfo(familyIDs)
 	if err != nil {
-		logger.ErrorWF("BatchGetFamilyInfo err",
+		logger.CtxError(ctx, "BatchGetFamilyInfo err",
 			zap.Int32s("familyIDs", familyIDs), zap.Error(err))
 		return nil, err
 	}
@@ -90,7 +93,7 @@ func LoadFamilyListInfoModel(logger fklog.FKLogI, familyIDs []int32) (r FamilysI
 		familyInfo := &FamilyInfoModel{}
 		err = serialize.Unmarshal(v, familyInfo)
 		if err != nil {
-			logger.ErrorWF("Unmarshal err",
+			logger.CtxError(ctx, "Unmarshal err",
 				zap.Int32("familyID", familyInfo.FamilyID), zap.Error(err))
 			continue
 		}
@@ -101,13 +104,14 @@ func LoadFamilyListInfoModel(logger fklog.FKLogI, familyIDs []int32) (r FamilysI
 }
 
 // NewFamilyInfoModel 新创建家族
-func NewFamilyInfoModel(logger fklog.FKLogI, familyName string, joinType int32) (*FamilyInfoModel, error) {
+func NewFamilyInfoModel(ctx context.Context, familyName string, joinType int32) (*FamilyInfoModel, error) {
+	logger := fklog.ContextAppLogger(ctx)
 	if joinType == 0 && familyName == "" {
 		return nil, errors.New("familyName or familySetting is nil")
 	}
 	familyID, err := familyredis.CreateFamilyId()
 	if err != nil {
-		logger.ErrorWF("CreateFamilyId err",
+		logger.CtxError(ctx, "CreateFamilyId err",
 			zap.String("familyName", familyName), zap.Any("joinType", joinType),
 			zap.Error(err))
 		return nil, err
@@ -123,7 +127,7 @@ func NewFamilyInfoModel(logger fklog.FKLogI, familyName string, joinType int32) 
 	return r, nil
 }
 
-func (r *FamilyInfoModel) AddMember(logger fklog.FKLogI, userInfo FamilyMember) {
+func (r *FamilyInfoModel) AddMember(ctx context.Context, userInfo FamilyMember) {
 	r.FamilyMembers = append(r.FamilyMembers, &FamilyMember{
 		UserID:         userInfo.UserID,
 		NickName:       userInfo.NickName,
@@ -137,7 +141,7 @@ func (r *FamilyInfoModel) AddMember(logger fklog.FKLogI, userInfo FamilyMember) 
 }
 
 // CheckRemMember 检查成员退出
-func (r *FamilyInfoModel) CheckRemMember(logger fklog.FKLogI) error {
+func (r *FamilyInfoModel) CheckRemMember(ctx context.Context) error {
 	if len(r.FamilyMembers) > 0 && len(r.FamilyApplyUsers) == 1 {
 		return errors.New("rem member limit, Keep at least one person in the family")
 	}
@@ -145,7 +149,7 @@ func (r *FamilyInfoModel) CheckRemMember(logger fklog.FKLogI) error {
 }
 
 // RemMember 批量移除成员
-func (r *FamilyInfoModel) RemMember(logger fklog.FKLogI, userIDs []uint64) {
+func (r *FamilyInfoModel) RemMember(ctx context.Context, userIDs []uint64) {
 	newMembers := make([]*FamilyMember, 0, len(r.FamilyMembers))
 	mapUsers := r.mapUserList(userIDs)
 	for _, member := range r.FamilyMembers {
@@ -157,7 +161,7 @@ func (r *FamilyInfoModel) RemMember(logger fklog.FKLogI, userIDs []uint64) {
 	r.MemberCount = int32(len(r.FamilyMembers))
 }
 
-func (r *FamilyInfoModel) AddApplyUser(logger fklog.FKLogI, userInfo FamilyMember) {
+func (r *FamilyInfoModel) AddApplyUser(ctx context.Context, userInfo FamilyMember) {
 	r.FamilyApplyUsers = append(r.FamilyApplyUsers, &FamilyMember{
 		UserID:         userInfo.UserID,
 		NickName:       userInfo.NickName,
@@ -169,7 +173,7 @@ func (r *FamilyInfoModel) AddApplyUser(logger fklog.FKLogI, userInfo FamilyMembe
 }
 
 // RemApplyUser 去掉申请者
-func (r *FamilyInfoModel) RemApplyUser(logger fklog.FKLogI, userInfo FamilyMember) {
+func (r *FamilyInfoModel) RemApplyUser(ctx context.Context, userInfo FamilyMember) {
 	newApplyUsers := make([]*FamilyMember, 0, len(r.FamilyApplyUsers))
 	mapUsers := r.mapUserList([]uint64{userInfo.UserID})
 	for _, applyUser := range r.FamilyApplyUsers {
@@ -180,32 +184,34 @@ func (r *FamilyInfoModel) RemApplyUser(logger fklog.FKLogI, userInfo FamilyMembe
 	r.FamilyApplyUsers = newApplyUsers
 }
 
-func (r *FamilyInfoModel) load(logger fklog.FKLogI, familyID int32) (err error) {
+func (r *FamilyInfoModel) load(ctx context.Context, familyID int32) (err error) {
+	logger := fklog.ContextAppLogger(ctx)
 	value, err := familyredis.GetFamilyInfo(familyID)
 	if err != nil {
-		logger.ErrorWF("LoadFamilyInfoModel err",
+		logger.CtxError(ctx, "LoadFamilyInfoModel err",
 			zap.Int32("familyID", familyID), zap.Error(err))
 		return err
 	}
 	err = serialize.Unmarshal(value, r)
 	if err != nil {
-		logger.ErrorWF("LoadFamilyInfoModel err",
+		logger.CtxError(ctx, "LoadFamilyInfoModel err",
 			zap.Int32("familyID", familyID), zap.Error(err))
 		return err
 	}
 	return
 }
 
-func (r *FamilyInfoModel) Save(logger fklog.FKLogI, familyID int32) (err error) {
+func (r *FamilyInfoModel) Save(ctx context.Context, familyID int32) (err error) {
+	logger := fklog.ContextAppLogger(ctx)
 	value, err := serialize.Marshal(r)
 	if err != nil {
-		logger.ErrorWF("save Marshal err",
+		logger.CtxError(ctx, "save Marshal err",
 			zap.Int32("familyID", familyID), zap.Error(err))
 		return err
 	}
 	err = familyredis.SetFamilyInfo(familyID, value)
 	if err != nil {
-		logger.ErrorWF("save SetFamilyInfo err",
+		logger.CtxError(ctx, "save SetFamilyInfo err",
 			zap.Int32("familyID", familyID), zap.Error(err))
 		return err
 	}
@@ -213,10 +219,11 @@ func (r *FamilyInfoModel) Save(logger fklog.FKLogI, familyID int32) (err error) 
 }
 
 // Delete 解散家族
-func (r *FamilyInfoModel) Delete(logger fklog.FKLogI, familyID int32) (err error) {
+func (r *FamilyInfoModel) Delete(ctx context.Context, familyID int32) (err error) {
+	logger := fklog.ContextAppLogger(ctx)
 	err = familyredis.DelFamilyInfo(familyID)
 	if err != nil {
-		logger.ErrorWF("delete DelFamilyInfo err",
+		logger.CtxError(ctx, "delete DelFamilyInfo err",
 			zap.Int32("familyID", familyID), zap.Error(err))
 		return err
 	}
@@ -225,7 +232,7 @@ func (r *FamilyInfoModel) Delete(logger fklog.FKLogI, familyID int32) (err error
 	for _, member := range r.FamilyMembers {
 		err = familyredis.DelUserFamilyID(member.UserID)
 		if err != nil {
-			logger.ErrorWF("delete DelUserFamilyID err",
+			logger.CtxError(ctx, "delete DelUserFamilyID err",
 				zap.Uint64("userID", member.UserID), zap.Error(err))
 		}
 	}
@@ -234,7 +241,7 @@ func (r *FamilyInfoModel) Delete(logger fklog.FKLogI, familyID int32) (err error
 }
 
 // DataToFamilyInfoPb 把家族信息填进pb
-func (r *FamilyInfoModel) DataToFamilyInfoPb(logger fklog.FKLogI) *MazeFamily.FamilyInfo {
+func (r *FamilyInfoModel) DataToFamilyInfoPb(ctx context.Context) *MazeFamily.FamilyInfo {
 	return &MazeFamily.FamilyInfo{
 		FamilyId:         proto.Int32(r.FamilyID),
 		FamilyName:       proto.String(r.FamilyName),
@@ -249,16 +256,16 @@ func (r *FamilyInfoModel) DataToFamilyInfoPb(logger fklog.FKLogI) *MazeFamily.Fa
 }
 
 // DataToFamilyInfoPb 把家族列表信息填进pb
-func (r FamilysInfoModel) DataToFamilyListInfoPb(logger fklog.FKLogI) []*MazeFamily.FamilyInfo {
+func (r FamilysInfoModel) DataToFamilyListInfoPb(ctx context.Context) []*MazeFamily.FamilyInfo {
 	ret := make([]*MazeFamily.FamilyInfo, 0)
 	for _, v := range r {
-		ret = append(ret, v.DataToFamilyInfoPb(logger))
+		ret = append(ret, v.DataToFamilyInfoPb(ctx))
 	}
 	return ret
 }
 
 // DataToFamilyMembersPb 取出所有家族成员信息
-func (r *FamilyInfoModel) DataToFamilyMembersPb(logger fklog.FKLogI) []*MazeFamily.FamilyMemberInfo {
+func (r *FamilyInfoModel) DataToFamilyMembersPb(ctx context.Context) []*MazeFamily.FamilyMemberInfo {
 	members := make([]*MazeFamily.FamilyMemberInfo, 0)
 	for _, member := range r.FamilyMembers {
 		members = append(members, &MazeFamily.FamilyMemberInfo{
@@ -274,7 +281,7 @@ func (r *FamilyInfoModel) DataToFamilyMembersPb(logger fklog.FKLogI) []*MazeFami
 }
 
 // DataToApplyUsersPb 取出所有申请用户信息
-func (r *FamilyInfoModel) DataToApplyUsersPb(logger fklog.FKLogI) []*MazeFamily.FamilyMemberInfo {
+func (r *FamilyInfoModel) DataToApplyUsersPb(ctx context.Context) []*MazeFamily.FamilyMemberInfo {
 	members := make([]*MazeFamily.FamilyMemberInfo, 0)
 	for _, applyUser := range r.FamilyApplyUsers {
 		members = append(members, &MazeFamily.FamilyMemberInfo{
@@ -290,7 +297,7 @@ func (r *FamilyInfoModel) DataToApplyUsersPb(logger fklog.FKLogI) []*MazeFamily.
 }
 
 // DataToFamilyUserPb 取出指定家族用户信息
-func (r *FamilyInfoModel) DataToFamilyUserPb(logger fklog.FKLogI, userID uint64) (ret *MazeFamily.FamilyMemberInfo) {
+func (r *FamilyInfoModel) DataToFamilyUserPb(ctx context.Context, userID uint64) (ret *MazeFamily.FamilyMemberInfo) {
 	for _, member := range r.FamilyMembers {
 		if member.UserID != userID {
 			continue
@@ -308,7 +315,7 @@ func (r *FamilyInfoModel) DataToFamilyUserPb(logger fklog.FKLogI, userID uint64)
 }
 
 // 家族升级
-func (r *FamilyInfoModel) Upgrade(logger fklog.FKLogI, familyID int32, targetLevel int32) (err error) {
+func (r *FamilyInfoModel) Upgrade(ctx context.Context, familyID int32, targetLevel int32) (err error) {
 	if targetLevel <= r.FamilyLevel {
 		return errors.New("targetLevel <= r.FamilyLevel")
 	}
@@ -317,7 +324,7 @@ func (r *FamilyInfoModel) Upgrade(logger fklog.FKLogI, familyID int32, targetLev
 }
 
 // UpdatePrivilegeLevel 更新家族权限
-func (r *FamilyInfoModel) UpdatePrivilegeLevel(logger fklog.FKLogI, familyID int32, users []uint64, level int32) (err error) {
+func (r *FamilyInfoModel) UpdatePrivilegeLevel(ctx context.Context, familyID int32, users []uint64, level int32) (err error) {
 	userMap := r.mapFamilyMembers()
 	for _, userID := range users {
 		if _, ok := userMap[userID]; ok {
@@ -345,7 +352,7 @@ func (r *FamilyInfoModel) mapUserList(userList []uint64) map[uint64]struct{} {
 }
 
 // 返回用户家族权限
-func (r *FamilyInfoModel) GetFamilyUserPrivilege(logger fklog.FKLogI, familyID int32, userID uint64) (int32, error) {
+func (r *FamilyInfoModel) GetFamilyUserPrivilege(ctx context.Context, familyID int32, userID uint64) (int32, error) {
 	for _, v := range r.FamilyMembers {
 		if v.UserID == userID {
 			return v.PrivilegeLevel, nil
@@ -355,7 +362,7 @@ func (r *FamilyInfoModel) GetFamilyUserPrivilege(logger fklog.FKLogI, familyID i
 }
 
 // 检查用户是否为族长
-func (r *FamilyInfoModel) CheckHaveLeader(logger fklog.FKLogI, userIDs []uint64) bool {
+func (r *FamilyInfoModel) CheckHaveLeader(ctx context.Context, userIDs []uint64) bool {
 	userMap := r.mapUserList(userIDs)
 	for _, v := range r.FamilyMembers {
 		if _, ok := userMap[v.UserID]; ok {
@@ -368,10 +375,11 @@ func (r *FamilyInfoModel) CheckHaveLeader(logger fklog.FKLogI, userIDs []uint64)
 }
 
 // 校验用户是否在家族
-func (r *FamilyInfoModel) CheckUserInFamily(logger fklog.FKLogI, userID uint64) bool {
+func (r *FamilyInfoModel) CheckUserInFamily(ctx context.Context, userID uint64) bool {
+	logger := fklog.ContextAppLogger(ctx)
 	familyID, err := familyredis.GetUserFamilyID(userID)
 	if err != nil {
-		logger.ErrorWF("CheckUserInFamily GetUserFamilyID err",
+		logger.CtxError(ctx, "CheckUserInFamily GetUserFamilyID err",
 			zap.Uint64("userID", userID), zap.Error(err))
 		return false
 	}
@@ -379,7 +387,7 @@ func (r *FamilyInfoModel) CheckUserInFamily(logger fklog.FKLogI, userID uint64) 
 }
 
 // 检查家族人数
-func (r *FamilyInfoModel) CheckFamilyMemberCount(logger fklog.FKLogI) error {
+func (r *FamilyInfoModel) CheckFamilyMemberCount(ctx context.Context) error {
 	if len(r.FamilyMembers) >= int(r.MemberCountLimit) {
 		return errors.New("家族人数已满")
 	}
@@ -387,7 +395,7 @@ func (r *FamilyInfoModel) CheckFamilyMemberCount(logger fklog.FKLogI) error {
 }
 
 // 检查用户是否在家族的请求列表中
-func (r *FamilyInfoModel) CheckUserInApplyList(logger fklog.FKLogI, userID uint64) bool {
+func (r *FamilyInfoModel) CheckUserInApplyList(ctx context.Context, userID uint64) bool {
 	for _, v := range r.FamilyApplyUsers {
 		if v.UserID == userID {
 			return true
@@ -397,7 +405,7 @@ func (r *FamilyInfoModel) CheckUserInApplyList(logger fklog.FKLogI, userID uint6
 }
 
 // 设置家族群组ID
-func (r *FamilyInfoModel) SetFamilyGroupID(logger fklog.FKLogI, groupID int32) error {
+func (r *FamilyInfoModel) SetFamilyGroupID(ctx context.Context, groupID int32) error {
 	if r.FamilyGroupID != 0 {
 		return errors.New("family group id has set")
 	}

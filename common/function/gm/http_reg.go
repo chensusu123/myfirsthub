@@ -93,7 +93,7 @@ func SafeHttpRegister(logger fklog.FKLogI, pattern string, handler func(http.Res
 
 			request.ParseForm()
 
-			span.SetAttributes(attribute.Int64("userId", int64(uid)))
+			span.SetAttributes(attribute.Int64("enduser.id", int64(uid)))
 			//if !CheckGM.CheckGMOnline(context.TODO(), logger, uid, pattern, request.RemoteAddr) {
 			//	return
 			//}

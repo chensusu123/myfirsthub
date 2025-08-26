@@ -13,6 +13,7 @@ import (
 	"maze_game_server/config/GMazeEnergyAffixRandRuleV8Cfg"
 	"maze_game_server/config/GMazeEnergyAffixV8Cfg"
 	"maze_game_server/config/GMazeEnergyLevelV8Cfg"
+	"maze_game_server/excel/mazeconfigv8"
 	"maze_game_server/excel/mazeconfigv8config"
 	"maze_game_server/excel/mazeenergyaffixrandrulev8config"
 	"maze_game_server/excel/mazeenergylevelv8config"
@@ -387,6 +388,21 @@ func (s *service) GetOptionBuffWeightInfo(ctx context.Context, buffId int32, sel
 	if buffConfig.Weight == 0 {
 		logger.CtxWarn(ctx, "getOptionBuffWeightInfo buff weight is 0", zap.Int32("buffId", buffId))
 		return nil
+	}
+
+	if buffConfig.Affix_group_id != int32(mazeconfigv8.GetSpecialBuffGroupId(ctx)) {
+		_, exist := selectedBuffGroupMap[buffConfig.Affix_group_id]
+		if !exist {
+			maxCount := int(mazeconfigv8.GetMaxBuffGroupCount(ctx))
+			if len(selectedBuffGroupMap) > maxCount {
+				return nil
+			} else if len(selectedBuffGroupMap) == maxCount {
+				_, exist = selectedBuffGroupMap[int32(mazeconfigv8.GetSpecialBuffGroupId(ctx))]
+				if !exist {
+					return nil
+				}
+			}
+		}
 	}
 
 	// 检查选择数量

@@ -1,6 +1,7 @@
 package barrierenergyservice
 
 import (
+	"context"
 	"sync"
 	"time"
 
@@ -17,7 +18,8 @@ var (
 )
 
 // 启动用户自动恢复体力
-func (s service) startUserRecoverEnergy(logger fklog.FKLogI, userId uint64, nextUpdateTime int64) {
+func (s service) startUserRecoverEnergy(ctx context.Context, userId uint64, nextUpdateTime int64) {
+	logger := fklog.ContextAppLogger(ctx)
 	mu.Lock()
 	defer mu.Unlock()
 
@@ -31,13 +33,14 @@ func (s service) startUserRecoverEnergy(logger fklog.FKLogI, userId uint64, next
 	// 设置体力自动恢复时间
 	recoverTime := nextUpdateTime - time.Now().Unix()
 	timer := time.AfterFunc(time.Duration(recoverTime)*time.Second, func() {
-		s.safeTimer(logger, userId)
+		s.safeTimer(ctx, userId)
 	})
 	userMap[userId] = timer
 	logger.InfoWF("startUserRecoverEnergy success", zap.Any("userId", userId), zap.Int64("recoverTime", recoverTime), zap.Any("timer", timer))
 }
 
-func (s service) safeTimer(logger fklog.FKLogI, userID uint64) {
+func (s service) safeTimer(ctx context.Context, userID uint64) {
+	logger := fklog.ContextAppLogger(ctx)
 	defer func() {
 		if r := recover(); r != nil {
 			logger.ErrorWF("handleRecoverUserEnergy panic.", zap.Any("r", r))
@@ -48,11 +51,12 @@ func (s service) safeTimer(logger fklog.FKLogI, userID uint64) {
 		s.stopUserRecoverTimer(logger, userID)
 		return
 	}
-	s.handleRecoverUserEnergy(logger, userID)
+	s.handleRecoverUserEnergy(ctx, userID)
 }
 
 // 自动恢复体力
-func (s service) handleRecoverUserEnergy(logger fklog.FKLogI, userID uint64) {
+func (s service) handleRecoverUserEnergy(ctx context.Context, userID uint64) {
+	logger := fklog.ContextAppLogger(ctx)
 	defer func() {
 		// 重新设置timer
 		mu.Lock()
@@ -63,13 +67,13 @@ func (s service) handleRecoverUserEnergy(logger fklog.FKLogI, userID uint64) {
 
 		nextTriggerTime := GetEnergyRecoverCfg()
 		timer := time.AfterFunc(time.Duration(nextTriggerTime)*time.Second, func() {
-			s.safeTimer(logger, userID)
+			s.safeTimer(ctx, userID)
 		})
 		userMap[userID] = timer
 		logger.InfoWF("handleRecoverUserEnergy add timer", zap.Any("userID", userID), zap.Int64("nextTriggerTime", nextTriggerTime), zap.Any("timer", timer))
 	}()
 
-	curEnergy, nextTime, err := s.calEnergy(logger, userID)
+	curEnergy, nextTime, err := s.calEnergy(ctx, userID)
 	if err != nil {
 		logger.InfoWF("handleRecoverUserEnergy calEnergy failed", zap.Any("userID", userID), zap.Error(err))
 		return

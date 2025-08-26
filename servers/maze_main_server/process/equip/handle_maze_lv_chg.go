@@ -7,6 +7,7 @@
 package equip
 
 import (
+	"context"
 	"maze_game_server/common/constdef"
 	"maze_game_server/common/structsdef"
 	"maze_game_server/config/GMazeLevelV8Cfg"
@@ -24,7 +25,8 @@ import (
 
 type MazeUserLevelRecord = mazeuserlevelkafka.MazeUserLevelRecord
 
-func HandleMazeLvChg(logger fklog.FKLogI, pack *MazeUserLevelRecord) {
+func HandleMazeLvChg(ctx context.Context, pack *MazeUserLevelRecord) {
+	logger := fklog.ContextAppLogger(ctx)
 	// pack := &structsdef.MazeUserLevelRecord{}
 	// err = json.Unmarshal(data, pack)
 	// if err != nil {
@@ -42,11 +44,12 @@ func HandleMazeLvChg(logger fklog.FKLogI, pack *MazeUserLevelRecord) {
 
 	ChkEquipPosUnlock(logger, pack.UserId, UnlockSrcDollLv, true)
 
-	UpdateMazeLvBuff(logger, pack.UserId)
+	UpdateMazeLvBuff(ctx, pack.UserId)
 	return
 }
 
-func UpdateMazeLvBuff(logger fklog.FKLogI, userId uint64) error {
+func UpdateMazeLvBuff(ctx context.Context, userId uint64) error {
+	logger := fklog.ContextAppLogger(ctx)
 	lv, err := mazeuserlevelredis.GetUserLevel(logger, userId)
 	if err != nil {
 		return err
@@ -80,7 +83,7 @@ func UpdateMazeLvBuff(logger fklog.FKLogI, userId uint64) error {
 	calcAttrNotify.ChgType = constdef.MazeBuffLvChg
 	calcAttrNotify.Session = ""
 	calcAttrNotify.BuffSrc = constdef.MazeBuffSrcLv
-	e := mazeattrcalcnotifyqueue.SendMazeAttrCalcNotify(logger, calcAttrNotify)
+	e := mazeattrcalcnotifyqueue.SendMazeAttrCalcNotify(ctx, calcAttrNotify)
 	if e != nil {
 		logger.ErrorWF("UpdateMazeLvBuff SendDollAttrCalcNotify fail", zap.Error(e))
 	}

@@ -9,7 +9,6 @@ import (
 	"maze_game_server/common/function/itemutil"
 	"maze_game_server/common/tradeno"
 	"maze_game_server/config/GMazeItemsV8Cfg"
-	"maze_game_server/lib/log"
 	"maze_game_server/lib/nano/session"
 	"maze_game_server/pb/common/MazeCommon"
 	"maze_game_server/pb/common/MazeGame"
@@ -18,6 +17,7 @@ import (
 	"maze_game_server/services/barrierservice"
 	"maze_game_server/services/itemservice"
 
+	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fklog"
 	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fkprometheus"
 	"go.uber.org/zap"
 	"google.golang.org/protobuf/proto"
@@ -26,7 +26,8 @@ import (
 func (g *Game) OnBarrierOpenBoxRQ_10445_10446(s *session.Session, req *MazeGame.BarrierOpenBoxRQ) (err error) {
 	defer fkprometheus.InfoPMT("OnBarrierOpenBoxRQ")()
 
-	logger := log.Clone("Game", uint64(s.UID()), 0)
+	ctx := s.Context()
+	logger := fklog.ContextAppLogger(ctx)
 	res := &MazeGame.BarrierOpenBoxRS{}
 
 	logger.InfoWF("OnBarrierOpenBoxRQ start", zap.Any("req", req))
@@ -60,7 +61,7 @@ func (g *Game) OnBarrierOpenBoxRQ_10445_10446(s *session.Session, req *MazeGame.
 
 	// 怪物掉落装备
 	if len(equips) > 0 {
-		_, err = addequip.AddEquipToBagWithOpdata(logger, userId, int32(MazeEquipSvr.ENUM_EQUIP_BAG_OP_TYPE_MAZE_EQUIP_BOX_AWARD), req.GetOpData(), tradeNo, equips)
+		_, err = addequip.AddEquipToBagWithOpdata(ctx, userId, int32(MazeEquipSvr.ENUM_EQUIP_BAG_OP_TYPE_MAZE_EQUIP_BOX_AWARD), req.GetOpData(), tradeNo, equips)
 		if err != nil {
 			logger.ErrorWF("OnBarrierOpenBoxRQ addEquipToBag fail", zap.Error(err), zap.Any("optype", int32(MazeEquipSvr.ENUM_EQUIP_BAG_OP_TYPE_MAZE_EQUIP_BOX_AWARD)),
 				zap.Any("tradeNo", tradeNo), zap.Any("addEquip", equips))

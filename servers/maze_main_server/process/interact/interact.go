@@ -6,11 +6,6 @@ import (
 	"maze_game_server/common/function/itemutil"
 	"maze_game_server/services/itemservice"
 
-	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fklog"
-	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fkprometheus"
-	"gitlab.ifreetalk.com/maze-plate/freetk/fkutil/saferand"
-	"go.uber.org/zap"
-	"google.golang.org/protobuf/proto"
 	"maze_game_server/common/cache/simCache"
 	"maze_game_server/common/equipmix"
 	"maze_game_server/common/errors"
@@ -27,6 +22,12 @@ import (
 	"maze_game_server/pb/common/MessageType"
 	"maze_game_server/pb/server/MazeEquipSvr"
 	equiprpc "maze_game_server/servers/maze_main_server/process/equip"
+
+	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fklog"
+	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fkprometheus"
+	"gitlab.ifreetalk.com/maze-plate/freetk/fkutil/saferand"
+	"go.uber.org/zap"
+	"google.golang.org/protobuf/proto"
 )
 
 type Interact struct {
@@ -92,7 +93,8 @@ var equipMixCache = simCache.NewCache()
 
 func (*Interact) OnMazeEquipMixRQ_10443_10444(s *session.Session, req *MazeEquipMix.MazeEquipMixRQ) (err error) {
 
-	logger := log.Clone("Interact", uint64(s.UID()), 0)
+	ctx := s.Context()
+	logger := fklog.ContextAppLogger(ctx)
 	res := &MazeEquipMix.MazeEquipMixRS{}
 
 	res.ErrInfo = errors.NO_ERROR
@@ -241,7 +243,7 @@ func (*Interact) OnMazeEquipMixRQ_10443_10444(s *session.Session, req *MazeEquip
 	})
 
 	equipRes := &MazeEquipSvr.SvrAddMazeEquipRS{}
-	err = equiprpc.OnSvrAddMazeEquipRQ(logger, int64(uid), equipReq, equipRes, "")
+	err = equiprpc.OnSvrAddMazeEquipRQ(ctx, int64(uid), equipReq, equipRes, "")
 	if err != nil {
 		logger.ErrorWF("OnMazeEquipMixRQ add equip err",
 			zap.Uint64("tradeNo", tradeNo),

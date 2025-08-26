@@ -35,7 +35,8 @@ func Register(broadcastUsers BroadcastUsers) {
 
 func StandaloneConsumerBytesConsumer() *simplenatsconsumer.SimpleConsumerProcessor {
 	return simplenatsconsumer.New(
-		simplenatsconsumer.WithSubject("maze.broadcast.msg.*"),
+		simplenatsconsumer.WithSubject("maze.broadcast.cluster.msg"),
+		simplenatsconsumer.WithSectionSubject(),
 		simplenatsconsumer.WithProcessorFunc(gStandaloneConsumer.Processor),
 		simplenatsconsumer.WithStandaloneConsumer(),
 	)
@@ -50,13 +51,7 @@ func (s *StandaloneConsumer) Processor(ctx context.Context, obj any, opts ...nat
 	data, _ := obj.([]byte)
 	logger := fklog.ContextAppLogger(ctx)
 	cfg := natsmsgoption.NewNatsMsgOpts(opts...)
-	if len(cfg.Subject) <= s.nameLen {
-		logger.CtxWarn(ctx, "broadcastservice Processor Subject is invalid",
-			zap.String("subject", cfg.Subject),
-		)
-		return nil, nil
-	}
-	userID := cfg.Subject[s.nameLen:]
+
 	packetType, data, err := clusterpaket.SplitClusterPacket(data)
 	if err != nil {
 		logger.CtxWarn(ctx, "broadcastservice Processor SplitClusterPacket failed",
@@ -72,11 +67,19 @@ func (s *StandaloneConsumer) Processor(ctx context.Context, obj any, opts ...nat
 		return nil, nil
 	}
 
-	userIDUint, err := strconv.ParseUint(userID, 10, 64)
+	userIDUint, err := strconv.ParseUint(cfg.PrimaryKey, 10, 64)
 	if err != nil {
 		logger.CtxWarn(ctx, "broadcastservice Processor ParseUint failed",
 			zap.String("subject", cfg.Subject),
 			zap.Any("err", err),
+		)
+		return nil, nil
+	}
+
+	if userIDUint == 0 {
+		logger.CtxWarn(ctx, "broadcastservice Processor PrimaryKey is invalid",
+			zap.String("subject", cfg.Subject),
+			zap.String("PrimaryKey", cfg.PrimaryKey),
 		)
 		return nil, nil
 	}
