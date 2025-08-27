@@ -56,7 +56,7 @@ func (s *service) SetBarrier(writer http.ResponseWriter, request *http.Request) 
 
 	userInfo, err := mazeuserinfo.GetUserInfoV2(ctx, params.UserID)
 	if err != nil {
-		logger.ErrorWF("SetBarrier GetUserInfoV2 fail", zap.Error(err))
+		logger.CtxError(ctx, "SetBarrier GetUserInfoV2 fail", zap.Error(err))
 		writer.Write([]byte(err.Error()))
 		return
 	}
@@ -64,7 +64,7 @@ func (s *service) SetBarrier(writer http.ResponseWriter, request *http.Request) 
 	barrierCfg := GMazeBarriesV8Cfg.Get(params.BarrierID)
 	if barrierCfg == nil {
 		errCfg := errors.New("cant find barrier cfg")
-		logger.ErrorWF("SetBarrier Get barrier fail", zap.Error(err))
+		logger.CtxError(ctx, "SetBarrier Get barrier fail", zap.Error(err))
 		writer.Write([]byte(errCfg.Error()))
 		return
 	}
@@ -82,16 +82,16 @@ func (s *service) SetBarrier(writer http.ResponseWriter, request *http.Request) 
 	// 更新设置关卡
 	err = mazeuserinfo.SetUserInfoV2(ctx, params.UserID, userInfo)
 	if err != nil {
-		logger.ErrorWF("SetBarrier SetUserInfoV2 fail", zap.Error(err))
+		logger.CtxError(ctx, "SetBarrier SetUserInfoV2 fail", zap.Error(err))
 		writer.Write([]byte(err.Error()))
 		return
 	}
 
 	// 锁定设置的关卡
 	if params.Lock == 1 {
-		mazefixedbarrierredis.SetUserFixedBarrierID(logger, params.UserID, params.BarrierID)
+		mazefixedbarrierredis.SetUserFixedBarrierID(ctx, params.UserID, params.BarrierID)
 	} else {
-		mazefixedbarrierredis.DelUserFixedBarrierID(logger, params.UserID)
+		mazefixedbarrierredis.DelUserFixedBarrierID(ctx, params.UserID)
 	}
 
 	writer.Write([]byte("设置成功，注意尽量不要在迷宫杀怪时使用本gm"))
@@ -104,7 +104,7 @@ func (s *service) DumpBattleData(writer http.ResponseWriter, request *http.Reque
 	barrierId := fkutil.ToInt32(request.Form.Get("barrierId"))
 	logger.SetLogId(time.Now().UnixNano())
 	logger.SetUid(userId)
-	logger.InfoWF("DumpBattleData begin")
+	logger.CtxInfo(ctx, "DumpBattleData begin")
 	battleData, e := game.GetMazeBattleData(logger, userId, barrierId)
 	if e != nil {
 		writer.Write([]byte(e.Error()))
@@ -121,7 +121,7 @@ func (s *service) DumpBattleData(writer http.ResponseWriter, request *http.Reque
 
 	tempBuffInfo, err := tempbuffservice.GlobalTempBuffService.GetTempBuffInfo(ctx, userId, barrierId)
 	if err != nil {
-		logger.ErrorWF("DumpBattleData GetBarrierTempBuff err", zap.Error(err))
+		logger.CtxError(ctx, "DumpBattleData GetBarrierTempBuff err", zap.Error(err))
 	} else {
 		tb, _ := json.Marshal(tempBuffInfo.TotalBuff)
 		bs.WriteString(fmt.Sprintf("临时buff数据:%s\n", string(tb)))
@@ -130,7 +130,7 @@ func (s *service) DumpBattleData(writer http.ResponseWriter, request *http.Reque
 	bs.WriteString("属性ID<->枚举映射关系:\n")
 	for k, v := range attrMap {
 		var attrName string
-		attrCfg := GMazeAttributeV8Cfg.Get(k)
+		attrCfg := GMazeAttributeV8Cfg.GetWithCtx(ctx, k)
 		if attrCfg != nil {
 			attrName = attrCfg.Name
 		}
@@ -150,7 +150,7 @@ func (s *service) Attrs(writer http.ResponseWriter, request *http.Request) {
 
 	userAttrMap, err := mazecalcattrredis.GetAllMazeCalcAttr(logger, userId)
 	if err != nil {
-		logger.ErrorWF("GetAllMazeCalcAttr nil", zap.Uint64("userId", userId), zap.Error(err))
+		logger.CtxError(ctx, "GetAllMazeCalcAttr nil", zap.Uint64("userId", userId), zap.Error(err))
 		fmt.Fprintf(writer, "获取人物属性失败: %s\n", err.Error())
 		return
 	}
@@ -159,7 +159,7 @@ func (s *service) Attrs(writer http.ResponseWriter, request *http.Request) {
 	if barrierId > 0 {
 		tempBuffInfo, err = tempbuffservice.GlobalTempBuffService.GetTempBuffInfo(ctx, userId, barrierId)
 		if err != nil {
-			logger.ErrorWF("GetBarrierTempBuff err", zap.Error(err))
+			logger.CtxError(ctx, "GetBarrierTempBuff err", zap.Error(err))
 			fmt.Fprintf(writer, "获取临时BUFF失败: %s\n", err.Error())
 			return
 		}
@@ -210,7 +210,7 @@ func (s *service) Attrs(writer http.ResponseWriter, request *http.Request) {
 		}
 		fmt.Fprintf(writer, "----------------临时属性列表----------------\n")
 		for _, buffInfo := range tempBuffInfo.TotalBuff {
-			attrCfg := GMazeAttributeV8Cfg.Get(buffInfo.BuffId)
+			attrCfg := GMazeAttributeV8Cfg.GetWithCtx(ctx, buffInfo.BuffId)
 			if attrCfg != nil {
 				switch attrCfg.Figure {
 				case 1:
@@ -236,11 +236,11 @@ func (s *service) LookAssembleInfo(writer http.ResponseWriter, request *http.Req
 
 	logger.SetLogId(time.Now().UnixNano())
 	logger.SetUid(userId)
-	logger.InfoWF("LookAssembleInfo begin")
+	logger.CtxInfo(ctx, "LookAssembleInfo begin")
 
 	assembleInfo, effect, err := dollassembleinfo.GetDollAssembleInfoEx(logger, userId)
 	if err != nil {
-		logger.ErrorWF("LookAssembleInfo Get Assemble info fail", zap.Error(err))
+		logger.CtxError(ctx, "LookAssembleInfo Get Assemble info fail", zap.Error(err))
 		writer.Write([]byte(err.Error()))
 		return
 	}
@@ -248,7 +248,7 @@ func (s *service) LookAssembleInfo(writer http.ResponseWriter, request *http.Req
 	var showBuff bytes.Buffer
 	header, err := equipaassemblegm.PackAssembleHeader(ctx, userId, assembleInfo)
 	if err != nil {
-		logger.ErrorWF("LookAssembleInfo PackAssembleHeader fail", zap.Error(err))
+		logger.CtxError(ctx, "LookAssembleInfo PackAssembleHeader fail", zap.Error(err))
 		writer.Write([]byte(err.Error()))
 		return
 	}
@@ -259,7 +259,7 @@ func (s *service) LookAssembleInfo(writer http.ResponseWriter, request *http.Req
 		return assembleInfo.MazeEquips[i].GetEquipPos().GetPos() <= assembleInfo.MazeEquips[j].GetEquipPos().GetPos()
 	})
 	for _, posInfo := range assembleInfo.MazeEquips {
-		equipaassemblegm.DumpEquipPos(logger, userId, &showBuff, posInfo.GetEquipPos().GetPos(), posInfo, assembleInfo.GetEpSuitId())
+		equipaassemblegm.DumpEquipPos(ctx, userId, &showBuff, posInfo.GetEquipPos().GetPos(), posInfo, assembleInfo.GetEpSuitId())
 	}
 	showBuff.WriteString(EndLine)
 	showBuff.WriteString(fmt.Sprintf("装备套装:%d\n", assembleInfo.GetEpSuitId()))
@@ -296,5 +296,5 @@ func (s *service) LookAssembleInfo(writer http.ResponseWriter, request *http.Req
 
 	r := showBuff.String()
 	writer.Write([]byte(r))
-	logger.InfoWF("LookAssembleInfo end")
+	logger.CtxInfo(ctx, "LookAssembleInfo end")
 }

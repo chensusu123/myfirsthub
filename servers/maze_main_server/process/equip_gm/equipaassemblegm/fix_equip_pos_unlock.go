@@ -7,6 +7,7 @@
 package equipaassemblegm
 
 import (
+	"context"
 	"maze_game_server/io/redis/dollassembleredis"
 	"maze_game_server/io/redis/dollassemblesuitredis"
 	"maze_game_server/pb/server/MazeEquipCache"
@@ -15,7 +16,8 @@ import (
 	"google.golang.org/protobuf/proto"
 )
 
-func UnlockPosByEquip(logger fklog.FKLogI, userId uint64) (cnt int32, err error) {
+func UnlockPosByEquip(ctx context.Context, userId uint64) (cnt int32, err error) {
+	logger := fklog.ContextAppLogger(ctx)
 	suitInfo, e := dollassemblesuitredis.GetDollAssembleSuit(logger, userId, 1, 8)
 	if e != nil {
 		return 0, e

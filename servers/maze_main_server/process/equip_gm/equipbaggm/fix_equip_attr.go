@@ -1,6 +1,7 @@
 package equipbaggm
 
 import (
+	"context"
 	"maze_game_server/common/errors"
 	"maze_game_server/config/GMazeEquipAffixRandPoolV8Cfg"
 	"maze_game_server/config/GMazeEquipAffixRollTypeV8Cfg"
@@ -13,17 +14,18 @@ import (
 	"google.golang.org/protobuf/proto"
 )
 
-func FixAllEquipAttrLimit(logger fklog.FKLogI, userId uint64) error {
+func FixAllEquipAttrLimit(ctx context.Context, userId uint64) error {
+	logger := fklog.ContextAppLogger(ctx)
 	equipInfoMap, err := mazebagequipredis.GetAllEquipInfo(logger, userId)
 	if err != nil {
-		logger.ErrorWF("fixAllEquipAttrLimit GetAllEquipInfo fail", zap.Error(err))
+		logger.CtxError(ctx, "fixAllEquipAttrLimit GetAllEquipInfo fail", zap.Error(err))
 		return err
 	}
 	chgEquipList := make([]*MazeEquipCache.MazeEquipInfoDb, 0)
 	for _, equipInfo := range equipInfoMap {
-		newEquipInfo, chgEquip, err := fixEquipAttr(logger, userId, equipInfo)
+		newEquipInfo, chgEquip, err := fixEquipAttr(ctx, userId, equipInfo)
 		if err != nil {
-			logger.ErrorWF("fixAllEquipAttrLimit fixEquipAttr fail", zap.Error(err))
+			logger.CtxError(ctx, "fixAllEquipAttrLimit fixEquipAttr fail", zap.Error(err))
 			return err
 		}
 		if chgEquip {
@@ -36,18 +38,19 @@ func FixAllEquipAttrLimit(logger fklog.FKLogI, userId uint64) error {
 	return err
 }
 
-func fixEquipAttr(logger fklog.FKLogI, userId uint64, equipInfo *MazeEquipCache.MazeEquipInfoDb) (*MazeEquipCache.MazeEquipInfoDb, bool, error) {
+func fixEquipAttr(ctx context.Context, userId uint64, equipInfo *MazeEquipCache.MazeEquipInfoDb) (*MazeEquipCache.MazeEquipInfoDb, bool, error) {
+	logger := fklog.ContextAppLogger(ctx)
 	chgEquip := false
 	for _, attrInfo := range equipInfo.BaseAttrs {
 		cfg := GMazeEquipAffixRandPoolV8Cfg.Get(attrInfo.GetAttrGroup())
 		if cfg == nil {
-			logger.ErrorWF("FixEquipAttr GMazeEquipAffixRandPoolV8Cfg fail",
+			logger.CtxError(ctx, "FixEquipAttr GMazeEquipAffixRandPoolV8Cfg fail",
 				zap.Any("attrGroupId", attrInfo.GetAttrGroup()))
 			return nil, false, errors.New("属性配置不存在")
 		}
 		rollTypeCfg := GMazeEquipAffixRollTypeV8Cfg.Get(cfg.Roll_type)
 		if rollTypeCfg == nil {
-			logger.ErrorWF("FixEquipAttr GMazeEquipAffixRandPoolV8Cfg err",
+			logger.CtxError(ctx, "FixEquipAttr GMazeEquipAffixRandPoolV8Cfg err",
 				zap.Int32("rollId", cfg.Roll_type))
 			return nil, false, errors.New("配置不存在")
 		}

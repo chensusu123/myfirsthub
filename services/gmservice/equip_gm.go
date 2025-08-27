@@ -3,22 +3,17 @@ package gmservice
 import (
 	"bytes"
 	"fmt"
-	"maze_game_server/common/function/fileio"
 	"maze_game_server/common/tradeno"
 	"maze_game_server/config/GMazeEquipInfoV8Cfg"
-	"maze_game_server/io/redis/mazebuffinforedis"
 	"maze_game_server/io/redis/mazeequipgetnumredis"
 	"maze_game_server/io/redis/mazeuserlevelredis"
 	"maze_game_server/io/rpc/dollequipbagrpc"
-	"maze_game_server/module/calcassembleattr"
-	"maze_game_server/module/dollassembleinfo"
 	"maze_game_server/pb/server/MazeEquipSvr"
 	"maze_game_server/servers/maze_main_server/process/equip"
 	"maze_game_server/servers/maze_main_server/process/equip_gm/equipaassemblegm"
 	"maze_game_server/servers/maze_main_server/process/equip_gm/equipbaggm"
 	"net/http"
 	"strings"
-	"sync/atomic"
 	"time"
 
 	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fklog"
@@ -63,10 +58,10 @@ func (s *service) GetEquipInfoByCfgId(writer http.ResponseWriter, request *http.
 	cd.ShowSeal = showSeal
 	logger.SetLogId(time.Now().UnixNano())
 	logger.SetUid(userId)
-	logger.InfoWF("GetEquipInfoByCfgId", zap.Any("cond", cd))
-	rs, err := equipaassemblegm.GetEquipInfoByCfgId(logger, userId, cd)
+	logger.CtxInfo(ctx, "GetEquipInfoByCfgId", zap.Any("cond", cd))
+	rs, err := equipaassemblegm.GetEquipInfoByCfgId(ctx, userId, cd)
 	if err != nil {
-		logger.ErrorWF("GetEquipInfoByCfgId", zap.Error(err))
+		logger.CtxError(ctx, "GetEquipInfoByCfgId", zap.Error(err))
 		writer.Write([]byte("执行失败"))
 		return
 	}
@@ -82,64 +77,13 @@ func (s *service) GetEquipInfoByGuid(writer http.ResponseWriter, request *http.R
 	logger := fklog.ContextAppLogger(ctx)
 	userId := fkutil.ToUint64(request.Form.Get("user_id"))
 	guid := fkutil.ToInt64(request.Form.Get("guid"))
-	rs, err := equipaassemblegm.GetEquipInfoByGuid(logger, userId, guid)
+	rs, err := equipaassemblegm.GetEquipInfoByGuid(ctx, userId, guid)
 	if err != nil {
-		logger.ErrorWF("GetEquipInfoByGuid", zap.Error(err))
+		logger.CtxError(ctx, "GetEquipInfoByGuid", zap.Error(err))
 		writer.Write([]byte("执行失败"))
 		return
 	}
 	writer.Write([]byte(rs))
-}
-
-func (s *service) FixDollEquipAttr(writer http.ResponseWriter, request *http.Request) {
-	ctx := request.Context()
-	logger := fklog.ContextAppLogger(ctx)
-	logger.InfoWF("FixDollEquipAttr start")
-
-	fPath := request.Form.Get("file")
-	fr := fileio.NewDefFReaderEx(logger, ",")
-	err := fr.Open(fPath)
-	if err != nil {
-		_, _ = writer.Write([]byte(err.Error()))
-		return
-	}
-	defer fr.Close()
-
-	var total, succ, fail int32
-	fr.Range(func(logger fklog.FKLogI, line []uint64) bool {
-		atomic.AddInt32(&total, 1)
-		if len(line) != 1 {
-			return true
-		}
-		userId := line[0]
-		assembleInfo, err := dollassembleinfo.GetDollAssembleInfo(logger, userId)
-		if err != nil {
-			atomic.AddInt32(&fail, 1)
-			logger.ErrorWF("FixDollEquipForce Get Assemble info fail", zap.Error(err))
-			return true
-		}
-		_, otherAttrs, e := calcassembleattr.CalcEquipAttrs(logger, assembleInfo.MazeEquips)
-		if e != nil {
-			atomic.AddInt32(&fail, 1)
-			return true
-		}
-
-		// 更新buff中心
-		mazebuffinforedis.SaveMazeEquipBuff(logger, userId, otherAttrs)
-		//	buffcenter.NotifyBuff(logger, userId, otherAttrs, constdef.ENUM_BUFF_SOURCE_DOLL_EQUIP, "maze_equip_gm_server")
-
-		// e = dollassembleattrredis.SetDollAssembleAttr(logger, userId, constdef.AttrFieldEquip, forceAttrs)
-		// if e == nil {
-		// 	e = dollforcechgnotifyqueue.DollForceChgNotice(logger, userId, constdef.ForcePreviewEquip, int32(constdef.ForceChgTypeGm), "")
-		// 	if e == nil {
-		// 		atomic.AddInt32(&succ, 1)
-		// 		return true
-		// 	}
-		// }
-		// atomic.AddInt32(&fail, 1)
-		return true
-	})
-	_, _ = writer.Write([]byte(fmt.Sprintf("执行结果=total:%d succ:%d fail:%d", total, succ, fail)))
 }
 
 func (s *service) SendOneSuitEquip(writer http.ResponseWriter, request *http.Request) {
@@ -189,55 +133,6 @@ func (s *service) SendOneSuitEquip(writer http.ResponseWriter, request *http.Req
 	}
 }
 
-func (s *service) ReInitDollEquipByFile(writer http.ResponseWriter, request *http.Request) {
-	ctx := request.Context()
-	logger := fklog.ContextAppLogger(ctx)
-
-	fPath := request.Form.Get("file")
-	fr := fileio.NewDefFReaderEx(logger, ",")
-	err := fr.Open(fPath)
-	if err != nil {
-		_, _ = writer.Write([]byte(err.Error()))
-		return
-	}
-	defer fr.Close()
-
-	var total, succ, fail int32
-	fr.Range(func(logger fklog.FKLogI, line []uint64) bool {
-		atomic.AddInt32(&total, 1)
-		if len(line) != 1 {
-			atomic.AddInt32(&fail, 1)
-			return true
-		}
-		uid := line[0]
-		e := equipbaggm.ClearUserBag(ctx, uid)
-		if e != nil {
-			atomic.AddInt32(&fail, 1)
-			return true
-		}
-		e = equip.ChkEquipPosUnlock(ctx, uid, "gm", true)
-		if e != nil {
-			atomic.AddInt32(&fail, 1)
-			return true
-		}
-		// 初始装备套检查
-		e = equip.InitDollEquipSuitSeq(logger, uid)
-		if e != nil {
-			atomic.AddInt32(&fail, 1)
-			return true
-		}
-		// 处理初始化装备
-		e = equip.HandleDollEquipInit(ctx, uid, true)
-		if e != nil {
-			atomic.AddInt32(&fail, 1)
-			return true
-		}
-		return true
-	})
-	_, _ = writer.Write([]byte(fmt.Sprintf("执行结果=total:%d succ:%d fail:%d", total, succ, fail)))
-
-}
-
 func (s *service) ReInitDollEquip(writer http.ResponseWriter, request *http.Request) {
 	ctx := request.Context()
 	logger := fklog.ContextAppLogger(ctx)
@@ -285,50 +180,13 @@ func (s *service) FixDollAttr(writer http.ResponseWriter, request *http.Request)
 	}
 }
 
-func (s *service) FixDollAttrByFile(writer http.ResponseWriter, request *http.Request) {
-	ctx := request.Context()
-	logger := fklog.ContextAppLogger(ctx)
-
-	fPath := request.Form.Get("file")
-	fixType := fkutil.ToInt32(request.Form.Get("fixType"))
-	fr := fileio.NewDefFReaderEx(logger, ",")
-	err := fr.Open(fPath)
-	if err != nil {
-		_, _ = writer.Write([]byte(err.Error()))
-		return
-	}
-	defer fr.Close()
-	logger.InfoWF("FixDollAttrByFile param", zap.Int32("fixType", fixType))
-
-	var total, succ, fail int32
-	fr.Range(func(logger fklog.FKLogI, line []uint64) bool {
-		atomic.AddInt32(&total, 1)
-		if len(line) != 1 {
-			atomic.AddInt32(&fail, 1)
-			return true
-		}
-		uid := line[0]
-
-		e := equipaassemblegm.ReCalcDollEquipAttr(ctx, uid, fixType)
-		if e == nil {
-			atomic.AddInt32(&succ, 1)
-		} else {
-			atomic.AddInt32(&fail, 1)
-		}
-
-		return true
-	})
-	_, _ = writer.Write([]byte(fmt.Sprintf("执行结果=total:%d succ:%d fail:%d", total, succ, fail)))
-
-}
-
 func (s *service) FixEquipPosUnlock(writer http.ResponseWriter, request *http.Request) {
 	ctx := request.Context()
 	logger := fklog.ContextAppLogger(ctx)
 
 	uid := fkutil.ToUint64(request.Form.Get("user_id"))
 	logger.SetUid(uid)
-	cnt, e := equipaassemblegm.UnlockPosByEquip(logger, uid)
+	cnt, e := equipaassemblegm.UnlockPosByEquip(ctx, uid)
 	if e == nil {
 		writer.Write([]byte(fmt.Sprintf("unlock:%d", cnt)))
 	} else {
@@ -358,7 +216,7 @@ func (s *service) GmDressBagEquip(writer http.ResponseWriter, request *http.Requ
 	logger.SetUid(uid)
 	pos := fkutil.ToInt32(request.Form.Get("pos"))
 	guid := fkutil.ToInt64(request.Form.Get("guid"))
-	e := equipaassemblegm.DressEquipGm(logger, uid, pos, guid)
+	e := equipaassemblegm.DressEquipGm(ctx, uid, pos, guid)
 	if e == nil {
 		writer.Write([]byte(string("ok")))
 	} else {
@@ -463,9 +321,9 @@ func (s *service) SetEquipRollScore(writer http.ResponseWriter, request *http.Re
 		return
 	}
 
-	err := mazeequipgetnumredis.SetEquipGetNum(logger, uid, cfg.Score_group, score)
+	err := mazeequipgetnumredis.SetEquipGetNum(ctx, uid, cfg.Score_group, score)
 	if err != nil {
-		logger.ErrorWF("SetEquipRollScore  SetEquipGetNum fail", zap.Error(err), zap.Uint64("uid", uid),
+		logger.CtxError(ctx, "SetEquipRollScore  SetEquipGetNum fail", zap.Error(err), zap.Uint64("uid", uid),
 			zap.Int32("equipId", equipId), zap.Int32("score", score))
 		writer.Write([]byte(err.Error()))
 		return
@@ -501,7 +359,7 @@ func (s *service) BatchAddEquip(writer http.ResponseWriter, request *http.Reques
 		elems := strings.Split(kv, ":")
 		if len(elems) == 2 {
 			equipId := fkutil.ToInt32(elems[0])
-			cfg := GMazeEquipInfoV8Cfg.Get(equipId)
+			cfg := GMazeEquipInfoV8Cfg.GetWithCtx(ctx, equipId)
 			if cfg == nil {
 				writer.Write([]byte(fmt.Sprintf("equipId(%d)找不到对应的装备配置", equipId)))
 				return
@@ -543,7 +401,7 @@ func (s *service) FixAllEquipAttrLimit(writer http.ResponseWriter, request *http
 
 	userId := fkutil.ToUint64(request.Form.Get("user_id"))
 	logger.SetUid(userId)
-	e := equipbaggm.FixAllEquipAttrLimit(logger, userId)
+	e := equipbaggm.FixAllEquipAttrLimit(ctx, userId)
 	if e == nil {
 		writer.Write([]byte("ok"))
 	} else {

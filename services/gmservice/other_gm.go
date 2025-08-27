@@ -1,10 +1,8 @@
 package gmservice
 
 import (
-	"context"
 	"encoding/json"
 	"fmt"
-	"maze_game_server/common/function/fileio"
 	"maze_game_server/io/redis/UnionIDBindRedis"
 	"maze_game_server/io/redis/dollassemblesuitredis"
 	"maze_game_server/io/redis/mazebagequipredis"
@@ -18,7 +16,6 @@ import (
 	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fklog"
 	"gitlab.ifreetalk.com/maze-plate/freetk/fkserver/appconfig"
 	"gitlab.ifreetalk.com/maze-plate/freetk/fkutil"
-	"gitlab.ifreetalk.com/nano-ecosystem/nlog/fkfmt"
 	"go.uber.org/zap"
 )
 
@@ -34,49 +31,6 @@ func (s *service) ClearBag(writer http.ResponseWriter, request *http.Request) {
 		writer.Write([]byte(err.Error()))
 		return
 	}
-
-	writer.Write([]byte("ok"))
-
-	return
-}
-
-func (s *service) BatchClearBag(writer http.ResponseWriter, request *http.Request) {
-	ctx := request.Context()
-	logger := fklog.ContextAppLogger(ctx)
-	// 外网线上环境不允许使用GM
-	request.ParseForm()
-
-	filename := request.Form.Get("file")
-
-	fr := fileio.NewDefFReaderEx(logger, ",")
-	err := fr.Open(filename)
-	if err != nil {
-		return
-	}
-	defer fr.Close()
-
-	fr.SetDumpRow(5000)
-	// fr.SetSleep(int32(waitLine), int32(sleep))
-	fkfmt.Println("open file", filename, "succ")
-	defer fkutil.CaptureException()
-
-	fr.InitAsync(int(8), int(100))
-
-	fr.Range(func(logger fklog.FKLogI, line []uint64) bool {
-		if len(line) != 1 {
-			logger.ErrorWF("file line not match")
-			return false
-		}
-		userId := line[0]
-
-		err := equipbaggm.ClearUserBag(context.TODO(), userId)
-		if err != nil {
-			logger.ErrorWF("BatchClearBag ClearUserBag fail", zap.Error(err), zap.Uint64("uid", userId))
-			return false
-		}
-
-		return true
-	})
 
 	writer.Write([]byte("ok"))
 
@@ -99,7 +53,7 @@ func (s *service) ClearBagNotAssemble(writer http.ResponseWriter, request *http.
 	// 获取身上的装备信息
 	assembleInfoMap, err := dollassemblesuitredis.GetAllDollAssembleSuit(logger, uid)
 	if err != nil {
-		logger.ErrorWF("ClearBagNotAssemble GetAllDollAssembleSuit fail", zap.Error(err))
+		logger.CtxError(ctx, "ClearBagNotAssemble GetAllDollAssembleSuit fail", zap.Error(err))
 		writer.Write([]byte(err.Error()))
 		return
 	}
@@ -117,7 +71,7 @@ func (s *service) ClearBagNotAssemble(writer http.ResponseWriter, request *http.
 
 	equipInfoMap, err := mazebagequipredis.GetAllEquipInfo(logger, uid)
 	if err != nil {
-		logger.ErrorWF("ClearBagNotAssemble GetAllEquipInfo fail", zap.Error(err))
+		logger.CtxError(ctx, "ClearBagNotAssemble GetAllEquipInfo fail", zap.Error(err))
 		writer.Write([]byte(err.Error()))
 		return
 	}
@@ -132,7 +86,7 @@ func (s *service) ClearBagNotAssemble(writer http.ResponseWriter, request *http.
 
 	err = equipbaggm.ClearEquipBagBatch(logger, uid, equipGuids)
 	if err != nil {
-		logger.ErrorWF("ClearBagNotAssemble ClearEquipBagBatch fail", zap.Error(err))
+		logger.CtxError(ctx, "ClearBagNotAssemble ClearEquipBagBatch fail", zap.Error(err))
 		writer.Write([]byte(err.Error()))
 		return
 	}

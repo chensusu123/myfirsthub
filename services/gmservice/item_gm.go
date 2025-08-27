@@ -23,12 +23,10 @@ import (
 
 func (s *service) AddRefreshCost(writer http.ResponseWriter, request *http.Request) {
 	ctx := request.Context()
-	logger := fklog.ContextAppLogger(ctx)
 	request.ParseForm()
 	userId := fkutil.ToUint64(request.Form.Get("user_id"))
 	itemId := fkutil.ToInt32(request.Form.Get("itemId"))
 	count := fkutil.ToInt64(request.Form.Get("count"))
-	logger.SetUid(userId)
 	item := &itemservice.ItemInfo{
 		ItemId: itemId,
 		Count:  count,
@@ -51,7 +49,7 @@ func (s *service) AddExp(writer http.ResponseWriter, request *http.Request) {
 
 	userInfo, err := mazeuserinfo.GetUserInfoV2(ctx, userId)
 	if err != nil {
-		logger.ErrorWF("AddExp GetUserInfoV2 fail", zap.Error(err))
+		logger.CtxError(ctx, "AddExp GetUserInfoV2 fail", zap.Error(err))
 		writer.Write([]byte(err.Error()))
 		return
 	}
@@ -62,13 +60,13 @@ func (s *service) AddExp(writer http.ResponseWriter, request *http.Request) {
 	// 更新等级经验
 	err = userInfo.AddExp(exp)
 	if err != nil {
-		logger.ErrorWF("AddExp CalExp fail", zap.Error(err))
+		logger.CtxError(ctx, "AddExp CalExp fail", zap.Error(err))
 		writer.Write([]byte(err.Error()))
 		return
 	}
 	err = mazeuserinfo.SetUserInfoV2(ctx, userId, userInfo)
 	if err != nil {
-		logger.ErrorWF("AddExp SetUserInfoV2 fail", zap.Error(err))
+		logger.CtxError(ctx, "AddExp SetUserInfoV2 fail", zap.Error(err))
 		writer.Write([]byte(err.Error()))
 		return
 	}
@@ -147,7 +145,7 @@ func (s *service) AddItem(writer http.ResponseWriter, request *http.Request) {
 	errInfo := itemservice.GlobalItemService.AddItem(ctx, userId, itemservice.ItemOpTypeGM, tradeNo, itemList...)
 	if errInfo != nil {
 		fmt.Fprintf(writer, "添加道具失败，错误：%s", string(errInfo.GetErrMsg()))
-		logger.ErrorWF("addItem AddItemEx fail", zap.Any("errInfo", errInfo), zap.Any("ItemList", items))
+		logger.CtxError(ctx, "addItem AddItemEx fail", zap.Any("errInfo", errInfo), zap.Any("ItemList", items))
 		return
 	}
 

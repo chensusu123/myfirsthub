@@ -7,6 +7,7 @@
 package equipaassemblegm
 
 import (
+	"context"
 	"maze_game_server/common/constdef"
 	"maze_game_server/common/function/assemble"
 	"maze_game_server/config/GMazeEquipInfoV8Cfg"
@@ -18,15 +19,16 @@ import (
 	"go.uber.org/zap"
 )
 
-func DressEquipGm(logger fklog.FKLogI, userId uint64, pos int32, equipGuid int64) error {
+func DressEquipGm(ctx context.Context, userId uint64, pos int32, equipGuid int64) error {
+	logger := fklog.ContextAppLogger(ctx)
 	assembleInfo, _, err := dollassembleinfo.GetDollAssembleInfoEx(logger, userId)
 	if err != nil {
-		logger.ErrorWF("DressEquipGm Get Assemble info fail", zap.Error(err))
+		logger.CtxError(ctx, "DressEquipGm Get Assemble info fail", zap.Error(err))
 		return err
 	}
 	allEquips, err := mazebagequipredis.GetAllEquipInfo(logger, userId)
 	if err != nil {
-		logger.ErrorWF("DressEquipGm GetAllEquipInfo info fail", zap.Error(err))
+		logger.CtxError(ctx, "DressEquipGm GetAllEquipInfo info fail", zap.Error(err))
 		return err
 	}
 	for i := 1; i <= constdef.EquipPosNum; i++ {
@@ -52,11 +54,11 @@ func DressEquipGm(logger fklog.FKLogI, userId uint64, pos int32, equipGuid int64
 					}
 				}
 				if equipGuid == 0 {
-					logger.WarnWF("DressEquipGm cannot find equip", zap.Int32("pos", int32(i)))
+					logger.CtxWarn(ctx, "DressEquipGm cannot find equip", zap.Int32("pos", int32(i)))
 				} else {
 					equipDetail := allEquips[equipGuid]
 					if equipDetail == nil {
-						logger.WarnWF("DressEquipGm bag equip no exist",
+						logger.CtxWarn(ctx, "DressEquipGm bag equip no exist",
 							zap.Int32("pos", int32(i)),
 							zap.Int64("equipGuid", equipGuid))
 					} else {

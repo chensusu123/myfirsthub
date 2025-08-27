@@ -28,26 +28,18 @@ type gmService interface {
 	// equipGM
 	GetEquipInfoByCfgId(writer http.ResponseWriter, request *http.Request)
 	GetEquipInfoByGuid(writer http.ResponseWriter, request *http.Request)
-	FixDollEquipAttr(writer http.ResponseWriter, request *http.Request)
 	SendOneSuitEquip(writer http.ResponseWriter, request *http.Request)
-	ReInitDollEquipByFile(writer http.ResponseWriter, request *http.Request)
 	ReInitDollEquip(writer http.ResponseWriter, request *http.Request)
-	FixDollAttr(writer http.ResponseWriter, request *http.Request)
-	FixDollAttrByFile(writer http.ResponseWriter, request *http.Request)
-	FixEquipPosUnlock(writer http.ResponseWriter, request *http.Request)
-	FixAssembleEquipInfo(writer http.ResponseWriter, request *http.Request)
 	GmDressBagEquip(writer http.ResponseWriter, request *http.Request)
 	GmEquipPosLvUp(writer http.ResponseWriter, request *http.Request)
 	AddEquip(writer http.ResponseWriter, request *http.Request)
 	SetEquipRollScore(writer http.ResponseWriter, request *http.Request)
 	BatchAddEquip(writer http.ResponseWriter, request *http.Request)
-	FixAllEquipAttrLimit(writer http.ResponseWriter, request *http.Request)
 
 	// otherGM
 	GenerateUser(writer http.ResponseWriter, request *http.Request)
 	Online(writer http.ResponseWriter, request *http.Request)
 	ClearBag(writer http.ResponseWriter, request *http.Request)
-	BatchClearBag(writer http.ResponseWriter, request *http.Request)
 	ClearBagNotAssemble(writer http.ResponseWriter, request *http.Request)
 
 	// excelGM
