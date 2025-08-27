@@ -14,10 +14,10 @@ import (
 
 // MazeSaveMonstersV8ConfigRow from maze_save_monsters_v8【迷宫-救援敌人】.xlsx maze_save_monsters_v8
 type MazeSaveMonstersV8ConfigRow struct {
-	Id       int32  `json:"id"`       // 怪物id
-	Model_id int32  `json:"model_id"` // 资源组id
-	Speed    string `json:"speed"`    // 移速
-	Hp       int32  `json:"hp"`       // 生命值
+	Id       int32 `json:"id"`       // 怪物id
+	Model_id int32 `json:"model_id"` // 资源组id
+	Speed    int32 `json:"speed"`    // 移速
+	Hp       int32 `json:"hp"`       // 生命值
 }
 
 // MazeSaveMonstersV8Config from maze_save_monsters_v8【迷宫-救援敌人】.xlsx maze_save_monsters_v8
@@ -311,7 +311,16 @@ func (*gMazeSaveMonstersV8Parser) Parse(logger fklog.FKLogI, data []string, row 
 
 	// parse column 2 speed : 移速
 	if data[2] != "" {
-		config.Speed = data[2]
+		tmp, err = strconv.ParseInt(data[2], 10, 64)
+		if err != nil {
+			err = errors.New("parse field speed 移速 to int32 failed")
+			logger.ErrorWF("parse field speed 移速 to int32 failed.",
+				zap.String("xlsx", "maze_save_monsters_v8【迷宫-救援敌人】.xlsx"), zap.String("sheet", "maze_save_monsters_v8"),
+				zap.String("parse_data", data[2]),
+				zap.Error(err))
+			return
+		}
+		config.Speed = int32(tmp)
 	}
 
 	// parse column 3 hp : 生命值
