@@ -158,7 +158,6 @@ func (f *Family) OnCreateFamilyRQ_10585_10586(s *session.Session, req *MazeFamil
 
 	res.FamilyInfo = familyInfo.DataToFamilyInfoPb(ctx)
 	res.MemberList = familyInfo.DataToFamilyMembersPb(ctx)
-	res.GroupId = proto.Int32(groupInfo.ID)
 
 	// 设置玩家所在家族
 	err = familyservice.GlobalFamilyService.SetUserFamily(ctx, uid, res.FamilyInfo.GetFamilyId())
