@@ -78,7 +78,7 @@ func (s *service) SetMazeTempBuff(writer http.ResponseWriter, request *http.Requ
 	var errs []string
 	var successList, failedList []string
 	for _, buffId := range buffList {
-		buffWeight := tempbuffservice.GlobalTempBuffService.GetOptionBuffWeightInfo(ctx, buffId, selectedBuffMap, selectedBuffGroupMap, map[int32]struct{}{})
+		buffWeight := tempbuffservice.GlobalTempBuffService.GetOptionBuffWeightInfo(ctx, buffId, selectedBuffMap, selectedBuffGroupMap, map[int32]struct{}{}, 0)
 		if err != nil {
 			failedList = append(failedList, fmt.Sprintf("%d", buffId))
 			errs = append(errs, err.Error())

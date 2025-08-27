@@ -256,7 +256,7 @@ func (s *service) createOptionalBuffList(ctx context.Context, buffInfo *tempbuff
 		}
 		maxRandLibCount := len(posLib)
 		for j := 1; j <= maxRandLibCount; j++ {
-			libraryId, _ = s.randLibraryId(posLib, attrMask)
+			libraryId, _ = s.randLibraryId(posLib)
 			if libraryId == 0 {
 				logger.CtxError(ctx, "randLibraryId libraryId id=0", zap.Any("posLib", posLib), zap.Any("configId", configId))
 				break
@@ -268,7 +268,8 @@ func (s *service) createOptionalBuffList(ctx context.Context, buffInfo *tempbuff
 			}
 
 			// 过滤出可选择的词条
-			optionalList, totalWeight := s.filterBuffList(ctx, optionalMap, libraryConfig.Affix_id_list, libraryConfig.Certainly_affix_id_list, selectedBuffMap, selectedBuffGroupMap)
+			optionalList, totalWeight := s.filterBuffList(ctx, optionalMap, libraryConfig.Affix_id_list, libraryConfig.Certainly_affix_id_list,
+				selectedBuffMap, selectedBuffGroupMap, attrMask)
 			// 随机选择个词条
 			buffId, weight := s.randomId(optionalList, totalWeight)
 
@@ -302,16 +303,13 @@ func (s *service) createOptionalBuffList(ctx context.Context, buffInfo *tempbuff
 	return optionalList, nil
 }
 
-func (s *service) randLibraryId(libraryMap map[int32]int32, attrMask int32) (int32, int32) {
+func (s *service) randLibraryId(libraryMap map[int32]int32) (int32, int32) {
 	var (
 		weightList  []*WeightInfo
 		totalWeight int32
 	)
 	for id, weight := range libraryMap {
 		if weight == 0 {
-			continue
-		}
-		if need := TestBuffAttrMask(id, attrMask); !need {
 			continue
 		}
 		weightList = append(weightList, &WeightInfo{
@@ -331,7 +329,7 @@ type WeightInfo struct {
 
 // 过滤本次可选的词条
 func (s *service) filterBuffList(ctx context.Context, optionalMap map[int32]struct{}, buffList, certainlyList []int32,
-	selectedBuffMap, selectedBuffGroupMap map[int32]int32) ([]*WeightInfo, int32) {
+	selectedBuffMap, selectedBuffGroupMap map[int32]int32, attrMask int32) ([]*WeightInfo, int32) {
 
 	var (
 		optionalList []*WeightInfo
@@ -346,7 +344,7 @@ func (s *service) filterBuffList(ctx context.Context, optionalMap map[int32]stru
 		if _, ok := optionalMap[buffId]; ok {
 			continue
 		}
-		buffWeight := s.GetOptionBuffWeightInfo(ctx, buffId, selectedBuffMap, selectedBuffGroupMap, optionalMap)
+		buffWeight := s.GetOptionBuffWeightInfo(ctx, buffId, selectedBuffMap, selectedBuffGroupMap, optionalMap, attrMask)
 		if buffWeight == nil {
 			continue
 		}
@@ -364,7 +362,7 @@ func (s *service) filterBuffList(ctx context.Context, optionalMap map[int32]stru
 			continue
 		}
 
-		buffWeight := s.GetOptionBuffWeightInfo(ctx, buffId, selectedBuffMap, selectedBuffGroupMap, optionalMap)
+		buffWeight := s.GetOptionBuffWeightInfo(ctx, buffId, selectedBuffMap, selectedBuffGroupMap, optionalMap, attrMask)
 		if buffWeight == nil {
 			continue
 		}
@@ -377,14 +375,17 @@ func (s *service) filterBuffList(ctx context.Context, optionalMap map[int32]stru
 }
 
 // 检查buff是否满足可选条件， 获取可选buff的权重信息
-func (s *service) GetOptionBuffWeightInfo(ctx context.Context, buffId int32, selectedBuffMap, selectedBuffGroupMap map[int32]int32, optionalMap map[int32]struct{}) *WeightInfo {
+func (s *service) GetOptionBuffWeightInfo(ctx context.Context, buffId int32, selectedBuffMap, selectedBuffGroupMap map[int32]int32,
+	optionalMap map[int32]struct{}, attrMask int32) *WeightInfo {
 	logger := fklog.ContextAppLogger(ctx)
 	buffConfig := GMazeEnergyAffixV8Cfg.GetWithCtx(ctx, buffId)
 	if buffConfig == nil {
 		logger.CtxWarn(ctx, "getOptionBuffWeightInfo buffConfig is nil", zap.Int32("buffId", buffId))
 		return nil
 	}
-
+	if !TestBuffAttrMask(buffConfig.Affix_group_id, attrMask) {
+		return nil
+	}
 	if buffConfig.Weight == 0 {
 		logger.CtxWarn(ctx, "getOptionBuffWeightInfo buff weight is 0", zap.Int32("buffId", buffId))
 		return nil
@@ -501,32 +502,36 @@ const (
 	PoisonMask
 )
 
+// 6001 6002 电
+// 6003 6004 冰
+// 6005 6006 火
+// 6007 6008 毒
 // 测试用，只选需要的buff
-func TestBuffAttrMask(libId, attrMask int32) bool {
+func TestBuffAttrMask(groupId, attrMask int32) bool {
 	if attrMask == 0 {
 		return true
 	}
-	if libId < 401 || libId > 408 {
+	if groupId < 6001 || groupId > 6008 {
 		return true
 	}
 	// 测试用属性掩码 0-全部 1-冰 2-火 4-电 8-毒
 	if attrMask&IceMask > 0 {
-		if libId == 403 || libId == 404 {
+		if groupId == 6003 || groupId == 6004 {
 			return true
 		}
 	}
 	if attrMask&FireMask > 0 {
-		if libId == 405 || libId == 406 {
+		if groupId == 6005 || groupId == 6006 {
 			return true
 		}
 	}
 	if attrMask&FlashMask > 0 {
-		if libId == 401 || libId == 402 {
+		if groupId == 6001 || groupId == 6002 {
 			return true
 		}
 	}
 	if attrMask&PoisonMask > 0 {
-		if libId == 407 || libId == 408 {
+		if groupId == 6007 || groupId == 6008 {
 			return true
 		}
 	}
