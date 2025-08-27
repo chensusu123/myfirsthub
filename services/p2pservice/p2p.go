@@ -117,8 +117,7 @@ func (p *p2p) SendMessage(ctx context.Context, a app.App, user app.User, peerID 
 
 // ReadMessage implements P2PService.
 func (p *p2p) ReadMessage(ctx context.Context, a app.App, user app.User, peerID uint64, messageID uint64) (err error) {
-	// TODO 标记消息已读
-	return
+	return p2pmsg.ReadMessage(ctx, a.ID(), user.UserID(), peerID, messageID)
 }
 
 // RemoveMessage implements P2PService.
@@ -126,6 +125,7 @@ func (p *p2p) RemoveMessage(ctx context.Context, a app.App, user app.User, peerI
 	return
 }
 
+// notifyMessage 通知接收者
 func (p *p2p) notifyMessage(ctx context.Context, userId uint64, peerID uint64, messageID uint64, _type int32, content string) error {
 	logger := fklog.ContextAppLogger(ctx)
 	// 推送消息给集群

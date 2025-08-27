@@ -98,3 +98,56 @@ func SaveMessage(ctx context.Context, appID int32, userID, peerID uint64, messag
 	logger.CtxInfo(ctx, "SaveMessage success", zap.Any("key", key), zap.Any("message", message))
 	return
 }
+
+// ReadMessage 标记消息为已读
+func ReadMessage(ctx context.Context, appID int32, userID, peerID uint64, messageID uint64) (err error) {
+	logger := fklog.ContextAppLogger(ctx)
+	var (
+		key = getKey(appID, userID, peerID)
+	)
+	cli, err := globalredis.GCli.GetDB()
+	if err != nil {
+		logger.CtxError(ctx, "ReadMessage Client fail",
+			zap.Error(err),
+			zap.Any("key", key),
+		)
+		return err
+	}
+	//取出messageid对应的value
+	member, err := cli.ZRange(ctx, key, int64(messageID-1), int64(messageID)).Result()
+	if err != nil {
+		if errors.Is(err, redis.Nil) {
+			err = nil
+		} else {
+			logger.CtxError(ctx, "ReadMessage getZValue fail",
+				zap.Error(err),
+				zap.Any("key", key),
+				zap.Any("messageID", messageID),
+			)
+			return err
+		}
+	}
+	message := Message{}
+	// 反序列化消息
+	err = json.Unmarshal([]byte(member[0]), &message)
+	if err != nil {
+		logger.CtxError(ctx, "ReadMessage Unmarshal fail", zap.Error(err), zap.String("value", member[0]))
+		return err
+	}
+	message.HasRead = true
+	// 更新消息状态
+	err = cli.ZAdd(ctx, key, redis.Z{Score: float64(messageID), Member: member[0]}).Err()
+	if err != nil {
+		if errors.Is(err, redis.Nil) {
+			err = nil
+		} else {
+			logger.CtxError(ctx, "ReadMessage ZAdd fail",
+				zap.Error(err),
+				zap.Any("key", key),
+			)
+			return err
+		}
+	}
+	logger.CtxInfo(ctx, "ReadMessage success", zap.Any("key", key), zap.Any("message", message))
+	return
+}

@@ -123,7 +123,7 @@ func (im *IM) OnReadMessage_10656_10657(s *session.Session, req *MazeIM.ReadMess
 
 	err = p2pservice.Default.ReadMessage(ctx, app.Maze, user, peerId, msgID)
 	if err != nil {
-		res.ErrInfo = errors.MODULE_ERROR.ToInfo()
+		res.ErrInfo = errors.COMMON_ERROR_TIPS.Wrap("已读消息失败")
 		logger.CtxError(ctx, "OnReadMessage SendMessage error", zap.Error(err), zap.Any("req", req))
 		return err
 	}
