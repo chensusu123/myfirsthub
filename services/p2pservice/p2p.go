@@ -31,6 +31,15 @@ type P2PService interface {
 	//	- content: 消息内容
 	SendMessage(ctx context.Context, logger fklog.FKLogI, a app.App, user app.User, peerID uint64, _type int32, content string) (messageID uint64, err error)
 
+	// ReadMessage 标记私聊中的指定消息已读
+	//
+	// 参数:
+	//	- a: 应用
+	//	- userID: 发送用户
+	//	- peerID: 接收用户
+	//	- messageID: 消息ID
+	ReadMessage(ctx context.Context, logger fklog.FKLogI, a app.App, user app.User, peerID uint64, messageID uint64) (err error)
+
 	// RemoveMessage 删除私聊中的指定消息(只删除自己这边的私聊记录)
 	//
 	// 参数:
@@ -85,6 +94,12 @@ func (p *p2p) SendMessage(ctx context.Context, logger fklog.FKLogI, a app.App, u
 	if err == nil {
 		err = p2pmsg.SaveMessage(logger, a.ID(), peerID, user.UserID(), message)
 	}
+	return
+}
+
+// ReadMessage implements P2PService.
+func (p *p2p) ReadMessage(ctx context.Context, logger fklog.FKLogI, a app.App, user app.User, peerID uint64, messageID uint64) (err error) {
+	// TODO 标记消息已读
 	return
 }
 
