@@ -3,7 +3,6 @@ package broadcastcli
 import (
 	"context"
 	"encoding/binary"
-	"strconv"
 
 	"maze_game_server/common/function/clusterpaket"
 
@@ -27,13 +26,13 @@ func init() {
 	serverdepend.RegisterDepend(natsproducer)
 }
 
-func Broadcast(ctx context.Context, broadcastID uint64, packetType uint16, v interface{}) (err error) {
+func Broadcast(ctx context.Context, broadcastID string, packetType uint16, v interface{}) (err error) {
 	span := nanotrace.NewSimpleTrace("BroadcastMsg")
 	ctx = span.Start(ctx)
 	defer span.Finish(ctx)
 	cSpan := nanotrace.SpanFromContext(ctx)
 	cSpan.SetAttributes(
-		attribute.Int64("broadcast.id", int64(broadcastID)),
+		attribute.String("broadcast.id", broadcastID),
 		attribute.Int("packet.id", int(packetType)),
 		attribute.String("nats.subject", "maze.broadcast.cluster.msg.*"),
 	)
@@ -44,23 +43,23 @@ func Broadcast(ctx context.Context, broadcastID uint64, packetType uint16, v int
 
 	subject := "maze.broadcast.cluster.msg"
 	err = gNatsproducer.Publish(ctx, subject, data, natsproduceroption.WithSectionSubject(),
-		natsproduceroption.WithTag(commonconst.NatsMsgHeaderPrimaryKey, strconv.Itoa(int(broadcastID))))
+		natsproduceroption.WithTag(commonconst.NatsMsgHeaderPrimaryKey, broadcastID))
 	fklog.ContextAppLogger(ctx).CtxInfo(ctx, "broadcastcli publish to nats",
 		zap.String("subject", subject),
-		zap.Uint64("broadcastID", broadcastID),
+		zap.String("broadcastID", broadcastID),
 		zap.Uint16("packetType", packetType),
 		zap.Error(err))
 	return err
 }
 
 // Deprecated: 仅仅供测试的时候使用
-func BroadcastTest(ctx context.Context, broadcastID uint64, packetType uint16, data []byte) (err error) {
+func BroadcastTest(ctx context.Context, broadcastID string, packetType uint16, data []byte) (err error) {
 	span := nanotrace.NewSimpleTrace("BroadcastMsg")
 	ctx = span.Start(ctx)
 	defer span.Finish(ctx)
 	cSpan := nanotrace.SpanFromContext(ctx)
 	cSpan.SetAttributes(
-		attribute.Int64("broadcast.id", int64(broadcastID)),
+		attribute.String("broadcast.id", broadcastID),
 		attribute.Int("packet.id", int(packetType)),
 		attribute.String("nats.subject", "maze.broadcast.cluster.msg.*"),
 	)
@@ -69,11 +68,11 @@ func BroadcastTest(ctx context.Context, broadcastID uint64, packetType uint16, d
 	copy(ret[2:], data)
 	subject := "maze.broadcast.cluster.msg"
 	err = gNatsproducer.Publish(ctx, subject, ret, natsproduceroption.WithSectionSubject(),
-		natsproduceroption.WithTag(commonconst.NatsMsgHeaderPrimaryKey, strconv.Itoa(int(broadcastID))))
+		natsproduceroption.WithTag(commonconst.NatsMsgHeaderPrimaryKey, broadcastID))
 
 	fklog.ContextAppLogger(ctx).CtxInfo(ctx, "broadcastcli publish to nats",
 		zap.String("subject", subject),
-		zap.Uint64("broadcastID", broadcastID),
+		zap.String("broadcastID", broadcastID),
 		zap.Uint16("packetType", packetType),
 		zap.Error(err))
 	return err

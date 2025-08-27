@@ -83,12 +83,8 @@ func broadcast(ctx context.Context, c *app.RequestContext) {
 		c.JSON(consts.StatusOK, MakeErrReturnMsg(400, "broadcastID is empty"))
 		return
 	}
-	userIDUint64, err := strconv.ParseUint(userID, 10, 64)
-	if err != nil {
-		c.JSON(consts.StatusOK, MakeErrReturnMsg(400, "broadcastID is invalid"))
-		return
-	}
+
 	msg := c.Query("msg")
-	broadcastcli.BroadcastTest(ctx, uint64(userIDUint64), 222, []byte(msg))
+	err := broadcastcli.BroadcastTest(ctx, userID, 222, []byte(msg))
 	c.JSON(consts.StatusOK, MakeSuccessReturnMsg(err))
 }
