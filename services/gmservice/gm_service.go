@@ -8,7 +8,7 @@ import (
 
 type gmService interface {
 	// 注册gm接口
-	SafeHttpRegister(logger fklog.FKLogI, pattern string, handler func(http.ResponseWriter, *http.Request))
+	SafeGETRegister(logger fklog.FKLogI, pattern string, handler func(http.ResponseWriter, *http.Request))
 	// buffGM
 	//	-- 设置临时buff
 	SetMazeTempBuff(writer http.ResponseWriter, request *http.Request)

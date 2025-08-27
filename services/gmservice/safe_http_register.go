@@ -24,57 +24,68 @@ const (
 
 type HeaderStrKey string
 
-func (s *service) SafeHttpRegister(logger fklog.FKLogI, pattern string, handler func(http.ResponseWriter, *http.Request)) {
+func (s *service) SafeGETRegister(logger fklog.FKLogI, pattern string, handler func(http.ResponseWriter, *http.Request)) {
 	appConfig := appconfig.GlobalConfig()
 	tracerPattern := http.MethodGet + pattern
+
+	oiginPattern := pattern
 	// /s4/AddExp
 	pattern = "/s" + appConfig.Global.SectionID + pattern
-	http.Handle(pattern, otelhttp.NewHandler(
-		http.HandlerFunc(func(writer http.ResponseWriter, request *http.Request) {
-			defer fkutil.CaptureException()
+	// 域名调用适配 带服前缀
 
-			uid := fkutil.ToUint64(request.Form.Get(USER_ID_FIELD))
+	handlerFactor := func() http.Handler {
+		return otelhttp.NewHandler(
+			http.HandlerFunc(func(writer http.ResponseWriter, request *http.Request) {
+				defer fkutil.CaptureException()
 
-			logidInt := logidutil.GenerateLogID()
-			logID := strconv.Itoa(int(logidInt))
-			shardingID := fmt.Sprintf("%d", appConfig.Global.ShardingID)
-			writer.Header().Set("X-App-Namespace", appConfig.Global.Namespace)
-			writer.Header().Set("X-App-Section", appConfig.Global.SectionID)
-			writer.Header().Set("X-App-Name", appConfig.Server.Server)
-			writer.Header().Set("X-App-Sharding", shardingID)
-			writer.Header().Set("X-Log-ID", logID)
+				uid := fkutil.ToUint64(request.Form.Get(USER_ID_FIELD))
 
-			callLogger := fklog.AppLogger().Clone("")
-			callLogger.SetLogId(logidInt)
-			callLogger.SetUid(uid)
+				logidInt := logidutil.GenerateLogID()
+				logID := strconv.Itoa(int(logidInt))
+				shardingID := fmt.Sprintf("%d", appConfig.Global.ShardingID)
+				writer.Header().Set("X-App-Namespace", appConfig.Global.Namespace)
+				writer.Header().Set("X-App-Section", appConfig.Global.SectionID)
+				writer.Header().Set("X-App-Name", appConfig.Server.Server)
+				writer.Header().Set("X-App-Sharding", shardingID)
+				writer.Header().Set("X-Log-ID", logID)
 
-			ctx, span := otel.Tracer("gm-handler").Start(request.Context(), tracerPattern)
-			defer span.End()
+				callLogger := fklog.AppLogger().Clone("")
+				callLogger.SetLogId(logidInt)
+				callLogger.SetUid(uid)
 
-			rid := request.Header.Get(headerKey)
-			if rid == "" {
-				if span.SpanContext().TraceID().IsValid() {
-					rid = span.SpanContext().TraceID().String()
-				}
+				ctx, span := otel.Tracer("gm-handler").Start(request.Context(), tracerPattern)
+				defer span.End()
+
+				rid := request.Header.Get(headerKey)
 				if rid == "" {
-					rid = uuid.New().String()
+					if span.SpanContext().TraceID().IsValid() {
+						rid = span.SpanContext().TraceID().String()
+					}
+					if rid == "" {
+						rid = uuid.New().String()
+					}
 				}
-			}
-			writer.Header().Set(headerKey, rid)
-			// 将callLogger添加添加到ctx中
-			ctx = fklog.ContextWithLogger(ctx, callLogger)
-			ctx = context.WithValue(ctx, HeaderStrKey(headerKey), rid)
+				writer.Header().Set(headerKey, rid)
+				// 将callLogger添加添加到ctx中
+				ctx = fklog.ContextWithLogger(ctx, callLogger)
+				ctx = context.WithValue(ctx, HeaderStrKey(headerKey), rid)
 
-			request.ParseForm()
+				request.ParseForm()
 
-			span.SetAttributes(attribute.Int64("enduser.id", int64(uid)))
-			//if !CheckGM.CheckGMOnline(context.TODO(), logger, uid, pattern, request.RemoteAddr) {
-			//	return
-			//}
+				span.SetAttributes(attribute.Int64("enduser.id", int64(uid)))
+				//if !CheckGM.CheckGMOnline(context.TODO(), logger, uid, pattern, request.RemoteAddr) {
+				//	return
+				//}
 
-			callLogger.CtxWarn(ctx, "execute gm", zap.Uint64("userId", uid),
-				zap.String("pattern", pattern), zap.Any("header", request.Header),
-				zap.Any("host", request.Host), zap.Any("remoteAddr", request.RemoteAddr))
-			handler(writer, request.WithContext(ctx))
-		}), tracerPattern))
+				callLogger.CtxWarn(ctx, "execute gm", zap.Uint64("userId", uid),
+					zap.String("pattern", pattern), zap.Any("header", request.Header),
+					zap.Any("host", request.Host), zap.Any("remoteAddr", request.RemoteAddr))
+				handler(writer, request.WithContext(ctx))
+			}), tracerPattern)
+	}
+
+	// 域名适配 带服前缀
+	http.Handle(pattern, handlerFactor())
+	// 后台适配 不带服前缀
+	http.Handle(oiginPattern, handlerFactor())
 }
