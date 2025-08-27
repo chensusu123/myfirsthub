@@ -51,7 +51,7 @@ type GroupService interface {
 	//	- a: 应用
 	//	- user: 群主用户
 	//	- memberIDs: 成员ID
-	CreateGroup(ctx context.Context, a app.App, user app.User, memberIDs []uint64) (g *app.Group, err error)
+	CreateGroup(ctx context.Context, a app.App, userID uint64, memberIDs []uint64) (g *app.Group, err error)
 
 	// InviteMember 群组邀请成员
 	//
@@ -122,10 +122,10 @@ func (*group) GetGroupInfo(ctx context.Context, a app.App, groupID int32) (g *ap
 }
 
 // CreateGroup implements GroupService.
-func (*group) CreateGroup(ctx context.Context, a app.App, user app.User, memberIDs []uint64) (g *app.Group, err error) {
+func (*group) CreateGroup(ctx context.Context, a app.App, userID uint64, memberIDs []uint64) (g *app.Group, err error) {
 	// TODO 群组ID生成器
 	groupID := int32(time.Now().Unix())
-	return grouppkg.CreateGroup(ctx, a.ID(), user.UserID(), groupID, memberIDs)
+	return grouppkg.CreateGroup(ctx, a.ID(), userID, groupID, memberIDs)
 }
 
 // InviteMember implements GroupService.

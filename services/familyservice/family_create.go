@@ -4,6 +4,7 @@ import (
 	"context"
 	"maze_game_server/model/alliancemodel"
 	"maze_game_server/model/familymodel"
+	"maze_game_server/services/groupservice"
 
 	grouppkg "maze_game_server/io/redis/im/group"
 
@@ -78,6 +79,13 @@ func (r *service) CreateFamily(ctx context.Context, userID uint64, allianceID in
 			zap.Error(err))
 		return nil, err
 	}
+	//创建家族群聊
+	groupInfo, err := groupservice.Default.CreateGroup(ctx, app.Maze, userID, make([]uint64, 0))
+	if err != nil {
+		logger.CtxError(ctx, "OnCreateFamilyRQ CreateGroup error", zap.Error(err))
+		return nil, err
+	}
+	r.SetFamilyGroupID(ctx, familyInfoModel.FamilyID, groupInfo.ID)
 
 	//加入联盟群聊
 	err = grouppkg.InviteMember(ctx, app.Maze.ID(), allianceID, userID)
