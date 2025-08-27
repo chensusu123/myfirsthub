@@ -6,9 +6,13 @@ import (
 	"encoding/hex"
 	"fmt"
 	"maze_game_server/app"
+	"maze_game_server/io/redis/im/msgstore/p2pmsg"
 	sessionpkg "maze_game_server/io/redis/im/session"
 
+	"maze_game_server/pb/common/MazeIM"
+
 	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fklog"
+	"google.golang.org/protobuf/proto"
 )
 
 type SessionService interface {
@@ -42,6 +46,13 @@ type SessionService interface {
 	// 	- user: 用户标识
 	//	- sessionID: 会话ID
 	RemoveSession(ctx context.Context, logger fklog.FKLogI, a app.App, user app.User, sessionID string) (err error)
+	// GetMessageInfo 获取会话消息信息
+	//
+	// 参数:
+	//	- a: 应用
+	// 	- user: 用户标识
+	//	- sessions: 会话列表
+	GetMessageInfo(ctx context.Context, logger fklog.FKLogI, a app.App, user app.User, sessions map[string]app.Session) (messageInfo []*MazeIM.Session, err error)
 }
 
 var (
@@ -85,4 +96,57 @@ func (s *session) GroupSessionID(groupID int32) string {
 func sum(data []byte) string {
 	sum := sha1.Sum(data)
 	return hex.EncodeToString(sum[:])
+}
+func (s *session) GetMessageInfo(ctx context.Context, logger fklog.FKLogI, a app.App, user app.User, sessions map[string]app.Session) (messageInfo []*MazeIM.Session, err error) {
+	if len(sessions) == 0 {
+		return nil, nil
+	}
+	for _, session := range sessions {
+		peerID := session.PeerID
+		if peerID > 0 {
+			p2pmsg, err := p2pmsg.QueryMessages(logger, a.ID(), user.UserID(), peerID, uint64(0), 10)
+			if err != nil {
+				return nil, err
+			}
+			if len(p2pmsg) > 0 {
+				messageInfo = append(messageInfo, &MazeIM.Session{
+					SessionId:  proto.String(session.ID),
+					Type:       proto.Int32(1),
+					GroupId:    proto.Int32(0),
+					CreateTime: proto.Int64(session.CreateTime),
+					Recent:     PbSessionMessage(p2pmsg),
+				})
+			}
+		} else {
+			groupID := session.GroupID
+			if groupID > 0 {
+				groupmsg, err := p2pmsg.QueryMessages(logger, a.ID(), user.UserID(), 0, uint64(0), 10)
+				if err != nil {
+					return nil, err
+				}
+				if len(groupmsg) > 0 {
+					messageInfo = append(messageInfo, &MazeIM.Session{
+						SessionId:  proto.String(session.ID),
+						Type:       proto.Int32(2),
+						GroupId:    proto.Int32(groupID),
+						CreateTime: proto.Int64(session.CreateTime),
+						Recent:     PbSessionMessage(groupmsg),
+					})
+				}
+			}
+		}
+	}
+	return messageInfo, nil
+}
+func PbSessionMessage(messages []p2pmsg.Message) []*MazeIM.Message {
+	pbMessages := make([]*MazeIM.Message, 0, len(messages))
+	for _, message := range messages {
+		pbMessages = append(pbMessages, &MazeIM.Message{
+			MsgId:   proto.Uint64(message.MessageID),
+			Type:    proto.Int32(message.Type),
+			Content: []byte(message.Content),
+			Sender:  proto.Uint64(message.UserID),
+		})
+	}
+	return pbMessages
 }

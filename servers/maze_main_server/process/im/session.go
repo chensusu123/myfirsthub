@@ -36,7 +36,19 @@ func (im *IM) OnQueryRecentSessions_10652_10653(s *session.Session, req *MazeIM.
 	}
 
 	messages, err := sessionservice.Default.QueryRecentSessions(s.Context(), logger, app.Maze, user)
-	_ = messages
+	if err != nil {
+		res.ErrInfo = errors.MODULE_ERROR.Wrap("获取最近会话失败")
+		logger.ErrorWF("OnQueryMessages QueryRecentSessions error", zap.Error(err))
+		return err
+	}
+
+	messagesList, err := sessionservice.Default.GetMessageInfo(s.Context(), logger, app.Maze, user, messages)
+	if err != nil {
+		res.ErrInfo = errors.MODULE_ERROR.Wrap("获取消息信息失败")
+		logger.ErrorWF("OnQueryMessages GetMessageInfo error", zap.Error(err))
+		return err
+	}
+	res.SessionList = messagesList
 	return
 }
 
@@ -65,6 +77,11 @@ func (im *IM) OnRemoveSession_10654_10655(s *session.Session, req *MazeIM.Remove
 	}
 
 	err = sessionservice.Default.RemoveSession(s.Context(), logger, app.Maze, user, sessionID)
-	_ = err
+	if err != nil {
+		res.ErrInfo = errors.MODULE_ERROR.Wrap("删除会话失败")
+		logger.ErrorWF("OnRemoveSession RemoveSession error", zap.Error(err))
+		return err
+	}
+
 	return
 }

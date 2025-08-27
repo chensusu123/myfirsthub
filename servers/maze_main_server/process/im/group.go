@@ -34,6 +34,7 @@ func (im *IM) OnQueryGroupMessages_10647_10648(s *session.Session, req *MazeIM.Q
 
 	messages, err := groupservice.Default.QueryMessages(s.Context(), logger, app.Maze, groupId, lastMsgID, 20)
 	if err != nil {
+		res.ErrInfo = errors.MODULE_ERROR.Wrap("获取消息失败")
 		logger.ErrorWF("OnQueryGroupMessages QueryMessages error", zap.Error(err))
 		return
 	}
@@ -66,6 +67,7 @@ func (im *IM) OnSendGroupMessage_10649_10650(s *session.Session, req *MazeIM.Sen
 
 	messageID, err := groupservice.Default.SendMessage(s.Context(), logger, app.Maze, groupId, userId, _type, content)
 	if err != nil {
+		res.ErrInfo = errors.MODULE_ERROR.Wrap("发送群聊消息失败")
 		logger.ErrorWF("OnSendGroupMessage SendMessage error", zap.Error(err))
 		return
 	}

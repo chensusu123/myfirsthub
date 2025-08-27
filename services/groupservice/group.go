@@ -151,7 +151,7 @@ func (g *group) notifyGroupMessage(ctx context.Context, logger fklog.FKLogI, a a
 			Message: &MazeIM.Message{
 				MsgId:      proto.Uint64(messageID),
 				Type:       proto.Int32(_type),
-				Content:    proto.String(content),
+				Content:    []byte(content),
 				Sender:     proto.Uint64(userId),
 				CreateTime: proto.Int64(time.Now().Unix()),
 			},

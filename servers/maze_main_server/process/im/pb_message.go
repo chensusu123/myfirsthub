@@ -11,7 +11,7 @@ func PbMessage(messageList msgstore.Message) *MazeIM.Message {
 	pbMsg := &MazeIM.Message{
 		MsgId:      proto.Uint64(messageList.MessageID),
 		Type:       proto.Int32(messageList.Type),
-		Content:    proto.String(messageList.Content),
+		Content:    []byte(messageList.Content),
 		Sender:     proto.Uint64(messageList.UserID),
 		CreateTime: proto.Int64(messageList.CreateTime),
 	}

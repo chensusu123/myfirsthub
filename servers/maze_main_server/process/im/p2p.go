@@ -35,12 +35,14 @@ func (im *IM) OnQueryMessages_10643_10644(s *session.Session, req *MazeIM.QueryM
 
 	user, err := app.WrapUser(userId, "")
 	if err != nil {
+		res.ErrInfo = errors.COMMON_ERROR_TIPS.Wrap("获取用户信息失败")
 		logger.ErrorWF("OnQueryMessages WrapUser error", zap.Error(err), zap.Any("req", req))
 		return err
 	}
 
 	messages, err := p2pservice.Default.QueryMessages(s.Context(), logger, app.Maze, user, peerId, lastMsgID, 20)
 	if err != nil {
+		res.ErrInfo = errors.COMMON_ERROR_TIPS.Wrap("获取消息失败")
 		logger.ErrorWF("OnQueryMessages QueryMessages error", zap.Error(err), zap.Any("req", req))
 		return err
 	}
@@ -74,12 +76,14 @@ func (im *IM) OnSendMessage_10645_10646(s *session.Session, req *MazeIM.SendMess
 
 	user, err := app.WrapUser(userId, "")
 	if err != nil {
+		res.ErrInfo = errors.COMMON_ERROR_TIPS.Wrap("获取用户信息失败")
 		logger.ErrorWF("OnSendMessage WrapUser error", zap.Error(err), zap.Any("req", req))
 		return err
 	}
 
 	messageID, err := p2pservice.Default.SendMessage(s.Context(), logger, app.Maze, user, peerId, _type, content)
 	if err != nil {
+		res.ErrInfo = errors.COMMON_ERROR_TIPS.Wrap("发送消息失败")
 		logger.ErrorWF("OnSendMessage SendMessage error", zap.Error(err), zap.Any("req", req))
 		return err
 	}
