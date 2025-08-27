@@ -10,8 +10,9 @@ import (
 	"bytes"
 	"context"
 	"fmt"
-	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fklog"
 	"time"
+
+	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fklog"
 
 	"maze_game_server/common/constdef"
 	"maze_game_server/io/redis/dollassembleredis"
@@ -19,6 +20,8 @@ import (
 	"maze_game_server/io/redis/mazeuserlevelredis"
 	"maze_game_server/pb/server/MazeEquipCache"
 )
+
+var EndLine = "-----------------------------------------------------------\n"
 
 func PackAssembleHeader(ctx context.Context, userId uint64, as *MazeEquipCache.MazeAssembleDb) (header string, err error) {
 	logger := fklog.ContextAppLogger(ctx)

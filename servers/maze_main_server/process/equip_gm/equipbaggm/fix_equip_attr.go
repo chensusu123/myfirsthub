@@ -13,7 +13,7 @@ import (
 	"google.golang.org/protobuf/proto"
 )
 
-func fixAllEquipAttrLimit(logger fklog.FKLogI, userId uint64) error {
+func FixAllEquipAttrLimit(logger fklog.FKLogI, userId uint64) error {
 	equipInfoMap, err := mazebagequipredis.GetAllEquipInfo(logger, userId)
 	if err != nil {
 		logger.ErrorWF("fixAllEquipAttrLimit GetAllEquipInfo fail", zap.Error(err))
