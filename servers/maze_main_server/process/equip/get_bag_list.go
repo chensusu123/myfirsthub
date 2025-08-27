@@ -30,7 +30,7 @@ func (e *Equip) OnGetMazeBagEquipListRQ_10405_10406(s *session.Session, req *Maz
 
 	defer func() {
 		err = s.Response(res)
-		logger.CtxError(ctx, "OnGetMazeBagEquipListRQ end", zap.Any("res", res))
+		logger.CtxInfo(ctx, "OnGetMazeBagEquipListRQ end", zap.Any("res", res))
 	}()
 
 	logger.CtxInfo(ctx, "OnGetMazeBagEquipListRQ with", zap.Any("req", req))
