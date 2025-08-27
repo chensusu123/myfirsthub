@@ -33,14 +33,14 @@ func getKey(args ...interface{}) string {
 }
 
 // GetGroupInfo
-func GetGroupInfo(logger fklog.FKLogI, appID int32, groupID int32) (group *Group, err error) {
+func GetGroupInfo(ctx context.Context, appID int32, groupID int32) (group *Group, err error) {
+	logger := fklog.ContextAppLogger(ctx)
 	var (
 		key = getKey(appID, groupID)
-		ctx = context.Background()
 	)
 	cli, err := globalredis.GCli.GetDB()
 	if err != nil {
-		logger.ErrorWF("GetGroupInfo Client fail",
+		logger.CtxError(ctx, "GetGroupInfo Client fail",
 			zap.Error(err),
 			zap.Any("key", key),
 			zap.Int32("groupID", groupID),
@@ -52,7 +52,7 @@ func GetGroupInfo(logger fklog.FKLogI, appID int32, groupID int32) (group *Group
 		if errors.Is(err, redis.Nil) {
 			err = nil
 		} else {
-			logger.ErrorWF("GetGroupInfo HGetAll fail",
+			logger.CtxError(ctx, "GetGroupInfo HGetAll fail",
 				zap.Error(err),
 				zap.Any("key", key),
 			)
@@ -71,25 +71,25 @@ func GetGroupInfo(logger fklog.FKLogI, appID int32, groupID int32) (group *Group
 			}
 		}
 		if err != nil {
-			logger.ErrorWF("GetGroupInfo Unmarshal fail", zap.Error(err), zap.String("key", key), zap.String("value", value))
+			logger.CtxError(ctx, "GetGroupInfo Unmarshal fail", zap.Error(err), zap.String("key", key), zap.String("value", value))
 			return
 		}
 
 	}
-	logger.DebugWF("GetGroupInfo success", zap.Any("key", key), zap.Any("group", group))
+	logger.CtxInfo(ctx, "GetGroupInfo success", zap.Any("key", key), zap.Any("group", group))
 	return
 }
 
 // CreateGroup
-func CreateGroup(logger fklog.FKLogI, appID int32, creator uint64, groupID int32, invitees []uint64) (group *Group, err error) {
+func CreateGroup(ctx context.Context, appID int32, creator uint64, groupID int32, invitees []uint64) (group *Group, err error) {
 	var (
-		now = time.Now()
-		key = getKey(appID, groupID)
-		ctx = context.Background()
+		now    = time.Now()
+		key    = getKey(appID, groupID)
+		logger = fklog.ContextAppLogger(ctx)
 	)
 	cli, err := globalredis.GCli.GetDB()
 	if err != nil {
-		logger.ErrorWF("CreateGroup Client fail",
+		logger.CtxError(ctx, "CreateGroup Client fail",
 			zap.Error(err),
 			zap.Any("key", key),
 			zap.Int32("groupID", groupID),
@@ -104,7 +104,7 @@ func CreateGroup(logger fklog.FKLogI, appID int32, creator uint64, groupID int32
 	}
 	info, err := json.Marshal(group)
 	if err != nil {
-		logger.ErrorWF("CreateGroup Marshal fail",
+		logger.CtxError(ctx, "CreateGroup Marshal fail",
 			zap.Error(err),
 			zap.Any("key", key),
 			zap.Int32("groupID", groupID),
@@ -122,7 +122,7 @@ func CreateGroup(logger fklog.FKLogI, appID int32, creator uint64, groupID int32
 		}
 		data, err := json.Marshal(member)
 		if err != nil {
-			logger.ErrorWF("CreateGroup Marshal fail",
+			logger.CtxError(ctx, "CreateGroup Marshal fail",
 				zap.Error(err),
 				zap.Any("key", key),
 				zap.Int32("groupID", groupID),
@@ -137,7 +137,7 @@ func CreateGroup(logger fklog.FKLogI, appID int32, creator uint64, groupID int32
 	}
 	err = cli.HMSet(ctx, key, values...).Err()
 	if err != nil {
-		logger.ErrorWF("CreateGroup HMSet fail",
+		logger.CtxError(ctx, "CreateGroup HMSet fail",
 			zap.Error(err),
 			zap.Any("key", key),
 			zap.Int32("groupID", groupID),
@@ -145,19 +145,19 @@ func CreateGroup(logger fklog.FKLogI, appID int32, creator uint64, groupID int32
 		)
 		return nil, err
 	}
-	logger.DebugWF("CreateGroup success", zap.Any("key", key), zap.Int32("groupID", groupID), zap.Any("group", group))
+	logger.CtxInfo(ctx, "CreateGroup success", zap.Any("key", key), zap.Int32("groupID", groupID), zap.Any("group", group))
 	return group, nil
 }
 
 // InviteMember
-func InviteMember(logger fklog.FKLogI, appID int32, groupID int32, memberID uint64) (err error) {
+func InviteMember(ctx context.Context, appID int32, groupID int32, memberID uint64) (err error) {
 	var (
-		key = getKey(appID, groupID)
-		ctx = context.Background()
+		key    = getKey(appID, groupID)
+		logger = fklog.ContextAppLogger(ctx)
 	)
 	cli, err := globalredis.GCli.GetDB()
 	if err != nil {
-		logger.ErrorWF("InviteMember Client fail",
+		logger.CtxError(ctx, "InviteMember Client fail",
 			zap.Error(err),
 			zap.Any("key", key),
 			zap.Int32("groupID", groupID),
@@ -171,7 +171,7 @@ func InviteMember(logger fklog.FKLogI, appID int32, groupID int32, memberID uint
 	}
 	data, err := json.Marshal(member)
 	if err != nil {
-		logger.ErrorWF("InviteMember Marshal fail",
+		logger.CtxError(ctx, "InviteMember Marshal fail",
 			zap.Error(err),
 			zap.Any("key", key),
 			zap.Int32("groupID", groupID),
@@ -185,7 +185,7 @@ func InviteMember(logger fklog.FKLogI, appID int32, groupID int32, memberID uint
 		if errors.Is(err, redis.Nil) {
 			err = nil
 		} else {
-			logger.ErrorWF("InviteMember HDel fail",
+			logger.CtxError(ctx, "InviteMember HDel fail",
 				zap.Error(err),
 				zap.Any("key", key),
 				zap.Int32("groupID", groupID),
@@ -195,7 +195,7 @@ func InviteMember(logger fklog.FKLogI, appID int32, groupID int32, memberID uint
 			return err
 		}
 	}
-	logger.DebugWF("InviteMember success", zap.Any("key", key), zap.Int32("groupID", groupID), zap.Uint64("memberID", memberID))
+	logger.CtxInfo(ctx, "InviteMember success", zap.Any("key", key), zap.Int32("groupID", groupID), zap.Uint64("memberID", memberID))
 	return
 }
 

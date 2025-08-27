@@ -27,14 +27,14 @@ func getKey(args ...interface{}) string {
 }
 
 // QuerySessions
-func QuerySessions(logger fklog.FKLogI, appID int32, userID uint64) (sessions map[string]Session, err error) {
+func QuerySessions(ctx context.Context, appID int32, userID uint64) (sessions map[string]Session, err error) {
+	logger := fklog.ContextAppLogger(ctx)
 	var (
 		key = getKey(appID, userID)
-		ctx = context.Background()
 	)
 	cli, err := globalredis.GCli.GetDB()
 	if err != nil {
-		logger.ErrorWF("QuerySessions Client fail",
+		logger.CtxError(ctx, "QuerySessions Client fail",
 			zap.Error(err),
 			zap.Any("key", key),
 		)
@@ -45,7 +45,7 @@ func QuerySessions(logger fklog.FKLogI, appID int32, userID uint64) (sessions ma
 		if errors.Is(err, redis.Nil) {
 			err = nil
 		} else {
-			logger.ErrorWF("QuerySessions HGETALL fail",
+			logger.CtxError(ctx, "QuerySessions HGETALL fail",
 				zap.Error(err),
 				zap.Any("key", key),
 			)
@@ -57,7 +57,7 @@ func QuerySessions(logger fklog.FKLogI, appID int32, userID uint64) (sessions ma
 		var session Session
 		err = json.Unmarshal([]byte(v), &session)
 		if err != nil {
-			logger.ErrorWF("QuerySessions Unmarshal fail",
+			logger.CtxError(ctx, "QuerySessions Unmarshal fail",
 				zap.Error(err),
 				zap.Any("key", key),
 			)
@@ -65,15 +65,15 @@ func QuerySessions(logger fklog.FKLogI, appID int32, userID uint64) (sessions ma
 		}
 		sessions[k] = session
 	}
-	logger.DebugWF("QuerySessions success", zap.Any("key", key), zap.Any("sessions", sessions))
+	logger.CtxInfo(ctx, "QuerySessions success", zap.Any("key", key), zap.Any("sessions", sessions))
 	return
 }
 
 // AddP2PSession 创建私聊会话
-func AddP2PSession(logger fklog.FKLogI, appID int32, userID uint64, sessionID string, peerID uint64) (err error) {
+func AddP2PSession(ctx context.Context, appID int32, userID uint64, sessionID string, peerID uint64) (err error) {
+	logger := fklog.ContextAppLogger(ctx)
 	var (
 		key = getKey(appID, userID)
-		ctx = context.Background()
 	)
 	session := Session{
 		PeerID:     peerID,
@@ -81,7 +81,7 @@ func AddP2PSession(logger fklog.FKLogI, appID int32, userID uint64, sessionID st
 	}
 	value, err := json.Marshal(session)
 	if err != nil {
-		logger.ErrorWF("AddP2PSession Marshal fail",
+		logger.CtxError(ctx, "AddP2PSession Marshal fail",
 			zap.Error(err),
 			zap.Any("key", key),
 			zap.String("sessionID", sessionID),
@@ -91,7 +91,7 @@ func AddP2PSession(logger fklog.FKLogI, appID int32, userID uint64, sessionID st
 	}
 	cli, err := globalredis.GCli.GetDB()
 	if err != nil {
-		logger.ErrorWF("AddP2PSession Client fail",
+		logger.CtxError(ctx, "AddP2PSession Client fail",
 			zap.Error(err),
 			zap.Any("key", key),
 			zap.String("sessionID", sessionID),
@@ -101,7 +101,7 @@ func AddP2PSession(logger fklog.FKLogI, appID int32, userID uint64, sessionID st
 	}
 	err = cli.HSet(ctx, key, sessionID, value).Err()
 	if err != nil {
-		logger.ErrorWF("AddP2PSession HSET fail",
+		logger.CtxError(ctx, "AddP2PSession HSET fail",
 			zap.Error(err),
 			zap.Any("key", key),
 			zap.String("sessionID", sessionID),
@@ -109,15 +109,15 @@ func AddP2PSession(logger fklog.FKLogI, appID int32, userID uint64, sessionID st
 		)
 		return err
 	}
-	logger.DebugWF("AddP2PSession success", zap.Any("key", key), zap.String("sessionID", sessionID), zap.Any("session", session))
+	logger.CtxInfo(ctx, "AddP2PSession success", zap.Any("key", key), zap.String("sessionID", sessionID), zap.Any("session", session))
 	return
 }
 
 // AddGroupSession 创建群聊会话
-func AddGroupSession(logger fklog.FKLogI, appID int32, userID uint64, sessionID string, groupID int32) (err error) {
+func AddGroupSession(ctx context.Context, appID int32, userID uint64, sessionID string, groupID int32) (err error) {
+	logger := fklog.ContextAppLogger(ctx)
 	var (
 		key = getKey(appID, userID)
-		ctx = context.Background()
 	)
 	session := Session{
 		GroupID:    groupID,
@@ -125,7 +125,7 @@ func AddGroupSession(logger fklog.FKLogI, appID int32, userID uint64, sessionID 
 	}
 	value, err := json.Marshal(session)
 	if err != nil {
-		logger.ErrorWF("AddGroupSession Marshal fail",
+		logger.CtxError(ctx, "AddGroupSession Marshal fail",
 			zap.Error(err),
 			zap.Any("key", key),
 			zap.String("sessionID", sessionID),
@@ -135,7 +135,7 @@ func AddGroupSession(logger fklog.FKLogI, appID int32, userID uint64, sessionID 
 	}
 	cli, err := globalredis.GCli.GetDB()
 	if err != nil {
-		logger.ErrorWF("AddGroupSession Client fail",
+		logger.CtxError(ctx, "AddGroupSession Client fail",
 			zap.Error(err),
 			zap.Any("key", key),
 			zap.String("sessionID", sessionID),
@@ -145,7 +145,7 @@ func AddGroupSession(logger fklog.FKLogI, appID int32, userID uint64, sessionID 
 	}
 	err = cli.HSet(ctx, key, groupID, value).Err()
 	if err != nil {
-		logger.ErrorWF("AddGroupSession HSET fail",
+		logger.CtxError(ctx, "AddGroupSession HSET fail",
 			zap.Error(err),
 			zap.Any("key", key),
 			zap.String("sessionID", sessionID),
@@ -153,19 +153,19 @@ func AddGroupSession(logger fklog.FKLogI, appID int32, userID uint64, sessionID 
 		)
 		return err
 	}
-	logger.DebugWF("AddGroupSession success", zap.Any("key", key), zap.String("sessionID", sessionID), zap.Any("session", session))
+	logger.CtxInfo(ctx, "AddGroupSession success", zap.Any("key", key), zap.String("sessionID", sessionID), zap.Any("session", session))
 	return
 }
 
 // RemoveSession 移除私聊会话
-func RemoveSession(logger fklog.FKLogI, appID int32, userID uint64, sessionID string) (err error) {
+func RemoveSession(ctx context.Context, appID int32, userID uint64, sessionID string) (err error) {
+	logger := fklog.ContextAppLogger(ctx)
 	var (
 		key = getKey(appID, userID)
-		ctx = context.Background()
 	)
 	cli, err := globalredis.GCli.GetDB()
 	if err != nil {
-		logger.ErrorWF("RemoveSession Client fail",
+		logger.CtxError(ctx, "RemoveSession Client fail",
 			zap.Error(err),
 			zap.Any("key", key),
 			zap.String("sessionID", sessionID),
@@ -177,7 +177,7 @@ func RemoveSession(logger fklog.FKLogI, appID int32, userID uint64, sessionID st
 		if errors.Is(err, redis.Nil) {
 			err = nil
 		} else {
-			logger.ErrorWF("RemoveSession HDEL fail",
+			logger.CtxError(ctx, "RemoveSession HDEL fail",
 				zap.Error(err),
 				zap.Any("key", key),
 				zap.String("sessionID", sessionID),
@@ -185,6 +185,6 @@ func RemoveSession(logger fklog.FKLogI, appID int32, userID uint64, sessionID st
 			return err
 		}
 	}
-	logger.DebugWF("RemoveSession success", zap.Any("key", key), zap.String("sessionID", sessionID))
+	logger.CtxInfo(ctx, "RemoveSession success", zap.Any("key", key), zap.String("sessionID", sessionID))
 	return
 }

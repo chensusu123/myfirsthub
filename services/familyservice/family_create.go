@@ -80,7 +80,7 @@ func (r *service) CreateFamily(ctx context.Context, userID uint64, allianceID in
 	}
 
 	//加入联盟群聊
-	err = grouppkg.InviteMember(logger, app.Maze.ID(), allianceID, userID)
+	err = grouppkg.InviteMember(ctx, app.Maze.ID(), allianceID, userID)
 	if err != nil {
 		logger.CtxError(ctx, "CreateFamily InviteMember alliance err",
 			zap.Error(err))
@@ -95,7 +95,7 @@ func (r *service) SetFamilyGroupID(ctx context.Context, familyID int32, groupID 
 	familymodel, err := familymodel.LoadFamilyInfoModel(ctx, familyID)
 	logger := fklog.ContextAppLogger(ctx)
 	if err != nil {
-		logger.ErrorWF("UpgradeFamily familymodel.LoadFamilyInfoModel err",
+		logger.CtxError(ctx, "UpgradeFamily familymodel.LoadFamilyInfoModel err",
 			zap.Int32("familyID", familyID), zap.Error(err))
 		return err
 	}

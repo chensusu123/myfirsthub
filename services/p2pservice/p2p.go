@@ -9,10 +9,9 @@ import (
 
 	"maze_game_server/pb/common/MazeIM"
 
-	"gitlab.ifreetalk.com/nano-ecosystem/fklog"
-
 	"maze_game_server/usecase/online"
 
+	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fklog"
 	"go.uber.org/zap"
 	"google.golang.org/protobuf/proto"
 )
@@ -26,7 +25,7 @@ type P2PService interface {
 	//	- peerID: 接收用户
 	//	- lastID: 客户端的最后一条消息ID
 	// 	- limit: 读取时限制读取条数
-	QueryMessages(ctx context.Context, logger fklog.FKLogI, a app.App, user app.User, peerID uint64, lastID uint64, limit int) (messages []app.Message, err error)
+	QueryMessages(ctx context.Context, a app.App, user app.User, peerID uint64, lastID uint64, limit int) (messages []app.Message, err error)
 
 	// SendMessage 向指定用户发送私聊消息
 	//
@@ -36,7 +35,7 @@ type P2PService interface {
 	//	- peerID: 接收用户
 	//	- _type: 消息类型
 	//	- content: 消息内容
-	SendMessage(ctx context.Context, logger fklog.FKLogI, a app.App, user app.User, peerID uint64, _type int32, content string) (messageID uint64, err error)
+	SendMessage(ctx context.Context, a app.App, user app.User, peerID uint64, _type int32, content string) (messageID uint64, err error)
 
 	// ReadMessage 标记私聊中的指定消息已读
 	//
@@ -45,7 +44,7 @@ type P2PService interface {
 	//	- userID: 发送用户
 	//	- peerID: 接收用户
 	//	- messageID: 消息ID
-	ReadMessage(ctx context.Context, logger fklog.FKLogI, a app.App, user app.User, peerID uint64, messageID uint64) (err error)
+	ReadMessage(ctx context.Context, a app.App, user app.User, peerID uint64, messageID uint64) (err error)
 
 	// RemoveMessage 删除私聊中的指定消息(只删除自己这边的私聊记录)
 	//
@@ -54,7 +53,7 @@ type P2PService interface {
 	//	- userID: 发送用户
 	//	- peerID: 接收用户
 	//	- messageID: 消息ID
-	RemoveMessage(ctx context.Context, logger fklog.FKLogI, a app.App, user app.User, peerID uint64, messageID uint64) (err error)
+	RemoveMessage(ctx context.Context, a app.App, user app.User, peerID uint64, messageID uint64) (err error)
 }
 
 var (
@@ -75,18 +74,18 @@ func newP2PService() P2PService {
 }
 
 // QueryMessages implements P2PService.
-func (p *p2p) QueryMessages(ctx context.Context, logger fklog.FKLogI, a app.App, user app.User, peerID uint64, lastID uint64, limit int) (messages []app.Message, err error) {
+func (p *p2p) QueryMessages(ctx context.Context, a app.App, user app.User, peerID uint64, lastID uint64, limit int) (messages []app.Message, err error) {
 	if lastID <= 0 {
 		lastID = idgenerator.MaxMessageID
 	}
 	if limit <= 0 {
 		limit = 20
 	}
-	return p2pmsg.QueryMessages(logger, a.ID(), user.UserID(), peerID, lastID, limit)
+	return p2pmsg.QueryMessages(ctx, a.ID(), user.UserID(), peerID, lastID, limit)
 }
 
 // SendMessage implements P2PService.
-func (p *p2p) SendMessage(ctx context.Context, logger fklog.FKLogI, a app.App, user app.User, peerID uint64, _type int32, content string) (messageID uint64, err error) {
+func (p *p2p) SendMessage(ctx context.Context, a app.App, user app.User, peerID uint64, _type int32, content string) (messageID uint64, err error) {
 	message := app.Message{}
 	messageID, err = idgenerator.NextID()
 	if err != nil {
@@ -97,36 +96,38 @@ func (p *p2p) SendMessage(ctx context.Context, logger fklog.FKLogI, a app.App, u
 	message.CreateTime = time.Now().Unix()
 	message.Type = _type
 	message.Content = content
+	logger := fklog.ContextAppLogger(ctx)
 	//发送者的记录
-	err = p2pmsg.SaveMessage(logger, a.ID(), user.UserID(), peerID, message)
+	err = p2pmsg.SaveMessage(ctx, a.ID(), user.UserID(), peerID, message)
 	if err != nil {
-		logger.ErrorWF("SaveMessage sender error", zap.Error(err))
+		logger.CtxError(ctx, "SaveMessage sender error", zap.Error(err))
 	}
 	//接收者的记录
-	err = p2pmsg.SaveMessage(logger, a.ID(), peerID, user.UserID(), message)
+	err = p2pmsg.SaveMessage(ctx, a.ID(), peerID, user.UserID(), message)
 	if err != nil {
-		logger.ErrorWF("SaveMessage peer error", zap.Error(err))
+		logger.CtxError(ctx, "SaveMessage peer error", zap.Error(err))
 	}
 	// 通知接收者
-	err = p.notifyMessage(ctx, logger, user.UserID(), peerID, messageID, _type, content)
+	err = p.notifyMessage(ctx, user.UserID(), peerID, messageID, _type, content)
 	if err != nil {
-		logger.ErrorWF("notifyMessage error", zap.Error(err))
+		logger.CtxError(ctx, "notifyMessage error", zap.Error(err))
 	}
 	return messageID, nil
 }
 
 // ReadMessage implements P2PService.
-func (p *p2p) ReadMessage(ctx context.Context, logger fklog.FKLogI, a app.App, user app.User, peerID uint64, messageID uint64) (err error) {
+func (p *p2p) ReadMessage(ctx context.Context, a app.App, user app.User, peerID uint64, messageID uint64) (err error) {
 	// TODO 标记消息已读
 	return
 }
 
 // RemoveMessage implements P2PService.
-func (p *p2p) RemoveMessage(ctx context.Context, logger fklog.FKLogI, a app.App, user app.User, peerID uint64, messageID uint64) (err error) {
+func (p *p2p) RemoveMessage(ctx context.Context, a app.App, user app.User, peerID uint64, messageID uint64) (err error) {
 	return
 }
 
-func (p *p2p) notifyMessage(ctx context.Context, logger fklog.FKLogI, userId uint64, peerID uint64, messageID uint64, _type int32, content string) error {
+func (p *p2p) notifyMessage(ctx context.Context, userId uint64, peerID uint64, messageID uint64, _type int32, content string) error {
+	logger := fklog.ContextAppLogger(ctx)
 	// 推送消息给集群
 	notifyMessage := &MazeIM.MessageNotificationID{
 		From:    proto.Int32(1),
@@ -140,10 +141,10 @@ func (p *p2p) notifyMessage(ctx context.Context, logger fklog.FKLogI, userId uin
 			CreateTime: proto.Int64(time.Now().Unix()),
 		},
 	}
-	logger.DebugWF("notifyMessage", zap.Any("notifyMessage", notifyMessage))
+	logger.CtxInfo(ctx, "notifyMessage", zap.Any("notifyMessage", notifyMessage))
 	err := online.ClusterPush(ctx, userId, 10651, notifyMessage)
 	if err != nil {
-		logger.ErrorWF("notifyMessage error", zap.Error(err), zap.Any("notifyMessage", notifyMessage))
+		logger.CtxError(ctx, "notifyMessage error", zap.Error(err), zap.Any("notifyMessage", notifyMessage))
 	}
 	return err
 }

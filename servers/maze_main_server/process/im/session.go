@@ -3,27 +3,28 @@ package im
 import (
 	"maze_game_server/app"
 	"maze_game_server/common/errors"
-	"maze_game_server/lib/log"
 	"maze_game_server/lib/nano/session"
 	"maze_game_server/pb/common/MazeIM"
 	"maze_game_server/services/sessionservice"
 
+	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fklog"
 	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fkprometheus"
 	"go.uber.org/zap"
 )
 
 func (im *IM) OnQueryRecentSessions_10652_10653(s *session.Session, req *MazeIM.QueryRecentSessionsRQ) (err error) {
 	defer fkprometheus.InfoPMT("OnQueryMessages")()
+	ctx := s.Context()
+	logger := fklog.ContextAppLogger(ctx)
 
-	logger := log.Clone("Game", uint64(s.UID()), 0)
 	res := &MazeIM.QueryRecentSessionsRS{}
 	res.Header = req.Header
 	res.ErrInfo = errors.NO_ERROR
 
-	logger.InfoWF("OnQueryMessages start", zap.Any("req", req))
+	logger.CtxInfo(ctx, "OnQueryMessages start", zap.Any("req", req))
 	defer func() {
 		err = s.Response(res)
-		logger.InfoWF("OnQueryMessages end", zap.Any("res", res))
+		logger.CtxInfo(ctx, "OnQueryMessages end", zap.Any("res", res))
 	}()
 
 	var (
@@ -35,17 +36,17 @@ func (im *IM) OnQueryRecentSessions_10652_10653(s *session.Session, req *MazeIM.
 		return err
 	}
 
-	messages, err := sessionservice.Default.QueryRecentSessions(s.Context(), logger, app.Maze, user)
+	messages, err := sessionservice.Default.QueryRecentSessions(ctx, app.Maze, user)
 	if err != nil {
 		res.ErrInfo = errors.MODULE_ERROR.Wrap("获取最近会话失败")
-		logger.ErrorWF("OnQueryMessages QueryRecentSessions error", zap.Error(err))
+		logger.CtxError(ctx, "OnQueryMessages QueryRecentSessions error", zap.Error(err))
 		return err
 	}
 
-	messagesList, err := sessionservice.Default.GetMessageInfo(s.Context(), logger, app.Maze, user, messages)
+	messagesList, err := sessionservice.Default.GetMessageInfo(ctx, app.Maze, user, messages)
 	if err != nil {
 		res.ErrInfo = errors.MODULE_ERROR.Wrap("获取消息信息失败")
-		logger.ErrorWF("OnQueryMessages GetMessageInfo error", zap.Error(err))
+		logger.CtxError(ctx, "OnQueryMessages GetMessageInfo error", zap.Error(err))
 		return err
 	}
 	res.SessionList = messagesList
@@ -54,16 +55,17 @@ func (im *IM) OnQueryRecentSessions_10652_10653(s *session.Session, req *MazeIM.
 
 func (im *IM) OnRemoveSession_10654_10655(s *session.Session, req *MazeIM.RemoveSessionRQ) (err error) {
 	defer fkprometheus.InfoPMT("OnRemoveSession")()
+	ctx := s.Context()
+	logger := fklog.ContextAppLogger(ctx)
 
-	logger := log.Clone("Game", uint64(s.UID()), 0)
 	res := &MazeIM.RemoveSessionRS{}
 	res.Header = req.Header
 	res.ErrInfo = errors.NO_ERROR
 
-	logger.InfoWF("OnRemoveSession start", zap.Any("req", req))
+	logger.CtxInfo(ctx, "OnRemoveSession start", zap.Any("req", req))
 	defer func() {
 		err = s.Response(res)
-		logger.InfoWF("OnRemoveSession end", zap.Any("res", res))
+		logger.CtxInfo(ctx, "OnRemoveSession end", zap.Any("res", res))
 	}()
 
 	var (
@@ -76,10 +78,10 @@ func (im *IM) OnRemoveSession_10654_10655(s *session.Session, req *MazeIM.Remove
 		return err
 	}
 
-	err = sessionservice.Default.RemoveSession(s.Context(), logger, app.Maze, user, sessionID)
+	err = sessionservice.Default.RemoveSession(ctx, app.Maze, user, sessionID)
 	if err != nil {
 		res.ErrInfo = errors.MODULE_ERROR.Wrap("删除会话失败")
-		logger.ErrorWF("OnRemoveSession RemoveSession error", zap.Error(err))
+		logger.CtxError(ctx, "OnRemoveSession RemoveSession error", zap.Error(err))
 		return err
 	}
 

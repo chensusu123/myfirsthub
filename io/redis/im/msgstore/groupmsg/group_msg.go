@@ -10,7 +10,7 @@ import (
 	"strconv"
 
 	"github.com/redis/go-redis/v9"
-	"gitlab.ifreetalk.com/nano-ecosystem/fklog"
+	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fklog"
 	"go.uber.org/zap"
 )
 
@@ -22,14 +22,14 @@ func getKey(args ...interface{}) string {
 }
 
 // QueryMessages 分页查询会话中的历史消息
-func QueryMessages(logger fklog.FKLogI, appID int32, groupID int32, lastID uint64, limit int) (messages []Message, err error) {
+func QueryMessages(ctx context.Context, appID int32, groupID int32, lastID uint64, limit int) (messages []Message, err error) {
+	logger := fklog.ContextAppLogger(ctx)
 	var (
 		key = getKey(appID, groupID)
-		ctx = context.Background()
 	)
 	cli, err := globalredis.GCli.GetDB()
 	if err != nil {
-		logger.ErrorWF("QueryMessages Client fail",
+		logger.CtxError(ctx, "QueryMessages Client fail",
 			zap.Error(err),
 			zap.Any("key", key),
 		)
@@ -40,7 +40,7 @@ func QueryMessages(logger fklog.FKLogI, appID int32, groupID int32, lastID uint6
 		if errors.Is(err, redis.Nil) {
 			err = nil
 		} else {
-			logger.ErrorWF("QueryMessages ZRevRangeByScore fail",
+			logger.CtxError(ctx, "QueryMessages ZRevRangeByScore fail",
 				zap.Error(err),
 				zap.Any("key", key),
 			)
@@ -51,24 +51,24 @@ func QueryMessages(logger fklog.FKLogI, appID int32, groupID int32, lastID uint6
 		var message Message
 		err = json.Unmarshal([]byte(value), &message)
 		if err != nil {
-			logger.ErrorWF("QueryMessages Unmarshal fail", zap.Error(err), zap.String("value", value))
+			logger.CtxError(ctx, "QueryMessages Unmarshal fail", zap.Error(err), zap.String("value", value))
 			return nil, err
 		}
 		messages = append(messages, message)
 	}
-	logger.DebugWF("QueryMessages success", zap.Any("key", key), zap.Any("messages", messages))
+	logger.CtxInfo(ctx, "QueryMessages success", zap.Any("key", key), zap.Any("messages", messages))
 	return
 }
 
 // SaveMessage 在会话保存历史消息
-func SaveMessage(logger fklog.FKLogI, appID int32, groupID int32, message Message) (err error) {
+func SaveMessage(ctx context.Context, appID int32, groupID int32, message Message) (err error) {
+	logger := fklog.ContextAppLogger(ctx)
 	var (
 		key = getKey(appID, groupID)
-		ctx = context.Background()
 	)
 	cli, err := globalredis.GCli.GetDB()
 	if err != nil {
-		logger.ErrorWF("SaveMessage Client fail",
+		logger.CtxError(ctx, "SaveMessage Client fail",
 			zap.Error(err),
 			zap.Any("key", key),
 		)
@@ -76,7 +76,7 @@ func SaveMessage(logger fklog.FKLogI, appID int32, groupID int32, message Messag
 	}
 	data, err := json.Marshal(message)
 	if err != nil {
-		logger.ErrorWF("SaveMessage Marshal fail",
+		logger.CtxError(ctx, "SaveMessage Marshal fail",
 			zap.Error(err),
 			zap.Any("key", key),
 		)
@@ -88,13 +88,13 @@ func SaveMessage(logger fklog.FKLogI, appID int32, groupID int32, message Messag
 		if errors.Is(err, redis.Nil) {
 			err = nil
 		} else {
-			logger.ErrorWF("SaveMessage ZAdd fail",
+			logger.CtxError(ctx, "SaveMessage ZAdd fail",
 				zap.Error(err),
 				zap.Any("key", key),
 			)
 			return err
 		}
 	}
-	logger.DebugWF("SaveMessage success", zap.Any("key", key), zap.Any("message", message))
+	logger.CtxInfo(ctx, "SaveMessage success", zap.Any("key", key), zap.Any("message", message))
 	return
 }

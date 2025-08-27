@@ -29,7 +29,7 @@ func (s *service) AddAlliance(ctx context.Context, allianceName string) error {
 		return err
 	}
 	// 创建联盟聊天组
-	_, err = grouppkg.CreateGroup(logger, app.Maze.ID(), uint64(0), allianceInfoModel.AllianceGroupID, make([]uint64, 0))
+	_, err = grouppkg.CreateGroup(ctx, app.Maze.ID(), uint64(0), allianceInfoModel.AllianceGroupID, make([]uint64, 0))
 	if err != nil {
 		logger.CtxError(ctx, "AddAlliance CreateGroup err", zap.Error(err))
 		return err

@@ -144,13 +144,14 @@ func (f *Family) OnCreateFamilyRQ_10585_10586(s *session.Session, req *MazeFamil
 	}
 	user, err := app.WrapUser(uid, "")
 	if err != nil {
-		logger.ErrorWF("OnQueryMessages WrapUser error", zap.Error(err), zap.Any("req", req))
+		logger.CtxError(ctx, "OnQueryMessages WrapUser error", zap.Error(err), zap.Any("req", req))
 		return err
 	}
 	//创建家族群聊
-	groupInfo, err := groupservice.Default.CreateGroup(s.Context(), logger, app.Maze, user, make([]uint64, 0))
+	groupInfo, err := groupservice.Default.CreateGroup(ctx, app.Maze, user, make([]uint64, 0))
 	if err != nil {
 		res.ErrInfo = errors.MODULE_ERROR.Wrap("设置玩家所在家族失败")
+		logger.CtxError(ctx, "OnCreateFamilyRQ CreateGroup error", zap.Error(err), zap.Any("req", req))
 		return err
 	}
 	familyservice.GlobalFamilyService.SetFamilyGroupID(ctx, res.FamilyInfo.GetFamilyId(), groupInfo.ID)
@@ -163,6 +164,7 @@ func (f *Family) OnCreateFamilyRQ_10585_10586(s *session.Session, req *MazeFamil
 	err = familyservice.GlobalFamilyService.SetUserFamily(ctx, uid, res.FamilyInfo.GetFamilyId())
 	if err != nil {
 		res.ErrInfo = errors.MODULE_ERROR.Wrap("设置玩家所在家族失败")
+		logger.CtxError(ctx, "OnCreateFamilyRQ SetUserFamily error", zap.Error(err), zap.Any("req", req))
 		return
 	}
 
@@ -453,9 +455,10 @@ func (f *Family) OnConfirmApplyFamilyRQ_10589_10590(s *session.Session, req *Maz
 			return err
 		}
 		//加入家族群聊
-		err = groupservice.Default.InviteMember(s.Context(), logger, app.Maze, familyInfo.FamilyGroupID, req.GetApplyUser().GetUserId())
+		err = groupservice.Default.InviteMember(ctx, app.Maze, familyInfo.FamilyGroupID, req.GetApplyUser().GetUserId())
 		if err != nil {
 			res.ErrInfo = errors.MODULE_ERROR.Wrap("加入家族群聊失败")
+			logger.CtxError(ctx, "加入家族群聊失败", zap.Error(err))
 			return err
 		}
 		//加入联盟群聊
@@ -465,9 +468,10 @@ func (f *Family) OnConfirmApplyFamilyRQ_10589_10590(s *session.Session, req *Maz
 			res.ErrInfo = errors.MODULE_ERROR.Wrap("获取联盟ID失败")
 			return err
 		}
-		err = groupservice.Default.InviteMember(s.Context(), logger, app.Maze, allianceID, req.GetApplyUser().GetUserId())
+		err = groupservice.Default.InviteMember(ctx, app.Maze, allianceID, req.GetApplyUser().GetUserId())
 		if err != nil {
 			res.ErrInfo = errors.MODULE_ERROR.Wrap("加入联盟群聊失败")
+			logger.CtxError(ctx, "加入联盟群聊失败", zap.Error(err))
 			return err
 		}
 

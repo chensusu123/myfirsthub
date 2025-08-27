@@ -11,7 +11,6 @@ import (
 
 	"maze_game_server/pb/common/MazeIM"
 
-	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fklog"
 	"google.golang.org/protobuf/proto"
 )
 
@@ -21,7 +20,7 @@ type SessionService interface {
 	// 参数:
 	//	- a: 应用
 	// 	- user: 用户标识
-	QueryRecentSessions(ctx context.Context, logger fklog.FKLogI, a app.App, user app.User) (sessions map[string]app.Session, err error)
+	QueryRecentSessions(ctx context.Context, a app.App, user app.User) (sessions map[string]app.Session, err error)
 
 	// CreateNormalSession 创建普通私聊会话
 	//
@@ -29,7 +28,7 @@ type SessionService interface {
 	//	- a: 应用
 	// 	- user: 用户标识
 	//	- peerID: 对方ID
-	CreateNormalSession(ctx context.Context, logger fklog.FKLogI, a app.App, user app.User, peerID uint64) (err error)
+	CreateNormalSession(ctx context.Context, a app.App, user app.User, peerID uint64) (err error)
 
 	// CreateGroupSession 创建群聊会话
 	//
@@ -37,7 +36,7 @@ type SessionService interface {
 	//	- a: 应用
 	// 	- user: 用户标识
 	//	- groupID: 群组ID
-	CreateGroupSession(ctx context.Context, logger fklog.FKLogI, a app.App, user app.User, groupID int32) (err error)
+	CreateGroupSession(ctx context.Context, a app.App, user app.User, groupID int32) (err error)
 
 	// RemoveSession 删除会话记录
 	//
@@ -45,14 +44,14 @@ type SessionService interface {
 	//	- a: 应用
 	// 	- user: 用户标识
 	//	- sessionID: 会话ID
-	RemoveSession(ctx context.Context, logger fklog.FKLogI, a app.App, user app.User, sessionID string) (err error)
+	RemoveSession(ctx context.Context, a app.App, user app.User, sessionID string) (err error)
 	// GetMessageInfo 获取会话消息信息
 	//
 	// 参数:
 	//	- a: 应用
 	// 	- user: 用户标识
 	//	- sessions: 会话列表
-	GetMessageInfo(ctx context.Context, logger fklog.FKLogI, a app.App, user app.User, sessions map[string]app.Session) (messageInfo []*MazeIM.Session, err error)
+	GetMessageInfo(ctx context.Context, a app.App, user app.User, sessions map[string]app.Session) (messageInfo []*MazeIM.Session, err error)
 }
 
 var (
@@ -63,25 +62,25 @@ type session struct {
 }
 
 // QueryRecentSessions implements SessionService.
-func (s *session) QueryRecentSessions(ctx context.Context, logger fklog.FKLogI, a app.App, user app.User) (sessions map[string]app.Session, err error) {
-	return sessionpkg.QuerySessions(logger, a.ID(), user.UserID())
+func (s *session) QueryRecentSessions(ctx context.Context, a app.App, user app.User) (sessions map[string]app.Session, err error) {
+	return sessionpkg.QuerySessions(ctx, a.ID(), user.UserID())
 }
 
 // CreateNormalSession implements SessionService.
-func (s *session) CreateNormalSession(ctx context.Context, logger fklog.FKLogI, a app.App, user app.User, peerID uint64) (err error) {
+func (s *session) CreateNormalSession(ctx context.Context, a app.App, user app.User, peerID uint64) (err error) {
 	sessionID := s.NormalSessionID(peerID)
-	return sessionpkg.AddP2PSession(logger, a.ID(), user.UserID(), sessionID, peerID)
+	return sessionpkg.AddP2PSession(ctx, a.ID(), user.UserID(), sessionID, peerID)
 }
 
 // CreateGroupSession implements SessionService.
-func (s *session) CreateGroupSession(ctx context.Context, logger fklog.FKLogI, a app.App, user app.User, groupID int32) (err error) {
+func (s *session) CreateGroupSession(ctx context.Context, a app.App, user app.User, groupID int32) (err error) {
 	sessionID := s.GroupSessionID(groupID)
-	return sessionpkg.AddGroupSession(logger, a.ID(), user.UserID(), sessionID, groupID)
+	return sessionpkg.AddGroupSession(ctx, a.ID(), user.UserID(), sessionID, groupID)
 }
 
 // RemoveSession implements SessionService.
-func (s *session) RemoveSession(ctx context.Context, logger fklog.FKLogI, a app.App, user app.User, sessionID string) (err error) {
-	return sessionpkg.RemoveSession(logger, a.ID(), user.UserID(), sessionID)
+func (s *session) RemoveSession(ctx context.Context, a app.App, user app.User, sessionID string) (err error) {
+	return sessionpkg.RemoveSession(ctx, a.ID(), user.UserID(), sessionID)
 }
 
 func (s *session) NormalSessionID(userID uint64) string {
@@ -97,14 +96,15 @@ func sum(data []byte) string {
 	sum := sha1.Sum(data)
 	return hex.EncodeToString(sum[:])
 }
-func (s *session) GetMessageInfo(ctx context.Context, logger fklog.FKLogI, a app.App, user app.User, sessions map[string]app.Session) (messageInfo []*MazeIM.Session, err error) {
+
+func (s *session) GetMessageInfo(ctx context.Context, a app.App, user app.User, sessions map[string]app.Session) (messageInfo []*MazeIM.Session, err error) {
 	if len(sessions) == 0 {
 		return nil, nil
 	}
 	for _, session := range sessions {
 		peerID := session.PeerID
 		if peerID > 0 {
-			p2pmsg, err := p2pmsg.QueryMessages(logger, a.ID(), user.UserID(), peerID, uint64(0), 10)
+			p2pmsg, err := p2pmsg.QueryMessages(ctx, a.ID(), user.UserID(), peerID, uint64(0), 10)
 			if err != nil {
 				return nil, err
 			}
@@ -120,7 +120,7 @@ func (s *session) GetMessageInfo(ctx context.Context, logger fklog.FKLogI, a app
 		} else {
 			groupID := session.GroupID
 			if groupID > 0 {
-				groupmsg, err := p2pmsg.QueryMessages(logger, a.ID(), user.UserID(), 0, uint64(0), 10)
+				groupmsg, err := p2pmsg.QueryMessages(ctx, a.ID(), user.UserID(), 0, uint64(0), 10)
 				if err != nil {
 					return nil, err
 				}
