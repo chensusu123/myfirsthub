@@ -87,3 +87,39 @@ func (im *IM) OnSendMessage_10645_10646(s *session.Session, req *MazeIM.SendMess
 	res.PeerId = proto.Uint64(peerId)
 	return nil
 }
+
+func (im *IM) OnReadMessage_10656_10657(s *session.Session, req *MazeIM.ReadMessageRQ) (err error) {
+	defer fkprometheus.InfoPMT("OnReadMessage")()
+
+	logger := log.Clone("Game", uint64(s.UID()), 0)
+	res := &MazeIM.ReadMessageRS{}
+	res.Header = req.Header
+	res.ErrInfo = errors.NO_ERROR
+
+	logger.InfoWF("OnReadMessage start", zap.Any("req", req))
+	defer func() {
+		err = s.Response(res)
+		logger.InfoWF("OnReadMessage end", zap.Any("res", res))
+	}()
+
+	var (
+		userId = uint64(s.UID())
+		peerId = req.GetPeerId()
+		msgID  = req.GetMsgId()
+	)
+
+	user, err := app.WrapUser(userId, "")
+	if err != nil {
+		res.ErrInfo = errors.COMMON_ERROR_TIPS.Wrap("参数错误")
+		logger.ErrorWF("OnReadMessage WrapUser error", zap.Error(err), zap.Any("req", req))
+		return err
+	}
+
+	err = p2pservice.Default.ReadMessage(s.Context(), logger, app.Maze, user, peerId, msgID)
+	if err != nil {
+		res.ErrInfo = errors.MODULE_ERROR.ToInfo()
+		logger.ErrorWF("OnReadMessage SendMessage error", zap.Error(err), zap.Any("req", req))
+		return err
+	}
+	return nil
+}
