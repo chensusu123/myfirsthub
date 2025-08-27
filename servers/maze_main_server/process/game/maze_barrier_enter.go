@@ -55,6 +55,10 @@ func (g *Game) OnMazeBarrierEnterRQ_10447_10448(s *session.Session, req *MazeGam
 	res.Header = req.Header
 	res.ErrInfo = errors.NO_ERROR
 
+	debug := req.GetDebug()
+	// 是否强制进入关卡
+	isForce := debug == int32(MazeGame.MazeBarrierEnterDebug_FORCE)
+
 	userId := uint64(s.UID())
 
 	if req.GetBarrierId() <= 0 {
@@ -88,12 +92,11 @@ func (g *Game) OnMazeBarrierEnterRQ_10447_10448(s *session.Session, req *MazeGam
 	}
 	oldEnergy := energy
 
-	// TODO 客户端需要进入任意关卡
-	// if req.GetBarrierId() < userInfo.Barrier {
-	// 	logger.ErrorWF("OnMazeBarrierEnterRQ req barrier lt pass barrier", zap.Any("req", req), zap.Int32("save", userInfo.Barrier))
-	// 	res.ErrInfo = errors.COMMON_ERROR_TIPS.Wrap("该关卡id小于存储的关卡id")
-	// 	return
-	// }
+	if !isForce && req.GetBarrierId() < userInfo.Barrier {
+		logger.ErrorWF("OnMazeBarrierEnterRQ req barrier lt pass barrier", zap.Any("req", req), zap.Int32("save", userInfo.Barrier))
+		res.ErrInfo = errors.COMMON_ERROR_TIPS.Wrap("该关卡id小于存储的关卡id")
+		return
+	}
 
 	//	res.Energy = proto.Int32(userInfo.Energy)
 	var isNewBarrier bool
@@ -174,10 +177,10 @@ func (g *Game) OnMazeBarrierEnterRQ_10447_10448(s *session.Session, req *MazeGam
 	} else {
 		isNewBarrier = true
 	}
-	// if req.GetBarrierId() > userInfo.Barrier {
-	isNewBarrier = true
-	userInfo.SetBarrier(req.GetBarrierId())
-	// }
+	if isForce || req.GetBarrierId() > userInfo.Barrier {
+		isNewBarrier = true
+		userInfo.SetBarrier(req.GetBarrierId())
+	}
 
 	//shopInfo, err := calequipsequence.GetMazeShopInfo(logger, userId, int32(userInfo.Level), req.GetBarrierId())
 	//if err != nil {
