@@ -45,7 +45,7 @@ func (g *Game) OnBarrierOpenBoxRQ_10445_10446(s *session.Session, req *MazeGame.
 	userId := uint64(s.UID())
 
 	// 关卡中打开宝箱
-	kongfu, equips, items, errinfo := barrierservice.Global.OpenBox(logger, userId, req.GetBarrierId(), int32(req.GetBoxId()))
+	kongfu, equips, items, errinfo := barrierservice.Global.OpenBox(ctx, userId, req.GetBarrierId(), int32(req.GetBoxId()))
 	if errinfo.GetErrCode() != errors.NO_ERROR_CODE {
 		res.ErrInfo = errinfo
 		logger.ErrorWF("OnBarrierOpenBoxRQ OpenBox fail", zap.Error(fmt.Errorf("OpenBox: %s", errinfo.GetErrMsg())), zap.Any("boxId", req.GetBoxId()))

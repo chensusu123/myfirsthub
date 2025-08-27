@@ -14,6 +14,7 @@ import (
 
 func (g *Game) OnBarrierDamageRQ_10622_10623(s *session.Session, req *MazeGame.BarrierDamageRQ) (err error) {
 	defer fkprometheus.InfoPMT("OnBarrierDamageRQ")()
+	ctx := s.Context()
 
 	logger := log.Clone("Game", uint64(s.UID()), 0)
 	res := &MazeGame.BarrierDamageRS{}
@@ -42,7 +43,7 @@ func (g *Game) OnBarrierDamageRQ_10622_10623(s *session.Session, req *MazeGame.B
 		return
 	}
 
-	userInfo, err := mazeuserinfo.GetUserInfoV2(logger, userId)
+	userInfo, err := mazeuserinfo.GetUserInfoV2(ctx, userId)
 	if err != nil {
 		logger.ErrorWF("OnBarrierDamageRQ GetUserInfoV2 fail", zap.Error(err))
 		res.ErrInfo = errors.MODULE_ERROR.ToInfo()
@@ -55,7 +56,7 @@ func (g *Game) OnBarrierDamageRQ_10622_10623(s *session.Session, req *MazeGame.B
 		return
 	}
 
-	totalDamage, err := barrierstagecounterservice.GlobalBarrierStageCounterService.AddDamage(logger, userId, req.GetBarrierId(), req.GetStageId(), req.GetDamage())
+	totalDamage, err := barrierstagecounterservice.GlobalBarrierStageCounterService.AddDamage(ctx, userId, req.GetBarrierId(), req.GetStageId(), req.GetDamage())
 	if err != nil {
 		logger.ErrorWF("OnBarrierDamageRQ AddDamage fail", zap.Any("req", req), zap.Error(err))
 		return err

@@ -14,7 +14,7 @@ import (
 // 邮件阅读
 func (g *Mail) OnMazeReadMailRQ_10628_10629(s *session.Session, req *MazeMail.MazeReadMailRQ) (err error) {
 	defer fkprometheus.InfoPMT("OnMazeReadMailRQ")()
-
+	ctx := s.Context()
 	logger := log.Clone("Frame", uint64(s.UID()), 0)
 	res := &MazeMail.MazeReadMailRS{}
 
@@ -29,7 +29,7 @@ func (g *Mail) OnMazeReadMailRQ_10628_10629(s *session.Session, req *MazeMail.Ma
 
 	userId := uint64(s.UID())
 
-	_, err = mazeuserinfo.GetUserInfoV2(logger, userId)
+	_, err = mazeuserinfo.GetUserInfoV2(ctx, userId)
 	if err != nil {
 		logger.ErrorWF("OnMazeReadMailRQ GetUserInfoV2 fail", zap.Error(err))
 		res.ErrInfo = errors.MODULE_ERROR.ToInfo()
@@ -37,14 +37,14 @@ func (g *Mail) OnMazeReadMailRQ_10628_10629(s *session.Session, req *MazeMail.Ma
 	}
 
 	if req.GetIsAll() {
-		_, err := mailservice.GlobalMailService.ReadAllMail(logger, userId, req.GetLabel())
+		_, err := mailservice.GlobalMailService.ReadAllMail(ctx, userId, req.GetLabel())
 		if err != nil {
 			logger.ErrorWF("OnMazeReadMailRQ ReadMail fail", zap.Error(err), zap.Uint64("userId", userId), zap.Int32("Label", req.GetLabel()))
 			res.ErrInfo = errors.COMMON_ERROR_TIPS.Wrap(err.Error())
 			return err
 		}
 	} else {
-		_, err = mailservice.GlobalMailService.ReadMail(logger, userId, req.GetMailId(), req.GetLabel())
+		_, err = mailservice.GlobalMailService.ReadMail(ctx, userId, req.GetMailId(), req.GetLabel())
 		if err != nil {
 			logger.ErrorWF("OnMazeReadMailRQ ReadMail fail", zap.Error(err), zap.Uint64("mailId", req.GetMailId()))
 			res.ErrInfo = errors.COMMON_ERROR_TIPS.Wrap(err.Error())
@@ -52,7 +52,7 @@ func (g *Mail) OnMazeReadMailRQ_10628_10629(s *session.Session, req *MazeMail.Ma
 		}
 	}
 
-	list, err := mailservice.GlobalMailService.GetMailListByLabel(logger, userId, req.GetLabel(), 0, 30)
+	list, err := mailservice.GlobalMailService.GetMailListByLabel(ctx, userId, req.GetLabel(), 0, 30)
 	if err != nil {
 		logger.ErrorWF("OnMazeGetMailListRQ GetMailList fail", zap.Error(err))
 		res.ErrInfo = errors.MODULE_ERROR.ToInfo()

@@ -88,7 +88,7 @@ func OnGmEquipPosLvUp(ctx context.Context, userId uint64, targetLv int32) (err e
 	// 	return
 	// }
 
-	mazeLv, err := mazeuserlevelredis.GetUserLevel(logger, userId)
+	mazeLv, err := mazeuserlevelredis.GetUserLevel(ctx, userId)
 	if err != nil {
 		err = fmt.Errorf("OnGmEquipPosLvUp GetUserLevel")
 		logger.CtxError(ctx, "OnEquipPosLvUpRQ GetUserLevel", zap.Error(err))

@@ -1,6 +1,7 @@
 package barrierservice
 
 import (
+	"context"
 	"fmt"
 	"maze_game_server/common/errors"
 	"maze_game_server/config/GMazeBoxV8Cfg"
@@ -13,8 +14,9 @@ import (
 )
 
 // OpenBox implements BarrierService.
-func (b *barrier) OpenBox(logger fklog.FKLogI, userID uint64, barrierID int32, boxID int32) (
+func (b *barrier) OpenBox(ctx context.Context, userID uint64, barrierID int32, boxID int32) (
 	kongfu int32, equips map[int32]int32, items map[int32]int64, errinfo *MessageType.ErrorInfo) {
+	logger := fklog.ContextAppLogger(ctx)
 	boxCfg := GMazeBoxV8Cfg.Get(boxID)
 	if boxCfg == nil {
 		logger.ErrorWF("OpenBox get box cfg fail", zap.Any("boxId", boxID))

@@ -42,7 +42,7 @@ func HandleMazeLevelMsg(ctx context.Context, msg *MazeUserLevelRecord) {
 	//	return
 	//}
 
-	userInfo, err := mazeuserinfo.GetUserInfoV2(logger, userId)
+	userInfo, err := mazeuserinfo.GetUserInfoV2(ctx, userId)
 	if err != nil {
 		logger.ErrorWF("HandleMazeLevelMsg GetUserInfoV2 fail", zap.Error(err))
 		return

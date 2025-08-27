@@ -14,6 +14,7 @@ import (
 // 加入房间
 func (g *Frame) OnJoinRoomRQ_10539_10540(s *session.Session, req *MazeRoom.MazeJoinRoomRQ) (err error) {
 	defer fkprometheus.InfoPMT("OnJoinRoomRQ")()
+	ctx := s.Context()
 
 	logger := log.Clone("Frame", uint64(s.UID()), 0)
 	res := &MazeRoom.MazeJoinRoomRS{}
@@ -30,7 +31,7 @@ func (g *Frame) OnJoinRoomRQ_10539_10540(s *session.Session, req *MazeRoom.MazeJ
 
 	userId := uint64(s.UID())
 
-	_, err = mazeuserinfo.GetUserInfoV2(logger, userId)
+	_, err = mazeuserinfo.GetUserInfoV2(ctx, userId)
 	if err != nil {
 		logger.ErrorWF("OnJoinRoomRQ GetUserInfoV2 fail", zap.Error(err))
 		res.ErrInfo = errors.MODULE_ERROR.ToInfo()

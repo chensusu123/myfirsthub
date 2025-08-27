@@ -1,6 +1,7 @@
 package barrierservice
 
 import (
+	"context"
 	"maze_game_server/common/errors"
 	"maze_game_server/config/GMazeActionCountV8Cfg"
 	"maze_game_server/config/GMazeBarriesV8Cfg"
@@ -18,7 +19,8 @@ import (
 )
 
 // GetBarrierInfos implements BarrierService.
-func (b *barrier) GetBarrierInfos(logger fklog.FKLogI, userID uint64) (barrierInfos []*MazeGame.MazeBarrierInfo, errinfo *MessageType.ErrorInfo) {
+func (b *barrier) GetBarrierInfos(ctx context.Context, userID uint64) (barrierInfos []*MazeGame.MazeBarrierInfo, errinfo *MessageType.ErrorInfo) {
+	logger := fklog.ContextAppLogger(ctx)
 	var err error
 	var maxNum, curNumToday int32
 	maxNumCfg := GMazeActionCountV8Cfg.Get(101)
@@ -28,7 +30,7 @@ func (b *barrier) GetBarrierInfos(logger fklog.FKLogI, userID uint64) (barrierIn
 	}
 	maxNum = maxNumCfg.Day_count_v8
 
-	userInfo, err := userinfomodel.NewUserInfoModel(logger, userID)
+	userInfo, err := userinfomodel.NewUserInfoModel(ctx, userID)
 	if err != nil {
 		logger.ErrorWF("GetBarrierInfos NewUserInfoModel fail", zap.Error(err))
 		return nil, errors.MODULE_ERROR.ToInfo()

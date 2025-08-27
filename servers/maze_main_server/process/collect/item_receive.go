@@ -54,7 +54,7 @@ func (c *Collect) OnMazeCollectItemReceiveRQ_10467_10468(s *session.Session, req
 		return
 	}
 
-	userInfo, err := mazeuserinfo.GetUserInfoV2(logger, userId)
+	userInfo, err := mazeuserinfo.GetUserInfoV2(ctx, userId)
 	if err != nil {
 		logger.ErrorWF("OnMazeCollectItemReceiveRQ GetUserInfoV2", zap.Error(err))
 		res.ErrInfo = errors.MODULE_ERROR.ToInfo()

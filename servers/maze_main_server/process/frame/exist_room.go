@@ -14,6 +14,7 @@ import (
 // 退出房间
 func (g *Frame) OnExistRoomRQ_10541_10542(s *session.Session, req *MazeRoom.MazeExistRoomRQ) (err error) {
 	defer fkprometheus.InfoPMT("OnExistRoomRQ")()
+	ctx := s.Context()
 
 	logger := log.Clone("Frame", uint64(s.UID()), 0)
 	res := &MazeRoom.MazeExistRoomRS{}
@@ -29,7 +30,7 @@ func (g *Frame) OnExistRoomRQ_10541_10542(s *session.Session, req *MazeRoom.Maze
 
 	userId := uint64(s.UID())
 
-	_, err = mazeuserinfo.GetUserInfoV2(logger, userId)
+	_, err = mazeuserinfo.GetUserInfoV2(ctx, userId)
 	if err != nil {
 		logger.ErrorWF("OnExistRoomRQ GetUserInfoV2 fail", zap.Error(err))
 		res.ErrInfo = errors.MODULE_ERROR.ToInfo()

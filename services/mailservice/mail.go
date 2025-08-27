@@ -2,6 +2,7 @@ package mailservice
 
 import (
 	"context"
+	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fklog"
 	"sort"
 	"time"
 
@@ -10,21 +11,21 @@ import (
 	"maze_game_server/model/mailmodel"
 	"maze_game_server/usecase/online"
 
-	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fklog"
 	"go.uber.org/zap"
 )
 
-func (s service) GetMailListByLabel(logger fklog.FKLogI, userId uint64, label, start, end int32) (mailList []*mailmodel.MailInfo, err error) {
-	model, err := mailmodel.NewMailModel(logger, userId)
+func (s service) GetMailListByLabel(ctx context.Context, userId uint64, label, start, end int32) (mailList []*mailmodel.MailInfo, err error) {
+	logger := fklog.ContextAppLogger(ctx)
+	model, err := mailmodel.NewMailModel(ctx, userId)
 	if err != nil {
-		logger.ErrorWF("GetMailList NewMailModel fail", zap.Error(err))
+		logger.CtxError(ctx, "GetMailListByLabel NewMailModel fail", zap.Error(err))
 		return
 	}
 
 	delList := make([]uint64, 0)
 	mailList = make([]*mailmodel.MailInfo, 0)
 	for _, info := range model.MailMap[label] {
-		if checkMailExpire(logger, info) {
+		if checkMailExpire(ctx, info) {
 			delList = append(delList, info.ID)
 			continue
 		}
@@ -42,9 +43,9 @@ func (s service) GetMailListByLabel(logger fklog.FKLogI, userId uint64, label, s
 		for _, mailId := range delList {
 			delete(model.MailMap[label], mailId)
 		}
-		err = model.Save(logger, userId)
+		err = model.Save(ctx, userId)
 		if err != nil {
-			logger.ErrorWF("GetMailList del mail Save fail", zap.Error(err))
+			logger.CtxError(ctx, "GetMailList del mail Save fail", zap.Error(err))
 			return mailList, err
 		}
 	}
@@ -52,33 +53,34 @@ func (s service) GetMailListByLabel(logger fklog.FKLogI, userId uint64, label, s
 	return
 }
 
-func (s service) SendMail(logger fklog.FKLogI, title, context, senderName string, label int32, reciverId uint64, attachments []*mailmodel.Attachment, expireTime int64) (err error) {
+func (s service) SendMail(ctx context.Context, title, context, senderName string, label int32, reciverId uint64, attachments []*mailmodel.Attachment, expireTime int64) (err error) {
+	logger := fklog.ContextAppLogger(ctx)
 	if expireTime > 0 && expireTime < time.Now().Unix() {
-		logger.InfoWF("SendMail expire time is less than now")
+		logger.CtxInfo(ctx, "SendMail expire time is less than now")
 		return errors.New("expire time is less than now")
 	}
 
 	if len(title) == 0 || title == "" {
-		logger.InfoWF("SendMail title is empty")
+		logger.CtxInfo(ctx, "SendMail title is empty")
 		return errors.New("SendMail title is empty")
 	}
 
 	if len(context) == 0 || context == "" {
-		logger.InfoWF("SendMail context is empty")
+		logger.CtxInfo(ctx, "SendMail context is empty")
 		return errors.New("SendMail context is empty")
 	}
 
 	if len(senderName) == 0 || senderName == "" {
-		logger.InfoWF("SendMail senderName is empty")
+		logger.CtxInfo(ctx, "SendMail senderName is empty")
 		senderName = "系统"
 	}
 
-	nMail := newMail(logger, title, context, senderName, label, reciverId, attachments, expireTime)
-	logger.InfoWF("SendMail newMail success", zap.Any("nMail", nMail))
+	nMail := newMail(ctx, title, context, senderName, label, reciverId, attachments, expireTime)
+	logger.CtxInfo(ctx, "SendMail newMail success", zap.Any("nMail", nMail))
 
-	mailModel, err := mailmodel.NewMailModel(logger, reciverId)
+	mailModel, err := mailmodel.NewMailModel(ctx, reciverId)
 	if err != nil {
-		logger.ErrorWF("SendMail NewMailModel fail", zap.Error(err))
+		logger.CtxError(ctx, "SendMail NewMailModel fail", zap.Error(err))
 		return
 	}
 
@@ -90,57 +92,59 @@ func (s service) SendMail(logger fklog.FKLogI, title, context, senderName string
 	if !ok {
 		infoMap[nMail.ID] = nMail
 	} else {
-		logger.ErrorWF("SendMail mail already exists")
+		logger.CtxInfo(ctx, "SendMail mail already exists")
 		return errors.New("SendMail mail already exists")
 	}
 	mailModel.MailMap[label] = infoMap
 
-	err = mailModel.Save(logger, reciverId)
+	err = mailModel.Save(ctx, reciverId)
 	if err != nil {
-		logger.ErrorWF("SendMail Save fail", zap.Error(err))
+		logger.CtxError(ctx, "SendMail Save fail", zap.Error(err))
 		return err
 	}
 
 	return
 }
 
-func (s service) ReadMail(logger fklog.FKLogI, userId, mailId uint64, label int32) (mailInfo *mailmodel.MailInfo, err error) {
+func (s service) ReadMail(ctx context.Context, userId, mailId uint64, label int32) (mailInfo *mailmodel.MailInfo, err error) {
+	logger := fklog.ContextAppLogger(ctx)
 	if mailId == 0 {
-		logger.ErrorWF("ReadMail mailId is empty")
+		logger.CtxInfo(ctx, "ReadMail mailId is empty")
 		return nil, errors.New("mailId is null")
 	}
 
-	mailModel, err := mailmodel.NewMailModel(logger, userId)
+	mailModel, err := mailmodel.NewMailModel(ctx, userId)
 	if err != nil {
-		logger.ErrorWF("ReadMail NewMailModel fail", zap.Error(err))
+		logger.CtxError(ctx, "ReadMail NewMailModel fail", zap.Error(err))
 		return
 	}
 
-	mailInfo = getMailById(logger, userId, mailId, label)
+	mailInfo = getMailById(ctx, userId, mailId, label)
 	if mailInfo == nil {
-		logger.InfoWF("ReadMail getMailById is nil")
+		logger.CtxInfo(ctx, "ReadMail getMailById is nil")
 		return nil, errors.New("mail not found")
 	}
 
 	if mailInfo.IsRead {
-		logger.InfoWF("ReadMail status already read", zap.Any("mailInfo", mailInfo))
+		logger.CtxInfo(ctx, "ReadMail status already read", zap.Any("mailInfo", mailInfo))
 		return mailInfo, nil
 	}
 	mailInfo.IsRead = true
 
 	mailModel.MailMap[label][mailId] = mailInfo
-	err = mailModel.Save(logger, userId)
+	err = mailModel.Save(ctx, userId)
 	if err != nil {
-		logger.ErrorWF("ReadMail Save fail", zap.Error(err))
+		logger.CtxError(ctx, "ReadMail Save fail", zap.Error(err))
 		return
 	}
 	return
 }
 
-func (s service) ReadAllMail(logger fklog.FKLogI, userId uint64, label int32) (mailList []*mailmodel.MailInfo, err error) {
-	mailModel, err := mailmodel.NewMailModel(logger, userId)
+func (s service) ReadAllMail(ctx context.Context, userId uint64, label int32) (mailList []*mailmodel.MailInfo, err error) {
+	logger := fklog.ContextAppLogger(ctx)
+	mailModel, err := mailmodel.NewMailModel(ctx, userId)
 	if err != nil {
-		logger.ErrorWF("ReadAllMail NewMailModel fail", zap.Error(err))
+		logger.CtxError(ctx, "ReadAllMail NewMailModel fail", zap.Error(err))
 		return
 	}
 
@@ -153,34 +157,35 @@ func (s service) ReadAllMail(logger fklog.FKLogI, userId uint64, label int32) (m
 		mailList = append(mailList, info)
 	}
 
-	err = mailModel.Save(logger, userId)
+	err = mailModel.Save(ctx, userId)
 	if err != nil {
-		logger.ErrorWF("ReadAllMail Save fail", zap.Error(err))
+		logger.CtxError(ctx, "ReadAllMail Save fail", zap.Error(err))
 		return
 	}
 
 	return
 }
 
-func (s service) GetMailAttachment(logger fklog.FKLogI, userId, mailId uint64, label int32) (mailInfo *mailmodel.MailInfo, attachments []*mailmodel.Attachment, err error) {
-	mailInfo = getMailById(logger, userId, mailId, label)
+func (s service) GetMailAttachment(ctx context.Context, userId, mailId uint64, label int32) (mailInfo *mailmodel.MailInfo, attachments []*mailmodel.Attachment, err error) {
+	logger := fklog.ContextAppLogger(ctx)
+	mailInfo = getMailById(ctx, userId, mailId, label)
 	if mailInfo == nil {
-		logger.InfoWF("GetMailAttachment getMailById is nil")
+		logger.CtxInfo(ctx, "GetMailAttachment getMailById is nil")
 		return mailInfo, nil, errors.New("mail not found")
 	}
 
 	if len(mailInfo.Attachments) == 0 {
-		logger.InfoWF("GetMailAttachment Attachments is nil")
+		logger.CtxInfo(ctx, "GetMailAttachment Attachments is nil")
 		return mailInfo, nil, errors.New("没有可领取的附件")
 	}
 
-	if checkMailExpire(logger, mailInfo) {
-		logger.InfoWF("GetAllMailAttachment already expire", zap.Any("mailInfo", mailInfo))
+	if checkMailExpire(ctx, mailInfo) {
+		logger.CtxInfo(ctx, "GetAllMailAttachment already expire", zap.Any("mailInfo", mailInfo))
 		return mailInfo, nil, errors.New("<UNK>")
 	}
 
 	if mailInfo.IsGetAttach {
-		logger.InfoWF("GetMailAttachment already claimed", zap.Any("mailInfo", mailInfo))
+		logger.CtxInfo(ctx, "GetMailAttachment already claimed", zap.Any("mailInfo", mailInfo))
 		return mailInfo, nil, errors.New("mail not found")
 	}
 
@@ -191,10 +196,11 @@ func (s service) GetMailAttachment(logger fklog.FKLogI, userId, mailId uint64, l
 	return
 }
 
-func (s service) GetAllMailAttachment(logger fklog.FKLogI, userId uint64, label int32) (mailList []*mailmodel.MailInfo, attachments []*mailmodel.Attachment, err error) {
-	mailModel, err := mailmodel.NewMailModel(logger, userId)
+func (s service) GetAllMailAttachment(ctx context.Context, userId uint64, label int32) (mailList []*mailmodel.MailInfo, attachments []*mailmodel.Attachment, err error) {
+	logger := fklog.ContextAppLogger(ctx)
+	mailModel, err := mailmodel.NewMailModel(ctx, userId)
 	if err != nil {
-		logger.ErrorWF("GetAllMailAttachment NewMailModel fail", zap.Error(err))
+		logger.CtxError(ctx, "GetAllMailAttachment NewMailModel fail", zap.Error(err))
 		return
 	}
 
@@ -202,17 +208,17 @@ func (s service) GetAllMailAttachment(logger fklog.FKLogI, userId uint64, label 
 
 	for _, info := range mailModel.MailMap[label] {
 
-		if checkMailExpire(logger, info) {
-			logger.InfoWF("GetAllMailAttachment already expire", zap.Any("mailInfo", info))
+		if checkMailExpire(ctx, info) {
+			logger.CtxInfo(ctx, "GetAllMailAttachment already expire", zap.Any("mailInfo", info))
 			continue
 		}
 		if len(info.Attachments) == 0 {
-			logger.InfoWF("GetAllMailAttachment Attachments is nil", zap.Any("mailInfo", info))
+			logger.CtxInfo(ctx, "GetAllMailAttachment Attachments is nil", zap.Any("mailInfo", info))
 			continue
 		}
 
 		if info.IsGetAttach {
-			logger.InfoWF("GetAllMailAttachment already GetAttach", zap.Any("info", info))
+			logger.CtxInfo(ctx, "GetAllMailAttachment already GetAttach", zap.Any("info", info))
 			continue
 		}
 
@@ -225,37 +231,39 @@ func (s service) GetAllMailAttachment(logger fklog.FKLogI, userId uint64, label 
 	return
 }
 
-func (s service) DelMail(logger fklog.FKLogI, userId, mailId uint64, label int32) (err error) {
-	mailModel, err := mailmodel.NewMailModel(logger, userId)
+func (s service) DelMail(ctx context.Context, userId, mailId uint64, label int32) (err error) {
+	logger := fklog.ContextAppLogger(ctx)
+	mailModel, err := mailmodel.NewMailModel(ctx, userId)
 	if err != nil {
-		logger.ErrorWF("DelMail NewMailModel fail", zap.Error(err))
+		logger.CtxError(ctx, "DelMail NewMailModel fail", zap.Error(err))
 		return
 	}
 
-	mailInfo := getMailById(logger, userId, mailId, label)
+	mailInfo := getMailById(ctx, userId, mailId, label)
 	if mailInfo == nil {
-		logger.InfoWF("DelMail getMailById is nil")
+		logger.CtxInfo(ctx, "DelMail getMailById is nil")
 		return errors.New("mail not found")
 	}
 
 	if !mailInfo.IsGetAttach {
-		logger.InfoWF("DelMail mail not GetAttach", zap.Any("mailInfo", mailInfo))
+		logger.CtxInfo(ctx, "DelMail mail not GetAttach", zap.Any("mailInfo", mailInfo))
 		return errors.New("邮件附件未领取")
 	}
 
 	delete(mailModel.MailMap[label], mailId)
 
-	err = mailModel.Save(logger, userId)
+	err = mailModel.Save(ctx, userId)
 	if err != nil {
 		return err
 	}
 	return
 }
 
-func (s service) DelAllMail(logger fklog.FKLogI, userId uint64, label int32) (err error) {
-	mailModel, err := mailmodel.NewMailModel(logger, userId)
+func (s service) DelAllMail(ctx context.Context, userId uint64, label int32) (err error) {
+	logger := fklog.ContextAppLogger(ctx)
+	mailModel, err := mailmodel.NewMailModel(ctx, userId)
 	if err != nil {
-		logger.ErrorWF("DelAllMail NewMailModel fail", zap.Error(err))
+		logger.CtxError(ctx, "DelAllMail NewMailModel fail", zap.Error(err))
 		return
 	}
 
@@ -271,7 +279,7 @@ func (s service) DelAllMail(logger fklog.FKLogI, userId uint64, label int32) (er
 		delete(mailModel.MailMap[label], mailId)
 	}
 
-	err = mailModel.Save(logger, userId)
+	err = mailModel.Save(ctx, userId)
 	if err != nil {
 		return err
 	}
@@ -279,23 +287,25 @@ func (s service) DelAllMail(logger fklog.FKLogI, userId uint64, label int32) (er
 	return
 }
 
-func (s service) PushMailToReciver(logger fklog.FKLogI, userId uint64, packetType uint16, v interface{}) {
+func (s service) PushMailToReciver(ctx context.Context, userId uint64, packetType uint16, v interface{}) {
+	logger := fklog.ContextAppLogger(ctx)
 	isOnline := online.IsOnline(userId)
 	if !isOnline {
-		logger.InfoWF("PushMailToReciver reciver is not online", zap.Uint64("userId", userId))
+		logger.CtxInfo(ctx, "PushMailToReciver reciver is not online", zap.Uint64("userId", userId))
 		return
 	}
 
 	err := online.ClusterPush(context.TODO(), userId, packetType, v)
 	if err != nil {
-		logger.ErrorWF("PushMailToReciver fail", zap.Error(err))
+		logger.CtxError(ctx, "PushMailToReciver fail", zap.Error(err))
 	}
 }
 
-func (s service) GetMailAttachmentAfter(logger fklog.FKLogI, userId uint64, mailList []*mailmodel.MailInfo) (err error) {
-	mailModel, err := mailmodel.NewMailModel(logger, userId)
+func (s service) GetMailAttachmentAfter(ctx context.Context, userId uint64, mailList []*mailmodel.MailInfo) (err error) {
+	logger := fklog.ContextAppLogger(ctx)
+	mailModel, err := mailmodel.NewMailModel(ctx, userId)
 	if err != nil {
-		logger.ErrorWF("GetMailAttachmentAfter NewMailModel fail", zap.Error(err))
+		logger.CtxError(ctx, "GetMailAttachmentAfter NewMailModel fail", zap.Error(err))
 		return
 	}
 
@@ -305,15 +315,15 @@ func (s service) GetMailAttachmentAfter(logger fklog.FKLogI, userId uint64, mail
 		// mailModel.MailMap[info.ID].Status = int32(MailStatusReadClaimed)
 	}
 
-	err = mailModel.Save(logger, userId)
+	err = mailModel.Save(ctx, userId)
 	if err != nil {
-		logger.ErrorWF("GetMailAttachmentAfter Save fail", zap.Error(err))
+		logger.CtxError(ctx, "GetMailAttachmentAfter Save fail", zap.Error(err))
 		return
 	}
 	return nil
 }
 
-func newMail(logger fklog.FKLogI, title, context, senderName string, label int32, reciverID uint64, attachments []*mailmodel.Attachment, expireTime int64) *mailmodel.MailInfo {
+func newMail(ctx context.Context, title, context, senderName string, label int32, reciverID uint64, attachments []*mailmodel.Attachment, expireTime int64) *mailmodel.MailInfo {
 	if len(attachments) == 0 || attachments == nil {
 		attachments = make([]*mailmodel.Attachment, 0)
 	}
@@ -332,34 +342,36 @@ func newMail(logger fklog.FKLogI, title, context, senderName string, label int32
 	}
 }
 
-func getMailById(logger fklog.FKLogI, userId, mailId uint64, label int32) *mailmodel.MailInfo {
+func getMailById(ctx context.Context, userId, mailId uint64, label int32) *mailmodel.MailInfo {
+	logger := fklog.ContextAppLogger(ctx)
 	if mailId == 0 {
 		return nil
 	}
-	mailModel, err := mailmodel.NewMailModel(logger, userId)
+	mailModel, err := mailmodel.NewMailModel(ctx, userId)
 	if err != nil {
-		logger.ErrorWF("getMailById NewMailModel fail", zap.Error(err))
+		logger.CtxError(ctx, "getMailById NewMailModel fail", zap.Error(err))
 		return nil
 	}
 	mailMap, ok := mailModel.MailMap[label]
 	if !ok {
-		logger.ErrorWF("getMailById label mail is empty", zap.Int32("label", label))
+		logger.CtxInfo(ctx, "getMailById label mail is empty", zap.Int32("label", label))
 		return nil
 	}
 	info, ok := mailMap[mailId]
 	if !ok {
-		logger.ErrorWF("getMailById mail not found", zap.Int32("label", label), zap.Uint64("mailId", mailId))
+		logger.CtxInfo(ctx, "getMailById mail not found", zap.Int32("label", label), zap.Uint64("mailId", mailId))
 		return nil
 	}
 	return info
 }
 
-func checkMailExpire(logger fklog.FKLogI, mailInfo *mailmodel.MailInfo) bool {
+func checkMailExpire(ctx context.Context, mailInfo *mailmodel.MailInfo) bool {
+	logger := fklog.ContextAppLogger(ctx)
 	if mailInfo.ExpireTime == 0 {
 		return false
 	}
 	if mailInfo.ExpireTime <= time.Now().Unix() {
-		logger.InfoWF("checkMailExpire mailInfo.ExpireTime <= time.Now().Unix()", zap.Any("mailInfo", mailInfo))
+		logger.CtxInfo(ctx, "checkMailExpire mailInfo.ExpireTime <= time.Now().Unix()", zap.Any("mailInfo", mailInfo))
 		return true
 	}
 	return false

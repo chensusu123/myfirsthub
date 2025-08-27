@@ -79,7 +79,7 @@ func (s service) handleRecoverUserEnergy(ctx context.Context, userID uint64) {
 		return
 	}
 
-	err = s.SendEnergyChgPack(logger, userID, curEnergy, nextTime)
+	err = s.SendEnergyChgPack(ctx, userID, curEnergy, nextTime)
 	if err != nil {
 		err = nil
 		logger.ErrorWF("handleRecoverUserEnergy SendEnergyChgPack fail", zap.Error(err), zap.Any("userID", userID), zap.Int32("curEnergy", curEnergy), zap.Int64("nextTime", nextTime))

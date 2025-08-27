@@ -38,10 +38,10 @@ func (g *Game) OnMazeBarrierPassRQ_10459_10460(s *session.Session, req *MazeGame
 
 	res := &MazeGame.MazeBarrierPassRS{}
 
-	logger.InfoWF("OnMazeBarrierPassRQ start", zap.Any("req", req))
+	logger.CtxInfo(ctx, "OnMazeBarrierPassRQ start", zap.Any("req", req))
 	defer func() {
 		err = s.Response(res)
-		logger.InfoWF("OnMazeBarrierPassRQ end", zap.Any("res", res))
+		logger.CtxInfo(ctx, "OnMazeBarrierPassRQ end", zap.Any("res", res))
 	}()
 
 	res.Header = req.Header
@@ -51,7 +51,7 @@ func (g *Game) OnMazeBarrierPassRQ_10459_10460(s *session.Session, req *MazeGame
 	userId := uint64(s.UID())
 
 	if req.GetBarrierId() <= 0 {
-		logger.ErrorWF("OnMazeBarrierPassRQ req barrier invalid", zap.Any("req", req))
+		logger.CtxError(ctx, "OnMazeBarrierPassRQ req barrier invalid", zap.Any("req", req))
 		res.ErrInfo = errors.COMMON_ERROR_TIPS.Wrap("关卡id未设置")
 		return
 	}
@@ -74,7 +74,7 @@ func (g *Game) OnMazeBarrierPassRQ_10459_10460(s *session.Session, req *MazeGame
 
 	err = mazebarriereventredis.LeaveBarrier(logger, userId, req.GetBarrierId(), true)
 	if err != nil {
-		logger.ErrorWF("OnMazeBarrierPassRQ LeaveBarrier fail", zap.Error(err))
+		logger.CtxError(ctx, "OnMazeBarrierPassRQ LeaveBarrier fail", zap.Error(err))
 	}
 
 	// 触发离开关卡事件
@@ -83,7 +83,7 @@ func (g *Game) OnMazeBarrierPassRQ_10459_10460(s *session.Session, req *MazeGame
 	// 清除关卡的临时数据
 	ClearBarriersTempData(ctx, userId, req.GetBarrierId())
 
-	logger.InfoWF("OnMazeBarrierPassRQ award dump", zap.Any("exp", req.GetFoeExp()), zap.Any("awards", awards), zap.Any("rareAwards", rareAwards))
+	logger.CtxInfo(ctx, "OnMazeBarrierPassRQ award dump", zap.Any("exp", req.GetFoeExp()), zap.Any("awards", awards), zap.Any("rareAwards", rareAwards))
 
 	passRecord := &mazebarrieruserkafka.MazeBarrierUserGameRecord{
 		UserId:         userId,
@@ -124,7 +124,7 @@ func ClearBarriersTempData(ctx context.Context, userId uint64, barrierId int32) 
 	// 删除通过的区域
 	tempbuffservice.GlobalTempBuffService.DelPassArea(context.TODO(), userId, barrierId)
 	//删除关卡计数
-	barrierstagecounterservice.GlobalBarrierStageCounterService.DelBarrierStageCounterOnPass(logger, userId, barrierId)
+	barrierstagecounterservice.GlobalBarrierStageCounterService.DelBarrierStageCounterOnPass(ctx, userId, barrierId)
 
 	mazebuffinforedis.DelMazeBuffBySrc(logger, userId, constdef.MazeBuffSrcSelectBuffForce)
 	// 推送属性计算消息

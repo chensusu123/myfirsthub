@@ -27,6 +27,7 @@ var EndLine = "-----------------------------------------------------------\n"
 
 func RegGm(logger fklog.FKLogI) {
 	gm.SafeHttpRegister(logger, "/LookAssembleInfo", func(writer http.ResponseWriter, request *http.Request) {
+		ctx := request.Context()
 		userId := fkutil.ToUint64(request.Form.Get("user_id"))
 
 		logger.SetLogId(time.Now().UnixNano())
@@ -41,7 +42,7 @@ func RegGm(logger fklog.FKLogI) {
 		}
 
 		var showBuff bytes.Buffer
-		header, err := PackAssembleHeader(logger, userId, assembleInfo)
+		header, err := PackAssembleHeader(ctx, userId, assembleInfo)
 		if err != nil {
 			logger.ErrorWF("LookAssembleInfo PackAssembleHeader fail", zap.Error(err))
 			writer.Write([]byte(err.Error()))
@@ -204,6 +205,7 @@ func RegGm(logger fklog.FKLogI) {
 	})
 
 	gm.SafeHttpRegister(logger, "/SendOneSuitEquip", func(writer http.ResponseWriter, request *http.Request) {
+		ctx := request.Context()
 		userId := fkutil.ToUint64(request.Form.Get("user_id"))
 		dressLv := fkutil.ToInt32(request.Form.Get("dressLv"))
 		LvDis := fkutil.ToInt32(request.Form.Get("LvDis"))
@@ -213,7 +215,7 @@ func RegGm(logger fklog.FKLogI) {
 		subType := fkutil.ToInt32(request.Form.Get("subType"))
 		p := EquipParam{}
 		if dressLv <= 0 {
-			dollLv, e := mazeuserlevelredis.GetUserLevel(logger, userId)
+			dollLv, e := mazeuserlevelredis.GetUserLevel(ctx, userId)
 			if e != nil {
 				writer.Write([]byte(e.Error()))
 				return
@@ -314,7 +316,7 @@ func RegGm(logger fklog.FKLogI) {
 	// })
 
 	gm.SafeHttpRegister(logger, "/ReInitDollEquipByFile", func(writer http.ResponseWriter, request *http.Request) {
-
+		ctx := request.Context()
 		fPath := request.Form.Get("file")
 		fr := fileio.NewDefFReaderEx(logger, ",")
 		err := fr.Open(fPath)
@@ -337,7 +339,7 @@ func RegGm(logger fklog.FKLogI) {
 				atomic.AddInt32(&fail, 1)
 				return true
 			}
-			e = equip.ChkEquipPosUnlock(logger, uid, "gm", true)
+			e = equip.ChkEquipPosUnlock(ctx, uid, "gm", true)
 			if e != nil {
 				atomic.AddInt32(&fail, 1)
 				return true
@@ -361,6 +363,7 @@ func RegGm(logger fklog.FKLogI) {
 	})
 
 	gm.SafeHttpRegister(logger, "/ReInitDollEquip", func(writer http.ResponseWriter, request *http.Request) {
+		ctx := request.Context()
 		uid := fkutil.ToUint64(request.Form.Get("user_id"))
 		clear := fkutil.ToBool(request.Form.Get("clear"))
 		if clear {
@@ -370,7 +373,7 @@ func RegGm(logger fklog.FKLogI) {
 				return
 			}
 		}
-		e := equip.ChkEquipPosUnlock(logger, uid, "gm", true)
+		e := equip.ChkEquipPosUnlock(ctx, uid, "gm", true)
 		if e != nil {
 			writer.Write([]byte(fmt.Sprintf("解锁装备位失败:%s", e.Error())))
 			return

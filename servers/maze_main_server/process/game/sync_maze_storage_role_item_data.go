@@ -13,7 +13,7 @@ import (
 
 func (g *Game) OnSyncMazeStorageRoleItemDataRQ_10515_10516(s *session.Session, req *MazeGame.SyncMazeStorageRoleItemDataRQ) (err error) {
 	defer fkprometheus.InfoPMT("OnSyncMazeStorageRoleItemDataRQ")()
-
+	ctx := s.Context()
 	logger := log.Clone("Game", uint64(s.UID()), 0)
 
 	res := &MazeGame.SyncMazeStorageRoleItemDataRS{}
@@ -28,7 +28,7 @@ func (g *Game) OnSyncMazeStorageRoleItemDataRQ_10515_10516(s *session.Session, r
 	res.RoleItemData = req.RoleItemData
 
 	userId := uint64(s.UID())
-	userInfo, err := mazeuserinfo.GetUserInfoV2(logger, userId)
+	userInfo, err := mazeuserinfo.GetUserInfoV2(ctx, userId)
 	if err != nil {
 		logger.ErrorWF("OnSyncMazeStorageRoleItemDataRQ GetUserInfoV2 fail", zap.Error(err))
 		res.ErrInfo = errors.MODULE_ERROR.ToInfo()

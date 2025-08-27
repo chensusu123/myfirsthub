@@ -14,6 +14,7 @@ import (
 // 客户端上报房间
 func (g *Frame) OnFrameSyncRQ_10539_10540(s *session.Session, req *MazeRoom.MazeFrameSyncRQ) (err error) {
 	defer fkprometheus.InfoPMT("OnFrameSyncRQ")()
+	ctx := s.Context()
 
 	logger := log.Clone("Frame", uint64(s.UID()), 0)
 	res := &MazeRoom.MazeFrameSyncRS{}
@@ -29,7 +30,7 @@ func (g *Frame) OnFrameSyncRQ_10539_10540(s *session.Session, req *MazeRoom.Maze
 
 	userId := uint64(s.UID())
 
-	_, err = mazeuserinfo.GetUserInfoV2(logger, userId)
+	_, err = mazeuserinfo.GetUserInfoV2(ctx, userId)
 	if err != nil {
 		logger.ErrorWF("OnFrameSyncRQ GetUserInfoV2 fail", zap.Error(err))
 		res.ErrInfo = errors.MODULE_ERROR.ToInfo()

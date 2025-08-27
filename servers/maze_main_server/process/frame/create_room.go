@@ -16,6 +16,8 @@ import (
 func (g *Frame) OnCreateRoomRQ_10531_10532(s *session.Session, req *MazeRoom.MazeCreateRoomRQ) (err error) {
 	defer fkprometheus.InfoPMT("OnCreateRoomRQ")()
 
+	ctx := s.Context()
+
 	logger := log.Clone("Frame", uint64(s.UID()), 0)
 	res := &MazeRoom.MazeCreateRoomRS{}
 
@@ -29,7 +31,7 @@ func (g *Frame) OnCreateRoomRQ_10531_10532(s *session.Session, req *MazeRoom.Maz
 	res.ErrInfo = errors.NO_ERROR
 	userId := uint64(s.UID())
 
-	_, err = mazeuserinfo.GetUserInfoV2(logger, userId)
+	_, err = mazeuserinfo.GetUserInfoV2(ctx, userId)
 	if err != nil {
 		logger.ErrorWF("OnCreateRoomRQ GetUserInfoV2 fail", zap.Error(err))
 		res.ErrInfo = errors.MODULE_ERROR.ToInfo()

@@ -469,22 +469,23 @@ func GetSkillAttr(skillAttrMap map[int32]int32, userAttrMap map[int32]int64) (at
 }
 
 // GetEquipSkillInfoChange 获取装备变化引起的技能变化
-func GetEquipSkillInfoChange(logger fklog.FKLogI, userID uint64, oldEquip, newEquip *MazeEquipCache.MazeEquipPosInfo) (ret *MazeAIBattle.MazeUserSkillInfoChangeID, changed bool, err error) {
-	userInfo, err := mazeuserinfo.GetUserInfoV2(logger, userID)
+func GetEquipSkillInfoChange(ctx context.Context, userID uint64, oldEquip, newEquip *MazeEquipCache.MazeEquipPosInfo) (ret *MazeAIBattle.MazeUserSkillInfoChangeID, changed bool, err error) {
+	logger := fklog.ContextAppLogger(ctx)
+	userInfo, err := mazeuserinfo.GetUserInfoV2(ctx, userID)
 	if err != nil {
-		logger.ErrorWF("GetEquipSkillInfoChange GetUserInfoV2 fail", zap.Error(err), zap.Uint64("userID", userID))
+		logger.CtxError(ctx, "GetEquipSkillInfoChange GetUserInfoV2 fail", zap.Error(err), zap.Uint64("userID", userID))
 		return
 	}
 
 	userAttrMap, err := GetUserAttrMap(logger, userID)
 	if err != nil {
-		logger.ErrorWF("GetMazeBattleData GetUserAttrMap err", zap.Error(err))
+		logger.CtxError(ctx, "GetMazeBattleData GetUserAttrMap err", zap.Error(err))
 		return nil, false, err
 	}
 
 	tempBuffInfo, err := tempbuffservice.GlobalTempBuffService.GetTempBuffInfo(context.TODO(), userID, userInfo.Barrier)
 	if err != nil {
-		logger.ErrorWF("GetMazeBattleData GetBarrierTempBuff err", zap.Error(err))
+		logger.CtxError(ctx, "GetMazeBattleData GetBarrierTempBuff err", zap.Error(err))
 		return nil, false, err
 	}
 	for _, buffInfo := range tempBuffInfo.TotalBuff {

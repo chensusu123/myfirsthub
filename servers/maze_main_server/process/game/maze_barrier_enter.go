@@ -37,11 +37,12 @@ import (
 
 func (g *Game) OnMazeBarrierEnterRQ_10447_10448(s *session.Session, req *MazeGame.MazeBarrierEnterRQ) (err error) {
 	defer fkprometheus.InfoPMT("OnMazeBarrierEnterRQ")()
+	ctx := s.Context()
 
 	logger := log.Clone("Game", uint64(s.UID()), 0)
 	res := &MazeGame.MazeBarrierEnterRS{}
 	energyID := &MazeEnergy.EnergyChangeID{} // defer时多补一个体力ID包
-	ctx := s.Context()
+
 	logger.InfoWF("OnMazeBarrierEnterRQ start", zap.Any("req", req))
 	defer func() {
 		err = s.Response(res)
@@ -68,7 +69,7 @@ func (g *Game) OnMazeBarrierEnterRQ_10447_10448(s *session.Session, req *MazeGam
 		return
 	}
 
-	userInfo, err := mazeuserinfo.GetUserInfoV2(logger, userId)
+	userInfo, err := mazeuserinfo.GetUserInfoV2(ctx, userId)
 	if err != nil {
 		logger.ErrorWF("OnMazeBarrierEnterRQ GetUserInfoV2 fail", zap.Error(err))
 		res.ErrInfo = errors.MODULE_ERROR.ToInfo()
@@ -118,7 +119,7 @@ func (g *Game) OnMazeBarrierEnterRQ_10447_10448(s *session.Session, req *MazeGam
 		}
 
 		// 有存档的情况需要把未通过的区域杀怪记录删除
-		err = barrierstagecounterservice.GlobalBarrierStageCounterService.DelBarrierStageCounter(logger, userId, req.GetBarrierId(), saveData.StageId)
+		err = barrierstagecounterservice.GlobalBarrierStageCounterService.DelBarrierStageCounter(ctx, userId, req.GetBarrierId(), saveData.StageId)
 		if err != nil {
 			logger.ErrorWF("OnMazeBarrierEnterRQ DelBarrierAreaRecord fail", zap.Error(err))
 			res.ErrInfo = errors.MODULE_ERROR.ToInfo()
@@ -183,7 +184,7 @@ func (g *Game) OnMazeBarrierEnterRQ_10447_10448(s *session.Session, req *MazeGam
 	//	logger.ErrorWF("OnMazeBarrierEnterRQ GetMazeShopInfo fail", zap.Error(err))
 	//	return
 	//}
-	dropInfo, err := equipdropmodel.NewEquipSpecialDropModel(logger, userId)
+	dropInfo, err := equipdropmodel.NewEquipSpecialDropModel(ctx, userId)
 	if err != nil {
 		logger.ErrorWF("OnMazeBarrierEnterRQ GetEquipSpecialDropModel fail", zap.Error(err))
 		return
@@ -258,7 +259,7 @@ func (g *Game) OnMazeBarrierEnterRQ_10447_10448(s *session.Session, req *MazeGam
 		//	return
 		//}
 		//
-		err = mazeuserinfo.SetUserInfoV2(logger, userId, userInfo)
+		err = mazeuserinfo.SetUserInfoV2(ctx, userId, userInfo)
 		if err != nil {
 			logger.ErrorWF("OnMazeBarrierEnterRQ SetUserInfoV2 fail", zap.Error(err))
 			res.ErrInfo = errors.MODULE_ERROR.ToInfo()
@@ -365,7 +366,7 @@ func (g *Game) OnMazeBarrierEnterRQ_10447_10448(s *session.Session, req *MazeGam
 
 func (g *Game) OnGetStorageInfoRQ_10529_10530(s *session.Session, req *MazeGame.MazeBarrierEnterRQ) (err error) {
 	defer fkprometheus.InfoPMT("OnGetStorageInfoRQ")()
-
+	ctx := s.Context()
 	logger := log.Clone("Game", uint64(s.UID()), 0)
 	res := &MazeGame.GetStorageInfoRS{}
 
@@ -387,7 +388,7 @@ func (g *Game) OnGetStorageInfoRQ_10529_10530(s *session.Session, req *MazeGame.
 		return
 	}
 
-	userInfo, err := mazeuserinfo.GetUserInfoV2(logger, userId)
+	userInfo, err := mazeuserinfo.GetUserInfoV2(ctx, userId)
 	if err != nil {
 		logger.ErrorWF("OnGetStorageInfoRQ GetUserInfoV2 fail", zap.Error(err))
 		res.ErrInfo = errors.MODULE_ERROR.ToInfo()

@@ -40,7 +40,7 @@ func (g *Game) OnMazeLoginRQ_10451_10452(s *session.Session, req *MazeGame.MazeL
 	var level, exp, expMax, force, money, extra, extraExp, diamond int64
 	var isInit bool
 
-	userInfo, err := mazeuserinfo.GetUserInfoV2(logger, userId)
+	userInfo, err := mazeuserinfo.GetUserInfoV2(ctx, userId)
 	if err != nil {
 		logger.ErrorWF("OnMazeLoginRQ GetUserInfo fail", zap.Error(err))
 		res.ErrInfo = errors.MODULE_ERROR.ToInfo()
@@ -80,7 +80,7 @@ func (g *Game) OnMazeLoginRQ_10451_10452(s *session.Session, req *MazeGame.MazeL
 		if userInfo.UserType != req.GetMazeVersion() {
 			userInfo.SetUserType(req.GetMazeVersion())
 		}
-		err = mazeuserinfo.SetUserInfoV2(logger, userId, userInfo)
+		err = mazeuserinfo.SetUserInfoV2(ctx, userId, userInfo)
 		if err != nil {
 			logger.ErrorWF("OnMazeLoginRQ SetUserInfo fail", zap.Error(err))
 			res.ErrInfo = errors.MODULE_ERROR.ToInfo()

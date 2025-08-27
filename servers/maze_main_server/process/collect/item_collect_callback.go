@@ -174,7 +174,7 @@ func ItemCollect(ctx context.Context, userId uint64, collectInfo *MazeCollectCac
 
 	newLastTime = lastTime + collectTimes*periodSeconds // 本次结算时间
 	collectInfo.LastTime = proto.Int64(newLastTime)
-	userInfo, err := mazeuserinfo.GetUserInfoV2(logger, userId)
+	userInfo, err := mazeuserinfo.GetUserInfoV2(ctx, userId)
 	if err != nil {
 		logger.ErrorWF("ItemCollect GetUserInfoV2", zap.Error(err))
 		return

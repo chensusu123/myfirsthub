@@ -45,7 +45,7 @@ func HandleMazeBarrierMsg(ctx context.Context, msg *MazeBarrierUserGameRecord) {
 		logger.ErrorWF("HandleMazeBarrierMsg GetCollectInfo is nil")
 		return
 	}
-	userInfo, err := mazeuserinfo.GetUserInfoV2(logger, userId)
+	userInfo, err := mazeuserinfo.GetUserInfoV2(ctx, userId)
 	if err != nil {
 		logger.ErrorWF("HandleMazeBarrierMsg GetUserInfoV2 fail", zap.Error(err))
 		return

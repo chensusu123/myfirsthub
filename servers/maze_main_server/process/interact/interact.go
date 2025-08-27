@@ -52,6 +52,7 @@ func RegTcpHandler() {
 
 func (*Interact) OnMazeEquipMixCostRQ_10441_10442(s *session.Session, req *MazeEquipMix.MazeEquipMixCostRQ) (err error) {
 
+	ctx := s.Context()
 	logger := log.Clone("Interact", uint64(s.UID()), 0)
 	res := &MazeEquipMix.MazeEquipMixCostRS{}
 	res.ErrInfo = errors.NO_ERROR
@@ -69,7 +70,7 @@ func (*Interact) OnMazeEquipMixCostRQ_10441_10442(s *session.Session, req *MazeE
 	uid := uint64(s.UID())
 
 	// 查等级
-	lv, err := mazeuserlevelredis.GetUserLevel(logger, uid)
+	lv, err := mazeuserlevelredis.GetUserLevel(ctx, uid)
 	if err != nil {
 		logger.ErrorWF("OnMazeEquipMixCostRQ get user level error", zap.Error(err))
 		res.ErrInfo = errors.MODULE_ERROR.ToInfo()
@@ -119,7 +120,7 @@ func (*Interact) OnMazeEquipMixRQ_10443_10444(s *session.Session, req *MazeEquip
 	defer equipMixCache.DelCache(uid)
 
 	// 查等级
-	lv, err := mazeuserlevelredis.GetUserLevel(logger, uid)
+	lv, err := mazeuserlevelredis.GetUserLevel(ctx, uid)
 	if err != nil {
 		logger.ErrorWF("OnMazeEquipMixRQ get user level error", zap.Error(err))
 		res.ErrInfo = errors.MODULE_ERROR.ToInfo()

@@ -1,6 +1,7 @@
 package equipdropservice
 
 import (
+	"context"
 	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fklog"
 	"gitlab.ifreetalk.com/maze-plate/freetk/fkutil"
 	"go.uber.org/zap"
@@ -14,10 +15,11 @@ import (
 	"maze_game_server/module/mazeuserinfo"
 )
 
-func (s service) GetNewEquip(logger fklog.FKLogI, userId uint64, level int32, barrierId int32, equipNum int32) (newEquip map[int32]int32, err error) {
-	userInfo, err := mazeuserinfo.GetUserInfoV2(logger, userId)
+func (s service) GetNewEquip(ctx context.Context, userId uint64, level int32, barrierId int32, equipNum int32) (newEquip map[int32]int32, err error) {
+	logger := fklog.ContextAppLogger(ctx)
+	userInfo, err := mazeuserinfo.GetUserInfoV2(ctx, userId)
 	if err != nil {
-		logger.ErrorWF("GetNewEquip GetNewEquip fail", zap.Error(err))
+		logger.CtxError(ctx, "GetNewEquip GetNewEquip fail", zap.Error(err))
 		return
 	}
 
@@ -29,37 +31,39 @@ func (s service) GetNewEquip(logger fklog.FKLogI, userId uint64, level int32, ba
 		barrierId = userInfo.Barrier
 	}
 
-	newEquip, err = s.getEquipId(logger, userId, level, barrierId, equipNum)
+	newEquip, err = s.getEquipId(ctx, userId, level, barrierId, equipNum)
 	if err != nil {
 		return nil, err
 	}
 	return
 }
 
-func (s service) GetMazeEquipSpecialDropInfo(logger fklog.FKLogI, userId uint64) (*equipdropmodel.EquipSpecialDropModel, error) {
-	info, err := equipdropmodel.NewEquipSpecialDropModel(logger, userId)
+func (s service) GetMazeEquipSpecialDropInfo(ctx context.Context, userId uint64) (*equipdropmodel.EquipSpecialDropModel, error) {
+	logger := fklog.ContextAppLogger(ctx)
+	info, err := equipdropmodel.NewEquipSpecialDropModel(ctx, userId)
 	if err != nil {
-		logger.ErrorWF("GetMazeEquipSpecialDropInfo GetMazeEquipSpecialDropInfo failed", zap.Error(err))
+		logger.CtxError(ctx, "GetMazeEquipSpecialDropInfo GetMazeEquipSpecialDropInfo failed", zap.Error(err))
 		return nil, errors.New("获取用户buff信息失败")
 	}
 	return info, nil
 }
 
-func (s service) getEquipId(logger fklog.FKLogI, userId uint64, mazeLevel int32, barrier int32, addCount int32) (equipMap map[int32]int32, err error) {
+func (s service) getEquipId(ctx context.Context, userId uint64, mazeLevel int32, barrier int32, addCount int32) (equipMap map[int32]int32, err error) {
+	logger := fklog.ContextAppLogger(ctx)
 	if addCount <= 0 {
-		logger.InfoWF("getEquipId addCount <= 0", zap.Any("addCount", addCount))
+		logger.CtxInfo(ctx, "getEquipId addCount <= 0", zap.Any("addCount", addCount))
 		return
 	}
 
-	info, err := s.GetMazeEquipSpecialDropInfo(logger, userId)
+	info, err := s.GetMazeEquipSpecialDropInfo(ctx, userId)
 	if err != nil {
-		logger.ErrorWF("GetEquipId GetMazeEquipSpecialDropInfo failed", zap.Error(err), zap.Uint64("userId", userId))
+		logger.CtxError(ctx, "GetEquipId GetMazeEquipSpecialDropInfo failed", zap.Error(err), zap.Uint64("userId", userId))
 		return nil, err
 	}
 
 	cfg, err := getMazeEquDropV8Cfg(barrier)
 	if err != nil {
-		logger.ErrorWF("GetEquipId GetMazeEquDropV8Cfg failed", zap.Error(err), zap.Uint64("userId", userId), zap.Int32("barrier", barrier))
+		logger.CtxInfo(ctx, "GetEquipId GetMazeEquDropV8Cfg failed", zap.Error(err), zap.Uint64("userId", userId), zap.Int32("barrier", barrier))
 		return nil, err
 	}
 	index, ok := info.DropMap[cfg.Order]
@@ -69,7 +73,7 @@ func (s service) getEquipId(logger fklog.FKLogI, userId uint64, mazeLevel int32,
 
 	equipMap = make(map[int32]int32)
 	if cfg.Special_drop != nil && index < int32(len(cfg.Special_drop)-1) {
-		dropMap, addNum := s.specialEquipDrop(logger, userId, barrier, mazeLevel, addCount)
+		dropMap, addNum := s.specialEquipDrop(ctx, userId, barrier, mazeLevel, addCount)
 		if len(dropMap) > 0 {
 			for k, v := range dropMap {
 				equipMap[k] += v
@@ -81,7 +85,7 @@ func (s service) getEquipId(logger fklog.FKLogI, userId uint64, mazeLevel int32,
 	if addCount <= 0 {
 		return
 	}
-	dropMap := s.regularityEquipDrop(logger, userId, barrier, mazeLevel, addCount)
+	dropMap := s.regularityEquipDrop(ctx, userId, barrier, mazeLevel, addCount)
 	if len(dropMap) > 0 {
 		for k, v := range dropMap {
 			equipMap[k] += v
@@ -91,29 +95,29 @@ func (s service) getEquipId(logger fklog.FKLogI, userId uint64, mazeLevel int32,
 }
 
 // 特殊掉落
-func (s service) specialEquipDrop(logger fklog.FKLogI, userId uint64, barrier, mazeLevel, addCount int32) (equipIdMap map[int32]int32, add int32) {
-
+func (s service) specialEquipDrop(ctx context.Context, userId uint64, barrier, mazeLevel, addCount int32) (equipIdMap map[int32]int32, add int32) {
+	logger := fklog.ContextAppLogger(ctx)
 	cfg, err := getMazeEquDropV8Cfg(barrier)
 	if err != nil {
-		logger.ErrorWF("specialEquipDrop GetMazeEquDropV8Cfg failed", zap.Error(err), zap.Uint64("userId", userId), zap.Int32("barrier", barrier))
+		logger.CtxInfo(ctx, "specialEquipDrop GetMazeEquDropV8Cfg failed", zap.Error(err), zap.Uint64("userId", userId), zap.Int32("barrier", barrier))
 		return nil, 0
 	}
 
 	if cfg.Special_drop == nil || len(cfg.Special_drop) == 0 {
-		logger.ErrorWF("specialEquipDrop GetEquipId special_drop empty")
+		logger.CtxInfo(ctx, "specialEquipDrop GetEquipId special_drop empty")
 		return nil, 0
 	}
 
-	info, err := s.GetMazeEquipSpecialDropInfo(logger, userId)
+	info, err := s.GetMazeEquipSpecialDropInfo(ctx, userId)
 	if err != nil {
-		logger.ErrorWF("specialEquipDrop GetMazeEquipSpecialDropInfo failed", zap.Error(err), zap.Uint64("userId", userId))
+		logger.CtxInfo(ctx, "specialEquipDrop GetMazeEquipSpecialDropInfo failed", zap.Error(err), zap.Uint64("userId", userId))
 		return nil, 0
 	}
 
 	index, ok := info.DropMap[cfg.Order]
 	if ok {
 		if index >= int32(len(cfg.Special_drop)-1) {
-			logger.InfoWF("specialEquipDrop special_drop max limit")
+			logger.CtxInfo(ctx, "specialEquipDrop special_drop max limit")
 			return nil, 0
 		}
 	} else {
@@ -134,7 +138,7 @@ func (s service) specialEquipDrop(logger fklog.FKLogI, userId uint64, barrier, m
 		quality := cfg.Special_drop[i]
 		pos := cfg.Special_drop[i+1]
 		equipId := getEquipId(newLevel, quality, pos)
-		logger.InfoWF("specialEquipDrop getEquipId success", zap.Int32("level", newLevel), zap.Int32("quality", quality), zap.Int32("pos", pos), zap.Int32("equipId", equipId))
+		logger.CtxInfo(ctx, "specialEquipDrop getEquipId success", zap.Int32("level", newLevel), zap.Int32("quality", quality), zap.Int32("pos", pos), zap.Int32("equipId", equipId))
 		equipIdMap[equipId] += 1
 
 		index = int32(i + 1)
@@ -143,9 +147,9 @@ func (s service) specialEquipDrop(logger fklog.FKLogI, userId uint64, barrier, m
 	}
 
 	if add > 0 {
-		err = info.Save(logger, userId)
+		err = info.Save(ctx, userId)
 		if err != nil {
-			logger.ErrorWF("specialEquipDrop EquipSpecialDropModel save failed", zap.Uint64("userId", userId), zap.Error(err))
+			logger.CtxError(ctx, "specialEquipDrop EquipSpecialDropModel save failed", zap.Uint64("userId", userId), zap.Error(err))
 			return equipIdMap, add
 		}
 	}
@@ -154,16 +158,16 @@ func (s service) specialEquipDrop(logger fklog.FKLogI, userId uint64, barrier, m
 }
 
 // 常规掉落组
-func (s service) regularityEquipDrop(logger fklog.FKLogI, userId uint64, barrier, mazeLevel, addCount int32) (equipIdMap map[int32]int32) {
-
+func (s service) regularityEquipDrop(ctx context.Context, userId uint64, barrier, mazeLevel, addCount int32) (equipIdMap map[int32]int32) {
+	logger := fklog.ContextAppLogger(ctx)
 	cfg, err := getMazeEquDropV8Cfg(barrier)
 	if err != nil {
-		logger.ErrorWF("regularityEquipDrop GetMazeEquDropV8Cfg failed", zap.Error(err), zap.Uint64("userId", userId), zap.Int32("barrier", barrier))
+		logger.CtxInfo(ctx, "regularityEquipDrop GetMazeEquDropV8Cfg failed", zap.Error(err), zap.Uint64("userId", userId), zap.Int32("barrier", barrier))
 		return nil
 	}
 
 	if cfg.Regularity_drop == nil || len(cfg.Regularity_drop) == 0 {
-		logger.ErrorWF("regularityEquipDrop GetEquipId regularity_drop empty")
+		logger.CtxInfo(ctx, "regularityEquipDrop GetEquipId regularity_drop empty")
 		return nil
 	}
 
@@ -177,31 +181,18 @@ func (s service) regularityEquipDrop(logger fklog.FKLogI, userId uint64, barrier
 	for i := int32(0); i < addCount; i++ {
 		quality := randfuncs.RandByWeightV2(logger, seqWeight, false)
 		if quality <= 0 {
-			logger.ErrorWF("regularityEquipDrop MazeEquDropV8Cfg err", zap.Any("seqWeight", seqWeight))
+			logger.CtxInfo(ctx, "regularityEquipDrop MazeEquDropV8Cfg err", zap.Any("seqWeight", seqWeight))
 			return nil
 		}
 
 		pos := fkutil.RandInt32(1, constdef.EquipPosNum+1) //部位等概率随机
-		//logger.InfoWF("regularityEquipDrop random quality, pos", zap.Int32("level", newLevel), zap.Int32("quality", quality), zap.Int("pos", pos))
 
 		equipId := getEquipId(newLevel, quality, int32(pos))
-		logger.InfoWF("regularityEquipDrop getEquipId success", zap.Int32("level", newLevel), zap.Int32("quality", quality), zap.Int32("pos", int32(pos)), zap.Int32("equipId", equipId))
+		logger.CtxInfo(ctx, "regularityEquipDrop getEquipId success", zap.Int32("level", newLevel), zap.Int32("quality", quality), zap.Int32("pos", int32(pos)), zap.Int32("equipId", equipId))
 		equipIdMap[equipId] += 1
 	}
 	return
 }
-
-// 编码特殊掉落记录
-//func EnCodeRecordId(quality, pos int32) int32 {
-//	return quality*equipSpecialDropRate + pos
-//}
-
-// 解码特殊掉落记录
-//func DecodeRecordId(recordId int32) (quality, pos int32) {
-//	quality = recordId / equipSpecialDropRate
-//	pos = recordId % equipSpecialDropRate
-//	return
-//}
 
 func (s service) GetMazeBarrierLv(level int32, barrier int32) int32 {
 	cfg := GMazeBarriesV8Cfg.Get(barrier)
@@ -255,4 +246,16 @@ func getEquipId(level, quality, pos int32) int32 {
 		}
 	}
 	return 0
+}
+
+func (s service) GmDelete(ctx context.Context, userId uint64) error {
+	logger := fklog.ContextAppLogger(ctx)
+	info := &equipdropmodel.EquipSpecialDropModel{}
+	err := info.Del(ctx, userId)
+	if err != nil {
+		logger.CtxError(ctx, "GlobalEquipDropService GmDelete err", zap.Error(err), zap.Uint64("userId", userId))
+		return err
+	}
+	logger.CtxInfo(ctx, "GlobalEquipDropService GmDelete success", zap.Error(err), zap.Uint64("userId", userId))
+	return nil
 }

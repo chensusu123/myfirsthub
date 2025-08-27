@@ -9,15 +9,17 @@ import (
 	"maze_game_server/io/redis/mazechallengenumredis"
 	"maze_game_server/io/redis/mazecollectredis"
 	"maze_game_server/io/redis/mazeequipgetnumredis"
-	"maze_game_server/io/redis/mazeequipspecialdropredis"
+
 	"maze_game_server/io/redis/mazeuserbarrierredis"
 	"maze_game_server/io/redis/mazeuserlevelredis"
 	"maze_game_server/io/redis/syncmazestorageinforedis"
 	"maze_game_server/lib/nano/session"
+
 	"maze_game_server/module/mazeuserinfo"
 	"maze_game_server/pb/common/MazeGame"
 	"maze_game_server/services/barrierenergyservice"
 	"maze_game_server/services/barrierscorerewardservice"
+	"maze_game_server/services/equipdropservice"
 	"maze_game_server/services/moneyservice"
 	"strings"
 	"time"
@@ -233,7 +235,7 @@ func ClearBarrier(ctx context.Context, userId uint64) (err error) {
 	// }
 
 	//清除关卡存档
-	userInfo, err := mazeuserinfo.GetUserInfoV2(logger, userId)
+	userInfo, err := mazeuserinfo.GetUserInfoV2(ctx, userId)
 	if err != nil {
 		return
 	}
@@ -244,7 +246,7 @@ func ClearBarrier(ctx context.Context, userId uint64) (err error) {
 	}
 
 	//清除等级经验通用数值
-	err = mazeuserlevelredis.GMDel(logger, userId)
+	err = mazeuserlevelredis.GMDel(ctx, userId)
 	if err != nil {
 		return
 	}
@@ -261,7 +263,12 @@ func ClearBarrier(ctx context.Context, userId uint64) (err error) {
 	//	return
 	//}
 
-	err = mazeequipspecialdropredis.GMDel(logger, userId)
+	//err = mazeequipspecialdropredis.GMDel(ctx, userId)
+	//if err != nil {
+	//	return err
+	//}
+
+	err = equipdropservice.GlobalEquipDropService.GmDelete(ctx, userId)
 	if err != nil {
 		return err
 	}

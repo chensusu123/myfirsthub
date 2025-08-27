@@ -2,6 +2,7 @@ package equip
 
 import (
 	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fkconfig/param"
+	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fklog"
 	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fkprometheus"
 	"go.uber.org/zap"
 	"maze_game_server/common/errors"
@@ -10,7 +11,6 @@ import (
 	"maze_game_server/config/GMazeEquipPosRankV8Cfg"
 	"maze_game_server/io/redis/dollassemblesuitredis"
 	"maze_game_server/io/redis/mazebagequipredis"
-	"maze_game_server/lib/log"
 	"maze_game_server/lib/nano/session"
 	"maze_game_server/pb/common/MazeGameEquip"
 	"maze_game_server/pb/server/MazeEquipCache"
@@ -25,23 +25,25 @@ func init() {
 
 func (e *Equip) OnEquipDismantleListRQ_10616_10617(s *session.Session, req *MazeGameEquip.MazeEquipDismantleListRQ) (err error) {
 	defer fkprometheus.DebugPMT("OnMazeEquipDismantleListRQ")()
-	res := &MazeGameEquip.MazeEquipDismantleListRS{}
+	ctx := s.Context()
+	userCtx := fklog.ContextAppLogger(ctx)
 
+	res := &MazeGameEquip.MazeEquipDismantleListRS{}
 	res.ErrInfo = errors.NO_ERROR
 	res.Header = req.Header
-	userCtx := log.Clone("Equip", uint64(s.UID()), 0)
+	//userCtx := log.Clone("Equip", uint64(s.UID()), 0)
 	shardingID := uint64(s.UID())
 
 	defer func() {
 		err = s.Response(res)
-		userCtx.InfoWF("OnMazeEquipDismantleListRQ end", zap.Any("res", res), zap.Error(err))
+		userCtx.CtxError(ctx, "OnMazeEquipDismantleListRQ end", zap.Any("res", res), zap.Error(err))
 	}()
 
-	userCtx.InfoWF("OnMazeEquipDismantleListRQ with", zap.Any("req", req))
+	userCtx.CtxInfo(ctx, "OnMazeEquipDismantleListRQ with", zap.Any("req", req))
 
 	all := GMazeEquipPosRankV8Cfg.GetAll()
 	if len(all) == 0 {
-		userCtx.ErrorWF("OnMazeEquipDismantleListRQ GDollEquipPosRankV8Cfg empty")
+		userCtx.CtxError(ctx, "OnMazeEquipDismantleListRQ GDollEquipPosRankV8Cfg empty")
 		res.ErrInfo = errors.CONFIG_NOT_FOUND.ToInfo()
 		return
 	}
@@ -53,7 +55,7 @@ func (e *Equip) OnEquipDismantleListRQ_10616_10617(s *session.Session, req *Maze
 
 	equipInfoMap, err := mazebagequipredis.GetAllEquipInfo(userCtx, shardingID)
 	if err != nil {
-		userCtx.ErrorWF("OnMazeEquipDismantleListRQ GetAllEquipInfo fail", zap.Error(err))
+		userCtx.CtxError(ctx, "OnMazeEquipDismantleListRQ GetAllEquipInfo fail", zap.Error(err))
 		res.ErrInfo = errors.MODULE_ERROR.ToInfo()
 		return
 	}
@@ -61,7 +63,7 @@ func (e *Equip) OnEquipDismantleListRQ_10616_10617(s *session.Session, req *Maze
 	// 获取身上的装备信息
 	assembleInfoMap, err := dollassemblesuitredis.GetAllDollAssembleSuit(userCtx, shardingID)
 	if err != nil {
-		userCtx.ErrorWF("OnDollEquipSaleSelectRQ GetAllDollAssembleSuit fail", zap.Error(err))
+		userCtx.CtxError(ctx, "OnDollEquipSaleSelectRQ GetAllDollAssembleSuit fail", zap.Error(err))
 		res.ErrInfo = errors.MODULE_ERROR.ToInfo()
 		return
 	}
@@ -89,7 +91,7 @@ func (e *Equip) OnEquipDismantleListRQ_10616_10617(s *session.Session, req *Maze
 
 		equipCfg := GMazeEquipInfoV8Cfg.Get(equip.GetEquipId())
 		if equipCfg == nil {
-			userCtx.ErrorWF("OnDollEquipDismantleListRQ getEquipInfoCfg fail", zap.Any("equipId", equip.GetEquipId()))
+			userCtx.CtxError(ctx, "OnDollEquipDismantleListRQ getEquipInfoCfg fail", zap.Any("equipId", equip.GetEquipId()))
 			res.ErrInfo = errors.MODULE_ERROR.Wrap("配置数据错误")
 			return
 		}
@@ -105,7 +107,7 @@ func (e *Equip) OnEquipDismantleListRQ_10616_10617(s *session.Session, req *Maze
 		equipInfoPb, err := packtopb.EquipSimplifyToCliPB(userCtx, equip)
 		if err != nil {
 			res.ErrInfo = errors.MODULE_ERROR.ToInfo()
-			userCtx.ErrorWF("OnDollEquipDismantleListRQ EquipSimplifyToCliPB fail", zap.Error(err))
+			userCtx.CtxError(ctx, "OnDollEquipDismantleListRQ EquipSimplifyToCliPB fail", zap.Error(err))
 			return err
 		}
 

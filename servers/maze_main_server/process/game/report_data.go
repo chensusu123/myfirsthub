@@ -48,7 +48,7 @@ func (g *Game) OnReportDataRQ_10453_10454(s *session.Session, req *MazeGame.Repo
 	var userInfo *mazeuserinfo.UserInfo
 	var levelRecord *mazeuserlevelkafka.MazeUserLevelRecord
 
-	userInfo, err = mazeuserinfo.GetUserInfoV2(logger, userId)
+	userInfo, err = mazeuserinfo.GetUserInfoV2(ctx, userId)
 	if err != nil {
 		logger.ErrorWF("ReportDataRQ GetUserInfoV2 fail", zap.Error(err))
 		res.ErrInfo = errors.MODULE_ERROR.ToInfo()
@@ -78,7 +78,7 @@ func (g *Game) OnReportDataRQ_10453_10454(s *session.Session, req *MazeGame.Repo
 	//var shopInfo *mazeshopseqredis.MazeShopInfo
 	if reportInfo.GetReportMask()&4 == 4 {
 		// 上报装备积分
-		dropInfo, err = equipdropmodel.NewEquipSpecialDropModel(logger, userId)
+		dropInfo, err = equipdropmodel.NewEquipSpecialDropModel(ctx, userId)
 		if err != nil {
 			logger.ErrorWF("ReportDataRQ GetEquipSpecialDropModel fail", zap.Error(err), zap.Uint64("userId", userId))
 			res.ErrInfo = errors.MODULE_ERROR.ToInfo()
@@ -97,7 +97,7 @@ func (g *Game) OnReportDataRQ_10453_10454(s *session.Session, req *MazeGame.Repo
 
 	// 修改上报数据的存储
 	if reportInfo.GetReportMask()&1 == 1 {
-		err = mazeuserinfo.SetUserInfoV2(logger, userId, userInfo)
+		err = mazeuserinfo.SetUserInfoV2(ctx, userId, userInfo)
 		if err != nil {
 			logger.ErrorWF("ReportDataRQ SetUserInfoV2 fail", zap.Error(err))
 			res.ErrInfo = errors.MODULE_ERROR.ToInfo()
@@ -143,7 +143,7 @@ func (g *Game) OnReportDataRQ_10453_10454(s *session.Session, req *MazeGame.Repo
 
 	if reportInfo.GetReportMask()&4 == 4 {
 		newLevel := equipdropservice.GlobalEquipDropService.GetMazeBarrierLv(int32(userInfo.Level), userInfo.Barrier)
-		err = dropInfo.Save(logger, userId)
+		err = dropInfo.Save(ctx, userId)
 		if err != nil {
 			logger.ErrorWF("ReportDataRQ EquipSpecialDropModel save fail", zap.Error(err), zap.Any("level", newLevel), zap.Any("dropInfo", dropInfo))
 			return err

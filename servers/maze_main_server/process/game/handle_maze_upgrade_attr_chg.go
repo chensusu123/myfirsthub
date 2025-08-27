@@ -23,11 +23,12 @@ import (
 )
 
 // 处理迷宫升级属性变化Id包
-func HandleMazeLvUpgradeAttrChgId(logger fklog.FKLogI, userId uint64, msg *structsdef.DollAttrChgNotify) {
+func HandleMazeLvUpgradeAttrChgId(ctx context.Context, userId uint64, msg *structsdef.DollAttrChgNotify) {
+	logger := fklog.ContextAppLogger(ctx)
 	if msg.ChgType != 301 {
 		return
 	}
-	mazeLv, e := mazeuserlevelredis.GetUserLevel(logger, userId)
+	mazeLv, e := mazeuserlevelredis.GetUserLevel(ctx, userId)
 	if e != nil {
 		logger.ErrorWF("HandleMazeLvUpgradeAttrChgId GetUserLevel fail", zap.Error(e),
 			zap.Uint64("uid", userId))

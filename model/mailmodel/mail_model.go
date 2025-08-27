@@ -3,7 +3,6 @@ package mailmodel
 import (
 	"context"
 	"fmt"
-	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fklog"
 	"maze_game_server/io"
 )
 
@@ -36,24 +35,24 @@ func getMailKey(userId uint64) string {
 	return fmt.Sprintf("maze:mail:u:%d", userId)
 }
 
-func NewMailModel(logger fklog.FKLogI, userID uint64) (*MailModel, error) {
+func NewMailModel(ctx context.Context, userID uint64) (*MailModel, error) {
 	mailModel := &MailModel{
 		MailMap: make(map[int32]map[uint64]*MailInfo),
 	}
-	if err := mailModel.load(logger, userID); err != nil {
+	if err := mailModel.load(ctx, userID); err != nil {
 		return nil, err
 	}
 	return mailModel, nil
 }
 
-func (p *MailModel) load(logger fklog.FKLogI, userID uint64) (err error) {
+func (p *MailModel) load(ctx context.Context, userID uint64) (err error) {
 	return io.LoadSvrData(context.TODO(), getMailKey(userID), p)
 }
 
-func (p *MailModel) Save(logger fklog.FKLogI, userID uint64) (err error) {
+func (p *MailModel) Save(ctx context.Context, userID uint64) (err error) {
 	return io.SaveSvrData(context.TODO(), getMailKey(userID), p)
 }
 
-func (p *MailModel) Del(logger fklog.FKLogI, userID uint64, stageId int32) (err error) {
+func (p *MailModel) Del(ctx context.Context, userID uint64, stageId int32) (err error) {
 	return io.DeleteSvrData(context.TODO(), getMailKey(userID))
 }

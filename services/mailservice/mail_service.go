@@ -1,21 +1,21 @@
 package mailservice
 
 import (
-	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fklog"
+	"context"
 	"maze_game_server/model/mailmodel"
 )
 
 type MailService interface {
-	GetMailListByLabel(logger fklog.FKLogI, userId uint64, label, start, end int32) (mailList []*mailmodel.MailInfo, err error)
-	SendMail(logger fklog.FKLogI, title, context, senderName string, label int32, reciverId uint64, Attachments []*mailmodel.Attachment, expireTime int64) (err error)
-	ReadMail(logger fklog.FKLogI, userId, mailId uint64, label int32) (mailInfo *mailmodel.MailInfo, err error)
-	ReadAllMail(logger fklog.FKLogI, userId uint64, label int32) (mailList []*mailmodel.MailInfo, err error)
-	GetMailAttachment(logger fklog.FKLogI, userId, mailId uint64, label int32) (mailInfo *mailmodel.MailInfo, attachments []*mailmodel.Attachment, err error)
-	GetAllMailAttachment(logger fklog.FKLogI, userId uint64, label int32) (mailList []*mailmodel.MailInfo, attachments []*mailmodel.Attachment, err error)
-	GetMailAttachmentAfter(logger fklog.FKLogI, userId uint64, mailList []*mailmodel.MailInfo) (err error)
-	DelMail(logger fklog.FKLogI, userId, mailId uint64, label int32) (err error)
-	DelAllMail(logger fklog.FKLogI, userId uint64, label int32) (err error)
-	PushMailToReciver(logger fklog.FKLogI, userId uint64, packetType uint16, v interface{})
+	GetMailListByLabel(ctx context.Context, userId uint64, label, start, end int32) (mailList []*mailmodel.MailInfo, err error)
+	SendMail(ctx context.Context, title, context, senderName string, label int32, reciverId uint64, Attachments []*mailmodel.Attachment, expireTime int64) (err error)
+	ReadMail(ctx context.Context, userId, mailId uint64, label int32) (mailInfo *mailmodel.MailInfo, err error)
+	ReadAllMail(ctx context.Context, userId uint64, label int32) (mailList []*mailmodel.MailInfo, err error)
+	GetMailAttachment(ctx context.Context, userId, mailId uint64, label int32) (mailInfo *mailmodel.MailInfo, attachments []*mailmodel.Attachment, err error)
+	GetAllMailAttachment(ctx context.Context, userId uint64, label int32) (mailList []*mailmodel.MailInfo, attachments []*mailmodel.Attachment, err error)
+	GetMailAttachmentAfter(ctx context.Context, userId uint64, mailList []*mailmodel.MailInfo) (err error)
+	DelMail(ctx context.Context, userId, mailId uint64, label int32) (err error)
+	DelAllMail(ctx context.Context, userId uint64, label int32) (err error)
+	PushMailToReciver(ctx context.Context, userId uint64, packetType uint16, v interface{})
 }
 
 var GlobalMailService MailService

@@ -42,7 +42,7 @@ func (g *Game) OnReportAwardFoeEquipRQ_10455_10456(s *session.Session, req *Maze
 		return
 	}
 
-	userInfo, err := mazeuserinfo.GetUserInfoV2(logger, userId)
+	userInfo, err := mazeuserinfo.GetUserInfoV2(ctx, userId)
 	if err != nil {
 		logger.ErrorWF("OnReportAwardFoeEquipRQ GetUserInfoV2 fail", zap.Error(err))
 		res.ErrInfo = errors.MODULE_ERROR.ToInfo()
@@ -62,7 +62,7 @@ func (g *Game) OnReportAwardFoeEquipRQ_10455_10456(s *session.Session, req *Maze
 	//	res.ErrInfo = errors.MODULE_ERROR.ToInfo()
 	//	return
 	//}
-	addEquipMap, err := equipdropservice.GlobalEquipDropService.GetNewEquip(logger, userId, int32(level), req.GetBarrierId(), equipNum)
+	addEquipMap, err := equipdropservice.GlobalEquipDropService.GetNewEquip(ctx, userId, int32(level), req.GetBarrierId(), equipNum)
 	if err != nil {
 		logger.ErrorWF("OnReportAwardFoeEquipRQ GetMazeShopInfo fail", zap.Error(err), zap.Any("barrier", req.GetBarrierId()), zap.Any("level", level))
 		res.ErrInfo = errors.MODULE_ERROR.ToInfo()

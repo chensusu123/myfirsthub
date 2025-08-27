@@ -13,7 +13,7 @@ import (
 
 func (g *Game) OnSyncMazeStorageItemInfoRQ_10521_10522(s *session.Session, req *MazeGame.SyncMazeStorageItemInfoRQ) (err error) {
 	defer fkprometheus.InfoPMT("OnSyncMazeStorageItemInfoRQ")()
-
+	ctx := s.Context()
 	logger := log.Clone("Game", uint64(s.UID()), 0)
 
 	res := &MazeGame.SyncMazeStorageItemInfoRS{}
@@ -28,7 +28,7 @@ func (g *Game) OnSyncMazeStorageItemInfoRQ_10521_10522(s *session.Session, req *
 	res.StorageItemInfo = req.StorageItemInfo
 
 	userId := uint64(s.UID())
-	userInfo, err := mazeuserinfo.GetUserInfoV2(logger, userId)
+	userInfo, err := mazeuserinfo.GetUserInfoV2(ctx, userId)
 	if err != nil {
 		logger.ErrorWF("OnSyncMazeStorageItemInfoRQ GetUserInfoV2 fail", zap.Error(err))
 		res.ErrInfo = errors.MODULE_ERROR.ToInfo()

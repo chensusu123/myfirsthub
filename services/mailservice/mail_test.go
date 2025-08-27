@@ -7,7 +7,6 @@ import (
 	"testing"
 
 	globalredis "maze_game_server/io/redis"
-	"maze_game_server/lib/log"
 	"maze_game_server/model/mailmodel"
 
 	"github.com/redis/go-redis/v9"
@@ -15,7 +14,7 @@ import (
 	fileResolver "gitlab.ifreetalk.com/maze-plate/freetk/registry/fileresolver"
 )
 
-var logger = log.Clone("EquipDropTest", 0, 0)
+//var logger = log.Clone("EquipDropTest", 0, 0)
 
 func TestMain(m *testing.M) {
 	originalStdout := os.Stdout
@@ -53,7 +52,7 @@ func TestRedis(t *testing.T) {
 }
 
 func TestGetMailList(t *testing.T) {
-	mailList, err := GlobalMailService.GetMailListByLabel(logger, 40000005, 0, 0, 30)
+	mailList, err := GlobalMailService.GetMailListByLabel(t.Context(), 40000005, 0, 0, 30)
 	if err != nil {
 		fmt.Println(err)
 		return
@@ -75,20 +74,20 @@ func TestMail(t *testing.T) {
 		},
 	}
 
-	err := GlobalMailService.SendMail(logger, "测试邮件", "邮件内容", "发送者", 0, 40000005, attachments, 0)
+	err := GlobalMailService.SendMail(t.Context(), "测试邮件", "邮件内容", "发送者", 0, 40000005, attachments, 0)
 	if err != nil {
 		fmt.Println(err)
 		return
 	}
 
-	mailList, err := GlobalMailService.ReadAllMail(logger, 40000005, 0)
+	mailList, err := GlobalMailService.ReadAllMail(t.Context(), 40000005, 0)
 	if err != nil {
 		fmt.Println(err)
 		return
 	}
 	fmt.Println(mailList)
 
-	mailList, attachs, err := GlobalMailService.GetAllMailAttachment(logger, 40000005, 0)
+	mailList, attachs, err := GlobalMailService.GetAllMailAttachment(t.Context(), 40000005, 0)
 	if err != nil {
 		fmt.Println(err)
 		return
@@ -96,19 +95,19 @@ func TestMail(t *testing.T) {
 	fmt.Println(mailList)
 	fmt.Println(attachs)
 
-	err = GlobalMailService.GetMailAttachmentAfter(logger, 40000005, mailList)
+	err = GlobalMailService.GetMailAttachmentAfter(t.Context(), 40000005, mailList)
 	if err != nil {
 		fmt.Println(err)
 		return
 	}
 
-	err = GlobalMailService.DelAllMail(logger, 40000005, 0)
+	err = GlobalMailService.DelAllMail(t.Context(), 40000005, 0)
 	if err != nil {
 		fmt.Println(err)
 		return
 	}
 
-	mailMap, err := GlobalMailService.GetAllMailList(logger, 40000005)
+	mailMap, err := GlobalMailService.GetMailListByLabel(t.Context(), 40000005, 0, 0, 30)
 	if err != nil {
 		fmt.Println(err)
 		return

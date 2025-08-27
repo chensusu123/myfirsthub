@@ -51,12 +51,12 @@ func (e *Equip) OnGetMazeAssembleRQ_10414_10415(s *session.Session, req *MazeGam
 
 	defer func() {
 		err = s.Response(res)
-		logger.InfoWF("OnGetMazeAssembleRQ end", zap.Any("res", res))
+		logger.CtxInfo(ctx, "OnGetMazeAssembleRQ end", zap.Any("res", res))
 	}()
 
-	logger.InfoWF("OnGetMazeAssembleRQ with", zap.Any("req", req))
+	logger.CtxInfo(ctx, "OnGetMazeAssembleRQ with", zap.Any("req", req))
 	// 检查装备位解锁
-	ChkEquipPosUnlock(logger, userId, UnlockSrcInit, false)
+	ChkEquipPosUnlock(ctx, userId, UnlockSrcInit, false)
 
 	// 初始装备套检查
 	InitDollEquipSuitSeq(logger, userId)
@@ -70,13 +70,13 @@ func (e *Equip) OnGetMazeAssembleRQ_10414_10415(s *session.Session, req *MazeGam
 	assembleInfo, effect, err := dollassembleinfo.GetDollAssembleInfoEx(logger, userId)
 	if err != nil {
 		res.ErrInfo = errors.MODULE_ERROR.ToInfo()
-		logger.ErrorWF("OnGetMazeAssembleRQ Get Assemble info fail", zap.Error(err))
+		logger.CtxError(ctx, "OnGetMazeAssembleRQ Get Assemble info fail", zap.Error(err))
 		return err
 	}
 	err = checkAssembleEquipConsistent(logger, userId, assembleInfo)
 	if err != nil {
 		res.ErrInfo = errors.MODULE_ERROR.ToInfo()
-		logger.ErrorWF("OnGetMazeAssembleRQ checkAssembleEquipConsistent fail", zap.Error(err))
+		logger.CtxError(ctx, "OnGetMazeAssembleRQ checkAssembleEquipConsistent fail", zap.Error(err))
 		return err
 	}
 	_ = effect
@@ -94,7 +94,7 @@ func (e *Equip) OnGetMazeAssembleRQ_10414_10415(s *session.Session, req *MazeGam
 				cliEquip, e := packequipostopb.PackEquipPosPb(logger, aEquip, -1)
 				if e != nil {
 					res.ErrInfo = errors.MODULE_ERROR.ToInfo()
-					logger.ErrorWF("OnGetMazeAssembleRQ AssembleEquipToCliPb fail", zap.Error(e), zap.Int32("pos", posCfg.Pos_id))
+					logger.CtxWarn(ctx, "OnGetMazeAssembleRQ AssembleEquipToCliPb fail", zap.Error(e), zap.Int32("pos", posCfg.Pos_id))
 					return e
 				}
 				dai.EquipPosList = append(dai.EquipPosList, cliEquip)
@@ -122,7 +122,7 @@ func (e *Equip) OnGetMazeAssembleRQ_10414_10415(s *session.Session, req *MazeGam
 	dai.EquipPosStSuit,
 		dai.EquipPosNextStSuit, e1 = equippossuit.GetCurAndNextSuit(logger, assembleInfo.GetEpEnSuitId())
 	if e1 != nil {
-		logger.ErrorWF("OnGetMazeAssembleRQ GetCurAndNextSuit fail", zap.Error(e1), zap.Int32("enSuitId", assembleInfo.GetEpEnSuitId()))
+		logger.CtxError(ctx, "OnGetMazeAssembleRQ GetCurAndNextSuit fail", zap.Error(e1), zap.Int32("enSuitId", assembleInfo.GetEpEnSuitId()))
 	}
 	res.MazeAssembleInfo = dai
 

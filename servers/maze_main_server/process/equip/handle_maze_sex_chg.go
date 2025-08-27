@@ -43,7 +43,7 @@ func HandleDollSexChg(ctx context.Context, logger fklog.FKLogI, index int, key, 
 		return nil
 	}
 	// 检查装备位解锁
-	ChkEquipPosUnlock(logger, userId, UnlockSrcSexChg, true)
+	ChkEquipPosUnlock(ctx, userId, UnlockSrcSexChg, true)
 
 	// 初始装备套检查
 	InitDollEquipSuitSeq(logger, userId)

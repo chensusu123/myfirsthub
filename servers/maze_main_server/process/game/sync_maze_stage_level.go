@@ -14,7 +14,7 @@ import (
 func (g *Game) OnSyncMazeStageLevelRQ_10546_10547(s *session.Session, req *MazeGame.SyncMazeStorageStageLevelRQ) (err error) {
 	defer fkprometheus.InfoPMT("OnSyncMazeStageLevelRQ")()
 	logger := log.Clone("Game", uint64(s.UID()), 0)
-
+	ctx := s.Context()
 	res := &MazeGame.SyncMazeStorageStageLevelRS{}
 	logger.InfoWF("OnSyncMazeStageLevelRQ start", zap.Any("req", req))
 	defer func() {
@@ -27,7 +27,7 @@ func (g *Game) OnSyncMazeStageLevelRQ_10546_10547(s *session.Session, req *MazeG
 	res.StageLevel = req.StageLevel
 
 	userId := uint64(s.UID())
-	userInfo, err := mazeuserinfo.GetUserInfoV2(logger, userId)
+	userInfo, err := mazeuserinfo.GetUserInfoV2(ctx, userId)
 	if err != nil {
 		logger.ErrorWF("OnSyncMazeStageLevelRQ GetUserInfoV2 fail", zap.Error(err))
 		res.ErrInfo = errors.MODULE_ERROR.ToInfo()

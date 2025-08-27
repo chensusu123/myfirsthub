@@ -73,23 +73,23 @@ func HandleDollEquipInit(ctx context.Context, userId uint64, needNotify bool) er
 	logger := fklog.ContextAppLogger(ctx)
 	state, e := GetEquipInitState(logger, userId)
 	if e != nil {
-		logger.ErrorWF("HandleDollEquipInit get init state fail", zap.Error(e))
+		logger.CtxError(ctx, "HandleDollEquipInit get init state fail", zap.Error(e))
 		return e
 	}
 	// 初始化完成
 	if state&(constdef.DollEquipInitStateDress|constdef.DollEquipInitStateBag) ==
 		constdef.DollEquipInitStateDress|constdef.DollEquipInitStateBag {
-		logger.InfoWF("HandleDollEquipInit already init")
+		logger.CtxInfo(ctx, "HandleDollEquipInit already init")
 		return nil
 	}
 	// 初始化进行中
 	if state&constdef.DollEquipInitDoing > 0 {
-		logger.WarnWF("HandleDollEquipInit init doing", zap.Int64("state", state))
+		logger.CtxWarn(ctx, "HandleDollEquipInit init doing", zap.Int64("state", state))
 		return nil
 	}
 	cfg := GMazeConfigV8Cfg.GetMazeConfigV8Config(constdef.DollCfgId3301)
 	if cfg == nil {
-		logger.ErrorWF("HandleDollEquipInit no init equip cfg", zap.Int32("cfgId", constdef.DollCfgId3301))
+		logger.CtxError(ctx, "HandleDollEquipInit no init equip cfg", zap.Int32("cfgId", constdef.DollCfgId3301))
 		return errors.New("初始装备配置不存在")
 	}
 	initEquips := make(map[int32]int64)
@@ -122,7 +122,7 @@ func doInitDollEquip(ctx context.Context, userId uint64, state int64, equips map
 
 	initEquipInfoMap, err := getInitquipFromBag(logger, userId, equips)
 	if err != nil {
-		logger.ErrorWF("doInitDollEquip getInitquipFromBag fail", zap.Error(err), zap.Any("equips", equips),
+		logger.CtxError(ctx, "doInitDollEquip getInitquipFromBag fail", zap.Error(err), zap.Any("equips", equips),
 			zap.Int64("state", state))
 		return err
 	}
@@ -130,7 +130,7 @@ func doInitDollEquip(ctx context.Context, userId uint64, state int64, equips map
 	state |= constdef.DollEquipInitDoing
 	err = SaveEquipInitState(logger, userId, state)
 	if err != nil {
-		logger.ErrorWF("doInitDollEquip set init doing state fail", zap.Error(err), zap.Any("equips", equips),
+		logger.CtxError(ctx, "doInitDollEquip set init doing state fail", zap.Error(err), zap.Any("equips", equips),
 			zap.Int64("state", state))
 		return err
 	}
@@ -138,7 +138,7 @@ func doInitDollEquip(ctx context.Context, userId uint64, state int64, equips map
 
 	defer func() {
 		if oldState == state {
-			logger.WarnWF("doInitDollEquip SaveEquipInitState no chg", zap.Any("equips", equips),
+			logger.CtxWarn(ctx, "doInitDollEquip SaveEquipInitState no chg", zap.Any("equips", equips),
 				zap.Any("initEquipInfoMap", initEquipInfoMap),
 				zap.Int64("oldState", oldState),
 				zap.Int64("state", state))
@@ -146,12 +146,12 @@ func doInitDollEquip(ctx context.Context, userId uint64, state int64, equips map
 		}
 		err = SaveEquipInitState(logger, userId, state)
 		if err != nil {
-			logger.ErrorWF("doInitDollEquip SaveEquipInitState fail", zap.Error(err), zap.Any("equips", equips),
+			logger.CtxError(ctx, "doInitDollEquip SaveEquipInitState fail", zap.Error(err), zap.Any("equips", equips),
 				zap.Any("initEquipInfoMap", initEquipInfoMap),
 				zap.Int64("oldState", oldState),
 				zap.Int64("state", state))
 		} else {
-			logger.InfoWF("doInitDollEquip SaveEquipInitState succ", zap.Any("equips", equips),
+			logger.CtxInfo(ctx, "doInitDollEquip SaveEquipInitState succ", zap.Any("equips", equips),
 				zap.Any("initEquipInfoMap", initEquipInfoMap),
 				zap.Int64("oldState", oldState),
 				zap.Int64("state", state))
@@ -166,7 +166,7 @@ func doInitDollEquip(ctx context.Context, userId uint64, state int64, equips map
 		}
 	}
 	if err != nil {
-		logger.ErrorWF("doInitDollEquip add init equip fail", zap.Any("equips", equips),
+		logger.CtxError(ctx, "doInitDollEquip add init equip fail", zap.Any("equips", equips),
 			zap.Int64("oldState", oldState),
 			zap.Int64("state", state))
 		return err
@@ -174,7 +174,7 @@ func doInitDollEquip(ctx context.Context, userId uint64, state int64, equips map
 	if len(initEquipInfoMap) > 0 {
 		state |= constdef.DollEquipInitStateBag
 	} else {
-		logger.WarnWF("doInitDollEquip no get init equip", zap.Any("equips", equips),
+		logger.CtxWarn(ctx, "doInitDollEquip no get init equip", zap.Any("equips", equips),
 			zap.Int64("oldState", oldState),
 			zap.Int64("state", state))
 		return nil
@@ -213,10 +213,10 @@ func addInitEquipToBag(ctx context.Context, userId uint64, equips map[int32]int6
 	// err = dollequipbagrpc.MazeBagAddRQ(logger, rqAdd, rsAdd)
 	err = OnSvrAddMazeEquipRQ(ctx, int64(userId), rqAdd, rsAdd, "")
 	if err != nil {
-		logger.ErrorWF("addInitEquipToBag MazeBagAddRQ fail", zap.Error(err), zap.Any("req", rqAdd), zap.Any("rs", rsAdd))
+		logger.CtxError(ctx, "addInitEquipToBag MazeBagAddRQ fail", zap.Error(err), zap.Any("req", rqAdd), zap.Any("rs", rsAdd))
 	} else {
 		if rsAdd.GetErrInfo().GetErrCode() != errors.NO_ERROR_CODE {
-			logger.ErrorWF("addInitEquipToBag rs fail", zap.Any("req", rqAdd), zap.Any("rs", rsAdd))
+			logger.CtxError(ctx, "addInitEquipToBag rs fail", zap.Any("req", rqAdd), zap.Any("rs", rsAdd))
 		}
 	}
 	return
@@ -232,17 +232,17 @@ func dressInitEquip(ctx context.Context, userId uint64, equipInfoMap map[int32]*
 	qualityMap := make(map[int32]int32, 0)
 	constCfgRow := GMazeEquipConfigV8Cfg.GetMazeEquipConfigV8Config(1)
 	if constCfgRow == nil {
-		logger.ErrorWF("dressInitEquip no found Getmazeequipconfigv8Config")
+		logger.CtxError(ctx, "dressInitEquip no found Getmazeequipconfigv8Config")
 		return errors.New("未找到装备通用配置")
 	}
 
 	assembleInfo, oldEffect, err := dollassembleinfo.GetDollAssembleInfoEx(logger, userId)
 	if err != nil {
-		logger.ErrorWF("dressInitEquip Get Assemble info fail", zap.Error(err))
+		logger.CtxError(ctx, "dressInitEquip Get Assemble info fail", zap.Error(err))
 		return err
 	}
 	if assembleInfo.GetCurSuitIndex() == 0 {
-		logger.WarnWF("dressInitEquip no set cur suit")
+		logger.CtxError(ctx, "dressInitEquip no set cur suit")
 		err = errors.New("未设置生效装备套")
 		return err
 	}
@@ -250,21 +250,21 @@ func dressInitEquip(ctx context.Context, userId uint64, equipInfoMap map[int32]*
 	for _, equipInfo := range equipInfoMap {
 		row := GMazeEquipInfoV8Cfg.GetMazeEquipInfoV8Config(equipInfo.GetEquipId())
 		if row == nil {
-			logger.ErrorWF("dressInitEquip 未找到装备配置 ", zap.Int32("equipId", equipInfo.GetEquipId()),
+			logger.CtxError(ctx, "dressInitEquip 未找到装备配置 ", zap.Int32("equipId", equipInfo.GetEquipId()),
 				zap.Int64("equipGuid", equipInfo.GetEquipGuid()))
 			return errors.New("未找到装备配置")
 		}
 		equipPosInfo := module.GetEquipPosInfo(assembleInfo, row.Pos)
 		if equipPosInfo == nil {
-			logger.ErrorWF("dressInitEquip 装备位未解锁", zap.Int32("pos", row.Pos))
+			logger.CtxError(ctx, "dressInitEquip 装备位未解锁", zap.Int32("pos", row.Pos))
 			return errors.New("装备位未解锁")
 		}
 		guid := module.GetDressedGuid(equipPosInfo)
 		if guid > 0 {
 			if equipPosInfo.GetEquipLoadInfo().GetEquipId() == equipInfo.GetEquipId() {
-				logger.WarnWF("dressInitEquip has dressed equip", zap.Int64("guid", guid), zap.Int32("equipId", equipPosInfo.GetEquipLoadInfo().GetEquipId()))
+				logger.CtxError(ctx, "dressInitEquip has dressed equip", zap.Int64("guid", guid), zap.Int32("equipId", equipPosInfo.GetEquipLoadInfo().GetEquipId()))
 			} else {
-				logger.WarnWF("dressInitEquip has dressed other equip", zap.Int64("guid", guid), zap.Int32("equipId", equipPosInfo.GetEquipLoadInfo().GetEquipId()))
+				logger.CtxError(ctx, "dressInitEquip has dressed other equip", zap.Int64("guid", guid), zap.Int32("equipId", equipPosInfo.GetEquipLoadInfo().GetEquipId()))
 			}
 			continue
 		}
@@ -309,7 +309,7 @@ func dressInitEquip(ctx context.Context, userId uint64, equipInfoMap map[int32]*
 	err = dollassemblesuitredis.SaveEquipAssembleInfoV2(logger, userId, assembleInfo.GetCurSuitIndex(), chgEquipPosList)
 	if err != nil {
 		opMask |= demconstdef.DollEquipAssembleOpMaskDbSave
-		logger.ErrorWF("dressInitEquip SaveEquipAssembleInfoV2 fail", zap.Error(err), zap.Any("chgEquipPosList", chgEquipPosList))
+		logger.CtxError(ctx, "dressInitEquip SaveEquipAssembleInfoV2 fail", zap.Error(err), zap.Any("chgEquipPosList", chgEquipPosList))
 		return err
 	}
 	opCode = 0

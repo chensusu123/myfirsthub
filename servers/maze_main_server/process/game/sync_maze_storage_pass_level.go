@@ -13,6 +13,7 @@ import (
 
 func (g *Game) OnSyncMazeStoragePassLevelRQ_10517_10518(s *session.Session, req *MazeGame.SyncMazeStoragePassLevelRQ) (err error) {
 	defer fkprometheus.InfoPMT("OnSyncMazeStoragePassLevelRQ")()
+	ctx := s.Context()
 
 	logger := log.Clone("Game", uint64(s.UID()), 0)
 
@@ -28,7 +29,7 @@ func (g *Game) OnSyncMazeStoragePassLevelRQ_10517_10518(s *session.Session, req 
 	res.PassLevel = req.PassLevel
 
 	userId := uint64(s.UID())
-	userInfo, err := mazeuserinfo.GetUserInfoV2(logger, userId)
+	userInfo, err := mazeuserinfo.GetUserInfoV2(ctx, userId)
 	if err != nil {
 		logger.ErrorWF("OnSyncMazeStoragePassLevelRQ GetUserInfoV2 fail", zap.Error(err))
 		res.ErrInfo = errors.MODULE_ERROR.ToInfo()

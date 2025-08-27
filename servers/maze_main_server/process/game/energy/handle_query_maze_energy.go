@@ -32,14 +32,14 @@ func (e *Energy) OnQueryMazeEnergyRQ_10469_10470(s *session.Session, req *MazeEn
 
 	defer func() {
 		err = s.Response(res)
-		logger.InfoWF("OnQueryMazeEnergyRQ end", zap.Any("res", res))
+		logger.CtxInfo(ctx, "OnQueryMazeEnergyRQ end", zap.Any("res", res))
 	}()
 
-	logger.InfoWF("OnQueryMazeEnergyRQ with", zap.Any("req", req))
+	logger.CtxInfo(ctx, "OnQueryMazeEnergyRQ with", zap.Any("req", req))
 
 	energy, nextTime, err := barrierenergyservice.GlobalBarrierEnergyService.GetBarrierEnergy(ctx, userId)
 	if err != nil {
-		logger.ErrorWF("OnQueryMazeEnergyRQ SetUserInfoV2 fail", zap.Error(err))
+		logger.CtxError(ctx, "OnQueryMazeEnergyRQ SetUserInfoV2 fail", zap.Error(err))
 		res.ErrInfo = errors.DB_SAVE_ERROR.ToInfo()
 		return
 	}

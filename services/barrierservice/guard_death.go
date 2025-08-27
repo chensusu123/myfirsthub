@@ -1,6 +1,7 @@
 package barrierservice
 
 import (
+	"context"
 	"fmt"
 	"maze_game_server/common/errors"
 	"maze_game_server/config/GMazeFoeV8Cfg"
@@ -12,7 +13,8 @@ import (
 )
 
 // GuardDeath implements BarrierService.
-func (b *barrier) GuardDeath(logger fklog.FKLogI, userID uint64, barrierID int32, monsterID int32, monsterGuid int32) (kongfu int32, equips map[int32]int32, items map[int32]int64, errinfo *MessageType.ErrorInfo) {
+func (b *barrier) GuardDeath(ctx context.Context, userID uint64, barrierID int32, monsterID int32, monsterGuid int32) (kongfu int32, equips map[int32]int32, items map[int32]int64, errinfo *MessageType.ErrorInfo) {
+	logger := fklog.ContextAppLogger(ctx)
 	foeCfg := GMazeFoeV8Cfg.Get(monsterID)
 	if foeCfg == nil {
 		logger.ErrorWF("GuardDeath get foe cfg fail", zap.Any("monsterID", monsterID))

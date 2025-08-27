@@ -7,8 +7,6 @@ import (
 	"maze_game_server/pb/common/MazeEnergy"
 	"maze_game_server/pb/common/MazeGame"
 	"maze_game_server/pb/common/MessageType"
-
-	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fklog"
 )
 
 type BarrierService interface {
@@ -26,7 +24,7 @@ type BarrierService interface {
 	//
 	// 参数：
 	//	- userID: 用户ID
-	GetBarrierInfos(logger fklog.FKLogI, userID uint64) (barrierInfos []*MazeGame.MazeBarrierInfo, errinfo *MessageType.ErrorInfo)
+	GetBarrierInfos(ctx context.Context, userID uint64) (barrierInfos []*MazeGame.MazeBarrierInfo, errinfo *MessageType.ErrorInfo)
 
 	// // BarrierEnter 进入指定关卡，返回关卡战斗相关信息与配置
 	// //
@@ -53,7 +51,7 @@ type BarrierService interface {
 	// 	- kongfu: 宝箱掉落通关值
 	// 	- equips: 宝箱掉落装备
 	// 	- items: 掉落道具
-	GuardDeath(logger fklog.FKLogI, userID uint64, barrierID int32, monsterID int32, monsterGuid int32) (
+	GuardDeath(ctx context.Context, userID uint64, barrierID int32, monsterID int32, monsterGuid int32) (
 		kongfu int32, equips map[int32]int32, items map[int32]int64, errinfo *MessageType.ErrorInfo)
 
 	// OpenBox 关卡中打开宝箱(注意：OpenBox接口不负责增加奖励，增加操作由调用方处理)
@@ -62,7 +60,7 @@ type BarrierService interface {
 	// 	- kongfu: 宝箱掉落通关值
 	// 	- equips: 宝箱掉落装备
 	// 	- items: 掉落道具
-	OpenBox(logger fklog.FKLogI, userID uint64, barrierID int32, boxID int32) (
+	OpenBox(ctx context.Context, userID uint64, barrierID int32, boxID int32) (
 		kongfu int32, equips map[int32]int32, items map[int32]int64, errinfo *MessageType.ErrorInfo)
 
 	// // GetUserBarrierInfo 获取用户指定关卡的存储信息

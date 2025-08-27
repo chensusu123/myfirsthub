@@ -42,10 +42,10 @@ func (e *Equip) OnDollEquipDismantleRQ_10410_10411(s *session.Session, req *Maze
 
 	defer func() {
 		err = s.Response(res)
-		logger.InfoWF("OnDollEquipDismantleRQ end", zap.Any("res", res))
+		logger.CtxInfo(ctx, "OnDollEquipDismantleRQ end", zap.Any("res", res))
 	}()
 
-	logger.InfoWF("OnDollEquipDismantleRQ with", zap.Any("req", req))
+	logger.CtxInfo(ctx, "OnDollEquipDismantleRQ with", zap.Any("req", req))
 
 	if len(req.GetSelectGuid()) == 0 {
 		res.ErrInfo = errors.COMMON_ERROR_TIPS.Wrap("缺少选定的装备")
@@ -67,7 +67,7 @@ func (e *Equip) OnDollEquipDismantleRQ_10410_10411(s *session.Session, req *Maze
 	// 获取身上的装备信息
 	assembleInfoMap, err := dollassemblesuitredis.GetAllDollAssembleSuit(logger, userId)
 	if err != nil {
-		logger.ErrorWF("OnDollEquipDismantleRQ GetAllDollAssembleSuit fail", zap.Error(err))
+		logger.CtxError(ctx, "OnDollEquipDismantleRQ GetAllDollAssembleSuit fail", zap.Error(err))
 		res.ErrInfo = errors.MODULE_ERROR.ToInfo()
 		return
 	}
@@ -85,7 +85,7 @@ func (e *Equip) OnDollEquipDismantleRQ_10410_10411(s *session.Session, req *Maze
 
 	equipInfoMap, err := mazebagequipredis.GetAllEquipInfo(logger, userId)
 	if err != nil {
-		logger.ErrorWF("OnDollEquipDismantleRQ GetAllEquipInfo fail", zap.Error(err))
+		logger.CtxError(ctx, "OnDollEquipDismantleRQ GetAllEquipInfo fail", zap.Error(err))
 		res.ErrInfo = errors.MODULE_ERROR.ToInfo()
 		return
 	}
@@ -105,32 +105,32 @@ func (e *Equip) OnDollEquipDismantleRQ_10410_10411(s *session.Session, req *Maze
 			continue
 		}
 		if !ok {
-			logger.WarnWF("OnDollEquipDismantleRQ not found equip", zap.Any("guid", equipGuid))
+			logger.CtxError(ctx, "OnDollEquipDismantleRQ not found equip", zap.Any("guid", equipGuid))
 			res.ErrInfo = errors.NewCodeError(constdef.DE_ERR_EQUIP_DISMANTLE_EQUIP_NOT_EXISTS, toastmsgtipexcel.GetToastMsgTip(2031, "选中的部分装备已经被分解")).ToInfo()
 			// res.ErrInfo = errors.NewCodeError(constdef.DE_ERR_EQUIP_DISMANTLE_EQUIP_NOT_EXISTS, "选中的部分装备已经被分解").ToInfo()
 			return
 		}
 
 		if _, ok := assembleGuid[equip.GetEquipGuid()]; ok { // 身上的装备不能分解
-			logger.ErrorWF("OnDollEquipDismantleRQ assemble equip", zap.Any("guid", equipGuid))
+			logger.CtxError(ctx, "OnDollEquipDismantleRQ assemble equip", zap.Any("guid", equipGuid))
 			res.ErrInfo = errors.NewCodeError(constdef.DE_ERR_EQUIP_DISMANTLE_QUANLITY_WRONG, "").ToInfo()
 			return
 		}
 
-		logger.DebugWF("OnDollEquipDismantleRQ start dismantle equip", zap.Any("equipGuid", equip.GetEquipGuid()))
+		logger.CtxInfo(ctx, "OnDollEquipDismantleRQ start dismantle equip", zap.Any("equipGuid", equip.GetEquipGuid()))
 
 		// 获取装备可以出售获得的材料
 		var equipAward map[int32]int64
 
 		equipCfg := GMazeEquipInfoV8Cfg.Get(equip.GetEquipId())
 		if equipCfg == nil {
-			logger.ErrorWF("OnDollEquipDismantleRQ get equip cfg fail", zap.Any("equipId", equip.GetEquipId))
+			logger.CtxError(ctx, "OnDollEquipDismantleRQ get equip cfg fail", zap.Any("equipId", equip.GetEquipId))
 			res.ErrInfo = errors.CONFIG_NOT_FOUND.ToInfo()
 			return
 		}
 		equipAward, err = getEquipDismantle(logger, equip.GetEquipGuid(), int64(equip.GetEquipId()), equipCfg)
 		if err != nil {
-			logger.ErrorWF("OnDollEquipDismantleRQ get dismantle award fail", zap.Any("equipGuid", equip.GetEquipGuid()), zap.Error(err))
+			logger.CtxError(ctx, "OnDollEquipDismantleRQ get dismantle award fail", zap.Any("equipGuid", equip.GetEquipGuid()), zap.Error(err))
 			res.ErrInfo = errors.CONFIG_NOT_FOUND.ToInfo()
 			return
 		}
@@ -146,10 +146,10 @@ func (e *Equip) OnDollEquipDismantleRQ_10410_10411(s *session.Session, req *Maze
 		guidsBag = append(guidsBag, equip.GetEquipGuid())
 	}
 
-	logger.DebugWF("OnDollEquipDismantleRQ end dismantle equip", zap.Any("total", award))
+	logger.CtxInfo(ctx, "OnDollEquipDismantleRQ end dismantle equip", zap.Any("total", award))
 
 	if len(guidsBag) == 0 && req.GetDismantleFrom() != 4 {
-		logger.ErrorWF("OnDollEquipDismantleRQ guids empty")
+		logger.CtxError(ctx, "OnDollEquipDismantleRQ guids empty")
 		res.ErrInfo = errors.MODULE_ERROR.ToInfo()
 		return
 	}
@@ -167,11 +167,11 @@ func (e *Equip) OnDollEquipDismantleRQ_10410_10411(s *session.Session, req *Maze
 		TradeNum:   proto.Uint64(tradeNo),
 	}
 	rsSale := &MazeEquipSvr.SvrMazeEquipSaleRS{}
-	logger.DebugWF("OnDollEquipDismantleRQ SvrDollEquipSaleRS dump", zap.Any("rqSale", rqSale), zap.Any("rsSale", rsSale))
+	logger.CtxError(ctx, "OnDollEquipDismantleRQ SvrDollEquipSaleRS dump", zap.Any("rqSale", rqSale), zap.Any("rsSale", rsSale))
 	// err = dollequipbagrpc.MazeEquipSaleRQ(logger, rqSale, rsSale)
 	err = OnSvrDollEquipSaleRQ(ctx, int64(userId), rqSale, rsSale)
 	if err != nil {
-		logger.ErrorWF("OnDollEquipDismantleRQ SvrDollEquipSaleRS fail", zap.Error(err), zap.Any("rq", rqSale))
+		logger.CtxError(ctx, "OnDollEquipDismantleRQ SvrDollEquipSaleRS fail", zap.Error(err), zap.Any("rq", rqSale))
 		res.ErrInfo = errors.MODULE_ERROR.ToInfo()
 		return
 	}
@@ -180,7 +180,7 @@ func (e *Equip) OnDollEquipDismantleRQ_10410_10411(s *session.Session, req *Maze
 			res.ErrInfo = errors.NewCodeError(constdef.DE_ERR_EQUIP_DISMANTLE_EQUIP_NOT_EXISTS, "装备不存在").ToInfo()
 			return
 		}
-		logger.ErrorWF("OnDollEquipDismantleRQ SvrDollEquipSaleRS checkRs fail", zap.Any("rs", rsSale), zap.Any("rq", rqSale))
+		logger.CtxError(ctx, "OnDollEquipDismantleRQ SvrDollEquipSaleRS checkRs fail", zap.Any("rs", rsSale), zap.Any("rq", rqSale))
 		res.ErrInfo = errors.COMMON_ERROR_TIPS.Wrap(string(rsSale.GetErrInfo().GetErrMsg()))
 		return
 	}
@@ -196,7 +196,7 @@ func (e *Equip) OnDollEquipDismantleRQ_10410_10411(s *session.Session, req *Maze
 		items := itemutil.Map2ItemInfo(award)
 		errInfo := itemservice.GlobalItemService.AddItem(context.TODO(), userId, itemservice.ItemOpTypeDismantle, tradeNo, items...)
 		if errInfo != nil {
-			logger.ErrorWF("OnDollEquipDismantleRQ AddItemEx fail", zap.Any("errInfo", errInfo), zap.Any("rq", rqSale))
+			logger.CtxError(ctx, "OnDollEquipDismantleRQ AddItemEx fail", zap.Any("errInfo", errInfo), zap.Any("rq", rqSale))
 		}
 	}
 

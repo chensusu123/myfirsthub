@@ -14,7 +14,7 @@ import (
 // 邮件列表
 func (g *Mail) OnMazeGetMailListRQ_10626_10627(s *session.Session, req *MazeMail.MazeGetMailListRQ) (err error) {
 	defer fkprometheus.InfoPMT("OnMazeGetMailListRQ")()
-
+	ctx := s.Context()
 	logger := log.Clone("Frame", uint64(s.UID()), 0)
 	res := &MazeMail.MazeGetMailListRS{}
 
@@ -29,7 +29,7 @@ func (g *Mail) OnMazeGetMailListRQ_10626_10627(s *session.Session, req *MazeMail
 
 	userId := uint64(s.UID())
 
-	_, err = mazeuserinfo.GetUserInfoV2(logger, userId)
+	_, err = mazeuserinfo.GetUserInfoV2(ctx, userId)
 	if err != nil {
 		logger.ErrorWF("OnMazeGetMailListRQ GetUserInfoV2 fail", zap.Error(err))
 		res.ErrInfo = errors.MODULE_ERROR.ToInfo()
@@ -37,7 +37,7 @@ func (g *Mail) OnMazeGetMailListRQ_10626_10627(s *session.Session, req *MazeMail
 	}
 
 	//首页签分页查询结果
-	mailList, err := mailservice.GlobalMailService.GetMailListByLabel(logger, userId, 0, 0, 30)
+	mailList, err := mailservice.GlobalMailService.GetMailListByLabel(ctx, userId, 0, 0, 30)
 	if err != nil {
 		logger.ErrorWF("OnMazeGetMailListRQ GetMailList fail", zap.Error(err))
 		res.ErrInfo = errors.MODULE_ERROR.ToInfo()

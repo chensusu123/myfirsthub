@@ -1,6 +1,7 @@
 package userinfomodel
 
 import (
+	"context"
 	"errors"
 	"maze_game_server/config/GMazeLevelV8Cfg"
 	"maze_game_server/io/redis/mazeuserlevelredis"
@@ -41,19 +42,20 @@ type UserInfoModel struct {
 }
 
 // NewUserInfoModel
-func NewUserInfoModel(logger fklog.FKLogI, userID uint64) (u *UserInfoModel, err error) {
+func NewUserInfoModel(ctx context.Context, userID uint64) (u *UserInfoModel, err error) {
 	u = &UserInfoModel{
 		UserID: userID,
 	}
-	if err = u.load(logger); err != nil {
+	if err = u.load(ctx); err != nil {
 		return nil, err
 	}
 	return u, nil
 }
 
 // load
-func (u *UserInfoModel) load(logger fklog.FKLogI) (err error) {
-	userMap, err := mazeuserlevelredis.GetUserInfo(logger, u.UserID)
+func (u *UserInfoModel) load(ctx context.Context) (err error) {
+	logger := fklog.ContextAppLogger(ctx)
+	userMap, err := mazeuserlevelredis.GetUserInfo(ctx, u.UserID)
 	if err != nil {
 		logger.ErrorWF("load GetUserInfo fail", zap.Error(err), zap.Uint64("userID", u.UserID))
 		return
@@ -114,7 +116,8 @@ func (u *UserInfoModel) CalExp() (err error) {
 }
 
 // Save
-func (u *UserInfoModel) Save(logger fklog.FKLogI) (err error) {
+func (u *UserInfoModel) Save(ctx context.Context) (err error) {
+	logger := fklog.ContextAppLogger(ctx)
 	userMap := map[string]int64{
 		UserLevel:          u.Level,
 		UserExp:            u.Exp,
@@ -127,7 +130,7 @@ func (u *UserInfoModel) Save(logger fklog.FKLogI) (err error) {
 		UserEnergy:         int64(u.Energy),
 		UserEnergyLastTime: u.EnergyLastTime,
 	}
-	err = mazeuserlevelredis.SetUserInfo(logger, u.UserID, userMap)
+	err = mazeuserlevelredis.SetUserInfo(ctx, u.UserID, userMap)
 	if err != nil {
 		logger.ErrorWF("load SetUserInfo fail", zap.Error(err), zap.Uint64("userID", u.UserID), zap.Any("userMap", userMap))
 	}

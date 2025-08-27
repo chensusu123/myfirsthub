@@ -31,7 +31,7 @@ func (c *Collect) OnMazeCollectInfoQueryRQ_10465_10466(s *session.Session, req *
 
 	userId := uint64(s.UID())
 
-	userInfo, err := mazeuserinfo.GetUserInfoV2(logger, userId)
+	userInfo, err := mazeuserinfo.GetUserInfoV2(ctx, userId)
 	if err != nil {
 		logger.ErrorWF("OnMazeCollectInfoQueryRQ GetUserInfoV2", zap.Error(err))
 		res.ErrInfo = errors.MODULE_ERROR.ToInfo()

@@ -39,7 +39,7 @@ func HandleTempBuffMsg(ctx context.Context, msg *MazeTempBuffChangeMsg) {
 	if userId <= 0 || len(msg.ChgAttrs) == 0 {
 		return
 	}
-	userInfo, err := mazeuserinfo.GetUserInfoV2(logger, userId)
+	userInfo, err := mazeuserinfo.GetUserInfoV2(ctx, userId)
 	if err != nil {
 		logger.ErrorWF("HandleTempBuffMsg GetUserInfoV2 fail", zap.Error(err))
 		return

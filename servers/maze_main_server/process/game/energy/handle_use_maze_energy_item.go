@@ -33,14 +33,14 @@ func (e *Energy) OnUseMazeEnergyItemRQ_10611_10612(s *session.Session, req *Maze
 
 	defer func() {
 		err = s.Response(res)
-		logger.InfoWF("OnUseMazeEnergyItemRQ end", zap.Any("res", res))
+		logger.CtxInfo(ctx, "OnUseMazeEnergyItemRQ end", zap.Any("res", res))
 	}()
 
-	logger.InfoWF("OnUseMazeEnergyItemRQ with", zap.Any("req", req))
+	logger.CtxInfo(ctx, "OnUseMazeEnergyItemRQ with", zap.Any("req", req))
 
-	uInfo, err := mazeuserinfo.GetUserInfoV2(logger, userId)
+	uInfo, err := mazeuserinfo.GetUserInfoV2(ctx, userId)
 	if err != nil {
-		logger.ErrorWF("OnUseMazeEnergyItemRQ GetUserInfoV2 fail", zap.Error(err))
+		logger.CtxError(ctx, "OnUseMazeEnergyItemRQ GetUserInfoV2 fail", zap.Error(err))
 		res.ErrInfo = errors.MODULE_ERROR.ToInfo()
 		return
 	}
@@ -52,14 +52,14 @@ func (e *Energy) OnUseMazeEnergyItemRQ_10611_10612(s *session.Session, req *Maze
 		// 补发一个id包
 		recoverTime := barrierenergyservice.GlobalBarrierEnergyService.GetEnergyRecoverCfg() // 迷宫体力回复间隔时间（秒）
 		nextTime := uInfo.EnergyLastTime + recoverTime - time.Now().Unix()
-		err = barrierenergyservice.GlobalBarrierEnergyService.SendEnergyChgPack(logger, userId, uInfo.Energy, nextTime)
+		err = barrierenergyservice.GlobalBarrierEnergyService.SendEnergyChgPack(ctx, userId, uInfo.Energy, nextTime)
 		if err != nil {
-			logger.ErrorWF("OnUseMazeEnergyItemRQ SendEnergyChgPack failed", zap.Error(err))
+			logger.CtxError(ctx, "OnUseMazeEnergyItemRQ SendEnergyChgPack failed", zap.Error(err))
 			//return err
 			err = nil
 		}
 
-		logger.WarnWF("OnUseMazeEnergyItemRQ energy already full", zap.Int32("has", uInfo.Energy), zap.Int32("maxVal", maxVal))
+		logger.CtxInfo(ctx, "OnUseMazeEnergyItemRQ energy already full", zap.Int32("has", uInfo.Energy), zap.Int32("maxVal", maxVal))
 		res.EnergyInfo.CurVal = proto.Int32(uInfo.Energy)
 		res.EnergyInfo.MaxVal = proto.Int32(maxVal)
 		res.EnergyInfo.NextRecoveryTime = proto.Int64(nextTime)
@@ -82,7 +82,7 @@ func (e *Energy) OnUseMazeEnergyItemRQ_10611_10612(s *session.Session, req *Maze
 	}
 	errInfo := itemservice.GlobalItemService.SubItem(context.TODO(), userId, itemservice.ItemOpTypeUseEnergy, tid, careCost)
 	if errInfo != nil {
-		logger.ErrorWF("OnUseMazeEnergyItemRQ DeductItemsEx", zap.Any("careCost", careCost), zap.Uint64("tid", tid), zap.Any("errInfo", errInfo))
+		logger.CtxError(ctx, "OnUseMazeEnergyItemRQ DeductItemsEx", zap.Any("careCost", careCost), zap.Uint64("tid", tid), zap.Any("errInfo", errInfo))
 
 		if errInfo.GetErrCode() == 50049 {
 			res.ErrInfo = errors.COMMON_ERROR_TIPS.Wrap("物品不足")
@@ -92,11 +92,11 @@ func (e *Energy) OnUseMazeEnergyItemRQ_10611_10612(s *session.Session, req *Maze
 		return
 	}
 
-	logger.InfoWF("OnUseMazeEnergyItemRQ DeductItemsEx succ", zap.Any("careCost", careCost), zap.Uint64("tid", tid))
+	logger.CtxInfo(ctx, "OnUseMazeEnergyItemRQ DeductItemsEx succ", zap.Any("careCost", careCost), zap.Uint64("tid", tid))
 
 	energy, nextTime, err := barrierenergyservice.GlobalBarrierEnergyService.AddEnergy(ctx, userId, recoverNum)
 	if err != nil {
-		logger.ErrorWF("OnUseMazeEnergyItemRQ AddEnergy fail", zap.Error(err))
+		logger.CtxError(ctx, "OnUseMazeEnergyItemRQ AddEnergy fail", zap.Error(err))
 		return err
 	}
 

@@ -7,12 +7,12 @@
 package mazelevel
 
 import (
-	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fklog"
+	"context"
 	"maze_game_server/io/redis/mazeuserlevelredis"
 )
 
-func GetMazelLevel(logger fklog.FKLogI, userId uint64) (level int64, err error) {
-	level, err = mazeuserlevelredis.GetUserLevel(logger, userId)
+func GetMazelLevel(ctx context.Context, userId uint64) (level int64, err error) {
+	level, err = mazeuserlevelredis.GetUserLevel(ctx, userId)
 	if err == nil && level == 0 {
 		level = 1
 	}

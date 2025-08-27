@@ -23,7 +23,7 @@ func RunCmd1001(ctx context.Context, userID uint64, session string, param string
 	if e != nil {
 		return e
 	}
-	e = equip.ChkEquipPosUnlock(logger, userID, "gm", true)
+	e = equip.ChkEquipPosUnlock(ctx, userID, "gm", true)
 	if e != nil {
 		return e
 	}

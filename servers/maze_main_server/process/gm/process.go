@@ -54,11 +54,12 @@ func RegGm(logger fklog.FKLogI) {
 	cmdbattledata.RegBattleDataGm(logger)
 
 	gm.SafeHttpRegister(logger, "/AddExp", func(writer http.ResponseWriter, request *http.Request) {
+		ctx := request.Context()
 		userId := fkutil.ToUint64(request.Form.Get("user_id"))
 		exp := fkutil.ToInt64(request.Form.Get("exp"))
 		logger.SetLogId(time.Now().UnixNano())
 
-		userInfo, err := mazeuserinfo.GetUserInfoV2(logger, userId)
+		userInfo, err := mazeuserinfo.GetUserInfoV2(ctx, userId)
 		if err != nil {
 			logger.ErrorWF("AddExp GetUserInfoV2 fail", zap.Error(err))
 			writer.Write([]byte(err.Error()))
@@ -75,7 +76,7 @@ func RegGm(logger fklog.FKLogI) {
 			writer.Write([]byte(err.Error()))
 			return
 		}
-		err = mazeuserinfo.SetUserInfoV2(logger, userId, userInfo)
+		err = mazeuserinfo.SetUserInfoV2(ctx, userId, userInfo)
 		if err != nil {
 			logger.ErrorWF("AddExp SetUserInfoV2 fail", zap.Error(err))
 			writer.Write([]byte(err.Error()))
@@ -106,6 +107,7 @@ func RegGm(logger fklog.FKLogI) {
 	}
 
 	gm.SafeHttpRegister(logger, "/SetBarrier", func(writer http.ResponseWriter, request *http.Request) {
+		ctx := request.Context()
 		var params SetBarrierParams
 
 		err := form.Decode(&params, request.Form)
@@ -121,7 +123,7 @@ func RegGm(logger fklog.FKLogI) {
 			return
 		}
 
-		userInfo, err := mazeuserinfo.GetUserInfoV2(logger, params.UserID)
+		userInfo, err := mazeuserinfo.GetUserInfoV2(ctx, params.UserID)
 		if err != nil {
 			logger.ErrorWF("SetBarrier GetUserInfoV2 fail", zap.Error(err))
 			writer.Write([]byte(err.Error()))
@@ -147,7 +149,7 @@ func RegGm(logger fklog.FKLogI) {
 		userInfo.SetPassBarrier(params.BarrierID - 1)
 
 		// 更新设置关卡
-		err = mazeuserinfo.SetUserInfoV2(logger, params.UserID, userInfo)
+		err = mazeuserinfo.SetUserInfoV2(ctx, params.UserID, userInfo)
 		if err != nil {
 			logger.ErrorWF("SetBarrier SetUserInfoV2 fail", zap.Error(err))
 			writer.Write([]byte(err.Error()))

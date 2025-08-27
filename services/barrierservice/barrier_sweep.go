@@ -29,7 +29,7 @@ func (b *barrier) SweepBarrier(ctx context.Context, header *Common.PacketHeader,
 		return
 	}
 
-	userInfo, err := mazeuserinfo.GetUserInfoV2(logger, userID)
+	userInfo, err := mazeuserinfo.GetUserInfoV2(ctx, userID)
 	if err != nil {
 		logger.ErrorWF("SweepBarrier GetUserInfoV2 fail", zap.Error(err))
 		errinfo = errors.MODULE_ERROR.ToInfo()

@@ -31,10 +31,10 @@ func (g *Game) OnBarrierMonsterDeathRQ_10498_10499(s *session.Session, req *Maze
 	logger := fklog.ContextAppLogger(ctx)
 	res := &MazeGame.BarrierMonsterDeathRS{}
 
-	logger.InfoWF("OnBarrierMonsterDeathRQ start", zap.Any("req", req))
+	logger.CtxInfo(ctx, "OnBarrierMonsterDeathRQ start", zap.Any("req", req))
 	defer func() {
 		err = s.Response(res)
-		logger.InfoWF("OnBarrierMonsterDeathRQ end", zap.Any("res", res))
+		logger.CtxInfo(ctx, "OnBarrierMonsterDeathRQ end", zap.Any("res", res))
 	}()
 
 	res.Header = req.Header
@@ -49,10 +49,10 @@ func (g *Game) OnBarrierMonsterDeathRQ_10498_10499(s *session.Session, req *Maze
 	opData := req.GetOpData()
 
 	// 击杀守卫后，获取守卫死亡奖励
-	kongfu, equips, items, errinfo := barrierservice.Global.GuardDeath(logger, userId, barrierID, int32(monsterID), int32(req.GetMonsterGuid()))
+	kongfu, equips, items, errinfo := barrierservice.Global.GuardDeath(ctx, userId, barrierID, int32(monsterID), int32(req.GetMonsterGuid()))
 	if errinfo.GetErrCode() != errors.NO_ERROR_CODE {
 		res.ErrInfo = errinfo
-		logger.ErrorWF("OnBarrierMonsterDeathRQ GuardDeath fail", zap.Error(fmt.Errorf("GuardDeath: %s", errinfo.GetErrMsg())), zap.Any("monsterID", monsterID))
+		logger.CtxError(ctx, "OnBarrierMonsterDeathRQ GuardDeath fail", zap.Error(fmt.Errorf("GuardDeath: %s", errinfo.GetErrMsg())), zap.Any("monsterID", monsterID))
 		return
 	}
 
@@ -67,7 +67,7 @@ func (g *Game) OnBarrierMonsterDeathRQ_10498_10499(s *session.Session, req *Maze
 	if len(equips) > 0 {
 		_, err = addequip.AddEquipToBagWithOpdata(ctx, userId, int32(MazeEquipSvr.ENUM_EQUIP_BAG_OP_TYPE_MAZE_EQUIP_MONSTER_DEATH_AWARD), opData, tradeNo, equips)
 		if err != nil {
-			logger.ErrorWF("OnBarrierMonsterDeathRQ addEquipToBag fail", zap.Error(err), zap.Any("optype", int32(MazeEquipSvr.ENUM_EQUIP_BAG_OP_TYPE_MAZE_EQUIP_FOE)),
+			logger.CtxError(ctx, "OnBarrierMonsterDeathRQ addEquipToBag fail", zap.Error(err), zap.Any("optype", int32(MazeEquipSvr.ENUM_EQUIP_BAG_OP_TYPE_MAZE_EQUIP_FOE)),
 				zap.Any("tradeNo", tradeNo), zap.Any("addEquip", equips))
 		}
 	}
@@ -78,7 +78,7 @@ func (g *Game) OnBarrierMonsterDeathRQ_10498_10499(s *session.Session, req *Maze
 		if itemID > 0 {
 			itemCfg := GMazeItemsV8Cfg.Get(itemID)
 			if itemCfg == nil {
-				logger.ErrorWF("OnBarrierMonsterDeathRQ item not found", zap.Error(fmt.Errorf("item: %d not found", itemID)), zap.Any("MonsterId", req.GetMonsterId()))
+				logger.CtxInfo(ctx, "OnBarrierMonsterDeathRQ item not found", zap.Error(fmt.Errorf("item: %d not found", itemID)), zap.Any("MonsterId", req.GetMonsterId()))
 			} else {
 				res.Awards = append(res.Awards, &MazeCommon.MazeItem{
 					ItemId: proto.Int32(itemID),
@@ -99,7 +99,7 @@ func (g *Game) OnBarrierMonsterDeathRQ_10498_10499(s *session.Session, req *Maze
 		itemList := itemutil.ItemPb2ItemInfo(bagItems)
 		errInfo := itemservice.GlobalItemService.AddItem(context.TODO(), userId, itemservice.ItemOpTypeMonsterDeath, tradeNo, itemList...)
 		if errInfo != nil {
-			logger.ErrorWF("OnBarrierMonsterDeathRQ AddItemEx fail", zap.Any("errInfo", errInfo), zap.Any("bagItems", bagItems))
+			logger.CtxInfo(ctx, "OnBarrierMonsterDeathRQ AddItemEx fail", zap.Any("errInfo", errInfo), zap.Any("bagItems", bagItems))
 		}
 	}
 
@@ -112,7 +112,7 @@ func (g *Game) OnBarrierMonsterDeathRQ_10498_10499(s *session.Session, req *Maze
 	}
 	awards, err := json.Marshal(res.Awards)
 	if err != nil {
-		logger.ErrorWF("OnBarrierMonsterDeathRQ json marshal fail", zap.Error(err), zap.Any("res", res))
+		logger.CtxError(ctx, "OnBarrierMonsterDeathRQ json marshal fail", zap.Error(err), zap.Any("res", res))
 	}
 	record.AwardList = string(awards)
 	dollmazefoekafka.PushDollMazeFoeRecord(ctx, record)

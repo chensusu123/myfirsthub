@@ -13,7 +13,7 @@ import (
 
 func (g *Game) OnMazeBarrierListRQ_10457_10458(s *session.Session, req *MazeGame.MazeBarrierListRQ) (err error) {
 	defer fkprometheus.InfoPMT("OnMazeBarrierListRQ")()
-
+	ctx := s.Context()
 	logger := log.Clone("Game", uint64(s.UID()), 0)
 	res := &MazeGame.MazeBarrierListRS{}
 
@@ -28,7 +28,7 @@ func (g *Game) OnMazeBarrierListRQ_10457_10458(s *session.Session, req *MazeGame
 
 	userID := uint64(s.UID())
 
-	barriers, errinfo := barrierservice.Global.GetBarrierInfos(logger, userID)
+	barriers, errinfo := barrierservice.Global.GetBarrierInfos(ctx, userID)
 	if errinfo.GetErrCode() != errors.NO_ERROR_CODE {
 		res.ErrInfo = errinfo
 	} else {

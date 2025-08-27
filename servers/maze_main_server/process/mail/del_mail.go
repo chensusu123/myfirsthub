@@ -17,7 +17,7 @@ func (g *Mail) OnMazeDelMailRQ_10632_10633(s *session.Session, req *MazeMail.Maz
 
 	logger := log.Clone("Frame", uint64(s.UID()), 0)
 	res := &MazeMail.MazeDelMailRS{}
-
+	ctx := s.Context()
 	logger.InfoWF("OnMazeDelMailRQ start", zap.Any("req", req))
 	defer func() {
 		err = s.Response(res)
@@ -29,7 +29,7 @@ func (g *Mail) OnMazeDelMailRQ_10632_10633(s *session.Session, req *MazeMail.Maz
 
 	userId := uint64(s.UID())
 
-	_, err = mazeuserinfo.GetUserInfoV2(logger, userId)
+	_, err = mazeuserinfo.GetUserInfoV2(ctx, userId)
 	if err != nil {
 		logger.ErrorWF("OnMazeDelMailRQ GetUserInfoV2 fail", zap.Error(err))
 		res.ErrInfo = errors.MODULE_ERROR.ToInfo()
@@ -37,14 +37,14 @@ func (g *Mail) OnMazeDelMailRQ_10632_10633(s *session.Session, req *MazeMail.Maz
 	}
 
 	if req.GetIsAll() {
-		err = mailservice.GlobalMailService.DelAllMail(logger, userId, req.GetLabel())
+		err = mailservice.GlobalMailService.DelAllMail(ctx, userId, req.GetLabel())
 		if err != nil {
 			logger.ErrorWF("OnMazeDelMailRQ ReadMail fail", zap.Error(err), zap.Int32("label", req.GetLabel()))
 			res.ErrInfo = errors.COMMON_ERROR_TIPS.Wrap(err.Error())
 			return
 		}
 	} else {
-		err = mailservice.GlobalMailService.DelMail(logger, userId, req.GetMailId(), req.GetLabel())
+		err = mailservice.GlobalMailService.DelMail(ctx, userId, req.GetMailId(), req.GetLabel())
 		if err != nil {
 			logger.ErrorWF("OnMazeDelMailRQ ReadMail fail", zap.Error(err), zap.Uint64("mailId", req.GetMailId()), zap.Int32("label", req.GetLabel()))
 			res.ErrInfo = errors.COMMON_ERROR_TIPS.Wrap(err.Error())
@@ -52,7 +52,7 @@ func (g *Mail) OnMazeDelMailRQ_10632_10633(s *session.Session, req *MazeMail.Maz
 		}
 	}
 
-	list, err := mailservice.GlobalMailService.GetMailListByLabel(logger, userId, req.GetLabel(), 0, 30)
+	list, err := mailservice.GlobalMailService.GetMailListByLabel(ctx, userId, req.GetLabel(), 0, 30)
 	if err != nil {
 		logger.ErrorWF("OnMazeGetMailListRQ GetMailList fail", zap.Error(err))
 		res.ErrInfo = errors.MODULE_ERROR.ToInfo()
