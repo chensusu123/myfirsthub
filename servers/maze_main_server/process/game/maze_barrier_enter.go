@@ -94,7 +94,7 @@ func (g *Game) OnMazeBarrierEnterRQ_10447_10448(s *session.Session, req *MazeGam
 
 	if !isForce && req.GetBarrierId() < userInfo.Barrier {
 		logger.ErrorWF("OnMazeBarrierEnterRQ req barrier lt pass barrier", zap.Any("req", req), zap.Int32("save", userInfo.Barrier))
-		res.ErrInfo = errors.COMMON_ERROR_TIPS.Wrap("该关卡id小于存储的关卡id")
+		res.ErrInfo = errors.BARRIER_ID_ERROR.ToInfo()
 		return
 	}
 
