@@ -79,3 +79,18 @@ func TestQueryMessages(t *testing.T) {
 	fmt.Println("messages:", messages)
 
 }
+
+// 读消息
+func TestReadMessage(t *testing.T) {
+	userId := uint64(50000001)
+	user, err := app.WrapUser(userId, "")
+	if err != nil {
+		logger.ErrorWF("OnSendMessage WrapUser error", zap.Error(err))
+	}
+	err = GlobalP2PService.ReadMessage(context.Background(), app.Maze, user, uint64(50000002), 34572438872286404)
+	if err != nil {
+		logger.ErrorWF("OnSendMessage ReadMessage error", zap.Error(err))
+	}
+
+	fmt.Println("read message success")
+}

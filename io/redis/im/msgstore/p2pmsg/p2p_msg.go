@@ -114,7 +114,10 @@ func ReadMessage(ctx context.Context, appID int32, userID, peerID uint64, messag
 		return err
 	}
 	//取出messageid对应的value
-	member, err := cli.ZRange(ctx, key, int64(messageID-1), int64(messageID)).Result()
+	member, err := cli.ZRangeByScore(ctx, key, &redis.ZRangeBy{
+		Min: strconv.FormatUint(messageID, 10),
+		Max: strconv.FormatUint(messageID, 10),
+	}).Result()
 	if err != nil {
 		if errors.Is(err, redis.Nil) {
 			err = nil
@@ -127,6 +130,9 @@ func ReadMessage(ctx context.Context, appID int32, userID, peerID uint64, messag
 			return err
 		}
 	}
+	if len(member) == 0 {
+		return nil
+	}
 	message := Message{}
 	// 反序列化消息
 	err = json.Unmarshal([]byte(member[0]), &message)
@@ -135,8 +141,28 @@ func ReadMessage(ctx context.Context, appID int32, userID, peerID uint64, messag
 		return err
 	}
 	message.HasRead = true
-	// 更新消息状态
-	err = cli.ZAdd(ctx, key, redis.Z{Score: float64(messageID), Member: member[0]}).Err()
+	messageData, err := json.Marshal(message)
+	if err != nil {
+		logger.CtxError(ctx, "ReadMessage Marshal fail", zap.Error(err), zap.Any("message", message))
+		return err
+	}
+
+	//TODO: 这里应该是先删除以前的消息，再添加新的消息状态,后续不用这种方式
+	//先删除以前的消息
+	err = cli.ZRem(ctx, key, member[0]).Err()
+	if err != nil {
+		if errors.Is(err, redis.Nil) {
+			err = nil
+		} else {
+			logger.CtxError(ctx, "ReadMessage ZRem fail",
+				zap.Error(err),
+				zap.Any("key", key),
+			)
+			return err
+		}
+	}
+	// 再添加新的消息状态
+	err = cli.ZAdd(ctx, key, redis.Z{Score: float64(messageID), Member: messageData}).Err()
 	if err != nil {
 		if errors.Is(err, redis.Nil) {
 			err = nil
