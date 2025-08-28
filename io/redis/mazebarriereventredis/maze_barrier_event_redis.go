@@ -159,6 +159,8 @@ func BackupBarrierEvents(logger fklog.FKLogI, userID uint64, enterTime int64) (e
 			zap.Any("key", key),
 		)
 	}
+	// 备份关卡事件数据
+	logger.DebugWF("BackupBarrierEvents success", zap.String("key", new), zap.Int64("enterTime", enterTime))
 	return
 }
 
