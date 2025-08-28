@@ -52,13 +52,13 @@ func TestRedis(t *testing.T) {
 }
 
 func TestSendMessages(t *testing.T) {
-	userId := uint64(50000001)
+	userId := uint64(50000002)
 	user, err := app.WrapUser(userId, "")
 	if err != nil {
 		logger.ErrorWF("OnSendMessage WrapUser error", zap.Error(err))
 	}
 
-	messageID, err := GlobalP2PService.SendMessage(context.Background(), app.Maze, user, uint64(50000002), int32(1), "hello01")
+	messageID, err := GlobalP2PService.SendMessage(context.Background(), app.Maze, user, uint64(50000001), int32(1), "hello022")
 	if err != nil {
 		logger.ErrorWF("OnSendMessage SendMessage error", zap.Error(err))
 	}
@@ -88,7 +88,7 @@ func TestReadMessage(t *testing.T) {
 		logger.ErrorWF("OnSendMessage WrapUser error", zap.Error(err))
 		return
 	}
-	err = GlobalP2PService.ReadMessage(context.Background(), app.Maze, user, uint64(50000001), 34681021584663748)
+	err = GlobalP2PService.ReadMessage(context.Background(), app.Maze, user, uint64(50000001), 34719099388978371)
 	if err != nil {
 		logger.ErrorWF("OnSendMessage ReadMessage error", zap.Error(err))
 	}
@@ -101,7 +101,7 @@ func TestRemoveMessage(t *testing.T) {
 	if err != nil {
 		logger.ErrorWF("OnSendMessage WrapUser error", zap.Error(err))
 	}
-	err = GlobalP2PService.RemoveMessage(context.Background(), app.Maze, user, uint64(50000001), 34681021584663748)
+	err = GlobalP2PService.RemoveMessage(context.Background(), app.Maze, user, uint64(50000001), 34719007919596739)
 	if err != nil {
 		logger.ErrorWF("OnSendMessage RemoveMessage error", zap.Error(err))
 	}

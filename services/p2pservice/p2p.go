@@ -56,6 +56,17 @@ type P2PService interface {
 	//	- peerID: 接收用户
 	//	- messageID: 消息ID
 	RemoveMessage(ctx context.Context, a app.App, user app.User, peerID uint64, messageID uint64) (err error)
+
+	// checkUserAndPeer 检查用户和接收者是否合法
+	//
+	// 参数:
+	//	- ctx: 上下文
+	//	- userId: 发送用户
+	//	- peerId: 接收用户
+	// 返回值:
+	//	- user: 用户
+	//	- errInfo: 错误信息(string)
+	CheckUserAndPeer(ctx context.Context, userId uint64, peerId uint64) (user app.User, errInfo string)
 }
 
 var (
@@ -171,4 +182,40 @@ func (p *p2p) notifyMessage(ctx context.Context, userId uint64, peerID uint64, m
 		logger.CtxError(ctx, "notifyMessage error", zap.Error(err), zap.Any("notifyMessage", notifyMessage))
 	}
 	return err
+}
+
+// CheckUserAndPeer 检查用户和接收者是否合法
+func (p *p2p) CheckUserAndPeer(ctx context.Context, userId uint64, peerId uint64) (user app.User, errInfo string) {
+	logger := fklog.ContextAppLogger(ctx)
+	if userId == peerId {
+		errInfo = "用户id不能和接收者id相同"
+		logger.CtxError(ctx, "OnSendMessage user and peerId error", zap.Any("err", errInfo), zap.Any("user", userId), zap.Any("peerId", peerId))
+		return nil, errInfo
+	}
+	if userId <= 0 {
+		errInfo = "用户id不合法"
+		logger.CtxError(ctx, "OnSendMessage user error", zap.Any("err", errInfo), zap.Any("user", userId))
+		return nil, errInfo
+	}
+	//判断用户是否存在
+	user, _ = app.WrapUser(userId, "")
+	if user == nil {
+		errInfo = "用户不存在"
+		logger.CtxError(ctx, "OnSendMessage user error", zap.Any("err", errInfo), zap.Any("user", userId))
+		return nil, errInfo
+	}
+	//判断peerId是否合法
+	if peerId <= 0 {
+		errInfo = "接收者id不合法"
+		logger.CtxError(ctx, "OnSendMessage peerId error", zap.Any("err", errInfo), zap.Any("peerId", peerId))
+		return nil, errInfo
+	}
+	peerUser, _ := app.WrapUser(peerId, "")
+	if peerUser == nil {
+		errInfo = "接收者不存在"
+		logger.CtxError(ctx, "OnSendMessage peerUser error", zap.Any("err", errInfo), zap.Any("peerId", peerId))
+		return nil, errInfo
+	}
+	//TODO 是否黑名单、禁言、拒接聊天等判断
+	return user, ""
 }

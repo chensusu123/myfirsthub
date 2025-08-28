@@ -99,6 +99,7 @@ func (g *group) SendMessage(ctx context.Context, a app.App, groupID int32, sende
 	if err != nil {
 		return 0, err
 	}
+	//TODO 需要判断这个组是否存在，通过家族或者联盟判断
 	message.MessageID = messageID
 	message.UserID = sender
 	message.CreateTime = time.Now().Unix()

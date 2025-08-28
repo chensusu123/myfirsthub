@@ -35,7 +35,7 @@ func QueryMessages(ctx context.Context, appID int32, groupID int32, lastID uint6
 		)
 		return nil, err
 	}
-	ret, err := cli.ZRevRangeByScore(ctx, key, &redis.ZRangeBy{Max: strconv.FormatUint(lastID, 10), Count: 20}).Result()
+	ret, err := cli.ZRevRangeByScore(ctx, key, &redis.ZRangeBy{Max: strconv.FormatUint(exchangeTextId(lastID), 10), Count: 20}).Result()
 	if err != nil {
 		if errors.Is(err, redis.Nil) {
 			err = nil
@@ -83,7 +83,7 @@ func SaveMessage(ctx context.Context, appID int32, groupID int32, message Messag
 		return err
 	}
 
-	err = cli.ZAdd(ctx, key, redis.Z{Score: float64(message.MessageID), Member: data}).Err()
+	err = cli.ZAdd(ctx, key, redis.Z{Score: float64(exchangeTextId(message.MessageID)), Member: data}).Err()
 	if err != nil {
 		if errors.Is(err, redis.Nil) {
 			err = nil
@@ -97,4 +97,10 @@ func SaveMessage(ctx context.Context, appID int32, groupID int32, message Messag
 	}
 	logger.CtxInfo(ctx, "SaveMessage success", zap.Any("key", key), zap.Any("message", message))
 	return
+}
+
+func exchangeTextId(textId uint64) uint64 {
+	t1 := (textId >> 12) & 0xffffffff00000
+	t2 := (textId & 0xfffff)
+	return t1 | t2
 }

@@ -35,7 +35,7 @@ func QueryMessages(ctx context.Context, appID int32, userID, peerID uint64, last
 		)
 		return nil, err
 	}
-	ret, err := cli.ZRevRangeByScore(ctx, key, &redis.ZRangeBy{Max: strconv.FormatUint(lastID, 10), Count: 20}).Result()
+	ret, err := cli.ZRevRangeByScore(ctx, key, &redis.ZRangeBy{Max: strconv.FormatUint(exchangeTextId(lastID), 10), Count: 20}).Result()
 	if err != nil {
 		if errors.Is(err, redis.Nil) {
 			err = nil
@@ -83,7 +83,7 @@ func SaveMessage(ctx context.Context, appID int32, userID, peerID uint64, messag
 		return err
 	}
 
-	err = cli.ZAdd(ctx, key, redis.Z{Score: float64(message.MessageID), Member: data}).Err()
+	err = cli.ZAdd(ctx, key, redis.Z{Score: float64(exchangeTextId(message.MessageID)), Member: data}).Err()
 	if err != nil {
 		if errors.Is(err, redis.Nil) {
 			err = nil
@@ -115,8 +115,8 @@ func ReadMessage(ctx context.Context, appID int32, userID, peerID uint64, messag
 	}
 	//取出messageid对应的value
 	member, err := cli.ZRangeByScore(ctx, key, &redis.ZRangeBy{
-		Min: strconv.FormatUint(messageID, 10),
-		Max: strconv.FormatUint(messageID, 10),
+		Min: strconv.FormatUint(exchangeTextId(messageID), 10),
+		Max: strconv.FormatUint(exchangeTextId(messageID), 10),
 	}).Result()
 	if err != nil {
 		if errors.Is(err, redis.Nil) {
@@ -167,7 +167,7 @@ func ReadMessage(ctx context.Context, appID int32, userID, peerID uint64, messag
 		}
 	}
 	// 再添加新的消息状态
-	err = cli.ZAdd(ctx, key, redis.Z{Score: float64(messageID), Member: messageData}).Err()
+	err = cli.ZAdd(ctx, key, redis.Z{Score: float64(exchangeTextId(messageID)), Member: messageData}).Err()
 	if err != nil {
 		if errors.Is(err, redis.Nil) {
 			err = nil
@@ -183,7 +183,7 @@ func ReadMessage(ctx context.Context, appID int32, userID, peerID uint64, messag
 	return
 }
 
-//删除消息
+// 删除消息
 func RemoveMessage(ctx context.Context, appID int32, userID, peerID uint64, messageID uint64) (err error) {
 	logger := fklog.ContextAppLogger(ctx)
 	var (
@@ -199,8 +199,8 @@ func RemoveMessage(ctx context.Context, appID int32, userID, peerID uint64, mess
 	}
 	//取出messageid对应的value
 	member, err := cli.ZRangeByScore(ctx, key, &redis.ZRangeBy{
-		Min: strconv.FormatUint(messageID, 10),
-		Max: strconv.FormatUint(messageID, 10),
+		Min: strconv.FormatUint(exchangeTextId(messageID), 10),
+		Max: strconv.FormatUint(exchangeTextId(messageID), 10),
 	}).Result()
 	if err != nil {
 		if errors.Is(err, redis.Nil) {
@@ -232,4 +232,10 @@ func RemoveMessage(ctx context.Context, appID int32, userID, peerID uint64, mess
 	}
 	logger.CtxInfo(ctx, "RemoveMessage success", zap.Any("key", key), zap.Any("messageID", messageID))
 	return
+}
+
+func exchangeTextId(textId uint64) uint64 {
+	t1 := (textId >> 12) & 0xffffffff00000
+	t2 := (textId & 0xfffff)
+	return t1 | t2
 }

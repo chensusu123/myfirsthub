@@ -34,10 +34,11 @@ func (im *IM) OnQueryMessages_10643_10644(s *session.Session, req *MazeIM.QueryM
 		lastMsgID = req.GetLastMsgId()
 	)
 
-	user, err := app.WrapUser(userId, "")
-	if err != nil {
-		res.ErrInfo = errors.COMMON_ERROR_TIPS.Wrap("获取用户信息失败")
-		logger.CtxError(ctx, "OnQueryMessages WrapUser error", zap.Error(err), zap.Any("req", req))
+	// 检查用户和对端是否存在
+	user, errInfo := p2pservice.Default.CheckUserAndPeer(ctx, userId, peerId)
+	if errInfo != "" {
+		res.ErrInfo = errors.COMMON_ERROR_TIPS.Wrap(errInfo)
+		logger.CtxError(ctx, "OnQueryMessages CheckUserAndPeer error", zap.Error(err), zap.Any("req", req))
 		return err
 	}
 
@@ -76,10 +77,11 @@ func (im *IM) OnSendMessage_10645_10646(s *session.Session, req *MazeIM.SendMess
 		content = req.GetContent()
 	)
 
-	user, err := app.WrapUser(userId, "")
-	if err != nil {
-		res.ErrInfo = errors.COMMON_ERROR_TIPS.Wrap("获取用户信息失败")
-		logger.CtxError(ctx, "OnSendMessage WrapUser error", zap.Error(err), zap.Any("req", req))
+	// 检查用户和对端是否存在
+	user, errInfo := p2pservice.Default.CheckUserAndPeer(ctx, userId, peerId)
+	if errInfo != "" {
+		res.ErrInfo = errors.COMMON_ERROR_TIPS.Wrap(errInfo)
+		logger.CtxError(ctx, "OnQueryMessages CheckUserAndPeer error", zap.Error(err), zap.Any("req", req))
 		return err
 	}
 
@@ -114,10 +116,11 @@ func (im *IM) OnReadMessage_10656_10657(s *session.Session, req *MazeIM.ReadMess
 		msgID  = req.GetMsgId()
 	)
 
-	user, err := app.WrapUser(userId, "")
-	if err != nil {
-		res.ErrInfo = errors.COMMON_ERROR_TIPS.Wrap("参数错误")
-		logger.CtxError(ctx, "OnReadMessage WrapUser error", zap.Error(err), zap.Any("req", req))
+	// 检查用户和对端是否存在
+	user, errInfo := p2pservice.Default.CheckUserAndPeer(ctx, userId, peerId)
+	if errInfo != "" {
+		res.ErrInfo = errors.COMMON_ERROR_TIPS.Wrap(errInfo)
+		logger.CtxError(ctx, "OnQueryMessages CheckUserAndPeer error", zap.Error(err), zap.Any("req", req))
 		return err
 	}
 

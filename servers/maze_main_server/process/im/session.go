@@ -33,6 +33,8 @@ func (im *IM) OnQueryRecentSessions_10652_10653(s *session.Session, req *MazeIM.
 
 	user, err := app.WrapUser(userId, "")
 	if err != nil {
+		res.ErrInfo = errors.MODULE_ERROR.Wrap("获取用户信息失败")
+		logger.CtxError(ctx, "OnQueryMessages WrapUser error", zap.Error(err))
 		return err
 	}
 
@@ -75,6 +77,8 @@ func (im *IM) OnRemoveSession_10654_10655(s *session.Session, req *MazeIM.Remove
 
 	user, err := app.WrapUser(userId, "")
 	if err != nil {
+		res.ErrInfo = errors.MODULE_ERROR.Wrap("获取用户信息失败")
+		logger.CtxError(ctx, "OnRemoveSession WrapUser error", zap.Error(err))
 		return err
 	}
 
