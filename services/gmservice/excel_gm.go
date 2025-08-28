@@ -55,7 +55,7 @@ func (s *service) GetExcelList(writer http.ResponseWriter, request *http.Request
 
 	}
 
-	outPut = *gmmodel.NewOutPut(http.StatusOK, "", *gmmodel.NewDynamicData(records, len(records)))
+	outPut = *gmmodel.NewOutPut(http.StatusOK, "操作成功", *gmmodel.NewDynamicData(records, len(records)))
 }
 
 func (s *service) GetExcelSheet(writer http.ResponseWriter, request *http.Request) {
@@ -88,7 +88,7 @@ func (s *service) GetExcelSheet(writer http.ResponseWriter, request *http.Reques
 		}
 	}
 
-	outPut = *gmmodel.NewOutPut(http.StatusOK, "", *gmmodel.NewDynamicData(records, len(records)))
+	outPut = *gmmodel.NewOutPut(http.StatusOK, "操作成功", *gmmodel.NewDynamicData(records, len(records)))
 }
 
 func (s *service) GetExcelData(writer http.ResponseWriter, request *http.Request) {
@@ -197,5 +197,5 @@ func (s *service) convertTableToJSON(table [][]string) gmmodel.Output {
 		records = append(records, dataRecord)
 	}
 
-	return *gmmodel.NewOutPut(http.StatusOK, "", *gmmodel.NewDynamicData(records, len(records)))
+	return *gmmodel.NewOutPut(http.StatusOK, "操作成功", *gmmodel.NewDynamicData(records, len(records)))
 }

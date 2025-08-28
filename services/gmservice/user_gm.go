@@ -55,29 +55,25 @@ func (s *service) SetBarrier(writer http.ResponseWriter, request *http.Request) 
 		writer.Write(jsonOut)
 	}()
 
-	var params SetBarrierParams
-
-	err := form.Decode(&params, request.Form)
-	if err != nil {
-		outPut = *gmmodel.NewOutPut(http.StatusBadGateway, "参数不正确", gmmodel.DynamicData{})
-		return
-	}
+	userID := fkutil.ToUint64(request.Form.Get("user_id"))
+	barrierID := fkutil.ToInt32(request.Form.Get("barrierId"))
+	lock := fkutil.ToInt32(request.Form.Get("lock"))
 
 	logger.SetLogId(time.Now().UnixNano())
 
-	if params.UserID <= 0 || params.BarrierID <= 0 {
+	if userID <= 0 || barrierID <= 0 {
 		outPut = *gmmodel.NewOutPut(http.StatusBadGateway, "参数不正确", gmmodel.DynamicData{})
 		return
 	}
 
-	userInfo, err := mazeuserinfo.GetUserInfoV2(ctx, params.UserID)
+	userInfo, err := mazeuserinfo.GetUserInfoV2(ctx, userID)
 	if err != nil {
 		logger.CtxError(ctx, "SetBarrier GetUserInfoV2 fail", zap.Error(err))
 		outPut = *gmmodel.NewOutPut(http.StatusBadGateway, err.Error(), gmmodel.DynamicData{})
 		return
 	}
 
-	barrierCfg := GMazeBarriesV8Cfg.GetWithCtx(ctx, params.BarrierID)
+	barrierCfg := GMazeBarriesV8Cfg.GetWithCtx(ctx, barrierID)
 	if barrierCfg == nil {
 		errCfg := errors.New("cant find barrier cfg")
 		logger.CtxError(ctx, "SetBarrier Get barrier fail", zap.Error(err))
@@ -92,11 +88,11 @@ func (s *service) SetBarrier(writer http.ResponseWriter, request *http.Request) 
 	// 	return
 	// }
 
-	userInfo.SetBarrier(params.BarrierID)
-	userInfo.SetPassBarrier(params.BarrierID - 1)
+	userInfo.SetBarrier(barrierID)
+	userInfo.SetPassBarrier(barrierID - 1)
 
 	// 更新设置关卡
-	err = mazeuserinfo.SetUserInfoV2(ctx, params.UserID, userInfo)
+	err = mazeuserinfo.SetUserInfoV2(ctx, userID, userInfo)
 	if err != nil {
 		logger.CtxError(ctx, "SetBarrier SetUserInfoV2 fail", zap.Error(err))
 		outPut = *gmmodel.NewOutPut(http.StatusBadGateway, err.Error(), gmmodel.DynamicData{})
@@ -104,10 +100,10 @@ func (s *service) SetBarrier(writer http.ResponseWriter, request *http.Request) 
 	}
 
 	// 锁定设置的关卡
-	if params.Lock == 1 {
-		mazefixedbarrierredis.SetUserFixedBarrierID(ctx, params.UserID, params.BarrierID)
+	if lock == 1 {
+		mazefixedbarrierredis.SetUserFixedBarrierID(ctx, userID, barrierID)
 	} else {
-		mazefixedbarrierredis.DelUserFixedBarrierID(ctx, params.UserID)
+		mazefixedbarrierredis.DelUserFixedBarrierID(ctx, userID)
 	}
 
 	outPut = *gmmodel.NewOutPut(http.StatusOK, "操作成功", gmmodel.DynamicData{})
