@@ -78,7 +78,7 @@ func (g *Game) OnMazeReportBattleEventRQ_10496_10497(s *session.Session, req *Ma
 			triggerFn = func() {
 				events.OnBossMove(logger, userID, event.GetEventFrame(), event.GetEventTimeMs(), event.GetBossMove())
 			}
-		// 猪妖移动
+		// 恢复/暂停游戏
 		case MazeGame.BattleEventType_PAUSE_GAME:
 			eventData = event.GetPauseGame()
 			triggerFn = func() {
