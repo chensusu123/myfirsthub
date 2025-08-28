@@ -3,6 +3,7 @@ package mazecollectchgrecordmodel
 import (
 	"maze_game_server/io/kafka/kafkacommonstruct"
 	"maze_game_server/io/mysql"
+	"strconv"
 	"strings"
 )
 
@@ -29,7 +30,7 @@ type MazeCollectChgRecord struct {
 	PeriodTime    int32  `json:"period_time" gorm:"column:period_time"`       // 产出周期
 	CollectTimes  int64  `json:"collect_times" gorm:"column:collect_times"`   // 道具产出周期数
 	BarrierId     int32  `json:"barrier_id" gorm:"column:barrier_id"`         // 关卡id
-	TradeNo       uint64 `json:"trade_no" gorm:"column:trade_no"`             // 加物品流水号
+	TradeNo       string `json:"trade_no" gorm:"column:trade_no"`             // 加物品流水号
 	AddItems      string `json:"add_items" gorm:"column:add_items"`           // 收集的道具/领取的道具
 	RemainItems   string `json:"remain_items" gorm:"column:remain_items"`     // 累计产出道具/领取后遗留的道具
 	RetCode       int64  `json:"ret_code" gorm:"column:ret_code"`             // 0:成功  其他失败
@@ -48,7 +49,7 @@ func NewMazeCollectChgRecord(userID uint64, opType int32, startTime int64, lastT
 		PeriodTime:    periodTime,
 		CollectTimes:  collectTimes,
 		BarrierId:     barrierId,
-		TradeNo:       tradeNo,
+		TradeNo:       strconv.FormatUint(tradeNo, 10),
 		AddItems:      addItems,
 		RemainItems:   remainItems,
 		RetCode:       retCode,

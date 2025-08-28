@@ -4,6 +4,7 @@ import (
 	"context"
 	"maze_game_server/common/constdef"
 	"maze_game_server/common/errors"
+	"maze_game_server/common/tradeno"
 	"maze_game_server/io/kafka/mazemoneykafka"
 	"maze_game_server/io/kafka/mazeuserlevelkafka"
 	"maze_game_server/lib/nano/session"
@@ -134,7 +135,7 @@ func (g *Game) OnReportDataRQ_10453_10454(s *session.Session, req *MazeGame.Repo
 				OldMoneyCount: oldCoin,
 				NewMoneyId:    constdef.MazeCommonItemCoin,
 				NewMoneyCount: reportInfo.GetMoneyCount(),
-				TradeNo:       int64(0),
+				TradeNo:       tradeno.GetTradeNum(),
 				ChgReason:     0,
 			}
 			mazemoneykafka.PushMazeMoneyRecord(ctx, record)

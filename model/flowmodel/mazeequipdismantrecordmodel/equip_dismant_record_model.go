@@ -3,6 +3,7 @@ package mazeequipdismantrecordmodel
 import (
 	"maze_game_server/io/kafka/kafkacommonstruct"
 	"maze_game_server/io/mysql"
+	"strconv"
 	"strings"
 )
 
@@ -23,7 +24,7 @@ type MazeGameEquipDismantleRecord struct {
 	KafkaCommon
 	UserId     uint64 `json:"user_id" gorm:"column:user_id"`         // 用户id
 	EquipGuids string `json:"equip_guids" gorm:"column:equip_guids"` // 装备guid列表
-	TradeNum   uint64 `json:"trade_num" gorm:"column:trade_num"`     // 交易单号
+	TradeNum   string `json:"trade_num" gorm:"column:trade_num"`     // 交易单号
 	Award      string `json:"award" gorm:"column:award"`             // 分解获得的材料
 	OpType     int32  `json:"op_type" gorm:"column:op_type"`         // 分解的操作来源
 	IsFail     int32  `json:"is_fail" gorm:"column:is_fail"`         // 操作是否失败 0-成功 1-失败
@@ -33,7 +34,7 @@ func NewMazeGameEquipDismantleRecord(useID uint64, equipGuids string, tradeNum u
 	res := &MazeGameEquipDismantleRecord{
 		UserId:     useID,
 		EquipGuids: equipGuids,
-		TradeNum:   tradeNum,
+		TradeNum:   strconv.FormatUint(tradeNum, 10),
 		Award:      award,
 		OpType:     opType,
 		IsFail:     isFail,

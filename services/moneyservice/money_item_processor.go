@@ -174,7 +174,7 @@ func (s *service) sendFlow(ctx context.Context, userId uint64, items []*itemserv
 			OldMoneyCount: oldMap[i.ItemId],
 			NewMoneyId:    i.ItemId,
 			NewMoneyCount: moneyMap[i.ItemId],
-			TradeNo:       int64(tradeNo),
+			TradeNo:       tradeNo,
 			ChgReason:     opType,
 		}
 		mazemoneykafka.PushMazeMoneyRecord(ctx, record)

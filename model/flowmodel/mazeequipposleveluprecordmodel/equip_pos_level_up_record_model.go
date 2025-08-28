@@ -3,6 +3,7 @@ package mazeequipposleveluprecordmodel
 import (
 	"maze_game_server/io/kafka/kafkacommonstruct"
 	"maze_game_server/io/mysql"
+	"strconv"
 	"strings"
 )
 
@@ -17,7 +18,7 @@ type EquipPosLevelUpRecord struct {
 	NewPosLv     int32  `json:"new_pos_lv" gorm:"column:new_pos_lv"`           // 强化后装备位等级
 	OldPosSuitId int32  `json:"old_pos_suit_id" gorm:"column:old_pos_suit_id"` // 强化前装备位套装id
 	NewPosSuitId int32  `json:"new_pos_suit_id" gorm:"column:new_pos_suit_id"` // 强化后装备位套装id
-	TradeNo      uint64 `json:"trade_no" gorm:"column:trade_no"`               // 扣物品流水号
+	TradeNo      string `json:"trade_no" gorm:"column:trade_no"`               // 扣物品流水号
 	CostItems    string `json:"cost_items" gorm:"column:cost_items"`           // 扣物品
 	Result       int32  `json:"result" gorm:"column:result"`                   // 结果 0:成功 1:强化失败 2:存储武力值属性失败 3:存储非武力值属性失败
 }
@@ -33,7 +34,7 @@ func NewEquipPosLevelUpRecord(userID uint64, posID int32, oldPosLv int32, newPos
 		NewPosLv:     newPosLv,
 		OldPosSuitId: oldPosSuitID,
 		NewPosSuitId: newPosSuitID,
-		TradeNo:      tradeNo,
+		TradeNo:      strconv.FormatUint(tradeNo, 10),
 		CostItems:    costItems,
 		Result:       result,
 	}

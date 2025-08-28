@@ -20,7 +20,7 @@ type MazeMoneyRecord struct {
 	OldMoneyCount int64  `json:"old_money_count" gorm:"column:old_money_count"` // 旧货币数量
 	NewMoneyId    int32  `json:"new_money_id" gorm:"column:new_money_id"`       // 新货币id
 	NewMoneyCount int64  `json:"new_money_count" gorm:"column:new_money_count"` // 新货币数量
-	TradeNo       int64  `json:"trade_no" gorm:"column:trade_no"`               // 交易号
+	TradeNo       uint64 `json:"trade_no" gorm:"column:trade_no"`               // 交易号
 	ChgReason     int32  `json:"chg_reason" gorm:"column:chg_reason"`           // 变化原因
 	GroupID       uint32 `json:"group_id" gorm:"column:group_id"`               // 组id
 	CreateTime    int64  `json:"create_time" gorm:"column:create_time"`         // 操作时间
