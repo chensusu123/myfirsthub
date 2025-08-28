@@ -151,6 +151,31 @@ func (s *service) GetBarrierDeathAward(ctx context.Context, userId uint64, barri
 		ohterItem[k] += v
 	}
 
+	// 过滤
+	for k, v := range realItemMap {
+		if v == 0 {
+			delete(realItemMap, k)
+		}
+	}
+
+	for k, v := range ohterItem {
+		if v == 0 {
+			delete(ohterItem, k)
+		}
+	}
+
+	for k, v := range realEquipMap {
+		if v == 0 {
+			delete(realEquipMap, k)
+		}
+	}
+
+	for k, v := range equipItem {
+		if v == 0 {
+			delete(equipItem, k)
+		}
+	}
+
 	logger.CtxInfo(ctx, "GetBarrierDeathAward", zap.Any("realItemMap", realItemMap),
 		zap.Any("ohterItem", ohterItem),
 		zap.Any("realEquipMap", realEquipMap),
