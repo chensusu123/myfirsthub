@@ -1,0 +1,7 @@
+paipaiworld_config,Unnamed: 1,Unnamed: 2,Unnamed: 3
+INT_S,INT_S,INT_S,STRING
+id,unique_id,currency_num,unique_desc
+序号,商品支付unique_id,货币数目,商品注释
+1,1000001,1,
+2,1000002,6,
+3,1000003,12,

@@ -1,12 +1,11 @@
 package dollequipdismantlekafka
 
 import (
-	"time"
-
-	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fkconfig"
-	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fklog"
-	"go.uber.org/zap"
+	"context"
 	"maze_game_server/io/dispatcher"
+	"maze_game_server/io/kafka/kafkacommonstruct"
+	"maze_game_server/model/flowmodel/mazeequipdismantrecordmodel"
+	"maze_game_server/services/flowservice"
 )
 
 const (
@@ -19,8 +18,11 @@ const (
 
 // var json = jsoniter.ConfigCompatibleWithStandardLibrary
 
+type KafkaCommon = kafkacommonstruct.KafkaCommon
+
 // 装备分解流水
 type MazeGameEquipDismantleRecord struct {
+	KafkaCommon
 	UserId     uint64 `json:"user_id" gorm:"column:user_id"`         // 用户id
 	EquipGuids string `json:"equip_guids" gorm:"column:equip_guids"` // 装备guid列表
 	TradeNum   uint64 `json:"trade_num" gorm:"column:trade_num"`     // 交易单号
@@ -29,7 +31,6 @@ type MazeGameEquipDismantleRecord struct {
 	IsFail     int32  `json:"is_fail" gorm:"column:is_fail"`         // 操作是否失败 0-成功 1-失败
 	GroupID    uint32 `json:"group_id" gorm:"column:group_id"`       // 组id
 	CreateTime int64  `json:"create_time" gorm:"column:create_time"` // 操作时间
-	ServerId   int32  `json:"server_id" gorm:"column:server_id"`
 }
 
 // var gKafka = &fkafka.KafkaProducer{}
@@ -41,19 +42,14 @@ func init() {
 
 var d = dispatcher.NewDispatcher[*MazeGameEquipDismantleRecord]()
 
-func Watch(fn func(logger fklog.FKLogI, msg *MazeGameEquipDismantleRecord)) {
+func Watch(fn func(ctx context.Context, msg *MazeGameEquipDismantleRecord)) {
 	d.Watch(fn)
 }
 
-func PushDollEquipDismantleRecord(agent fklog.FKLogI, record *MazeGameEquipDismantleRecord) error {
-	record.CreateTime = time.Now().Unix()
-	record.GroupID = fkconfig.EnvVal.GroupID
-	// cnt, err := json.Marshal(record)
-	// if err != nil {
-	// 	return err
-	// }
-	// return gKafka.SendWithUserID(record.UserId, cnt)
-	d.Push(agent, record)
-	agent.InfoWF("PushDollEquipDismantleRecord data", zap.Any("userId", record.UserId), zap.Any("record", record))
+// 流水打点使用
+func PushDollEquipDismantleRecord(ctx context.Context, record *MazeGameEquipDismantleRecord) error {
+	flowData := mazeequipdismantrecordmodel.NewMazeGameEquipDismantleRecord(record.UserId, record.EquipGuids, record.TradeNum, record.Award, record.OpType, record.IsFail)
+	flowservice.GflowService.SendFlowData(ctx, flowData)
+	// agent.InfoWF("PushDollEquipDismantleRecord data", zap.Any("userId", record.UserId), zap.Any("record", record))
 	return nil
 }

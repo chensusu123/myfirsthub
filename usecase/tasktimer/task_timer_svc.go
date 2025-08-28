@@ -12,13 +12,20 @@ import (
 	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/discoveryutil"
 	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fkconfig"
 	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fklog"
+	"gitlab.ifreetalk.com/maze-plate/freetk/fkserver/appconfig"
 	"go.uber.org/zap"
 )
 
 type TaskTimerBusiness struct {
-	delay  *redisdelay.BucketTicker
-	cancel context.CancelFunc
-	ctx    context.Context
+	delay     *redisdelay.BucketTicker
+	cancel    context.CancelFunc
+	ctx       context.Context
+	namespace string
+}
+
+// OnShutdown implements fkcore.FKServiceI.
+func (tb *TaskTimerBusiness) OnShutdown(fklog.FKLogI) error {
+	return nil
 }
 
 // FKServiceI 服务接口
@@ -29,8 +36,8 @@ func (tb *TaskTimerBusiness) Name() string {
 func (tb *TaskTimerBusiness) OnInit(logger fklog.FKLogI, cfg fkconfig.FkConfigerI) (err error) {
 	logger.InfoWF("TaskTimerBusiness OnInit")
 	loopLogger := logger.Clone("loop")
-
-	redisCfg, err := discoveryutil.GetRedisCfg(fkconfig.EnvVal.Namespace, "maze_main_server.redis")
+	tb.namespace = appconfig.GlobalConfig().Global.Namespace
+	redisCfg, err := discoveryutil.GetRedisCfg(tb.namespace, "maze_main_server.redis")
 	if err != nil {
 		logger.ErrorWF("TaskTimerBusiness GetRedisCfg failed", zap.Error(err))
 		return err

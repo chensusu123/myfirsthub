@@ -1,0 +1,5 @@
+paipaiworld_config,Unnamed: 1,Unnamed: 2,Unnamed: 3
+INT_K,STRING,STRING,MAP<INT:LONG>_S
+order,desc,desc_0,initial_attr
+序号,备注,备注,初始化属性
+1,马健,玩家在迷宫的初始属性,3041301:120000_3000101:200_3041401:0_3010101:10_3020101:2_3030101:480_9101:40_3050001:10000_3060001:10000_3070001:10000_7000305:10000

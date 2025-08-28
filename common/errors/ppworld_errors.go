@@ -561,3 +561,7 @@ var (
 	CheckShipBuildingError  = errors.New("检查港口失败")
 	ShipBuildingUnlockError = errors.New("港口尚未解锁")
 )
+
+var (
+	BARRIER_ID_ERROR = NewCodeError(80001, "该关卡id小于存储的关卡id")
+)

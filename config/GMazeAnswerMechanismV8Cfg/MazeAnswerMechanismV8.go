@@ -1,6 +1,7 @@
 package GMazeAnswerMechanismV8Cfg
 
 import (
+	"context"
 	"errors"
 	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fklog"
 	"gitlab.ifreetalk.com/maze-plate/freetk/fkserver/config_manager"
@@ -83,9 +84,19 @@ func GetMazeAnswerMechanismV8Config(configId int32) *MazeAnswerMechanismV8Config
 	return gConfigData.GetMazeAnswerMechanismV8Config(configId)
 }
 
+// Deprecated: 链路追踪信息缺失。推荐使用GetWithCtx
 // Get pkg func. get one config by configId
 func Get(configId int32) *MazeAnswerMechanismV8ConfigRow {
-	return gConfigData.Get(configId)
+	return GetWithCtx(context.Background(), configId)
+}
+
+// GetWithCtx pkg func. get one config by configId
+func GetWithCtx(ctx context.Context, configId int32, otps ...config_manager.QueryOption) *MazeAnswerMechanismV8ConfigRow {
+	cfg := gConfigData.Get(configId)
+	if cfg == nil {
+		config_manager.MissRecord(ctx, "maze_answer_mechanism_v8", configId, otps...)
+	}
+	return cfg
 }
 
 // GetAllMazeAnswerMechanismV8Config pkg func. get all config slice

@@ -1,6 +1,7 @@
 package GMazeEnergyAffixFrontV8Cfg
 
 import (
+	"context"
 	"errors"
 	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fklog"
 	"gitlab.ifreetalk.com/maze-plate/freetk/fkserver/config_manager"
@@ -14,9 +15,12 @@ import (
 
 // MazeEnergyAffixFrontV8ConfigRow from maze_energy_affix_front_v8【迷宫-能力词条-前置词条组】.xlsx maze_energy_affix_front_v8
 type MazeEnergyAffixFrontV8ConfigRow struct {
-	Order        int32   `json:"order"`        // 词条前置组id
-	Affix_id_set []int32 `json:"affix_id_set"` // 词条组id
-	Must_num     int32   `json:"must_num"`     // 必须拥有的词条数
+	Order                int32           `json:"order"`                // 词条前置组id
+	Affix_id_set         []int32         `json:"affix_id_set"`         // 词条组id
+	Must_num             int32           `json:"must_num"`             // 必须拥有的词条数
+	Affix_group_num      map[int32]int32 `json:"affix_group_num"`      // 词条前置所需词条组id:总数量
+	Exclusive_affix__id  int32           `json:"exclusive_affix__id"`  // 互斥词条id
+	Extra_affix_group_id int32           `json:"extra_affix_group_id"` // 额外词条组id
 }
 
 // MazeEnergyAffixFrontV8Config from maze_energy_affix_front_v8【迷宫-能力词条-前置词条组】.xlsx maze_energy_affix_front_v8
@@ -79,9 +83,19 @@ func GetMazeEnergyAffixFrontV8Config(configId int32) *MazeEnergyAffixFrontV8Conf
 	return gConfigData.GetMazeEnergyAffixFrontV8Config(configId)
 }
 
+// Deprecated: 链路追踪信息缺失。推荐使用GetWithCtx
 // Get pkg func. get one config by configId
 func Get(configId int32) *MazeEnergyAffixFrontV8ConfigRow {
-	return gConfigData.Get(configId)
+	return GetWithCtx(context.Background(), configId)
+}
+
+// GetWithCtx pkg func. get one config by configId
+func GetWithCtx(ctx context.Context, configId int32, otps ...config_manager.QueryOption) *MazeEnergyAffixFrontV8ConfigRow {
+	cfg := gConfigData.Get(configId)
+	if cfg == nil {
+		config_manager.MissRecord(ctx, "maze_energy_affix_front_v8", configId, otps...)
+	}
+	return cfg
 }
 
 // GetAllMazeEnergyAffixFrontV8Config pkg func. get all config slice
@@ -316,6 +330,71 @@ func (*gMazeEnergyAffixFrontV8Parser) Parse(logger fklog.FKLogI, data []string, 
 		}
 		config.Must_num = int32(tmp)
 	}
+
+	// parse column 3 affix_group_num : 词条前置所需词条组id:总数量
+	if data[3] != "" {
+
+		config.Affix_group_num = make(map[int32]int32)
+		var key int32
+		var value int32
+		vals := strings.Split(data[3], "_")
+		for k, val := range vals {
+			items := strings.Split(val, ":")
+			tmp, err = strconv.ParseInt(items[0], 10, 64)
+			if err != nil {
+				err = errors.New("parse map field affix_group_num 词条前置所需词条组id:总数量 to key int32 failed")
+				logger.ErrorWF("parse map field affix_group_num 词条前置所需词条组id:总数量 to key int32 failed.",
+					zap.String("xlsx", "maze_energy_affix_front_v8【迷宫-能力词条-前置词条组】.xlsx"), zap.String("sheet", "maze_energy_affix_front_v8"),
+					// zap.String("field_data",data[3]),
+					zap.String("item_data", val), zap.Int("index", k),
+					zap.String("parse_data", items[0]),
+					zap.Error(err))
+				return
+			}
+			key = int32(tmp)
+			tmp, err = strconv.ParseInt(items[1], 10, 64)
+			if err != nil {
+				err = errors.New("parse map field affix_group_num 词条前置所需词条组id:总数量 to value int32 failed")
+				logger.ErrorWF("parse map field affix_group_num 词条前置所需词条组id:总数量 to value int32 failed.",
+					zap.String("xlsx", "maze_energy_affix_front_v8【迷宫-能力词条-前置词条组】.xlsx"), zap.String("sheet", "maze_energy_affix_front_v8"),
+					// zap.String("field_data",data[3]),
+					zap.String("item_data", val), zap.Int("index", k),
+					zap.String("parse_data", items[1]),
+					zap.Error(err))
+				return
+			}
+			value = int32(tmp)
+			config.Affix_group_num[key] = value
+		}
+	}
+
+	// parse column 4 exclusive_affix__id : 互斥词条id
+	if data[4] != "" {
+		tmp, err = strconv.ParseInt(data[4], 10, 64)
+		if err != nil {
+			err = errors.New("parse field exclusive_affix__id 互斥词条id to int32 failed")
+			logger.ErrorWF("parse field exclusive_affix__id 互斥词条id to int32 failed.",
+				zap.String("xlsx", "maze_energy_affix_front_v8【迷宫-能力词条-前置词条组】.xlsx"), zap.String("sheet", "maze_energy_affix_front_v8"),
+				zap.String("parse_data", data[4]),
+				zap.Error(err))
+			return
+		}
+		config.Exclusive_affix__id = int32(tmp)
+	}
+
+	// parse column 5 extra_affix_group_id : 额外词条组id
+	if data[5] != "" {
+		tmp, err = strconv.ParseInt(data[5], 10, 64)
+		if err != nil {
+			err = errors.New("parse field extra_affix_group_id 额外词条组id to int32 failed")
+			logger.ErrorWF("parse field extra_affix_group_id 额外词条组id to int32 failed.",
+				zap.String("xlsx", "maze_energy_affix_front_v8【迷宫-能力词条-前置词条组】.xlsx"), zap.String("sheet", "maze_energy_affix_front_v8"),
+				zap.String("parse_data", data[5]),
+				zap.Error(err))
+			return
+		}
+		config.Extra_affix_group_id = int32(tmp)
+	}
 	return
 }
 
@@ -323,6 +402,9 @@ var gMazeEnergyAffixFrontV8Fields = []string{
 	"order",
 	"affix_id_set",
 	"must_num",
+	"affix_group_num",
+	"exclusive_affix__id",
+	"extra_affix_group_id",
 }
 
 // LoadDataManual load data for test

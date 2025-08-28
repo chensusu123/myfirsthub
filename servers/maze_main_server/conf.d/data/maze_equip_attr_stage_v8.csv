@@ -1,0 +1,7 @@
+paipaiworld_config,Unnamed: 1,Unnamed: 2,Unnamed: 3
+INT_K,INT_S,STRING,INT_S
+stage_id,ratio,desc,score
+所属档位,属性系数,备注,掉落分数
+1,10000,免费,1
+2,10000,月卡,2
+3,10000,648,5

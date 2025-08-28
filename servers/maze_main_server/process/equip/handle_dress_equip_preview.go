@@ -1,6 +1,7 @@
 package equip
 
 import (
+	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fklog"
 	"maze_game_server/common/constdef"
 	"maze_game_server/common/errors"
 	"maze_game_server/common/function/packtopb"
@@ -8,7 +9,6 @@ import (
 	"maze_game_server/config/GMazeEquipInfoV8Cfg"
 	"maze_game_server/excel/mazeequipconfigv8"
 	"maze_game_server/io/redis/mazeuserlevelredis"
-	"maze_game_server/lib/log"
 	"maze_game_server/lib/nano/session"
 	"maze_game_server/module/dollassembleinfo"
 	"maze_game_server/module/effectequip"
@@ -22,8 +22,9 @@ import (
 
 func (e *Equip) OnDressEquipPreviewRQ_10416_10417(s *session.Session, req *MazeGameEquip.MazeDressEquipPreviewRQ) (err error) {
 	defer fkprometheus.DebugPMT("OnDressEquipPreviewRQ")()
-
-	logger := log.Clone("Equip", uint64(s.UID()), 0)
+	ctx := s.Context()
+	logger := fklog.ContextAppLogger(ctx)
+	//logger := log.Clone("Equip", uint64(s.UID()), 0)
 	res := &MazeGameEquip.MazeDressEquipPreviewRS{}
 
 	res.ErrInfo = errors.NO_ERROR
@@ -35,10 +36,10 @@ func (e *Equip) OnDressEquipPreviewRQ_10416_10417(s *session.Session, req *MazeG
 
 	defer func() {
 		err = s.Response(res)
-		logger.InfoWF("OnDressEquipPreviewRQ end", zap.Any("res", res))
+		logger.CtxInfo(ctx, "OnDressEquipPreviewRQ end", zap.Any("res", res))
 	}()
 
-	logger.InfoWF("OnDressEquipPreviewRQ with", zap.Any("req", req))
+	logger.CtxInfo(ctx, "OnDressEquipPreviewRQ with", zap.Any("req", req))
 
 	pos := req.GetEquipPos()
 	replaceGuid := req.GetPreviewGuid()
@@ -47,33 +48,33 @@ func (e *Equip) OnDressEquipPreviewRQ_10416_10417(s *session.Session, req *MazeG
 
 	if curSuitSeq <= 0 {
 		res.ErrInfo = errors.COMMON_ERROR_TIPS.Wrap("请指定套装")
-		logger.WarnWF("OnDressEquipPreviewRQ no suit seq", zap.Int32("suitSeq", curSuitSeq))
+		logger.CtxError(ctx, "OnDressEquipPreviewRQ no suit seq", zap.Int32("suitSeq", curSuitSeq))
 		return nil
 	}
 	maxSuitSeq := mazeequipconfigv8.GetMaxEquipSuitNum()
 	if curSuitSeq > maxSuitSeq {
 		res.ErrInfo = errors.COMMON_ERROR_TIPS.Wrap("套装序号无效")
-		logger.WarnWF("OnDressEquipPreviewRQ suit seq invalid", zap.Int32("suitSeq", curSuitSeq),
+		logger.CtxError(ctx, "OnDressEquipPreviewRQ suit seq invalid", zap.Int32("suitSeq", curSuitSeq),
 			zap.Int32("maxSuitSeq", maxSuitSeq))
 		return nil
 	}
 
 	if pos <= 0 {
 		res.ErrInfo = errors.COMMON_ERROR_TIPS.Wrap("请选择装备位")
-		logger.WarnWF("OnDressEquipPreviewRQ euqip pos invalid", zap.Int32("pos", pos))
+		logger.CtxError(ctx, "OnDressEquipPreviewRQ euqip pos invalid", zap.Int32("pos", pos))
 		return nil
 	}
 
 	if selfGuid <= 0 && replaceGuid <= 0 {
 		res.ErrInfo = errors.COMMON_ERROR_TIPS.Wrap("请选择装备")
-		logger.WarnWF("OnDressEquipPreviewRQ no equip", zap.Int32("pos", pos),
+		logger.CtxError(ctx, "OnDressEquipPreviewRQ no equip", zap.Int32("pos", pos),
 			zap.Int64("selfGuid", selfGuid), zap.Int64("replaceGuid", replaceGuid))
 		return nil
 	}
 
-	mazeLv, err := mazeuserlevelredis.GetUserLevel(logger, userId)
+	mazeLv, err := mazeuserlevelredis.GetUserLevel(ctx, userId)
 	if err != nil {
-		logger.ErrorWF("OnDressEquipPreviewRQ GetDollLevel fail", zap.Error(err))
+		logger.CtxError(ctx, "OnDressEquipPreviewRQ GetDollLevel fail", zap.Error(err))
 		res.ErrInfo = errors.MODULE_ERROR.ToInfo()
 		return
 	}
@@ -86,7 +87,7 @@ func (e *Equip) OnDressEquipPreviewRQ_10416_10417(s *session.Session, req *MazeG
 		//	replaceEquip, isIns, err = FindEquip(userCtx, shardingID, replaceGuid, req.GetOpSrc())
 		if err != nil {
 			res.ErrInfo = errors.COMMON_ERROR_TIPS.Wrap(err.Error())
-			logger.ErrorWF("OnDressEquipPreviewRQ get bag equip info fail", zap.Error(err),
+			logger.CtxError(ctx, "OnDressEquipPreviewRQ get bag equip info fail", zap.Error(err),
 				zap.Int64("bagEquip", replaceGuid))
 			return err
 		}
@@ -94,12 +95,12 @@ func (e *Equip) OnDressEquipPreviewRQ_10416_10417(s *session.Session, req *MazeG
 		row := GMazeEquipInfoV8Cfg.GetMazeEquipInfoV8Config(replaceEquip.GetEquipId())
 		if row == nil {
 			res.ErrInfo = errors.COMMON_ERROR_TIPS.Wrap("未找到装备配置")
-			logger.ErrorWF("OnDressEquipPreviewRQ 未找到装备配置 ", zap.Int32("equipId", replaceEquip.GetEquipId()), zap.Int64("equipGuid", replaceGuid))
+			logger.CtxError(ctx, "OnDressEquipPreviewRQ 未找到装备配置 ", zap.Int32("equipId", replaceEquip.GetEquipId()), zap.Int64("equipGuid", replaceGuid))
 			return err
 		}
 		if row.Pos != pos {
 			res.ErrInfo = errors.COMMON_ERROR_TIPS.Wrap("装备位不匹配")
-			logger.WarnWF("OnDressEquipPreviewRQ equip pos not match",
+			logger.CtxWarn(ctx, "OnDressEquipPreviewRQ equip pos not match",
 				zap.Int32("pos", pos),
 				zap.Int32("previewPos", row.Pos),
 				zap.Int32("previewEquipId", replaceEquip.GetEquipId()),
@@ -111,7 +112,7 @@ func (e *Equip) OnDressEquipPreviewRQ_10416_10417(s *session.Session, req *MazeG
 		replaceEquipCli, e1 = packtopb.EquipInfoToCliPB(logger, replaceEquip)
 		if e1 != nil {
 			res.ErrInfo = errors.COMMON_ERROR_TIPS.Wrap("预览失败")
-			logger.ErrorWF("OnDressEquipPreviewRQ EquipInfoToCliPB fail",
+			logger.CtxError(ctx, "OnDressEquipPreviewRQ EquipInfoToCliPB fail",
 				zap.Int32("equipId", replaceEquip.GetEquipId()),
 				zap.Int64("equipGuid", replaceGuid))
 			return e1
@@ -120,17 +121,17 @@ func (e *Equip) OnDressEquipPreviewRQ_10416_10417(s *session.Session, req *MazeG
 	assembleInfo, err := dollassembleinfo.GetDollAssembleInfo(logger, userId)
 	if err != nil {
 		res.ErrInfo = errors.MODULE_ERROR.ToInfo()
-		logger.ErrorWF("OnDressEquipPreviewRQ Get Assemble info fail", zap.Error(err))
+		logger.CtxError(ctx, "OnDressEquipPreviewRQ Get Assemble info fail", zap.Error(err))
 		return err
 	}
 	if assembleInfo.GetCurSuitIndex() == 0 {
 		res.ErrInfo = errors.NewErrorInfo(constdef.DE_ERR_EQUIP_SUIT_NOT_INIT, "未设置生效装备套")
-		logger.WarnWF("OnDressEquipPreviewRQ no set cur suit", zap.Int32("cCurSeq", curSuitSeq))
+		logger.CtxError(ctx, "OnDressEquipPreviewRQ no set cur suit", zap.Int32("cCurSeq", curSuitSeq))
 		return err
 	}
 	if assembleInfo.GetCurSuitIndex() != curSuitSeq {
 		res.ErrInfo = errors.NewErrorInfo(constdef.DE_ERR_EQUIP_SUIT_NOT_MATCH, "套装不匹配")
-		logger.WarnWF("OnDressEquipPreviewRQ cur suit not match",
+		logger.CtxError(ctx, "OnDressEquipPreviewRQ cur suit not match",
 			zap.Int32("sCurSeq", assembleInfo.GetCurSuitIndex()), zap.Int32("cCurSeq", curSuitSeq))
 		return err
 	}
@@ -139,7 +140,7 @@ func (e *Equip) OnDressEquipPreviewRQ_10416_10417(s *session.Session, req *MazeG
 	dressedGuid := module.GetDressedGuid(dressedEquipPos)
 	if selfGuid != dressedGuid {
 		// 如果是快捷预览武力值，不校验
-		logger.WarnWF("OnDressEquipPreviewRQ dressed equip not match", zap.Int32("pos", pos),
+		logger.CtxWarn(ctx, "OnDressEquipPreviewRQ dressed equip not match", zap.Int32("pos", pos),
 			zap.Int64("dressedGuid", dressedGuid),
 			zap.Int64("cliDressedGuid", selfGuid))
 		res.ErrInfo = errors.NewCodeError(constdef.DE_ERR_DRESS_EQUIP_DATA_NO_MATCH, "").ToInfo()

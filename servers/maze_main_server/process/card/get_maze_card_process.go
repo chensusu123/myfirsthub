@@ -1,11 +1,11 @@
 package card
 
 import (
+	"context"
 	"maze_game_server/common/constdef"
 	"maze_game_server/common/errors"
 	"maze_game_server/io/redis/mazebuffinforedis"
 	"maze_game_server/io/redis/userriddlemonthlyredis"
-	"maze_game_server/lib/log"
 	"maze_game_server/lib/nano/session"
 	"maze_game_server/pb/common/MazeCard"
 	"time"
@@ -20,7 +20,8 @@ func (*Card) GetMazeCardRQ_10430_10431(s *session.Session, req *MazeCard.GetMaze
 	defer fkprometheus.InfoPMT("GetMazeCardRQ")()
 	start := time.Now()
 
-	logger := log.Clone("Card", uint64(s.UID()), 0)
+	ctx := s.Context()
+	logger := fklog.ContextAppLogger(ctx)
 	res := &MazeCard.GetMazeCardRS{}
 	res.ErrInfo = errors.NO_ERROR
 	res.Header = req.Header
@@ -48,7 +49,7 @@ func (*Card) GetMazeCardRQ_10430_10431(s *session.Session, req *MazeCard.GetMaze
 	}
 
 	// 检查月卡信息
-	err = UpdateCard(logger, userId, expirationTime)
+	err = UpdateCard(ctx, userId, expirationTime)
 	if err != nil {
 		logger.ErrorWF("GetMazeCardRQ UpdateCard failed", zap.Error(err))
 	}
@@ -62,7 +63,8 @@ func (*Card) GetMazeCardRQ_10430_10431(s *session.Session, req *MazeCard.GetMaze
 	return nil
 }
 
-func UpdateCard(logger fklog.FKLogI, userId uint64, expirationTime int64) error {
+func UpdateCard(ctx context.Context, userId uint64, expirationTime int64) error {
+	logger := fklog.ContextAppLogger(ctx)
 	info, err := mazebuffinforedis.GetMazeBuffBySrc(logger, userId, constdef.MazeBuffSrcMonthCard)
 	if err != nil {
 		logger.ErrorWF("UpdateCard GetMazeBuffBySrc failed", zap.Uint64("userId", userId), zap.Error(err))
@@ -73,12 +75,12 @@ func UpdateCard(logger fklog.FKLogI, userId uint64, expirationTime int64) error 
 		if expirationTime >= time.Now().Unix() {
 			return nil
 		}
-		return DeleteMazeCard(logger, userId)
+		return DeleteMazeCard(ctx, userId)
 	}
 
 	if expirationTime < time.Now().Unix() {
 		return nil
 	}
 
-	return AddMazeCard(logger, userId, expirationTime)
+	return AddMazeCard(ctx, userId, expirationTime)
 }

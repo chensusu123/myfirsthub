@@ -1,7 +1,10 @@
 package interact
 
 import (
+	"context"
 	"fmt"
+	"maze_game_server/common/function/itemutil"
+	"maze_game_server/services/itemservice"
 
 	"maze_game_server/common/cache/simCache"
 	"maze_game_server/common/equipmix"
@@ -18,9 +21,7 @@ import (
 	"maze_game_server/pb/common/MazeEquipMix"
 	"maze_game_server/pb/common/MessageType"
 	"maze_game_server/pb/server/MazeEquipSvr"
-	"maze_game_server/pb/server/MazeItemSvr"
 	equiprpc "maze_game_server/servers/maze_main_server/process/equip"
-	itemrpc "maze_game_server/servers/maze_main_server/process/item"
 
 	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fklog"
 	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fkprometheus"
@@ -51,6 +52,7 @@ func RegTcpHandler() {
 
 func (*Interact) OnMazeEquipMixCostRQ_10441_10442(s *session.Session, req *MazeEquipMix.MazeEquipMixCostRQ) (err error) {
 
+	ctx := s.Context()
 	logger := log.Clone("Interact", uint64(s.UID()), 0)
 	res := &MazeEquipMix.MazeEquipMixCostRS{}
 	res.ErrInfo = errors.NO_ERROR
@@ -68,7 +70,7 @@ func (*Interact) OnMazeEquipMixCostRQ_10441_10442(s *session.Session, req *MazeE
 	uid := uint64(s.UID())
 
 	// 查等级
-	lv, err := mazeuserlevelredis.GetUserLevel(logger, uid)
+	lv, err := mazeuserlevelredis.GetUserLevel(ctx, uid)
 	if err != nil {
 		logger.ErrorWF("OnMazeEquipMixCostRQ get user level error", zap.Error(err))
 		res.ErrInfo = errors.MODULE_ERROR.ToInfo()
@@ -92,7 +94,8 @@ var equipMixCache = simCache.NewCache()
 
 func (*Interact) OnMazeEquipMixRQ_10443_10444(s *session.Session, req *MazeEquipMix.MazeEquipMixRQ) (err error) {
 
-	logger := log.Clone("Interact", uint64(s.UID()), 0)
+	ctx := s.Context()
+	logger := fklog.ContextAppLogger(ctx)
 	res := &MazeEquipMix.MazeEquipMixRS{}
 
 	res.ErrInfo = errors.NO_ERROR
@@ -117,7 +120,7 @@ func (*Interact) OnMazeEquipMixRQ_10443_10444(s *session.Session, req *MazeEquip
 	defer equipMixCache.DelCache(uid)
 
 	// 查等级
-	lv, err := mazeuserlevelredis.GetUserLevel(logger, uid)
+	lv, err := mazeuserlevelredis.GetUserLevel(ctx, uid)
 	if err != nil {
 		logger.ErrorWF("OnMazeEquipMixRQ get user level error", zap.Error(err))
 		res.ErrInfo = errors.MODULE_ERROR.ToInfo()
@@ -218,28 +221,13 @@ func (*Interact) OnMazeEquipMixRQ_10443_10444(s *session.Session, req *MazeEquip
 		cost := cfg.Cost
 
 		var errorInfo *MessageType.ErrorInfo
-
-		rpcreq := &MazeItemSvr.ConsumeItemRQ{
-			UserId:      proto.Uint64(uid),
-			Items:       cost,
-			OpType:      proto.Int32(695),
-			TradeNumber: proto.Uint64(tradeNo),
-		}
-		rpcres := &MazeItemSvr.ConsumeItemRS{}
-
-		err = itemrpc.OnAddItemRQ(logger, rpcreq, rpcres)
+		items := itemutil.ItemPb2ItemInfo(cfg.Cost)
+		itemservice.GlobalItemService.SubItem(context.TODO(), uid, itemservice.ItemOpTypeEquipMix, tradeNo, items...)
 		if err != nil {
 			logger.ErrorWF("OnMazeEquipMixRQ DeductItems err", zap.Uint64("tradeNo", tradeNo), zap.Any("cost", cost),
 				zap.Any("errorInfo", errorInfo), zap.Error(err),
 			)
 			res.ErrInfo = errors.NewCommonCodeError("sub item err")
-			return
-		}
-		if rpcres.ErrInfo != nil {
-			logger.WarnWF("OnMazeEquipMixRQ DeductItems invalid", zap.Uint64("tradeNo", tradeNo), zap.Any("cost", cost),
-				zap.Any("errorInfo", errorInfo), zap.Error(err),
-			)
-			res.ErrInfo = errorInfo
 			return
 		}
 	}
@@ -256,7 +244,7 @@ func (*Interact) OnMazeEquipMixRQ_10443_10444(s *session.Session, req *MazeEquip
 	})
 
 	equipRes := &MazeEquipSvr.SvrAddMazeEquipRS{}
-	err = equiprpc.OnSvrAddMazeEquipRQ(logger, int64(uid), equipReq, equipRes, "")
+	err = equiprpc.OnSvrAddMazeEquipRQ(ctx, int64(uid), equipReq, equipRes, "")
 	if err != nil {
 		logger.ErrorWF("OnMazeEquipMixRQ add equip err",
 			zap.Uint64("tradeNo", tradeNo),

@@ -1,0 +1,12 @@
+paipaiworld_config,Unnamed: 1,Unnamed: 2,Unnamed: 3,Unnamed: 4,Unnamed: 5,Unnamed: 6,Unnamed: 7,Unnamed: 8,Unnamed: 9,Unnamed: 10
+INT_K,STRING_S_C,MAP<INT:STRING>_S,INT_C_S,INT_C,INT_S,INT_S_C,INT_S,MAP<INT:INT>_S,STRING_S,INT_C
+pos_id,name,sub_type_name,rank,auto_equip_id,is_default,need_level,need_task,need_dungeon_id,unlock_desc,pvp_level_rank
+部位id,备注,子类型,展示顺序,没有装备时跳转使用的物品id,是否默认解锁,需要人偶等级,需要完成任务id,需要通关章节id（=）：层数id(>=),未解锁描述,强化默认顺序
+1,武器,1:刀_2:剑_3:匕首_4:拳套_5:棍_6:枪,1,42701000,1,1,0,0:0,默认解锁,1
+2,头盔,0:0,5,42702000,0,1,0,0:0,默认解锁,2
+3,上衣,0:0,2,42703000,0,1,0,0:0,默认解锁,3
+4,裤子,0:0,3,42704000,0,1,0,0:0,默认解锁,5
+5,指环,0:0,6,42705000,0,1,0,0:0,默认解锁,7
+6,靴子,0:0,7,42706000,0,1,0,0:0,默认解锁,8
+7,护腕,0:0,8,42707000,0,1,0,0:0,默认解锁,6
+8,挂饰,0:0,4,42708000,0,1,0,0:0,默认解锁,4

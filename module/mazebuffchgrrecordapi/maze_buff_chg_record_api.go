@@ -7,19 +7,20 @@
 package mazebuffchgrrecordapi
 
 import (
+	"context"
 	"strings"
 
-	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fkconfig/param"
-	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fklog"
-	"gitlab.ifreetalk.com/maze-plate/freetk/fkutil"
 	"maze_game_server/common/function/maputil"
 	"maze_game_server/common/structsdef"
 	"maze_game_server/common/vardef"
 	"maze_game_server/io/kafka/mazebuffchgrecord"
 	"maze_game_server/pb/server/MazeBuffData"
+
+	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fkconfig/param"
+	"gitlab.ifreetalk.com/maze-plate/freetk/fkutil"
 )
 
-func SendMazeBuffChgRecord(logger fklog.FKLogI, userId uint64, src, chgReason int32, attrDbOld, attrDbNew *MazeBuffData.MazeBuffDb) error {
+func SendMazeBuffChgRecord(ctx context.Context, userId uint64, src, chgReason int32, attrDbOld, attrDbNew *MazeBuffData.MazeBuffDb) error {
 	r := structsdef.MazeGameBuffAttrChgRecord{}
 	r.UserId = userId
 	r.ChgDesc = vardef.MazeBuffChgTypeDesc[chgReason]
@@ -32,7 +33,7 @@ func SendMazeBuffChgRecord(logger fklog.FKLogI, userId uint64, src, chgReason in
 		r.NewVal = maputil.MapToString(DollAttrDbToMap(attrDbNew))
 	}
 
-	return mazebuffchgrecord.SendMazeBuffAttrRecord(logger, &r)
+	return mazebuffchgrecord.SendMazeBuffAttrRecord(ctx, &r)
 }
 
 func DollAttrDbToMap(attrDB *MazeBuffData.MazeBuffDb) map[int32]int64 {

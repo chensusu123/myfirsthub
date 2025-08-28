@@ -7,15 +7,17 @@
 package asequipsuittopb
 
 import (
+	"context"
 	"maze_game_server/config/GMazeEquipSuiteAttrV8Cfg"
 	"maze_game_server/pb/common/MazeGameEquip"
 
+	"gitlab.ifreetalk.com/maze-plate/freetk/fkserver/config_manager"
 	"google.golang.org/protobuf/proto"
 )
 
 func PackAsEquipSuitInfo(suitKey int32) *MazeGameEquip.AsEquipSuitInfo {
 	o := &MazeGameEquip.AsEquipSuitInfo{}
-	row := GMazeEquipSuiteAttrV8Cfg.Get(suitKey)
+	row := GMazeEquipSuiteAttrV8Cfg.GetWithCtx(context.Background(), suitKey, config_manager.QueryNullable())
 	if row != nil {
 		o.EpSuitId = proto.Int32(row.Suite_id)
 	}

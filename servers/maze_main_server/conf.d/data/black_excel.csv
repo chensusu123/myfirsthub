@@ -1,0 +1,4 @@
+paipaiworld_config,Unnamed: 1,Unnamed: 2
+STRING,LIST<STRING>,INT
+sheet_name,filed,not_at_all
+sheet名,字段名,是否整个表都不要（1是整个不要）

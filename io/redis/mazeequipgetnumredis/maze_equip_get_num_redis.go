@@ -57,16 +57,17 @@ func GetEquipGetNumInc(logger fklog.FKLogI, userId uint64, equipId int32, additi
 }
 
 // 保存装备的次数分值
-func SetEquipGetNum(logger fklog.FKLogI, userId uint64, equipId, score int32) error {
+func SetEquipGetNum(ctx context.Context, userId uint64, equipId, score int32) error {
+	logger := fklog.ContextAppLogger(ctx)
 	key := fmt.Sprintf("maze:equip:get:num:%d", userId)
 	_, err := gRedis.Do(context.TODO(), "hset", key, equipId, score)
 	if err != nil {
-		logger.ErrorWF("SetEquipGetNum set score failed with", zap.Error(err),
+		logger.CtxError(ctx, "SetEquipGetNum set score failed with", zap.Error(err),
 			zap.Int32("equipId", equipId),
 			zap.Int32("score", score))
 		return err
 	}
-	logger.InfoWF("SetEquipGetNum set score with",
+	logger.CtxInfo(ctx, "SetEquipGetNum set score with",
 		zap.Int32("equipId", equipId),
 		zap.Int32("score", score))
 	return err

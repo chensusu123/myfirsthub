@@ -8,10 +8,12 @@ package equipaassemblegm
 
 import (
 	"bytes"
+	"context"
 	"fmt"
 	"time"
 
 	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fklog"
+
 	"maze_game_server/common/constdef"
 	"maze_game_server/io/redis/dollassembleredis"
 	"maze_game_server/io/redis/mazecalcattrredis"
@@ -19,10 +21,13 @@ import (
 	"maze_game_server/pb/server/MazeEquipCache"
 )
 
-func PackAssembleHeader(logger fklog.FKLogI, userId uint64, as *MazeEquipCache.MazeAssembleDb) (header string, err error) {
+var EndLine = "-----------------------------------------------------------\n"
+
+func PackAssembleHeader(ctx context.Context, userId uint64, as *MazeEquipCache.MazeAssembleDb) (header string, err error) {
+	logger := fklog.ContextAppLogger(ctx)
 	var headerBs bytes.Buffer
 	headerBs.WriteString("基本信息:\n")
-	dollLv, err := mazeuserlevelredis.GetUserLevel(logger, userId)
+	dollLv, err := mazeuserlevelredis.GetUserLevel(ctx, userId)
 	if err != nil {
 		return
 	}

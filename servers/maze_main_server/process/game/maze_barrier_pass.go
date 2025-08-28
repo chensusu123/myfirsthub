@@ -1,32 +1,30 @@
 package game
 
 import (
+	"context"
 	"fmt"
 	"maze_game_server/common/constdef"
 	"maze_game_server/common/errors"
-	"maze_game_server/common/function/addequip"
-	"maze_game_server/common/function/gentradeno"
-	"maze_game_server/common/function/itemutil"
-	"maze_game_server/common/function/packtopb/equiptoitem"
-	"maze_game_server/config/GMazeActionCountV8Cfg"
-	"maze_game_server/config/GMazeBarriesV8Cfg"
+	"maze_game_server/common/structsdef"
 	"maze_game_server/io/kafka/mazebarrieruserkafka"
-	"maze_game_server/io/kafka/mazeuserlevelkafka"
+	"maze_game_server/io/redis/mazeattrcalcnotifyqueue"
 	"maze_game_server/io/redis/mazebarriereventredis"
-	"maze_game_server/io/redis/mazechallengenumredis"
-	"maze_game_server/io/redis/mazeuserbarrierredis"
-	"maze_game_server/lib/log"
+	"maze_game_server/io/redis/mazebarrieropstatusredis"
+	"maze_game_server/io/redis/mazebuffinforedis"
+	"maze_game_server/io/redis/syncmazestorageinforedis"
 	"maze_game_server/lib/nano/session"
-	"maze_game_server/module/mazebarrier"
-	"maze_game_server/module/mazecommonvalue"
-	"maze_game_server/module/mazeuserinfo"
 	"maze_game_server/pb/common/MazeCommon"
 	"maze_game_server/pb/common/MazeGame"
-	"maze_game_server/pb/server/MazeEquipSvr"
 	"maze_game_server/servers/maze_main_server/process/game/events"
+	"maze_game_server/services/barriersavedataservice"
+	"maze_game_server/services/barrierscorerewardservice"
+	"maze_game_server/services/barrierservice"
+	"maze_game_server/services/barrierstagecounterservice"
+	"maze_game_server/services/tempbuffservice"
 	"strings"
 	"time"
 
+	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fklog"
 	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fkprometheus"
 	"go.uber.org/zap"
 	"google.golang.org/protobuf/proto"
@@ -35,230 +33,106 @@ import (
 func (g *Game) OnMazeBarrierPassRQ_10459_10460(s *session.Session, req *MazeGame.MazeBarrierPassRQ) (err error) {
 	defer fkprometheus.InfoPMT("OnMazeBarrierPassRQ")()
 
-	logger := log.Clone("Game", uint64(s.UID()), 0)
+	ctx := s.Context()
+	logger := fklog.ContextAppLogger(ctx)
 
 	res := &MazeGame.MazeBarrierPassRS{}
 
-	logger.InfoWF("OnMazeBarrierPassRQ start", zap.Any("req", req))
+	logger.CtxInfo(ctx, "OnMazeBarrierPassRQ start", zap.Any("req", req))
 	defer func() {
 		err = s.Response(res)
-		logger.InfoWF("OnMazeBarrierPassRQ end", zap.Any("res", res))
+		logger.CtxInfo(ctx, "OnMazeBarrierPassRQ end", zap.Any("res", res))
 	}()
 
 	res.Header = req.Header
 	res.ErrInfo = errors.NO_ERROR
+	res.BarrierId = req.BarrierId
 
 	userId := uint64(s.UID())
 
 	if req.GetBarrierId() <= 0 {
-		logger.ErrorWF("OnMazeBarrierPassRQ req barrier invalid", zap.Any("req", req))
+		logger.CtxError(ctx, "OnMazeBarrierPassRQ req barrier invalid", zap.Any("req", req))
 		res.ErrInfo = errors.COMMON_ERROR_TIPS.Wrap("关卡id未设置")
 		return
 	}
-	if req.GetFoeExp() < 0 {
-		logger.ErrorWF("OnMazeBarrierPassRQ req barrier invalid", zap.Any("req", req))
-		res.ErrInfo = errors.COMMON_ERROR_TIPS.Wrap("经验参数错误")
+	//if req.GetFoeExp() < 0 {
+	//	logger.ErrorWF("OnMazeBarrierPassRQ req barrier invalid", zap.Any("req", req))
+	//	res.ErrInfo = errors.COMMON_ERROR_TIPS.Wrap("经验参数错误")
+	//	return
+	//}
+
+	killMonsterNum, totalDamage, awards, rareAwards, errinfo := barrierservice.Global.BarrierPass(ctx, req.GetHeader(), userId, req.GetBarrierId(), req.GetFoeExp())
+	if errinfo != nil {
+		res.ErrInfo = errinfo
 		return
-	}
-
-	cfg := GMazeBarriesV8Cfg.Get(req.GetBarrierId())
-	if cfg == nil {
-		logger.ErrorWF("OnMazeBarrierPassRQ get barrier cfg fail", zap.Any("barrier", req.GetBarrierId()))
-		res.ErrInfo = errors.COMMON_ERROR_TIPS.Wrap("关卡配置数据获取失败")
-		return
-	}
-	rareMap := make(map[int32]struct{})
-	for _, v := range cfg.Rare_items_show {
-		rareMap[v] = struct{}{}
-	}
-	rareMap = map[int32]struct{}{}
-
-	userInfo, err := mazeuserinfo.GetUserInfoV2(logger, userId)
-	if err != nil {
-		logger.ErrorWF("OnMazeBarrierPassRQ GetUserInfoV2 fail", zap.Error(err))
-		res.ErrInfo = errors.MODULE_ERROR.ToInfo()
-		return
-	}
-
-	if userInfo.PassBarrier >= req.GetBarrierId() {
-		logger.ErrorWF("OnMazeBarrierPassRQ req barrier lt pass barrier", zap.Any("req", req), zap.Int32("pass", userInfo.PassBarrier))
-		res.ErrInfo = errors.COMMON_ERROR_TIPS.Wrap("该关卡已上报过通关")
-		return
-	}
-
-	if userInfo.Barrier != req.GetBarrierId() {
-		logger.ErrorWF("OnMazeBarrierPassRQ userinfo barrier not match", zap.Any("req", req), zap.Int32("save", userInfo.Barrier))
-		res.ErrInfo = errors.COMMON_ERROR_TIPS.Wrap("记录用户正在打的关卡与上报通关id不匹配")
-		return
-	}
-
-	userBarrier, err := mazeuserbarrierredis.GetUserBarrierInfo(logger, userId, req.GetBarrierId())
-	if err != nil {
-		logger.ErrorWF("OnMazeBarrierPassRQ GetUserBarrierInfo fail", zap.Error(err))
-		res.ErrInfo = errors.MODULE_ERROR.ToInfo()
-		return
-	}
-
-	userInfo.SetPassBarrier(req.GetBarrierId())
-	// userInfo.SetBarrier(cfg.Next_id)
-	oldLevel := userInfo.Level
-	oldExp := userInfo.TotalExp
-	err = userInfo.AddExp(int64(req.GetFoeExp()))
-	if err != nil {
-		logger.ErrorWF("OnMazeBarrierPassRQ AddExp fail", zap.Error(err))
-		res.ErrInfo = errors.MODULE_ERROR.ToInfo()
-		return
-	}
-	newLevel := userInfo.Level
-	err = mazeuserinfo.SetUserInfoV2(logger, userId, userInfo)
-	if err != nil {
-		logger.ErrorWF("OnMazeBarrierPassRQ SetUserInfoV2 fail", zap.Error(err))
-		res.ErrInfo = errors.MODULE_ERROR.ToInfo()
-		return
-	}
-	mazecommonvalue.HandleUserLevelExpChg(logger, userId, userInfo.Level, userInfo.Exp, req.GetHeader().GetSession())
-
-	defer func() {
-		if oldLevel != newLevel {
-			levelRecord := &mazeuserlevelkafka.MazeUserLevelRecord{
-				UserId:      userId,
-				OldLevel:    int32(oldLevel),
-				OldTotalExp: oldExp,
-				NewLevel:    int32(newLevel),
-				NewTotalExp: int32(userInfo.TotalExp),
-			}
-			mazeuserlevelkafka.PushMazeLevelRecord(logger, levelRecord)
-		}
-	}()
-
-	if req.GetFoeExp() > 0 {
-		expItem := &MazeCommon.MazeItem{ItemId: proto.Int32(constdef.MazeCommonItemExp), Count: proto.Int64(int64(req.GetFoeExp()))}
-		_, ok := rareMap[constdef.MazeCommonItemExp]
-		if ok {
-			res.BarrierRareAward = append(res.BarrierRareAward, expItem)
-		} else {
-			res.BarrierAward = append(res.BarrierAward, expItem)
-		}
-	}
-
-	//成功通关需要 (1和2通过kafka清理)
-	//1. 清除临时buff
-	//2. 影响挂机生产
-	//3. 清除客户端透传数据(通过切换关卡id 切换不同的key 目前没清)
-
-	// 死亡之后是否需要清空复活次数
-	userBarrier.RebornCount = proto.Int32(0)
-	userBarrier.BarrierStatus = proto.Int32(3)
-	userBarrier.EndTime = proto.Int64(time.Now().Unix())
-	err = mazeuserbarrierredis.SetUserBarrierInfo(logger, userId, 0, userBarrier)
-	if err != nil {
-		logger.ErrorWF("OnMazeBarrierPassRQ SetUserBarrierInfo fail", zap.Error(err))
-		res.ErrInfo = errors.MODULE_ERROR.ToInfo()
-		return
-	}
-
-	now := time.Now()
-	today := now.Year()*10000 + int(now.Month())*100 + now.Day()
-
-	var awardBarrierNum int32
-	awardBarrierNumCfg := GMazeActionCountV8Cfg.Get(102)
-	if awardBarrierNumCfg != nil {
-		awardBarrierNum = awardBarrierNumCfg.Day_count_v8
-	}
-
-	useNumToday, err2 := mazechallengenumredis.GetUserChallengeNum(logger, userId, today)
-	if err2 != nil {
-		logger.ErrorWF("OnMazeBarrierPassRQ GetUserChallengeNum fail", zap.Error(err2))
-	} else if useNumToday > 0 {
-		if awardBarrierNum > int32(useNumToday) {
-			awardBarrierNum = int32(useNumToday)
-		}
-		err = mazechallengenumredis.AddUserChallengeNum(logger, userId, today, 0-awardBarrierNum)
-		if err != nil {
-			logger.ErrorWF("OnMazeBarrierPassRQ AddUserChallengeNum fail", zap.Error(err))
-		}
-	}
-
-	awardMap, equipMap, err := mazebarrier.GetBarrierPassAwardWithFirst(logger, req.GetBarrierId())
-	if err != nil {
-		logger.ErrorWF("OnMazeBarrierPassRQ GetBarrierPassAwardWithFirst fail", zap.Error(err), zap.Any("barrier", req.GetBarrierId()))
 	} else {
-		//696	UN_CGK_COMMON_BILL_TYPE_696	迷宫通关
-		tradeNo := gentradeno.GetTradeNum()
-		if len(awardMap) > 0 {
-			awardItems := itemutil.Map2Common(awardMap)
-			errInfo := gentradeno.AddItemEx(logger, userId, 696, tradeNo, req.GetHeader(), awardItems...)
-			if errInfo != nil {
-				logger.ErrorWF("OnMazeBarrierPassRQ AddItemEx fail", zap.Any("errInfo", errInfo), zap.Any("awardItems", awardItems))
-			}
-
-			for _, item := range awardItems {
-				_, ok := rareMap[item.GetItemId()]
-				if ok {
-					res.BarrierRareAward = append(res.BarrierRareAward, item)
-				} else {
-					res.BarrierAward = append(res.BarrierAward, item)
-				}
-			}
-		}
-
-		if len(equipMap) > 0 {
-			//MAZE_EQUIP_PASS_AWARD = 9;//迷宫通关奖励 张登元
-			rs, err := addequip.AddEquipToBag(logger, userId, int32(MazeEquipSvr.ENUM_EQUIP_BAG_OP_TYPE_MAZE_EQUIP_PASS_AWARD), tradeNo, equipMap)
-			if err != nil {
-				logger.ErrorWF("OnMazeBarrierPassRQ addEquipToBag fail", zap.Error(err), zap.Any("optype", int32(MazeEquipSvr.ENUM_EQUIP_BAG_OP_TYPE_MAZE_EQUIP_BOX_AWARD)),
-					zap.Any("tradeNo", tradeNo), zap.Any("addEquip", equipMap))
-			}
-
-			for _, equip := range rs.GetEquipList() {
-				itemEquip, err := equiptoitem.PackEquipToItem(equip)
-				if err != nil {
-					logger.ErrorWF("OnMazeBarrierPassRQ PackEquipToItem fail", zap.Error(err), zap.Any("equip", equip))
-					continue
-				}
-				_, ok := rareMap[itemEquip.GetItemId()]
-				if ok {
-					res.BarrierRareAward = append(res.BarrierRareAward, itemEquip)
-				} else {
-					res.BarrierAward = append(res.BarrierAward, itemEquip)
-				}
-			}
-		}
+		res.KillMonsterNum = proto.Int32(killMonsterNum)
+		res.TotalDamage = proto.Int64(totalDamage)
+		res.BarrierAward = awards
+		res.BarrierRareAward = rareAwards
 	}
 
 	err = mazebarriereventredis.LeaveBarrier(logger, userId, req.GetBarrierId(), true)
 	if err != nil {
-		logger.ErrorWF("OnMazeBarrierPassRQ LeaveBarrier fail", zap.Error(err))
+		logger.CtxError(ctx, "OnMazeBarrierPassRQ LeaveBarrier fail", zap.Error(err))
 	}
 
 	// 触发离开关卡事件
 	events.OnLeaveBarrier(logger, userId, 0, time.Now().UnixMilli(), &MazeGame.BattleEventLeaveBarrier{BarrierId: proto.Int32(req.GetBarrierId()), Result: MazeGame.BarrierResult_PASS.Enum()})
 
-	logger.InfoWF("OnMazeBarrierPassRQ award dump", zap.Any("exp", req.GetFoeExp()), zap.Any("awardItem", awardMap), zap.Any("awardEquip", equipMap))
+	// 清除关卡的临时数据
+	ClearBarriersTempData(ctx, userId, req.GetBarrierId())
+
+	logger.CtxInfo(ctx, "OnMazeBarrierPassRQ award dump", zap.Any("exp", req.GetFoeExp()), zap.Any("awards", awards), zap.Any("rareAwards", rareAwards))
 
 	passRecord := &mazebarrieruserkafka.MazeBarrierUserGameRecord{
-		UserId:  userId,
-		Barrier: req.GetBarrierId(),
-		GameRet: mazebarrieruserkafka.GameRetSucc,
-		Awards:  getAwards(req.GetFoeExp(), awardMap, equipMap),
+		UserId:         userId,
+		Barrier:        req.GetBarrierId(),
+		GameRet:        mazebarrieruserkafka.GameRetSucc,
+		Awards:         getAwards(logger, awards, rareAwards),
+		KillMonsterNum: int64(killMonsterNum),
 	}
 
-	mazebarrieruserkafka.PushMazeBarrierUserRecord(logger, passRecord)
+	mazebarrieruserkafka.PushMazeBarrierUserRecord(ctx, passRecord)
 
 	return nil
 }
 
-func getAwards(exp int32, awardMap map[int32]int64, awardEquip map[int32]int32) string {
+func getAwards(logger fklog.FKLogI, awards ...[]*MazeCommon.MazeItem) string {
 	awardStr := make([]string, 0)
-
-	awardStr = append(awardStr, fmt.Sprintf("%d:%d", constdef.MazeCommonItemExp, exp))
-
-	for k, v := range awardMap {
-		awardStr = append(awardStr, fmt.Sprintf("%d:%d", k, v))
-	}
-
-	for k, v := range awardEquip {
-		awardStr = append(awardStr, fmt.Sprintf("%d:%d", k, v))
+	for _, award := range awards {
+		for _, v := range award {
+			awardStr = append(awardStr, fmt.Sprintf("%d:%d", v.GetItemId(), v.GetCount()))
+		}
 	}
 	return strings.Join(awardStr, "_")
+}
+
+// 清除关卡的临时数据
+func ClearBarriersTempData(ctx context.Context, userId uint64, barrierId int32) {
+	logger := fklog.ContextAppLogger(ctx)
+	// 删除关卡存档
+	syncmazestorageinforedis.DelSyncMazeStorageInfo(userId, barrierId)
+	// 清理关卡操作状态
+	mazebarrieropstatusredis.ClearOpStatus(logger, userId, barrierId)
+	//清除关卡已获得奖励存档
+	barrierscorerewardservice.GlobalScoreRewardService.DelBarrierScoreRewardItem(context.TODO(), userId, barrierId)
+	// 删除关卡存档 new
+	barriersavedataservice.GlobalBarrierSaveDataService.DelBarrierSaveData(context.TODO(), userId, barrierId)
+	// 删除临时buff
+	tempbuffservice.GlobalTempBuffService.DelTempBuff(context.TODO(), userId, barrierId)
+	// 删除通过的区域
+	tempbuffservice.GlobalTempBuffService.DelPassArea(context.TODO(), userId, barrierId)
+	//删除关卡计数
+	barrierstagecounterservice.GlobalBarrierStageCounterService.DelBarrierStageCounterOnPass(ctx, userId, barrierId)
+
+	mazebuffinforedis.DelMazeBuffBySrc(logger, userId, constdef.MazeBuffSrcSelectBuffForce)
+	// 推送属性计算消息
+	calcAttrNotify := &structsdef.MazeCalcAttrNotifyMsg{
+		UserId:  userId,
+		ChgType: constdef.MazeBuffChgForceValue,
+		Session: "buff",
+		BuffSrc: constdef.MazeBuffSrcSelectBuffForce,
+	}
+	mazeattrcalcnotifyqueue.SendMazeAttrCalcNotify(ctx, calcAttrNotify)
 }

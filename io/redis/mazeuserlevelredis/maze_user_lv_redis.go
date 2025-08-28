@@ -28,32 +28,34 @@ func init() {
 	fkconfig.RegisterNameNode("mazeuserlevelredis", 21613, gRedis)
 }
 
-func GetUserLevel(logger fklog.FKLogI, userId uint64) (level int64, err error) {
+func GetUserLevel(ctx context.Context, userId uint64) (level int64, err error) {
+	logger := fklog.ContextAppLogger(ctx)
 	key := fmt.Sprintf("maze:u:%d:level:exp", userId)
 	level, err = redis.Int64(gRedis.Do(context.TODO(), "hget", key, USER_LEVEL))
 	if err == redis.ErrNil {
 		err = nil
-		logger.InfoWF("GetUserLevel nil", zap.String("key", key))
+		logger.CtxError(ctx, "GetUserLevel nil", zap.String("key", key))
 		return
 	}
 	if err != nil {
-		logger.ErrorWF("GetUserLevel fail", zap.String("key", key), zap.Error(err))
+		logger.CtxError(ctx, "GetUserLevel fail", zap.String("key", key), zap.Error(err))
 		return
 	}
 
 	return
 }
 
-func GetUserInfo(logger fklog.FKLogI, userId uint64) (userInfo map[string]int64, err error) {
+func GetUserInfo(ctx context.Context, userId uint64) (userInfo map[string]int64, err error) {
+	logger := fklog.ContextAppLogger(ctx)
 	key := fmt.Sprintf("maze:u:%d:level:exp", userId)
 	res, err := redis.StringMap(gRedis.Do(context.TODO(), "hgetall", key))
 	if err == redis.ErrNil {
 		err = nil
-		logger.InfoWF("GetUserInfo nil", zap.String("key", key))
+		logger.CtxInfo(ctx, "GetUserInfo nil", zap.String("key", key))
 		return
 	}
 	if err != nil {
-		logger.ErrorWF("GetUserInfo fail", zap.String("key", key), zap.Error(err))
+		logger.CtxError(ctx, "GetUserInfo fail", zap.String("key", key), zap.Error(err))
 		return
 	}
 
@@ -63,11 +65,12 @@ func GetUserInfo(logger fklog.FKLogI, userId uint64) (userInfo map[string]int64,
 		userInfo[k] = fkutil.ToInt64(v)
 	}
 
-	logger.InfoWF("GetUserInfo succ", zap.Any("userInfo", userInfo))
+	logger.CtxInfo(ctx, "GetUserInfo succ", zap.Any("userInfo", userInfo))
 	return
 }
 
-func SetUserInfo(logger fklog.FKLogI, userId uint64, userInfo map[string]int64) (err error) {
+func SetUserInfo(ctx context.Context, userId uint64, userInfo map[string]int64) (err error) {
+	logger := fklog.ContextAppLogger(ctx)
 	key := fmt.Sprintf("maze:u:%d:level:exp", userId)
 	var args []interface{}
 	args = append(args, key)
@@ -76,26 +79,27 @@ func SetUserInfo(logger fklog.FKLogI, userId uint64, userInfo map[string]int64) 
 		args = append(args, v)
 	}
 	if len(args) == 1 {
-		logger.ErrorWF("SetUserInfo params empty", zap.Any("userInfo", userInfo))
+		logger.CtxError(ctx, "SetUserInfo params empty", zap.Any("userInfo", userInfo))
 		return
 	}
 	_, err = gRedis.Do(context.TODO(), "hmset", args...)
 	if err != nil {
-		logger.ErrorWF("SetUserInfo hmset fail", zap.String("key", key), zap.Any("args", args), zap.Error(err))
+		logger.CtxError(ctx, "SetUserInfo hmset fail", zap.String("key", key), zap.Any("args", args), zap.Error(err))
 		return
 	}
-	logger.InfoWF("SetUserInfo succ", zap.String("key", key), zap.Any("userInfo", userInfo))
+	logger.CtxInfo(ctx, "SetUserInfo succ", zap.String("key", key), zap.Any("userInfo", userInfo))
 	return
 }
 
-func GMDel(logger fklog.FKLogI, userId uint64) (err error) {
+func GMDel(ctx context.Context, userId uint64) (err error) {
+	logger := fklog.ContextAppLogger(ctx)
 	key := fmt.Sprintf("maze:u:%d:level:exp", userId)
 	_, err = redis.Int64(gRedis.Do(context.TODO(), "del", key))
 	if err != nil {
-		logger.ErrorWF("GMDel fail", zap.String("key", key), zap.Error(err))
+		logger.CtxError(ctx, "GMDel fail", zap.String("key", key), zap.Error(err))
 		return
 	}
 
-	logger.InfoWF("GMDel succ", zap.Any("key", key))
+	logger.CtxInfo(ctx, "GMDel succ", zap.Any("key", key))
 	return
 }

@@ -1,0 +1,8 @@
+paipaiworld_config,Unnamed: 1,Unnamed: 2,Unnamed: 3,Unnamed: 4,Unnamed: 5
+INT_K,STRING,STRING,STRING,INT_C_S,INT_C_S
+item_id,desc1,desc2,desc3,quality,order_type_2
+物品id,备注,备注,备注,品质,同品质排序（数字大的在前面）
+43400002,生命药剂,,,5,1
+46700001,强化水晶,,,1,1
+46800001,塑造精华,,,1,11
+49000001,体力药剂,,,5,11

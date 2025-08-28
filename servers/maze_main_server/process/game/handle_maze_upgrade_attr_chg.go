@@ -7,12 +7,14 @@
 package game
 
 import (
+	"context"
+
 	"maze_game_server/common/structsdef"
 	"maze_game_server/excel/mazeconfigv8"
 	"maze_game_server/io/redis/mazeuserlevelredis"
 	"maze_game_server/pb/common/Common"
 	"maze_game_server/pb/common/MazeGame"
-	"maze_game_server/usecase/mustarrive"
+	"maze_game_server/usecase/online"
 
 	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fklog"
 	"google.golang.org/protobuf/proto"
@@ -21,11 +23,12 @@ import (
 )
 
 // 处理迷宫升级属性变化Id包
-func HandleMazeLvUpgradeAttrChgId(logger fklog.FKLogI, userId uint64, msg *structsdef.DollAttrChgNotify) {
+func HandleMazeLvUpgradeAttrChgId(ctx context.Context, userId uint64, msg *structsdef.DollAttrChgNotify) {
+	logger := fklog.ContextAppLogger(ctx)
 	if msg.ChgType != 301 {
 		return
 	}
-	mazeLv, e := mazeuserlevelredis.GetUserLevel(logger, userId)
+	mazeLv, e := mazeuserlevelredis.GetUserLevel(ctx, userId)
 	if e != nil {
 		logger.ErrorWF("HandleMazeLvUpgradeAttrChgId GetUserLevel fail", zap.Error(e),
 			zap.Uint64("uid", userId))
@@ -55,7 +58,7 @@ func HandleMazeLvUpgradeAttrChgId(logger fklog.FKLogI, userId uint64, msg *struc
 
 	logger.InfoWF("HandleMazeLvUpgradeAttrChgId send client with",
 		zap.Any("mazeLvChgIDMsg", mazeLvChgIDMsg), zap.Uint64("userId", userId))
-	mustarrive.SendArrivePacket(logger, int64(userId), 10479, mazeLvChgIDMsg)
+	online.ClusterPush(context.TODO(), uint64(userId), 10479, mazeLvChgIDMsg)
 }
 
 // func IsMazeUpgradeCareAttr(attrId int32) bool {

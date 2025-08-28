@@ -1,8 +1,7 @@
 package equipbaggm
 
 import (
-	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fklog"
-	"go.uber.org/zap"
+	"context"
 	"maze_game_server/common/constdef"
 	"maze_game_server/common/function/assemble"
 	"maze_game_server/common/structsdef"
@@ -10,10 +9,14 @@ import (
 	"maze_game_server/io/redis/dollassemblesuitredis"
 	"maze_game_server/io/redis/mazeattrcalcnotifyqueue"
 	"maze_game_server/io/redis/mazebuffinforedis"
+
+	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fklog"
+	"go.uber.org/zap"
 )
 
 // 删除人偶装配信息
-func ClearDollAssembleInfo(logger fklog.FKLogI, userId uint64) error {
+func ClearDollAssembleInfo(ctx context.Context, userId uint64) error {
+	logger := fklog.ContextAppLogger(ctx)
 	var step int
 	var e error
 	defer func() {
@@ -48,7 +51,7 @@ func ClearDollAssembleInfo(logger fklog.FKLogI, userId uint64) error {
 		calcAttrNotify.ChgType = constdef.MazeBuffChgTypeEquipGm
 		calcAttrNotify.Session = "gm"
 		calcAttrNotify.BuffSrc = constdef.MazeBuffSrcEquip
-		mazeattrcalcnotifyqueue.SendMazeAttrCalcNotify(logger, calcAttrNotify)
+		mazeattrcalcnotifyqueue.SendMazeAttrCalcNotify(ctx, calcAttrNotify)
 	}
 
 	e = mazebuffinforedis.DelMazeBuffBySrc(logger, userId, constdef.MazeBuffSrcEquipPos)
@@ -60,7 +63,7 @@ func ClearDollAssembleInfo(logger fklog.FKLogI, userId uint64) error {
 		calcAttrNotify.ChgType = constdef.MazeBuffChgTypeEquipGm
 		calcAttrNotify.Session = "gm"
 		calcAttrNotify.BuffSrc = constdef.MazeBuffSrcEquipPos
-		mazeattrcalcnotifyqueue.SendMazeAttrCalcNotify(logger, calcAttrNotify)
+		mazeattrcalcnotifyqueue.SendMazeAttrCalcNotify(ctx, calcAttrNotify)
 	}
 	return e
 }

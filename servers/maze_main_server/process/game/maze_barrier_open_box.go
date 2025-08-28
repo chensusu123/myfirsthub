@@ -1,22 +1,24 @@
 package game
 
 import (
+	"context"
 	"fmt"
 	"maze_game_server/common/constdef"
 	"maze_game_server/common/errors"
 	"maze_game_server/common/function/addequip"
-	"maze_game_server/common/function/gentradeno"
-	"maze_game_server/config/GMazeBoxV8Cfg"
+	"maze_game_server/common/function/itemutil"
+	"maze_game_server/common/tradeno"
 	"maze_game_server/config/GMazeItemsV8Cfg"
-	"maze_game_server/io/redis/mazeboxredis"
-	"maze_game_server/lib/log"
 	"maze_game_server/lib/nano/session"
 	"maze_game_server/pb/common/MazeCommon"
 	"maze_game_server/pb/common/MazeGame"
 	"maze_game_server/pb/server/MazeEquipSvr"
+	"maze_game_server/services/barrierscorerewardservice"
+	"maze_game_server/services/barrierservice"
+	"maze_game_server/services/itemservice"
 
+	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fklog"
 	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fkprometheus"
-	"gitlab.ifreetalk.com/maze-plate/freetk/fkutil"
 	"go.uber.org/zap"
 	"google.golang.org/protobuf/proto"
 )
@@ -24,7 +26,8 @@ import (
 func (g *Game) OnBarrierOpenBoxRQ_10445_10446(s *session.Session, req *MazeGame.BarrierOpenBoxRQ) (err error) {
 	defer fkprometheus.InfoPMT("OnBarrierOpenBoxRQ")()
 
-	logger := log.Clone("Game", uint64(s.UID()), 0)
+	ctx := s.Context()
+	logger := fklog.ContextAppLogger(ctx)
 	res := &MazeGame.BarrierOpenBoxRS{}
 
 	logger.InfoWF("OnBarrierOpenBoxRQ start", zap.Any("req", req))
@@ -41,58 +44,33 @@ func (g *Game) OnBarrierOpenBoxRQ_10445_10446(s *session.Session, req *MazeGame.
 
 	userId := uint64(s.UID())
 
-	boxCfg := GMazeBoxV8Cfg.Get(int32(req.GetBoxId()))
-	if boxCfg == nil {
-		logger.ErrorWF("OnBarrierOpenBoxRQ get box cfg fail", zap.Any("boxId", req.GetBoxId()))
-		res.ErrInfo = errors.CONFIG_NOT_FOUND.ToInfo()
+	// 关卡中打开宝箱
+	kongfu, equips, items, errinfo := barrierservice.Global.OpenBox(ctx, userId, req.GetBarrierId(), int32(req.GetBoxId()))
+	if errinfo.GetErrCode() != errors.NO_ERROR_CODE {
+		res.ErrInfo = errinfo
+		logger.ErrorWF("OnBarrierOpenBoxRQ OpenBox fail", zap.Error(fmt.Errorf("OpenBox: %s", errinfo.GetErrMsg())), zap.Any("boxId", req.GetBoxId()))
 		return
 	}
 
-	// 更新box表格 读表校验宝箱对应的关卡id
-	if fkutil.ToInt64(boxCfg.Level_id) != int64(req.GetBarrierId()) {
-		logger.ErrorWF("OnBarrierOpenBoxRQ barrier and box not match", zap.Any("boxId", req.GetBoxId()), zap.Any("barrierId", req.GetBarrierId()))
-		res.ErrInfo = errors.COMMON_ERROR_TIPS.Wrap("宝箱关卡信息不匹配")
-		return
-	}
+	// 通关值
+	res.Kongfu = proto.Int32(kongfu)
 
-	opened, err := mazeboxredis.IsOpenedBox(logger, userId, int32(req.GetBoxId()))
-	if err != nil {
-		logger.ErrorWF("OnBarrierOpenBoxRQ IsOpenedBox fail", zap.Error(err), zap.Any("boxId", req.GetBoxId()), zap.Any("barrierId", req.GetBarrierId()))
-		res.ErrInfo = errors.COMMON_ERROR_TIPS.Wrap("宝箱打开失败")
-		return
-	}
+	tradeNo := tradeno.GetTradeNum()
 
-	var (
-		awardEquip []int32
-		dropItem   map[int32]int64
-	)
-	if opened > 0 {
-		awardEquip = boxCfg.Award_equip
-		dropItem = boxCfg.Drop_item
-	} else {
-		awardEquip = boxCfg.Award_equip_first
-		dropItem = boxCfg.Drop_item_first
-	}
+	// TODO 使用equip,item服务增加奖励
 
-	// 宝箱掉落装备
-	tradeNo := gentradeno.GetTradeNum()
-	equip := make(map[int32]int32)
-	for _, v := range awardEquip {
-		if v > 0 {
-			equip[v] += 1
-		}
-	}
-	if len(equip) > 0 {
-		_, err = addequip.AddEquipToBagWithOpdata(logger, userId, int32(MazeEquipSvr.ENUM_EQUIP_BAG_OP_TYPE_MAZE_EQUIP_BOX_AWARD), req.GetOpData(), tradeNo, equip)
+	// 怪物掉落装备
+	if len(equips) > 0 {
+		_, err = addequip.AddEquipToBagWithOpdata(ctx, userId, int32(MazeEquipSvr.ENUM_EQUIP_BAG_OP_TYPE_MAZE_EQUIP_BOX_AWARD), req.GetOpData(), tradeNo, equips)
 		if err != nil {
 			logger.ErrorWF("OnBarrierOpenBoxRQ addEquipToBag fail", zap.Error(err), zap.Any("optype", int32(MazeEquipSvr.ENUM_EQUIP_BAG_OP_TYPE_MAZE_EQUIP_BOX_AWARD)),
-				zap.Any("tradeNo", tradeNo), zap.Any("addEquip", equip))
+				zap.Any("tradeNo", tradeNo), zap.Any("addEquip", equips))
 		}
 	}
 
 	var bagItems []*MazeCommon.MazeItem
 	// 增加掉落物品返回
-	for itemID, count := range dropItem {
+	for itemID, count := range items {
 		if itemID > 0 {
 			itemCfg := GMazeItemsV8Cfg.Get(itemID)
 			if itemCfg == nil {
@@ -120,21 +98,20 @@ func (g *Game) OnBarrierOpenBoxRQ_10445_10446(s *session.Session, req *MazeGame.
 			}
 		}
 	}
+
 	// 处理需要加入背包的道具
 	if len(bagItems) > 0 {
-		errInfo := gentradeno.AddItemEx(logger, userId, 697, tradeNo, req.GetHeader(), bagItems...)
+		itemList := itemutil.ItemPb2ItemInfo(bagItems)
+		errInfo := itemservice.GlobalItemService.AddItem(context.TODO(), userId, itemservice.ItemOpTypeOpenBox, tradeNo, itemList...)
 		if errInfo != nil {
 			logger.ErrorWF("OnBarrierOpenBoxRQ AddItemEx fail", zap.Any("errInfo", errInfo), zap.Any("bagItems", bagItems))
 		}
 	}
 
-	// 通关值
-	res.Kongfu = proto.Int32(boxCfg.Add_kongfu)
-
-	// 标记宝箱已打开过
-	err = mazeboxredis.SetOpenBoxTime(logger, userId, int32(req.GetBoxId()))
-	if err != nil {
-		logger.ErrorWF("OnBarrierOpenBoxRQ SetOpenBoxTime fail", zap.Error(err), zap.Any("boxId", req.GetBoxId()), zap.Any("barrierId", req.GetBarrierId()))
+	// 保存到已获取的道具
+	if err = barrierscorerewardservice.GlobalScoreRewardService.SaveBarrierScoreReward(context.TODO(), userId, req.GetBarrierId(), equips, items); err != nil {
+		logger.ErrorWF("OnBarrierPickItemRQ SaveBarrierScoreRewardItem err", zap.Error(err), zap.Any("barrier", req.GetBarrierId()))
+		res.ErrInfo = errors.MODULE_ERROR.ToInfo()
 	}
 
 	return nil

@@ -1,0 +1,7 @@
+paipaiworld_config,Unnamed: 1,Unnamed: 2,Unnamed: 3,Unnamed: 4,Unnamed: 5,Unnamed: 6
+INT_K,LONG_C,LONG_C,INT_C,INT_C,INT_C,LIST<INT>_C
+order,kongfu_min,kongfu_max,display_hit_time,beaten_back_range,display_hit_grading,display_die_grading
+序号,玩家武力/主目标武力万分比，下限,玩家武力/主目标武力万分比，上限,怪物受击硬直时间系数万分比（废弃）,怪物受击击退距离系数万分比,怪物受击动作档位,怪物受击动作档位
+1,0,5000,3000,3000,900005,900100
+2,5001,10000,6000,6000,900006,900200
+3,10001,1500073741823,10000,10000,900007,"900300,900301,900302,900303,900304,900305,900306,900307,900308,900309,900310,900311"

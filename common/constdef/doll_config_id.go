@@ -48,3 +48,24 @@ const (
 const (
 	MazeInitAttrCfgId int32 = 1 // 迷宫初始属性列表
 )
+
+// 展示道具id
+const (
+	GoldPileItemCfgId            = 46200101 // 金币堆道具id
+	StrengthenStonePileItemCfgId = 46700101 // 强化石堆道具id
+)
+
+// 展示道具与实际道具对应配置id
+const (
+	GoldPileShow2RealCfgId            int32 = 901
+	StrengthenStonePileShow2RealCfgId int32 = 902
+)
+
+
+const PassValueInitCfgId = 921 // 通关值初始值
+const (
+	ItemTypeGoldCoinPile    = 462 // 金币堆
+	ItemTypeQianghuashiPile = 467 // 强化水晶堆
+	ItemTypeTempBuff        = 482 // 三选一道具
+	ItemTypeEnergyPotion    = 490 // 体力药剂
+)

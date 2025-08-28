@@ -8,7 +8,9 @@ import (
 
 	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fkconfig"
 	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fklog"
+	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/services"
 	"gitlab.ifreetalk.com/maze-plate/freetk/fkserver"
+	"gitlab.ifreetalk.com/maze-plate/freetk/fkserver/appconfig"
 	"gitlab.ifreetalk.com/maze-plate/freetk/pkg/registry"
 	"gitlab.ifreetalk.com/maze-plate/freetk/pkg/utils"
 	"gitlab.ifreetalk.com/maze-plate/freetk/plateregistry"
@@ -16,8 +18,11 @@ import (
 )
 
 type NanoInitService struct {
-	addr    string
-	nlisten func()
+	addr        string
+	nlisten     func()
+	appName     string
+	namespace   string
+	serviceName string
 }
 
 // Name implements fkcore.FKServiceI.
@@ -27,28 +32,46 @@ func (ns *NanoInitService) Name() string {
 
 // OnInit implements fkcore.FKServiceI.
 func (ns *NanoInitService) OnInit(logger fklog.FKLogI, config fkconfig.FkConfigerI) (err error) {
+	appConfig := appconfig.GlobalConfig()
+
 	// Nano组件与路由
 	comps, routes := Components()
-	listenAddr := ":5998"
+
+	ns.appName = appConfig.Server.AppName
+	ns.namespace = appConfig.Global.Namespace
+	ns.serviceName = ns.appName + ".ws"
+
+	svrCfg := services.Config(ns.serviceName)
+	if svrCfg != nil {
+		ns.addr = svrCfg.Address
+	}
+
+	jsonPath := "/s" + appConfig.Global.SectionID + "/json"
+	pbPath := "/s" + appConfig.Global.SectionID + "/pb"
 	ns.nlisten = func() {
-		nano.Listen(listenAddr,
+		nano.Listen(ns.addr,
 			// nano.WithDebugMode(),
 
 			// 启用WebSocket协议
 			nano.WithIsWebsocket(true),
-			nano.WithWSPath("/json",
+			nano.WithWSPath(jsonPath,
 				// 以下Serializer与PacketCodec作用于局部
 				codec.NewJsonPacketCodec(routes, codec.WithSerializer(json.NewSerializer())),
 			),
-			nano.WithWSPath("/pb",
+			nano.WithWSPath(pbPath,
 				// 以下Serializer与PacketCodec作用于局部
 				codec.NewEsPacketCodec(routes, codec.WithSerializer(codec.NewProtobufSerializer())),
 			),
-			nano.WithSessionMonitor(online.SessionMonitor()),
+			nano.WithSessionMonitor(online.SessionMonitor(logger)),
 			nano.WithComponents(comps),
 		)
 	}
-	ns.addr = fkconfig.EnvVal.LocalIP + listenAddr
+	logger.InfoWF("nano init service listen", zap.Any("svrCfg", svrCfg),
+		zap.Any("appName", ns.appName),
+		zap.Any("serviceName", ns.serviceName),
+		zap.Any("namespace", ns.namespace),
+		zap.Any("DefaultClientConfig", services.DefaultClientConfig()),
+	)
 	return
 }
 
@@ -58,8 +81,8 @@ func (ns *NanoInitService) OnStart(logger fklog.FKLogI, config fkconfig.FkConfig
 	tags := fkserver.GetRegistryMetadata()
 
 	Info := &registry.Info{
-		Namespace:   fkconfig.EnvVal.Namespace,
-		ServiceName: fkconfig.EnvVal.AppName + ".ws",
+		Namespace:   ns.namespace,
+		ServiceName: ns.serviceName,
 		Addr:        utils.NewNetAddr("tcp", ns.addr),
 		Tags:        tags,
 	}
@@ -73,8 +96,8 @@ func (ns *NanoInitService) OnStart(logger fklog.FKLogI, config fkconfig.FkConfig
 func (ns *NanoInitService) OnStop(logger fklog.FKLogI) error {
 	tags := fkserver.GetRegistryMetadata()
 	Info := &registry.Info{
-		Namespace:   fkconfig.EnvVal.Namespace,
-		ServiceName: fkconfig.EnvVal.AppName + ".ws",
+		Namespace:   ns.namespace,
+		ServiceName: ns.serviceName,
 		Addr:        utils.NewNetAddr("tcp", ns.addr),
 		Tags:        tags,
 	}
@@ -85,5 +108,10 @@ func (ns *NanoInitService) OnStop(logger fklog.FKLogI) error {
 
 // OnFinish implements fkcore.FKServiceI.
 func (ns *NanoInitService) OnFinish(logger fklog.FKLogI) error {
+	return nil
+}
+
+// OnShutdown implements fkcore.FKServiceI.
+func (ns *NanoInitService) OnShutdown(fklog.FKLogI) error {
 	return nil
 }

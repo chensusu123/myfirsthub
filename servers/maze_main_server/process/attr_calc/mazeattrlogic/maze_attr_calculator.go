@@ -7,6 +7,7 @@
 package mazeattrlogic
 
 import (
+	"context"
 	"fmt"
 	"maze_game_server/common/constdef"
 	"maze_game_server/common/structsdef"
@@ -220,7 +221,7 @@ func (m *DAC) CalcFormulaAttr() error {
 }
 
 // 保存通知
-func (m *DAC) End() error {
+func (m *DAC) End(ctx context.Context) error {
 	if m.InParam.IsPreview {
 		return nil
 	}
@@ -251,10 +252,10 @@ func (m *DAC) End() error {
 	}
 
 	// 记录流水
-	m.Record(chgAttrs)
+	m.Record(ctx, chgAttrs)
 
 	// 变化通知
-	m.Notify(chgAttrs)
+	m.Notify(ctx, chgAttrs)
 	return err
 }
 
@@ -291,7 +292,7 @@ func (m *DAC) compareDiff() (chgs map[int32]int64, delIds []int32) {
 	return chgs, delIds
 }
 
-func (m *DAC) Record(chgAttrs map[int32]int64) {
+func (m *DAC) Record(ctx context.Context, chgAttrs map[int32]int64) {
 	// 打消息变化
 	now := time.Now().UnixNano() / 1000000
 	for k, newVal := range chgAttrs {
@@ -325,11 +326,11 @@ func (m *DAC) Record(chgAttrs map[int32]int64) {
 		} else {
 			dacr.Extra = m.Acr.DumpWeightInfo(k)
 		}
-		mazeattrchgrecord.SendMazeGameAttrChgRecord(m, dacr)
+		mazeattrchgrecord.SendMazeGameAttrChgRecord(ctx, dacr)
 	}
 }
 
-func (m *DAC) Notify(chgAttrs map[int32]int64) {
+func (m *DAC) Notify(ctx context.Context, chgAttrs map[int32]int64) {
 	// 打消息变化
 	now := time.Now().UnixNano() / 1000000
 	msg := &structsdef.DollAttrChgNotify{}
@@ -347,7 +348,7 @@ func (m *DAC) Notify(chgAttrs map[int32]int64) {
 		chgAttr.CurVal = newAttr
 		msg.ChgAttrs = append(msg.ChgAttrs, chgAttr)
 	}
-	mazeattrmsg.SendMazeAttrChgNotify(m, msg)
+	mazeattrmsg.SendMazeAttrChgNotify(ctx, msg)
 	commonlogic.NotifyClientAttrChg(m, m.UserId, msg)
 }
 

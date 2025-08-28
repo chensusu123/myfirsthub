@@ -1,0 +1,3 @@
+primary_excel,foreign_excel,primary_sheet,foreign_sheet,primary_column,foreign_column,use_map_key_foreign
+主键表名,外键表名,主键sheet名,外键sheet名,主键列名,外键列名,是否用map的key做外键
+maze_act_info_v8【迷宫-动作配置】,maze_skill_act_v8【迷宫-技能-技能动作】,maze_act_info_v8,maze_skill_act_v8,order,act_id,False

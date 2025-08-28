@@ -21,6 +21,7 @@
 package nano
 
 import (
+	"context"
 	"fmt"
 	"sync"
 	"sync/atomic"
@@ -121,7 +122,7 @@ func (c *Group) Multicast(route string, v interface{}, filter SessionFilter) err
 		if !filter(s) {
 			continue
 		}
-		if err = s.Push(route, data); err != nil {
+		if err = s.Push(context.Background(), route, data); err != nil {
 			log.Println(err.Error())
 		}
 	}
@@ -148,7 +149,7 @@ func (c *Group) Broadcast(route string, v interface{}) error {
 	defer c.mu.RUnlock()
 
 	for _, s := range c.sessions {
-		if err = s.Push(route, data); err != nil {
+		if err = s.Push(context.TODO(), route, data); err != nil {
 			log.Println(fmt.Sprintf("Session push message error, ID=%d, UID=%d, Error=%s", s.ID(), s.UID(), err.Error()))
 		}
 	}

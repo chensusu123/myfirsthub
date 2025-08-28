@@ -1,10 +1,11 @@
 package test
 
 import (
+	fileResolver "gitlab.ifreetalk.com/maze-plate/freetk/registry/fileresolver"
 	"gorm.io/gorm"
+	"maze_game_server/io/mysql/account"
 	"os"
 
-	"maze_game_server/usecase/localconfig"
 	"testing"
 	"time"
 
@@ -32,9 +33,10 @@ var gTestLogger fklog.FKLogI
 func init() {
 	gTestLogger = fklog.AppLogger().Clone("maze_main_server_t")
 	os.Setenv("mode", "dev")
-	cfgSvr := localconfig.New("./conf.d/localconfig.yaml")
-	myBiz := mysql.BizFlow{}
-	err := myBiz.Init(cfgSvr)
+	//cfgSvr := localconfig.New("./conf.d/localconfig.yaml")
+	myBiz := mysql.NewBizFlow("BizCfg")
+	resolver := fileResolver.New("./conf.d/service.yaml")
+	err := myBiz.Init(resolver)
 	if err != nil {
 		panic("mysql init err:" + err.Error())
 	}
@@ -286,4 +288,14 @@ func InsertTest(db *gorm.DB, tableName string) {
 		return
 	}
 	gTestLogger.InfoWF("SaveUserLevelRecord succ", zap.Any("flowrecord", record))
+}
+
+func TestGetAccountInfo(t *testing.T) {
+	gTestLogger = fklog.AppLogger().Clone("maze_main_server_t")
+	info, err := account.GetAccountInfo(gTestLogger, 123)
+	if err != nil {
+		gTestLogger.ErrorWF("GetAccountInfo fail", zap.Error(err))
+		return
+	}
+	gTestLogger.InfoWF("GetAccountInfo succ", zap.Any("info", info))
 }

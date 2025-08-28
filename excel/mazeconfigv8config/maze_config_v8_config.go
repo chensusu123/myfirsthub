@@ -1,6 +1,10 @@
 package mazeconfigv8config
 
-import "maze_game_server/config/GMazeConfigV8Cfg"
+import (
+	"context"
+	"gitlab.ifreetalk.com/maze-plate/freetk/fkserver/config_manager"
+	"maze_game_server/config/GMazeConfigV8Cfg"
+)
 
 /**
  * @Author: liushuhang
@@ -18,16 +22,17 @@ func GetMazeConfig(configId int32) map[int32]int64 {
 }
 
 func GetBuffSelectCount() int64 {
-	config := GMazeConfigV8Cfg.Get(999)
-	if config == nil {
-		return 3
-	}
-
-	return config.Value_int
+	//config := GMazeConfigV8Cfg.Get(999)
+	//if config == nil {
+	//	return 3
+	//}
+	//
+	//return config.Value_int
+	return 3
 }
 
-func GetBuffSelectTime() int32 {
-	config := GMazeConfigV8Cfg.Get(401)
+func GetBuffSelectTime(ctx context.Context) int32 {
+	config := GMazeConfigV8Cfg.GetWithCtx(ctx, 401, config_manager.QueryNullable())
 	if config == nil {
 		return 60
 	}

@@ -1,6 +1,7 @@
 package equip
 
 import (
+	"context"
 	"fmt"
 
 	"maze_game_server/common/constdef"
@@ -23,29 +24,30 @@ import (
 )
 
 // OnGmEquipPosLvUp 不扣道具，直接将用户装备提升到某个等级 ！！！谨慎使用
-func OnGmEquipPosLvUp(logger fklog.FKLogI, userId uint64, targetLv int32) (err error) {
+func OnGmEquipPosLvUp(ctx context.Context, userId uint64, targetLv int32) (err error) {
+	logger := fklog.ContextAppLogger(ctx)
 	defer fkprometheus.DebugPMT("OnGmEquipPosLvUp")()
-	logger.InfoWF("OnGmEquipPosLvUp start", zap.Any("userId", userId),
+	logger.CtxInfo(ctx, "OnGmEquipPosLvUp start", zap.Any("userId", userId),
 		zap.Int32("targetLv", targetLv))
 	defer func() {
-		logger.InfoWF("OnGmEquipPosLvUp end", zap.Any("err", err))
+		logger.CtxInfo(ctx, "OnGmEquipPosLvUp end", zap.Any("err", err))
 	}()
 
 	if userId == 0 {
 		err = fmt.Errorf("userId is 0")
-		logger.ErrorWF("OnGmEquipPosLvUp userId is 0")
+		logger.CtxError(ctx, "OnGmEquipPosLvUp userId is 0")
 		return
 	}
 
 	if targetLv == 0 {
 		err = fmt.Errorf("targetLv is 0")
-		logger.ErrorWF("OnGmEquipPosLvUp targetLv is 0")
+		logger.CtxError(ctx, "OnGmEquipPosLvUp targetLv is 0")
 		return
 	}
 
 	assembleDb, err := dollassembleredis.GetAllAssembleInfo(logger, userId)
 	if err != nil {
-		logger.ErrorWF("OnGmEquipPosLvUp GetAllAssembleInfo", zap.Error(err))
+		logger.CtxError(ctx, "OnGmEquipPosLvUp GetAllAssembleInfo", zap.Error(err))
 		return
 	}
 
@@ -54,7 +56,7 @@ func OnGmEquipPosLvUp(logger fklog.FKLogI, userId uint64, targetLv int32) (err e
 	equipPos := assembleDb.GetMazeEquips()
 	if len(equipPos) < constdef.EquipPosNum { // 未解锁全部装备位
 		err = fmt.Errorf("OnGmEquipPosLvUp not unlock all equip pos")
-		logger.WarnWF("OnGmEquipPosLvUp not unlock all equip pos",
+		logger.CtxWarn(ctx, "OnGmEquipPosLvUp not unlock all equip pos",
 			zap.Int("unlockNum", len(equipPos)), zap.Int("needNum", constdef.EquipPosNum))
 		return
 	}
@@ -86,10 +88,10 @@ func OnGmEquipPosLvUp(logger fklog.FKLogI, userId uint64, targetLv int32) (err e
 	// 	return
 	// }
 
-	mazeLv, err := mazeuserlevelredis.GetUserLevel(logger, userId)
+	mazeLv, err := mazeuserlevelredis.GetUserLevel(ctx, userId)
 	if err != nil {
 		err = fmt.Errorf("OnGmEquipPosLvUp GetUserLevel")
-		logger.ErrorWF("OnEquipPosLvUpRQ GetUserLevel", zap.Error(err))
+		logger.CtxError(ctx, "OnEquipPosLvUpRQ GetUserLevel", zap.Error(err))
 		return nil
 	}
 	// 所有部位全部检查一遍
@@ -99,7 +101,7 @@ func OnGmEquipPosLvUp(logger fklog.FKLogI, userId uint64, targetLv int32) (err e
 		cfg := equipposexcel.GetPosStrengthCfg(posId, posLv)
 		if cfg == nil {
 			err = fmt.Errorf("cannot found pos cfg")
-			logger.ErrorWF("OnGmEquipPosLvUp GetPosStrengthCfg", zap.Error(err),
+			logger.CtxError(ctx, "OnGmEquipPosLvUp GetPosStrengthCfg", zap.Error(err),
 				zap.Int32("posId", posId), zap.Int32("posLv", posLv))
 			return
 		}
@@ -110,7 +112,7 @@ func OnGmEquipPosLvUp(logger fklog.FKLogI, userId uint64, targetLv int32) (err e
 		// }
 		if mazeLv < int64(cfg.Need_maze_level) {
 			err = fmt.Errorf("OnGmEquipPosLvUp insufficient maze lv, curMazeLv:%d, needMazeLv:%d", mazeLv, cfg.Need_maze_level)
-			logger.WarnWF("OnGmEquipPosLvUp insufficient maze lv",
+			logger.CtxWarn(ctx, "OnGmEquipPosLvUp insufficient maze lv",
 				zap.Int64("mazeLv", mazeLv),
 				zap.Int32("needLv", cfg.Need_maze_level))
 			return
@@ -175,12 +177,12 @@ func OnGmEquipPosLvUp(logger fklog.FKLogI, userId uint64, targetLv int32) (err e
 		cfg := equipposexcel.GetPosStrengthCfg(posId, posLv)
 		if cfg == nil {
 			err = fmt.Errorf("cannot found pos cfg")
-			logger.ErrorWF("OnGmEquipPosLvUp GetPosStrengthCfg", zap.Error(err),
+			logger.CtxError(ctx, "OnGmEquipPosLvUp GetPosStrengthCfg", zap.Error(err),
 				zap.Int32("posId", posId), zap.Int32("posLv", posLv))
 			return
 		}
 		if cfg.Next_order < 0 {
-			logger.WarnWF("OnGmEquipPosLvUp equip pos is max level, client should filter",
+			logger.CtxWarn(ctx, "OnGmEquipPosLvUp equip pos is max level, client should filter",
 				zap.Any("posId", posId), zap.Int32("posLv", posLv))
 			continue
 		}
@@ -202,7 +204,7 @@ func OnGmEquipPosLvUp(logger fklog.FKLogI, userId uint64, targetLv int32) (err e
 	newSuitId, err := equippossuit.CalcPosSuit(logger, equipPos)
 	if err != nil {
 		err = fmt.Errorf("OnGmEquipPosLvUp CalcPosSuit")
-		logger.ErrorWF("OnEquipPosLvUpRQ CalcPosSuit", zap.Error(err))
+		logger.CtxError(ctx, "OnEquipPosLvUpRQ CalcPosSuit", zap.Error(err))
 		return
 	}
 	if newSuitId != curSuitId {
@@ -265,7 +267,7 @@ func OnGmEquipPosLvUp(logger fklog.FKLogI, userId uint64, targetLv int32) (err e
 	var retMask int32 = 0
 	defer func() {
 		// 整合为一条流水(不扣物品，忽略流水号)
-		if err := equipposstrengrecordkafka.PushEquipPosStrengRecord(logger, userId,
+		if err := equipposstrengrecordkafka.PushEquipPosStrengRecord(ctx, userId,
 			0, 0, targetLv, curSuitId, newSuitId, 0, nil, result, retMask); err != nil {
 			logger.ErrorWF("OnEquipPosLvUpRQ PushEquipPosStrengRecord", zap.Error(err))
 		}
@@ -280,7 +282,7 @@ func OnGmEquipPosLvUp(logger fklog.FKLogI, userId uint64, targetLv int32) (err e
 	}
 	logger.InfoWF("OnEquipPosLvUpRQ SetAssembleInfoByFields succ", zap.Any("chgAssemDb", chgAssemDb))
 	// 计算属性加成
-	retMask |= UpdateEquipPosBuff(logger, userId, curSuitId, newSuitId,
+	retMask |= UpdateEquipPosBuff(ctx, userId, curSuitId, newSuitId,
 		assembleDb.GetMazeEquips(), posCurAttrs, "")
 
 	// 推装配信息变化包

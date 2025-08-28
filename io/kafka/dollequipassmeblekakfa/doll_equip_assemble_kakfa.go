@@ -1,17 +1,16 @@
 package dollequipassmeblekakfa
 
 import (
-	"time"
-
-	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fkconfig"
-	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fklog"
-	"go.uber.org/zap"
+	"context"
 	"maze_game_server/io/dispatcher"
+	"maze_game_server/io/kafka/kafkacommonstruct"
+	"maze_game_server/model/flowmodel/mazeequipassemblerecordmodel"
+	"maze_game_server/services/flowservice"
 )
 
 var d = dispatcher.NewDispatcher[*MazeGameEquipAssembleRecord]()
 
-func Watch(fn func(logger fklog.FKLogI, msg *MazeGameEquipAssembleRecord)) {
+func Watch(fn func(ctx context.Context, msg *MazeGameEquipAssembleRecord)) {
 	d.Watch(fn)
 }
 
@@ -33,7 +32,10 @@ const (
 	DollEquipAssembleOpBag      int32 = 1000 // 背包操作最终类型= DollEquipAssembleOpBag+ 背包ENUM_EQUIP_BAG_OP_TYPE
 )
 
+type KafkaCommon = kafkacommonstruct.KafkaCommon
+
 type MazeGameEquipAssembleRecord struct {
+	KafkaCommon
 	UserId     uint64 `json:"user_id" gorm:"column:user_id"`           // 用户Id
 	GroupId    uint32 `json:"group_id" gorm:"column:group_id"`         // 分组ID  当时服务分片所属分组
 	EquipPos   int32  `json:"equip_pos" gorm:"column:equip_pos"`       // 装备位ID
@@ -47,24 +49,13 @@ type MazeGameEquipAssembleRecord struct {
 	RetCode    int32  `json:"ret_code" gorm:"column:ret_code"`         // 0:成功  其他失败
 	CodeMask   int32  `json:"code_mask" gorm:"column:code_mask"`       // 业务掩码
 	TransID    uint64 `json:"trans_id" gorm:"column:trans_id"`         // 事务Id
-	OpTime     int64  `json:"op_time" gorm:"column:create_time"`       // 流水时间戳
-	ServerId   int32  `json:"server_id" gorm:"column:server_id"`
+	OpTime     int64  `json:"create_time" gorm:"column:create_time"`   // 流水时间戳
 }
 
-func SendMazeGameEquipAssembleRecord(logger fklog.FKLogI, record *MazeGameEquipAssembleRecord) error {
-	record.GroupId = fkconfig.EnvVal.GroupID
-	record.OpTime = time.Now().UnixNano() / 1000000
-	// jbs, e := json.Marshal(record)
-	// if e != nil {
-	// 	logger.ErrorWF("SendMazeGameEquipAssembleRecord Marshal fail", zap.Error(e), zap.Any("record", record))
-	// 	return e
-	// }
-	// e = kp.SendWithUserID(record.UserId, jbs)
-	// if e != nil {
-	// 	logger.ErrorWF("SendMazeGameEquipAssembleRecord SendWithUserID fail", zap.Error(e), zap.Any("record", record))
-	// 	return e
-	// }
-	d.Push(logger, record)
-	logger.InfoWF("SendMazeGameEquipAssembleRecord SendWithUserID succ", zap.Any("record", record))
+// 流水打点使用
+func SendMazeGameEquipAssembleRecord(ctx context.Context, record *MazeGameEquipAssembleRecord) error {
+	flowData := mazeequipassemblerecordmodel.NewMazeGameEquipAssembleRecord(record.UserId, record.EquipPos, record.OpType, record.NewEquipId, record.NewGuid, record.OldEquipId, record.OldGuid,
+		record.OldFElem, record.NewFElem, record.RetCode, record.CodeMask, record.TransID)
+	flowservice.GflowService.SendFlowData(ctx, flowData)
 	return nil
 }

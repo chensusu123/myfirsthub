@@ -1,17 +1,18 @@
 package equip
 
 import (
+	"context"
 	"fmt"
+	"maze_game_server/common/tradeno"
+	"maze_game_server/services/itemservice"
 	"strings"
 
 	"maze_game_server/common/constdef"
 	"maze_game_server/common/errors"
 	"maze_game_server/common/function/assemble"
 	"maze_game_server/common/function/excelutil"
-	"maze_game_server/common/function/gentradeno"
 	"maze_game_server/common/function/itemutil"
 	"maze_game_server/common/function/maputil"
-	"maze_game_server/common/function/uniqueid"
 	"maze_game_server/common/structsdef"
 	"maze_game_server/config/GMazeEquipPosLvSuiteV8Cfg"
 	"maze_game_server/config/GMazeEquipPosLvV8Cfg"
@@ -22,7 +23,6 @@ import (
 	"maze_game_server/io/redis/mazeattrcalcnotifyqueue"
 	"maze_game_server/io/redis/mazebuffinforedis"
 	"maze_game_server/io/redis/mazeuserlevelredis"
-	"maze_game_server/lib/log"
 	"maze_game_server/lib/nano/session"
 	"maze_game_server/module/assembleidpack"
 	"maze_game_server/module/calcassembleattr"
@@ -43,7 +43,8 @@ import (
 func (e *Equip) OnEquipPosLvUpRQ_10425_10426(s *session.Session, rq *MazeEquipPos.MazeEquipPosLvUpRQ) (err error) {
 	defer fkprometheus.DebugPMT("OnEquipPosLvUpRQ")()
 
-	logger := log.Clone("Equip", uint64(s.UID()), 0)
+	ctx := s.Context()
+	logger := fklog.ContextAppLogger(ctx)
 	rs := &MazeEquipPos.MazeEquipPosLvUpRS{}
 
 	rs.ErrInfo = errors.NO_ERROR
@@ -57,21 +58,21 @@ func (e *Equip) OnEquipPosLvUpRQ_10425_10426(s *session.Session, rq *MazeEquipPo
 	rqCurLv := rq.GetLevel()
 	rqCost := rq.GetCostItems()
 
-	logger.InfoWF("OnEquipPosLvUpRQ start", zap.Any("rq", rq))
+	logger.CtxError(ctx, "OnEquipPosLvUpRQ start", zap.Any("rq", rq))
 	defer func() {
 		err = s.Response(rs)
-		logger.InfoWF("OnEquipPosLvUpRQ end", zap.Any("rs", rs))
+		logger.CtxInfo(ctx, "OnEquipPosLvUpRQ end", zap.Any("rs", rs))
 	}()
 
 	if posId < 1 || posId > constdef.EquipPosNum {
-		logger.ErrorWF("OnEquipPosLvUpRQ param invalid", zap.Int32("posId", posId))
+		logger.CtxError(ctx, "OnEquipPosLvUpRQ param invalid", zap.Int32("posId", posId))
 		rs.ErrInfo = errors.ARGS_NOT_MATCH.ToInfo()
 		return
 	}
 
 	assembleDb, err := dollassembleredis.GetAllAssembleInfo(logger, userId)
 	if err != nil {
-		logger.ErrorWF("OnEquipPosLvUpRQ GetAllAssembleInfo", zap.Error(err))
+		logger.CtxError(ctx, "OnEquipPosLvUpRQ GetAllAssembleInfo", zap.Error(err))
 		rs.ErrInfo = errors.MODULE_ERROR.ToInfo()
 		return
 	}
@@ -80,7 +81,7 @@ func (e *Equip) OnEquipPosLvUpRQ_10425_10426(s *session.Session, rq *MazeEquipPo
 
 	equipPos := assembleDb.GetMazeEquips()
 	if len(equipPos) < constdef.EquipPosNum { // 未解锁全部装备位
-		logger.WarnWF("OnEquipPosStrengPreviewRQ not unlock all equip pos",
+		logger.CtxError(ctx, "OnEquipPosStrengPreviewRQ not unlock all equip pos",
 			zap.Int("unlockNum", len(equipPos)), zap.Int("needNum", constdef.EquipPosNum))
 		rs.ErrInfo = errors.COMMON_ERROR_TIPS.Wrap(toastmsgtipexcel.GetToastMsgTip(2024, "解锁全部装备位后可强化"))
 		return
@@ -102,39 +103,39 @@ func (e *Equip) OnEquipPosLvUpRQ_10425_10426(s *session.Session, rq *MazeEquipPo
 	}
 
 	if rqCurLv != curLv {
-		logger.ErrorWF("OnEquipPosLvUpRQ param invalid", zap.Int32("rqCurLv", rqCurLv), zap.Int32("svrCurLv", curLv))
+		logger.CtxError(ctx, "OnEquipPosLvUpRQ param invalid", zap.Int32("rqCurLv", rqCurLv), zap.Int32("svrCurLv", curLv))
 		rs.ErrInfo = errors.ARGS_NOT_MATCH.ToInfo()
 		return
 	}
 
 	if curEquipPosDb == nil {
-		logger.ErrorWF("OnEquipPosLvUpRQ param invalid, no current equip position", zap.Int32("posId", posId))
+		logger.CtxError(ctx, "OnEquipPosLvUpRQ param invalid, no current equip position", zap.Int32("posId", posId))
 		rs.ErrInfo = errors.ARGS_NOT_MATCH.ToInfo()
 		return
 	}
 
 	curCfg := equipposexcel.GetPosStrengthCfg(posId, curLv)
 	if curCfg == nil {
-		logger.ErrorWF("OnEquipPosLvUpRQ GetPosStrengthCfg", zap.Error(err),
+		logger.CtxError(ctx, "OnEquipPosLvUpRQ GetPosStrengthCfg", zap.Error(err),
 			zap.Int32("posId", posId), zap.Int32("curLv", curLv))
 		rs.ErrInfo = errors.CONFIG_NOT_FOUND.ToInfo()
 		return
 	}
 	if curCfg.Next_order < 0 {
-		logger.WarnWF("OnEquipPosLvUpRQ equip pos is max level, client should filter",
+		logger.CtxError(ctx, "OnEquipPosLvUpRQ equip pos is max level, client should filter",
 			zap.Int32("curLv", curLv))
 		rs.ErrInfo = errors.COMMON_ERROR_TIPS.Wrap("装备位已达到最高等级")
 		return
 	}
 	nextCfg := equipposexcel.GetPosStrengthCfgByKey(curCfg.Next_order)
 	if nextCfg == nil {
-		logger.ErrorWF("OnEquipPosLvUpRQ cannot found next cfg",
+		logger.CtxError(ctx, "OnEquipPosLvUpRQ cannot found next cfg",
 			zap.Int32("curLv", curLv), zap.Int32("key", curCfg.Next_order))
 		rs.ErrInfo = errors.CONFIG_NOT_FOUND.ToInfo()
 		return
 	}
 	if otherMinLv < curCfg.Need_other {
-		logger.ErrorWF("OnEquipPosLvUpRQ other equip pos min level limit, client should filter",
+		logger.CtxError(ctx, "OnEquipPosLvUpRQ other equip pos min level limit, client should filter",
 			zap.Int32("curLv", curLv),
 			zap.Int32("pos", posId),
 			zap.Int32("otherMinLv", otherMinLv),
@@ -143,14 +144,14 @@ func (e *Equip) OnEquipPosLvUpRQ_10425_10426(s *session.Session, rq *MazeEquipPo
 		return
 	}
 
-	mazeLv, err := mazeuserlevelredis.GetUserLevel(logger, userId)
+	mazeLv, err := mazeuserlevelredis.GetUserLevel(ctx, userId)
 	if err != nil {
-		logger.ErrorWF("OnEquipPosLvUpRQ GetUserLevel", zap.Error(err))
+		logger.CtxError(ctx, "OnEquipPosLvUpRQ GetUserLevel", zap.Error(err))
 		rs.ErrInfo = errors.MODULE_ERROR.Wrap("查询迷宫等级失败")
 		return nil
 	}
 	if mazeLv < int64(curCfg.Need_maze_level) {
-		logger.WarnWF("OnEquipPosLvUpRQ insufficient doll lv",
+		logger.CtxError(ctx, "OnEquipPosLvUpRQ insufficient doll lv",
 			zap.Int64("mazeLv", mazeLv),
 			zap.Int32("needLv", curCfg.Need_maze_level))
 		rs.ErrInfo = errors.COMMON_ERROR_TIPS.Wrap(strings.ReplaceAll(toastmsgtipexcel.GetToastMsgTip(2012, "等级达到N级才可继续强化"), "N", fmt.Sprintf("%d", curCfg.Need_maze_level)))
@@ -158,7 +159,7 @@ func (e *Equip) OnEquipPosLvUpRQ_10425_10426(s *session.Session, rq *MazeEquipPo
 	}
 	svrCost := itemutil.Map2Common(curCfg.Cost)
 	if !itemutil.CheckItemMatch(rqCost, svrCost) {
-		logger.ErrorWF("OnEquipPosLvUpRQ param invalid", zap.Any("rqCost", rqCost),
+		logger.CtxError(ctx, "OnEquipPosLvUpRQ param invalid", zap.Any("rqCost", rqCost),
 			zap.Any("svrCost", svrCost))
 		rs.ErrInfo = errors.ARGS_NOT_MATCH.ToInfo()
 		return
@@ -198,14 +199,14 @@ func (e *Equip) OnEquipPosLvUpRQ_10425_10426(s *session.Session, rq *MazeEquipPo
 
 	curSuit, nextSuit, err := equippossuit.GetCurAndNextSuit(logger, curSuitId)
 	if err != nil {
-		logger.ErrorWF("OnEquipPosLvUpRQ GetCurAndNextSuit", zap.Error(err))
+		logger.CtxError(ctx, "OnEquipPosLvUpRQ GetCurAndNextSuit", zap.Error(err))
 		rs.ErrInfo = errors.MODULE_ERROR.ToInfo()
 		return
 	}
 
 	newSuitId, err := equippossuit.CalcPosSuit(logger, equipPos)
 	if err != nil {
-		logger.ErrorWF("OnEquipPosLvUpRQ CalcPosSuit", zap.Error(err))
+		logger.CtxError(ctx, "OnEquipPosLvUpRQ CalcPosSuit", zap.Error(err))
 		rs.ErrInfo = errors.MODULE_ERROR.ToInfo()
 		return
 	}
@@ -216,12 +217,13 @@ func (e *Equip) OnEquipPosLvUpRQ_10425_10426(s *session.Session, rq *MazeEquipPo
 	}
 
 	// 扣物品
-	tid := uniqueid.GenUniqueIdUInt64()
+	tid := tradeno.GetTradeNum()
 	if len(careCost) > 0 {
 		// 通用	693	UN_CGK_COMMON_BILL_TYPE_693	迷宫装备位强化		否	马健	2025-03-22 17:28:42
-		errInfo := gentradeno.DeductItemsEx(logger, userId, 693, tid, careCost...)
+		items := itemutil.ItemPb2ItemInfo(careCost)
+		errInfo := itemservice.GlobalItemService.SubItem(context.TODO(), userId, itemservice.ItemOpTypeEquipPosLvUp, tid, items...)
 		if errInfo != nil {
-			logger.ErrorWF("OnEquipPosLvUpRQ DeductItemsEx",
+			logger.CtxError(ctx, "OnEquipPosLvUpRQ DeductItemsEx",
 				zap.Any("svrCost", svrCost),
 				zap.Any("careCost", careCost),
 				zap.Uint64("tid", tid),
@@ -235,7 +237,7 @@ func (e *Equip) OnEquipPosLvUpRQ_10425_10426(s *session.Session, rq *MazeEquipPo
 			return
 		}
 	}
-	logger.InfoWF("OnEquipPosLvUpRQ DeductItemsEx succ",
+	logger.CtxInfo(ctx, "OnEquipPosLvUpRQ DeductItemsEx succ",
 		zap.Any("svrCost", svrCost),
 		zap.Any("careCost", careCost),
 		zap.Uint64("tid", tid))
@@ -268,23 +270,23 @@ func (e *Equip) OnEquipPosLvUpRQ_10425_10426(s *session.Session, rq *MazeEquipPo
 	var result int32 = 1
 	var retMask int32 = 0
 	defer func() {
-		if err := equipposstrengrecordkafka.PushEquipPosStrengRecord(logger, userId,
+		if err := equipposstrengrecordkafka.PushEquipPosStrengRecord(ctx, userId,
 			posId, curLv, nextCfg.Level, curSuitId, newSuitId, tid, svrCost, result, retMask); err != nil {
-			logger.ErrorWF("OnEquipPosLvUpRQ PushEquipPosStrengRecord", zap.Error(err))
+			logger.CtxError(ctx, "OnEquipPosLvUpRQ PushEquipPosStrengRecord", zap.Error(err))
 		}
 	}()
 
 	// 强化
 	if err = dollassembleredis.SetAssembleInfoByFields(logger, userId, fields, chgAssemDb); err != nil {
-		logger.ErrorWF("OnEquipPosLvUpRQ SetAssembleInfoByFields", zap.Error(err))
+		logger.CtxError(ctx, "OnEquipPosLvUpRQ SetAssembleInfoByFields", zap.Error(err))
 		rs.ErrInfo = errors.DB_SAVE_ERROR.ToInfo()
 		result = 0
 		retMask |= MazeEquipPosErrDB
 		return
 	}
-	logger.InfoWF("OnEquipPosLvUpRQ SetAssembleInfoByFields succ", zap.Any("chgAssemDb", chgAssemDb))
+	logger.CtxInfo(ctx, "OnEquipPosLvUpRQ SetAssembleInfoByFields succ", zap.Any("chgAssemDb", chgAssemDb))
 	// 计算属性加成
-	retMask |= UpdateEquipPosBuff(logger, userId, curSuitId, newSuitId,
+	retMask |= UpdateEquipPosBuff(ctx, userId, curSuitId, newSuitId,
 		assembleDb.GetMazeEquips(), posCurAttrs, rq.GetHeader().GetSession())
 
 	// 推装配信息变化包
@@ -296,6 +298,9 @@ func (e *Equip) OnEquipPosLvUpRQ_10425_10426(s *session.Session, rq *MazeEquipPo
 	var rsNextCfg *GMazeEquipPosLvV8Cfg.MazeEquipPosLvV8ConfigRow
 	if rsCurCfg.Next_order > 0 {
 		rsNextCfg = equipposexcel.GetPosStrengthCfgByKey(rsCurCfg.Next_order)
+	} else {
+		//最大等级了
+		rs.StLevel.NextVal = proto.Int64(int64(-1))
 	}
 
 	rs.StLevel = &Common.AttrChgInfo{
@@ -331,15 +336,16 @@ func (e *Equip) OnEquipPosLvUpRQ_10425_10426(s *session.Session, rq *MazeEquipPo
 		var e error
 		rs.CurSuit, rs.NextSuit, e = equippossuit.GetCurAndNextSuit(logger, newSuitId)
 		if e != nil {
-			logger.ErrorWF("OnEquipPosLvUpRQ GetCurAndNextSuit", zap.Error(e),
+			logger.CtxError(ctx, "OnEquipPosLvUpRQ GetCurAndNextSuit", zap.Error(e),
 				zap.Int32("newSuitId", newSuitId))
 		}
 	}
 	return
 }
 
-func UpdateEquipPosBuff(logger fklog.FKLogI, userId uint64,
+func UpdateEquipPosBuff(ctx context.Context, userId uint64,
 	curSuitId, newSuitId int32, posInfo []*MazeEquipCache.MazeEquipPosInfo, posCurAttrs map[int32]int64, session string) (result int32) {
+	logger := fklog.ContextAppLogger(ctx)
 	reals, shows := CalcEquipPosBuffs(posInfo)
 	posNewAttrs := map[int32]int64{} // 装备位升级后属性
 	posNewShowAttrs := map[int32]int64{}
@@ -355,17 +361,17 @@ func UpdateEquipPosBuff(logger fklog.FKLogI, userId uint64,
 	err := mazebuffinforedis.SaveMazeEquipPosBuff(logger, userId, calcassembleattr.PackMapAttrAll(posNewAttrs, posNewShowAttrs))
 	if err != nil {
 		result |= MazeEquipPosErrSaveBuff
-		logger.ErrorWF("UpdateEquipPosBuff SaveMazeEquipPosBuff err", zap.Error(err))
+		logger.CtxError(ctx, "UpdateEquipPosBuff SaveMazeEquipPosBuff err", zap.Error(err))
 	} else {
 		calcAttrNotify := &structsdef.MazeCalcAttrNotifyMsg{}
 		calcAttrNotify.FromServer = PosMySvr
 		calcAttrNotify.UserId = userId
 		calcAttrNotify.ChgType = constdef.MazeBuffEquipPosUpgrade
 		calcAttrNotify.Session = session
-		err = mazeattrcalcnotifyqueue.SendMazeAttrCalcNotify(logger, calcAttrNotify)
+		err = mazeattrcalcnotifyqueue.SendMazeAttrCalcNotify(ctx, calcAttrNotify)
 		if err != nil {
 			result |= MazeEquipPosErrBuffNotify
-			logger.ErrorWF("UpdateEquipPosBuff SendMazeAttrCalcNotify fail", zap.Error(err))
+			logger.CtxError(ctx, "UpdateEquipPosBuff SendMazeAttrCalcNotify fail", zap.Error(err))
 		}
 	}
 	return

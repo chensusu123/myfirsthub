@@ -22,7 +22,7 @@ var (
 )
 
 type BarrierEvent struct {
-	Frame int64       `json:"frame,omitempty"`
+	Frame int64       `json:"frame_model,omitempty"`
 	Time  int64       `json:"time,omitempty"`
 	Type  int32       `json:"type,omitempty"`
 	Data  interface{} `json:"data,omitempty"`
@@ -58,7 +58,7 @@ func TriggerBarrierEvent(logger fklog.FKLogI, userID uint64, frame int64, eventT
 		logger.ErrorWF("TriggerBarrierEvent Marshal fail",
 			zap.Error(err),
 			zap.Uint64("userID", userID),
-			zap.Int64("frame", frame),
+			zap.Int64("frame_model", frame),
 			zap.Int64("eventTime", eventTime),
 			zap.Int32("eventType", int32(eventType)),
 			zap.Any("eventData", eventData),
@@ -159,6 +159,8 @@ func BackupBarrierEvents(logger fklog.FKLogI, userID uint64, enterTime int64) (e
 			zap.Any("key", key),
 		)
 	}
+	// 备份关卡事件数据
+	logger.DebugWF("BackupBarrierEvents success", zap.String("key", new), zap.Int64("enterTime", enterTime))
 	return
 }
 

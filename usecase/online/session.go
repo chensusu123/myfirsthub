@@ -1,58 +1,69 @@
 package online
 
 import (
+	"context"
 	"errors"
-	"maze_game_server/lib/codec"
-	"maze_game_server/lib/nano/session"
 	"sync"
 	"time"
+
+	"maze_game_server/lib/codec"
+	"maze_game_server/lib/nano/session"
 
 	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fklog"
 	"go.uber.org/zap"
 )
 
-var (
-	ErrSessionNotFound = errors.New("session not found")
-)
+var ErrSessionNotFound = errors.New("session not found")
 
 var monitor = new(Monitor)
 
 type Monitor struct {
+	logger   fklog.FKLogI
 	online   sync.Map
 	sessions sync.Map
 }
 
 // OnCreate implements session.Monitor.
-func (m *Monitor) OnCreate(s *session.Session) {
+func (m *Monitor) OnCreate(ctx context.Context, s *session.Session) {
 	m.sessions.Store(s.ID(), s)
+	fklog.ContextAppLogger(ctx).CtxInfo(ctx, "Monitor OnCreate session created", zap.Int64("SessionID", s.ID()))
 }
 
 // OnClose implements session.Monitor.
-func (m *Monitor) OnClose(s *session.Session) {
+func (m *Monitor) OnClose(ctx context.Context, s *session.Session, err error) {
 	value, loaded := m.sessions.LoadAndDelete(s.ID())
 	if loaded {
 		if userID := value.(*session.Session).UID(); userID > 0 {
 			m.online.Delete(uint64(userID))
+			fklog.ContextAppLogger(ctx).CtxInfo(ctx, "Monitor OnClose user offline", zap.Int64("SessionID", s.ID()), zap.Int64("UID", s.UID()))
 		}
 	}
+	var lastErr string
+	if err != nil {
+		lastErr = err.Error()
+	}
+	fklog.ContextAppLogger(ctx).CtxInfo(ctx, "Monitor OnClose session closed", zap.Int64("SessionID", s.ID()), zap.Int64("UID", s.UID()), zap.String("lastErr", lastErr))
 }
 
 // SessionMonitor returns a session monitor.
-func SessionMonitor() *Monitor {
+func SessionMonitor(logger fklog.FKLogI) *Monitor {
+	monitor.logger = logger
 	return monitor
 }
 
 // Bind
-func Bind(logger fklog.FKLogI, s *session.Session, userID uint64) (err error) {
+func Bind(ctx context.Context, s *session.Session, userID uint64) (err error) {
 	value, found := monitor.sessions.Load(s.ID())
 	if !found {
-		logger.ErrorWF("Bind session not found", zap.Error(ErrSessionNotFound), zap.Int64("ID", s.ID()), zap.Uint64("userID", userID))
+		fklog.ContextAppLogger(ctx).CtxError(ctx, "Bind session not found", zap.Error(ErrSessionNotFound), zap.Int64("ID", s.ID()), zap.Uint64("userID", userID))
 		return ErrSessionNotFound
 	}
 	monitor.online.Store(userID, value)
+	fklog.ContextAppLogger(ctx).CtxInfo(ctx, "Monitor session bound", zap.Int64("SessionID", s.ID()), zap.Uint64("userID", userID))
 	return
 }
 
+// Deprecated: 不带trace信息。 以后废弃。使用ClusterPush
 // Push
 func Push(logger fklog.FKLogI, userID uint64, packetType uint16, v interface{}) (err error) {
 	s, found := monitor.online.Load(userID)
@@ -60,7 +71,7 @@ func Push(logger fklog.FKLogI, userID uint64, packetType uint16, v interface{}) 
 		logger.ErrorWF("Push session not found", zap.Error(ErrSessionNotFound), zap.Uint64("userID", userID), zap.Any("v", v))
 		return ErrSessionNotFound
 	}
-	return s.(*session.Session).ResponseMID(codec.ToMessageID(uint32(time.Now().Unix()), 0, packetType), v)
+	return s.(*session.Session).ResponseMID(context.TODO(), codec.ToMessageID(uint32(time.Now().Unix()), 0, packetType), v)
 }
 
 // Scan
@@ -69,4 +80,28 @@ func Scan(fn func(id int64, s *session.Session)) {
 		fn(key.(int64), value.(*session.Session))
 		return true
 	})
+}
+
+func IsOnline(userID uint64) bool {
+	_, ok := monitor.online.Load(userID)
+	return ok
+}
+
+// PushWithContext 带ctx的push。 会带trace信息.往本分片用户推送。 用户当前不在本分片。就收不到
+// 注意： 只能往本分片用户推送。 不能往其他分片用户推送
+func PushWithContext(ctx context.Context, userID uint64, packetType uint16, v interface{}) (err error) {
+	s, found := monitor.online.Load(userID)
+	if !found {
+		fklog.ContextAppLogger(ctx).CtxError(ctx, "Push session not found", zap.Uint64("userID", userID), zap.Any("v", v))
+		return ErrSessionNotFound
+	}
+	return s.(*session.Session).ResponseMID(ctx, codec.ToMessageID(uint32(time.Now().Unix()), 0, packetType), v)
+}
+
+func GetOnlineUsers() (userIDs []uint64) {
+	monitor.online.Range(func(key, value interface{}) bool {
+		userIDs = append(userIDs, key.(uint64))
+		return true
+	})
+	return
 }

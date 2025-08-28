@@ -1,6 +1,7 @@
 package GMazeSkillInfoV8Cfg
 
 import (
+	"context"
 	"errors"
 	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fklog"
 	"gitlab.ifreetalk.com/maze-plate/freetk/fkserver/config_manager"
@@ -15,31 +16,38 @@ import (
 // MazeSkillInfoV8ConfigRow from maze_skill_info_v8【迷宫-技能-技能信息】.xlsx maze_skill_info_v8
 type MazeSkillInfoV8ConfigRow struct {
 	Id                       int32           `json:"id"`                       // 技能id
+	Skill_attr_id            int32           `json:"skill_attr_id"`            // 获得技能对应属性id
 	Type                     int32           `json:"type"`                     // 技能类型
-	Group                    int32           `json:"group"`                    // 技能组id
-	Level                    int32           `json:"level"`                    // 技能等级
+	Priority                 int32           `json:"priority"`                 // 动作技能释放优先级
+	Level                    map[int32]int32 `json:"level"`                    // 技能等级
 	Name                     string          `json:"name"`                     // 技能名
-	Cost                     map[int32]int64 `json:"cost"`                     // 消耗物品：数量
 	Desc                     string          `json:"desc"`                     // 技能描述_文本
-	Initial_cool_time        int32           `json:"initial_cool_time"`        // 技能初始冷却时间（豪秒）
-	Public_cool_time         int32           `json:"public_cool_time"`         // 技能公共冷却时间（豪秒）
-	Skill_cool_time          int32           `json:"skill_cool_time"`          // 技能释放冷却时间（豪秒）
-	Distance_min             int32           `json:"distance_min"`             // 最近释放距离
-	Distance_max             int32           `json:"distance_max"`             // 最远释放距离
+	Auto_release_time        int32           `json:"auto_release_time"`        // 自动释放时机
+	Auto_release_condition   string          `json:"auto_release_condition"`   // 自动释放条件
+	Skill_cool_time          map[int32]int32 `json:"skill_cool_time"`          // 技能释放冷却时间（豪秒）
+	Distance_min             map[int32]int32 `json:"distance_min"`             // 最近释放距离
+	Distance_max             map[int32]int32 `json:"distance_max"`             // 最远释放距离
 	Is_break                 int32           `json:"is_break"`                 // 是否打断当前动作（0-不 1-打断
 	Is_no_target             int32           `json:"is_no_target"`             // 是否允许无目标释放（0-不允许 1-允许）
 	Scope_type               int32           `json:"scope_type"`               // 释放目标类型
 	Target_type              int32           `json:"target_type"`              // 目标阵营
-	Scope_param1             int32           `json:"scope_param1"`             // 技能效果半径
-	Target_num               int32           `json:"target_num"`               // 目标数量
+	Scope_param1             map[int32]int32 `json:"scope_param1"`             // 技能效果半径
+	Target_num               map[int32]int32 `json:"target_num"`               // 目标数量
 	Damage_type              int32           `json:"damage_type"`              // 伤害计算类型
 	Damage_element           []int32         `json:"damage_element"`           // 参与伤害计算的攻击元素类型（0-物理、1-冰、2-火、3-毒、4-电）
-	Main_target_damage_fix   int32           `json:"main_target_damage_fix"`   // 主目标直接伤害固定值
-	Main_target_damage       int32           `json:"main_target_damage"`       // 主目标直接伤害系数
-	Second_target_damage_fix int32           `json:"second_target_damage_fix"` // 非主目标直接伤害固定值
-	Second_target_damage     int32           `json:"second_target_damage"`     // 非主目标直接伤害系数
+	Damage_element_adjust    []int32         `json:"damage_element_adjust"`    // 元素伤害系数调整关联属性id（按顺序：物理、冰、火、毒、电，万分比）
+	Main_target_damage_fix   map[int32]int32 `json:"main_target_damage_fix"`   // 主目标直接伤害固定值
+	Main_target_damage       map[int32]int32 `json:"main_target_damage"`       // 主目标直接伤害系数
+	Second_target_damage_fix map[int32]int32 `json:"second_target_damage_fix"` // 非主目标直接伤害固定值
+	Second_target_damage     map[int32]int32 `json:"second_target_damage"`     // 非主目标直接伤害系数
 	Self_effect              []int32         `json:"self_effect"`              // 释放后自身效果
 	Target_effect            []int32         `json:"target_effect"`            // 释放后对目标效果
+	Summon_id                int32           `json:"summon_id"`                // 召唤物id
+	Summon_num               map[int32]int32 `json:"summon_num"`               // 召唤物数量
+	Duration                 map[int32]int32 `json:"duration"`                 // 技能持续时间（毫秒）
+	Interval                 map[int32]int32 `json:"interval"`                 // 技能伤害或效果生效间隔（毫秒）
+	Damage_adjustment        map[int32]int32 `json:"damage_adjustment"`        // 每次造成伤害后的伤害调整系数
+	Trajectory_num           map[int32]int32 `json:"trajectory_num"`           // 弹道数量
 }
 
 // MazeSkillInfoV8Config from maze_skill_info_v8【迷宫-技能-技能信息】.xlsx maze_skill_info_v8
@@ -102,9 +110,19 @@ func GetMazeSkillInfoV8Config(configId int32) *MazeSkillInfoV8ConfigRow {
 	return gConfigData.GetMazeSkillInfoV8Config(configId)
 }
 
+// Deprecated: 链路追踪信息缺失。推荐使用GetWithCtx
 // Get pkg func. get one config by configId
 func Get(configId int32) *MazeSkillInfoV8ConfigRow {
-	return gConfigData.Get(configId)
+	return GetWithCtx(context.Background(), configId)
+}
+
+// GetWithCtx pkg func. get one config by configId
+func GetWithCtx(ctx context.Context, configId int32, otps ...config_manager.QueryOption) *MazeSkillInfoV8ConfigRow {
+	cfg := gConfigData.Get(configId)
+	if cfg == nil {
+		config_manager.MissRecord(ctx, "maze_skill_info_v8", configId, otps...)
+	}
+	return cfg
 }
 
 // GetAllMazeSkillInfoV8Config pkg func. get all config slice
@@ -307,68 +325,63 @@ func (*gMazeSkillInfoV8Parser) Parse(logger fklog.FKLogI, data []string, row int
 		config.Id = int32(tmp)
 	}
 
-	// parse column 1 type : 技能类型
+	// parse column 1 skill_attr_id : 获得技能对应属性id
 	if data[1] != "" {
 		tmp, err = strconv.ParseInt(data[1], 10, 64)
+		if err != nil {
+			err = errors.New("parse field skill_attr_id 获得技能对应属性id to int32 failed")
+			logger.ErrorWF("parse field skill_attr_id 获得技能对应属性id to int32 failed.",
+				zap.String("xlsx", "maze_skill_info_v8【迷宫-技能-技能信息】.xlsx"), zap.String("sheet", "maze_skill_info_v8"),
+				zap.String("parse_data", data[1]),
+				zap.Error(err))
+			return
+		}
+		config.Skill_attr_id = int32(tmp)
+	}
+
+	// parse column 2 type : 技能类型
+	if data[2] != "" {
+		tmp, err = strconv.ParseInt(data[2], 10, 64)
 		if err != nil {
 			err = errors.New("parse field type 技能类型 to int32 failed")
 			logger.ErrorWF("parse field type 技能类型 to int32 failed.",
 				zap.String("xlsx", "maze_skill_info_v8【迷宫-技能-技能信息】.xlsx"), zap.String("sheet", "maze_skill_info_v8"),
-				zap.String("parse_data", data[1]),
+				zap.String("parse_data", data[2]),
 				zap.Error(err))
 			return
 		}
 		config.Type = int32(tmp)
 	}
 
-	// parse column 2 group : 技能组id
-	if data[2] != "" {
-		tmp, err = strconv.ParseInt(data[2], 10, 64)
-		if err != nil {
-			err = errors.New("parse field group 技能组id to int32 failed")
-			logger.ErrorWF("parse field group 技能组id to int32 failed.",
-				zap.String("xlsx", "maze_skill_info_v8【迷宫-技能-技能信息】.xlsx"), zap.String("sheet", "maze_skill_info_v8"),
-				zap.String("parse_data", data[2]),
-				zap.Error(err))
-			return
-		}
-		config.Group = int32(tmp)
-	}
-
-	// parse column 3 level : 技能等级
+	// parse column 3 priority : 动作技能释放优先级
 	if data[3] != "" {
 		tmp, err = strconv.ParseInt(data[3], 10, 64)
 		if err != nil {
-			err = errors.New("parse field level 技能等级 to int32 failed")
-			logger.ErrorWF("parse field level 技能等级 to int32 failed.",
+			err = errors.New("parse field priority 动作技能释放优先级 to int32 failed")
+			logger.ErrorWF("parse field priority 动作技能释放优先级 to int32 failed.",
 				zap.String("xlsx", "maze_skill_info_v8【迷宫-技能-技能信息】.xlsx"), zap.String("sheet", "maze_skill_info_v8"),
 				zap.String("parse_data", data[3]),
 				zap.Error(err))
 			return
 		}
-		config.Level = int32(tmp)
+		config.Priority = int32(tmp)
 	}
 
-	// parse column 4 name : 技能名
+	// parse column 4 level : 技能等级
 	if data[4] != "" {
-		config.Name = data[4]
-	}
 
-	// parse column 5 cost : 消耗物品：数量
-	if data[5] != "" {
-
-		config.Cost = make(map[int32]int64)
+		config.Level = make(map[int32]int32)
 		var key int32
-		var value int64
-		vals := strings.Split(data[5], "_")
+		var value int32
+		vals := strings.Split(data[4], "_")
 		for k, val := range vals {
 			items := strings.Split(val, ":")
 			tmp, err = strconv.ParseInt(items[0], 10, 64)
 			if err != nil {
-				err = errors.New("parse map field cost 消耗物品：数量 to key int32 failed")
-				logger.ErrorWF("parse map field cost 消耗物品：数量 to key int32 failed.",
+				err = errors.New("parse map field level 技能等级 to key int32 failed")
+				logger.ErrorWF("parse map field level 技能等级 to key int32 failed.",
 					zap.String("xlsx", "maze_skill_info_v8【迷宫-技能-技能信息】.xlsx"), zap.String("sheet", "maze_skill_info_v8"),
-					// zap.String("field_data",data[5]),
+					// zap.String("field_data",data[4]),
 					zap.String("item_data", val), zap.Int("index", k),
 					zap.String("parse_data", items[0]),
 					zap.Error(err))
@@ -377,18 +390,23 @@ func (*gMazeSkillInfoV8Parser) Parse(logger fklog.FKLogI, data []string, row int
 			key = int32(tmp)
 			tmp, err = strconv.ParseInt(items[1], 10, 64)
 			if err != nil {
-				err = errors.New("parse map field cost 消耗物品：数量 to value int64 failed")
-				logger.ErrorWF("parse map field cost 消耗物品：数量 to value int64 failed.",
+				err = errors.New("parse map field level 技能等级 to value int32 failed")
+				logger.ErrorWF("parse map field level 技能等级 to value int32 failed.",
 					zap.String("xlsx", "maze_skill_info_v8【迷宫-技能-技能信息】.xlsx"), zap.String("sheet", "maze_skill_info_v8"),
-					// zap.String("field_data",data[5]),
+					// zap.String("field_data",data[4]),
 					zap.String("item_data", val), zap.Int("index", k),
 					zap.String("parse_data", items[1]),
 					zap.Error(err))
 				return
 			}
-			value = int64(tmp)
-			config.Cost[key] = value
+			value = int32(tmp)
+			config.Level[key] = value
 		}
+	}
+
+	// parse column 5 name : 技能名
+	if data[5] != "" {
+		config.Name = data[5]
 	}
 
 	// parse column 6 desc : 技能描述_文本
@@ -396,74 +414,134 @@ func (*gMazeSkillInfoV8Parser) Parse(logger fklog.FKLogI, data []string, row int
 		config.Desc = data[6]
 	}
 
-	// parse column 7 initial_cool_time : 技能初始冷却时间（豪秒）
+	// parse column 7 auto_release_time : 自动释放时机
 	if data[7] != "" {
 		tmp, err = strconv.ParseInt(data[7], 10, 64)
 		if err != nil {
-			err = errors.New("parse field initial_cool_time 技能初始冷却时间（豪秒） to int32 failed")
-			logger.ErrorWF("parse field initial_cool_time 技能初始冷却时间（豪秒） to int32 failed.",
+			err = errors.New("parse field auto_release_time 自动释放时机 to int32 failed")
+			logger.ErrorWF("parse field auto_release_time 自动释放时机 to int32 failed.",
 				zap.String("xlsx", "maze_skill_info_v8【迷宫-技能-技能信息】.xlsx"), zap.String("sheet", "maze_skill_info_v8"),
 				zap.String("parse_data", data[7]),
 				zap.Error(err))
 			return
 		}
-		config.Initial_cool_time = int32(tmp)
+		config.Auto_release_time = int32(tmp)
 	}
 
-	// parse column 8 public_cool_time : 技能公共冷却时间（豪秒）
+	// parse column 8 auto_release_condition : 自动释放条件
 	if data[8] != "" {
-		tmp, err = strconv.ParseInt(data[8], 10, 64)
-		if err != nil {
-			err = errors.New("parse field public_cool_time 技能公共冷却时间（豪秒） to int32 failed")
-			logger.ErrorWF("parse field public_cool_time 技能公共冷却时间（豪秒） to int32 failed.",
-				zap.String("xlsx", "maze_skill_info_v8【迷宫-技能-技能信息】.xlsx"), zap.String("sheet", "maze_skill_info_v8"),
-				zap.String("parse_data", data[8]),
-				zap.Error(err))
-			return
-		}
-		config.Public_cool_time = int32(tmp)
+		config.Auto_release_condition = data[8]
 	}
 
 	// parse column 9 skill_cool_time : 技能释放冷却时间（豪秒）
 	if data[9] != "" {
-		tmp, err = strconv.ParseInt(data[9], 10, 64)
-		if err != nil {
-			err = errors.New("parse field skill_cool_time 技能释放冷却时间（豪秒） to int32 failed")
-			logger.ErrorWF("parse field skill_cool_time 技能释放冷却时间（豪秒） to int32 failed.",
-				zap.String("xlsx", "maze_skill_info_v8【迷宫-技能-技能信息】.xlsx"), zap.String("sheet", "maze_skill_info_v8"),
-				zap.String("parse_data", data[9]),
-				zap.Error(err))
-			return
+
+		config.Skill_cool_time = make(map[int32]int32)
+		var key int32
+		var value int32
+		vals := strings.Split(data[9], "_")
+		for k, val := range vals {
+			items := strings.Split(val, ":")
+			tmp, err = strconv.ParseInt(items[0], 10, 64)
+			if err != nil {
+				err = errors.New("parse map field skill_cool_time 技能释放冷却时间（豪秒） to key int32 failed")
+				logger.ErrorWF("parse map field skill_cool_time 技能释放冷却时间（豪秒） to key int32 failed.",
+					zap.String("xlsx", "maze_skill_info_v8【迷宫-技能-技能信息】.xlsx"), zap.String("sheet", "maze_skill_info_v8"),
+					// zap.String("field_data",data[9]),
+					zap.String("item_data", val), zap.Int("index", k),
+					zap.String("parse_data", items[0]),
+					zap.Error(err))
+				return
+			}
+			key = int32(tmp)
+			tmp, err = strconv.ParseInt(items[1], 10, 64)
+			if err != nil {
+				err = errors.New("parse map field skill_cool_time 技能释放冷却时间（豪秒） to value int32 failed")
+				logger.ErrorWF("parse map field skill_cool_time 技能释放冷却时间（豪秒） to value int32 failed.",
+					zap.String("xlsx", "maze_skill_info_v8【迷宫-技能-技能信息】.xlsx"), zap.String("sheet", "maze_skill_info_v8"),
+					// zap.String("field_data",data[9]),
+					zap.String("item_data", val), zap.Int("index", k),
+					zap.String("parse_data", items[1]),
+					zap.Error(err))
+				return
+			}
+			value = int32(tmp)
+			config.Skill_cool_time[key] = value
 		}
-		config.Skill_cool_time = int32(tmp)
 	}
 
 	// parse column 10 distance_min : 最近释放距离
 	if data[10] != "" {
-		tmp, err = strconv.ParseInt(data[10], 10, 64)
-		if err != nil {
-			err = errors.New("parse field distance_min 最近释放距离 to int32 failed")
-			logger.ErrorWF("parse field distance_min 最近释放距离 to int32 failed.",
-				zap.String("xlsx", "maze_skill_info_v8【迷宫-技能-技能信息】.xlsx"), zap.String("sheet", "maze_skill_info_v8"),
-				zap.String("parse_data", data[10]),
-				zap.Error(err))
-			return
+
+		config.Distance_min = make(map[int32]int32)
+		var key int32
+		var value int32
+		vals := strings.Split(data[10], "_")
+		for k, val := range vals {
+			items := strings.Split(val, ":")
+			tmp, err = strconv.ParseInt(items[0], 10, 64)
+			if err != nil {
+				err = errors.New("parse map field distance_min 最近释放距离 to key int32 failed")
+				logger.ErrorWF("parse map field distance_min 最近释放距离 to key int32 failed.",
+					zap.String("xlsx", "maze_skill_info_v8【迷宫-技能-技能信息】.xlsx"), zap.String("sheet", "maze_skill_info_v8"),
+					// zap.String("field_data",data[10]),
+					zap.String("item_data", val), zap.Int("index", k),
+					zap.String("parse_data", items[0]),
+					zap.Error(err))
+				return
+			}
+			key = int32(tmp)
+			tmp, err = strconv.ParseInt(items[1], 10, 64)
+			if err != nil {
+				err = errors.New("parse map field distance_min 最近释放距离 to value int32 failed")
+				logger.ErrorWF("parse map field distance_min 最近释放距离 to value int32 failed.",
+					zap.String("xlsx", "maze_skill_info_v8【迷宫-技能-技能信息】.xlsx"), zap.String("sheet", "maze_skill_info_v8"),
+					// zap.String("field_data",data[10]),
+					zap.String("item_data", val), zap.Int("index", k),
+					zap.String("parse_data", items[1]),
+					zap.Error(err))
+				return
+			}
+			value = int32(tmp)
+			config.Distance_min[key] = value
 		}
-		config.Distance_min = int32(tmp)
 	}
 
 	// parse column 11 distance_max : 最远释放距离
 	if data[11] != "" {
-		tmp, err = strconv.ParseInt(data[11], 10, 64)
-		if err != nil {
-			err = errors.New("parse field distance_max 最远释放距离 to int32 failed")
-			logger.ErrorWF("parse field distance_max 最远释放距离 to int32 failed.",
-				zap.String("xlsx", "maze_skill_info_v8【迷宫-技能-技能信息】.xlsx"), zap.String("sheet", "maze_skill_info_v8"),
-				zap.String("parse_data", data[11]),
-				zap.Error(err))
-			return
+
+		config.Distance_max = make(map[int32]int32)
+		var key int32
+		var value int32
+		vals := strings.Split(data[11], "_")
+		for k, val := range vals {
+			items := strings.Split(val, ":")
+			tmp, err = strconv.ParseInt(items[0], 10, 64)
+			if err != nil {
+				err = errors.New("parse map field distance_max 最远释放距离 to key int32 failed")
+				logger.ErrorWF("parse map field distance_max 最远释放距离 to key int32 failed.",
+					zap.String("xlsx", "maze_skill_info_v8【迷宫-技能-技能信息】.xlsx"), zap.String("sheet", "maze_skill_info_v8"),
+					// zap.String("field_data",data[11]),
+					zap.String("item_data", val), zap.Int("index", k),
+					zap.String("parse_data", items[0]),
+					zap.Error(err))
+				return
+			}
+			key = int32(tmp)
+			tmp, err = strconv.ParseInt(items[1], 10, 64)
+			if err != nil {
+				err = errors.New("parse map field distance_max 最远释放距离 to value int32 failed")
+				logger.ErrorWF("parse map field distance_max 最远释放距离 to value int32 failed.",
+					zap.String("xlsx", "maze_skill_info_v8【迷宫-技能-技能信息】.xlsx"), zap.String("sheet", "maze_skill_info_v8"),
+					// zap.String("field_data",data[11]),
+					zap.String("item_data", val), zap.Int("index", k),
+					zap.String("parse_data", items[1]),
+					zap.Error(err))
+				return
+			}
+			value = int32(tmp)
+			config.Distance_max[key] = value
 		}
-		config.Distance_max = int32(tmp)
 	}
 
 	// parse column 12 is_break : 是否打断当前动作（0-不 1-打断
@@ -524,30 +602,76 @@ func (*gMazeSkillInfoV8Parser) Parse(logger fklog.FKLogI, data []string, row int
 
 	// parse column 16 scope_param1 : 技能效果半径
 	if data[16] != "" {
-		tmp, err = strconv.ParseInt(data[16], 10, 64)
-		if err != nil {
-			err = errors.New("parse field scope_param1 技能效果半径 to int32 failed")
-			logger.ErrorWF("parse field scope_param1 技能效果半径 to int32 failed.",
-				zap.String("xlsx", "maze_skill_info_v8【迷宫-技能-技能信息】.xlsx"), zap.String("sheet", "maze_skill_info_v8"),
-				zap.String("parse_data", data[16]),
-				zap.Error(err))
-			return
+
+		config.Scope_param1 = make(map[int32]int32)
+		var key int32
+		var value int32
+		vals := strings.Split(data[16], "_")
+		for k, val := range vals {
+			items := strings.Split(val, ":")
+			tmp, err = strconv.ParseInt(items[0], 10, 64)
+			if err != nil {
+				err = errors.New("parse map field scope_param1 技能效果半径 to key int32 failed")
+				logger.ErrorWF("parse map field scope_param1 技能效果半径 to key int32 failed.",
+					zap.String("xlsx", "maze_skill_info_v8【迷宫-技能-技能信息】.xlsx"), zap.String("sheet", "maze_skill_info_v8"),
+					// zap.String("field_data",data[16]),
+					zap.String("item_data", val), zap.Int("index", k),
+					zap.String("parse_data", items[0]),
+					zap.Error(err))
+				return
+			}
+			key = int32(tmp)
+			tmp, err = strconv.ParseInt(items[1], 10, 64)
+			if err != nil {
+				err = errors.New("parse map field scope_param1 技能效果半径 to value int32 failed")
+				logger.ErrorWF("parse map field scope_param1 技能效果半径 to value int32 failed.",
+					zap.String("xlsx", "maze_skill_info_v8【迷宫-技能-技能信息】.xlsx"), zap.String("sheet", "maze_skill_info_v8"),
+					// zap.String("field_data",data[16]),
+					zap.String("item_data", val), zap.Int("index", k),
+					zap.String("parse_data", items[1]),
+					zap.Error(err))
+				return
+			}
+			value = int32(tmp)
+			config.Scope_param1[key] = value
 		}
-		config.Scope_param1 = int32(tmp)
 	}
 
 	// parse column 17 target_num : 目标数量
 	if data[17] != "" {
-		tmp, err = strconv.ParseInt(data[17], 10, 64)
-		if err != nil {
-			err = errors.New("parse field target_num 目标数量 to int32 failed")
-			logger.ErrorWF("parse field target_num 目标数量 to int32 failed.",
-				zap.String("xlsx", "maze_skill_info_v8【迷宫-技能-技能信息】.xlsx"), zap.String("sheet", "maze_skill_info_v8"),
-				zap.String("parse_data", data[17]),
-				zap.Error(err))
-			return
+
+		config.Target_num = make(map[int32]int32)
+		var key int32
+		var value int32
+		vals := strings.Split(data[17], "_")
+		for k, val := range vals {
+			items := strings.Split(val, ":")
+			tmp, err = strconv.ParseInt(items[0], 10, 64)
+			if err != nil {
+				err = errors.New("parse map field target_num 目标数量 to key int32 failed")
+				logger.ErrorWF("parse map field target_num 目标数量 to key int32 failed.",
+					zap.String("xlsx", "maze_skill_info_v8【迷宫-技能-技能信息】.xlsx"), zap.String("sheet", "maze_skill_info_v8"),
+					// zap.String("field_data",data[17]),
+					zap.String("item_data", val), zap.Int("index", k),
+					zap.String("parse_data", items[0]),
+					zap.Error(err))
+				return
+			}
+			key = int32(tmp)
+			tmp, err = strconv.ParseInt(items[1], 10, 64)
+			if err != nil {
+				err = errors.New("parse map field target_num 目标数量 to value int32 failed")
+				logger.ErrorWF("parse map field target_num 目标数量 to value int32 failed.",
+					zap.String("xlsx", "maze_skill_info_v8【迷宫-技能-技能信息】.xlsx"), zap.String("sheet", "maze_skill_info_v8"),
+					// zap.String("field_data",data[17]),
+					zap.String("item_data", val), zap.Int("index", k),
+					zap.String("parse_data", items[1]),
+					zap.Error(err))
+				return
+			}
+			value = int32(tmp)
+			config.Target_num[key] = value
 		}
-		config.Target_num = int32(tmp)
 	}
 
 	// parse column 18 damage_type : 伤害计算类型
@@ -583,73 +707,184 @@ func (*gMazeSkillInfoV8Parser) Parse(logger fklog.FKLogI, data []string, row int
 		}
 	}
 
-	// parse column 20 main_target_damage_fix : 主目标直接伤害固定值
+	// parse column 20 damage_element_adjust : 元素伤害系数调整关联属性id（按顺序：物理、冰、火、毒、电，万分比）
 	if data[20] != "" {
-		tmp, err = strconv.ParseInt(data[20], 10, 64)
-		if err != nil {
-			err = errors.New("parse field main_target_damage_fix 主目标直接伤害固定值 to int32 failed")
-			logger.ErrorWF("parse field main_target_damage_fix 主目标直接伤害固定值 to int32 failed.",
-				zap.String("xlsx", "maze_skill_info_v8【迷宫-技能-技能信息】.xlsx"), zap.String("sheet", "maze_skill_info_v8"),
-				zap.String("parse_data", data[20]),
-				zap.Error(err))
-			return
+
+		vals := strings.Split(data[20], ",")
+		for k, v := range vals {
+			tmp, err = strconv.ParseInt(v, 10, 64)
+			if err != nil {
+				err = errors.New("parse array field damage_element_adjust 元素伤害系数调整关联属性id（按顺序：物理、冰、火、毒、电，万分比） to []int32 failed")
+				logger.ErrorWF("parse array field damage_element_adjust 元素伤害系数调整关联属性id（按顺序：物理、冰、火、毒、电，万分比） to []int32 failed.",
+					zap.String("xlsx", "maze_skill_info_v8【迷宫-技能-技能信息】.xlsx"), zap.String("sheet", "maze_skill_info_v8"),
+					// zap.String("field_data",data[20]),
+					zap.String("parse_data", v), zap.Int("index", k),
+					zap.Error(err))
+				return
+			}
+			config.Damage_element_adjust = append(config.Damage_element_adjust, int32(tmp))
 		}
-		config.Main_target_damage_fix = int32(tmp)
 	}
 
-	// parse column 21 main_target_damage : 主目标直接伤害系数
+	// parse column 21 main_target_damage_fix : 主目标直接伤害固定值
 	if data[21] != "" {
-		tmp, err = strconv.ParseInt(data[21], 10, 64)
-		if err != nil {
-			err = errors.New("parse field main_target_damage 主目标直接伤害系数 to int32 failed")
-			logger.ErrorWF("parse field main_target_damage 主目标直接伤害系数 to int32 failed.",
-				zap.String("xlsx", "maze_skill_info_v8【迷宫-技能-技能信息】.xlsx"), zap.String("sheet", "maze_skill_info_v8"),
-				zap.String("parse_data", data[21]),
-				zap.Error(err))
-			return
+
+		config.Main_target_damage_fix = make(map[int32]int32)
+		var key int32
+		var value int32
+		vals := strings.Split(data[21], "_")
+		for k, val := range vals {
+			items := strings.Split(val, ":")
+			tmp, err = strconv.ParseInt(items[0], 10, 64)
+			if err != nil {
+				err = errors.New("parse map field main_target_damage_fix 主目标直接伤害固定值 to key int32 failed")
+				logger.ErrorWF("parse map field main_target_damage_fix 主目标直接伤害固定值 to key int32 failed.",
+					zap.String("xlsx", "maze_skill_info_v8【迷宫-技能-技能信息】.xlsx"), zap.String("sheet", "maze_skill_info_v8"),
+					// zap.String("field_data",data[21]),
+					zap.String("item_data", val), zap.Int("index", k),
+					zap.String("parse_data", items[0]),
+					zap.Error(err))
+				return
+			}
+			key = int32(tmp)
+			tmp, err = strconv.ParseInt(items[1], 10, 64)
+			if err != nil {
+				err = errors.New("parse map field main_target_damage_fix 主目标直接伤害固定值 to value int32 failed")
+				logger.ErrorWF("parse map field main_target_damage_fix 主目标直接伤害固定值 to value int32 failed.",
+					zap.String("xlsx", "maze_skill_info_v8【迷宫-技能-技能信息】.xlsx"), zap.String("sheet", "maze_skill_info_v8"),
+					// zap.String("field_data",data[21]),
+					zap.String("item_data", val), zap.Int("index", k),
+					zap.String("parse_data", items[1]),
+					zap.Error(err))
+				return
+			}
+			value = int32(tmp)
+			config.Main_target_damage_fix[key] = value
 		}
-		config.Main_target_damage = int32(tmp)
 	}
 
-	// parse column 22 second_target_damage_fix : 非主目标直接伤害固定值
+	// parse column 22 main_target_damage : 主目标直接伤害系数
 	if data[22] != "" {
-		tmp, err = strconv.ParseInt(data[22], 10, 64)
-		if err != nil {
-			err = errors.New("parse field second_target_damage_fix 非主目标直接伤害固定值 to int32 failed")
-			logger.ErrorWF("parse field second_target_damage_fix 非主目标直接伤害固定值 to int32 failed.",
-				zap.String("xlsx", "maze_skill_info_v8【迷宫-技能-技能信息】.xlsx"), zap.String("sheet", "maze_skill_info_v8"),
-				zap.String("parse_data", data[22]),
-				zap.Error(err))
-			return
+
+		config.Main_target_damage = make(map[int32]int32)
+		var key int32
+		var value int32
+		vals := strings.Split(data[22], "_")
+		for k, val := range vals {
+			items := strings.Split(val, ":")
+			tmp, err = strconv.ParseInt(items[0], 10, 64)
+			if err != nil {
+				err = errors.New("parse map field main_target_damage 主目标直接伤害系数 to key int32 failed")
+				logger.ErrorWF("parse map field main_target_damage 主目标直接伤害系数 to key int32 failed.",
+					zap.String("xlsx", "maze_skill_info_v8【迷宫-技能-技能信息】.xlsx"), zap.String("sheet", "maze_skill_info_v8"),
+					// zap.String("field_data",data[22]),
+					zap.String("item_data", val), zap.Int("index", k),
+					zap.String("parse_data", items[0]),
+					zap.Error(err))
+				return
+			}
+			key = int32(tmp)
+			tmp, err = strconv.ParseInt(items[1], 10, 64)
+			if err != nil {
+				err = errors.New("parse map field main_target_damage 主目标直接伤害系数 to value int32 failed")
+				logger.ErrorWF("parse map field main_target_damage 主目标直接伤害系数 to value int32 failed.",
+					zap.String("xlsx", "maze_skill_info_v8【迷宫-技能-技能信息】.xlsx"), zap.String("sheet", "maze_skill_info_v8"),
+					// zap.String("field_data",data[22]),
+					zap.String("item_data", val), zap.Int("index", k),
+					zap.String("parse_data", items[1]),
+					zap.Error(err))
+				return
+			}
+			value = int32(tmp)
+			config.Main_target_damage[key] = value
 		}
-		config.Second_target_damage_fix = int32(tmp)
 	}
 
-	// parse column 23 second_target_damage : 非主目标直接伤害系数
+	// parse column 23 second_target_damage_fix : 非主目标直接伤害固定值
 	if data[23] != "" {
-		tmp, err = strconv.ParseInt(data[23], 10, 64)
-		if err != nil {
-			err = errors.New("parse field second_target_damage 非主目标直接伤害系数 to int32 failed")
-			logger.ErrorWF("parse field second_target_damage 非主目标直接伤害系数 to int32 failed.",
-				zap.String("xlsx", "maze_skill_info_v8【迷宫-技能-技能信息】.xlsx"), zap.String("sheet", "maze_skill_info_v8"),
-				zap.String("parse_data", data[23]),
-				zap.Error(err))
-			return
+
+		config.Second_target_damage_fix = make(map[int32]int32)
+		var key int32
+		var value int32
+		vals := strings.Split(data[23], "_")
+		for k, val := range vals {
+			items := strings.Split(val, ":")
+			tmp, err = strconv.ParseInt(items[0], 10, 64)
+			if err != nil {
+				err = errors.New("parse map field second_target_damage_fix 非主目标直接伤害固定值 to key int32 failed")
+				logger.ErrorWF("parse map field second_target_damage_fix 非主目标直接伤害固定值 to key int32 failed.",
+					zap.String("xlsx", "maze_skill_info_v8【迷宫-技能-技能信息】.xlsx"), zap.String("sheet", "maze_skill_info_v8"),
+					// zap.String("field_data",data[23]),
+					zap.String("item_data", val), zap.Int("index", k),
+					zap.String("parse_data", items[0]),
+					zap.Error(err))
+				return
+			}
+			key = int32(tmp)
+			tmp, err = strconv.ParseInt(items[1], 10, 64)
+			if err != nil {
+				err = errors.New("parse map field second_target_damage_fix 非主目标直接伤害固定值 to value int32 failed")
+				logger.ErrorWF("parse map field second_target_damage_fix 非主目标直接伤害固定值 to value int32 failed.",
+					zap.String("xlsx", "maze_skill_info_v8【迷宫-技能-技能信息】.xlsx"), zap.String("sheet", "maze_skill_info_v8"),
+					// zap.String("field_data",data[23]),
+					zap.String("item_data", val), zap.Int("index", k),
+					zap.String("parse_data", items[1]),
+					zap.Error(err))
+				return
+			}
+			value = int32(tmp)
+			config.Second_target_damage_fix[key] = value
 		}
-		config.Second_target_damage = int32(tmp)
 	}
 
-	// parse column 24 self_effect : 释放后自身效果
+	// parse column 24 second_target_damage : 非主目标直接伤害系数
 	if data[24] != "" {
 
-		vals := strings.Split(data[24], ",")
+		config.Second_target_damage = make(map[int32]int32)
+		var key int32
+		var value int32
+		vals := strings.Split(data[24], "_")
+		for k, val := range vals {
+			items := strings.Split(val, ":")
+			tmp, err = strconv.ParseInt(items[0], 10, 64)
+			if err != nil {
+				err = errors.New("parse map field second_target_damage 非主目标直接伤害系数 to key int32 failed")
+				logger.ErrorWF("parse map field second_target_damage 非主目标直接伤害系数 to key int32 failed.",
+					zap.String("xlsx", "maze_skill_info_v8【迷宫-技能-技能信息】.xlsx"), zap.String("sheet", "maze_skill_info_v8"),
+					// zap.String("field_data",data[24]),
+					zap.String("item_data", val), zap.Int("index", k),
+					zap.String("parse_data", items[0]),
+					zap.Error(err))
+				return
+			}
+			key = int32(tmp)
+			tmp, err = strconv.ParseInt(items[1], 10, 64)
+			if err != nil {
+				err = errors.New("parse map field second_target_damage 非主目标直接伤害系数 to value int32 failed")
+				logger.ErrorWF("parse map field second_target_damage 非主目标直接伤害系数 to value int32 failed.",
+					zap.String("xlsx", "maze_skill_info_v8【迷宫-技能-技能信息】.xlsx"), zap.String("sheet", "maze_skill_info_v8"),
+					// zap.String("field_data",data[24]),
+					zap.String("item_data", val), zap.Int("index", k),
+					zap.String("parse_data", items[1]),
+					zap.Error(err))
+				return
+			}
+			value = int32(tmp)
+			config.Second_target_damage[key] = value
+		}
+	}
+
+	// parse column 25 self_effect : 释放后自身效果
+	if data[25] != "" {
+
+		vals := strings.Split(data[25], ",")
 		for k, v := range vals {
 			tmp, err = strconv.ParseInt(v, 10, 64)
 			if err != nil {
 				err = errors.New("parse array field self_effect 释放后自身效果 to []int32 failed")
 				logger.ErrorWF("parse array field self_effect 释放后自身效果 to []int32 failed.",
 					zap.String("xlsx", "maze_skill_info_v8【迷宫-技能-技能信息】.xlsx"), zap.String("sheet", "maze_skill_info_v8"),
-					// zap.String("field_data",data[24]),
+					// zap.String("field_data",data[25]),
 					zap.String("parse_data", v), zap.Int("index", k),
 					zap.Error(err))
 				return
@@ -658,17 +893,17 @@ func (*gMazeSkillInfoV8Parser) Parse(logger fklog.FKLogI, data []string, row int
 		}
 	}
 
-	// parse column 25 target_effect : 释放后对目标效果
-	if data[25] != "" {
+	// parse column 26 target_effect : 释放后对目标效果
+	if data[26] != "" {
 
-		vals := strings.Split(data[25], ",")
+		vals := strings.Split(data[26], ",")
 		for k, v := range vals {
 			tmp, err = strconv.ParseInt(v, 10, 64)
 			if err != nil {
 				err = errors.New("parse array field target_effect 释放后对目标效果 to []int32 failed")
 				logger.ErrorWF("parse array field target_effect 释放后对目标效果 to []int32 failed.",
 					zap.String("xlsx", "maze_skill_info_v8【迷宫-技能-技能信息】.xlsx"), zap.String("sheet", "maze_skill_info_v8"),
-					// zap.String("field_data",data[25]),
+					// zap.String("field_data",data[26]),
 					zap.String("parse_data", v), zap.Int("index", k),
 					zap.Error(err))
 				return
@@ -676,19 +911,218 @@ func (*gMazeSkillInfoV8Parser) Parse(logger fklog.FKLogI, data []string, row int
 			config.Target_effect = append(config.Target_effect, int32(tmp))
 		}
 	}
+
+	// parse column 27 summon_id : 召唤物id
+	if data[27] != "" {
+		tmp, err = strconv.ParseInt(data[27], 10, 64)
+		if err != nil {
+			err = errors.New("parse field summon_id 召唤物id to int32 failed")
+			logger.ErrorWF("parse field summon_id 召唤物id to int32 failed.",
+				zap.String("xlsx", "maze_skill_info_v8【迷宫-技能-技能信息】.xlsx"), zap.String("sheet", "maze_skill_info_v8"),
+				zap.String("parse_data", data[27]),
+				zap.Error(err))
+			return
+		}
+		config.Summon_id = int32(tmp)
+	}
+
+	// parse column 28 summon_num : 召唤物数量
+	if data[28] != "" {
+
+		config.Summon_num = make(map[int32]int32)
+		var key int32
+		var value int32
+		vals := strings.Split(data[28], "_")
+		for k, val := range vals {
+			items := strings.Split(val, ":")
+			tmp, err = strconv.ParseInt(items[0], 10, 64)
+			if err != nil {
+				err = errors.New("parse map field summon_num 召唤物数量 to key int32 failed")
+				logger.ErrorWF("parse map field summon_num 召唤物数量 to key int32 failed.",
+					zap.String("xlsx", "maze_skill_info_v8【迷宫-技能-技能信息】.xlsx"), zap.String("sheet", "maze_skill_info_v8"),
+					// zap.String("field_data",data[28]),
+					zap.String("item_data", val), zap.Int("index", k),
+					zap.String("parse_data", items[0]),
+					zap.Error(err))
+				return
+			}
+			key = int32(tmp)
+			tmp, err = strconv.ParseInt(items[1], 10, 64)
+			if err != nil {
+				err = errors.New("parse map field summon_num 召唤物数量 to value int32 failed")
+				logger.ErrorWF("parse map field summon_num 召唤物数量 to value int32 failed.",
+					zap.String("xlsx", "maze_skill_info_v8【迷宫-技能-技能信息】.xlsx"), zap.String("sheet", "maze_skill_info_v8"),
+					// zap.String("field_data",data[28]),
+					zap.String("item_data", val), zap.Int("index", k),
+					zap.String("parse_data", items[1]),
+					zap.Error(err))
+				return
+			}
+			value = int32(tmp)
+			config.Summon_num[key] = value
+		}
+	}
+
+	// parse column 29 duration : 技能持续时间（毫秒）
+	if data[29] != "" {
+
+		config.Duration = make(map[int32]int32)
+		var key int32
+		var value int32
+		vals := strings.Split(data[29], "_")
+		for k, val := range vals {
+			items := strings.Split(val, ":")
+			tmp, err = strconv.ParseInt(items[0], 10, 64)
+			if err != nil {
+				err = errors.New("parse map field duration 技能持续时间（毫秒） to key int32 failed")
+				logger.ErrorWF("parse map field duration 技能持续时间（毫秒） to key int32 failed.",
+					zap.String("xlsx", "maze_skill_info_v8【迷宫-技能-技能信息】.xlsx"), zap.String("sheet", "maze_skill_info_v8"),
+					// zap.String("field_data",data[29]),
+					zap.String("item_data", val), zap.Int("index", k),
+					zap.String("parse_data", items[0]),
+					zap.Error(err))
+				return
+			}
+			key = int32(tmp)
+			tmp, err = strconv.ParseInt(items[1], 10, 64)
+			if err != nil {
+				err = errors.New("parse map field duration 技能持续时间（毫秒） to value int32 failed")
+				logger.ErrorWF("parse map field duration 技能持续时间（毫秒） to value int32 failed.",
+					zap.String("xlsx", "maze_skill_info_v8【迷宫-技能-技能信息】.xlsx"), zap.String("sheet", "maze_skill_info_v8"),
+					// zap.String("field_data",data[29]),
+					zap.String("item_data", val), zap.Int("index", k),
+					zap.String("parse_data", items[1]),
+					zap.Error(err))
+				return
+			}
+			value = int32(tmp)
+			config.Duration[key] = value
+		}
+	}
+
+	// parse column 30 interval : 技能伤害或效果生效间隔（毫秒）
+	if data[30] != "" {
+
+		config.Interval = make(map[int32]int32)
+		var key int32
+		var value int32
+		vals := strings.Split(data[30], "_")
+		for k, val := range vals {
+			items := strings.Split(val, ":")
+			tmp, err = strconv.ParseInt(items[0], 10, 64)
+			if err != nil {
+				err = errors.New("parse map field interval 技能伤害或效果生效间隔（毫秒） to key int32 failed")
+				logger.ErrorWF("parse map field interval 技能伤害或效果生效间隔（毫秒） to key int32 failed.",
+					zap.String("xlsx", "maze_skill_info_v8【迷宫-技能-技能信息】.xlsx"), zap.String("sheet", "maze_skill_info_v8"),
+					// zap.String("field_data",data[30]),
+					zap.String("item_data", val), zap.Int("index", k),
+					zap.String("parse_data", items[0]),
+					zap.Error(err))
+				return
+			}
+			key = int32(tmp)
+			tmp, err = strconv.ParseInt(items[1], 10, 64)
+			if err != nil {
+				err = errors.New("parse map field interval 技能伤害或效果生效间隔（毫秒） to value int32 failed")
+				logger.ErrorWF("parse map field interval 技能伤害或效果生效间隔（毫秒） to value int32 failed.",
+					zap.String("xlsx", "maze_skill_info_v8【迷宫-技能-技能信息】.xlsx"), zap.String("sheet", "maze_skill_info_v8"),
+					// zap.String("field_data",data[30]),
+					zap.String("item_data", val), zap.Int("index", k),
+					zap.String("parse_data", items[1]),
+					zap.Error(err))
+				return
+			}
+			value = int32(tmp)
+			config.Interval[key] = value
+		}
+	}
+
+	// parse column 31 damage_adjustment : 每次造成伤害后的伤害调整系数
+	if data[31] != "" {
+
+		config.Damage_adjustment = make(map[int32]int32)
+		var key int32
+		var value int32
+		vals := strings.Split(data[31], "_")
+		for k, val := range vals {
+			items := strings.Split(val, ":")
+			tmp, err = strconv.ParseInt(items[0], 10, 64)
+			if err != nil {
+				err = errors.New("parse map field damage_adjustment 每次造成伤害后的伤害调整系数 to key int32 failed")
+				logger.ErrorWF("parse map field damage_adjustment 每次造成伤害后的伤害调整系数 to key int32 failed.",
+					zap.String("xlsx", "maze_skill_info_v8【迷宫-技能-技能信息】.xlsx"), zap.String("sheet", "maze_skill_info_v8"),
+					// zap.String("field_data",data[31]),
+					zap.String("item_data", val), zap.Int("index", k),
+					zap.String("parse_data", items[0]),
+					zap.Error(err))
+				return
+			}
+			key = int32(tmp)
+			tmp, err = strconv.ParseInt(items[1], 10, 64)
+			if err != nil {
+				err = errors.New("parse map field damage_adjustment 每次造成伤害后的伤害调整系数 to value int32 failed")
+				logger.ErrorWF("parse map field damage_adjustment 每次造成伤害后的伤害调整系数 to value int32 failed.",
+					zap.String("xlsx", "maze_skill_info_v8【迷宫-技能-技能信息】.xlsx"), zap.String("sheet", "maze_skill_info_v8"),
+					// zap.String("field_data",data[31]),
+					zap.String("item_data", val), zap.Int("index", k),
+					zap.String("parse_data", items[1]),
+					zap.Error(err))
+				return
+			}
+			value = int32(tmp)
+			config.Damage_adjustment[key] = value
+		}
+	}
+
+	// parse column 32 trajectory_num : 弹道数量
+	if data[32] != "" {
+
+		config.Trajectory_num = make(map[int32]int32)
+		var key int32
+		var value int32
+		vals := strings.Split(data[32], "_")
+		for k, val := range vals {
+			items := strings.Split(val, ":")
+			tmp, err = strconv.ParseInt(items[0], 10, 64)
+			if err != nil {
+				err = errors.New("parse map field trajectory_num 弹道数量 to key int32 failed")
+				logger.ErrorWF("parse map field trajectory_num 弹道数量 to key int32 failed.",
+					zap.String("xlsx", "maze_skill_info_v8【迷宫-技能-技能信息】.xlsx"), zap.String("sheet", "maze_skill_info_v8"),
+					// zap.String("field_data",data[32]),
+					zap.String("item_data", val), zap.Int("index", k),
+					zap.String("parse_data", items[0]),
+					zap.Error(err))
+				return
+			}
+			key = int32(tmp)
+			tmp, err = strconv.ParseInt(items[1], 10, 64)
+			if err != nil {
+				err = errors.New("parse map field trajectory_num 弹道数量 to value int32 failed")
+				logger.ErrorWF("parse map field trajectory_num 弹道数量 to value int32 failed.",
+					zap.String("xlsx", "maze_skill_info_v8【迷宫-技能-技能信息】.xlsx"), zap.String("sheet", "maze_skill_info_v8"),
+					// zap.String("field_data",data[32]),
+					zap.String("item_data", val), zap.Int("index", k),
+					zap.String("parse_data", items[1]),
+					zap.Error(err))
+				return
+			}
+			value = int32(tmp)
+			config.Trajectory_num[key] = value
+		}
+	}
 	return
 }
 
 var gMazeSkillInfoV8Fields = []string{
 	"id",
+	"skill_attr_id",
 	"type",
-	"group",
+	"priority",
 	"level",
 	"name",
-	"cost",
 	"desc",
-	"initial_cool_time",
-	"public_cool_time",
+	"auto_release_time",
+	"auto_release_condition",
 	"skill_cool_time",
 	"distance_min",
 	"distance_max",
@@ -700,12 +1134,19 @@ var gMazeSkillInfoV8Fields = []string{
 	"target_num",
 	"damage_type",
 	"damage_element",
+	"damage_element_adjust",
 	"main_target_damage_fix",
 	"main_target_damage",
 	"second_target_damage_fix",
 	"second_target_damage",
 	"self_effect",
 	"target_effect",
+	"summon_id",
+	"summon_num",
+	"duration",
+	"interval",
+	"damage_adjustment",
+	"trajectory_num",
 }
 
 // LoadDataManual load data for test

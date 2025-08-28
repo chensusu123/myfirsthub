@@ -1,0 +1,7 @@
+paipaiworld_config,Unnamed: 1,Unnamed: 2,Unnamed: 3
+INT_C_S,INT_S,INT_C_S,MAP<INT:LONG>_S
+id,charge_id,sort,items
+序号,充值id,排序,礼包内容道具：数量
+1,1,1,46900001:10
+2,2,2,46900001:60
+3,3,3,46900001:120

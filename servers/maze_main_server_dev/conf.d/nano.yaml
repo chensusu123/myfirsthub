@@ -1,0 +1,41 @@
+global: # global config.
+  namespace: ${NAMESPACE} # environment type, two types: production and development.
+  local_ip: ${POD_LOCAL_IP}
+  container_name: ${APP_CONTAINER_NAME} # container name.
+  hostname: ${HOSTNAME} # service process name.
+  env: ${ENVIRONMENT} # environment type, two types: production and development.
+  project_group: ${PROJECT_GROUP} # project group name.
+  section_id: ${SERVER_ID} # server id.
+  k8s_node_hostname: ${K8S_NODE_HOSTNAME} # k8s node hostname.
+  cpu_num: ${K8S_REQUEST_CPU} # cpu number.
+server: # server configuration.
+  app: ${APPNAME} # business application name.
+  server: ${APPNAME} # service process name.
+  service: # business service configuration，can have multiple.
+    - name: ${APPNAME}.ws # the route name of the service.
+      port: 5998 # the service listening port, can use the placeholder ${port}.
+      network: tcp # the service listening network type,  tcp or udp.
+      protocol: websocket # application layer protocol, trpc or http.
+    - name: ${APPNAME}.web # the route name of the service.
+      port: 5999 # the service listening port, can use the placeholder ${port}.
+      network: tcp # the service listening network type,  tcp or udp.
+      protocol: http # application layer protocol, trpc or http.
+client: # configuration for client calls.
+  timeout: 1000 # maximum request processing time for all backends.
+  service: # configuration for a single backend.
+    - name: maze_main_server.mysql # backend service name.
+      network: tcp # backend service network type, tcp or udp, configuration takes precedence.
+      protocol: mysql # application layer protocol, trpc or http.
+    - name: maze_main_server.redis # backend service name.
+      network: tcp # backend service network type, tcp or udp, configuration takes precedence.
+      protocol: redis # application layer protocol, trpc or http.
+    - name: BizCfg # backend service name.
+      network: tcp # backend service network type, tcp or udp, configuration takes precedence.
+      protocol: mysql # application layer protocol, trpc or http.
+# 日志配置 (对应 LogConfig 结构体)
+log:
+  log_level: "debug" # 日志级别 (debug/info/warn/error)
+  use_new_rule: true # true 使用时间分隔日志 false 按照以前文件大小分隔日志
+  minute: 30 # 1-60分钟 使用时间分隔日志的单位
+  with_caller: true # 是否记录调用者信息
+  max_age: 8 # 日志最大保存天数，不写默认0，无删除操作

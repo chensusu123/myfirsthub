@@ -1,6 +1,7 @@
 package GMazeActInfoV8Cfg
 
 import (
+	"context"
 	"errors"
 	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fklog"
 	"gitlab.ifreetalk.com/maze-plate/freetk/fkserver/config_manager"
@@ -16,8 +17,10 @@ import (
 type MazeActInfoV8ConfigRow struct {
 	Order                     int32           `json:"order"`                     // 动作id
 	Attack_point_damage_ratio map[int32]int32 `json:"attack_point_damage_ratio"` // 打击点:伤害系数
+	Attack_back_range         map[int32]int32 `json:"attack_back_range"`         // 打击点:击退距离系数
 	Tough_broke_value         int32           `json:"tough_broke_value"`         // 削韧值
 	Temp_tough                int32           `json:"temp_tough"`                // 动作临时韧性
+	Kongfu_hit_time_ratio     map[int32]int32 `json:"kongfu_hit_time_ratio"`     // 打击点:计算受击档位武力比系数
 }
 
 // MazeActInfoV8Config from maze_act_info_v8【迷宫-动作配置】.xlsx maze_act_info_v8
@@ -80,9 +83,19 @@ func GetMazeActInfoV8Config(configId int32) *MazeActInfoV8ConfigRow {
 	return gConfigData.GetMazeActInfoV8Config(configId)
 }
 
+// Deprecated: 链路追踪信息缺失。推荐使用GetWithCtx
 // Get pkg func. get one config by configId
 func Get(configId int32) *MazeActInfoV8ConfigRow {
-	return gConfigData.Get(configId)
+	return GetWithCtx(context.Background(), configId)
+}
+
+// GetWithCtx pkg func. get one config by configId
+func GetWithCtx(ctx context.Context, configId int32, otps ...config_manager.QueryOption) *MazeActInfoV8ConfigRow {
+	cfg := gConfigData.Get(configId)
+	if cfg == nil {
+		config_manager.MissRecord(ctx, "maze_act_info_v8", configId, otps...)
+	}
+	return cfg
 }
 
 // GetAllMazeActInfoV8Config pkg func. get all config slice
@@ -322,32 +335,106 @@ func (*gMazeActInfoV8Parser) Parse(logger fklog.FKLogI, data []string, row inter
 		}
 	}
 
-	// parse column 2 tough_broke_value : 削韧值
+	// parse column 2 attack_back_range : 打击点:击退距离系数
 	if data[2] != "" {
-		tmp, err = strconv.ParseInt(data[2], 10, 64)
+
+		config.Attack_back_range = make(map[int32]int32)
+		var key int32
+		var value int32
+		vals := strings.Split(data[2], "_")
+		for k, val := range vals {
+			items := strings.Split(val, ":")
+			tmp, err = strconv.ParseInt(items[0], 10, 64)
+			if err != nil {
+				err = errors.New("parse map field attack_back_range 打击点:击退距离系数 to key int32 failed")
+				logger.ErrorWF("parse map field attack_back_range 打击点:击退距离系数 to key int32 failed.",
+					zap.String("xlsx", "maze_act_info_v8【迷宫-动作配置】.xlsx"), zap.String("sheet", "maze_act_info_v8"),
+					// zap.String("field_data",data[2]),
+					zap.String("item_data", val), zap.Int("index", k),
+					zap.String("parse_data", items[0]),
+					zap.Error(err))
+				return
+			}
+			key = int32(tmp)
+			tmp, err = strconv.ParseInt(items[1], 10, 64)
+			if err != nil {
+				err = errors.New("parse map field attack_back_range 打击点:击退距离系数 to value int32 failed")
+				logger.ErrorWF("parse map field attack_back_range 打击点:击退距离系数 to value int32 failed.",
+					zap.String("xlsx", "maze_act_info_v8【迷宫-动作配置】.xlsx"), zap.String("sheet", "maze_act_info_v8"),
+					// zap.String("field_data",data[2]),
+					zap.String("item_data", val), zap.Int("index", k),
+					zap.String("parse_data", items[1]),
+					zap.Error(err))
+				return
+			}
+			value = int32(tmp)
+			config.Attack_back_range[key] = value
+		}
+	}
+
+	// parse column 3 tough_broke_value : 削韧值
+	if data[3] != "" {
+		tmp, err = strconv.ParseInt(data[3], 10, 64)
 		if err != nil {
 			err = errors.New("parse field tough_broke_value 削韧值 to int32 failed")
 			logger.ErrorWF("parse field tough_broke_value 削韧值 to int32 failed.",
 				zap.String("xlsx", "maze_act_info_v8【迷宫-动作配置】.xlsx"), zap.String("sheet", "maze_act_info_v8"),
-				zap.String("parse_data", data[2]),
+				zap.String("parse_data", data[3]),
 				zap.Error(err))
 			return
 		}
 		config.Tough_broke_value = int32(tmp)
 	}
 
-	// parse column 3 temp_tough : 动作临时韧性
-	if data[3] != "" {
-		tmp, err = strconv.ParseInt(data[3], 10, 64)
+	// parse column 4 temp_tough : 动作临时韧性
+	if data[4] != "" {
+		tmp, err = strconv.ParseInt(data[4], 10, 64)
 		if err != nil {
 			err = errors.New("parse field temp_tough 动作临时韧性 to int32 failed")
 			logger.ErrorWF("parse field temp_tough 动作临时韧性 to int32 failed.",
 				zap.String("xlsx", "maze_act_info_v8【迷宫-动作配置】.xlsx"), zap.String("sheet", "maze_act_info_v8"),
-				zap.String("parse_data", data[3]),
+				zap.String("parse_data", data[4]),
 				zap.Error(err))
 			return
 		}
 		config.Temp_tough = int32(tmp)
+	}
+
+	// parse column 5 kongfu_hit_time_ratio : 打击点:计算受击档位武力比系数
+	if data[5] != "" {
+
+		config.Kongfu_hit_time_ratio = make(map[int32]int32)
+		var key int32
+		var value int32
+		vals := strings.Split(data[5], "_")
+		for k, val := range vals {
+			items := strings.Split(val, ":")
+			tmp, err = strconv.ParseInt(items[0], 10, 64)
+			if err != nil {
+				err = errors.New("parse map field kongfu_hit_time_ratio 打击点:计算受击档位武力比系数 to key int32 failed")
+				logger.ErrorWF("parse map field kongfu_hit_time_ratio 打击点:计算受击档位武力比系数 to key int32 failed.",
+					zap.String("xlsx", "maze_act_info_v8【迷宫-动作配置】.xlsx"), zap.String("sheet", "maze_act_info_v8"),
+					// zap.String("field_data",data[5]),
+					zap.String("item_data", val), zap.Int("index", k),
+					zap.String("parse_data", items[0]),
+					zap.Error(err))
+				return
+			}
+			key = int32(tmp)
+			tmp, err = strconv.ParseInt(items[1], 10, 64)
+			if err != nil {
+				err = errors.New("parse map field kongfu_hit_time_ratio 打击点:计算受击档位武力比系数 to value int32 failed")
+				logger.ErrorWF("parse map field kongfu_hit_time_ratio 打击点:计算受击档位武力比系数 to value int32 failed.",
+					zap.String("xlsx", "maze_act_info_v8【迷宫-动作配置】.xlsx"), zap.String("sheet", "maze_act_info_v8"),
+					// zap.String("field_data",data[5]),
+					zap.String("item_data", val), zap.Int("index", k),
+					zap.String("parse_data", items[1]),
+					zap.Error(err))
+				return
+			}
+			value = int32(tmp)
+			config.Kongfu_hit_time_ratio[key] = value
+		}
 	}
 	return
 }
@@ -355,8 +442,10 @@ func (*gMazeActInfoV8Parser) Parse(logger fklog.FKLogI, data []string, row inter
 var gMazeActInfoV8Fields = []string{
 	"order",
 	"attack_point_damage_ratio",
+	"attack_back_range",
 	"tough_broke_value",
 	"temp_tough",
+	"kongfu_hit_time_ratio",
 }
 
 // LoadDataManual load data for test

@@ -1,10 +1,11 @@
 package session
 
-type Monitor interface {
+import "context"
 
+type Monitor interface {
 	// OnCreate
-	OnCreate(s *Session)
+	OnCreate(ctx context.Context, s *Session)
 
 	// OnClose
-	OnClose(s *Session)
+	OnClose(ctx context.Context, s *Session, err error)
 }

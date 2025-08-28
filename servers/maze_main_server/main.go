@@ -4,9 +4,13 @@ import (
 	"fmt"
 	"os"
 
-	"maze_game_server/io/mysql/flowrecord"
-	"maze_game_server/io/redis/userprofileredis"
+	"maze_game_server/io"
+	globalredis "maze_game_server/io/redis"
+
+	"maze_game_server/io/mysql"
 	"maze_game_server/servers/maze_main_server/process"
+	"maze_game_server/servers/maze_main_server/process/clusterusermsg"
+	_ "maze_game_server/servers/maze_main_server/process/mazeadmin"
 	"maze_game_server/usecase/business"
 	"maze_game_server/usecase/tasktimer"
 
@@ -28,26 +32,20 @@ func main() {
 	fkserver.SetMonitorName(fkserver.GroupNameGO, fkserver.ProjectNamePPWD, "maze_main_server")
 
 	process.RegisterHandler()
-
+	io.InitBackendCoder(globalredis.GCli, nil)
 	fkserver.AddBusiness(&business.GCustomBusiness)
 	loadconfigapi.SetLoadConfigFunc(business.GCustomBusiness.LoadCacheConfig)
 	loadconfigapi.SetInitConfigCacheFunc(business.GCustomBusiness.Init)
 
-	// myBiz := mysql.NewBizFlow("BizCfg")
+	myBiz := mysql.NewBizGorm("BizCfg", "BizGorm")
 	// 注册到服务依赖里面.初始化由框架进行调用
-	// serverdepend.RegisterDepend(myBiz.Name(), myBiz)
+	serverdepend.RegisterDepend(myBiz)
 
-	// fkserver.AppServer.AddBasicService(&process.NanoInitService{})
+	fkserver.AppServer.AddBasicService(&process.NanoInitService{})
 	// fkserver.AddBusiness(&business.GCustomBusiness)
 	fkserver.AddBusiness(tasktimer.GTaskTimerBusiness)
 
-	// 注册redis
-	profileRedis := userprofileredis.NewRedisDemo("maze_main_server.redis", "user_profile_redis")
-	serverdepend.RegisterDepend(profileRedis)
-
-	// 注册mysql
-	flowMysql := flowrecord.NewMysqlAlterProfileRecord("BizCfg", "user_profile_flow_mysql")
-	serverdepend.RegisterDepend(flowMysql)
+	clusterusermsg.Register()
 
 	fkserver.Run()
 }

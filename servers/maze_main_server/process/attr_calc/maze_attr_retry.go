@@ -7,13 +7,15 @@
 package attr_calc
 
 import (
+	"context"
 	"sync/atomic"
 	"time"
+
+	"maze_game_server/common/structsdef"
 
 	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fkconfig/param"
 	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fklog"
 	"go.uber.org/zap"
-	"maze_game_server/common/structsdef"
 )
 
 var (
@@ -32,7 +34,8 @@ func init() {
 	param.Int32P(&TestSwitch, "calc:fail:retry:test", 0, "失败重试测试")
 	param.Int64P(&ConRetryCounterMax, "con:retry:cnt:limit", 1000, "同时重试数量上限")
 }
-func doMazeAttrCalcRetry(logger fklog.FKLogI, msg *structsdef.MazeCalcAttrNotifyMsg) {
+func doMazeAttrCalcRetry(ctx context.Context, msg *structsdef.MazeCalcAttrNotifyMsg) {
+	logger := fklog.ContextAppLogger(ctx)
 	lastTime := msg.Stamp / 1000 // 转成秒
 	now := time.Now().Unix()
 	if now >= lastTime+int64(RetryMaxTime) {
@@ -58,7 +61,7 @@ func doMazeAttrCalcRetry(logger fklog.FKLogI, msg *structsdef.MazeCalcAttrNotify
 	}
 	time.AfterFunc(time.Millisecond*time.Duration(RetryTimeInterval), func() {
 		// mazeattrcalcnotifyqueue.SendMazeAttrCalcNotify(logger, msg)
-		err := OnMazeAttrCalcMsg(nil, logger, 0, msg)
+		err := OnMazeAttrCalcMsg(ctx, logger, 0, msg)
 		if err != nil {
 			logger.ErrorWF("doMazeAttrCalcRetry OnMazeAttrCalcMsg failed", zap.Any("msg", msg), zap.Error(err))
 		}

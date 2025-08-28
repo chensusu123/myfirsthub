@@ -7,13 +7,14 @@
 package mazebuffchgrecord
 
 import (
+	"context"
 	"time"
 
-	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fkconfig"
-	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fklog"
-	"go.uber.org/zap"
 	"maze_game_server/common/structsdef"
 	"maze_game_server/io/dispatcher"
+
+	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fklog"
+	"go.uber.org/zap"
 )
 
 // var kp = &fkafka.KafkaProducer{}
@@ -26,27 +27,17 @@ func init() {
 
 var d = dispatcher.NewDispatcher[*structsdef.MazeGameBuffAttrChgRecord]()
 
-func Watch(fn func(logger fklog.FKLogI, msg *structsdef.MazeGameBuffAttrChgRecord)) {
+func Watch(fn func(ctx context.Context, msg *structsdef.MazeGameBuffAttrChgRecord)) {
 	d.Watch(fn)
 }
 
-func SendMazeBuffAttrRecord(logger fklog.FKLogI, record *structsdef.MazeGameBuffAttrChgRecord) error {
-	record.GroupId = fkconfig.EnvVal.GroupID
+func SendMazeBuffAttrRecord(ctx context.Context, record *structsdef.MazeGameBuffAttrChgRecord) error {
+	logger := fklog.ContextAppLogger(ctx)
 	if record.CreateTime == 0 {
 		record.CreateTime = time.Now().UnixNano() / 1000000
 	}
 
-	// jbs, e := json.Marshal(record)
-	// if e != nil {
-	// 	logger.ErrorWF("SendMazeBuffAttrRecord Marshal fail", zap.Error(e), zap.Any("record", record))
-	// 	return e
-	// }
-	// e = kp.SendWithUserID(record.UserId, jbs)
-	// if e != nil {
-	// 	logger.ErrorWF("SendMazeBuffAttrRecord SendWithUserID fail", zap.Error(e), zap.Any("record", record))
-	// 	return e
-	// }
-	d.Push(logger, record)
+	d.Push(ctx, record)
 	logger.InfoWF("SendMazeBuffAttrRecord SendWithUserID succ", zap.Any("record", record))
 	return nil
 }

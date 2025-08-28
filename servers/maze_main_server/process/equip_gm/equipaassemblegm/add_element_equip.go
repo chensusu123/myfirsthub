@@ -7,10 +7,11 @@
 package equipaassemblegm
 
 import (
+	"context"
 	"fmt"
 	"maze_game_server/common/errors"
 	"maze_game_server/common/function/packtopb"
-	"maze_game_server/common/function/uniqueid"
+	"maze_game_server/common/tradeno"
 	"maze_game_server/config/GMazeEquipInfoV8Cfg"
 	"maze_game_server/config/GMazeEquipPosRankV8Cfg"
 	"maze_game_server/io/rpc/dollequipbagrpc"
@@ -60,13 +61,14 @@ func CheckEquipParam(p *EquipParam) error {
 	return nil
 }
 
-func AddEquipByCond(logger fklog.FKLogI, userId uint64, cond EquipParam) (result []*EquipResult, err error) {
+func AddEquipByCond(ctx context.Context, userId uint64, cond EquipParam) (result []*EquipResult, err error) {
+	logger := fklog.ContextAppLogger(ctx)
 	equipIds, findAll := FindEquipIdsByCond(logger, cond)
 	if !findAll {
 		err = fmt.Errorf("按条件未找到装备配置，请检查参数 已找到%d条配置", len(equipIds))
 		return
 	}
-	equipMap, err := AddCondEquipToBag(logger, userId, equipIds, cond.SuitId, cond.SubType)
+	equipMap, err := AddCondEquipToBag(ctx, userId, equipIds, cond.SuitId, cond.SubType)
 	if err != nil {
 		return
 	}
@@ -130,8 +132,9 @@ func FindEquipIdsByCond(logger fklog.FKLogI, cond EquipParam) (equipIds map[int3
 	return equipIds, findAll
 }
 
-func AddCondEquipToBag(logger fklog.FKLogI, userId uint64, equipIds map[int32]int32, suitId, subType int32) (equipInfos map[int64]*MazeGameEquip.MazeEquipInfo, err error) {
-	tradeNo := uniqueid.GenUniqueIdUInt64()
+func AddCondEquipToBag(ctx context.Context, userId uint64, equipIds map[int32]int32, suitId, subType int32) (equipInfos map[int64]*MazeGameEquip.MazeEquipInfo, err error) {
+	logger := fklog.ContextAppLogger(ctx)
+	tradeNo := tradeno.GetTradeNum()
 	rqAdd := &MazeEquipSvr.SvrAddMazeEquipRQ{
 		UserId:      proto.Uint64(userId),
 		OpType:      proto.Int32(int32(MazeEquipSvr.ENUM_EQUIP_BAG_OP_TYPE_MAZE_INIT_EQUIP)),
@@ -161,7 +164,7 @@ func AddCondEquipToBag(logger fklog.FKLogI, userId uint64, equipIds map[int32]in
 	}
 
 	rsAdd := &MazeEquipSvr.SvrAddMazeEquipRS{}
-	err = dollequipbagrpc.MazeBagAddRQ(logger, rqAdd, rsAdd)
+	err = dollequipbagrpc.MazeBagAddRQ(ctx, rqAdd, rsAdd)
 	if err != nil {
 		return
 	}

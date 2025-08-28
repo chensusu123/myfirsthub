@@ -1,6 +1,7 @@
 package mazeuserinfo
 
 import (
+	"context"
 	"errors"
 
 	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fklog"
@@ -136,8 +137,8 @@ func (u *UserInfo) SetEnergyLastTime(lastTime int64) {
 	u.mask |= USER_INFO_MASK_ENERGY_LAST_TIME
 }
 
-func GetUserInfoV2(logger fklog.FKLogI, userId uint64) (userInfo *UserInfo, err error) {
-	userMap, err := mazeuserlevelredis.GetUserInfo(logger, userId)
+func GetUserInfoV2(ctx context.Context, userId uint64) (userInfo *UserInfo, err error) {
+	userMap, err := mazeuserlevelredis.GetUserInfo(ctx, userId)
 	if err != nil {
 		return
 	}
@@ -162,10 +163,10 @@ func GetUserInfoV2(logger fklog.FKLogI, userId uint64) (userInfo *UserInfo, err 
 	return
 }
 
-func SetUserInfoV2(logger fklog.FKLogI, userId uint64, userInfo *UserInfo) (err error) {
-
+func SetUserInfoV2(ctx context.Context, userId uint64, userInfo *UserInfo) (err error) {
+	logger := fklog.ContextAppLogger(ctx)
 	if userInfo == nil {
-		logger.ErrorWF("SetUserInfoV2 userInfo is nil")
+		logger.CtxInfo(ctx, "SetUserInfoV2 userInfo is nil")
 		err = errors.New("userInfo nil")
 		return
 	}
@@ -202,7 +203,7 @@ func SetUserInfoV2(logger fklog.FKLogI, userId uint64, userInfo *UserInfo) (err 
 		return
 	}
 
-	err = mazeuserlevelredis.SetUserInfo(logger, userId, userMap)
+	err = mazeuserlevelredis.SetUserInfo(ctx, userId, userMap)
 	if err != nil {
 		return
 	}

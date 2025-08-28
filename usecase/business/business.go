@@ -87,6 +87,11 @@ type tCustomBusiness struct {
 	cacheForChangeStatus int32    // 变化缓存状态，0：变化缓存已消费，无缓存；1：缓存进行中；2：缓存完成，待消费
 }
 
+// OnShutdown implements fkcore.FKServiceI.
+func (tb *tCustomBusiness) OnShutdown(fklog.FKLogI) error {
+	return nil
+}
+
 // FKServiceI 服务接口
 func (tb *tCustomBusiness) Name() string {
 	return "ConfigCacheServer"
@@ -498,7 +503,7 @@ func (tb *tCustomBusiness) Init(logger fklog.FKLogI) (err error) {
 	// }
 	_ = data
 	// 监控文件变化
-	tb.closeMonitor, err = filemonitor.MonitorChangeForCacheServer(logger, ".xlsx",
+	tb.closeMonitor, err = filemonitor.MonitorChangeForCacheServer(logger, ".csv",
 		tb, tb.isSameDir, flagConfigPath, readDir)
 	if err != nil {
 		logger.ErrorWF("OnInit monitor file path failed.", zap.String("path", flagConfigPath), zap.String("version", tb.gitFile),

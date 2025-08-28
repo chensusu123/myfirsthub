@@ -8,21 +8,22 @@
 package game
 
 import (
+	"context"
 	"maze_game_server/common/errors"
-	"maze_game_server/common/function/gentradeno"
 	"maze_game_server/common/function/itemutil"
-	"maze_game_server/common/function/uniqueid"
+	"maze_game_server/common/tradeno"
 	"maze_game_server/config/GMazeRebornCostV8Cfg"
 	"maze_game_server/excel/mazeconfigv8"
 	"maze_game_server/io/kafka/mazerebornkafka"
 	"maze_game_server/io/redis/mazeuserbarrierredis"
-	"maze_game_server/lib/log"
 	"maze_game_server/lib/nano/session"
 	"maze_game_server/pb/common/MazeCommon"
 	"maze_game_server/pb/common/MazeGame"
+	"maze_game_server/services/itemservice"
 	"sort"
 	"time"
 
+	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fklog"
 	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fkprometheus"
 	"go.uber.org/zap"
 	"google.golang.org/protobuf/proto"
@@ -31,7 +32,8 @@ import (
 func (g *Game) OnMazeBarrierRebornRQ_10461_10462(s *session.Session, req *MazeGame.MazeBarrierRebornRQ) (err error) {
 	defer fkprometheus.InfoPMT("OnMazeBarrierRebornRQ")()
 
-	logger := log.Clone("Game", uint64(s.UID()), 0)
+	ctx := s.Context()
+	logger := fklog.ContextAppLogger(ctx)
 	res := &MazeGame.MazeBarrierRebornRS{}
 
 	logger.InfoWF("OnMazeBarrierRebornRQ start", zap.Any("req", req))
@@ -129,10 +131,11 @@ func (g *Game) OnMazeBarrierRebornRQ_10461_10462(s *session.Session, req *MazeGa
 		}
 
 		// 扣除消耗
-		tid := uniqueid.GenUniqueIdUInt64()
+		tid := tradeno.GetTradeNum()
 		if len(svrCost) > 0 {
 			// 通用	698	UN_CGK_COMMON_BILL_TYPE_698	迷宫挑战复活		否	马健	2025-03-25 13:48:10
-			errInfo := gentradeno.DeductItemsEx(logger, userId, 698, tid, svrCost...)
+			items := itemutil.ItemPb2ItemInfo(svrCost)
+			errInfo := itemservice.GlobalItemService.SubItem(context.TODO(), userId, itemservice.ItemOpTypeReborn, tid, items...)
 			if errInfo != nil {
 				logger.ErrorWF("OnMazeBarrierRebornRQ DeductItemsEx",
 					zap.Any("svrCost", svrCost),
@@ -165,7 +168,7 @@ func (g *Game) OnMazeBarrierRebornRQ_10461_10462(s *session.Session, req *MazeGa
 			RebornCount: int64(barrierInfo.GetRebornCount()),
 			RebornCost:  itemutil.CommonItemsToString(svrCost),
 		}
-		mazerebornkafka.PushMazeRebornRecord(logger, record)
+		mazerebornkafka.PushMazeRebornRecord(ctx, record)
 	}
 	return nil
 }

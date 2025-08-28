@@ -1,6 +1,7 @@
 package packtopb
 
 import (
+	"context"
 	"sort"
 
 	"maze_game_server/config/GMazeEquipAffixOrderV8Cfg"
@@ -12,6 +13,7 @@ import (
 	"maze_game_server/common/errors"
 
 	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fklog"
+	"gitlab.ifreetalk.com/maze-plate/freetk/fkserver/config_manager"
 	"go.uber.org/zap"
 
 	"maze_game_server/common/constdef"
@@ -146,7 +148,7 @@ func EquipAttrToCliPb(showAttrInfo *MazeEquipCache.EquipAttrInfo, showAttrMin, s
 		return attrInfo
 	}
 	attrInfo.Figure = proto.Int32(attrCfg.Figure)
-	attrSpDescCfg := GMazeAttrSpDescV8Cfg.Get(showAttrInfo.GetAttrId())
+	attrSpDescCfg := GMazeAttrSpDescV8Cfg.GetWithCtx(context.Background(), showAttrInfo.GetAttrId(), config_manager.QueryNullable())
 	if attrSpDescCfg != nil {
 		attrInfo.AttrDesc = proto.String(attrSpDescCfg.Equip_affix_desc)
 		attrInfo.AttrUnits = proto.String(attrSpDescCfg.Equip_affix_suffix)

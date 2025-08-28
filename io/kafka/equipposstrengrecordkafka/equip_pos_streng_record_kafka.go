@@ -1,21 +1,23 @@
 package equipposstrengrecordkafka
 
 import (
-	"time"
-
-	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fkconfig"
-	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fklog"
-	"go.uber.org/zap"
+	"context"
 	"maze_game_server/common/function/itemutil"
 	"maze_game_server/io/dispatcher"
+	"maze_game_server/io/kafka/kafkacommonstruct"
+	"maze_game_server/model/flowmodel/mazeequipposleveluprecordmodel"
 	"maze_game_server/pb/common/MazeCommon"
+	"maze_game_server/services/flowservice"
 )
+
+type KafkaCommon = kafkacommonstruct.KafkaCommon
 
 // 装备位强化流水
 type EquipPosLevelUpRecord struct {
+	KafkaCommon
 	UserId       uint64 `json:"user_id" gorm:"column:user_id"`
 	GroupId      uint32 `json:"group_id" gorm:"column:group_id"`
-	OpTime       int64  `json:"op_time" gorm:"column:create_time"` // 毫秒时间戳
+	OpTime       int64  `json:"create_time" gorm:"column:create_time"` // 毫秒时间戳
 	PosId        int32  `json:"pos_id" gorm:"column:pos_id"`
 	OldPosLv     int32  `json:"old_pos_lv" gorm:"column:old_pos_lv"`           // 强化前装备位等级
 	NewPosLv     int32  `json:"new_pos_lv" gorm:"column:new_pos_lv"`           // 强化后装备位等级
@@ -26,7 +28,6 @@ type EquipPosLevelUpRecord struct {
 	TradeNo   uint64 `json:"trade_no" gorm:"column:trade_no"`     // 扣物品流水号
 	CostItems string `json:"cost_items" gorm:"column:cost_items"` // 扣物品
 	Result    int32  `json:"result" gorm:"column:result"`         // 结果 0:成功 1:强化失败 2:存储武力值属性失败 3:存储非武力值属性失败
-	ServerId  int32  `json:"server_id" gorm:"column:server_id"`
 }
 
 // var logCli = &fkafka.KafkaProducer{}
@@ -37,7 +38,7 @@ func init() {
 
 var d = dispatcher.NewDispatcher[*EquipPosLevelUpRecord]()
 
-func Watch(fn func(logger fklog.FKLogI, msg *EquipPosLevelUpRecord)) {
+func Watch(fn func(ctx context.Context, msg *EquipPosLevelUpRecord)) {
 	d.Watch(fn)
 }
 
@@ -49,24 +50,12 @@ func Watch(fn func(logger fklog.FKLogI, msg *EquipPosLevelUpRecord)) {
 // return logCli.SendWithUserID(data.UserId, msg)
 // }
 
-func PushEquipPosStrengRecord(logger fklog.FKLogI, userId uint64, posId,
-	oldPosLv, newPosLv, oldPosSuitId, newPosSuitId int32, tradeNo uint64, items []*MazeCommon.MazeItem, result, mask int32) error {
-	data := &EquipPosLevelUpRecord{
-		UserId:       userId,
-		GroupId:      fkconfig.EnvVal.GroupID,
-		OpTime:       time.Now().UnixMilli(),
-		PosId:        posId,
-		OldPosLv:     oldPosLv,
-		NewPosLv:     newPosLv,
-		OldPosSuitId: oldPosSuitId,
-		NewPosSuitId: newPosSuitId,
-		// OldPkLv:      oldPkLv,
-		// NewPkLv:      newPkLv,
-		TradeNo:   tradeNo,
-		CostItems: itemutil.CommonItemsToString(items),
-		Result:    result,
-	}
-	logger.InfoWF("PushEquipPosStrengRecord", zap.Any("data", data))
-	d.Push(logger, data)
+// 流水打点使用
+func PushEquipPosStrengRecord(ctx context.Context, userId uint64, posId,
+	oldPosLv, newPosLv, oldPosSuitId, newPosSuitId int32, tradeNo uint64, items []*MazeCommon.MazeItem, result, mask int32,
+) error {
+	flowData := mazeequipposleveluprecordmodel.NewEquipPosLevelUpRecord(userId, posId, oldPosLv, newPosLv, oldPosSuitId, newPosSuitId,
+		tradeNo, itemutil.CommonItemsToString(items), result)
+	flowservice.GflowService.SendFlowData(ctx, flowData)
 	return nil
 }

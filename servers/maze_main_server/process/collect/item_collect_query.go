@@ -2,12 +2,12 @@ package collect
 
 import (
 	"maze_game_server/common/errors"
-	"maze_game_server/io/redis/mazecollectredis"
-	"maze_game_server/lib/log"
 	"maze_game_server/lib/nano/session"
+	"maze_game_server/module/mazecollect"
 	"maze_game_server/module/mazeuserinfo"
 	"maze_game_server/pb/common/MazeCollect"
 
+	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fklog"
 	"go.uber.org/zap"
 	"google.golang.org/protobuf/proto"
 )
@@ -15,7 +15,9 @@ import (
 // 道具收集查询
 func (c *Collect) OnMazeCollectInfoQueryRQ_10465_10466(s *session.Session, req *MazeCollect.MazeCollectInfoQueryRQ) (err error) {
 
-	logger := log.Clone("Collect", uint64(s.UID()), 0)
+	ctx := s.Context()
+	logger := fklog.ContextAppLogger(ctx)
+
 	res := &MazeCollect.MazeCollectInfoQueryRS{}
 	res.Header = req.Header
 	res.ErrInfo = errors.NO_ERROR
@@ -29,7 +31,7 @@ func (c *Collect) OnMazeCollectInfoQueryRQ_10465_10466(s *session.Session, req *
 
 	userId := uint64(s.UID())
 
-	userInfo, err := mazeuserinfo.GetUserInfoV2(logger, userId)
+	userInfo, err := mazeuserinfo.GetUserInfoV2(ctx, userId)
 	if err != nil {
 		logger.ErrorWF("OnMazeCollectInfoQueryRQ GetUserInfoV2", zap.Error(err))
 		res.ErrInfo = errors.MODULE_ERROR.ToInfo()
@@ -37,29 +39,40 @@ func (c *Collect) OnMazeCollectInfoQueryRQ_10465_10466(s *session.Session, req *
 	}
 
 	// 道具产出信息
-	collectInfo, err := mazecollectredis.GetCollectInfo(logger, userId)
-	if err != nil {
-		logger.ErrorWF("OnMazeCollectInfoQueryRQ GetCollectInfo", zap.Error(err))
-		res.ErrInfo = errors.MODULE_ERROR.ToInfo()
-		return
-	}
+	//collectInfo, err := mazecollectredis.GetCollectInfo(logger, userId)
+	//if err != nil {
+	//	logger.ErrorWF("OnMazeCollectInfoQueryRQ GetCollectInfo", zap.Error(err))
+	//	res.ErrInfo = errors.MODULE_ERROR.ToInfo()
+	//	return
+	//}
+	cInfo := mazecollect.NewCollectInfo(logger, userId)
+	collectInfo := cInfo.GetCollectInfo()
+
 	if collectInfo == nil {
 		if userInfo.PassBarrier <= 0 {
 			return nil
 		}
-		err = InitMazeCollectLand(logger, userId, userInfo.PassBarrier)
+		//err = InitMazeCollectLand(logger, userId, userInfo.PassBarrier)
+		err, collectInfo = cInfo.NewMazeCollectInfo(userInfo.PassBarrier)
 		if err != nil {
 			logger.ErrorWF("OnMazeCollectInfoQueryRQ InitMazeCollectLand", zap.Error(err))
 			res.ErrInfo = errors.MODULE_ERROR.ToInfo()
 			return err
 		}
+		NewCollectAfter(ctx, userId, collectInfo)
 		// 道具产出信息
-		collectInfo, err = mazecollectredis.GetCollectInfo(logger, userId)
-		if err != nil {
-			logger.ErrorWF("OnMazeCollectInfoQueryRQ GetCollectInfo", zap.Error(err))
-			res.ErrInfo = errors.MODULE_ERROR.ToInfo()
-			return err
-		}
+		//collectInfo, err = mazecollectredis.GetCollectInfo(logger, userId)
+		//if err != nil {
+		//	logger.ErrorWF("OnMazeCollectInfoQueryRQ GetCollectInfo", zap.Error(err))
+		//	res.ErrInfo = errors.MODULE_ERROR.ToInfo()
+		//	return err
+		//}
+		//collectInfo = mazecollect.GetCollectInfo(logger, userId)
+		//if collectInfo == nil {
+		//	logger.ErrorWF("OnMazeCollectInfoQueryRQ GetCollectInfo is nil")
+		//	res.ErrInfo = errors.MODULE_ERROR.ToInfo()
+		//	return err
+		//}
 	}
 	if collectInfo == nil {
 		return nil
@@ -67,7 +80,7 @@ func (c *Collect) OnMazeCollectInfoQueryRQ_10465_10466(s *session.Session, req *
 	if IsTimerLoss(collectInfo) {
 		// 定时器丢失修复道具产出
 		logger.InfoWF("OnMazeCollectInfoQueryRQ fix ItemCollect start", zap.Any("collectInfo", collectInfo))
-		err = ItemCollect(logger, userId, collectInfo)
+		err = ItemCollect(ctx, userId, collectInfo)
 		if err != nil {
 			logger.ErrorWF("OnPetCollectInfoQueryRQ fix ItemCollect", zap.Error(err))
 			res.ErrInfo = errors.MODULE_ERROR.ToInfo()

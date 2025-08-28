@@ -1,9 +1,11 @@
 package mazecommonvalue
 
 import (
-	"maze_game_server/pb/common/MazeGame"
-	"maze_game_server/usecase/mustarrive"
+	"context"
 	"time"
+
+	"maze_game_server/pb/common/MazeGame"
+	"maze_game_server/usecase/online"
 
 	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fklog"
 	"go.uber.org/zap"
@@ -20,6 +22,7 @@ var commonMap = map[int32]struct{}{
 	int32(MazeGame.MAZE_DATA_TYPE_ENUM_MAZE_DATA_TYPE_EXP_INCOME):  {},
 	int32(MazeGame.MAZE_DATA_TYPE_ENUM_MAZE_DATA_TYPE_EQUIP_POINT): {},
 	int32(MazeGame.MAZE_DATA_TYPE_ENUM_MAZE_DATA_TYPE_DIAMOND):     {},
+	int32(MazeGame.MAZE_DATA_TYPE_ENUM_MAZE_DATA_TYPE_PASS_VALUE):  {},
 }
 
 type CommonValueStruct struct {
@@ -55,7 +58,7 @@ func SendCommonValueIdPack(logger fklog.FKLogI, userId uint64, commonList []*Com
 	}
 
 	logger.InfoWF("sendCommonValueIdPack send client with", zap.Any("commonList", commonList), zap.Any("commonValuePack", commonValuePack))
-	return mustarrive.SendArrivePacket(logger, int64(userId), 10478, commonValuePack)
+	return online.ClusterPush(context.TODO(), uint64(userId), 10478, commonValuePack)
 }
 
 func MakeCommonValueList(logger fklog.FKLogI, commonValue map[int32]int64, commonReason map[int32]int32, commonSession map[int32]string) (commonList []*CommonValueStruct) {
@@ -107,7 +110,7 @@ func MakeCommonValueExtraExp(logger fklog.FKLogI, userId uint64, level int64, fo
 	return
 }
 
-func MakeAllCommonValue(logger fklog.FKLogI, userId uint64, level, exp, expMax, force, money, extra, extraExp, diamond int64, session string) (commonList []*CommonValueStruct) {
+func MakeAllCommonValue(logger fklog.FKLogI, userId uint64, level, exp, expMax, force, money, extra, extraExp, diamond, passValue int64, session string) (commonList []*CommonValueStruct) {
 	commonList = make([]*CommonValueStruct, 0)
 
 	lvStruct := &CommonValueStruct{
@@ -166,7 +169,14 @@ func MakeAllCommonValue(logger fklog.FKLogI, userId uint64, level, exp, expMax, 
 		Session: session,
 	}
 
+	passValueStruct := &CommonValueStruct{
+		DataType:     int32(MazeGame.MAZE_DATA_TYPE_ENUM_MAZE_DATA_TYPE_PASS_VALUE),
+		DataValueInt: passValue,
+		// ChgReason:    int32(1),
+		Session: session,
+	}
+
 	// commonList = append(commonList, lvStruct, expStruct, expMaxStruct, forceStruct, moneyStruct, extraStruct)
-	commonList = append(commonList, lvStruct, expStruct, extraStruct, expMaxStruct, moneyStruct, diamondStruct, forceStruct)
+	commonList = append(commonList, lvStruct, expStruct, extraStruct, expMaxStruct, moneyStruct, diamondStruct, forceStruct, passValueStruct)
 	return
 }

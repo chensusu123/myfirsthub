@@ -1,0 +1,7 @@
+paipaiworld_config,Unnamed: 1,Unnamed: 2,Unnamed: 3,Unnamed: 4
+INT_S,STRING_S,INT_S,MAP<INT:INT>_S,STRING_S
+id,action_name,day_count_v8,count_level_v8,lose_desc_v8
+唯一id,行为名称,每天次数,需要迷宫冒险等级,未开启提示文本
+1,迷宫小程序，挂机功能开启等级,0,10:2,2级解锁
+101,迷宫小程序，迷宫每天挑战次数上限,100,0:0,默认解锁
+102,迷宫小程序，迷宫首次通关奖励挑战次数（挑战次数不超上限）,1,0:0,默认解锁

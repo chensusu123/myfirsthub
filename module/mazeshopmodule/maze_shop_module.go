@@ -1,13 +1,13 @@
 package mazeshopmodule
 
 import (
-	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fklog"
-	"go.uber.org/zap"
 	"maze_game_server/common/errors"
-	"maze_game_server/common/function/randfuncs"
 	"maze_game_server/config/GMazeShopEquipListV8Cfg"
 	"maze_game_server/config/GMazeShopV8Cfg"
 	"maze_game_server/io/redis/mazeshopseqredis"
+
+	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fklog"
+	"go.uber.org/zap"
 )
 
 //func GetMaxAreaId(barrierId, maxAreaId int32) int32 {
@@ -28,52 +28,52 @@ import (
 //	return maxAreaId
 //}
 
-func GetMazeShopInfo(logger fklog.FKLogI, userId uint64, mazeLevel int32, areaId int32) (mazeShopInfo *mazeshopseqredis.MazeShopInfo, err error) {
-	newLevel := GetMazeShopLv(mazeLevel, areaId)
-	mazeShopInfo, err = mazeshopseqredis.GetMazeShopInfo(logger, userId, newLevel)
-	if err != nil {
-		logger.ErrorWF("GetMazeShopInfo error!", zap.Error(err), zap.Any("newLevel", newLevel))
-		return
-	}
-	cfg := GMazeShopV8Cfg.Get(newLevel)
-	if cfg == nil {
-		logger.ErrorWF("GetMazeShopInfo GMazeShopV8Cfg fail",
-			zap.Int32("newLevel", newLevel))
-		return mazeShopInfo, errors.New("获取配置失败")
-	}
-	if mazeShopInfo == nil {
-		mazeShopInfo, err = HandleMazeShopSeqInit(logger, cfg)
-		if err != nil || mazeShopInfo == nil {
-			logger.ErrorWF("GetMazeShopInfo HandleMazeShopSeqInit fail",
-				zap.Int32("newLevel", newLevel),
-				zap.Error(err))
-			return mazeShopInfo, errors.New("获取配置失败")
-		}
-	}
-	return mazeShopInfo, nil
-}
+//func GetMazeShopInfo(logger fklog.FKLogI, userId uint64, mazeLevel int32, areaId int32) (mazeShopInfo *mazeshopseqredis.MazeShopInfo, err error) {
+//	newLevel := GetMazeShopLv(mazeLevel, areaId)
+//	mazeShopInfo, err = mazeshopseqredis.GetMazeShopInfo(logger, userId, newLevel)
+//	if err != nil {
+//		logger.ErrorWF("GetMazeShopInfo error!", zap.Error(err), zap.Any("newLevel", newLevel))
+//		return
+//	}
+//	cfg := GMazeShopV8Cfg.Get(newLevel)
+//	if cfg == nil {
+//		logger.ErrorWF("GetMazeShopInfo GMazeShopV8Cfg fail",
+//			zap.Int32("newLevel", newLevel))
+//		return mazeShopInfo, errors.New("获取配置失败")
+//	}
+//	if mazeShopInfo == nil {
+//		mazeShopInfo, err = HandleMazeShopSeqInit(logger, cfg)
+//		if err != nil || mazeShopInfo == nil {
+//			logger.ErrorWF("GetMazeShopInfo HandleMazeShopSeqInit fail",
+//				zap.Int32("newLevel", newLevel),
+//				zap.Error(err))
+//			return mazeShopInfo, errors.New("获取配置失败")
+//		}
+//	}
+//	return mazeShopInfo, nil
+//}
 
-func HandleMazeShopSeqInit(logger fklog.FKLogI, cfg *GMazeShopV8Cfg.MazeShopV8ConfigRow) (mazeShopInfo *mazeshopseqredis.MazeShopInfo, err error) {
-	mazeShopInfo = &mazeshopseqredis.MazeShopInfo{}
-	if cfg == nil {
-		logger.ErrorWF("HandleMazeShopSeqInit GMazeShopV8Cfg err")
-		return nil, errors.New("配置不存在")
-	}
-	seqWeight := make(map[int32]int32, 0)
-	for _, seqId := range cfg.Buy_list {
-		seqWeight[seqId] = 1000
-	}
-	seqId := randfuncs.RandByWeightV2(logger, seqWeight, false)
-	if seqId <= 0 {
-		logger.ErrorWF("HandleMazeShopSeqInit GMazeShopV8Cfg err",
-			zap.Any("seqWeight", seqWeight))
-		return nil, errors.New("配置不存在")
-	}
-	mazeShopInfo.SeqId = seqId
-	mazeShopInfo.BackId = cfg.Buy_list_base2
-	mazeShopInfo.ShopSlotNum = make(map[int32]int32)
-	return mazeShopInfo, nil
-}
+//func HandleMazeShopSeqInit(logger fklog.FKLogI, cfg *GMazeShopV8Cfg.MazeShopV8ConfigRow) (mazeShopInfo *mazeshopseqredis.MazeShopInfo, err error) {
+//	mazeShopInfo = &mazeshopseqredis.MazeShopInfo{}
+//	if cfg == nil {
+//		logger.ErrorWF("HandleMazeShopSeqInit GMazeShopV8Cfg err")
+//		return nil, errors.New("配置不存在")
+//	}
+//	seqWeight := make(map[int32]int32, 0)
+//	for _, seqId := range cfg.Buy_list {
+//		seqWeight[seqId] = 1000
+//	}
+//	seqId := randfuncs.RandByWeightV2(logger, seqWeight, false)
+//	if seqId <= 0 {
+//		logger.ErrorWF("HandleMazeShopSeqInit GMazeShopV8Cfg err",
+//			zap.Any("seqWeight", seqWeight))
+//		return nil, errors.New("配置不存在")
+//	}
+//	mazeShopInfo.SeqId = seqId
+//	mazeShopInfo.BackId = cfg.Buy_list_base2
+//	mazeShopInfo.ShopSlotNum = make(map[int32]int32)
+//	return mazeShopInfo, nil
+//}
 
 func GetMazeSeqEquipId(logger fklog.FKLogI, userId uint64, mazeLevel int32, areaId int32, mazeShopInfo *mazeshopseqredis.MazeShopInfo, addCount, assignPos int32, equipMaxMap map[int32]int64) (equipMap map[int32]int32, err error) {
 	newLevel := GetMazeShopLv(mazeLevel, areaId)

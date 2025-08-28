@@ -1,6 +1,7 @@
 package GMazeAttributeV8Cfg
 
 import (
+	"context"
 	"errors"
 	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fklog"
 	"gitlab.ifreetalk.com/maze-plate/freetk/fkserver/config_manager"
@@ -13,25 +14,13 @@ import (
 
 // MazeAttributeV8ConfigRow from maze_attribute_v8【迷宫-属性】.xlsx maze_attribute_v8
 type MazeAttributeV8ConfigRow struct {
-	Id                    int32  `json:"id"`                    // 属性ID
-	Is_into_buff          int32  `json:"is_into_buff"`          // 是否进入buff中心
-	Formula_parameter_id  int32  `json:"formula_parameter_id"`  // 公式属性id
-	Name                  string `json:"name"`                  // 属性名称
-	Type                  int32  `json:"type"`                  // 属性类型
-	Figure                int32  `json:"figure"`                // 数值类型
-	ShowType              int32  `json:"showType"`              // 是否显示在属性面板
-	Quotiety              int32  `json:"quotiety"`              // 战力系数
-	Atk_coefficient       int32  `json:"atk_coefficient"`       // 攻击系数
-	Def_coefficient       int32  `json:"def_coefficient"`       // 防御系数
-	Durable_coefficient   int32  `json:"durable_coefficient"`   // 耐久系数
-	Movespeed_coefficient int32  `json:"movespeed_coefficient"` // 移动系数
-	Load_coefficient      int32  `json:"load_coefficient"`      // 载重系数
-	Ishide                int32  `json:"ishide"`                // 是否隐藏
-	Enemy_type            int32  `json:"enemy_type"`            // 是否是npc怪
-	To_attr               int32  `json:"to_attr"`               // 映射属性id
-	Action_range          int32  `json:"action_range"`          // 作用范围（1-旗舰 2-非旗舰）
-	Origin                int32  `json:"origin"`                // 本源属性id
-	Use_type              int32  `json:"use_type"`              // 属性使用类型
+	Id                   int32  `json:"id"`                   // 属性ID
+	Is_into_buff         int32  `json:"is_into_buff"`         // 是否进入buff中心
+	Formula_parameter_id int32  `json:"formula_parameter_id"` // 公式属性id
+	Name                 string `json:"name"`                 // 属性名称
+	Type                 int32  `json:"type"`                 // 属性类型
+	Figure               int32  `json:"figure"`               // 数值类型
+	Initial_value        int32  `json:"initial_value"`        // 初始值
 }
 
 // MazeAttributeV8Config from maze_attribute_v8【迷宫-属性】.xlsx maze_attribute_v8
@@ -94,9 +83,19 @@ func GetMazeAttributeV8Config(configId int32) *MazeAttributeV8ConfigRow {
 	return gConfigData.GetMazeAttributeV8Config(configId)
 }
 
+// Deprecated: 链路追踪信息缺失。推荐使用GetWithCtx
 // Get pkg func. get one config by configId
 func Get(configId int32) *MazeAttributeV8ConfigRow {
-	return gConfigData.Get(configId)
+	return GetWithCtx(context.Background(), configId)
+}
+
+// GetWithCtx pkg func. get one config by configId
+func GetWithCtx(ctx context.Context, configId int32, otps ...config_manager.QueryOption) *MazeAttributeV8ConfigRow {
+	cfg := gConfigData.Get(configId)
+	if cfg == nil {
+		config_manager.MissRecord(ctx, "maze_attribute_v8", configId, otps...)
+	}
+	return cfg
 }
 
 // GetAllMazeAttributeV8Config pkg func. get all config slice
@@ -360,186 +359,18 @@ func (*gMazeAttributeV8Parser) Parse(logger fklog.FKLogI, data []string, row int
 		config.Figure = int32(tmp)
 	}
 
-	// parse column 6 showType : 是否显示在属性面板
+	// parse column 6 initial_value : 初始值
 	if data[6] != "" {
 		tmp, err = strconv.ParseInt(data[6], 10, 64)
 		if err != nil {
-			err = errors.New("parse field showType 是否显示在属性面板 to int32 failed")
-			logger.ErrorWF("parse field showType 是否显示在属性面板 to int32 failed.",
+			err = errors.New("parse field initial_value 初始值 to int32 failed")
+			logger.ErrorWF("parse field initial_value 初始值 to int32 failed.",
 				zap.String("xlsx", "maze_attribute_v8【迷宫-属性】.xlsx"), zap.String("sheet", "maze_attribute_v8"),
 				zap.String("parse_data", data[6]),
 				zap.Error(err))
 			return
 		}
-		config.ShowType = int32(tmp)
-	}
-
-	// parse column 7 quotiety : 战力系数
-	if data[7] != "" {
-		tmp, err = strconv.ParseInt(data[7], 10, 64)
-		if err != nil {
-			err = errors.New("parse field quotiety 战力系数 to int32 failed")
-			logger.ErrorWF("parse field quotiety 战力系数 to int32 failed.",
-				zap.String("xlsx", "maze_attribute_v8【迷宫-属性】.xlsx"), zap.String("sheet", "maze_attribute_v8"),
-				zap.String("parse_data", data[7]),
-				zap.Error(err))
-			return
-		}
-		config.Quotiety = int32(tmp)
-	}
-
-	// parse column 8 atk_coefficient : 攻击系数
-	if data[8] != "" {
-		tmp, err = strconv.ParseInt(data[8], 10, 64)
-		if err != nil {
-			err = errors.New("parse field atk_coefficient 攻击系数 to int32 failed")
-			logger.ErrorWF("parse field atk_coefficient 攻击系数 to int32 failed.",
-				zap.String("xlsx", "maze_attribute_v8【迷宫-属性】.xlsx"), zap.String("sheet", "maze_attribute_v8"),
-				zap.String("parse_data", data[8]),
-				zap.Error(err))
-			return
-		}
-		config.Atk_coefficient = int32(tmp)
-	}
-
-	// parse column 9 def_coefficient : 防御系数
-	if data[9] != "" {
-		tmp, err = strconv.ParseInt(data[9], 10, 64)
-		if err != nil {
-			err = errors.New("parse field def_coefficient 防御系数 to int32 failed")
-			logger.ErrorWF("parse field def_coefficient 防御系数 to int32 failed.",
-				zap.String("xlsx", "maze_attribute_v8【迷宫-属性】.xlsx"), zap.String("sheet", "maze_attribute_v8"),
-				zap.String("parse_data", data[9]),
-				zap.Error(err))
-			return
-		}
-		config.Def_coefficient = int32(tmp)
-	}
-
-	// parse column 10 durable_coefficient : 耐久系数
-	if data[10] != "" {
-		tmp, err = strconv.ParseInt(data[10], 10, 64)
-		if err != nil {
-			err = errors.New("parse field durable_coefficient 耐久系数 to int32 failed")
-			logger.ErrorWF("parse field durable_coefficient 耐久系数 to int32 failed.",
-				zap.String("xlsx", "maze_attribute_v8【迷宫-属性】.xlsx"), zap.String("sheet", "maze_attribute_v8"),
-				zap.String("parse_data", data[10]),
-				zap.Error(err))
-			return
-		}
-		config.Durable_coefficient = int32(tmp)
-	}
-
-	// parse column 11 movespeed_coefficient : 移动系数
-	if data[11] != "" {
-		tmp, err = strconv.ParseInt(data[11], 10, 64)
-		if err != nil {
-			err = errors.New("parse field movespeed_coefficient 移动系数 to int32 failed")
-			logger.ErrorWF("parse field movespeed_coefficient 移动系数 to int32 failed.",
-				zap.String("xlsx", "maze_attribute_v8【迷宫-属性】.xlsx"), zap.String("sheet", "maze_attribute_v8"),
-				zap.String("parse_data", data[11]),
-				zap.Error(err))
-			return
-		}
-		config.Movespeed_coefficient = int32(tmp)
-	}
-
-	// parse column 12 load_coefficient : 载重系数
-	if data[12] != "" {
-		tmp, err = strconv.ParseInt(data[12], 10, 64)
-		if err != nil {
-			err = errors.New("parse field load_coefficient 载重系数 to int32 failed")
-			logger.ErrorWF("parse field load_coefficient 载重系数 to int32 failed.",
-				zap.String("xlsx", "maze_attribute_v8【迷宫-属性】.xlsx"), zap.String("sheet", "maze_attribute_v8"),
-				zap.String("parse_data", data[12]),
-				zap.Error(err))
-			return
-		}
-		config.Load_coefficient = int32(tmp)
-	}
-
-	// parse column 13 ishide : 是否隐藏
-	if data[13] != "" {
-		tmp, err = strconv.ParseInt(data[13], 10, 64)
-		if err != nil {
-			err = errors.New("parse field ishide 是否隐藏 to int32 failed")
-			logger.ErrorWF("parse field ishide 是否隐藏 to int32 failed.",
-				zap.String("xlsx", "maze_attribute_v8【迷宫-属性】.xlsx"), zap.String("sheet", "maze_attribute_v8"),
-				zap.String("parse_data", data[13]),
-				zap.Error(err))
-			return
-		}
-		config.Ishide = int32(tmp)
-	}
-
-	// parse column 14 enemy_type : 是否是npc怪
-	if data[14] != "" {
-		tmp, err = strconv.ParseInt(data[14], 10, 64)
-		if err != nil {
-			err = errors.New("parse field enemy_type 是否是npc怪 to int32 failed")
-			logger.ErrorWF("parse field enemy_type 是否是npc怪 to int32 failed.",
-				zap.String("xlsx", "maze_attribute_v8【迷宫-属性】.xlsx"), zap.String("sheet", "maze_attribute_v8"),
-				zap.String("parse_data", data[14]),
-				zap.Error(err))
-			return
-		}
-		config.Enemy_type = int32(tmp)
-	}
-
-	// parse column 15 to_attr : 映射属性id
-	if data[15] != "" {
-		tmp, err = strconv.ParseInt(data[15], 10, 64)
-		if err != nil {
-			err = errors.New("parse field to_attr 映射属性id to int32 failed")
-			logger.ErrorWF("parse field to_attr 映射属性id to int32 failed.",
-				zap.String("xlsx", "maze_attribute_v8【迷宫-属性】.xlsx"), zap.String("sheet", "maze_attribute_v8"),
-				zap.String("parse_data", data[15]),
-				zap.Error(err))
-			return
-		}
-		config.To_attr = int32(tmp)
-	}
-
-	// parse column 16 action_range : 作用范围（1-旗舰 2-非旗舰）
-	if data[16] != "" {
-		tmp, err = strconv.ParseInt(data[16], 10, 64)
-		if err != nil {
-			err = errors.New("parse field action_range 作用范围（1-旗舰 2-非旗舰） to int32 failed")
-			logger.ErrorWF("parse field action_range 作用范围（1-旗舰 2-非旗舰） to int32 failed.",
-				zap.String("xlsx", "maze_attribute_v8【迷宫-属性】.xlsx"), zap.String("sheet", "maze_attribute_v8"),
-				zap.String("parse_data", data[16]),
-				zap.Error(err))
-			return
-		}
-		config.Action_range = int32(tmp)
-	}
-
-	// parse column 17 origin : 本源属性id
-	if data[17] != "" {
-		tmp, err = strconv.ParseInt(data[17], 10, 64)
-		if err != nil {
-			err = errors.New("parse field origin 本源属性id to int32 failed")
-			logger.ErrorWF("parse field origin 本源属性id to int32 failed.",
-				zap.String("xlsx", "maze_attribute_v8【迷宫-属性】.xlsx"), zap.String("sheet", "maze_attribute_v8"),
-				zap.String("parse_data", data[17]),
-				zap.Error(err))
-			return
-		}
-		config.Origin = int32(tmp)
-	}
-
-	// parse column 18 use_type : 属性使用类型
-	if data[18] != "" {
-		tmp, err = strconv.ParseInt(data[18], 10, 64)
-		if err != nil {
-			err = errors.New("parse field use_type 属性使用类型 to int32 failed")
-			logger.ErrorWF("parse field use_type 属性使用类型 to int32 failed.",
-				zap.String("xlsx", "maze_attribute_v8【迷宫-属性】.xlsx"), zap.String("sheet", "maze_attribute_v8"),
-				zap.String("parse_data", data[18]),
-				zap.Error(err))
-			return
-		}
-		config.Use_type = int32(tmp)
+		config.Initial_value = int32(tmp)
 	}
 	return
 }
@@ -551,19 +382,7 @@ var gMazeAttributeV8Fields = []string{
 	"name",
 	"type",
 	"figure",
-	"showType",
-	"quotiety",
-	"atk_coefficient",
-	"def_coefficient",
-	"durable_coefficient",
-	"movespeed_coefficient",
-	"load_coefficient",
-	"ishide",
-	"enemy_type",
-	"to_attr",
-	"action_range",
-	"origin",
-	"use_type",
+	"initial_value",
 }
 
 // LoadDataManual load data for test

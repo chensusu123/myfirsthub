@@ -7,12 +7,14 @@
 package commonlogic
 
 import (
+	"context"
+
 	"maze_game_server/common/constdef"
 	"maze_game_server/common/structsdef"
 	"maze_game_server/excel/mazeconfigv8"
 	"maze_game_server/pb/common/Common"
 	"maze_game_server/pb/common/MazePropertyPanel"
-	"maze_game_server/usecase/mustarrive"
+	"maze_game_server/usecase/online"
 
 	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fklog"
 	"go.uber.org/zap"
@@ -41,7 +43,7 @@ func NotifyClientAttrChg(logger fklog.FKLogI, userId uint64, msg *structsdef.Dol
 	}
 	if len(mazePanelChgIDMsg.ChgAttrs) > 0 {
 		logger.InfoWF("NotifyClientAttrChg send client with", zap.Any("mazePanelChgIDMsg", mazePanelChgIDMsg))
-		mustarrive.SendArrivePacket(logger, int64(userId), 16262, mazePanelChgIDMsg)
+		online.ClusterPush(context.TODO(), uint64(userId), 16262, mazePanelChgIDMsg)
 	} else {
 		logger.InfoWF("NotifyClientAttrChg no care attrs", zap.Any("mazePanelChgIDMsg", mazePanelChgIDMsg))
 	}

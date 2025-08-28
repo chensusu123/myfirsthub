@@ -7,6 +7,7 @@
 package equip
 
 import (
+	"context"
 	"maze_game_server/common/constdef"
 	"maze_game_server/common/structsdef"
 	"maze_game_server/config/GMazeLevelV8Cfg"
@@ -24,7 +25,8 @@ import (
 
 type MazeUserLevelRecord = mazeuserlevelkafka.MazeUserLevelRecord
 
-func HandleMazeLvChg(logger fklog.FKLogI, pack *MazeUserLevelRecord) {
+func HandleMazeLvChg(ctx context.Context, pack *MazeUserLevelRecord) {
+	logger := fklog.ContextAppLogger(ctx)
 	// pack := &structsdef.MazeUserLevelRecord{}
 	// err = json.Unmarshal(data, pack)
 	// if err != nil {
@@ -40,20 +42,21 @@ func HandleMazeLvChg(logger fklog.FKLogI, pack *MazeUserLevelRecord) {
 	logger.SetUid(pack.UserId)
 	logger.WarnWF("HandleMazeLvChg recv kafka notify", zap.Any("pack", pack))
 
-	ChkEquipPosUnlock(logger, pack.UserId, UnlockSrcDollLv, true)
+	ChkEquipPosUnlock(ctx, pack.UserId, UnlockSrcDollLv, true)
 
-	UpdateMazeLvBuff(logger, pack.UserId)
+	UpdateMazeLvBuff(ctx, pack.UserId)
 	return
 }
 
-func UpdateMazeLvBuff(logger fklog.FKLogI, userId uint64) error {
-	lv, err := mazeuserlevelredis.GetUserLevel(logger, userId)
+func UpdateMazeLvBuff(ctx context.Context, userId uint64) error {
+	logger := fklog.ContextAppLogger(ctx)
+	lv, err := mazeuserlevelredis.GetUserLevel(ctx, userId)
 	if err != nil {
 		return err
 	}
 	mazeLvCfg := GMazeLevelV8Cfg.Get(int32(lv))
 	if mazeLvCfg == nil {
-		logger.ErrorWF("UpdateMazeLvBuff no found cfg", zap.Int64("lv", lv))
+		logger.CtxError(ctx, "UpdateMazeLvBuff no found cfg", zap.Int64("lv", lv))
 		return nil
 	}
 	otherDb := &MazeBuffData.MazeBuffDb{}
@@ -68,7 +71,7 @@ func UpdateMazeLvBuff(logger fklog.FKLogI, userId uint64) error {
 	}
 	err = mazebuffinforedis.SaveMazeLvBuff(logger, userId, otherDb)
 	if err != nil {
-		logger.ErrorWF("UpdateMazeLvBuff SaveMazeLvBuff fail", zap.Error(err),
+		logger.CtxError(ctx, "UpdateMazeLvBuff SaveMazeLvBuff fail", zap.Error(err),
 			zap.Any("otherDb", otherDb),
 			zap.Int64("mazeLv", lv))
 		return err
@@ -80,12 +83,12 @@ func UpdateMazeLvBuff(logger fklog.FKLogI, userId uint64) error {
 	calcAttrNotify.ChgType = constdef.MazeBuffLvChg
 	calcAttrNotify.Session = ""
 	calcAttrNotify.BuffSrc = constdef.MazeBuffSrcLv
-	e := mazeattrcalcnotifyqueue.SendMazeAttrCalcNotify(logger, calcAttrNotify)
+	e := mazeattrcalcnotifyqueue.SendMazeAttrCalcNotify(ctx, calcAttrNotify)
 	if e != nil {
-		logger.ErrorWF("UpdateMazeLvBuff SendDollAttrCalcNotify fail", zap.Error(e))
+		logger.CtxError(ctx, "UpdateMazeLvBuff SendDollAttrCalcNotify fail", zap.Error(e))
 	}
 
-	logger.InfoWF("UpdateMazeLvBuff end", zap.Any("otherDb", otherDb),
+	logger.CtxInfo(ctx, "UpdateMazeLvBuff end", zap.Any("otherDb", otherDb),
 		zap.Int64("mazeLv", lv))
 	return nil
 }

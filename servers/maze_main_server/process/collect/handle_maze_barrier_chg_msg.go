@@ -1,18 +1,21 @@
 package collect
 
 import (
+	"context"
+	"maze_game_server/io/kafka/mazebarrieruserkafka"
+	"maze_game_server/module/funcopencheck"
+	"maze_game_server/module/mazecollect"
+	"maze_game_server/module/mazeuserinfo"
+
 	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fklog"
 	"go.uber.org/zap"
-	"maze_game_server/io/kafka/mazebarrieruserkafka"
-	"maze_game_server/io/redis/mazecollectredis"
-	"maze_game_server/module/funcopencheck"
-	"maze_game_server/module/mazeuserinfo"
 )
 
 // 用户迷宫闯关纪录
 type MazeBarrierUserGameRecord = mazebarrieruserkafka.MazeBarrierUserGameRecord
 
-func HandleMazeBarrierMsg(logger fklog.FKLogI, msg *MazeBarrierUserGameRecord) {
+func HandleMazeBarrierMsg(ctx context.Context, msg *MazeBarrierUserGameRecord) {
+	logger := fklog.ContextAppLogger(ctx)
 	// msg := &MazeBarrierUserGameRecord{}
 	// err = json.Unmarshal(data, msg)
 	// if err != nil {
@@ -31,15 +34,18 @@ func HandleMazeBarrierMsg(logger fklog.FKLogI, msg *MazeBarrierUserGameRecord) {
 		return
 	}
 	// 道具产出信息
-	collectInfo, err := mazecollectredis.GetCollectInfo(logger, userId)
-	if err != nil {
-		logger.ErrorWF("HandleMazeBarrierMsg GetCollectInfo", zap.Error(err))
+	//collectInfo, err := mazecollectredis.GetCollectInfo(logger, userId)
+	//if err != nil {
+	//	logger.ErrorWF("HandleMazeBarrierMsg GetCollectInfo ", zap.Error(err)))
+	//	return
+	//}
+	cInfo := mazecollect.NewCollectInfo(logger, userId)
+	collectInfo := cInfo.GetCollectInfo()
+	if collectInfo == nil {
+		logger.ErrorWF("HandleMazeBarrierMsg GetCollectInfo is nil")
 		return
 	}
-	if collectInfo != nil {
-		return
-	}
-	userInfo, err := mazeuserinfo.GetUserInfoV2(logger, userId)
+	userInfo, err := mazeuserinfo.GetUserInfoV2(ctx, userId)
 	if err != nil {
 		logger.ErrorWF("HandleMazeBarrierMsg GetUserInfoV2 fail", zap.Error(err))
 		return
@@ -52,10 +58,14 @@ func HandleMazeBarrierMsg(logger fklog.FKLogI, msg *MazeBarrierUserGameRecord) {
 	if !result.IsOpen {
 		return
 	}
-	err = InitMazeCollectLand(logger, userId, userInfo.PassBarrier)
+	//err = InitMazeCollectLand(logger, userId, userInfo.PassBarrier)
+	err, collectInfo = cInfo.NewMazeCollectInfo(userInfo.PassBarrier)
 	if err != nil {
 		logger.ErrorWF("HandleMazeBarrierMsg InitMazeCollectLand", zap.Error(err))
 		return
 	}
+
+	NewCollectAfter(ctx, userId, collectInfo)
+
 	return
 }
