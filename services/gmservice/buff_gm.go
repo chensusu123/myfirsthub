@@ -1,10 +1,12 @@
 package gmservice
 
 import (
+	"encoding/json"
 	"fmt"
 	"maze_game_server/config/GMazeAttributeV8Cfg"
 	"maze_game_server/config/GMazeEnergyAffixV8Cfg"
 	"maze_game_server/io/kafka/mazetempbuffchgmsg"
+	"maze_game_server/model/gmmodel"
 	"maze_game_server/model/tempbuffmodel"
 	"maze_game_server/services/tempbuffservice"
 	"net/http"
@@ -20,7 +22,20 @@ func (s *service) SetMazeTempBuff(writer http.ResponseWriter, request *http.Requ
 	// 外网线上环境不允许使用GM
 	ctx := request.Context()
 	logger := fklog.ContextAppLogger(ctx)
-	request.ParseForm()
+
+	var outPut gmmodel.Output
+	defer func() {
+		jsonOut, err := json.Marshal(outPut)
+		if err != nil {
+			logger.CtxError(ctx, "Post: /AddItem  Marshal Fail",
+				zap.Any("request", request),
+				zap.Any("ouput", outPut),
+				zap.Error(err),
+			)
+		}
+		writer.Write(jsonOut)
+	}()
+
 	userId := fkutil.ToUint64(request.Form.Get("user_id"))
 	barrierId := fkutil.ToInt32(request.Form.Get("stageId"))
 	buffs := request.Form.Get("buffs")
@@ -38,7 +53,7 @@ func (s *service) SetMazeTempBuff(writer http.ResponseWriter, request *http.Requ
 
 	if userId == 0 || barrierId == 0 || len(buffs) == 0 {
 		logger.CtxError(ctx, "setMazeTempBuff args is error")
-		_, _ = writer.Write([]byte("set maze temp buff args is error"))
+		outPut = *gmmodel.NewOutPut(http.StatusBadGateway, "set maze temp buff args is error", gmmodel.DynamicData{})
 		return
 	}
 
@@ -47,7 +62,7 @@ func (s *service) SetMazeTempBuff(writer http.ResponseWriter, request *http.Requ
 	buffInfo, err := tempbuffservice.GlobalTempBuffService.GetTempBuffInfo(ctx, userId, barrierId)
 	if err != nil {
 		logger.CtxError(ctx, "setMazeTempBuff GetMazeTempBuff", zap.Error(err))
-		_, _ = writer.Write([]byte("get user buff failed"))
+		outPut = *gmmodel.NewOutPut(http.StatusBadGateway, "get user buff failed", gmmodel.DynamicData{})
 		return
 	}
 
@@ -96,7 +111,7 @@ func (s *service) SetMazeTempBuff(writer http.ResponseWriter, request *http.Requ
 
 	if len(successList) == 0 {
 		logger.CtxWarn(ctx, "setMazeTempBuff optionalList is nil")
-		_, _ = writer.Write([]byte("not have optional buff, failed buff:" + strings.Join(failedList, ",") + " errs:" + strings.Join(errs, ",")))
+		outPut = *gmmodel.NewOutPut(http.StatusBadGateway, "not have optional buff, failed buff:"+strings.Join(failedList, ",")+" errs:"+strings.Join(errs, ","), gmmodel.DynamicData{})
 		return
 	}
 
@@ -108,7 +123,7 @@ func (s *service) SetMazeTempBuff(writer http.ResponseWriter, request *http.Requ
 			for id := range config.Add_attr {
 				attrCfg := GMazeAttributeV8Cfg.Get(id)
 				if attrCfg == nil {
-					fmt.Fprintf(writer, "词条[%d]增加的属性[%d]配置无效，请检查属性配置表: maze_attribute_v8【迷宫-属性】.xlsx", info.BuffId, id)
+					outPut = *gmmodel.NewOutPut(http.StatusBadGateway, fmt.Sprintf("词条[%d]增加的属性[%d]配置无效，请检查属性配置表: maze_attribute_v8【迷宫-属性】.xlsx", info.BuffId, id), gmmodel.DynamicData{})
 					return
 				}
 			}
@@ -122,7 +137,7 @@ func (s *service) SetMazeTempBuff(writer http.ResponseWriter, request *http.Requ
 	err = buffInfo.Save(ctx, userId, barrierId)
 	if err != nil {
 		logger.CtxError(ctx, "setMazeTempBuff SetMazeTempBuff failed", zap.Any("info", buffInfo), zap.Error(err))
-		_, _ = writer.Write([]byte("save buff failed"))
+		outPut = *gmmodel.NewOutPut(http.StatusBadGateway, "save buff failed", gmmodel.DynamicData{})
 		return
 	}
 
@@ -146,10 +161,12 @@ func (s *service) SetMazeTempBuff(writer http.ResponseWriter, request *http.Requ
 
 	msg.ChgAttrs = chgAttrs
 	_ = mazetempbuffchgmsg.PushTempBuffChangeMsg(ctx, msg)
-	_, _ = writer.Write([]byte("set success buff:" + strings.Join(successList, ",")))
+
+	logger.CtxInfo(ctx, "set success buff:"+strings.Join(successList, ","))
 	if len(failedList) > 0 {
-		_, _ = writer.Write([]byte("failed buff:" + strings.Join(failedList, ",")))
+		logger.CtxWarn(ctx, "failed buff:"+strings.Join(failedList, ","))
 	}
+	outPut = *gmmodel.NewOutPut(http.StatusOK, "操作成功", gmmodel.DynamicData{})
 
 	// // buff中心
 	// forceAttr, err := GetSelectBuffForceAttr(buffInfo.TotalBuff)

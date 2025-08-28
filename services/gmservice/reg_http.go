@@ -10,11 +10,12 @@ func (s *service) RegHttp(logger fklog.FKLogI) {
 	s.SafeGETRegister(logger, "/SetBarrier", s.SetBarrier)
 	s.SafeGETRegister(logger, "/DumpBattleData", s.DumpBattleData)
 	s.SafeGETRegister(logger, "/attrs", s.Attrs)
+	s.SafePOSTRegister(logger, "/SetLevel", s.SetUserLevel)
 	// buff
-	s.SafeGETRegister(logger, "/setMazeTempBuff", s.SetMazeTempBuff)
+	s.SafePOSTRegister(logger, "/setMazeTempBuff", s.SetMazeTempBuff)
 	// equip
-	s.SafeGETRegister(logger, "/AddEquip", s.AddEquip)
-	s.SafeGETRegister(logger, "/GmEquipPosLvUp", s.GmEquipPosLvUp)
+	s.SafePOSTRegister(logger, "/AddEquip", s.AddEquip)
+	s.SafePOSTRegister(logger, "/GmEquipPosLvUp", s.GmEquipPosLvUp)
 	s.SafeGETRegister(logger, "/GetEquipInfoByCfgId", s.GetEquipInfoByCfgId)
 	s.SafeGETRegister(logger, "/GetEquipInfoByGuid", s.GetEquipInfoByGuid)
 	s.SafeGETRegister(logger, "/SendOneSuitEquip", s.SendOneSuitEquip)
@@ -30,10 +31,10 @@ func (s *service) RegHttp(logger fklog.FKLogI) {
 	s.SafeGETRegister(logger, "/generateUser", s.GenerateUser)
 	s.SafeGETRegister(logger, "/online", s.Online)
 	// item
-	s.SafeGETRegister(logger, "/AddExp", s.AddExp)
-	s.SafeGETRegister(logger, "/addRefreshCost", s.AddRefreshCost)
-	s.SafeGETRegister(logger, "/addEnergy", s.AddEnergy)
-	s.SafeGETRegister(logger, "/addItem", s.AddItem)
+	s.SafePOSTRegister(logger, "/AddExp", s.AddExp)
+	s.SafePOSTRegister(logger, "/addRefreshCost", s.AddRefreshCost)
+	s.SafePOSTRegister(logger, "/addEnergy", s.AddEnergy)
+	s.SafePOSTRegister(logger, "/addItem", s.AddItem)
 	// excel
 	s.SafeGETRegister(logger, "/showSheet", s.ShowSheet)
 	s.SafeGETRegister(logger, "/GetExcelList", s.GetExcelList)

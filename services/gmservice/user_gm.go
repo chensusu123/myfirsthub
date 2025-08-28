@@ -8,10 +8,13 @@ import (
 	"maze_game_server/config/GMazeAttributeV8Cfg"
 	"maze_game_server/config/GMazeBarriesV8Cfg"
 	"maze_game_server/config/GMazeEnergyAffixV8Cfg"
+	"maze_game_server/io/kafka/mazeuserlevelkafka"
 	"maze_game_server/io/redis/mazecalcattrredis"
 	"maze_game_server/io/redis/mazefixedbarrierredis"
+	"maze_game_server/model/gmmodel"
 	"maze_game_server/model/tempbuffmodel"
 	"maze_game_server/module/dollassembleinfo"
+	"maze_game_server/module/mazecommonvalue"
 	"maze_game_server/module/mazeuserinfo"
 	"maze_game_server/servers/maze_main_server/process/equip_gm/equipaassemblegm"
 	"maze_game_server/servers/maze_main_server/process/game"
@@ -39,33 +42,46 @@ func (s *service) SetBarrier(writer http.ResponseWriter, request *http.Request) 
 	ctx := request.Context()
 	logger := fklog.ContextAppLogger(ctx)
 
+	var outPut gmmodel.Output
+	defer func() {
+		jsonOut, err := json.Marshal(outPut)
+		if err != nil {
+			logger.CtxError(ctx, "Post: /AddItem  Marshal Fail",
+				zap.Any("request", request),
+				zap.Any("ouput", outPut),
+				zap.Error(err),
+			)
+		}
+		writer.Write(jsonOut)
+	}()
+
 	var params SetBarrierParams
 
 	err := form.Decode(&params, request.Form)
 	if err != nil {
-		writer.Write([]byte("参数不正确"))
+		outPut = *gmmodel.NewOutPut(http.StatusBadGateway, "参数不正确", gmmodel.DynamicData{})
 		return
 	}
 
 	logger.SetLogId(time.Now().UnixNano())
 
 	if params.UserID <= 0 || params.BarrierID <= 0 {
-		writer.Write([]byte("参数不正确"))
+		outPut = *gmmodel.NewOutPut(http.StatusBadGateway, "参数不正确", gmmodel.DynamicData{})
 		return
 	}
 
 	userInfo, err := mazeuserinfo.GetUserInfoV2(ctx, params.UserID)
 	if err != nil {
 		logger.CtxError(ctx, "SetBarrier GetUserInfoV2 fail", zap.Error(err))
-		writer.Write([]byte(err.Error()))
+		outPut = *gmmodel.NewOutPut(http.StatusBadGateway, err.Error(), gmmodel.DynamicData{})
 		return
 	}
 
-	barrierCfg := GMazeBarriesV8Cfg.Get(params.BarrierID)
+	barrierCfg := GMazeBarriesV8Cfg.GetWithCtx(ctx, params.BarrierID)
 	if barrierCfg == nil {
 		errCfg := errors.New("cant find barrier cfg")
 		logger.CtxError(ctx, "SetBarrier Get barrier fail", zap.Error(err))
-		writer.Write([]byte(errCfg.Error()))
+		outPut = *gmmodel.NewOutPut(http.StatusBadGateway, errCfg.Error(), gmmodel.DynamicData{})
 		return
 	}
 
@@ -83,7 +99,7 @@ func (s *service) SetBarrier(writer http.ResponseWriter, request *http.Request) 
 	err = mazeuserinfo.SetUserInfoV2(ctx, params.UserID, userInfo)
 	if err != nil {
 		logger.CtxError(ctx, "SetBarrier SetUserInfoV2 fail", zap.Error(err))
-		writer.Write([]byte(err.Error()))
+		outPut = *gmmodel.NewOutPut(http.StatusBadGateway, err.Error(), gmmodel.DynamicData{})
 		return
 	}
 
@@ -94,7 +110,7 @@ func (s *service) SetBarrier(writer http.ResponseWriter, request *http.Request) 
 		mazefixedbarrierredis.DelUserFixedBarrierID(ctx, params.UserID)
 	}
 
-	writer.Write([]byte("设置成功，注意尽量不要在迷宫杀怪时使用本gm"))
+	outPut = *gmmodel.NewOutPut(http.StatusOK, "操作成功", gmmodel.DynamicData{})
 }
 
 func (s *service) DumpBattleData(writer http.ResponseWriter, request *http.Request) {
@@ -297,4 +313,61 @@ func (s *service) LookAssembleInfo(writer http.ResponseWriter, request *http.Req
 	r := showBuff.String()
 	writer.Write([]byte(r))
 	logger.CtxInfo(ctx, "LookAssembleInfo end")
+}
+
+func (s *service) SetUserLevel(writer http.ResponseWriter, request *http.Request) {
+	ctx := request.Context()
+	logger := fklog.ContextAppLogger(ctx)
+
+	var outPut gmmodel.Output
+	defer func() {
+		jsonOut, err := json.Marshal(outPut)
+		if err != nil {
+			logger.CtxError(ctx, "Post: /SetUserLevel  Marshal Fail",
+				zap.Any("request", request),
+				zap.Any("ouput", outPut),
+				zap.Error(err),
+			)
+		}
+		writer.Write(jsonOut)
+	}()
+
+	userId := fkutil.ToUint64(request.Form.Get("user_id"))
+	newLevel := fkutil.ToInt64(request.Form.Get("level"))
+	logger.SetLogId(time.Now().UnixNano())
+
+	userInfo, err := mazeuserinfo.GetUserInfoV2(ctx, userId)
+	if err != nil {
+		logger.CtxError(ctx, "SetUserLevel GetUserInfoV2 fail", zap.Error(err))
+		outPut = *gmmodel.NewOutPut(http.StatusBadGateway, fmt.Sprintf("errMsg: %s", err.Error()), gmmodel.DynamicData{})
+		return
+	}
+
+	oldLevel := userInfo.Level
+	oldExp := userInfo.TotalExp
+
+	// 更新等级经验
+	userInfo.SetLevel(newLevel)
+	userInfo.SetExp(0)
+
+	err = mazeuserinfo.SetUserInfoV2(ctx, userId, userInfo)
+	if err != nil {
+		logger.CtxError(ctx, "SetUserLevel SetUserInfoV2 fail", zap.Error(err))
+		outPut = *gmmodel.NewOutPut(http.StatusBadGateway, fmt.Sprintf("errMsg: %s", err.Error()), gmmodel.DynamicData{})
+		return
+	}
+	mazecommonvalue.HandleUserLevelExpChg(logger, userId, userInfo.Level, userInfo.Exp, "")
+
+	defer func() {
+		levelRecord := &mazeuserlevelkafka.MazeUserLevelRecord{
+			UserId:      userId,
+			OldLevel:    int32(oldLevel),
+			OldTotalExp: oldExp,
+			NewLevel:    int32(newLevel),
+			NewTotalExp: int32(oldExp),
+		}
+		mazeuserlevelkafka.PushMazeLevelRecord(ctx, levelRecord)
+	}()
+
+	outPut = *gmmodel.NewOutPut(http.StatusOK, "操作成功", gmmodel.DynamicData{})
 }

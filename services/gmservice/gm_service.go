@@ -1,6 +1,7 @@
 package gmservice
 
 import (
+	"maze_game_server/model/gmmodel"
 	"net/http"
 
 	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fklog"
@@ -9,6 +10,8 @@ import (
 type gmService interface {
 	// 注册gm接口
 	SafeGETRegister(logger fklog.FKLogI, pattern string, handler func(http.ResponseWriter, *http.Request))
+	SafePOSTRegister(logger fklog.FKLogI, pattern string, handler func(http.ResponseWriter, *http.Request))
+
 	// buffGM
 	//	-- 设置临时buff
 	SetMazeTempBuff(writer http.ResponseWriter, request *http.Request)
@@ -24,6 +27,7 @@ type gmService interface {
 	SetBarrier(writer http.ResponseWriter, request *http.Request)
 	DumpBattleData(writer http.ResponseWriter, request *http.Request)
 	Attrs(writer http.ResponseWriter, request *http.Request)
+	SetUserLevel(writer http.ResponseWriter, request *http.Request)
 
 	// equipGM
 	GetEquipInfoByCfgId(writer http.ResponseWriter, request *http.Request)
@@ -48,7 +52,7 @@ type gmService interface {
 	GetExcelSheet(writer http.ResponseWriter, request *http.Request)
 	GetExcelData(writer http.ResponseWriter, request *http.Request)
 	readExcelFile(filePath, sheetName string) ([][]string, error)
-	convertTableToJSON(table [][]string) ExcelOutput
+	convertTableToJSON(table [][]string) gmmodel.Output
 
 	// 统一注册http接口
 	RegHttp(logger fklog.FKLogI)
@@ -58,12 +62,12 @@ var GmService gmService
 
 type service struct {
 	// 表数据缓存 todo 该数据和使用数据为同一份
-	sheetDataCache map[string]DynamicData
+	sheetDataCache map[string]gmmodel.DynamicData
 }
 
 func NewGmService() gmService {
 	svr := &service{}
-	svr.sheetDataCache = make(map[string]DynamicData)
+	svr.sheetDataCache = make(map[string]gmmodel.DynamicData)
 	return svr
 }
 

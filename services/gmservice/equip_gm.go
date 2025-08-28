@@ -2,12 +2,14 @@ package gmservice
 
 import (
 	"bytes"
+	"encoding/json"
 	"fmt"
 	"maze_game_server/common/tradeno"
 	"maze_game_server/config/GMazeEquipInfoV8Cfg"
 	"maze_game_server/io/redis/mazeequipgetnumredis"
 	"maze_game_server/io/redis/mazeuserlevelredis"
 	"maze_game_server/io/rpc/dollequipbagrpc"
+	"maze_game_server/model/gmmodel"
 	"maze_game_server/pb/server/MazeEquipSvr"
 	"maze_game_server/servers/maze_main_server/process/equip"
 	"maze_game_server/servers/maze_main_server/process/equip_gm/equipaassemblegm"
@@ -228,21 +230,46 @@ func (s *service) GmEquipPosLvUp(writer http.ResponseWriter, request *http.Reque
 	ctx := request.Context()
 	logger := fklog.ContextAppLogger(ctx)
 
+	var outPut gmmodel.Output
+	defer func() {
+		jsonOut, err := json.Marshal(outPut)
+		if err != nil {
+			logger.CtxError(ctx, "Post: /AddItem  Marshal Fail",
+				zap.Any("request", request),
+				zap.Any("ouput", outPut),
+				zap.Error(err),
+			)
+		}
+		writer.Write(jsonOut)
+	}()
+
 	uid := fkutil.ToUint64(request.Form.Get("user_id"))
 	logger.SetUid(uid)
 	targetLv := fkutil.ToInt32(request.Form.Get("lv"))
 	e := equip.OnGmEquipPosLvUp(ctx, uid, targetLv)
 	if e == nil {
-		writer.Write([]byte(string("ok")))
+		outPut = *gmmodel.NewOutPut(http.StatusOK, "操作成功", gmmodel.DynamicData{})
 	} else {
-		writer.Write([]byte(e.Error()))
+		outPut = *gmmodel.NewOutPut(http.StatusBadGateway, e.Error(), gmmodel.DynamicData{})
 	}
 }
 
 func (s *service) AddEquip(writer http.ResponseWriter, request *http.Request) {
 	ctx := request.Context()
-	// 外网线上环境不允许使用GM
-	request.ParseForm()
+	logger := fklog.ContextAppLogger(ctx)
+
+	var outPut gmmodel.Output
+	defer func() {
+		jsonOut, err := json.Marshal(outPut)
+		if err != nil {
+			logger.CtxError(ctx, "Post: /AddItem  Marshal Fail",
+				zap.Any("request", request),
+				zap.Any("ouput", outPut),
+				zap.Error(err),
+			)
+		}
+		writer.Write(jsonOut)
+	}()
 
 	userId := fkutil.ToUint64(request.Form.Get("user_id"))
 	equipId := fkutil.ToInt32(request.Form.Get("equipId"))
@@ -252,7 +279,7 @@ func (s *service) AddEquip(writer http.ResponseWriter, request *http.Request) {
 	tailType := fkutil.ToInt32(request.Form.Get("tailType"))
 
 	if subType > 6 {
-		writer.Write([]byte("subType 子类型无效"))
+		outPut = *gmmodel.NewOutPut(http.StatusBadGateway, "subType 子类型无效", gmmodel.DynamicData{})
 		return
 	}
 
@@ -293,10 +320,11 @@ func (s *service) AddEquip(writer http.ResponseWriter, request *http.Request) {
 	req.TradeNumber = proto.Uint64(tradeno.GetTradeNum())
 	err := dollequipbagrpc.MazeBagAddRQ(ctx, req, res)
 	if err != nil {
-		writer.Write([]byte(err.Error()))
+		outPut = *gmmodel.NewOutPut(http.StatusBadGateway, fmt.Sprintf("errMsg: %s", err.Error()), gmmodel.DynamicData{})
 		return
 	}
-	writer.Write([]byte("ok"))
+
+	outPut = *gmmodel.NewOutPut(http.StatusOK, "操作成功", gmmodel.DynamicData{})
 	return
 }
 
@@ -334,19 +362,31 @@ func (s *service) SetEquipRollScore(writer http.ResponseWriter, request *http.Re
 
 func (s *service) BatchAddEquip(writer http.ResponseWriter, request *http.Request) {
 	ctx := request.Context()
-	// 外网线上环境不允许使用GM
-	request.ParseForm()
+	logger := fklog.ContextAppLogger(ctx)
+
+	var outPut gmmodel.Output
+	defer func() {
+		jsonOut, err := json.Marshal(outPut)
+		if err != nil {
+			logger.CtxError(ctx, "Post: /AddItem  Marshal Fail",
+				zap.Any("request", request),
+				zap.Any("ouput", outPut),
+				zap.Error(err),
+			)
+		}
+		writer.Write(jsonOut)
+	}()
 
 	uid := fkutil.ToUint64(request.Form.Get("user_id"))
 	param := request.Form.Get("equips")
 	rp := request.Form.Get("rules")
 	if uid <= 0 {
-		writer.Write([]byte("uid 不能为0"))
+		outPut = *gmmodel.NewOutPut(http.StatusBadGateway, "user_id不合法", gmmodel.DynamicData{})
 		return
 	}
 
 	if param == "" {
-		writer.Write([]byte("请指定装备参数"))
+		outPut = *gmmodel.NewOutPut(http.StatusBadGateway, "请指定装备参数", gmmodel.DynamicData{})
 		return
 	}
 	rulesMap := equipbaggm.ParseRules(rp)
@@ -361,7 +401,7 @@ func (s *service) BatchAddEquip(writer http.ResponseWriter, request *http.Reques
 			equipId := fkutil.ToInt32(elems[0])
 			cfg := GMazeEquipInfoV8Cfg.GetWithCtx(ctx, equipId)
 			if cfg == nil {
-				writer.Write([]byte(fmt.Sprintf("equipId(%d)找不到对应的装备配置", equipId)))
+				outPut = *gmmodel.NewOutPut(http.StatusBadGateway, fmt.Sprintf("equipId(%d)找不到对应的装备配置", equipId), gmmodel.DynamicData{})
 				return
 			}
 
@@ -379,7 +419,7 @@ func (s *service) BatchAddEquip(writer http.ResponseWriter, request *http.Reques
 		}
 	}
 	if len(equipConds) > 100 {
-		writer.Write([]byte("一次添加装备太多,最多100件"))
+		outPut = *gmmodel.NewOutPut(http.StatusBadGateway, "一次添加装备太多,最多100件", gmmodel.DynamicData{})
 		return
 	}
 
@@ -389,10 +429,11 @@ func (s *service) BatchAddEquip(writer http.ResponseWriter, request *http.Reques
 	req.TradeNumber = proto.Uint64(tradeno.GetTradeNum())
 	err := dollequipbagrpc.MazeBagAddRQ(ctx, req, res)
 	if err != nil {
-		writer.Write([]byte(err.Error()))
+		outPut = *gmmodel.NewOutPut(http.StatusBadGateway, fmt.Sprintf("errMsg: %s", err.Error()), gmmodel.DynamicData{})
 		return
 	}
-	writer.Write([]byte("ok"))
+
+	outPut = *gmmodel.NewOutPut(http.StatusOK, "操作成功", gmmodel.DynamicData{})
 }
 
 func (s *service) FixAllEquipAttrLimit(writer http.ResponseWriter, request *http.Request) {

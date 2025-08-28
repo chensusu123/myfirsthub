@@ -4,33 +4,18 @@ import (
 	"encoding/csv"
 	"encoding/json"
 	"fmt"
+	"maze_game_server/model/gmmodel"
 	"net/http"
 	"os"
 
 	"github.com/iancoleman/orderedmap"
+	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fklog"
 	"gitlab.ifreetalk.com/maze-plate/freetk/fkserver/config_manager"
+	"go.uber.org/zap"
 )
 
-type ShowSheet struct {
-	ErrorCode uint64                          `json:"errorCode"`
-	ErrorMsg  string                          `json:"errorMsg"`
-	Data      []config_manager.ConfigShowItem `json:"data"`
-}
-
-type ExcelOutput struct {
-	Status int         `json:"status"`
-	Desc   string      `json:"desc"`
-	Data   DynamicData `json:"data"`
-}
-
-// 调整DynamicData以使用有序map
-type DynamicData struct {
-	List  []*orderedmap.OrderedMap `json:"list"` // 有序map切片，保证对象格式和顺序
-	Total int                      `json:"total"`
-}
-
 func (s *service) ShowSheet(writer http.ResponseWriter, request *http.Request) {
-	showSheet := &ShowSheet{}
+	showSheet := gmmodel.NewSheet()
 	defer func() {
 		jsonData, err := json.Marshal(showSheet)
 		if err != nil {
@@ -45,6 +30,21 @@ func (s *service) ShowSheet(writer http.ResponseWriter, request *http.Request) {
 }
 
 func (s *service) GetExcelList(writer http.ResponseWriter, request *http.Request) {
+	ctx := request.Context()
+	logger := fklog.ContextAppLogger(ctx)
+
+	var outPut gmmodel.Output
+	defer func() {
+		jsonOut, err := json.Marshal(outPut)
+		if err != nil {
+			logger.CtxError(ctx, "Post: /AddItem  Marshal Fail",
+				zap.Any("request", request),
+				zap.Any("ouput", outPut),
+				zap.Error(err),
+			)
+		}
+		writer.Write(jsonOut)
+	}()
 	datas := config_manager.ShowSheet()
 
 	var records []*orderedmap.OrderedMap
@@ -55,26 +55,26 @@ func (s *service) GetExcelList(writer http.ResponseWriter, request *http.Request
 
 	}
 
-	output := ExcelOutput{
-		Status: 0,
-		Desc:   "",
-		Data: DynamicData{
-			List:  records,
-			Total: len(records),
-		},
-	}
-
-	jsonOutput, err := json.Marshal(output)
-	if err != nil {
-		writer.Write([]byte(err.Error()))
-		return
-	}
-
-	writer.Header().Set("Content-Type", "application/json")
-	writer.Write(jsonOutput)
+	outPut = *gmmodel.NewOutPut(http.StatusOK, "", *gmmodel.NewDynamicData(records, len(records)))
 }
 
 func (s *service) GetExcelSheet(writer http.ResponseWriter, request *http.Request) {
+	ctx := request.Context()
+	logger := fklog.ContextAppLogger(ctx)
+
+	var outPut gmmodel.Output
+	defer func() {
+		jsonOut, err := json.Marshal(outPut)
+		if err != nil {
+			logger.CtxError(ctx, "Post: /AddItem  Marshal Fail",
+				zap.Any("request", request),
+				zap.Any("ouput", outPut),
+				zap.Error(err),
+			)
+		}
+		writer.Write(jsonOut)
+	}()
+
 	fileName := request.Form.Get("fileName")
 
 	datas := config_manager.ShowSheet()
@@ -88,51 +88,40 @@ func (s *service) GetExcelSheet(writer http.ResponseWriter, request *http.Reques
 		}
 	}
 
-	output := ExcelOutput{
-		Status: 0,
-		Desc:   "",
-		Data: DynamicData{
-			List:  records,
-			Total: len(records),
-		},
-	}
-
-	jsonOutput, err := json.Marshal(output)
-	if err != nil {
-		writer.Write([]byte(err.Error()))
-		return
-	}
-
-	writer.Write(jsonOutput)
+	outPut = *gmmodel.NewOutPut(http.StatusOK, "", *gmmodel.NewDynamicData(records, len(records)))
 }
 
 func (s *service) GetExcelData(writer http.ResponseWriter, request *http.Request) {
+	ctx := request.Context()
+	logger := fklog.ContextAppLogger(ctx)
+
+	var outPut gmmodel.Output
+	defer func() {
+		jsonOut, err := json.Marshal(outPut)
+		if err != nil {
+			logger.CtxError(ctx, "Post: /AddItem  Marshal Fail",
+				zap.Any("request", request),
+				zap.Any("ouput", outPut),
+				zap.Error(err),
+			)
+		}
+		writer.Write(jsonOut)
+	}()
+
 	fileName := request.Form.Get("fileName")
 	sheetName := request.Form.Get("sheetName")
-	var output ExcelOutput
 
 	if data, ok := s.sheetDataCache[sheetName]; ok {
-		output = ExcelOutput{
-			Status: 0,
-			Desc:   "",
-			Data:   data,
-		}
+		outPut = *gmmodel.NewOutPut(http.StatusOK, "", data)
+
 	} else {
 		tableData, err := s.readExcelFile("./conf.d/data/"+fileName, sheetName)
 		if err != nil {
-			writer.Write([]byte(err.Error()))
+			outPut = *gmmodel.NewOutPut(http.StatusBadGateway, err.Error(), gmmodel.DynamicData{})
 			return
 		}
-		output = s.convertTableToJSON(tableData)
+		outPut = s.convertTableToJSON(tableData)
 	}
-
-	jsonOutput, err := json.Marshal(output)
-	if err != nil {
-		writer.Write([]byte(err.Error()))
-		return
-	}
-
-	writer.Write(jsonOutput)
 }
 
 func (s *service) readExcelFile(filePath, sheetName string) ([][]string, error) {
@@ -158,22 +147,14 @@ func (s *service) readExcelFile(filePath, sheetName string) ([][]string, error) 
 }
 
 // 转换任意行列数的表格数据为指定JSON格式（保持对象格式和顺序）
-func (s *service) convertTableToJSON(table [][]string) ExcelOutput {
+func (s *service) convertTableToJSON(table [][]string) gmmodel.Output {
 	if len(table) < 4 {
-		return ExcelOutput{
-			Status: 1,
-			Desc:   "表格数据行数不足，至少需要4行",
-			Data:   DynamicData{},
-		}
+		return *gmmodel.NewOutPut(http.StatusBadRequest, "表格数据行数不足，至少需要4行", gmmodel.DynamicData{})
 	}
 
 	keys := table[2]
 	if len(keys) == 0 {
-		return ExcelOutput{
-			Status: 2,
-			Desc:   "未找到有效键名（第三行）",
-			Data:   DynamicData{},
-		}
+		return *gmmodel.NewOutPut(http.StatusBadRequest, "未找到有效键名（第三行）", gmmodel.DynamicData{})
 	}
 
 	var records []*orderedmap.OrderedMap
@@ -216,12 +197,5 @@ func (s *service) convertTableToJSON(table [][]string) ExcelOutput {
 		records = append(records, dataRecord)
 	}
 
-	return ExcelOutput{
-		Status: 0,
-		Desc:   "",
-		Data: DynamicData{
-			List:  records,
-			Total: len(records),
-		},
-	}
+	return *gmmodel.NewOutPut(http.StatusOK, "", *gmmodel.NewDynamicData(records, len(records)))
 }
