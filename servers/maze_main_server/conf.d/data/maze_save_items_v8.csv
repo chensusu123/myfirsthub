@@ -5,6 +5,6 @@ id,name,iconAtlas,icon,type,argument
 1,木桩,items_atlas_0,deadman,1,6000
 2,木箱,items_atlas_0,wooden,1,6000
 3,石头,items_atlas_0,stone,1,6000
-4,减速带,items_atlas_0,stone,2,"3000,3000,100"
+4,减速带,items_atlas_0,speed_bump,2,"3000,3000,100"
 5,武器1,items_atlas_0,fire_ball,3,"10,10,1000"
 6,武器2,items_atlas_0,ice_ball,3,"30,5,1500"
