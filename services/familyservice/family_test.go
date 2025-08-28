@@ -47,7 +47,7 @@ func TestRedis(t *testing.T) {
 	fmt.Println(res)
 }
 
-func TestCteateFamily(t *testing.T) {
+func TestCreateFamily(t *testing.T) {
 	ctx := context.Background()
 	family, err := GlobalFamilyService.CreateFamily(ctx, uint64(50000001), 1, "family_name1111", 1, familymodel.FamilyMember{
 		UserID:         uint64(50000001),

@@ -82,15 +82,29 @@ func TestQueryMessages(t *testing.T) {
 
 // 读消息
 func TestReadMessage(t *testing.T) {
-	userId := uint64(50000001)
+	userId := uint64(50000002)
+	user, err := app.WrapUser(userId, "")
+	if err != nil {
+		logger.ErrorWF("OnSendMessage WrapUser error", zap.Error(err))
+		return
+	}
+	err = GlobalP2PService.ReadMessage(context.Background(), app.Maze, user, uint64(50000001), 34681021584663748)
+	if err != nil {
+		logger.ErrorWF("OnSendMessage ReadMessage error", zap.Error(err))
+	}
+	fmt.Println("read message success")
+}
+
+func TestRemoveMessage(t *testing.T) {
+	userId := uint64(50000002)
 	user, err := app.WrapUser(userId, "")
 	if err != nil {
 		logger.ErrorWF("OnSendMessage WrapUser error", zap.Error(err))
 	}
-	err = GlobalP2PService.ReadMessage(context.Background(), app.Maze, user, uint64(50000002), 34572438872286404)
+	err = GlobalP2PService.RemoveMessage(context.Background(), app.Maze, user, uint64(50000001), 34681021584663748)
 	if err != nil {
-		logger.ErrorWF("OnSendMessage ReadMessage error", zap.Error(err))
+		logger.ErrorWF("OnSendMessage RemoveMessage error", zap.Error(err))
 	}
 
-	fmt.Println("read message success")
+	fmt.Println("remove message success")
 }

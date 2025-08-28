@@ -6,6 +6,7 @@ import (
 	grouppkg "maze_game_server/io/redis/im/group"
 	"maze_game_server/io/redis/im/msgstore/groupmsg"
 	"maze_game_server/lib/idgenerator"
+	"maze_game_server/services/sessionservice"
 	"time"
 
 	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fklog"
@@ -108,11 +109,18 @@ func (g *group) SendMessage(ctx context.Context, a app.App, groupID int32, sende
 		logger.CtxError(ctx, "SendMessage error", zap.Error(err), zap.Uint64("sender", sender), zap.Int32("_type", _type), zap.String("content", content))
 		return 0, err
 	}
-	err = g.notifyGroupMessage(ctx, a, sender, messageID, _type, groupID, content)
+	err = g.notifyGroupMessage(ctx, a, sender, messageID, _type, groupID, 10651, content)
 	if err != nil {
 		logger.CtxError(ctx, "notifyGroupMessage error", zap.Error(err), zap.Uint64("sender", sender), zap.Int32("_type", _type), zap.String("content", content))
 		return 0, err
 	}
+	//创建群组成员会话
+	user, err := app.WrapUser(sender, "")
+	if err != nil {
+		logger.CtxError(ctx, "WrapUser error", zap.Error(err), zap.Uint64("sender", sender))
+		return 0, err
+	}
+	sessionservice.Default.CreateGroupSession(ctx, a, user, groupID)
 	return messageID, nil
 }
 
@@ -133,7 +141,7 @@ func (g *group) InviteMember(ctx context.Context, a app.App, groupID int32, memb
 	return grouppkg.InviteMember(ctx, a.ID(), groupID, memberID)
 }
 
-func (g *group) notifyGroupMessage(ctx context.Context, a app.App, userId uint64, messageID uint64, _type int32, groupID int32, content string) error {
+func (g *group) notifyGroupMessage(ctx context.Context, a app.App, userId uint64, messageID uint64, _type int32, groupID int32, packId uint16, content string) error {
 	logger := fklog.ContextAppLogger(ctx)
 	groupInfo, err := g.GetGroupInfo(ctx, a, groupID)
 	if err != nil {
@@ -159,10 +167,17 @@ func (g *group) notifyGroupMessage(ctx context.Context, a app.App, userId uint64
 			},
 		}
 		logger.CtxInfo(ctx, "notifyMessage group", zap.Any("notifyMessage group", notifyMessage))
-		err = online.ClusterPush(ctx, userId, 10651, notifyMessage)
+		err = online.ClusterPush(ctx, userId, packId, notifyMessage)
 		if err != nil {
 			logger.CtxError(ctx, "notifyMessage error", zap.Error(err), zap.Any("notifyMessage", notifyMessage))
 		}
+		//创建群组成员会话
+		user, err := app.WrapUser(member.UserID, "")
+		if err != nil {
+			logger.CtxError(ctx, "WrapUser error", zap.Error(err), zap.Uint64("userId", member.UserID))
+			continue
+		}
+		sessionservice.Default.CreateGroupSession(ctx, a, user, groupID)
 	}
 	return nil
 }

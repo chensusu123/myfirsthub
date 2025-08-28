@@ -2,9 +2,11 @@ package p2pservice
 
 import (
 	"context"
+	"fmt"
 	"maze_game_server/app"
 	"maze_game_server/io/redis/im/msgstore/p2pmsg"
 	"maze_game_server/lib/idgenerator"
+	"maze_game_server/services/sessionservice"
 	"time"
 
 	"maze_game_server/pb/common/MazeIM"
@@ -108,25 +110,47 @@ func (p *p2p) SendMessage(ctx context.Context, a app.App, user app.User, peerID 
 		logger.CtxError(ctx, "SaveMessage peer error", zap.Error(err))
 	}
 	// 通知接收者
-	err = p.notifyMessage(ctx, user.UserID(), peerID, messageID, _type, content)
+	err = p.notifyMessage(ctx, user.UserID(), peerID, messageID, _type, 10651, content)
 	if err != nil {
 		logger.CtxError(ctx, "notifyMessage error", zap.Error(err))
 	}
+	//创建发送者会话
+	sessionservice.Default.CreateNormalSession(ctx, a, user, peerID)
+	//创建接收者会话
+	peerUser, err := app.WrapUser(peerID, "")
+	if err != nil {
+		logger.CtxError(ctx, "WrapUser error", zap.Error(err))
+		return 0, err
+	}
+	sessionservice.Default.CreateNormalSession(ctx, a, peerUser, user.UserID())
 	return messageID, nil
 }
 
 // ReadMessage implements P2PService.
 func (p *p2p) ReadMessage(ctx context.Context, a app.App, user app.User, peerID uint64, messageID uint64) (err error) {
-	return p2pmsg.ReadMessage(ctx, a.ID(), user.UserID(), peerID, messageID)
+	//这里peerid是此消息发送者的id user.UserID()是接收者的id
+	err = p2pmsg.ReadMessage(ctx, a.ID(), peerID, user.UserID(), messageID)
+	if err != nil {
+		fmt.Println("ReadMessage error:", err)
+		return err
+	}
+	//通知接收者
+	err = p.notifyMessage(ctx, user.UserID(), peerID, messageID, 1, 10656, "")
+	if err != nil {
+		fmt.Println("notifyMessage error:", err)
+		return err
+	}
+	return nil
 }
 
 // RemoveMessage implements P2PService.
 func (p *p2p) RemoveMessage(ctx context.Context, a app.App, user app.User, peerID uint64, messageID uint64) (err error) {
-	return
+	return p2pmsg.RemoveMessage(ctx, a.ID(), user.UserID(), peerID, messageID)
+
 }
 
 // notifyMessage 通知接收者
-func (p *p2p) notifyMessage(ctx context.Context, userId uint64, peerID uint64, messageID uint64, _type int32, content string) error {
+func (p *p2p) notifyMessage(ctx context.Context, userId uint64, peerID uint64, messageID uint64, _type int32, packId uint16, content string) error {
 	logger := fklog.ContextAppLogger(ctx)
 	// 推送消息给集群
 	notifyMessage := &MazeIM.MessageNotificationID{
@@ -142,7 +166,7 @@ func (p *p2p) notifyMessage(ctx context.Context, userId uint64, peerID uint64, m
 		},
 	}
 	logger.CtxInfo(ctx, "notifyMessage", zap.Any("notifyMessage", notifyMessage))
-	err := online.ClusterPush(ctx, userId, 10651, notifyMessage)
+	err := online.ClusterPush(ctx, userId, packId, notifyMessage)
 	if err != nil {
 		logger.CtxError(ctx, "notifyMessage error", zap.Error(err), zap.Any("notifyMessage", notifyMessage))
 	}

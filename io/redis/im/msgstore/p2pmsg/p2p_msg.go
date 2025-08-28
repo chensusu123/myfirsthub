@@ -140,6 +140,11 @@ func ReadMessage(ctx context.Context, appID int32, userID, peerID uint64, messag
 		logger.CtxError(ctx, "ReadMessage Unmarshal fail", zap.Error(err), zap.String("value", member[0]))
 		return err
 	}
+	if message.HasRead {
+		// 已经标记为已读，不需要再次标记
+		logger.CtxInfo(ctx, "ReadMessage already read", zap.Any("key", key), zap.Any("message", message))
+		return nil
+	}
 	message.HasRead = true
 	messageData, err := json.Marshal(message)
 	if err != nil {
@@ -175,5 +180,56 @@ func ReadMessage(ctx context.Context, appID int32, userID, peerID uint64, messag
 		}
 	}
 	logger.CtxInfo(ctx, "ReadMessage success", zap.Any("key", key), zap.Any("message", message))
+	return
+}
+
+//删除消息
+func RemoveMessage(ctx context.Context, appID int32, userID, peerID uint64, messageID uint64) (err error) {
+	logger := fklog.ContextAppLogger(ctx)
+	var (
+		key = getKey(appID, userID, peerID)
+	)
+	cli, err := globalredis.GCli.GetDB()
+	if err != nil {
+		logger.CtxError(ctx, "RemoveMessage Client fail",
+			zap.Error(err),
+			zap.Any("key", key),
+		)
+		return err
+	}
+	//取出messageid对应的value
+	member, err := cli.ZRangeByScore(ctx, key, &redis.ZRangeBy{
+		Min: strconv.FormatUint(messageID, 10),
+		Max: strconv.FormatUint(messageID, 10),
+	}).Result()
+	if err != nil {
+		if errors.Is(err, redis.Nil) {
+			err = nil
+		} else {
+			logger.CtxError(ctx, "RemoveMessage getZValue fail",
+				zap.Error(err),
+				zap.Any("key", key),
+				zap.Any("messageID", messageID),
+			)
+			return err
+		}
+	}
+	if len(member) == 0 {
+		return nil
+	}
+	// 删除消息
+	err = cli.ZRem(ctx, key, member[0]).Err()
+	if err != nil {
+		if errors.Is(err, redis.Nil) {
+			err = nil
+		} else {
+			logger.CtxError(ctx, "RemoveMessage ZRem fail",
+				zap.Error(err),
+				zap.Any("key", key),
+			)
+			return err
+		}
+	}
+	logger.CtxInfo(ctx, "RemoveMessage success", zap.Any("key", key), zap.Any("messageID", messageID))
 	return
 }
