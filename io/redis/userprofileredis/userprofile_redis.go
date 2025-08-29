@@ -6,8 +6,8 @@ import (
 	"context"
 	"fmt"
 
+	"github.com/go-redis/redis"
 	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/database/nanoredis"
-	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fkredis/redis"
 )
 
 var GlobalUserProfileRedis *UserProfileRedis
@@ -26,29 +26,29 @@ func (r *UserProfileRedis) getKey(userID uint64) string {
 }
 
 // SetProfile 设置用户资料
-func (r *UserProfileRedis) SetProfile(userID uint64, data []byte) error {
+func (r *UserProfileRedis) SetProfile(ctx context.Context, userID uint64, data []byte) error {
 	db, err := r.GetDB()
 	if err != nil {
 		return err
 	}
-	return db.Set(context.TODO(), r.getKey(userID), data, 0).Err()
+	return db.Set(ctx, r.getKey(userID), data, 0).Err()
 }
 
 // GetProfile 获取用户资料
-func (r *UserProfileRedis) GetProfile(userID uint64) ([]byte, error) {
+func (r *UserProfileRedis) GetProfile(ctx context.Context, userID uint64) ([]byte, error) {
 	db, err := r.GetDB()
 	if err != nil {
 		return nil, err
 	}
-	ret, err := db.Get(context.TODO(), r.getKey(userID)).Bytes()
-	if err == redis.ErrNil {
+	ret, err := db.Get(ctx, r.getKey(userID)).Bytes()
+	if err == redis.Nil {
 		return nil, nil
 	}
 	return ret, err
 }
 
 // BatchGetProfile 批量获取用户资料
-func (r *UserProfileRedis) BatchGetProfile(userIDs []uint64) ([][]byte, error) {
+func (r *UserProfileRedis) BatchGetProfile(ctx context.Context, userIDs []uint64) ([][]byte, error) {
 	db, err := r.GetDB()
 	if err != nil {
 		return nil, err
@@ -57,9 +57,9 @@ func (r *UserProfileRedis) BatchGetProfile(userIDs []uint64) ([][]byte, error) {
 	for i, userID := range userIDs {
 		args[i] = r.getKey(userID)
 	}
-	result, err := db.MGet(context.TODO(), args...).Result()
-	if err == redis.ErrNil {
-		return nil, nil
+	result, err := db.MGet(ctx, args...).Result()
+	if err != redis.Nil {
+		return nil, err
 	}
 	ret := make([][]byte, len(result))
 	for _, v := range result {
@@ -73,10 +73,10 @@ func (r *UserProfileRedis) BatchGetProfile(userIDs []uint64) ([][]byte, error) {
 }
 
 // DeleteProfile 删除用户资料
-func (r *UserProfileRedis) DelProfile(userID uint64) error {
+func (r *UserProfileRedis) DelProfile(ctx context.Context, userID uint64) error {
 	db, err := r.GetDB()
 	if err != nil {
 		return err
 	}
-	return db.Del(context.TODO(), r.getKey(userID)).Err()
+	return db.Del(ctx, r.getKey(userID)).Err()
 }

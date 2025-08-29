@@ -1,17 +1,19 @@
 package userprofile
 
 import (
+	"context"
 	"time"
 
 	"github.com/dgrijalva/jwt-go"
-	"gitlab.ifreetalk.com/nano-ecosystem/fklog"
+	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fklog"
 	"go.uber.org/zap"
 )
 
-func CreateAvatarToken(logger fklog.FKLogI) (string, error) {
+func CreateAvatarToken(ctx context.Context) (string, error) {
+	logger := fklog.ContextAppLogger(ctx)
 	token, err := GenerateAvatarToken()
 	if err != nil {
-		logger.ErrorWF("CreateAvatarToken failed", zap.Error(err))
+		logger.CtxError(ctx, "CreateAvatarToken failed", zap.Error(err))
 		return "", err
 	}
 	return token, nil
