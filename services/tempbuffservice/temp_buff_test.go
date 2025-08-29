@@ -102,3 +102,29 @@ func TestGetTempBuffGroupList(t *testing.T) {
 	}
 	_ = groupList
 }
+
+func TestCalcLibraryAddWeight(t *testing.T) {
+	s := &service{}
+	weight1 := s.calcLibraryAddWeight(100, []int32{5000, 6000, 7000, 8000}, 0)
+	weight2 := s.calcLibraryAddWeight(100, []int32{5000, 6000, 7000, 8000}, 1)
+	weight3 := s.calcLibraryAddWeight(100, []int32{5000, 6000, 7000, 8000}, 2)
+	weight4 := s.calcLibraryAddWeight(100, []int32{5000, 6000, 7000, 8000}, 3)
+	weight5 := s.calcLibraryAddWeight(100, []int32{5000, 6000, 7000, 8000}, 4)
+	weight6 := s.calcLibraryAddWeight(100, []int32{5000, 6000, 7000, 8000}, 5)
+	weight7 := s.calcLibraryAddWeight(100, []int32{5000, 6000, 7000, 8000}, 6)
+	weight8 := s.calcLibraryAddWeight(100, []int32{}, 1)
+	weight9 := s.calcLibraryAddWeight(100, []int32{}, 2)
+	fmt.Println(weight1, weight2, weight3, weight4, weight5, weight6, weight7, weight8, weight9)
+}
+
+func TestCalcLibrarySubWeight(t *testing.T) {
+	s := &service{}
+	weight1 := s.calcLibrarySubWeight(100, []int32{}, 0)
+	weight2 := s.calcLibrarySubWeight(100, []int32{}, 1)
+	weight3 := s.calcLibrarySubWeight(100, []int32{5000}, 1)
+	weight4 := s.calcLibrarySubWeight(100, []int32{5000}, 2)
+	weight5 := s.calcLibrarySubWeight(100, []int32{5000, 10000}, 1)
+	weight6 := s.calcLibrarySubWeight(100, []int32{5000, 10000}, 2)
+	weight7 := s.calcLibrarySubWeight(100, []int32{5000, 10000}, 0)
+	fmt.Println(weight1, weight2, weight3, weight4, weight5, weight6, weight7)
+}
