@@ -11,7 +11,6 @@ import (
 	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fklog"
 	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fkredis"
 	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fkredis/redis"
-	"gitlab.ifreetalk.com/maze-plate/freetk/fkutil"
 	"go.uber.org/zap"
 	"google.golang.org/protobuf/proto"
 )
@@ -150,7 +149,14 @@ func GetBarrierEnterTime(logger fklog.FKLogI, userID uint64) (enterTime int64, e
 		}
 	}
 	if len(memberAndScore) == 2 {
-		enterTime = fkutil.ToInt64(memberAndScore[1])
+		var event BarrierEvent
+		err = json.Unmarshal([]byte(memberAndScore[0]), &event)
+		if err != nil {
+			logger.ErrorWF("GetBarrierEnterTime Unmarshal fail", zap.Error(err), zap.Any("memberAndScore", memberAndScore))
+			return 0, err
+		} else {
+			enterTime = event.Time
+		}
 	}
 	return
 }
