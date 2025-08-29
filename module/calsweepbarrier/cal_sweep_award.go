@@ -36,7 +36,7 @@ import (
 // 获取扫荡关卡的奖励 equipItem 通过装备奖励 ohterItem 物品奖励 expItem 经验奖励 equipNum 打怪掉落装备数量
 func GetSweepBarrierAward(ctx context.Context, uid uint64, barrierId int32) (equipItem map[int32]int32, otherItem map[int32]int64, expItem *MazeCommon.MazeItem, equipNum int32, err error) {
 	logger := fklog.ContextAppLogger(ctx)
-	barrierCfg := GMazeBarriesV8Cfg.Get(barrierId)
+	barrierCfg := GMazeBarriesV8Cfg.GetWithCtx(ctx, barrierId)
 	if barrierCfg == nil {
 		logger.CtxError(ctx, "GetSweepBarrierAward get barrier cfg fail", zap.Any("barrierId", barrierId))
 		err = errors.New("barrier cfg nil")
@@ -85,7 +85,7 @@ func GetSweepBarrierAward(ctx context.Context, uid uint64, barrierId int32) (equ
 	var addItem1, addItem2 int32
 	var addExp, addMoney, addEquipPoint int64
 	for foeId, num := range foeCountMap {
-		foeCfg := GMazeFoeV8Cfg.Get(foeId)
+		foeCfg := GMazeFoeV8Cfg.GetWithCtx(ctx, foeId)
 		if foeCfg == nil {
 			logger.CtxError(ctx, "GetSweepBarrierAward get foe cfg fail", zap.Any("foeId", foeId))
 			err = errors.New("foe cfg nil")
@@ -124,7 +124,7 @@ func GetSweepBarrierAward(ctx context.Context, uid uint64, barrierId int32) (equ
 	item1Num := addItem1 / barrierCfg.Need_item1_score
 	if item1Num > 0 {
 		// id从通用配置获取
-		itemConfig := GMazeConfigV8Cfg.Get(901)
+		itemConfig := GMazeConfigV8Cfg.GetWithCtx(ctx, constdef.MazeCfgId901)
 		for _, v := range itemConfig.Value_map {
 			addItems[int32(v)] += int64(item1Num) * int64(barrierCfg.Item1_nums_per_pile)
 		}
@@ -134,7 +134,7 @@ func GetSweepBarrierAward(ctx context.Context, uid uint64, barrierId int32) (equ
 	item2Num := addItem2 / barrierCfg.Need_item2_score
 	if item2Num > 0 {
 		// id从通用配置获取
-		itemConfig := GMazeConfigV8Cfg.Get(902)
+		itemConfig := GMazeConfigV8Cfg.GetWithCtx(ctx, constdef.MazeCfgId902)
 		for _, v := range itemConfig.Value_map {
 			addItems[int32(v)] += int64(item2Num) * int64(barrierCfg.Item2_nums_per_pile)
 		}
@@ -146,8 +146,10 @@ func GetSweepBarrierAward(ctx context.Context, uid uint64, barrierId int32) (equ
 	if addExp > 0 {
 		expItem = &MazeCommon.MazeItem{ItemId: proto.Int32(constdef.MazeCommonItemExp), Count: proto.Int64(addExp)}
 	}
-
-	addItems[constdef.MazeCommonItemCoin] += addMoney
+	// 金币奖励
+	if addMoney > 0 {
+		addItems[constdef.MazeCommonItemCoin] += addMoney
+	}
 
 	otherItem = addItems
 	return
