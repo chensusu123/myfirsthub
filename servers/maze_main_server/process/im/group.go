@@ -77,3 +77,40 @@ func (im *IM) OnSendGroupMessage_10649_10650(s *session.Session, req *MazeIM.Sen
 	res.MsgId = proto.Uint64(messageID)
 	return
 }
+
+// 订阅群组消息 groupids填写这些群组的id
+func (im *IM) SubscribeMessages_10660_10661(s *session.Session, req *MazeIM.SubMessageRQ) (err error) {
+	defer fkprometheus.InfoPMT("SubscribeMessages")()
+	ctx := s.Context()
+	logger := fklog.ContextAppLogger(ctx)
+
+	res := &MazeIM.SubMessageRS{}
+	res.Header = req.Header
+	res.ErrInfo = errors.NO_ERROR
+
+	logger.CtxInfo(ctx, "SubscribeMessages start", zap.Any("req", req))
+	defer func() {
+		err = s.Response(res)
+		logger.CtxInfo(ctx, "SubscribeMessages end", zap.Any("res", res))
+	}()
+
+	// var (
+	// 	userId   = uint64(s.UID())
+	// 	groupIds = req.GetGroupIds()
+	// )
+
+	// user, err := app.WrapUser(userId, "")
+	// if err != nil {
+	// 	res.ErrInfo = errors.MODULE_ERROR.Wrap("获取用户信息失败")
+	// 	logger.CtxError(ctx, "SubscribeMessages WrapUser error", zap.Error(err))
+	// 	return err
+	// }
+
+	// err = groupservice.Default.SubscribeMessages(ctx, app.Maze, user, groupIds)
+	// if err != nil {
+	// 	res.ErrInfo = errors.MODULE_ERROR.Wrap("订阅消息失败")
+	// 	logger.CtxError(ctx, "SubscribeMessages SubscribeMessages error", zap.Error(err))
+	// 	return err
+	// }
+	return
+}

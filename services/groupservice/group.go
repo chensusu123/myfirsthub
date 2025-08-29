@@ -182,3 +182,9 @@ func (g *group) notifyGroupMessage(ctx context.Context, a app.App, userId uint64
 	}
 	return nil
 }
+
+func (g *group) SubscribeMessages(ctx context.Context, a app.App, user app.User, groupIds []int32) (err error) {
+	// logger := fklog.ContextAppLogger(ctx)
+
+	return
+}
