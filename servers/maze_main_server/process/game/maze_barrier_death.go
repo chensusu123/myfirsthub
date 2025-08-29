@@ -70,6 +70,7 @@ func (g *Game) OnMazeBarrierDeathRQ_10449_10450(s *session.Session, req *MazeGam
 		GameRet:        mazebarrieruserkafka.GameRetDeath,
 		Awards:         getAwards(logger, awards),
 		KillMonsterNum: int64(killMonsterNum),
+		DeathReason:    uint32(req.GetReason()),
 	}
 
 	mazebarrieruserkafka.PushMazeBarrierUserRecord(ctx, passRecord)
