@@ -16,13 +16,17 @@ import (
 	"google.golang.org/protobuf/proto"
 )
 
+const (
+	FrameMax int64 = 999999
+)
+
 var (
 	cli  = &fkredis.FkRedis{}
 	json = jsoniter.ConfigCompatibleWithStandardLibrary
 )
 
 type BarrierEvent struct {
-	Frame int64       `json:"frame_model,omitempty"`
+	Frame int64       `json:"frame,omitempty"`
 	Time  int64       `json:"time,omitempty"`
 	Type  int32       `json:"type,omitempty"`
 	Data  interface{} `json:"data,omitempty"`
@@ -65,7 +69,13 @@ func TriggerBarrierEvent(logger fklog.FKLogI, userID uint64, frame int64, eventT
 		)
 		return err
 	}
-	_, err = cli.Do(ctx, "ZADD", key, eventTime, data)
+	// 有frame则用frame，否则用时间
+	score := eventTime
+	// 进入关卡的帧序号是0
+	if frame > 0 || eventType == MazeGame.BattleEventType_ENTER_BARRIER {
+		score = frame
+	}
+	_, err = cli.Do(ctx, "ZADD", key, score, data)
 	if err != nil {
 		logger.ErrorWF("TriggerBarrierEvent ZADD fail",
 			zap.Error(err),
@@ -105,7 +115,7 @@ func LeaveBarrier(logger fklog.FKLogI, userID uint64, barrierID int32, passed bo
 	} else {
 		event.Result = MazeGame.BarrierResult_DEATH.Enum()
 	}
-	err = TriggerBarrierEvent(logger, userID, 0, time.Now().UnixMilli(), MazeGame.BattleEventType_LEAVE_BARRIER, event)
+	err = TriggerBarrierEvent(logger, userID, FrameMax, time.Now().UnixMilli(), MazeGame.BattleEventType_LEAVE_BARRIER, event)
 	if err != nil {
 		logger.ErrorWF("EnterBarrier TriggerBarrierEvent fail", zap.Error(err), zap.Uint64("userID", userID), zap.Int32("barrierID", barrierID), zap.Any("passed", passed))
 		return
