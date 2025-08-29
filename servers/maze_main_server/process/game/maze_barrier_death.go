@@ -32,6 +32,7 @@ func (g *Game) OnMazeBarrierDeathRQ_10449_10450(s *session.Session, req *MazeGam
 	res.Header = req.Header
 	res.ErrInfo = errors.NO_ERROR
 	res.BarrierId = req.BarrierId
+	res.Reason = req.Reason
 
 	userId := uint64(s.UID())
 
