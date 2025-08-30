@@ -1,13 +1,16 @@
 package game
 
 import (
+	"encoding/json"
 	"maze_game_server/common/errors"
 	"maze_game_server/io/redis/mazebarriereventredis"
-	"maze_game_server/lib/log"
 	"maze_game_server/lib/nano/session"
+	"maze_game_server/model/flowmodel/reportdatamodel"
 	"maze_game_server/pb/common/MazeGame"
 	"maze_game_server/servers/maze_main_server/process/game/events"
+	"maze_game_server/services/flowservice"
 
+	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fklog"
 	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fkprometheus"
 	"go.uber.org/zap"
 	"google.golang.org/protobuf/proto"
@@ -17,13 +20,15 @@ import (
 func (g *Game) OnMazeReportBattleEventRQ_10496_10497(s *session.Session, req *MazeGame.ReportBattleEventRQ) (err error) {
 	defer fkprometheus.InfoPMT("OnMazeReportBattleEventRQ")()
 
-	logger := log.Clone("Game", uint64(s.UID()), 0)
+	ctx := s.Context()
+	logger := fklog.ContextAppLogger(ctx)
+
 	res := &MazeGame.ReportBattleEventRS{}
 
-	logger.InfoWF("OnMazeReportBattleEventRQ start", zap.Any("req", req))
+	logger.CtxInfo(ctx, "OnMazeReportBattleEventRQ start", zap.Any("req", req))
 	defer func() {
 		err = s.Response(res)
-		logger.InfoWF("OnMazeReportBattleEventRQ end", zap.Any("res", res))
+		logger.CtxInfo(ctx, "OnMazeReportBattleEventRQ end", zap.Any("res", res))
 	}()
 
 	res.Header = req.Header
@@ -86,15 +91,24 @@ func (g *Game) OnMazeReportBattleEventRQ_10496_10497(s *session.Session, req *Ma
 			}
 		}
 		if eventData == nil {
-			logger.ErrorWF("OnMazeReportBattleEventRQ event type not supported", zap.Int32("eventType", int32(eventType)))
+			logger.CtxError(ctx, "OnMazeReportBattleEventRQ event type not supported", zap.Int32("eventType", int32(eventType)))
 		} else {
 			err = mazebarriereventredis.TriggerBarrierEvent(logger, userID, event.GetEventFrame(), event.GetEventTimeMs(), eventType, eventData)
 			if err != nil {
-				logger.ErrorWF("OnMazeReportBattleEventRQ TriggerBarrierEvent fail", zap.Error(err), zap.Int32("eventType", int32(eventType)))
+				logger.CtxError(ctx, "OnMazeReportBattleEventRQ TriggerBarrierEvent fail", zap.Error(err), zap.Int32("eventType", int32(eventType)))
 			}
 			// 触发事件
 			triggerFn()
 		}
+		dataJson, err := json.Marshal(eventData)
+		if err != nil {
+			logger.CtxError(ctx, "OnMazeReportBattleEventRQ Marshal fail",
+				zap.Any("eventDta", eventData),
+				zap.Error(err))
+			continue
+		}
+		data := reportdatamodel.NewReportData(event.GetType(), uint64(event.GetEventFrame()), uint64(event.GetEventTimeMs()), string(dataJson))
+		flowservice.GflowService.SendFlowData(ctx, data)
 	}
 	return
 }
