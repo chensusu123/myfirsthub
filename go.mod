@@ -25,7 +25,7 @@ require (
 	github.com/samber/slog-zap/v2 v2.6.2
 	github.com/spf13/cast v1.9.2
 	github.com/urfave/cli v1.22.16
-	gitlab.ifreetalk.com/maze-plate/freetk v1.0.1-0.20250830083131-5e1b20ffa7f0
+	gitlab.ifreetalk.com/maze-plate/freetk v1.0.1-0.20250830091529-88f4b9eda4ce
 	gitlab.ifreetalk.com/nano-ecosystem/fklog v0.0.0-20250813072008-4577841956ed // indirect
 	go.opentelemetry.io/otel v1.37.0
 	go.opentelemetry.io/otel/trace v1.37.0
@@ -119,7 +119,6 @@ require (
 	github.com/prometheus/common v0.44.0 // indirect
 	github.com/prometheus/procfs v0.11.1 // indirect
 	github.com/redis/go-redis/extra/rediscmd/v9 v9.12.1 // indirect
-	github.com/redis/go-redis/extra/redisotel/v9 v9.12.1 // indirect
 	github.com/russross/blackfriday/v2 v2.1.0 // indirect
 	github.com/samber/lo v1.47.0 // indirect
 	github.com/samber/slog-common v0.18.1 // indirect
