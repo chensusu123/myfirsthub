@@ -686,8 +686,6 @@ github.com/prometheus/procfs v0.11.1 h1:xRC8Iq1yyca5ypa9n1EZnWZkt7dwcoRPQwX/5gwa
 github.com/prometheus/procfs v0.11.1/go.mod h1:eesXgaPo1q7lBpVMoMy0ZOFTth9hBn4W/y0/p/ScXhY=
 github.com/redis/go-redis/extra/rediscmd/v9 v9.12.1 h1:DR14pbiA9cjS5btoGU7oKuBcaYGzpxMsAyswO6mHqSk=
 github.com/redis/go-redis/extra/rediscmd/v9 v9.12.1/go.mod h1:mWGfYiY4x0lamv7XbhF0M1hxwa6EkfxzEpVsv9yG7PY=
-github.com/redis/go-redis/extra/redisotel/v9 v9.12.1 h1:2MioZj2s8Ovom2Yrpb/bBCJ88fR9L0MfMq2wAH44R8M=
-github.com/redis/go-redis/extra/redisotel/v9 v9.12.1/go.mod h1:nw1BvV+EW5TmXbfUOhFsPETFR390JLmtdWut88T1VAE=
 github.com/redis/go-redis/v9 v9.12.1 h1:k5iquqv27aBtnTm2tIkROUDp8JBXhXZIVu1InSgvovg=
 github.com/redis/go-redis/v9 v9.12.1/go.mod h1:huWgSWd8mW6+m0VPhJjSSQ+d6Nh1VICQ6Q5lHuCH/Iw=
 github.com/rogpeppe/fastuuid v1.2.0/go.mod h1:jVj6XXZzXRy/MSR5jhDC/2q6DgLz+nrA6LYCDYWNEvQ=
@@ -775,8 +773,8 @@ github.com/yuin/goldmark v1.3.5/go.mod h1:mwnBkeHKe2W/ZEtQ+71ViKU8L12m81fl3OWwC1
 github.com/yuin/goldmark v1.4.13/go.mod h1:6yULJ656Px+3vBD8DxQVa3kxgyrAnzto9xy5taEt/CY=
 gitlab.ifreetalk.com/maze-plate/extra v1.0.1-0.20250401060651-722653168d37 h1:lyB5pFQppuBFwhWaEaJN54c9dNnKVjoJoS9ZMezSfhc=
 gitlab.ifreetalk.com/maze-plate/extra v1.0.1-0.20250401060651-722653168d37/go.mod h1:ZHwfNF+727RvJctXbXHW/8kdkKBMIyUNHgUdwjqZ9E0=
-gitlab.ifreetalk.com/maze-plate/freetk v1.0.1-0.20250830083131-5e1b20ffa7f0 h1:ksgRwvOEVK+9TXu8Qf58taPhNeGYe8gN37ICb5HomOE=
-gitlab.ifreetalk.com/maze-plate/freetk v1.0.1-0.20250830083131-5e1b20ffa7f0/go.mod h1:xVWinX22QmTWy33KeZ+4+M8CFx5/DHha4/c3ssJ6kaA=
+gitlab.ifreetalk.com/maze-plate/freetk v1.0.1-0.20250830091529-88f4b9eda4ce h1:mGrzE7Au2x5XqMx8hy29A2Sc3VchfHToK2nXBFLkG9I=
+gitlab.ifreetalk.com/maze-plate/freetk v1.0.1-0.20250830091529-88f4b9eda4ce/go.mod h1:5BgAfmxGfMMixu2VVzG5rjKPpZxiUmeYLStgMkK965A=
 gitlab.ifreetalk.com/nano-ecosystem/fklog v0.0.0-20250813072008-4577841956ed h1:vi1Miaxky3Agh7JC3t6LP6/BBfEA5AdYXf6QdGzevUA=
 gitlab.ifreetalk.com/nano-ecosystem/fklog v0.0.0-20250813072008-4577841956ed/go.mod h1:EBlTAtJ7j+E85oFKb2G1hAjAVxTVUWvYTObbK2HlaY4=
 gitlab.ifreetalk.com/nano-ecosystem/nlog v0.0.0-20250821135715-fb9c1259891f h1:tfcCAN3S+cwJMSEcVOLofmFBPLGCgc+Mng71Nw5D928=
