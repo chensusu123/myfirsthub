@@ -20,16 +20,17 @@ package mazeshopseqredis
 //	fkconfig.RegisterNameNode("mazeshopseqredis", 21579, gRedis)
 //}
 //
-//// 人偶商城信息
-//type MazeShopInfo struct {
-//	SeqId       int32           `json:"seq_id"`        // 序列id
-//	BackId      int32           `json:"back_id"`       //备用id
-//	CurSeqIndex int32           `json:"cur_index"`     //当前位置
-//	BackIndex   int32           `json:"back_index"`    //备用位置
-//	TotalCount  int32           `json:"total_count"`   //累计数量
-//	ShopSlotNum map[int32]int32 `json:"shop_slot_num"` //槽位购买数量
-//	EquipPoints int32           `json:"equip_points"`  // 装备分
-//}
+// 人偶商城信息
+type MazeShopInfo struct {
+	SeqId       int32           `json:"seq_id"`        // 序列id
+	BackId      int32           `json:"back_id"`       //备用id
+	CurSeqIndex int32           `json:"cur_index"`     //当前位置
+	BackIndex   int32           `json:"back_index"`    //备用位置
+	TotalCount  int32           `json:"total_count"`   //累计数量
+	ShopSlotNum map[int32]int32 `json:"shop_slot_num"` //槽位购买数量
+	EquipPoints int32           `json:"equip_points"`  // 装备分
+}
+
 //
 //func GetMazeShopInfo(logger fklog.FKLogI, userId uint64, level int32) (mazeShopInfo *MazeShopInfo, err error) {
 //	key := fmt.Sprintf("maze:shop:seq:%d", userId)

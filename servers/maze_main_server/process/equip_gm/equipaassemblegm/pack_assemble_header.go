@@ -32,7 +32,7 @@ func PackAssembleHeader(ctx context.Context, userId uint64, as *MazeEquipCache.M
 		return
 	}
 	headerBs.WriteString(fmt.Sprintf("迷宫等级:%d\n", dollLv))
-	force, err := mazecalcattrredis.GetMazeForce(logger, userId)
+	force, err := mazecalcattrredis.GetMazeForce(ctx, userId)
 	if err != nil {
 		return
 	}

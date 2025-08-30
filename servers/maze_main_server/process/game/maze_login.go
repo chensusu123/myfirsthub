@@ -25,10 +25,10 @@ func (g *Game) OnMazeLoginRQ_10451_10452(s *session.Session, req *MazeGame.MazeL
 	logger := fklog.ContextAppLogger(ctx)
 	res := &MazeGame.MazeLoginRS{}
 
-	logger.InfoWF("OnMazeLoginRQ start", zap.Any("req", req))
+	logger.CtxInfo(ctx, "OnMazeLoginRQ start", zap.Any("req", req))
 	defer func() {
 		err = s.Response(res)
-		logger.InfoWF("OnMazeLoginRQ end", zap.Any("res", res))
+		logger.CtxInfo(ctx, "OnMazeLoginRQ end", zap.Any("res", res))
 	}()
 
 	res.Header = req.Header
@@ -42,7 +42,7 @@ func (g *Game) OnMazeLoginRQ_10451_10452(s *session.Session, req *MazeGame.MazeL
 
 	userInfo, err := mazeuserinfo.GetUserInfoV2(ctx, userId)
 	if err != nil {
-		logger.ErrorWF("OnMazeLoginRQ GetUserInfo fail", zap.Error(err))
+		logger.CtxError(ctx, "OnMazeLoginRQ GetUserInfo fail", zap.Error(err))
 		res.ErrInfo = errors.MODULE_ERROR.ToInfo()
 		return
 	}
@@ -71,7 +71,7 @@ func (g *Game) OnMazeLoginRQ_10451_10452(s *session.Session, req *MazeGame.MazeL
 
 	money, diamond, err = moneyservice.GlobalMoneyService.GetUserMoney(context.TODO(), userId)
 	if err != nil {
-		logger.ErrorWF("OnMazeLoginRQ GetUserMoney fail", zap.Error(err))
+		logger.CtxError(ctx, "OnMazeLoginRQ GetUserMoney fail", zap.Error(err))
 		res.ErrInfo = errors.MODULE_ERROR.ToInfo()
 		return
 	}
@@ -82,29 +82,29 @@ func (g *Game) OnMazeLoginRQ_10451_10452(s *session.Session, req *MazeGame.MazeL
 		}
 		err = mazeuserinfo.SetUserInfoV2(ctx, userId, userInfo)
 		if err != nil {
-			logger.ErrorWF("OnMazeLoginRQ SetUserInfo fail", zap.Error(err))
+			logger.CtxError(ctx, "OnMazeLoginRQ SetUserInfo fail", zap.Error(err))
 			res.ErrInfo = errors.MODULE_ERROR.ToInfo()
 			return
 		}
 	}
 
-	force, err = mazecalcattrredis.GetMazeForce(logger, userId)
+	force, err = mazecalcattrredis.GetMazeForce(ctx, userId)
 	if err != nil {
-		logger.ErrorWF("OnMazeLoginRQ GetMazeForce fail", zap.Error(err))
+		logger.CtxError(ctx, "OnMazeLoginRQ GetMazeForce fail", zap.Error(err))
 		res.ErrInfo = errors.MODULE_ERROR.ToInfo()
 		return
 	}
 
-	extra, err2 := mazecommonvalue.MakeCommonValueExtra(logger, userId, level, 0)
+	extra, err2 := mazecommonvalue.MakeCommonValueExtra(ctx, userId, level, 0)
 	if err2 != nil {
-		logger.ErrorWF("OnMazeLoginRQ MakeCommonValueExtra fail", zap.Error(err2))
+		logger.CtxError(ctx, "OnMazeLoginRQ MakeCommonValueExtra fail", zap.Error(err2))
 		// res.ErrInfo = errors.MODULE_ERROR.ToInfo()
 		// return
 	}
 
 	// extraExp, err = MakeCommonValueExtraExp(logger, userId, level, force)
 	// if err != nil {
-	// 	logger.ErrorWF("OnMazeLoginRQ MakeCommonValueExtraExp fail", zap.Error(err))
+	// 	logger.CtxError(ctx,"OnMazeLoginRQ MakeCommonValueExtraExp fail", zap.Error(err))
 	// 	res.ErrInfo = errors.MODULE_ERROR.ToInfo()
 	// 	return
 	// }
@@ -116,7 +116,7 @@ func (g *Game) OnMazeLoginRQ_10451_10452(s *session.Session, req *MazeGame.MazeL
 	}
 	commonList := mazecommonvalue.MakeAllCommonValue(logger, userId, level, exp, expMax, force, money, extra, extraExp, diamond, passValue, req.GetHeader().GetSession())
 
-	mazecommonvalue.SendCommonValueIdPack(logger, userId, commonList)
+	mazecommonvalue.SendCommonValueIdPack(ctx, userId, commonList)
 
 	return nil
 }

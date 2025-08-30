@@ -477,7 +477,7 @@ func GetEquipSkillInfoChange(ctx context.Context, userID uint64, oldEquip, newEq
 		return
 	}
 
-	userAttrMap, err := GetUserAttrMap(logger, userID)
+	userAttrMap, err := GetUserAttrMap(ctx, userID)
 	if err != nil {
 		logger.CtxError(ctx, "GetMazeBattleData GetUserAttrMap err", zap.Error(err))
 		return nil, false, err
@@ -514,13 +514,14 @@ func GetEquipSkillInfoChange(ctx context.Context, userID uint64, oldEquip, newEq
 	return ret, changed, nil
 }
 
-func GetUserAttrMap(logger fklog.FKLogI, userId uint64) (map[int32]int64, error) {
+func GetUserAttrMap(ctx context.Context, userId uint64) (map[int32]int64, error) {
 	//attrIds := GetAttrIds()
 	//skillAttrIds := GetSkillAttrIds()
 	//if len(skillAttrIds) > 0 {
 	//	attrIds = append(attrIds, skillAttrIds...)
 	//}
-	attrDbs, err := mazecalcattrredis.GetAllMazeCalcAttr(logger, userId)
+	logger := fklog.ContextAppLogger(ctx)
+	attrDbs, err := mazecalcattrredis.GetAllMazeCalcAttr(ctx, userId)
 	if err != nil {
 		logger.WarnWF("GetUserBattleAttr BatchGetDollCalcAttr nil", zap.Uint64("userId", userId))
 		return nil, err

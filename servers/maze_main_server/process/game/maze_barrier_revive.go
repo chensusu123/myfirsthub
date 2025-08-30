@@ -61,7 +61,7 @@ func (g *Game) OnMazeBarrierRebornRQ_10461_10462(s *session.Session, req *MazeGa
 		return
 	}
 
-	barrierInfo, err := mazeuserbarrierredis.GetUserBarrierInfo(logger, userId, barrierId)
+	barrierInfo, err := mazeuserbarrierredis.GetUserBarrierInfo(ctx, userId, barrierId)
 	if err != nil {
 		logger.ErrorWF("OnMazeBarrierRebornRQ GetUserBarrierInfo fail",
 			zap.Any("req", req), zap.Error(err))
@@ -152,7 +152,7 @@ func (g *Game) OnMazeBarrierRebornRQ_10461_10462(s *session.Session, req *MazeGa
 
 		// 更新复活次数
 		barrierInfo.RebornCount = proto.Int32(barrierInfo.GetRebornCount() + 1)
-		err = mazeuserbarrierredis.SetUserBarrierInfo(logger, userId, barrierInfo.GetBarrierId(), barrierInfo)
+		err = mazeuserbarrierredis.SetUserBarrierInfo(ctx, userId, barrierInfo.GetBarrierId(), barrierInfo)
 		if err != nil {
 			logger.ErrorWF("OnMazeBarrierRebornRQ SetUserBarrierInfo fail", zap.Error(err),
 				zap.Any("barrierInfo", barrierInfo))

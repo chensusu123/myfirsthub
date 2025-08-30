@@ -1,11 +1,12 @@
 package test
 
 import (
-	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fklog"
 	"maze_game_server/io/kafka/mazeuserlevelkafka"
 	"maze_game_server/io/mysql/flowrecord"
 	"testing"
 	"time"
+
+	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fklog"
 )
 
 func BenchmarkUserLevelRecord(b *testing.B) {

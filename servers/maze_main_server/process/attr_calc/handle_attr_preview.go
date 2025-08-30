@@ -7,18 +7,18 @@
 package attr_calc
 
 import (
-	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fklog"
+	"context"
 	"maze_game_server/common/constdef"
 	"maze_game_server/common/vardef"
 	"maze_game_server/servers/maze_main_server/process/attr_calc/mazeattrlogic"
 )
 
-func RunPreviewDac(logger fklog.FKLogI, userId uint64, dacParam *mazeattrlogic.DACParam,
+func RunPreviewDac(ctx context.Context, userId uint64, dacParam *mazeattrlogic.DACParam,
 	careAttrs []int32, replaceSrc int32,
 	repalceAttrs map[int32]int64, preViewId int64) (result map[int32]int64, err error) {
 	dacParam.IsPreview = true
-	dac := mazeattrlogic.NewDAC(logger, userId)
-	err = dac.InitData(dacParam)
+	dac := mazeattrlogic.NewDAC(ctx, userId)
+	err = dac.InitData(ctx, dacParam)
 	if err != nil {
 		return
 	}
@@ -39,13 +39,13 @@ func RunPreviewDac(logger fklog.FKLogI, userId uint64, dacParam *mazeattrlogic.D
 	return
 }
 
-func DoEquipPreview(logger fklog.FKLogI, userId uint64, careAttrs []int32,
+func DoEquipPreview(ctx context.Context, userId uint64, careAttrs []int32,
 	replaceSrc int32,
 	repalceAttrs map[int32]int64, previewId int64) (result map[int32]int64, err error) {
 	p := mazeattrlogic.NewDACParam()
 	p.ChgType = constdef.MazeBuffChgTypeEquipDress
 	p.ChgDesc = vardef.MazeBuffChgTypeDesc[p.ChgType]
-	return RunPreviewDac(logger, userId, p, careAttrs, replaceSrc, repalceAttrs, previewId)
+	return RunPreviewDac(ctx, userId, p, careAttrs, replaceSrc, repalceAttrs, previewId)
 }
 
 type PreviewAttrInfo struct {
@@ -67,18 +67,18 @@ type PreviewPairAttrInfo struct {
 }
 
 // 批量预览
-func DoEquipBatchPreview(logger fklog.FKLogI, userId uint64, previewList []*PreviewAttrInfo) (preResult []*PreviewAttrInfo, err error) {
+func DoEquipBatchPreview(ctx context.Context, userId uint64, previewList []*PreviewAttrInfo) (preResult []*PreviewAttrInfo, err error) {
 	p := mazeattrlogic.NewDACParam()
 	p.ChgType = constdef.MazeBuffChgTypeEquipDress
 	p.ChgDesc = vardef.MazeBuffChgTypeDesc[p.ChgType]
 	p.IsPreview = true
-	dac := mazeattrlogic.NewDAC(logger, userId)
-	err = dac.InitData(p)
+	dac := mazeattrlogic.NewDAC(ctx, userId)
+	err = dac.InitData(ctx, p)
 	if err != nil {
 		return nil, err
 	}
 	for _, previewInfo := range previewList {
-		cp := dac.CloneData()
+		cp := dac.CloneData(ctx)
 
 		pp := &mazeattrlogic.PreviewParam{}
 		pp.BuffSrc = previewInfo.BuffSrc
@@ -98,18 +98,18 @@ func DoEquipBatchPreview(logger fklog.FKLogI, userId uint64, previewList []*Prev
 }
 
 // 成对批量预览
-func DoEquipBatchPairPreview(logger fklog.FKLogI, userId uint64, previewList []*PreviewPairAttrInfo) (result []*PreviewPairAttrInfo, err error) {
+func DoEquipBatchPairPreview(ctx context.Context, userId uint64, previewList []*PreviewPairAttrInfo) (result []*PreviewPairAttrInfo, err error) {
 	p := mazeattrlogic.NewDACParam()
 	p.ChgType = constdef.MazeBuffChgTypeEquipDress
 	p.ChgDesc = vardef.MazeBuffChgTypeDesc[p.ChgType]
 	p.IsPreview = true
-	dac := mazeattrlogic.NewDAC(logger, userId)
-	err = dac.InitData(p)
+	dac := mazeattrlogic.NewDAC(ctx, userId)
+	err = dac.InitData(ctx, p)
 	if err != nil {
 		return nil, err
 	}
 	for _, previewInfo := range previewList {
-		cp := dac.CloneData()
+		cp := dac.CloneData(ctx)
 
 		pp := &mazeattrlogic.PreviewParam{}
 		pp.BuffSrc = previewInfo.BuffSrc
@@ -125,7 +125,7 @@ func DoEquipBatchPairPreview(logger fklog.FKLogI, userId uint64, previewList []*
 		}
 		previewInfo.Result1 = cp.GetCareAttrs(previewInfo.CareAttrs)
 
-		cp = dac.CloneData()
+		cp = dac.CloneData(ctx)
 
 		pp = &mazeattrlogic.PreviewParam{}
 		pp.BuffSrc = previewInfo.BuffSrc

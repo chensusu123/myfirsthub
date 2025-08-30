@@ -114,7 +114,7 @@ func ClearBarriersTempData(ctx context.Context, userId uint64, barrierId int32) 
 	// 删除关卡存档
 	syncmazestorageinforedis.DelSyncMazeStorageInfo(userId, barrierId)
 	// 清理关卡操作状态
-	mazebarrieropstatusredis.ClearOpStatus(logger, userId, barrierId)
+	mazebarrieropstatusredis.ClearOpStatus(ctx, userId, barrierId)
 	//清除关卡已获得奖励存档
 	barrierscorerewardservice.GlobalScoreRewardService.DelBarrierScoreRewardItem(context.TODO(), userId, barrierId)
 	// 删除关卡存档 new

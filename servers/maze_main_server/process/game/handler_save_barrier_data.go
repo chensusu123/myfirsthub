@@ -1,15 +1,16 @@
 package game
 
 import (
-	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fklog"
-	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fkprometheus"
-	"go.uber.org/zap"
 	"maze_game_server/common/errors"
 	"maze_game_server/lib/nano/session"
 	"maze_game_server/model/barriersavedatamodel"
 	"maze_game_server/module/mazecommonvalue"
 	"maze_game_server/pb/common/MazeGame"
 	"maze_game_server/services/barriersavedataservice"
+
+	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fklog"
+	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fkprometheus"
+	"go.uber.org/zap"
 )
 
 // 关卡存档
@@ -41,7 +42,7 @@ func (g *Game) OnSaveBarrierDataRQ_10624_10625(s *session.Session, req *MazeGame
 		return nil
 	}
 
-	mazecommonvalue.SendPassValueIdPack(ctx, logger, userId, req.GetBarrierId(), req.GetStageId())
+	mazecommonvalue.SendPassValueIdPack(ctx, userId, req.GetBarrierId(), req.GetStageId())
 
 	return
 }

@@ -58,7 +58,7 @@ func (s *service) GetBarrierDeathAward(ctx context.Context, userId uint64, barri
 		return nil, nil, nil, nil, 0, errors.New("box cfg nil")
 	}
 
-	opened, err := mazeboxredis.IsOpenedBox(logger, userId, barrier, barrierCfg.Box_id)
+	opened, err := mazeboxredis.IsOpenedBox(ctx, userId, barrier, barrierCfg.Box_id)
 	if err != nil {
 		logger.CtxError(ctx, "GetBarrierDeathAward IsOpenedBox fail", zap.Error(err), zap.Any("boxId", barrierCfg.Box_id), zap.Any("barrierId", barrier))
 		return nil, nil, nil, nil, 0, err

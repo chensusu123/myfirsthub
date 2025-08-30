@@ -78,7 +78,8 @@ func NewReplaceData() *ReplaceData {
 	return obj
 }
 
-func NewDAC(logger fklog.FKLogI, userId uint64) *DAC {
+func NewDAC(ctx context.Context, userId uint64) *DAC {
+	logger := fklog.ContextAppLogger(ctx)
 	dac := &DAC{}
 	dac.UserId = userId
 	dac.FKLogI = logger
@@ -94,8 +95,8 @@ func NewDAC(logger fklog.FKLogI, userId uint64) *DAC {
 	return dac
 }
 
-func (m *DAC) CloneData() *DAC {
-	cp := NewDAC(m, m.UserId)
+func (m *DAC) CloneData(ctx context.Context) *DAC {
+	cp := NewDAC(ctx, m.UserId)
 	cp.CalcAttrOldMap = m.CalcAttrOldMap
 	//	cp.BuffCenterAttrsIn = m.BuffCenterAttrsIn
 	cp.ErrNoRetry = m.ErrNoRetry
@@ -113,7 +114,7 @@ func (m *DAC) CloneData() *DAC {
 }
 
 // 初始化
-func (m *DAC) InitData(iParam *DACParam) error {
+func (m *DAC) InitData(ctx context.Context, iParam *DACParam) error {
 	var err error
 	defer func() {
 		if err != nil {
@@ -148,7 +149,7 @@ func (m *DAC) InitData(iParam *DACParam) error {
 	}
 	m.DollBuffCenterIn = dollBuffs
 	// 初始化旧值
-	m.CalcAttrOldMap, err = mazecalcattrredis.HScanMazeCalcAttr(m, m.UserId)
+	m.CalcAttrOldMap, err = mazecalcattrredis.HScanMazeCalcAttr(ctx, m.UserId)
 	if err != nil {
 		return err
 	}
@@ -241,14 +242,14 @@ func (m *DAC) End(ctx context.Context) error {
 	if len(chgAttrs) <= 0 {
 		return nil
 	}
-	err = mazecalcattrredis.SaveMazeCalcAttr(m, m.UserId, chgAttrs)
+	err = mazecalcattrredis.SaveMazeCalcAttr(ctx, m.UserId, chgAttrs)
 	if err != nil {
 		return err
 	}
 
 	// 删除0值的ID，节省空间，放置key过大，失败可以忽略
 	if len(delIds) > 0 && len(m.CalcAttrOldMap) > int(commonlogic.CleanIdLen) {
-		mazecalcattrredis.HDelMazeCalcAttr(m, m.UserId, delIds)
+		mazecalcattrredis.HDelMazeCalcAttr(ctx, m.UserId, delIds)
 	}
 
 	// 记录流水

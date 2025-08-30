@@ -37,7 +37,7 @@ func (b *barrier) BarrierPass(ctx context.Context, header *Common.PacketHeader, 
 	logger := fklog.ContextAppLogger(ctx)
 	cfg := GMazeBarriesV8Cfg.Get(barrierID)
 	if cfg == nil {
-		logger.ErrorWF("BarrierPass get barrier cfg fail", zap.Any("barrier", barrierID), zap.Any("foeExp", foeExp))
+		logger.CtxError(ctx, "BarrierPass get barrier cfg fail", zap.Any("barrier", barrierID), zap.Any("foeExp", foeExp))
 		return 0, 0, nil, nil, errors.COMMON_ERROR_TIPS.Wrap("关卡配置数据获取失败")
 	}
 	rareMap := make(map[int32]struct{})
@@ -48,29 +48,29 @@ func (b *barrier) BarrierPass(ctx context.Context, header *Common.PacketHeader, 
 
 	userInfo, err := userinfomodel.NewUserInfoModel(ctx, userID)
 	if err != nil {
-		logger.ErrorWF("BarrierPass GetUserInfoV2 fail", zap.Error(err), zap.Any("barrier", barrierID), zap.Any("foeExp", foeExp))
+		logger.CtxError(ctx, "BarrierPass GetUserInfoV2 fail", zap.Error(err), zap.Any("barrier", barrierID), zap.Any("foeExp", foeExp))
 		return 0, 0, nil, nil, errors.MODULE_ERROR.ToInfo()
 	}
 
 	if userInfo.PassBarrier >= barrierID {
-		logger.ErrorWF("BarrierPass req barrier lt pass barrier", zap.Any("barrierID", barrierID), zap.Int32("pass", userInfo.PassBarrier))
+		logger.CtxError(ctx, "BarrierPass req barrier lt pass barrier", zap.Any("barrierID", barrierID), zap.Int32("pass", userInfo.PassBarrier))
 		return 0, 0, nil, nil, errors.COMMON_ERROR_TIPS.Wrap("该关卡已上报过通关")
 	}
 
 	if userInfo.Barrier != barrierID {
-		logger.ErrorWF("BarrierPass userinfo barrier not match", zap.Any("barrierID", barrierID), zap.Int32("save", userInfo.Barrier))
+		logger.CtxError(ctx, "BarrierPass userinfo barrier not match", zap.Any("barrierID", barrierID), zap.Int32("save", userInfo.Barrier))
 		return 0, 0, nil, nil, errors.COMMON_ERROR_TIPS.Wrap("记录用户正在打的关卡与上报通关id不匹配")
 	}
 
-	userBarrier, err := userbarriermodel.NewUserBarrierModel(logger, userID)
+	userBarrier, err := userbarriermodel.NewUserBarrierModel(ctx, userID)
 	if err != nil {
-		logger.ErrorWF("BarrierPass GetUserBarrierInfo fail", zap.Error(err), zap.Any("barrier", barrierID), zap.Any("foeExp", foeExp))
+		logger.CtxError(ctx, "BarrierPass GetUserBarrierInfo fail", zap.Error(err), zap.Any("barrier", barrierID), zap.Any("foeExp", foeExp))
 		return 0, 0, nil, nil, errors.MODULE_ERROR.ToInfo()
 	}
 
 	killMonsterNum, totalDamage, totalExp, _, err := barrierstagecounterservice.GlobalBarrierStageCounterService.GetBarrierStageCounter(ctx, userID, barrierID)
 	if err != nil {
-		logger.ErrorWF("OnMazeBarrierPassRQ GetBarrierAreaRecord fail", zap.Error(err))
+		logger.CtxError(ctx, "OnMazeBarrierPassRQ GetBarrierAreaRecord fail", zap.Error(err))
 		return 0, 0, nil, nil, errors.MODULE_ERROR.ToInfo()
 	}
 
@@ -81,16 +81,16 @@ func (b *barrier) BarrierPass(ctx context.Context, header *Common.PacketHeader, 
 	oldExp := userInfo.TotalExp
 	err = userInfo.AddExp(int64(totalExp))
 	if err != nil {
-		logger.ErrorWF("BarrierPass AddExp fail", zap.Error(err), zap.Any("barrier", barrierID), zap.Any("totalExp", totalExp))
+		logger.CtxError(ctx, "BarrierPass AddExp fail", zap.Error(err), zap.Any("barrier", barrierID), zap.Any("totalExp", totalExp))
 		return 0, 0, nil, nil, errors.MODULE_ERROR.ToInfo()
 	}
 	newLevel := userInfo.Level
 	err = userInfo.Save(ctx)
 	if err != nil {
-		logger.ErrorWF("BarrierPass SetUserInfoV2 fail", zap.Error(err), zap.Any("barrier", barrierID), zap.Any("totalExp", totalExp))
+		logger.CtxError(ctx, "BarrierPass SetUserInfoV2 fail", zap.Error(err), zap.Any("barrier", barrierID), zap.Any("totalExp", totalExp))
 		return 0, 0, nil, nil, errors.MODULE_ERROR.ToInfo()
 	}
-	mazecommonvalue.HandleUserLevelExpChg(logger, userID, userInfo.Level, userInfo.Exp, header.GetSession())
+	mazecommonvalue.HandleUserLevelExpChg(ctx, userID, userInfo.Level, userInfo.Exp, header.GetSession())
 
 	defer func() {
 		if oldLevel != newLevel {
@@ -124,9 +124,9 @@ func (b *barrier) BarrierPass(ctx context.Context, header *Common.PacketHeader, 
 	userBarrier.RebornCount = 0
 	userBarrier.BarrierStatus = 3
 	userBarrier.EndTime = time.Now().Unix()
-	err = userBarrier.Save(logger)
+	err = userBarrier.Save(ctx)
 	if err != nil {
-		logger.ErrorWF("BarrierPass SetUserBarrierInfo fail", zap.Error(err), zap.Any("barrier", barrierID), zap.Any("totalExp", totalExp))
+		logger.CtxError(ctx, "BarrierPass SetUserBarrierInfo fail", zap.Error(err), zap.Any("barrier", barrierID), zap.Any("totalExp", totalExp))
 		return 0, 0, nil, nil, errors.MODULE_ERROR.ToInfo()
 	}
 
@@ -139,22 +139,22 @@ func (b *barrier) BarrierPass(ctx context.Context, header *Common.PacketHeader, 
 		awardBarrierNum = awardBarrierNumCfg.Day_count_v8
 	}
 
-	useNumToday, err2 := mazechallengenumredis.GetUserChallengeNum(logger, userID, today)
+	useNumToday, err2 := mazechallengenumredis.GetUserChallengeNum(ctx, userID, today)
 	if err2 != nil {
-		logger.ErrorWF("BarrierPass GetUserChallengeNum fail", zap.Error(err2))
+		logger.CtxError(ctx, "BarrierPass GetUserChallengeNum fail", zap.Error(err2))
 	} else if useNumToday > 0 {
 		if awardBarrierNum > int32(useNumToday) {
 			awardBarrierNum = int32(useNumToday)
 		}
-		err = mazechallengenumredis.AddUserChallengeNum(logger, userID, today, 0-awardBarrierNum)
+		err = mazechallengenumredis.AddUserChallengeNum(ctx, userID, today, 0-awardBarrierNum)
 		if err != nil {
-			logger.ErrorWF("BarrierPass AddUserChallengeNum fail", zap.Error(err))
+			logger.CtxError(ctx, "BarrierPass AddUserChallengeNum fail", zap.Error(err))
 		}
 	}
 
-	awardMap, equipMap, err := mazebarrier.GetBarrierPassAwardWithFirst(logger, barrierID)
+	awardMap, equipMap, err := mazebarrier.GetBarrierPassAwardWithFirst(ctx, barrierID)
 	if err != nil {
-		logger.ErrorWF("BarrierPass GetBarrierPassAwardWithFirst fail", zap.Error(err), zap.Any("barrier", barrierID))
+		logger.CtxError(ctx, "BarrierPass GetBarrierPassAwardWithFirst fail", zap.Error(err), zap.Any("barrier", barrierID))
 	} else {
 		//696	UN_CGK_COMMON_BILL_TYPE_696	迷宫通关
 		tradeNo := tradeno.GetTradeNum()
@@ -163,7 +163,7 @@ func (b *barrier) BarrierPass(ctx context.Context, header *Common.PacketHeader, 
 			itemList := itemutil.Map2ItemInfo(awardMap)
 			errInfo := itemservice.GlobalItemService.AddItem(context.TODO(), userID, itemservice.ItemOpTypePass, tradeNo, itemList...)
 			if errInfo != nil {
-				logger.ErrorWF("BarrierPass AddItemEx fail", zap.Any("errInfo", errInfo), zap.Any("awardItems", awardItems))
+				logger.CtxError(ctx, "BarrierPass AddItemEx fail", zap.Any("errInfo", errInfo), zap.Any("awardItems", awardItems))
 			}
 
 			for _, item := range awardItems {
@@ -180,14 +180,14 @@ func (b *barrier) BarrierPass(ctx context.Context, header *Common.PacketHeader, 
 			//MAZE_EQUIP_PASS_AWARD = 9;//迷宫通关奖励 张登元
 			rs, err := addequip.AddEquipToBag(ctx, userID, int32(MazeEquipSvr.ENUM_EQUIP_BAG_OP_TYPE_MAZE_EQUIP_PASS_AWARD), tradeNo, equipMap)
 			if err != nil {
-				logger.ErrorWF("BarrierPass addEquipToBag fail", zap.Error(err), zap.Any("optype", int32(MazeEquipSvr.ENUM_EQUIP_BAG_OP_TYPE_MAZE_EQUIP_BOX_AWARD)),
+				logger.CtxError(ctx, "BarrierPass addEquipToBag fail", zap.Error(err), zap.Any("optype", int32(MazeEquipSvr.ENUM_EQUIP_BAG_OP_TYPE_MAZE_EQUIP_BOX_AWARD)),
 					zap.Any("tradeNo", tradeNo), zap.Any("addEquip", equipMap))
 			}
 
 			for _, equip := range rs.GetEquipList() {
 				itemEquip, err := equiptoitem.PackEquipToItem(equip)
 				if err != nil {
-					logger.ErrorWF("BarrierPass PackEquipToItem fail", zap.Error(err), zap.Any("equip", equip))
+					logger.CtxError(ctx, "BarrierPass PackEquipToItem fail", zap.Error(err), zap.Any("equip", equip))
 					continue
 				}
 				_, ok := rareMap[itemEquip.GetItemId()]
@@ -209,31 +209,31 @@ func (b *barrier) BarrierDeath(ctx context.Context, header *Common.PacketHeader,
 	logger := fklog.ContextAppLogger(ctx)
 	userInfo, err := userinfomodel.NewUserInfoModel(ctx, userID)
 	if err != nil {
-		logger.ErrorWF("OnMazeBarrierDeathRQ GetUserInfoV2 fail", zap.Error(err), zap.Any("barrier", barrierID), zap.Any("foeExp", foeExp))
+		logger.CtxError(ctx, "OnMazeBarrierDeathRQ GetUserInfoV2 fail", zap.Error(err), zap.Any("barrier", barrierID), zap.Any("foeExp", foeExp))
 		return 0, 0, nil, errors.MODULE_ERROR.ToInfo()
 	}
 
 	if barrierID != userInfo.Barrier {
-		logger.ErrorWF("OnMazeBarrierDeathRQ req barrier lt pass barrier", zap.Any("barrierID", barrierID), zap.Int32("save", userInfo.Barrier))
+		logger.CtxError(ctx, "OnMazeBarrierDeathRQ req barrier lt pass barrier", zap.Any("barrierID", barrierID), zap.Int32("save", userInfo.Barrier))
 		return 0, 0, nil, errors.COMMON_ERROR_TIPS.Wrap("请求的关卡id和存储的不一致")
 	}
 
-	userBarrier, err := userbarriermodel.NewUserBarrierModel(logger, userID)
+	userBarrier, err := userbarriermodel.NewUserBarrierModel(ctx, userID)
 	if err != nil {
-		logger.ErrorWF("OnMazeBarrierDeathRQ GetUserBarrierInfo fail", zap.Error(err), zap.Any("barrier", barrierID), zap.Any("foeExp", foeExp))
+		logger.CtxError(ctx, "OnMazeBarrierDeathRQ GetUserBarrierInfo fail", zap.Error(err), zap.Any("barrier", barrierID), zap.Any("foeExp", foeExp))
 		return 0, 0, nil, errors.MODULE_ERROR.ToInfo()
 	}
 
 	killMonsterNum, totalDamage, totalExp, _, err := barrierstagecounterservice.GlobalBarrierStageCounterService.GetBarrierStageCounter(ctx, userID, barrierID)
 	if err != nil {
-		logger.ErrorWF("OnMazeBarrierPassRQ GetBarrierAreaRecord fail", zap.Error(err))
+		logger.CtxError(ctx, "OnMazeBarrierPassRQ GetBarrierAreaRecord fail", zap.Error(err))
 		return 0, 0, nil, errors.MODULE_ERROR.ToInfo()
 	}
 
 	// 计算出失败的奖励
 	realItem, showItem, realEquip, showEquip, showExp, err := awardservice.GlobalAwardService.GetBarrierDeathAward(ctx, userID, barrierID)
 	if err != nil {
-		logger.ErrorWF("OnMazeBarrierDeathRQ GetBarrierDeathAward fail", zap.Error(err), zap.Any("barrier", barrierID), zap.Any("totalExp", totalExp))
+		logger.CtxError(ctx, "OnMazeBarrierDeathRQ GetBarrierDeathAward fail", zap.Error(err), zap.Any("barrier", barrierID), zap.Any("totalExp", totalExp))
 		return 0, 0, nil, errors.MODULE_ERROR.ToInfo()
 	}
 
@@ -253,16 +253,16 @@ func (b *barrier) BarrierDeath(ctx context.Context, header *Common.PacketHeader,
 	oldExp := userInfo.TotalExp
 	err = userInfo.AddExp(nowExp)
 	if err != nil {
-		logger.ErrorWF("OnMazeBarrierDeathRQ addExp fail", zap.Error(err), zap.Any("barrier", barrierID), zap.Any("totalExp", totalExp))
+		logger.CtxError(ctx, "OnMazeBarrierDeathRQ addExp fail", zap.Error(err), zap.Any("barrier", barrierID), zap.Any("totalExp", totalExp))
 		return 0, 0, nil, errors.MODULE_ERROR.ToInfo()
 	}
 	newLevel := userInfo.Level
 	err = userInfo.Save(ctx)
 	if err != nil {
-		logger.ErrorWF("OnMazeBarrierDeathRQ SetUserInfoV2 fail", zap.Error(err), zap.Any("barrier", barrierID), zap.Any("totalExp", totalExp))
+		logger.CtxError(ctx, "OnMazeBarrierDeathRQ SetUserInfoV2 fail", zap.Error(err), zap.Any("barrier", barrierID), zap.Any("totalExp", totalExp))
 		return 0, 0, nil, errors.MODULE_ERROR.ToInfo()
 	}
-	mazecommonvalue.HandleUserLevelExpChg(logger, userID, userInfo.Level, userInfo.Exp, header.GetSession())
+	mazecommonvalue.HandleUserLevelExpChg(ctx, userID, userInfo.Level, userInfo.Exp, header.GetSession())
 
 	awards = append(awards, &MazeCommon.MazeItem{
 		ItemId: proto.Int32(constdef.MazeCommonItemExp),
@@ -287,9 +287,9 @@ func (b *barrier) BarrierDeath(ctx context.Context, header *Common.PacketHeader,
 	userBarrier.RebornCount = 0
 	userBarrier.BarrierStatus = 1
 	userBarrier.EndTime = time.Now().Unix()
-	err = userBarrier.Save(logger)
+	err = userBarrier.Save(ctx)
 	if err != nil {
-		logger.ErrorWF("OnMazeBarrierDeathRQ SetUserBarrierInfo fail", zap.Error(err), zap.Any("barrier", barrierID), zap.Any("totalExp", totalExp))
+		logger.CtxError(ctx, "OnMazeBarrierDeathRQ SetUserBarrierInfo fail", zap.Error(err), zap.Any("barrier", barrierID), zap.Any("totalExp", totalExp))
 		return 0, 0, nil, errors.MODULE_ERROR.ToInfo()
 	}
 
@@ -307,7 +307,7 @@ func (b *barrier) BarrierDeath(ctx context.Context, header *Common.PacketHeader,
 		itemList := itemutil.Map2ItemInfo(realItem)
 		errInfo := itemservice.GlobalItemService.AddItem(context.TODO(), userID, itemservice.ItemOpTypeDeath, tradeNo, itemList...)
 		if errInfo != nil {
-			logger.ErrorWF("CalUserSweepBarrierAward AddItemEx fail", zap.Any("errInfo", errInfo), zap.Any("otherItem", otherItem))
+			logger.CtxError(ctx, "CalUserSweepBarrierAward AddItemEx fail", zap.Any("errInfo", errInfo), zap.Any("otherItem", otherItem))
 			return 0, 0, nil, errors.MODULE_ERROR.ToInfo()
 		}
 		// res.BarrierAward = append(res.BarrierAward, otherItem...)
@@ -317,7 +317,7 @@ func (b *barrier) BarrierDeath(ctx context.Context, header *Common.PacketHeader,
 	if len(realEquip) > 0 {
 		_, err := addequip.AddEquipToBag(ctx, userID, int32(MazeEquipSvr.ENUM_EQUIP_BAG_OP_TYPE_MAZE_EQUIP_SWEEP_AWARD), tradeNo, realEquip)
 		if err != nil {
-			logger.ErrorWF("CalUserSweepBarrierAward addEquipToBag fail", zap.Error(err), zap.Any("optype", int32(MazeEquipSvr.ENUM_EQUIP_BAG_OP_TYPE_MAZE_EQUIP_BOX_AWARD)),
+			logger.CtxError(ctx, "CalUserSweepBarrierAward addEquipToBag fail", zap.Error(err), zap.Any("optype", int32(MazeEquipSvr.ENUM_EQUIP_BAG_OP_TYPE_MAZE_EQUIP_BOX_AWARD)),
 				zap.Any("tradeNo", tradeNo), zap.Any("addEquip", realEquip))
 			return 0, 0, nil, errors.MODULE_ERROR.ToInfo()
 		}
@@ -333,7 +333,7 @@ func (b *barrier) BarrierDeath(ctx context.Context, header *Common.PacketHeader,
 			for i := 0; i < int(count); i++ {
 				itemEquip, err := equiptoitem.PackMazeEquipInfoSvrToItem(equipId)
 				if err != nil {
-					logger.ErrorWF("CalUserSweepBarrierAward PackMazeEquipInfoSvrToItem fail", zap.Error(err), zap.Any("equipId", equipId))
+					logger.CtxError(ctx, "CalUserSweepBarrierAward PackMazeEquipInfoSvrToItem fail", zap.Error(err), zap.Any("equipId", equipId))
 					continue
 				}
 				awards = append(awards, itemEquip)

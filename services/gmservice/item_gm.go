@@ -100,7 +100,7 @@ func (s *service) AddExp(writer http.ResponseWriter, request *http.Request) {
 		outPut = *gmmodel.NewOutPut(http.StatusBadGateway, fmt.Sprintf("errMsg: %s", err.Error()), gmmodel.DynamicData{})
 		return
 	}
-	mazecommonvalue.HandleUserLevelExpChg(logger, userId, userInfo.Level, userInfo.Exp, "")
+	mazecommonvalue.HandleUserLevelExpChg(ctx, userId, userInfo.Level, userInfo.Exp, "")
 
 	defer func() {
 		if exp != 0 {

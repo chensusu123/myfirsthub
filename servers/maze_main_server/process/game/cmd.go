@@ -46,10 +46,10 @@ func (g *Game) OnSendDollMazeCmdRQ_10463_10464(s *session.Session, req *MazeGame
 
 	defer func() {
 		err = s.Response(res)
-		logger.InfoWF("OnSendDollMazeCmdRQ end", zap.Any("res", res))
+		logger.CtxInfo(ctx, "OnSendDollMazeCmdRQ end", zap.Any("res", res))
 	}()
 
-	logger.InfoWF("OnSendDollMazeCmdRQ with", zap.Any("req", req))
+	logger.CtxInfo(ctx, "OnSendDollMazeCmdRQ with", zap.Any("req", req))
 	// if !BreedVersionFC.IsDollVersion(userCtx, shardingID) {
 	// 	userCtx.WarnWF("OnSendDollMazeCmdRQ not doll version", zap.Uint64("userID", shardingID))
 	// 	return
@@ -115,8 +115,8 @@ func ParseCmd(ctx context.Context, uid uint64, cmdCode int32, cmd string, sessio
 			}
 			params[datas[0]] = datas[1]
 		}
-		logger.InfoWF("ParseCmd SetMazeMoney dump params", zap.Any("params", params))
-		err = SetMazeMoney(logger, fkutil.ToUint64(params["user"]), fkutil.ToInt32(params["diamond"]), fkutil.ToInt64(params["money"]), session)
+		logger.CtxInfo(ctx, "ParseCmd SetMazeMoney dump params", zap.Any("params", params))
+		err = SetMazeMoney(ctx, fkutil.ToUint64(params["user"]), fkutil.ToInt32(params["diamond"]), fkutil.ToInt64(params["money"]), session)
 		return
 	case 1003:
 		cmdParams := strings.Split(cmd, "&")
@@ -133,8 +133,8 @@ func ParseCmd(ctx context.Context, uid uint64, cmdCode int32, cmd string, sessio
 			}
 			params[datas[0]] = datas[1]
 		}
-		logger.InfoWF("ParseCmd SetMazeBarrier dump params", zap.Any("params", params))
-		err = SetMazeBarrier(logger, fkutil.ToUint64(params["user"]), fkutil.ToInt32(params["barrier"]))
+		logger.CtxInfo(ctx, "ParseCmd SetMazeBarrier dump params", zap.Any("params", params))
+		err = SetMazeBarrier(ctx, fkutil.ToUint64(params["user"]), fkutil.ToInt32(params["barrier"]))
 		return
 	case 1004:
 		cmdParams := strings.Split(cmd, "&")
@@ -151,14 +151,14 @@ func ParseCmd(ctx context.Context, uid uint64, cmdCode int32, cmd string, sessio
 			}
 			params[datas[0]] = datas[1]
 		}
-		logger.InfoWF("ParseCmd ClearBarrier dump params", zap.Any("params", params))
-		err = mazeboxredis.ClearOpenBoxTime(logger, fkutil.ToUint64(params["user"]))
+		logger.CtxInfo(ctx, "ParseCmd ClearBarrier dump params", zap.Any("params", params))
+		err = mazeboxredis.ClearOpenBoxTime(ctx, fkutil.ToUint64(params["user"]))
 		if err != nil {
-			logger.ErrorWF("ParseCmd ClearOpenBoxTime fail", zap.Error(err), zap.Uint64("userID", fkutil.ToUint64(params["user"])))
+			logger.CtxError(ctx, "ParseCmd ClearOpenBoxTime fail", zap.Error(err), zap.Uint64("userID", fkutil.ToUint64(params["user"])))
 		}
 		err = ClearBarrier(ctx, fkutil.ToUint64(params["user"]))
 		if err != nil {
-			logger.ErrorWF("ParseCmd End ClearOpenBoxTime failed", zap.Error(err), zap.Uint64("userID", fkutil.ToUint64(params["user"])))
+			logger.CtxError(ctx, "ParseCmd End ClearOpenBoxTime failed", zap.Error(err), zap.Uint64("userID", fkutil.ToUint64(params["user"])))
 		}
 		return
 	case 1005:
@@ -176,8 +176,8 @@ func ParseCmd(ctx context.Context, uid uint64, cmdCode int32, cmd string, sessio
 			}
 			params[datas[0]] = datas[1]
 		}
-		logger.InfoWF("ParseCmd SetMazeUserInfo dump params", zap.Any("params", params))
-		err = SetMazeUserInfo(logger, fkutil.ToUint64(params["user"]), fkutil.ToInt64(params["level"]), fkutil.ToInt64(params["exp"]))
+		logger.CtxInfo(ctx, "ParseCmd SetMazeUserInfo dump params", zap.Any("params", params))
+		err = SetMazeUserInfo(ctx, fkutil.ToUint64(params["user"]), fkutil.ToInt64(params["level"]), fkutil.ToInt64(params["exp"]))
 		return
 	default:
 		err = errors.New("wrong cmd_code")
@@ -185,27 +185,28 @@ func ParseCmd(ctx context.Context, uid uint64, cmdCode int32, cmd string, sessio
 	return
 }
 
-func SetMazeMoney(logger fklog.FKLogI, uid uint64, diamond int32, money int64, session string) (err error) {
+func SetMazeMoney(ctx context.Context, uid uint64, diamond int32, money int64, session string) (err error) {
+	logger := fklog.ContextAppLogger(ctx)
 	if uid <= 0 || diamond < 0 || money < 0 {
-		logger.ErrorWF("userId不能小于等于0,diamond、moneyCount不能小于0")
+		logger.CtxError(ctx, "userId不能小于等于0,diamond、moneyCount不能小于0")
 		err = errors.New("userId不能小于等于0,diamond、moneyCount不能小于0")
 		return
 	}
 	err = moneyservice.GlobalMoneyService.SetMoney(context.TODO(), uid, constdef.MazeCommonItemCoin, money)
 	if err != nil {
-		logger.ErrorWF("SetMazeMoney GMSet fail", zap.Error(err))
+		logger.CtxError(ctx, "SetMazeMoney GMSet fail", zap.Error(err))
 		return
 	}
 	err = moneyservice.GlobalMoneyService.SetMoney(context.TODO(), uid, constdef.MazeCommonItemDiamond, int64(diamond))
 	if err != nil {
-		logger.ErrorWF("SetMazeMoney GMSet fail", zap.Error(err))
+		logger.CtxError(ctx, "SetMazeMoney GMSet fail", zap.Error(err))
 		return
 	}
 
 	return
 }
 
-func SetMazeBarrier(logger fklog.FKLogI, userId uint64, barrierId int32) (err error) {
+func SetMazeBarrier(ctx context.Context, userId uint64, barrierId int32) (err error) {
 
 	if userId <= 0 || barrierId <= 0 {
 		err = errors.New("userId、barrierId不能小于等于0")
@@ -240,7 +241,7 @@ func ClearBarrier(ctx context.Context, userId uint64) (err error) {
 		return
 	}
 	err = syncmazestorageinforedis.DelSyncMazeStorageInfo(userId, userInfo.Barrier)
-	logger.InfoWF("ClearBarrier end", zap.Error(err), zap.Any("userInfo", userInfo), zap.Any("user", userId))
+	logger.CtxInfo(ctx, "ClearBarrier end", zap.Error(err), zap.Any("userInfo", userInfo), zap.Any("user", userId))
 	if err != nil {
 		return err
 	}
@@ -253,7 +254,7 @@ func ClearBarrier(ctx context.Context, userId uint64) (err error) {
 
 	// maxBarrierId := 7
 	// for barrierId := 1; barrierId <= maxBarrierId; barrierId++ {
-	err = mazeuserbarrierredis.GMDel(logger, userId, 0)
+	err = mazeuserbarrierredis.GMDel(ctx, userId, 0)
 	if err != nil {
 		return
 	}
@@ -280,7 +281,7 @@ func ClearBarrier(ctx context.Context, userId uint64) (err error) {
 
 	now := time.Now()
 	today := now.Year()*10000 + int(now.Month())*100 + now.Day()
-	err = mazechallengenumredis.GMDel(logger, userId, today)
+	err = mazechallengenumredis.GMDel(ctx, userId, today)
 	if err != nil {
 		return
 	}
@@ -307,10 +308,10 @@ func ClearBarrier(ctx context.Context, userId uint64) (err error) {
 
 }
 
-func SetMazeUserInfo(logger fklog.FKLogI, uid uint64, level int64, exp int64) (err error) {
-
+func SetMazeUserInfo(ctx context.Context, uid uint64, level int64, exp int64) (err error) {
+	logger := fklog.ContextAppLogger(ctx)
 	if uid <= 0 || level <= 0 || exp < 0 {
-		logger.ErrorWF("userId、level不能小于等于0,exp不能小于0")
+		logger.CtxError(ctx, "userId、level不能小于等于0,exp不能小于0")
 		err = errors.New("userId、level不能小于等于0,exp不能小于0")
 		return
 	}
@@ -324,7 +325,7 @@ func SetMazeUserInfo(logger fklog.FKLogI, uid uint64, level int64, exp int64) (e
 
 	// levelCfg := GMazeLevelV8Cfg.Get(int32(level))
 	// if levelCfg == nil {
-	// 	logger.ErrorWF("根据level不能读取等级配置表")
+	// 	logger.CtxError(ctx,"根据level不能读取等级配置表")
 	// 	err = errors.New("根据level不能读取等级配置表")
 	// 	return
 	// }
@@ -365,13 +366,13 @@ func CmdAddEnergy(ctx context.Context, userId uint64, args map[string]string) er
 	}
 	oldEnergy, _, err := barrierenergyservice.GlobalBarrierEnergyService.GetBarrierEnergy(ctx, userId)
 	if err != nil {
-		logger.ErrorWF("CmdAddEnergy GetBarrierEnergy failed", zap.Error(err))
+		logger.CtxError(ctx, "CmdAddEnergy GetBarrierEnergy failed", zap.Error(err))
 		return err
 	}
 
 	newEnergy, nextUpdateTime, err := barrierenergyservice.GlobalBarrierEnergyService.AddEnergy(ctx, userId, vInt)
 	if err != nil {
-		logger.ErrorWF("CmdAddEnergy AddEnergy failed", zap.Error(err))
+		logger.CtxError(ctx, "CmdAddEnergy AddEnergy failed", zap.Error(err))
 		return err
 	}
 	barrierenergyservice.GlobalBarrierEnergyService.PushEnergyRecord(ctx, userId, oldEnergy, newEnergy, mazeenergyrecord.GMAdd, nextUpdateTime)

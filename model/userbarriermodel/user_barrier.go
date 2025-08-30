@@ -1,6 +1,7 @@
 package userbarriermodel
 
 import (
+	"context"
 	"maze_game_server/io/redis/mazeuserbarrierredis"
 	"maze_game_server/pb/server/MazeBarrierCache"
 
@@ -18,19 +19,20 @@ type UserBarrierModel struct {
 	EndTime       int64  `json:"end_time,omitempty"`       //本次探险有结果的时间
 }
 
-func NewUserBarrierModel(logger fklog.FKLogI, userID uint64) (ub *UserBarrierModel, err error) {
+func NewUserBarrierModel(ctx context.Context, userID uint64) (ub *UserBarrierModel, err error) {
 	ub = &UserBarrierModel{
 		UserID: userID,
 	}
-	if err = ub.load(logger); err != nil {
+	if err = ub.load(ctx); err != nil {
 		return nil, err
 	}
 	return ub, nil
 }
 
 // load
-func (ub *UserBarrierModel) load(logger fklog.FKLogI) (err error) {
-	data, err := mazeuserbarrierredis.GetUserBarrierInfo(logger, ub.UserID, 0)
+func (ub *UserBarrierModel) load(ctx context.Context) (err error) {
+	logger := fklog.ContextAppLogger(ctx)
+	data, err := mazeuserbarrierredis.GetUserBarrierInfo(ctx, ub.UserID, 0)
 	if err != nil {
 		logger.ErrorWF("load GetUserBarrierInfo fail", zap.Error(err), zap.Uint64("UserID", ub.UserID))
 		return err
@@ -44,7 +46,8 @@ func (ub *UserBarrierModel) load(logger fklog.FKLogI) (err error) {
 }
 
 // Save
-func (ub *UserBarrierModel) Save(logger fklog.FKLogI) (err error) {
+func (ub *UserBarrierModel) Save(ctx context.Context) (err error) {
+	logger := fklog.ContextAppLogger(ctx)
 	data := &MazeBarrierCache.MazeBarrierCache{
 		BarrierId:     proto.Int32(ub.BarrierID),
 		BarrierStatus: proto.Int32(ub.BarrierStatus),
@@ -52,9 +55,9 @@ func (ub *UserBarrierModel) Save(logger fklog.FKLogI) (err error) {
 		StartTime:     proto.Int64(ub.StartTime),
 		EndTime:       proto.Int64(ub.EndTime),
 	}
-	err = mazeuserbarrierredis.SetUserBarrierInfo(logger, ub.UserID, 0, data)
+	err = mazeuserbarrierredis.SetUserBarrierInfo(ctx, ub.UserID, 0, data)
 	if err != nil {
-		logger.ErrorWF("Save SetUserBarrierInfo fail", zap.Error(err), zap.Uint64("UserID", ub.UserID), zap.Any("data", data))
+		logger.CtxError(ctx, "Save SetUserBarrierInfo fail", zap.Error(err), zap.Uint64("UserID", ub.UserID), zap.Any("data", data))
 	}
 	return
 }

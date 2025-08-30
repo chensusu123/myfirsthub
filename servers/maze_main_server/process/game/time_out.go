@@ -4,10 +4,11 @@ import (
 	"fmt"
 	"strings"
 
+	"maze_game_server/common/errors"
+
 	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fkconfig/param"
 	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fklog"
 	"gitlab.ifreetalk.com/maze-plate/freetk/fkutil"
-	"maze_game_server/common/errors"
 )
 
 var HeartTime int64

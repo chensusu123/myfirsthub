@@ -117,7 +117,7 @@ func (s *service) DumpBattleData(writer http.ResponseWriter, request *http.Reque
 	logger.SetLogId(time.Now().UnixNano())
 	logger.SetUid(userId)
 	logger.CtxInfo(ctx, "DumpBattleData begin")
-	battleData, e := game.GetMazeBattleData(logger, userId, barrierId)
+	battleData, e := game.GetMazeBattleData(ctx, userId, barrierId)
 	if e != nil {
 		writer.Write([]byte(e.Error()))
 		return
@@ -160,7 +160,7 @@ func (s *service) Attrs(writer http.ResponseWriter, request *http.Request) {
 		barrierId = fkutil.ToInt32(request.Form.Get("barrier_id"))
 	)
 
-	userAttrMap, err := mazecalcattrredis.GetAllMazeCalcAttr(logger, userId)
+	userAttrMap, err := mazecalcattrredis.GetAllMazeCalcAttr(ctx, userId)
 	if err != nil {
 		logger.CtxError(ctx, "GetAllMazeCalcAttr nil", zap.Uint64("userId", userId), zap.Error(err))
 		fmt.Fprintf(writer, "获取人物属性失败: %s\n", err.Error())
@@ -282,7 +282,7 @@ func (s *service) LookAssembleInfo(writer http.ResponseWriter, request *http.Req
 	}
 	showBuff.WriteString(EndLine)
 
-	ar, err := equipaassemblegm.DumpDollCalcAttr(logger, userId)
+	ar, err := equipaassemblegm.DumpDollCalcAttr(ctx, userId)
 	if err != nil {
 		writer.Write([]byte(err.Error()))
 		return
@@ -352,7 +352,7 @@ func (s *service) SetUserLevel(writer http.ResponseWriter, request *http.Request
 		outPut = *gmmodel.NewOutPut(http.StatusBadGateway, fmt.Sprintf("errMsg: %s", err.Error()), gmmodel.DynamicData{})
 		return
 	}
-	mazecommonvalue.HandleUserLevelExpChg(logger, userId, userInfo.Level, userInfo.Exp, "")
+	mazecommonvalue.HandleUserLevelExpChg(ctx, userId, userInfo.Level, userInfo.Exp, "")
 
 	defer func() {
 		levelRecord := &mazeuserlevelkafka.MazeUserLevelRecord{

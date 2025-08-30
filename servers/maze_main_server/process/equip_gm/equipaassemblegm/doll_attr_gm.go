@@ -8,9 +8,9 @@ package equipaassemblegm
 
 import (
 	"bytes"
+	"context"
 	"fmt"
 
-	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fklog"
 	"maze_game_server/common/constdef"
 	"maze_game_server/common/vardef"
 	"maze_game_server/config/GMazeAttrSpDescV8Cfg"
@@ -19,10 +19,12 @@ import (
 	"maze_game_server/io/redis/mazebuffinforedis"
 	"maze_game_server/io/redis/mazecalcattrredis"
 	"maze_game_server/module/mazeattrformula"
+
+	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fklog"
 )
 
-func DumpDollCalcAttr(logger fklog.FKLogI, userId uint64) (attrInfo string, err error) {
-	attrs, err := mazecalcattrredis.HScanMazeCalcAttr(logger, userId)
+func DumpDollCalcAttr(ctx context.Context, userId uint64) (attrInfo string, err error) {
+	attrs, err := mazecalcattrredis.HScanMazeCalcAttr(ctx, userId)
 	if err != nil {
 		return
 	}

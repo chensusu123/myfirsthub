@@ -382,8 +382,8 @@ func InitDollEquipSuitSeq(logger fklog.FKLogI, userId uint64) error {
 
 // 人偶属性初始化
 func HandleDollAttrInit(ctx context.Context, userId uint64, session string) {
-	logger := fklog.ContextAppLogger(ctx)
-	slen, err := mazecalcattrredis.HlenMazeCalcAttr(logger, userId)
+	// logger := fklog.ContextAppLogger(ctx)
+	slen, err := mazecalcattrredis.HlenMazeCalcAttr(ctx, userId)
 	if err != nil {
 		return
 	}

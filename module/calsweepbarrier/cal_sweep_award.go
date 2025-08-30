@@ -67,12 +67,12 @@ func GetSweepBarrierAward(ctx context.Context, uid uint64, barrierId int32) (equ
 		}
 	}
 
-	moneyExtra, err := mazecommonvalue.GetMoneyExtraAdditionEquip(logger, uid)
+	moneyExtra, err := mazecommonvalue.GetMoneyExtraAdditionEquip(ctx, uid)
 	if err != nil {
 		logger.CtxError(ctx, "GetSweepBarrierAward GetMoneyExtraAdditionEquip fail", zap.Error(err))
 		return
 	}
-	expExtra, err := mazecommonvalue.GetExpExtraAdditionEquip(logger, uid)
+	expExtra, err := mazecommonvalue.GetExpExtraAdditionEquip(ctx, uid)
 	if err != nil {
 		logger.CtxError(ctx, "GetSweepBarrierAward GetExpExtraAdditionEquip fail", zap.Error(err))
 		return
@@ -103,7 +103,7 @@ func GetSweepBarrierAward(ctx context.Context, uid uint64, barrierId int32) (equ
 
 	// 计算加成 由于没有武力值 暂时没有额外加成
 	// 获取关卡宝箱掉落奖励 包含装备和物品
-	addItems, equipMap, err := mazebarrier.GetBarrierPassAward(logger, barrierId)
+	addItems, equipMap, err := mazebarrier.GetBarrierPassAward(ctx, barrierId)
 	if err != nil {
 		logger.CtxError(ctx, "GetSweepBarrierAward GetBarrierPassAward fail", zap.Any("barrierId", barrierId))
 		return
@@ -208,7 +208,7 @@ func CalUserSweepBarrierAward(ctx context.Context, uid uint64, barrierId int32, 
 			return
 		}
 
-		mazecommonvalue.HandleUserLevelExpChg(logger, uid, userInfo.Level, userInfo.Exp, header.GetSession())
+		mazecommonvalue.HandleUserLevelExpChg(ctx, uid, userInfo.Level, userInfo.Exp, header.GetSession())
 		defer func() {
 			if oldLevel != newLevel {
 				levelRecord := &mazeuserlevelkafka.MazeUserLevelRecord{
