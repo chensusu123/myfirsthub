@@ -3,6 +3,7 @@ package flowservice
 import (
 	"context"
 	flowmodel "maze_game_server/model/flowmodel/flow_model"
+	"sync"
 )
 
 type flowService interface {
@@ -10,15 +11,20 @@ type flowService interface {
 	SendFlowData(ctx context.Context, record interface{})
 	// 处理数据的地方 初始化时创建 后续把所有数据都转化为json来发送
 	ProcessFlowData()
+	SetUserEnterTime(userID uint64, enterTime uint64)
+	GetUserEnterTime(userID uint64) uint64
 }
 
 type service struct {
-	ch chan *flowmodel.FlowData
+	sync.RWMutex
+	ch         chan *flowmodel.FlowData
+	reportTime map[uint64]uint64
 }
 
 func NewFlowService() flowService {
 	svr := &service{}
 	svr.ch = make(chan *flowmodel.FlowData, flowmodel.MAXFLOWCHANSIZE)
+	svr.reportTime = make(map[uint64]uint64)
 	go svr.ProcessFlowData()
 	return svr
 }

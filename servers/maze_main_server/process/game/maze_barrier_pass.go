@@ -72,7 +72,7 @@ func (g *Game) OnMazeBarrierPassRQ_10459_10460(s *session.Session, req *MazeGame
 		res.BarrierRareAward = rareAwards
 	}
 
-	err = mazebarriereventredis.LeaveBarrier(logger, userId, req.GetBarrierId(), true)
+	err = mazebarriereventredis.LeaveBarrier(ctx, userId, req.GetBarrierId(), true)
 	if err != nil {
 		logger.CtxError(ctx, "OnMazeBarrierPassRQ LeaveBarrier fail", zap.Error(err))
 	}

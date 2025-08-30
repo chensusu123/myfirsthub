@@ -24,6 +24,7 @@ import (
 	"maze_game_server/services/barrierenergyservice"
 	"maze_game_server/services/barriersavedataservice"
 	"maze_game_server/services/barrierstagecounterservice"
+	"maze_game_server/services/flowservice"
 	"maze_game_server/services/itemservice"
 	"maze_game_server/services/tempbuffservice"
 	"strings"
@@ -296,7 +297,7 @@ func (g *Game) OnMazeBarrierEnterRQ_10447_10448(s *session.Session, req *MazeGam
 
 	// 同步给客户端当前服务器记录的通用数值
 	var expMax, money, diamond int64
-	levelCfg := GMazeLevelV8Cfg.Get(int32(userInfo.Level))
+	levelCfg := GMazeLevelV8Cfg.GetWithCtx(ctx, int32(userInfo.Level))
 	if levelCfg != nil {
 		expMax = levelCfg.Next_level_need_exp
 	}
@@ -329,10 +330,20 @@ func (g *Game) OnMazeBarrierEnterRQ_10447_10448(s *session.Session, req *MazeGam
 		Energy:     proto.Int32(curEnergy),
 	}
 
-	err = mazebarriereventredis.EnterBarrier(logger, userId, req.GetBarrierId())
+	err = mazebarriereventredis.EnterBarrier(ctx, userId, req.GetBarrierId())
 	if err != nil {
-		logger.ErrorWF("OnMazeBarrierEnterRQ EnterBarrier fail", zap.Error(err))
+		logger.CtxError(ctx, "OnMazeBarrierEnterRQ EnterBarrier fail", zap.Error(err))
 	}
+	// 设置用户进入关卡时间
+	// 备份事件流
+	enterTime, err := mazebarriereventredis.GetBarrierEnterTime(ctx, userId)
+	if err != nil {
+		logger.CtxError(ctx, "OnMazeBarrierEnterRQ GetBarrierEnterTime Fail",
+			zap.Uint64("UserId", userId),
+			zap.Error(err))
+		// 不返回 触发后续事件
+	}
+	flowservice.GflowService.SetUserEnterTime(userId, uint64(enterTime))
 
 	// 触发进入关卡事件
 	events.OnEnterBarrier(logger, userId, 0, time.Now().UnixMilli(), &MazeGame.BattleEventEnterBarrier{BarrierId: proto.Int32(req.GetBarrierId())})

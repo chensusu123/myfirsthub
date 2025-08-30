@@ -56,7 +56,7 @@ func (g *Game) OnMazeBarrierDeathRQ_10449_10450(s *session.Session, req *MazeGam
 		res.BarrierAward = awards
 	}
 
-	err = mazebarriereventredis.LeaveBarrier(logger, userId, req.GetBarrierId(), false)
+	err = mazebarriereventredis.LeaveBarrier(ctx, userId, req.GetBarrierId(), false)
 	if err != nil {
 		logger.ErrorWF("OnMazeBarrierPassRQ LeaveBarrier fail", zap.Error(err), zap.Any("barrier", req.GetBarrierId()))
 	}
