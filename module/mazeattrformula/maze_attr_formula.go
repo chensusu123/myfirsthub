@@ -7,23 +7,26 @@
 package mazeattrformula
 
 import (
+	"context"
 	"errors"
 	"fmt"
 
+	"maze_game_server/config/GMazeAttributeFormulaV8Cfg"
+
 	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fklog"
 	"go.uber.org/zap"
-	"maze_game_server/config/GMazeAttributeFormulaV8Cfg"
 )
 
-func CalcMazeFormulaAttr(logger fklog.FKLogI, formulaId int32,
+func CalcMazeFormulaAttr(ctx context.Context, formulaId int32,
 	attrs map[int32]int64) (m int64, desc string, err error) {
+	logger := fklog.ContextAppLogger(ctx)
 	var p1, p2, p3, p4, p5, p11, p12 float64
 	var p8, p9, p10 float64
 	var p8s, p9s, p10s string
 
-	cfg := GMazeAttributeFormulaV8Cfg.Get(formulaId)
+	cfg := GMazeAttributeFormulaV8Cfg.GetWithCtx(ctx, formulaId)
 	if cfg == nil {
-		logger.ErrorWF("CalcDollFormulaAttr cannot find config", zap.Int32("formulaId", formulaId))
+		logger.CtxError(ctx, "CalcDollFormulaAttr cannot find config", zap.Int32("formulaId", formulaId))
 		return 0, desc, errors.New("no found formula config")
 	}
 
@@ -75,7 +78,7 @@ func CalcMazeFormulaAttr(logger fklog.FKLogI, formulaId int32,
 	m1 := p1 * (1 + p2/10000.0) * p8 * (1 + p3/10000.0)
 	m2 := (m1 + p4) * (1 + p5/10000.0) * p9 * p10
 	m = int64((m2 + p11) * (1 + p12/10000.0))
-	logger.InfoWF("CalcMazeFormulaAttr result",
+	logger.CtxInfo(ctx, "CalcMazeFormulaAttr result",
 		zap.Int32("formulaId", formulaId),
 		zap.Int64("val", m),
 		zap.Float64("m1", m1),
@@ -101,8 +104,8 @@ func CalcMultiplyParam(params []int32, attrs map[int32]int64) (float64, string) 
 }
 
 // 获取攻防血相关的公式属性参数Id列表
-func GetGFXFormulaParamAttrs(formulaId int32) []int32 {
-	cfg := GMazeAttributeFormulaV8Cfg.Get(formulaId)
+func GetGFXFormulaParamAttrs(ctx context.Context, formulaId int32) []int32 {
+	cfg := GMazeAttributeFormulaV8Cfg.GetWithCtx(ctx, formulaId)
 	if cfg == nil {
 		return nil
 	}

@@ -59,7 +59,7 @@ func (e *Equip) OnGetMazeAssembleRQ_10414_10415(s *session.Session, req *MazeGam
 	ChkEquipPosUnlock(ctx, userId, UnlockSrcInit, false)
 
 	// 初始装备套检查
-	InitDollEquipSuitSeq(logger, userId)
+	InitDollEquipSuitSeq(ctx, userId)
 
 	// 处理初始化装备
 	HandleDollEquipInit(ctx, userId, false)
@@ -67,13 +67,13 @@ func (e *Equip) OnGetMazeAssembleRQ_10414_10415(s *session.Session, req *MazeGam
 	// 人偶属性初始化
 	HandleDollAttrInit(ctx, userId, req.GetHeader().GetSession())
 
-	assembleInfo, effect, err := dollassembleinfo.GetDollAssembleInfoEx(logger, userId)
+	assembleInfo, effect, err := dollassembleinfo.GetDollAssembleInfoEx(ctx, userId)
 	if err != nil {
 		res.ErrInfo = errors.MODULE_ERROR.ToInfo()
 		logger.CtxError(ctx, "OnGetMazeAssembleRQ Get Assemble info fail", zap.Error(err))
 		return err
 	}
-	err = checkAssembleEquipConsistent(logger, userId, assembleInfo)
+	err = checkAssembleEquipConsistent(ctx, userId, assembleInfo)
 	if err != nil {
 		res.ErrInfo = errors.MODULE_ERROR.ToInfo()
 		logger.CtxError(ctx, "OnGetMazeAssembleRQ checkAssembleEquipConsistent fail", zap.Error(err))
@@ -91,7 +91,7 @@ func (e *Equip) OnGetMazeAssembleRQ_10414_10415(s *session.Session, req *MazeGam
 		var unlock int32
 		for _, aEquip := range assembleInfo.MazeEquips {
 			if posCfg.Pos_id == aEquip.GetEquipPos().GetPos() {
-				cliEquip, e := packequipostopb.PackEquipPosPb(logger, aEquip, -1)
+				cliEquip, e := packequipostopb.PackEquipPosPb(ctx, aEquip, -1)
 				if e != nil {
 					res.ErrInfo = errors.MODULE_ERROR.ToInfo()
 					logger.CtxWarn(ctx, "OnGetMazeAssembleRQ AssembleEquipToCliPb fail", zap.Error(e), zap.Int32("pos", posCfg.Pos_id))
@@ -120,7 +120,7 @@ func (e *Equip) OnGetMazeAssembleRQ_10414_10415(s *session.Session, req *MazeGam
 	dai.AsEquipSuitInfo = asequipsuittopb.PackAsEquipSuitInfo(assembleInfo.GetEpSuitId())
 	var e1 error
 	dai.EquipPosStSuit,
-		dai.EquipPosNextStSuit, e1 = equippossuit.GetCurAndNextSuit(logger, assembleInfo.GetEpEnSuitId())
+		dai.EquipPosNextStSuit, e1 = equippossuit.GetCurAndNextSuit(ctx, assembleInfo.GetEpEnSuitId())
 	if e1 != nil {
 		logger.CtxError(ctx, "OnGetMazeAssembleRQ GetCurAndNextSuit fail", zap.Error(e1), zap.Int32("enSuitId", assembleInfo.GetEpEnSuitId()))
 	}
@@ -130,16 +130,16 @@ func (e *Equip) OnGetMazeAssembleRQ_10414_10415(s *session.Session, req *MazeGam
 	return nil
 }
 
-// func getFuncOpenMask(logger fklog.FKLogI, funcId, dolllv, maskId int32) int32 {
+// func getFuncOpenMask(ctx context.Context, funcId, dolllv, maskId int32) int32 {
 // 	fc, e := funcopencheck.IsFuncOpen(funcId, dolllv)
 // 	if e != nil {
-// 		logger.ErrorWF("getFuncOpenMask IsFuncOpen fail", zap.Error(e), zap.Int32("funcId", funcId))
+// 		logger.CtxError(ctx,"getFuncOpenMask IsFuncOpen fail", zap.Error(e), zap.Int32("funcId", funcId))
 
 // 	} else {
 // 		if fc.IsOpen {
 // 			return maskId
 // 		} else {
-// 			logger.InfoWF("getFuncOpenMask IsFuncOpen", zap.Int32("funcId", funcId), zap.Any("fc", fc), zap.Int32("dollLv", dolllv))
+// 			logger.CtxInfo(ctx,"getFuncOpenMask IsFuncOpen", zap.Int32("funcId", funcId), zap.Any("fc", fc), zap.Int32("dollLv", dolllv))
 // 		}
 // 	}
 // 	return 0
@@ -169,7 +169,8 @@ func (e *Equip) OnGetMazeAssembleRQ_10414_10415(s *session.Session, req *MazeGam
 // }
 
 // 检查装备数据
-func checkAssembleEquipConsistent(logger fklog.FKLogI, userId uint64, assembleInfo *MazeEquipCache.MazeAssembleDb) error {
+func checkAssembleEquipConsistent(ctx context.Context, userId uint64, assembleInfo *MazeEquipCache.MazeAssembleDb) error {
+	logger := fklog.ContextAppLogger(ctx)
 	var needUpdateEquipPos []*MazeEquipCache.MazeEquipPosInfo
 	for _, equipPos := range assembleInfo.GetMazeEquips() {
 		if !assemble.IsAssembleEquip(equipPos) {
@@ -192,11 +193,11 @@ func checkAssembleEquipConsistent(logger fklog.FKLogI, userId uint64, assembleIn
 		}
 	}
 	if len(needUpdateEquipPos) > 0 {
-		err := dollassemblesuitredis.SaveEquipAssembleInfoV2(logger, userId, assembleInfo.GetCurSuitIndex(), needUpdateEquipPos)
+		err := dollassemblesuitredis.SaveEquipAssembleInfoV2(ctx, userId, assembleInfo.GetCurSuitIndex(), needUpdateEquipPos)
 		if err != nil {
-			logger.ErrorWF("checkAssembleEquipConsistent SaveEquipAssembleInfoV2 fail", zap.Error(err), zap.Any("needUpdateEquipPos", needUpdateEquipPos))
+			logger.CtxError(ctx, "checkAssembleEquipConsistent SaveEquipAssembleInfoV2 fail", zap.Error(err), zap.Any("needUpdateEquipPos", needUpdateEquipPos))
 		} else {
-			logger.WarnWF("checkAssembleEquipConsistent SaveEquipAssembleInfoV2 succ", zap.Any("needUpdateEquipPos", needUpdateEquipPos))
+			logger.CtxWarn(ctx, "checkAssembleEquipConsistent SaveEquipAssembleInfoV2 succ", zap.Any("needUpdateEquipPos", needUpdateEquipPos))
 		}
 		return err
 	}
@@ -214,7 +215,7 @@ func checkAssembleEquipLose(ctx context.Context, userId uint64, assembleInfo *Ma
 		}
 		if equipPos.GetEquipLoadInfo().GetEquipGuid() > 0 && equipPos.GetEquipInfo().GetEquipGuid() == 0 {
 
-			record := StartEquipAssmebleRecord(userId, equipPos.EquipPos.GetPos(), dollequipassmeblekakfa.DollEquipAssembleOpDown, nil, equipPos,
+			record := StartEquipAssmebleRecord(ctx, userId, equipPos.EquipPos.GetPos(), dollequipassmeblekakfa.DollEquipAssembleOpDown, nil, equipPos,
 				effectOld)
 			recordList = append(recordList, record)
 			module.ResetEquipPos(equipPos)
@@ -222,18 +223,18 @@ func checkAssembleEquipLose(ctx context.Context, userId uint64, assembleInfo *Ma
 		}
 	}
 	if len(needUpdateEquipPos) > 0 {
-		err := dollassemblesuitredis.SaveEquipAssembleInfoV2(logger, userId, assembleInfo.GetCurSuitIndex(), needUpdateEquipPos)
+		err := dollassemblesuitredis.SaveEquipAssembleInfoV2(ctx, userId, assembleInfo.GetCurSuitIndex(), needUpdateEquipPos)
 		if err != nil {
-			logger.ErrorWF("checkAssembleEquipLose SaveEquipAssembleInfoV2 fail", zap.Error(err), zap.Any("needUpdateEquipPos", needUpdateEquipPos))
+			logger.CtxError(ctx, "checkAssembleEquipLose SaveEquipAssembleInfoV2 fail", zap.Error(err), zap.Any("needUpdateEquipPos", needUpdateEquipPos))
 			return err
 		}
-		logger.WarnWF("checkAssembleEquipLose SaveEquipAssembleInfoV2 succ", zap.Any("needUpdateEquipPos", needUpdateEquipPos))
+		logger.CtxWarn(ctx, "checkAssembleEquipLose SaveEquipAssembleInfoV2 succ", zap.Any("needUpdateEquipPos", needUpdateEquipPos))
 
-		effectInfo, e := calcassembleattr.CalcEquipEffect(logger, assembleInfo.MazeEquips)
+		effectInfo, e := calcassembleattr.CalcEquipEffect(ctx, assembleInfo.MazeEquips)
 		if e == nil {
 			assembleInfo.EpSuitId = proto.Int32(effectInfo.SuitId)
 			// 更新人偶buff
-			e = mazebuffinforedis.SaveMazeEquipBuff(logger, userId, effectInfo.Other)
+			e = mazebuffinforedis.SaveMazeEquipBuff(ctx, userId, effectInfo.Other)
 			if e == nil {
 				// 通知计算属性
 				calcAttrNotify := &structsdef.MazeCalcAttrNotifyMsg{}

@@ -2,9 +2,6 @@ package equipdropservice
 
 import (
 	"context"
-	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fklog"
-	"gitlab.ifreetalk.com/maze-plate/freetk/fkutil"
-	"go.uber.org/zap"
 	"maze_game_server/common/constdef"
 	"maze_game_server/common/errors"
 	"maze_game_server/common/function/randfuncs"
@@ -13,6 +10,10 @@ import (
 	"maze_game_server/config/GMazeEquipPosQuaLvV8Cfg"
 	"maze_game_server/model/equipdropmodel"
 	"maze_game_server/module/mazeuserinfo"
+
+	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fklog"
+	"gitlab.ifreetalk.com/maze-plate/freetk/fkutil"
+	"go.uber.org/zap"
 )
 
 func (s service) GetNewEquip(ctx context.Context, userId uint64, level int32, barrierId int32, equipNum int32) (newEquip map[int32]int32, err error) {
@@ -61,7 +62,7 @@ func (s service) getEquipId(ctx context.Context, userId uint64, mazeLevel int32,
 		return nil, err
 	}
 
-	cfg, err := getMazeEquDropV8Cfg(barrier)
+	cfg, err := getMazeEquDropV8Cfg(ctx, barrier)
 	if err != nil {
 		logger.CtxInfo(ctx, "GetEquipId GetMazeEquDropV8Cfg failed", zap.Error(err), zap.Uint64("userId", userId), zap.Int32("barrier", barrier))
 		return nil, err
@@ -97,7 +98,7 @@ func (s service) getEquipId(ctx context.Context, userId uint64, mazeLevel int32,
 // 特殊掉落
 func (s service) specialEquipDrop(ctx context.Context, userId uint64, barrier, mazeLevel, addCount int32) (equipIdMap map[int32]int32, add int32) {
 	logger := fklog.ContextAppLogger(ctx)
-	cfg, err := getMazeEquDropV8Cfg(barrier)
+	cfg, err := getMazeEquDropV8Cfg(ctx, barrier)
 	if err != nil {
 		logger.CtxInfo(ctx, "specialEquipDrop GetMazeEquDropV8Cfg failed", zap.Error(err), zap.Uint64("userId", userId), zap.Int32("barrier", barrier))
 		return nil, 0
@@ -125,7 +126,7 @@ func (s service) specialEquipDrop(ctx context.Context, userId uint64, barrier, m
 	}
 
 	equipIdMap = make(map[int32]int32)
-	newLevel := s.GetMazeBarrierLv(mazeLevel, barrier)
+	newLevel := s.GetMazeBarrierLv(ctx, mazeLevel, barrier)
 	add = int32(0)
 	for i := 0; i < len(cfg.Special_drop); i += 2 {
 		if addCount == add {
@@ -160,7 +161,7 @@ func (s service) specialEquipDrop(ctx context.Context, userId uint64, barrier, m
 // 常规掉落组
 func (s service) regularityEquipDrop(ctx context.Context, userId uint64, barrier, mazeLevel, addCount int32) (equipIdMap map[int32]int32) {
 	logger := fklog.ContextAppLogger(ctx)
-	cfg, err := getMazeEquDropV8Cfg(barrier)
+	cfg, err := getMazeEquDropV8Cfg(ctx, barrier)
 	if err != nil {
 		logger.CtxInfo(ctx, "regularityEquipDrop GetMazeEquDropV8Cfg failed", zap.Error(err), zap.Uint64("userId", userId), zap.Int32("barrier", barrier))
 		return nil
@@ -177,7 +178,7 @@ func (s service) regularityEquipDrop(ctx context.Context, userId uint64, barrier
 		seqWeight[quality] = weight
 	}
 	equipIdMap = make(map[int32]int32)
-	newLevel := s.GetMazeBarrierLv(mazeLevel, barrier)
+	newLevel := s.GetMazeBarrierLv(ctx, mazeLevel, barrier)
 	for i := int32(0); i < addCount; i++ {
 		quality := randfuncs.RandByWeightV2(logger, seqWeight, false)
 		if quality <= 0 {
@@ -194,8 +195,8 @@ func (s service) regularityEquipDrop(ctx context.Context, userId uint64, barrier
 	return
 }
 
-func (s service) GetMazeBarrierLv(level int32, barrier int32) int32 {
-	cfg := GMazeBarriesV8Cfg.Get(barrier)
+func (s service) GetMazeBarrierLv(ctx context.Context, level int32, barrier int32) int32 {
+	cfg := GMazeBarriesV8Cfg.GetWithCtx(ctx, barrier)
 	if cfg == nil {
 		return level
 	}
@@ -208,12 +209,12 @@ func (s service) GetMazeBarrierLv(level int32, barrier int32) int32 {
 	return level
 }
 
-func getMazeEquDropV8Cfg(barrier int32) (*GMazeEquDropV8Cfg.MazeEquDropV8ConfigRow, error) {
-	cfg := GMazeBarriesV8Cfg.Get(barrier)
+func getMazeEquDropV8Cfg(ctx context.Context, barrier int32) (*GMazeEquDropV8Cfg.MazeEquDropV8ConfigRow, error) {
+	cfg := GMazeBarriesV8Cfg.GetWithCtx(ctx, barrier)
 	if cfg == nil {
 		return nil, errors.New("GMazeBarriesV8Cfg config error")
 	}
-	eCfg := GMazeEquDropV8Cfg.Get(cfg.Equ_drop)
+	eCfg := GMazeEquDropV8Cfg.GetWithCtx(ctx, cfg.Equ_drop)
 	if eCfg == nil {
 		return nil, errors.New("GMazeEquDropV8Cfg config error")
 	}

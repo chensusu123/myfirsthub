@@ -21,27 +21,29 @@ func init() {
 	fkconfig.RegisterNameNode("mazebagequipredis", 21640, gRedis)
 }
 
-func GetEquipInfo(logger fklog.FKLogI, userId uint64, equipGuid int64) (equipInfo *MazeEquipCache.MazeEquipInfoDb, err error) {
+func GetEquipInfo(ctx context.Context, userId uint64, equipGuid int64) (equipInfo *MazeEquipCache.MazeEquipInfoDb, err error) {
+	logger := fklog.ContextAppLogger(ctx)
 	key := fmt.Sprintf("maze:bag:equip:info:%d", userId)
 	ret, err := redis.Bytes(gRedis.Do(context.TODO(), "hget", key, equipGuid))
 	if err != nil {
 		if err == redis.ErrNil {
 			return nil, nil
 		}
-		logger.ErrorWF("GetEquipInfo get equip failed", zap.Error(err), zap.String("key", key), zap.Any("equipGuid", equipGuid))
+		logger.CtxError(ctx, "GetEquipInfo get equip failed", zap.Error(err), zap.String("key", key), zap.Any("equipGuid", equipGuid))
 		return nil, err
 	}
 	equipInfo = &MazeEquipCache.MazeEquipInfoDb{}
 	err = proto.Unmarshal(ret, equipInfo)
 	if err != nil {
-		logger.ErrorWF("GetEquipInfo Unmarshal ret error", zap.Any("ret", ret), zap.Error(err))
+		logger.CtxError(ctx, "GetEquipInfo Unmarshal ret error", zap.Any("ret", ret), zap.Error(err))
 		return nil, err
 	}
-	logger.DebugWF("GetEquipInfo succ", zap.Any("equipInfo", equipInfo))
+	logger.CtxDebug(ctx, "GetEquipInfo succ", zap.Any("equipInfo", equipInfo))
 	return equipInfo, nil
 }
 
-func GetBatchEquipInfo(logger fklog.FKLogI, userId uint64, equipGuids ...int64) (equipMap map[int64]*MazeEquipCache.MazeEquipInfoDb, err error) {
+func GetBatchEquipInfo(ctx context.Context, userId uint64, equipGuids ...int64) (equipMap map[int64]*MazeEquipCache.MazeEquipInfoDb, err error) {
+	logger := fklog.ContextAppLogger(ctx)
 	key := fmt.Sprintf("maze:bag:equip:info:%d", userId)
 	var args []interface{}
 	args = append(args, key)
@@ -50,7 +52,7 @@ func GetBatchEquipInfo(logger fklog.FKLogI, userId uint64, equipGuids ...int64) 
 	}
 	ret, err := redis.ByteSlices(gRedis.Do(context.TODO(), "HMGET", args...))
 	if err != nil {
-		logger.ErrorWF("GetBatchEquipInfo get equip failed", zap.Error(err), zap.String("key", key), zap.Any("args", args))
+		logger.CtxError(ctx, "GetBatchEquipInfo get equip failed", zap.Error(err), zap.String("key", key), zap.Any("args", args))
 		return nil, err
 	}
 	equipMap = make(map[int64]*MazeEquipCache.MazeEquipInfoDb, 0)
@@ -58,7 +60,7 @@ func GetBatchEquipInfo(logger fklog.FKLogI, userId uint64, equipGuids ...int64) 
 		info := &MazeEquipCache.MazeEquipInfoDb{}
 		err := proto.Unmarshal(ret[i], info)
 		if err != nil {
-			logger.ErrorWF("GetBatchEquipInfo equipMap Unmarshal fail", zap.Error(err))
+			logger.CtxError(ctx, "GetBatchEquipInfo equipMap Unmarshal fail", zap.Error(err))
 			return equipMap, err
 		}
 		if info.GetEquipGuid() == 0 {
@@ -69,19 +71,20 @@ func GetBatchEquipInfo(logger fklog.FKLogI, userId uint64, equipGuids ...int64) 
 	return
 }
 
-func SaveEquipInfo(logger fklog.FKLogI, userId uint64, equipInfo *MazeEquipCache.MazeEquipInfoDb) (err error) {
+func SaveEquipInfo(ctx context.Context, userId uint64, equipInfo *MazeEquipCache.MazeEquipInfoDb) (err error) {
+	logger := fklog.ContextAppLogger(ctx)
 	key := fmt.Sprintf("maze:bag:equip:info:%d", userId)
 
 	data, err := proto.Marshal(equipInfo)
 	if err != nil {
-		logger.ErrorWF("SaveEquipInfo Marshal error", zap.Int64("equipGuid", equipInfo.GetEquipGuid()),
+		logger.CtxError(ctx, "SaveEquipInfo Marshal error", zap.Int64("equipGuid", equipInfo.GetEquipGuid()),
 			zap.Any("equipInfo", equipInfo), zap.Error(err))
 		return
 	}
 
 	_, err = redis.Int(gRedis.Do(context.TODO(), "hset", key, equipInfo.GetEquipGuid(), data))
 	if err != nil {
-		logger.ErrorWF("SaveOneAuction hset error", zap.Int64("equipGuid", equipInfo.GetEquipGuid()),
+		logger.CtxError(ctx, "SaveOneAuction hset error", zap.Int64("equipGuid", equipInfo.GetEquipGuid()),
 			zap.Any("equipInfo", equipInfo), zap.Error(err))
 		return
 	}
@@ -89,7 +92,8 @@ func SaveEquipInfo(logger fklog.FKLogI, userId uint64, equipInfo *MazeEquipCache
 }
 
 // 保存装备的装配信息
-func BatchSaveEquipInfo(logger fklog.FKLogI, userId uint64, equipList []*MazeEquipCache.MazeEquipInfoDb) error {
+func BatchSaveEquipInfo(ctx context.Context, userId uint64, equipList []*MazeEquipCache.MazeEquipInfoDb) error {
+	logger := fklog.ContextAppLogger(ctx)
 	args := make([]interface{}, 0, 1+2*len(equipList))
 
 	key := fmt.Sprintf("maze:bag:equip:info:%d", userId)
@@ -103,38 +107,40 @@ func BatchSaveEquipInfo(logger fklog.FKLogI, userId uint64, equipList []*MazeEqu
 		args = append(args, equipPb)
 	}
 	if len(args) == 1 {
-		logger.WarnWF("equip nil")
+		logger.CtxWarn(ctx, "equip nil")
 		return nil
 	}
 	// redis操作
 	_, err := gRedis.Do(context.TODO(), "HMSET", args...)
 	if err != nil {
-		logger.ErrorWF("BatchSaveEquipInfo redis with fail",
+		logger.CtxError(ctx, "BatchSaveEquipInfo redis with fail",
 			zap.Error(err),
 			zap.Any("equipList", equipList),
 			zap.String("key", key))
 		return err
 	}
-	logger.DebugWF("BatchSaveEquipInfo succ",
+	logger.CtxDebug(ctx, "BatchSaveEquipInfo succ",
 		zap.Any("equipList", equipList),
 		zap.String("key", key))
 	return nil
 }
 
 // GM DEL背包
-func GMDelEquip(logger fklog.FKLogI, userId uint64) (err error) {
+func GMDelEquip(ctx context.Context, userId uint64) (err error) {
+	logger := fklog.ContextAppLogger(ctx)
 	key := fmt.Sprintf("maze:bag:equip:info:%d", userId)
 
 	_, err = gRedis.Do(context.TODO(), "DEL", key)
 	if err != nil {
-		logger.ErrorWF("del equip info fail", zap.Error(err), zap.String("key", key))
+		logger.CtxError(ctx, "del equip info fail", zap.Error(err), zap.String("key", key))
 		return err
 	}
-	logger.InfoWF("del equip succ ", zap.String("key", key))
+	logger.CtxInfo(ctx, "del equip succ ", zap.String("key", key))
 	return nil
 }
 
-func BatchDelEquip(logger fklog.FKLogI, userId uint64, equipGuids ...int64) (err error) {
+func BatchDelEquip(ctx context.Context, userId uint64, equipGuids ...int64) (err error) {
+	logger := fklog.ContextAppLogger(ctx)
 	key := fmt.Sprintf("maze:bag:equip:info:%d", userId)
 	args := make([]interface{}, 0)
 	args = append(args, key)
@@ -142,19 +148,20 @@ func BatchDelEquip(logger fklog.FKLogI, userId uint64, equipGuids ...int64) (err
 		args = append(args, guid) //field
 	}
 	if len(args) <= 1 {
-		logger.WarnWF("no has equip to save", zap.Any("args", args), zap.String("key", key))
+		logger.CtxWarn(ctx, "no has equip to save", zap.Any("args", args), zap.String("key", key))
 		return errors.New("配置参数错误")
 	}
 	_, err = gRedis.Do(context.TODO(), "HDEL", args...)
 	if err != nil {
-		logger.ErrorWF("del equip info fail", zap.Error(err), zap.String("key", key), zap.Any("args", args))
+		logger.CtxError(ctx, "del equip info fail", zap.Error(err), zap.String("key", key), zap.Any("args", args))
 		return err
 	}
-	logger.InfoWF("del equip succ ", zap.String("key", key), zap.Any("equipGuids", equipGuids))
+	logger.CtxInfo(ctx, "del equip succ ", zap.String("key", key), zap.Any("equipGuids", equipGuids))
 	return nil
 }
 
-func GetAllEquipInfo(logger fklog.FKLogI, userId uint64) (equipMap map[int64]*MazeEquipCache.MazeEquipInfoDb, err error) {
+func GetAllEquipInfo(ctx context.Context, userId uint64) (equipMap map[int64]*MazeEquipCache.MazeEquipInfoDb, err error) {
+	logger := fklog.ContextAppLogger(ctx)
 	key := fmt.Sprintf("maze:bag:equip:info:%d", userId)
 	batchCount := 300
 	cursor := 0 // 初始hscan游标
@@ -178,11 +185,11 @@ func GetAllEquipInfo(logger fklog.FKLogI, userId uint64) (equipMap map[int64]*Ma
 			info := &MazeEquipCache.MazeEquipInfoDb{}
 			err := proto.Unmarshal(res[i+1], info)
 			if err != nil {
-				logger.ErrorWF("GetAllEquipInfo Unmarshal error", zap.Uint64("userId", userId), zap.String("guid", string(res[i])), zap.String("info", string(res[i+1])), zap.Error(err))
+				logger.CtxError(ctx, "GetAllEquipInfo Unmarshal error", zap.Uint64("userId", userId), zap.String("guid", string(res[i])), zap.String("info", string(res[i+1])), zap.Error(err))
 				return equipMap, err
 			}
 			if info.GetEquipGuid() == 0 {
-				logger.WarnWF("GetAllEquipInfo Unmarshal error", zap.String("key", key), zap.String("guid", string(res[i+1])), zap.Any("info", info))
+				logger.CtxWarn(ctx, "GetAllEquipInfo Unmarshal error", zap.String("key", key), zap.String("guid", string(res[i+1])), zap.Any("info", info))
 				continue
 			}
 			equipMap[info.GetEquipGuid()] = info
@@ -193,8 +200,8 @@ func GetAllEquipInfo(logger fklog.FKLogI, userId uint64) (equipMap map[int64]*Ma
 		}
 	}
 	if len(equipMap) > batchCount {
-		logger.WarnWF("GetAllEquipInfo equip count too many", zap.String("key", key), zap.Any("equipMap", len(equipMap)))
+		logger.CtxWarn(ctx, "GetAllEquipInfo equip count too many", zap.String("key", key), zap.Any("equipMap", len(equipMap)))
 	}
-	//logger.InfoWF("GetAllEquipInfo end", zap.String("key", key), zap.Any("equipMap", equipMap))
+	//logger.CtxInfo(ctx,"GetAllEquipInfo end", zap.String("key", key), zap.Any("equipMap", equipMap))
 	return equipMap, nil
 }

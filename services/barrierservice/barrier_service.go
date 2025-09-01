@@ -29,7 +29,7 @@ type BarrierService interface {
 	// // BarrierEnter 进入指定关卡，返回关卡战斗相关信息与配置
 	// //
 	// // TODO 该功能接口依赖比较多，延后
-	// BarrierEnter(logger fklog.FKLogI, userID uint64, barrierID int32) (errinfo *MessageType.ErrorInfo)
+	// BarrierEnter(ctx context.Context, userID uint64, barrierID int32) (errinfo *MessageType.ErrorInfo)
 
 	// BarrierPass 通关指定关卡
 	//
@@ -64,16 +64,16 @@ type BarrierService interface {
 		kongfu int32, equips map[int32]int32, items map[int32]int64, errinfo *MessageType.ErrorInfo)
 
 	// // GetUserBarrierInfo 获取用户指定关卡的存储信息
-	// GetUserBarrierInfo(logger fklog.FKLogI, userID uint64, barrierID int32) (barrierInfo *MazeBarrierCache.MazeBarrierCache, err error)
+	// GetUserBarrierInfo(ctx context.Context, userID uint64, barrierID int32) (barrierInfo *MazeBarrierCache.MazeBarrierCache, err error)
 
 	// // SetUserBarrierInfo 设置用户指定关卡的存储信息
-	// SetUserBarrierInfo(logger fklog.FKLogI, userID uint64, barrierID int32, barrierInfo *MazeBarrierCache.MazeBarrierCache) (err error)
+	// SetUserBarrierInfo(ctx context.Context, userID uint64, barrierID int32, barrierInfo *MazeBarrierCache.MazeBarrierCache) (err error)
 
 	// // GetRebornCostByCount 获取指定复活次数的复活消耗
 	// //
 	// // 参数：
 	// //	- count: 复活次数，第几次复活
-	// GetRebornCostByCount(logger fklog.FKLogI, count int32) (cost map[int32]int64, maxReborn int32, canReborn bool)
+	// GetRebornCostByCount(ctx context.Context, count int32) (cost map[int32]int64, maxReborn int32, canReborn bool)
 }
 
 var (

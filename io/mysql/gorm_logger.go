@@ -16,9 +16,9 @@ type GormLogger struct {
 	SlowThreshold time.Duration
 }
 
-func NewGormLogger(logger fklog.FKLogI, level logger.LogLevel) *GormLogger {
+func NewGormLogger(ctx context.Context, level logger.LogLevel) *GormLogger {
 	return &GormLogger{
-		Logger:        logger,
+		Logger:        fklog.ContextAppLogger(ctx),
 		LogLevel:      level,
 		SlowThreshold: 200 * time.Millisecond, // 可自定义慢查询阈值
 	}
@@ -32,19 +32,19 @@ func (l *GormLogger) LogMode(level logger.LogLevel) logger.Interface {
 
 func (l *GormLogger) Info(ctx context.Context, msg string, data ...interface{}) {
 	if l.LogLevel >= logger.Info {
-		l.Logger.InfoWF(msg, zap.Any("data", data))
+		l.Logger.CtxInfo(ctx, msg, zap.Any("data", data))
 	}
 }
 
 func (l *GormLogger) Warn(ctx context.Context, msg string, data ...interface{}) {
 	if l.LogLevel >= logger.Warn {
-		l.Logger.WarnWF(msg, zap.Any("data", data))
+		l.Logger.CtxWarn(ctx, msg, zap.Any("data", data))
 	}
 }
 
 func (l *GormLogger) Error(ctx context.Context, msg string, data ...interface{}) {
 	if l.LogLevel >= logger.Error {
-		l.Logger.ErrorWF(msg, zap.Any("data", data))
+		l.Logger.CtxError(ctx, msg, zap.Any("data", data))
 	}
 }
 
@@ -58,7 +58,7 @@ func (l *GormLogger) Trace(ctx context.Context, begin time.Time, fc func() (stri
 
 	switch {
 	case err != nil && l.LogLevel >= logger.Error:
-		l.Logger.WarnWF("SQL error",
+		l.Logger.CtxWarn(ctx, "SQL error",
 			zap.String("sql", sql),
 			zap.Int64("rows", rows),
 			zap.Duration("elapsed", elapsed),
@@ -66,14 +66,14 @@ func (l *GormLogger) Trace(ctx context.Context, begin time.Time, fc func() (stri
 			zap.Error(err),
 		)
 	case elapsed > l.SlowThreshold && l.SlowThreshold != 0 && l.LogLevel >= logger.Warn:
-		l.Logger.WarnWF("SLOW SQL",
+		l.Logger.CtxWarn(ctx, "SLOW SQL",
 			zap.String("sql", sql),
 			zap.Int64("rows", rows),
 			zap.Duration("elapsed", elapsed),
 			// zap.String("file", utils.FileWithLineNum()),
 		)
 	case l.LogLevel >= logger.Info:
-		l.Logger.WarnWF("SQL executed",
+		l.Logger.CtxWarn(ctx, "SQL executed",
 			zap.String("sql", sql),
 			zap.Int64("rows", rows),
 			zap.Duration("elapsed", elapsed),

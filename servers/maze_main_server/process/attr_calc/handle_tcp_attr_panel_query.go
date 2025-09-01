@@ -38,13 +38,13 @@ func (p *Property) OnQueryPropertyPanelRQ_10427_10428(s *session.Session, req *M
 	err = panelCalc.Init(ctx, DPACParam{Force: 0})
 	if err != nil {
 		res.ErrInfo = errors.MODULE_ERROR.ToInfo()
-		logger.ErrorWF("OnQueryPropertyPanelRQ Init fail", zap.Error(err))
+		logger.CtxError(ctx, "OnQueryPropertyPanelRQ Init fail", zap.Error(err))
 		return err
 	}
 	err = panelCalc.Calc(ctx)
 	if err != nil {
 		res.ErrInfo = errors.MODULE_ERROR.ToInfo()
-		logger.ErrorWF("OnQueryPropertyPanelRQ Calc fail", zap.Error(err))
+		logger.CtxError(ctx, "OnQueryPropertyPanelRQ Calc fail", zap.Error(err))
 		return err
 	}
 	res.PropertyPanel = panelCalc.Panel

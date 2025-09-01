@@ -1,13 +1,14 @@
 package dollmappuzzlenewcfgex
 
 import (
-	"go.uber.org/zap"
 	"maze_game_server/config/GDollMapPuzzleNewV8Cfg"
 	"maze_game_server/lib/log"
 	"strconv"
 	"strings"
 	"sync/atomic"
 	"unsafe"
+
+	"go.uber.org/zap"
 )
 
 type AreaInfo struct {

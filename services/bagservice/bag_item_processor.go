@@ -150,13 +150,13 @@ func (s *service) sendBagItemChgID(ctx context.Context, userId uint64, items []*
 	if len(items) == 0 {
 		return
 	}
-	logger := fklog.ContextAppLogger(ctx)
+	// logger := fklog.ContextAppLogger(ctx)
 	idPack := &MazeBag.MazeBagChgID{
 		Token: proto.Int64(time.Now().UnixMilli()),
 		Items: make([]*MazeBag.MazeBagItem, 0, len(items)),
 	}
 	for _, item := range items {
-		idPack.Items = append(idPack.Items, itemutil.BuildMazeBagItem(logger, item.ItemId, item.Count))
+		idPack.Items = append(idPack.Items, itemutil.BuildMazeBagItem(ctx, item.ItemId, item.Count))
 	}
 	_ = online.PushWithContext(ctx, userId, 10404, idPack)
 }

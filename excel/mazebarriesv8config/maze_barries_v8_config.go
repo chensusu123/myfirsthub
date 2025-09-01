@@ -1,6 +1,9 @@
 package mazebarriesv8config
 
-import "maze_game_server/config/GMazeBarriesV8Cfg"
+import (
+	"context"
+	"maze_game_server/config/GMazeBarriesV8Cfg"
+)
 
 /**
  * @Author: liushuhang
@@ -8,8 +11,8 @@ import "maze_game_server/config/GMazeBarriesV8Cfg"
  * @Description:
  */
 
-func GetStageConfig(configId int32) *GMazeBarriesV8Cfg.MazeBarriesV8ConfigRow {
-	config := GMazeBarriesV8Cfg.Get(configId)
+func GetStageConfig(ctx context.Context, configId int32) *GMazeBarriesV8Cfg.MazeBarriesV8ConfigRow {
+	config := GMazeBarriesV8Cfg.GetWithCtx(ctx, configId)
 	if config == nil {
 		return nil
 	}

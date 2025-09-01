@@ -56,19 +56,19 @@ func (g *Game) OnMazeBarrierDeathRQ_10449_10450(s *session.Session, req *MazeGam
 		res.BarrierAward = awards
 	}
 
-	err = mazebarriereventredis.LeaveBarrier(logger, userId, req.GetBarrierId(), false)
+	err = mazebarriereventredis.LeaveBarrier(ctx, userId, req.GetBarrierId(), false)
 	if err != nil {
 		logger.CtxError(ctx, "OnMazeBarrierPassRQ LeaveBarrier fail", zap.Error(err), zap.Any("barrier", req.GetBarrierId()))
 	}
 
 	// 触发离开关卡事件
-	events.OnLeaveBarrier(logger, userId, 0, time.Now().UnixMilli(), &MazeGame.BattleEventLeaveBarrier{BarrierId: proto.Int32(req.GetBarrierId()), Result: MazeGame.BarrierResult_DEATH.Enum()})
+	events.OnLeaveBarrier(ctx, userId, 0, time.Now().UnixMilli(), &MazeGame.BattleEventLeaveBarrier{BarrierId: proto.Int32(req.GetBarrierId()), Result: MazeGame.BarrierResult_DEATH.Enum()})
 
 	passRecord := &mazebarrieruserkafka.MazeBarrierUserGameRecord{
 		UserId:         userId,
 		Barrier:        req.GetBarrierId(),
 		GameRet:        mazebarrieruserkafka.GameRetDeath,
-		Awards:         getAwards(logger, awards),
+		Awards:         getAwards(ctx, awards),
 		KillMonsterNum: int64(killMonsterNum),
 	}
 
@@ -77,10 +77,10 @@ func (g *Game) OnMazeBarrierDeathRQ_10449_10450(s *session.Session, req *MazeGam
 	return nil
 }
 
-// func GetDeathPunish(logger fklog.FKLogI, userId uint64) (subDeathPer int64, lostMin, lostMax int64, err error) {
+// func GetDeathPunish(ctx context.Context, userId uint64) (subDeathPer int64, lostMin, lostMax int64, err error) {
 // 	// forceVal, err := mazecalcattrredis.GetMazeForce(logger, userId)
 // 	// if err != nil {
-// 	// 	logger.ErrorWF("GetDeathPunish GetMazeForce fail", zap.Error(err))
+// 	// 	logger.CtxError(ctx,"GetDeathPunish GetMazeForce fail", zap.Error(err))
 // 	// 	return
 // 	// }
 

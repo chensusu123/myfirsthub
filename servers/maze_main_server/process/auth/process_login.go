@@ -81,7 +81,7 @@ func (a *Auth) OnLoginRQ_10492_10493(s *session.Session, req *UserLogin.UserLogi
 		}
 		err = usersection.Set(ctx, newUserID, appconfig.GlobalConfig().Global.SectionID)
 		if err != nil {
-			logger.ErrorWF("usersection.Set fail",
+			logger.CtxError(ctx, "usersection.Set fail",
 				zap.Uint64("userID", userID),
 				zap.Error(err))
 		}
@@ -116,7 +116,7 @@ func (a *Auth) OnLiveRQ_10494_10495(s *session.Session, req *UserLogin.UserLiveR
 	res.Session = req.Session
 	defer func() {
 		err = s.Response(res)
-		logger.InfoWF("OnLiveRQ end", zap.Any("req", req), zap.Any("res", res))
+		logger.CtxInfo(s.Context(), "OnLiveRQ end", zap.Any("req", req), zap.Any("res", res))
 	}()
 
 	res.Error = errors.NO_ERROR
@@ -132,7 +132,7 @@ func (a *Auth) OnConfigDataMd5Rq_10500_10501(s *session.Session, req *UserLogin.
 
 	defer func() {
 		err = s.Response(res)
-		logger.InfoWF("OnConfigDataMd5Rq end", zap.Any("req", req), zap.Any("res", res))
+		logger.CtxInfo(s.Context(), "OnConfigDataMd5Rq end", zap.Any("req", req), zap.Any("res", res))
 	}()
 
 	res.Error = errors.NO_ERROR

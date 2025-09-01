@@ -27,8 +27,6 @@ import (
 	"maze_game_server/module/effectequip"
 	"maze_game_server/pb/common/MazeGameEquip"
 	"maze_game_server/pb/server/MazeEquipCache"
-
-	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fklog"
 )
 
 func DumpEquipPos(ctx context.Context, uid uint64, w *bytes.Buffer, pos int32, posInfo *MazeEquipCache.MazeEquipPosInfo, suitId int32) {
@@ -67,7 +65,7 @@ func GetEquipInfoByCfgId(ctx context.Context, userId uint64, cond BagCond) (rs s
 			return
 		}
 		strs = append(strs, str)
-		row := GMazeEquipInfoV8Cfg.Get(equip.GetEquipId())
+		row := GMazeEquipInfoV8Cfg.GetWithCtx(ctx, equip.GetEquipId())
 		if row != nil {
 			totalMap[row.Pos] += 1
 			totalCnt++
@@ -87,9 +85,9 @@ func GetEquipInfoByCfgId(ctx context.Context, userId uint64, cond BagCond) (rs s
 }
 
 func GetEquipInfoByGuid(ctx context.Context, userId uint64, guid int64) (rs string, err error) {
-	logger := fklog.ContextAppLogger(ctx)
+	// logger := fklog.ContextAppLogger(ctx)
 	// todo 等装备链路修改完成 再传入ctx
-	equip, err := effectequip.GetEffectEquipInfo(logger, userId, guid)
+	equip, err := effectequip.GetEffectEquipInfo(ctx, userId, guid)
 	if err != nil {
 		return
 	}
@@ -111,9 +109,9 @@ type ShowEquipParam struct {
 }
 
 func ShowEquip(ctx context.Context, userId uint64, equipDb *MazeEquipCache.MazeEquipInfoDb, force int64, suitId int32, p ShowEquipParam) (rs string, err error) {
-	logger := fklog.ContextAppLogger(ctx)
+	// logger := fklog.ContextAppLogger(ctx)
 	// todo 等装备链路修改 再传入ctx
-	cliEquip, err := packtopb.EquipInfoToCliPB(logger, equipDb)
+	cliEquip, err := packtopb.EquipInfoToCliPB(ctx, equipDb)
 	if err != nil {
 		return
 	}
@@ -156,10 +154,10 @@ func ShowEquip(ctx context.Context, userId uint64, equipDb *MazeEquipCache.MazeE
 		vardef.DollEquipQualityMap[cliEquip.GetEquipQuality()]))
 	w.WriteString(fmt.Sprintf("穿戴等级: %d\n", cliEquip.GetEquipLevel()))
 	w.WriteString(fmt.Sprintf("资源配置ID: %d\n", p.ResID))
-	resId, _ := pbutil.GetDollEquipName(equipDb, equipDb.GetEquipSubType())
+	resId, _ := pbutil.GetDollEquipName(ctx, equipDb, equipDb.GetEquipSubType())
 	w.WriteString(fmt.Sprintf("展示资源配置ID: %d\n", resId))
 
-	_, equipName := pbutil.GetDollEquipName(equipDb, 0) // 子类型无用，内部会自己取
+	_, equipName := pbutil.GetDollEquipName(ctx, equipDb, 0) // 子类型无用，内部会自己取
 	w.WriteString(fmt.Sprintf("装备名: %s\n", equipName))
 
 	suitRow := GMazeEquipSuiteInfoV8Cfg.GetMazeEquipSuiteInfoV8Config(equipDb.GetSuitId())
@@ -213,7 +211,7 @@ func ShowEquip(ctx context.Context, userId uint64, equipDb *MazeEquipCache.MazeE
 		if attrInfo.GetAttrType() == 1 {
 			entryInfo += "(主)\t"
 		}
-		attrCfg := GMazeEquipAffixRandPoolV8Cfg.Get(attrInfo.GetAttrGroup())
+		attrCfg := GMazeEquipAffixRandPoolV8Cfg.GetWithCtx(ctx, attrInfo.GetAttrGroup())
 		for _, showAttr := range attrInfo.GetShowAttrList() {
 			row := GMazeAttributeV8Cfg.GetMazeAttributeV8Config(showAttr.GetAttrId())
 			if row == nil {

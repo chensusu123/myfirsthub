@@ -23,17 +23,19 @@ func init() {
 	fkconfig.RegisterNameNode("babycollectredis", 21726, gRedis)
 }
 
-func SetCollectInfo(logger fklog.FKLogI, uid uint64, info *MazeCollectCache.MazeCollectInfo) (err error) {
+func SetCollectInfo(ctx context.Context, uid uint64, info *MazeCollectCache.MazeCollectInfo) (err error) {
+	logger := fklog.ContextAppLogger(ctx)
 	bts, err := proto.Marshal(info)
 	if err != nil {
 		return
 	}
 	_, err = gRedis.Do(context.TODO(), "set", fmt.Sprintf(collectKsy, uid), bts)
-	logger.InfoWF("SetCollectInfo", zap.Uint64("userId", uid), zap.Any("info", info))
+	logger.CtxInfo(ctx, "SetCollectInfo", zap.Uint64("userId", uid), zap.Any("info", info))
 	return
 }
 
-func GetCollectInfo(logger fklog.FKLogI, uid uint64) (info *MazeCollectCache.MazeCollectInfo, err error) {
+func GetCollectInfo(ctx context.Context, uid uint64) (info *MazeCollectCache.MazeCollectInfo, err error) {
+	logger := fklog.ContextAppLogger(ctx)
 	bts, err := redis.Bytes(gRedis.Do(context.TODO(), "get", fmt.Sprintf(collectKsy, uid)))
 	if err != nil {
 		if err == redis.ErrNil {
@@ -43,17 +45,18 @@ func GetCollectInfo(logger fklog.FKLogI, uid uint64) (info *MazeCollectCache.Maz
 	}
 	info = &MazeCollectCache.MazeCollectInfo{}
 	err = proto.Unmarshal(bts, info)
-	logger.InfoWF("GetCollectInfo", zap.Uint64("userId", uid), zap.Any("info", info))
+	logger.CtxInfo(ctx, "GetCollectInfo", zap.Uint64("userId", uid), zap.Any("info", info))
 	return
 }
 
-func GMDel(logger fklog.FKLogI, userId uint64) (err error) {
+func GMDel(ctx context.Context, userId uint64) (err error) {
+	logger := fklog.ContextAppLogger(ctx)
 	key := fmt.Sprintf(collectKsy, userId)
 	_, err = redis.Int64(gRedis.Do(context.TODO(), "del", key))
 	if err != nil {
-		logger.ErrorWF("GMDel fail", zap.String("key", key), zap.Error(err))
+		logger.CtxError(ctx, "GMDel fail", zap.String("key", key), zap.Error(err))
 		return
 	}
-	logger.InfoWF("GMDel succ", zap.Any("key", key))
+	logger.CtxInfo(ctx, "GMDel succ", zap.Any("key", key))
 	return
 }

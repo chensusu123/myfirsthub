@@ -17,7 +17,7 @@ import (
 func (b *barrier) OpenBox(ctx context.Context, userID uint64, barrierID int32, boxID int32) (
 	kongfu int32, equips map[int32]int32, items map[int32]int64, errinfo *MessageType.ErrorInfo) {
 	logger := fklog.ContextAppLogger(ctx)
-	boxCfg := GMazeBoxV8Cfg.Get(boxID)
+	boxCfg := GMazeBoxV8Cfg.GetWithCtx(ctx,boxID)
 	if boxCfg == nil {
 		logger.CtxError(ctx, "OpenBox get box cfg fail", zap.Any("boxId", boxID))
 		return 0, nil, nil, errors.CONFIG_NOT_FOUND.ToInfo()

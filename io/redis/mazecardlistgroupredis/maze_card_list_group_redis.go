@@ -25,36 +25,38 @@ func getKey() string {
 	return fmt.Sprintf("maze:card:group:%s:list", sectionID)
 }
 
-func SetMazeCard(logger fklog.FKLogI, userId uint64, expirationTime int64) error {
+func SetMazeCard(ctx context.Context, userId uint64, expirationTime int64) error {
+	logger := fklog.ContextAppLogger(ctx)
 	key := getKey()
 	_, err := gRedis.Do(context.TODO(), "zadd", key, expirationTime, userId)
 	if err != nil {
-		logger.ErrorWF("SetMazeCard zadd failed", zap.String("key", key), zap.Uint64("userId", userId),
+		logger.CtxError(ctx, "SetMazeCard zadd failed", zap.String("key", key), zap.Uint64("userId", userId),
 			zap.Int64("time", expirationTime), zap.Error(err))
 		return err
 	}
 
-	logger.InfoWF("SetMazeCard end", zap.Uint64("userId", userId), zap.Int64("time", expirationTime))
+	logger.CtxInfo(ctx, "SetMazeCard end", zap.Uint64("userId", userId), zap.Int64("time", expirationTime))
 	return nil
 }
 
-func GetMazeCard(logger fklog.FKLogI, userId uint64) (int64, error) {
+func GetMazeCard(ctx context.Context, userId uint64) (int64, error) {
+	logger := fklog.ContextAppLogger(ctx)
 	key := getKey()
 	expirationTime, err := redis.Int64(gRedis.Do(context.TODO(), "zscore", key, userId))
 	if err != nil && err != redis.ErrNil {
-		logger.ErrorWF("GetMazeCard zscore failed", zap.Uint64("userId", userId), zap.Error(err))
+		logger.CtxError(ctx, "GetMazeCard zscore failed", zap.Uint64("userId", userId), zap.Error(err))
 		return 0, err
 	}
 
-	logger.InfoWF("GetMazeCard end", zap.Uint64("userId", userId), zap.Int64("time", expirationTime))
+	logger.CtxInfo(ctx, "GetMazeCard end", zap.Uint64("userId", userId), zap.Int64("time", expirationTime))
 	return 0, nil
 }
 
-func BatchDelMazeCard(logger fklog.FKLogI, userList []int64) error {
+func BatchDelMazeCard(ctx context.Context, userList []int64) error {
 	if len(userList) == 0 {
 		return nil
 	}
-
+	logger := fklog.ContextAppLogger(ctx)
 	param := make([]interface{}, 0, len(userList)+2)
 	param = append(param, getKey())
 	for _, userId := range userList {
@@ -63,34 +65,36 @@ func BatchDelMazeCard(logger fklog.FKLogI, userList []int64) error {
 
 	_, err := gRedis.Do(context.TODO(), "zrem", param...)
 	if err != nil {
-		logger.ErrorWF("BatchDelMazeCard zrem failed", zap.Int64s("userList", userList), zap.Error(err))
+		logger.CtxError(ctx, "BatchDelMazeCard zrem failed", zap.Int64s("userList", userList), zap.Error(err))
 		return err
 	}
 
-	logger.InfoWF("BatchDelMazeCard end", zap.Int64s("userList", userList))
+	logger.CtxInfo(ctx, "BatchDelMazeCard end", zap.Int64s("userList", userList))
 	return nil
 }
 
-func DelMazeCard(logger fklog.FKLogI, userId uint64) error {
+func DelMazeCard(ctx context.Context, userId uint64) error {
+	logger := fklog.ContextAppLogger(ctx)
 	key := getKey()
 	_, err := gRedis.Do(context.TODO(), "zrem", key, userId)
 	if err != nil {
-		logger.ErrorWF("DelMazeCard zrem failed", zap.Uint64("userId", userId), zap.Error(err))
+		logger.CtxError(ctx, "DelMazeCard zrem failed", zap.Uint64("userId", userId), zap.Error(err))
 		return err
 	}
 
-	logger.InfoWF("DelMazeCard end", zap.Uint64("userId", userId))
+	logger.CtxInfo(ctx, "DelMazeCard end", zap.Uint64("userId", userId))
 	return nil
 }
 
-func GetMazeCardExpirationList(logger fklog.FKLogI) ([]int64, error) {
+func GetMazeCardExpirationList(ctx context.Context) ([]int64, error) {
+	logger := fklog.ContextAppLogger(ctx)
 	key := getKey()
 	userList, err := redis.Int64s(gRedis.Do(context.TODO(), "zrangebyscore", key, "-inf", time.Now().Unix()))
 	if err != nil {
-		logger.ErrorWF("GetMazeCardExpirationList zrangebyscore failed", zap.Error(err))
+		logger.CtxError(ctx, "GetMazeCardExpirationList zrangebyscore failed", zap.Error(err))
 		return nil, err
 	}
 
-	logger.InfoWF("GetMazeCardExpirationList end", zap.Int64s("userList", userList))
+	logger.CtxInfo(ctx, "GetMazeCardExpirationList end", zap.Int64s("userList", userList))
 	return userList, nil
 }

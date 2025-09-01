@@ -11,7 +11,6 @@ import (
 	"maze_game_server/common/equipmix"
 
 	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fkconfig"
-	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fklog"
 	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fkredis"
 	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fkredis/redis"
 )
@@ -38,7 +37,7 @@ const (
 	field_idx = "idx"
 )
 
-func GetEquipMixData(logger fklog.FKLogI, uid uint64) (data *equipmix.MixData, err error) {
+func GetEquipMixData(ctx context.Context, uid uint64) (data *equipmix.MixData, err error) {
 	k := getKey(uid)
 
 	res, err := redis.Int64s(db.Do(context.Background(), "HMGET", k, field_lv, field_cfg, field_idx))
@@ -62,7 +61,7 @@ func GetEquipMixData(logger fklog.FKLogI, uid uint64) (data *equipmix.MixData, e
 	return
 }
 
-func SetEquipMixData(logger fklog.FKLogI, uid uint64, data *equipmix.MixData) (err error) {
+func SetEquipMixData(ctx context.Context, uid uint64, data *equipmix.MixData) (err error) {
 	k := getKey(uid)
 	_, err = db.Do(context.Background(), "HMSET", k, field_lv, data.Lv, field_cfg, data.Cfg, field_idx, data.Idx)
 	return

@@ -1,15 +1,16 @@
 package item
 
 import (
-	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fklog"
-	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fkprometheus"
-	"go.uber.org/zap"
 	"maze_game_server/common/errors"
 	"maze_game_server/common/function/itemutil"
 	"maze_game_server/lib/nano/component"
 	"maze_game_server/lib/nano/session"
 	"maze_game_server/pb/common/MazeBag"
 	"maze_game_server/services/bagservice"
+
+	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fklog"
+	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fkprometheus"
+	"go.uber.org/zap"
 )
 
 type Item struct {
@@ -46,7 +47,7 @@ func (i *Item) OnMazeBagListRQ_10400_10401(s *session.Session, req *MazeBag.Maze
 		if id <= 0 || count <= 0 {
 			continue
 		}
-		res.Items = append(res.Items, itemutil.BuildMazeBagItem(logger, id, count))
+		res.Items = append(res.Items, itemutil.BuildMazeBagItem(ctx, id, count))
 	}
 	return
 }

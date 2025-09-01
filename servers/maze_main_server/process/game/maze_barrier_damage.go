@@ -37,7 +37,7 @@ func (g *Game) OnBarrierDamageRQ_10622_10623(s *session.Session, req *MazeGame.B
 		res.ErrInfo = errors.COMMON_ERROR_TIPS.Wrap("关卡id未设置")
 		return
 	}
-	barrierCfg := GMazeBarriesV8Cfg.Get(req.GetBarrierId())
+	barrierCfg := GMazeBarriesV8Cfg.GetWithCtx(ctx,req.GetBarrierId())
 	if barrierCfg == nil {
 		logger.CtxError(ctx, "OnBarrierDamageRQ get barrier cfg fail", zap.Any("barrier", req.GetStageId()))
 		res.ErrInfo = errors.COMMON_ERROR_TIPS.Wrap("找不到该关卡配置")

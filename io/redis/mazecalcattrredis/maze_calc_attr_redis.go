@@ -60,7 +60,7 @@ func GetAllMazeCalcAttr(ctx context.Context, userId uint64) (attrDbs map[int32]i
 	res, err := redis.ByteSlices(gRedis.Do(context.TODO(), "hgetall", key))
 	if err == redis.ErrNil {
 		err = nil
-		logger.WarnWF("GetAllMazeCalcAttr hvals nil", zap.String("key", key))
+		logger.CtxWarn(ctx, "GetAllMazeCalcAttr hvals nil", zap.String("key", key))
 		return
 	}
 
@@ -170,7 +170,7 @@ func BatchGetMazeCalcAttr(ctx context.Context, userId uint64, attrIds []int32) (
 	res, err := redis.ByteSlices(gRedis.Do(context.TODO(), "HMGET", args...))
 	if err == redis.ErrNil {
 		err = nil
-		logger.WarnWF("BatchGetMazeCalcAttr HMGET nil", zap.String("key", key), zap.Any("attrIds", attrIds))
+		logger.CtxWarn(ctx, "BatchGetMazeCalcAttr HMGET nil", zap.String("key", key), zap.Any("attrIds", attrIds))
 		return
 	}
 

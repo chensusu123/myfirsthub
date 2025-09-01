@@ -1,28 +1,30 @@
 package itemutil
 
 import (
+	"context"
 	"fmt"
-	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fklog"
-	"go.uber.org/zap"
 	"maze_game_server/config/GMazeBagOrderV8Cfg"
 	"maze_game_server/pb/common/MazeBag"
 	"maze_game_server/services/itemservice"
 	"sort"
+
+	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fklog"
+	"go.uber.org/zap"
 
 	"maze_game_server/pb/common/MazeCommon"
 
 	"google.golang.org/protobuf/proto"
 )
 
-func BuildMazeBagItem(logger fklog.FKLogI, id int32, count int64) (bagItem *MazeBag.MazeBagItem) {
+func BuildMazeBagItem(ctx context.Context, id int32, count int64) (bagItem *MazeBag.MazeBagItem) {
 	bagItem = &MazeBag.MazeBagItem{
 		ItemId: proto.Int32(id),
 		Count:  proto.Int64(count),
 	}
-
-	cfg := GMazeBagOrderV8Cfg.Get(id)
+	logger := fklog.ContextAppLogger(ctx)
+	cfg := GMazeBagOrderV8Cfg.GetWithCtx(ctx, id)
 	if cfg == nil {
-		logger.WarnWF("BuildMazeBagItem GMazeBagOrderV8Cfg nil", zap.Int32("id", id))
+		logger.CtxWarn(ctx, "BuildMazeBagItem GMazeBagOrderV8Cfg nil", zap.Int32("id", id))
 		return
 	}
 

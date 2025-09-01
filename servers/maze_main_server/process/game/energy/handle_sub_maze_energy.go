@@ -21,39 +21,39 @@ package energy
 // 	return SubMazeEnergyRQ(ctx, shardingID, req, res)
 // }
 
-//func SubMazeEnergyRQ(logger fklog.FKLogI, userID uint64, req *MazeEnergySvr.SubMazeEnergyRQ, res *MazeEnergySvr.SubMazeEnergyRS) (err error) {
+//func SubMazeEnergyRQ(ctx context.Context, userID uint64, req *MazeEnergySvr.SubMazeEnergyRQ, res *MazeEnergySvr.SubMazeEnergyRS) (err error) {
 //	res.ErrInfo = errors.NO_ERROR
 //
 //	if req.GetUserId() == 0 {
-//		logger.WarnWF("SubMazeEnergyRQ invalid userId ", zap.Any("rq", req))
+//		logger.CtxWarn(ctx,"SubMazeEnergyRQ invalid userId ", zap.Any("rq", req))
 //		res.ErrInfo = errors.COMMON_ERROR_TIPS.Wrap("invalid userId")
 //		return nil
 //	}
 //	if req.GetTradeNumber() == 0 {
-//		logger.WarnWF("SubMazeEnergyRQ invalid tardeNo ", zap.Any("rq", req))
+//		logger.CtxWarn(ctx,"SubMazeEnergyRQ invalid tardeNo ", zap.Any("rq", req))
 //		res.ErrInfo = errors.COMMON_ERROR_TIPS.Wrap("invalid tardeNo")
 //		return nil
 //	}
 //
 //	if req.GetOpType() == 0 {
-//		logger.WarnWF("SubMazeEnergyRQ invalid optype", zap.Any("rq", req))
+//		logger.CtxWarn(ctx,"SubMazeEnergyRQ invalid optype", zap.Any("rq", req))
 //		res.ErrInfo = errors.COMMON_ERROR_TIPS.Wrap("invalid optype")
 //		return nil
 //	}
 //	if req.GetSubVal() <= 0 {
-//		logger.WarnWF("SubMazeEnergyRQ invalid val", zap.Any("rq", req))
+//		logger.CtxWarn(ctx,"SubMazeEnergyRQ invalid val", zap.Any("rq", req))
 //		res.ErrInfo = errors.COMMON_ERROR_TIPS.Wrap("invalid val")
 //		return nil
 //	}
 //
 //	uInfo, err := mazeuserinfo.GetUserInfoV2(logger, req.GetUserId())
 //	if err != nil {
-//		logger.ErrorWF("SubMazeEnergyRQ GetUserInfoV2 fail", zap.Error(err))
+//		logger.CtxError(ctx,"SubMazeEnergyRQ GetUserInfoV2 fail", zap.Error(err))
 //		res.ErrInfo = errors.MODULE_ERROR.ToInfo()
 //		return
 //	}
 //	if uInfo.Energy < req.GetSubVal() {
-//		logger.WarnWF("SubMazeEnergyRQ energy less",
+//		logger.CtxWarn(ctx,"SubMazeEnergyRQ energy less",
 //			zap.Int32("has", uInfo.Energy),
 //			zap.Int32("need", req.GetSubVal()))
 //		res.RemainVal = proto.Int32(uInfo.Energy)
@@ -68,7 +68,7 @@ package energy
 //	uInfo.SetEnergy(remain)
 //	err = mazeuserinfo.SetUserInfoV2(logger, req.GetUserId(), uInfo)
 //	if err != nil {
-//		logger.ErrorWF("SubMazeEnergyRQ SetUserInfoV2 fail", zap.Error(err), zap.Any("uInfo", uInfo))
+//		logger.CtxError(ctx,"SubMazeEnergyRQ SetUserInfoV2 fail", zap.Error(err), zap.Any("uInfo", uInfo))
 //		res.ErrInfo = errors.MODULE_ERROR.ToInfo()
 //		return
 //	}

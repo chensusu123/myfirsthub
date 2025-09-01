@@ -60,10 +60,10 @@ func QueryBagByCond(ctx context.Context, userId uint64, cond BagCond) (equips []
 	var guidEquip map[int64]*MazeEquipCache.MazeEquipInfoDb
 	if cond.ShowSeal == 1 {
 		// todo 等装备链路修改 再传入
-		guidEquip, err = mazebagequipredis.GetAllEquipInfo(logger, userId)
+		guidEquip, err = mazebagequipredis.GetAllEquipInfo(ctx, userId)
 
 	} else {
-		guidEquip, err = effectequip.GetAllEffectEquipInfo(logger, userId)
+		guidEquip, err = effectequip.GetAllEffectEquipInfo(ctx, userId)
 
 	}
 	if err != nil {
@@ -71,7 +71,7 @@ func QueryBagByCond(ctx context.Context, userId uint64, cond BagCond) (equips []
 	}
 	// 过滤掉已装配的
 	if cond.QueryInUse == 0 {
-		suitEquips, err1 := dollassemblesuitredis.GetAllDollAssembleSuit(logger, userId)
+		suitEquips, err1 := dollassemblesuitredis.GetAllDollAssembleSuit(ctx, userId)
 		if err1 != nil {
 			err = err1
 			return

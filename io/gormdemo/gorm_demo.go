@@ -3,6 +3,7 @@ package gormdemo
 
 ///Users/majiange/data/dev/go_work/maze/maze-plate/freetk/fkcore/database/nanogorm
 import (
+	"context"
 	"maze_game_server/io/kafka/mazebarrieruserkafka"
 	"maze_game_server/io/mysql"
 
@@ -21,10 +22,11 @@ func NewGormDemo(serviceName string, name string) *GormDemo {
 	return rt
 }
 
-func (g *GormDemo) SaveBarrierUserRecord(logger fklog.FKLogI, record *mazebarrieruserkafka.MazeBarrierUserGameRecord) error {
+func (g *GormDemo) SaveBarrierUserRecord(ctx context.Context, record *mazebarrieruserkafka.MazeBarrierUserGameRecord) error {
+	logger := fklog.ContextAppLogger(ctx)
 	db, err := g.GetGormDB()
 	if err != nil {
-		logger.ErrorWF("GetMysqlDb fail", zap.Error(err), zap.Any("record:", record))
+		logger.CtxError(ctx, "GetMysqlDb fail", zap.Error(err), zap.Any("record:", record))
 		return err
 	}
 

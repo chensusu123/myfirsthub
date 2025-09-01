@@ -1,6 +1,7 @@
 package maze_es_t
 
 import (
+	"context"
 	"log"
 	"net/url"
 	"os"
@@ -16,23 +17,22 @@ import (
 	"maze_game_server/servers/maze_es/process"
 
 	"github.com/gorilla/websocket"
-	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fklog"
 	"go.uber.org/zap"
 	"google.golang.org/protobuf/proto"
 )
 
 var gAddr = "127.0.0.1:9876"
 
-func client(logger fklog.FKLogI, addr string) {
+func client(ctx context.Context, addr string) {
 	log.SetFlags(0)
 	interrupt := make(chan os.Signal, 1)
 	signal.Notify(interrupt, os.Interrupt)
 	u := url.URL{Scheme: "ws", Host: addr, Path: "/ws"}
-	logger.DebugWF("connecting to", zap.String("url", u.String()))
+	logger.CtxDebug(ctx, "connecting to", zap.String("url", u.String()))
 
 	c, _, err := websocket.DefaultDialer.Dial(u.String(), nil)
 	if err != nil {
-		logger.ErrorWF("dial:", zap.Error(err))
+		logger.CtxError(ctx, "dial:", zap.Error(err))
 		return
 	}
 	defer c.Close()
@@ -44,10 +44,10 @@ func client(logger fklog.FKLogI, addr string) {
 		for {
 			messageType, message, err := c.ReadMessage()
 			if err != nil {
-				logger.ErrorWF("read:", zap.Error(err))
+				logger.CtxError(ctx, "read:", zap.Error(err))
 				return
 			}
-			logger.DebugWF("recv message",
+			logger.CtxDebug(ctx, "recv message",
 				zap.Int("messageType", messageType),
 				zap.Any("message", len(message)))
 
@@ -75,11 +75,11 @@ func client(logger fklog.FKLogI, addr string) {
 				sendData = makeOtherData()
 			}
 
-			logger.DebugWF("send message",
+			logger.CtxDebug(ctx, "send message",
 				zap.Any("message", len(sendData)))
 			err := c.WriteMessage(websocket.BinaryMessage, sendData)
 			if err != nil {
-				logger.ErrorWF("write:", zap.Error(err))
+				logger.CtxError(ctx, "write:", zap.Error(err))
 				return
 			}
 			loopCount += 1
@@ -131,7 +131,7 @@ func TestWebsocket(t *testing.T) {
 	websocket_service.MockOnInit(logger, gAddr)
 	websocket_service.MockOnStart(logger)
 
-	gTestLogger.DebugWF("a")
+	gTestlogger.CtxDebug(ctx, "a")
 
 	go client(logger, gAddr)
 	go sendMsgToUser()

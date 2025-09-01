@@ -1,11 +1,13 @@
 package bagmodule
 
 import (
-	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fklog"
-	"go.uber.org/zap"
+	"context"
 	"maze_game_server/io/redis/dollassemblesuitredis"
 	"maze_game_server/io/redis/mazebagequipredis"
 	"maze_game_server/pb/server/MazeEquipCache"
+
+	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fklog"
+	"go.uber.org/zap"
 )
 
 // 背包数据管理
@@ -20,26 +22,26 @@ type BagEquipMgr struct {
 	fklog.FKLogI
 }
 
-func NewBagEquipMgr(logger fklog.FKLogI, userId uint64) *BagEquipMgr {
+func NewBagEquipMgr(ctx context.Context, userId uint64) *BagEquipMgr {
 	ret := &BagEquipMgr{UserID: userId,
 		MainBagEquips:  NewMainBagEquip(),
 		AssembleEquips: NewAssembleEquip(),
-		dbChange:       NewBagChangeInfo(logger),
-		FKLogI:         logger,
+		dbChange:       NewBagChangeInfo(ctx),
+		FKLogI:         fklog.ContextAppLogger(ctx),
 	}
 	return ret
 }
 
 // 加载数据
-func (m *BagEquipMgr) LoadBagFromRedis() error {
-	equipMap, err := mazebagequipredis.GetAllEquipInfo(m, m.UserID)
+func (m *BagEquipMgr) LoadBagFromRedis(ctx context.Context) error {
+	equipMap, err := mazebagequipredis.GetAllEquipInfo(ctx, m.UserID)
 	if err != nil {
 		m.ErrorWF("LoadBagFromRedis GetAllEquipInfo error", zap.Error(err))
 		return err
 	}
 
 	// 获取身上的装备信息
-	assembleInfoMap, err := dollassemblesuitredis.GetAllDollAssembleSuit(m, m.UserID)
+	assembleInfoMap, err := dollassemblesuitredis.GetAllDollAssembleSuit(ctx, m.UserID)
 	if err != nil {
 		m.ErrorWF("LoadBagFromRedis GetAllDollAssembleSuit error", zap.Error(err))
 		return err
@@ -62,17 +64,17 @@ func (m *BagEquipMgr) LoadBagFromRedis() error {
 	return nil
 }
 
-func (m *BagEquipMgr) SaveBagInfoToRedis() error {
+func (m *BagEquipMgr) SaveBagInfoToRedis(ctx context.Context) error {
 	rems, adds := m.dbChange.MergeAddAndRemoveUpdateInfo()
 	if len(rems) > 0 {
-		err := mazebagequipredis.BatchDelEquip(m, m.UserID, rems...)
+		err := mazebagequipredis.BatchDelEquip(ctx, m.UserID, rems...)
 		if err != nil {
 			m.ErrorWF("SaveBagInfoToRedis BatchDelEquip error", zap.Error(err), zap.Any("rems", rems))
 			return err
 		}
 	}
 	if len(adds) > 0 {
-		err := mazebagequipredis.BatchSaveEquipInfo(m, m.UserID, adds)
+		err := mazebagequipredis.BatchSaveEquipInfo(ctx, m.UserID, adds)
 		if err != nil {
 			m.ErrorWF("SaveBagInfoToRedis BatchSaveEquipInfo error", zap.Error(err), zap.Any("adds", adds))
 			return err

@@ -115,7 +115,7 @@ func GetMazeBattleData(ctx context.Context, userId uint64, barrierId int32) (maz
 
 	// 召唤物配置
 	for _, summonId := range summonIds {
-		summonCfg := GMazeSummonV8Cfg.Get(summonId)
+		summonCfg := GMazeSummonV8Cfg.GetWithCtx(ctx,summonId)
 		if summonCfg == nil {
 			logger.CtxError(ctx, "GetMazeBattleData GMazeSummonV8Cfg.Get fail", zap.Int32("summonId", summonId))
 			return nil, fmt.Errorf("召唤物配置不存在")
@@ -180,7 +180,7 @@ func GetMazeBattleData(ctx context.Context, userId uint64, barrierId int32) (maz
 		}
 	}
 
-	barrierCfg := GMazeBarriesV8Cfg.Get(barrierId)
+	barrierCfg := GMazeBarriesV8Cfg.GetWithCtx(ctx,barrierId)
 	if barrierCfg == nil {
 		logger.CtxError(ctx, "GetMazeBattleData GMazeBarriesV8Cfg fail", zap.Any("barrierId", barrierId))
 		return nil, errors.CONFIG_NOT_FOUND
@@ -191,7 +191,7 @@ func GetMazeBattleData(ctx context.Context, userId uint64, barrierId int32) (maz
 		if boxID <= 0 {
 			continue
 		}
-		boxCfg := GMazeBoxV8Cfg.Get(boxID)
+		boxCfg := GMazeBoxV8Cfg.GetWithCtx(ctx,boxID)
 		if boxCfg == nil {
 			logger.CtxError(ctx, "GetMazeBattleData GMazeBoxV8Cfg fail", zap.Any("boxId", boxID), zap.Any("barrierId", barrierId))
 			return nil, errors.CONFIG_NOT_FOUND
@@ -272,7 +272,7 @@ func GetFoeAreaInfos(ctx context.Context, userId uint64, force int64, barrierId 
 // todo 技能公共cd
 func GetMazeAIMonsterConfig(ctx context.Context, userId uint64, force int64, foeId int32, userStiffRatio int64) (*MazeAIBattle.MazeAIMonsterConfigInfo, error) {
 	logger := fklog.ContextAppLogger(ctx)
-	foeCfg := GMazeFoeV8Cfg.Get(foeId)
+	foeCfg := GMazeFoeV8Cfg.GetWithCtx(ctx,foeId)
 	if foeCfg == nil {
 		logger.CtxError(ctx, "GetMazeAIMonsterConfig GMazeFoeV8Cfg err", zap.Any("foeId", foeId))
 		return nil, errors.New("配置不存在")
@@ -332,7 +332,7 @@ func GetMazeAIMonsterConfig(ctx context.Context, userId uint64, force int64, foe
 	skillTotalInfo.SkillInfoList = make([]*MazeAIBattle.MazeAISkillInfo, 0)
 	attrMap := make(map[int32]int64)
 	if len(skillIds) > 0 {
-		skillCfg := GMazeSkillInfoV8Cfg.Get(skillIds[0])
+		skillCfg := GMazeSkillInfoV8Cfg.GetWithCtx(ctx,skillIds[0])
 		if skillCfg == nil {
 			logger.CtxError(ctx, "GetMazeAIMonsterConfig GMazeSkillInfoV8Cfg err", zap.Any("skillId", skillIds[0]))
 			return nil, errors.New("配置不存在")
@@ -423,7 +423,7 @@ func GetUserAttrInfo(ctx context.Context, userId uint64, userAttrMap map[int32]i
 	// 	if row.Add_attr <= 0 {
 	// 		continue
 	// 	}
-	// 	attrSkill := GMazeAttrSkillV8Cfg.Get(row.Add_attr)
+	// 	attrSkill := GMazeAttrSkillV8Cfg.GetWithCtx(ctx,row.Add_attr)
 	// 	if attrSkill == nil {
 	// 		continue
 	// 	}
@@ -446,7 +446,7 @@ func GetUserAttrInfo(ctx context.Context, userId uint64, userAttrMap map[int32]i
 
 func GetUserBattleSkillInfo(ctx context.Context, skillId int32, attrMap map[int32]int64) (*MazeAIBattle.MazeAISkillInfo, []*MazeAIBattle.MazeAIActAttackValue, error) {
 	logger := fklog.ContextAppLogger(ctx)
-	skillCfg := GMazeSkillInfoV8Cfg.Get(skillId)
+	skillCfg := GMazeSkillInfoV8Cfg.GetWithCtx(ctx,skillId)
 	if skillCfg == nil {
 		logger.CtxError(ctx, "GetUserBattleSkillInfo GMazeSkillInfoV8Cfg err", zap.Any("skillId", skillId))
 		return nil, nil, errors.New("配置不存在")
@@ -463,7 +463,7 @@ func GetUserBattleSkillInfo(ctx context.Context, skillId int32, attrMap map[int3
 				if actId == 0 {
 					continue
 				}
-				mazeActCfg := GMazeActInfoV8Cfg.Get(actId)
+				mazeActCfg := GMazeActInfoV8Cfg.GetWithCtx(ctx,actId)
 				if mazeActCfg == nil {
 					logger.CtxError(ctx, "GetUserBattleSkillInfo GMazeActInfoV8Cfg err", zap.Any("skillId", skillId), zap.Any("actId", actId))
 					return nil, nil, errors.New("配置不存在")
@@ -559,7 +559,7 @@ func GetUserBattleSkillInfo(ctx context.Context, skillId int32, attrMap map[int3
 		if effectId == 0 {
 			continue
 		}
-		effectCfg := GMazeSkilleffectV8Cfg.Get(effectId)
+		effectCfg := GMazeSkilleffectV8Cfg.GetWithCtx(ctx,effectId)
 		if effectCfg == nil {
 			logger.CtxError(ctx, "GetUserBattleSkillInfo GMazeSkilleffectV8Cfg err", zap.Any("effectId", effectId))
 			return nil, nil, errors.New("配置不存在")
@@ -632,7 +632,7 @@ func GetUserBattleSkillInfo(ctx context.Context, skillId int32, attrMap map[int3
 		if effectId == 0 {
 			continue
 		}
-		effectCfg := GMazeSkilleffectV8Cfg.Get(effectId)
+		effectCfg := GMazeSkilleffectV8Cfg.GetWithCtx(ctx,effectId)
 		if effectCfg == nil {
 			logger.CtxError(ctx, "GetUserBattleSkillInfo GMazeSkilleffectV8Cfg err", zap.Any("effectId", effectId))
 			return nil, nil, errors.New("配置不存在")
@@ -705,12 +705,12 @@ func GetUserBattleSkillInfo(ctx context.Context, skillId int32, attrMap map[int3
 
 func GetFoeBattleSkillInfo(ctx context.Context, skillId int32, attrMap map[int32]int64) (*MazeAIBattle.MazeAISkillInfo, error) {
 	logger := fklog.ContextAppLogger(ctx)
-	skillCfg := GMazeSkillInfoV8Cfg.Get(skillId)
+	skillCfg := GMazeSkillInfoV8Cfg.GetWithCtx(ctx,skillId)
 	if skillCfg == nil {
 		logger.CtxError(ctx, "GetFoeBattleSkillInfo GMazeSkillInfoV8Cfg err", zap.Any("skillId", skillId))
 		return nil, errors.New("配置不存在")
 	}
-	skillActCfg := GMazeSkillActV8Cfg.Get(skillId)
+	skillActCfg := GMazeSkillActV8Cfg.GetWithCtx(ctx,skillId)
 	if skillActCfg == nil {
 		logger.CtxError(ctx, "GetFoeBattleSkillInfo GMazeSkillActV8Cfg err", zap.Any("skillId", skillId))
 		return nil, errors.New("配置不存在")
@@ -768,7 +768,7 @@ func GetFoeBattleSkillInfo(ctx context.Context, skillId int32, attrMap map[int32
 		if effectId == 0 {
 			continue
 		}
-		effectCfg := GMazeSkilleffectV8Cfg.Get(effectId)
+		effectCfg := GMazeSkilleffectV8Cfg.GetWithCtx(ctx,effectId)
 		if effectCfg == nil {
 			logger.CtxError(ctx, "GetFoeBattleSkillInfo GMazeSkilleffectV8Cfg err", zap.Any("effectId", effectId))
 			return nil, errors.New("配置不存在")
@@ -841,7 +841,7 @@ func GetFoeBattleSkillInfo(ctx context.Context, skillId int32, attrMap map[int32
 		if effectId == 0 {
 			continue
 		}
-		effectCfg := GMazeSkilleffectV8Cfg.Get(effectId)
+		effectCfg := GMazeSkilleffectV8Cfg.GetWithCtx(ctx,effectId)
 		if effectCfg == nil {
 			logger.CtxError(ctx, "GetFoeBattleSkillInfo GMazeSkilleffectV8Cfg err", zap.Any("effectId", effectId))
 			return nil, errors.New("配置不存在")
@@ -914,12 +914,12 @@ func GetFoeBattleSkillInfo(ctx context.Context, skillId int32, attrMap map[int32
 
 func GetFoeSkillConfigInfo(ctx context.Context, skillId int32) (*MazeAIBattle.MazeSkillConfigInfo, error) {
 	logger := fklog.ContextAppLogger(ctx)
-	skillCfg := GMazeSkillInfoV8Cfg.Get(skillId)
+	skillCfg := GMazeSkillInfoV8Cfg.GetWithCtx(ctx,skillId)
 	if skillCfg == nil {
 		logger.CtxError(ctx, "GetMazeAIMonsterConfig GMazeSkillInfoV8Cfg err", zap.Any("skillId", skillId))
 		return nil, errors.New("配置不存在")
 	}
-	skillActCfg := GMazeSkillActV8Cfg.Get(skillId)
+	skillActCfg := GMazeSkillActV8Cfg.GetWithCtx(ctx,skillId)
 	if skillActCfg == nil {
 		logger.CtxError(ctx, "GetMazeAIMonsterConfig GMazeSkillActV8Cfg err", zap.Any("skillId", skillId))
 		return nil, errors.New("配置不存在")
@@ -934,7 +934,7 @@ func GetFoeSkillConfigInfo(ctx context.Context, skillId int32) (*MazeAIBattle.Ma
 			if actId == 0 {
 				continue
 			}
-			mazeActCfg := GMazeActInfoV8Cfg.Get(actId)
+			mazeActCfg := GMazeActInfoV8Cfg.GetWithCtx(ctx,actId)
 			if mazeActCfg == nil {
 				logger.CtxError(ctx, "GetMazeAIMonsterConfig GMazeActInfoV8Cfg err", zap.Any("skillId", skillId), zap.Any("actId", actId))
 				return nil, errors.New("配置不存在")
@@ -977,7 +977,7 @@ func GetFoeSkillConfigInfo(ctx context.Context, skillId int32) (*MazeAIBattle.Ma
 }
 
 // func GetMazeAIAutoSkillInfo(ctx context.Context, skillId int32, attrMap map[int32]int64) (*MazeAIBattle.MazeAIAutoSkillInfo, error) {
-// 	skillAutoCfg := GMazeSkillAutoReleaseV8Cfg.Get(skillId)
+// 	skillAutoCfg := GMazeSkillAutoReleaseV8Cfg.GetWithCtx(ctx,skillId)
 // 	if skillAutoCfg == nil {
 // 		logger.CtxError(ctx,"GetMazeAIAutoSkillInfo GMazeSkillAutoReleaseV8Cfg err", zap.Any("skillId", skillId))
 // 		return nil, errors.New("配置不存在")
@@ -1014,7 +1014,7 @@ func GetFoeSkillConfigInfo(ctx context.Context, skillId int32) (*MazeAIBattle.Ma
 
 func GetMazeSkillConditionInfo(ctx context.Context, conditionID int32, attrMap map[int32]int64) (*MazeAIBattle.MazeSkillCondition, error) {
 	logger := fklog.ContextAppLogger(ctx)
-	cfg := GMazeSkillAutoConditionV8Cfg.Get(conditionID)
+	cfg := GMazeSkillAutoConditionV8Cfg.GetWithCtx(ctx,conditionID)
 	if cfg == nil {
 		logger.CtxError(ctx, "GetMazeSkillConditionInfo GMazeSkillAutoConditionV8Cfg err", zap.Any("conditionID", conditionID))
 		return nil, errors.New("配置不存在")

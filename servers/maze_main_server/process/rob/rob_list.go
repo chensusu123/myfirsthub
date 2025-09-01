@@ -44,7 +44,7 @@ func (*Rob) OnMazeRobGuaJiListRQ_10488_10489(s *session.Session, req *MazeRobGua
 	defer fkprometheus.DebugPMT("OnMazeRobGuaJiListRQ")()
 	defer func() {
 		err = s.Response(res)
-		logger.InfoWF("OnMazeRobGuaJiListRQ end",
+		logger.CtxInfo(s.Context(), "OnMazeRobGuaJiListRQ end",
 			zap.Any("req", req),
 			zap.Any("res", res),
 		)

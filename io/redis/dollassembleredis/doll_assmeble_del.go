@@ -15,23 +15,24 @@ import (
 )
 
 // 删除装配信息
-func DelAssmebleInfo(logger fklog.FKLogI, userId uint64) error {
+func DelAssmebleInfo(ctx context.Context, userId uint64) error {
 	key := fmt.Sprintf("maze:assemble:info:u:%d", userId)
-
+	logger := fklog.ContextAppLogger(ctx)
 	_, err := gRedis.Do(context.TODO(), "DEL", key)
 	if err != nil {
-		logger.ErrorWF("DelAssmebleInfo fail",
+		logger.CtxError(ctx, "DelAssmebleInfo fail",
 			zap.Error(err),
 			zap.String("key", key))
 		return err
 	}
-	logger.InfoWF("DelAssmebleInfo succ",
+	logger.CtxInfo(ctx, "DelAssmebleInfo succ",
 		zap.String("key", key))
 	return err
 }
 
-func BatchDelAssmebleInfo(logger fklog.FKLogI, userId uint64, fields ...string) error {
+func BatchDelAssmebleInfo(ctx context.Context, userId uint64, fields ...string) error {
 	key := fmt.Sprintf("maze:assemble:info:u:%d", userId)
+	logger := fklog.ContextAppLogger(ctx)
 	var args []interface{}
 	args = append(args, key)
 	for _, field := range fields {
@@ -39,12 +40,12 @@ func BatchDelAssmebleInfo(logger fklog.FKLogI, userId uint64, fields ...string) 
 	}
 	_, err := gRedis.Do(context.TODO(), "HDEL", args...)
 	if err != nil {
-		logger.ErrorWF("BatchDelAssmebleInfo fail",
+		logger.CtxError(ctx, "BatchDelAssmebleInfo fail",
 			zap.Error(err),
 			zap.String("key", key), zap.Any("fields", fields))
 		return err
 	}
-	logger.InfoWF("BatchDelAssmebleInfo succ",
+	logger.CtxInfo(ctx, "BatchDelAssmebleInfo succ",
 		zap.String("key", key), zap.Any("fields", fields))
 	return err
 }

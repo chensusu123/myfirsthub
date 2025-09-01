@@ -12,9 +12,9 @@ func OnMazeAreaEquipNumRQ(logger fknet.TCPContext, shardingID uint64, rqMsg prot
 	// req := rqMsg.(*DollMazeBarrier.MazeAreaEquipNumRQ)
 	// res := rsMsg.(*DollMazeBarrier.MazeAreaEquipNumRS)
 
-	// logger.InfoWF("OnMazeAreaEquipNumRQ start", zap.Any("req", req))
+	// logger.CtxInfo(ctx,"OnMazeAreaEquipNumRQ start", zap.Any("req", req))
 	// defer func() {
-	// 	logger.InfoWF("OnMazeAreaEquipNumRQ end", zap.Any("res", res))
+	// 	logger.CtxInfo(ctx,"OnMazeAreaEquipNumRQ end", zap.Any("res", res))
 	// }()
 
 	// res.Header = req.Header
@@ -25,21 +25,21 @@ func OnMazeAreaEquipNumRQ(logger fknet.TCPContext, shardingID uint64, rqMsg prot
 
 	// userId := shardingID
 
-	// areaCfg := GMazeBrushAreaV8Cfg.Get(req.GetAreaId())
+	// areaCfg := GMazeBrushAreaV8Cfg.GetWithCtx(ctx,req.GetAreaId())
 	// if areaCfg == nil {
-	// 	logger.ErrorWF("OnMazeAreaEquipNumRQ get maze brush area cfg nil", zap.Any("areaId", req.GetAreaId()))
+	// 	logger.CtxError(ctx,"OnMazeAreaEquipNumRQ get maze brush area cfg nil", zap.Any("areaId", req.GetAreaId()))
 	// 	res.ErrInfo = errors.CONFIG_NOT_FOUND.Wrap("区域id未取到配表数据")
 	// 	return
 	// }
 	// if areaCfg.Barries != req.GetBarrierId() {
-	// 	logger.ErrorWF("OnMazeAreaEquipNumRQ barrier and area not match", zap.Any("barrierId", req.GetBarrierId()), zap.Any("areaId", req.GetAreaId()))
+	// 	logger.CtxError(ctx,"OnMazeAreaEquipNumRQ barrier and area not match", zap.Any("barrierId", req.GetBarrierId()), zap.Any("areaId", req.GetAreaId()))
 	// 	res.ErrInfo = errors.COMMON_ERROR_TIPS.Wrap("关卡与区域不匹配")
 	// 	return
 	// }
 
-	// maxCfg := GMazeConfigV8Cfg.Get(1)
+	// maxCfg := GMazeConfigV8Cfg.GetWithCtx(ctx,1)
 	// if maxCfg == nil {
-	// 	logger.ErrorWF("OnMazeAreaEquipNumRQ get maze maxEquip cfg nil")
+	// 	logger.CtxError(ctx,"OnMazeAreaEquipNumRQ get maze maxEquip cfg nil")
 	// 	res.ErrInfo = errors.CONFIG_NOT_FOUND.ToInfo()
 	// 	return
 	// }
@@ -52,7 +52,7 @@ func OnMazeAreaEquipNumRQ(logger fknet.TCPContext, shardingID uint64, rqMsg prot
 
 	// userBarrier, err := mazeuserbarrier.GetUserBarrier(logger, userId, req.GetBarrierId())
 	// if err != nil {
-	// 	logger.ErrorWF("OnMazeAreaEquipNumRQ GetUserBarrier fail", zap.Error(err))
+	// 	logger.CtxError(ctx,"OnMazeAreaEquipNumRQ GetUserBarrier fail", zap.Error(err))
 	// 	res.ErrInfo = errors.MODULE_ERROR.ToInfo()
 	// 	return
 	// }
@@ -72,7 +72,7 @@ func OnMazeAreaEquipNumRQ(logger fknet.TCPContext, shardingID uint64, rqMsg prot
 
 	// err = mazeuserbarrier.SetUserBarrier(logger, userId, req.GetBarrierId(), userBarrier, nil)
 	// if err != nil {
-	// 	logger.ErrorWF("OnMazeAreaEquipNumRQ SetUserBarrierArea fail", zap.Error(err))
+	// 	logger.CtxError(ctx,"OnMazeAreaEquipNumRQ SetUserBarrierArea fail", zap.Error(err))
 	// 	res.ErrInfo = errors.MODULE_ERROR.ToInfo()
 	// 	return
 	// }
@@ -80,7 +80,7 @@ func OnMazeAreaEquipNumRQ(logger fknet.TCPContext, shardingID uint64, rqMsg prot
 	// if oldEquipNum < int32(maxVal) && req.GetCollectEquipNum() >= int32(maxVal) {
 	// 	err = StartFixMazeProduce(logger, userId, req.GetAreaId())
 	// 	if err != nil {
-	// 		logger.ErrorWF("OnMazeAreaEquipNumRQ StartFixMazeProduce fail", zap.Error(err))
+	// 		logger.CtxError(ctx,"OnMazeAreaEquipNumRQ StartFixMazeProduce fail", zap.Error(err))
 	// 		res.ErrInfo = errors.MODULE_ERROR.ToInfo()
 	// 		return
 	// 	}
@@ -89,7 +89,7 @@ func OnMazeAreaEquipNumRQ(logger fknet.TCPContext, shardingID uint64, rqMsg prot
 	// // if oldEquipNum >= int32(maxVal) && req.GetCollectEquipNum() < int32(maxVal) {
 	// // 	err = StartFixMazeProduce(logger, userId, req.GetAreaId())
 	// // 	if err != nil {
-	// // 		logger.ErrorWF("OnMazeAreaEquipNumRQ StartFixMazeProduce fail", zap.Error(err))
+	// // 		logger.CtxError(ctx,"OnMazeAreaEquipNumRQ StartFixMazeProduce fail", zap.Error(err))
 	// // 		res.ErrInfo = errors.MODULE_ERROR.ToInfo()
 	// // 		return
 	// // 	}

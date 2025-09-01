@@ -39,13 +39,13 @@ func doMazeAttrCalcRetry(ctx context.Context, msg *structsdef.MazeCalcAttrNotify
 	lastTime := msg.Stamp / 1000 // 转成秒
 	now := time.Now().Unix()
 	if now >= lastTime+int64(RetryMaxTime) {
-		logger.WarnWF("doMazeAttrCalcRetry to max time",
+		logger.CtxWarn(ctx, "doMazeAttrCalcRetry to max time",
 			zap.Int64("lastTime", msg.Stamp),
 			zap.Int32("maxTime", RetryMaxTime))
 		return
 	}
 	if msg.RetryFlag >= RetryMaxCount {
-		logger.WarnWF("doMazeAttrCalcRetry to max retry times",
+		logger.CtxWarn(ctx, "doMazeAttrCalcRetry to max retry times",
 			zap.Int32("retryCount", msg.RetryFlag),
 			zap.Int32("maxTimes", RetryMaxCount))
 		return
@@ -54,7 +54,7 @@ func doMazeAttrCalcRetry(ctx context.Context, msg *structsdef.MazeCalcAttrNotify
 	atomic.AddInt64(&ConRetryCounter, 1)
 	curRetryMax := atomic.LoadInt64(&ConRetryCounter)
 	if curRetryMax >= ConRetryCounterMax {
-		logger.WarnWF("doMazeAttrCalcRetry Concurrency retry to limit",
+		logger.CtxWarn(ctx, "doMazeAttrCalcRetry Concurrency retry to limit",
 			zap.Int64("curConRetryMax", curRetryMax),
 			zap.Int64("conretryLimit", ConRetryCounterMax))
 		return
@@ -63,7 +63,7 @@ func doMazeAttrCalcRetry(ctx context.Context, msg *structsdef.MazeCalcAttrNotify
 		// mazeattrcalcnotifyqueue.SendMazeAttrCalcNotify(logger, msg)
 		err := OnMazeAttrCalcMsg(ctx, logger, 0, msg)
 		if err != nil {
-			logger.ErrorWF("doMazeAttrCalcRetry OnMazeAttrCalcMsg failed", zap.Any("msg", msg), zap.Error(err))
+			logger.CtxError(ctx, "doMazeAttrCalcRetry OnMazeAttrCalcMsg failed", zap.Any("msg", msg), zap.Error(err))
 		}
 		atomic.AddInt64(&ConRetryCounter, -1)
 	})

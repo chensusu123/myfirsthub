@@ -2,10 +2,11 @@ package moneyservice
 
 import (
 	"context"
-	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fklog"
-	"go.uber.org/zap"
 	"maze_game_server/common/constdef"
 	"maze_game_server/model/moneymodel"
+
+	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fklog"
+	"go.uber.org/zap"
 )
 
 func (s *service) GetUserMoney(ctx context.Context, userId uint64) (coin, diamond int64, err error) {
@@ -39,7 +40,7 @@ func (s *service) SetMoney(ctx context.Context, userId uint64, itemId int32, val
 
 	err = model.SetValue(ctx, userId, itemId, value)
 	if err != nil {
-		logger.ErrorWF("GetUserMoney SetMoney err", zap.Error(err))
+		logger.CtxError(ctx, "GetUserMoney SetMoney err", zap.Error(err))
 		return err
 	}
 	return nil

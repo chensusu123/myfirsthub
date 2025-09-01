@@ -1,10 +1,12 @@
 package frame_model
 
 import (
-	"github.com/google/uuid"
-	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fklog"
+	"context"
 	"sync"
 	"time"
+
+	"github.com/google/uuid"
+	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fklog"
 )
 
 const (
@@ -81,7 +83,7 @@ func NewServer() *Server {
 	}
 }
 
-func NewRoomInfo(logger fklog.FKLogI, userIdList []uint64, gameTick, startPercent, gameLastTime, udpReliabilityStrategy int32, roomExtInfo string, needSeed bool) *Room {
+func NewRoomInfo(ctx context.Context, userIdList []uint64, gameTick, startPercent, gameLastTime, udpReliabilityStrategy int32, roomExtInfo string, needSeed bool) *Room {
 	roomInfo := &Room{}
 	roomInfo.FrameDataList = make([]*FrameData, 0)
 	roomInfo.CurrentFrame = 0
@@ -109,10 +111,10 @@ func NewRoomInfo(logger fklog.FKLogI, userIdList []uint64, gameTick, startPercen
 	return roomInfo
 }
 
-func NewPlayer(logger fklog.FKLogI, userId uint64, role int32) *Player {
+func NewPlayer(ctx context.Context, userId uint64, role int32) *Player {
 	return &Player{
 		ID:     userId,
-		Logger: logger,
+		Logger: fklog.ContextAppLogger(ctx),
 		Role:   role,
 	}
 }

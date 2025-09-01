@@ -2,11 +2,9 @@ package equipbaggm
 
 import (
 	"context"
-
-	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fklog"
 )
 
-func Reg(logger fklog.FKLogI) {
+func Reg(ctx context.Context) {
 	// gm.SafeHttpRegister(logger, "/AddEquip")
 
 	// gm.SafeHttpRegister(logger, "/ClearBag")
@@ -21,12 +19,12 @@ func Reg(logger fklog.FKLogI) {
 	//
 	// 	leagueIDMap, err := WorldLeagueRedis.GetWorldLeagueInfo(logger, mapId)
 	// 	if err != nil {
-	// 		logger.ErrorWF("ClearBagByMap load world leagueInfo fail",
+	// 		logger.CtxError(ctx,"ClearBagByMap load world leagueInfo fail",
 	// 			zap.Uint64("mapID", mapId),
 	// 			zap.Error(err))
 	// 		return
 	// 	}
-	// 	logger.InfoWF("ClearBagByMap map info",
+	// 	logger.CtxInfo(ctx,"ClearBagByMap map info",
 	// 		zap.Uint64("map", mapId),
 	// 		zap.Int("leagueLen", len(leagueIDMap)),
 	// 	)
@@ -36,7 +34,7 @@ func Reg(logger fklog.FKLogI) {
 	// 		// 取联盟下的散人家族
 	// 		familyIDs, err := LeagueFamilyRedis.GetAllLeagueFamilyIDs(logger, leagueID)
 	// 		if err != nil {
-	// 			logger.ErrorWF("ClearBagByMap get league familyIDs fail", zap.Any("leagueID", leagueID), zap.Error(err))
+	// 			logger.CtxError(ctx,"ClearBagByMap get league familyIDs fail", zap.Any("leagueID", leagueID), zap.Error(err))
 	// 			continue
 	// 		}
 	//
@@ -45,7 +43,7 @@ func Reg(logger fklog.FKLogI) {
 	// 			// 取家族下所有人
 	// 			users, err := FamilyAllocUserRedis.GetAllFamilyUIDSliceFix(logger, familyID)
 	// 			if err != nil {
-	// 				logger.ErrorWF("ClearBagByMap get family users fail", zap.Error(err))
+	// 				logger.CtxError(ctx,"ClearBagByMap get family users fail", zap.Error(err))
 	// 				continue
 	// 			}
 	//
@@ -56,7 +54,7 @@ func Reg(logger fklog.FKLogI) {
 	// 			for _, uid := range users {
 	// 				err := ClearUserBag(logger, uid)
 	// 				if err != nil {
-	// 					logger.ErrorWF("ClearBagByMap ClearUserBag fail", zap.Error(err), zap.Uint64("uid", uid))
+	// 					logger.CtxError(ctx,"ClearBagByMap ClearUserBag fail", zap.Error(err), zap.Uint64("uid", uid))
 	// 					continue
 	// 				}
 	// 			}
@@ -93,13 +91,13 @@ func Reg(logger fklog.FKLogI) {
 	// 	for index := int32(1); index <= maxBaseNum; index++ {
 	// 		basePoolMap, ok := groupBasePoolMap[index]
 	// 		if !ok {
-	// 			logger.ErrorWF("doll_equip_info_v8【人偶-装备-信息】.xlsx 基础属性条数缺失 ", zap.Any("装备id：", cfg.Equipment_id), zap.Any("缺失条数位置：", index))
+	// 			logger.CtxError(ctx,"doll_equip_info_v8【人偶-装备-信息】.xlsx 基础属性条数缺失 ", zap.Any("装备id：", cfg.Equipment_id), zap.Any("缺失条数位置：", index))
 	// 			continue
 	// 		}
 	// 		for poolId := range basePoolMap {
 	// 			poolMap := mazeequipaffixrandpoolv8.GetEquipPoolWeightCfg(poolId)
 	// 			if len(poolMap) == 0 {
-	// 				logger.ErrorWF("doll_equip_affix_pool_v8【人偶-装备-词条随机池】.xlsx 基础词条库缺失 ", zap.Any("装备id:", cfg.Equipment_id), zap.Any("池子id:", poolId))
+	// 				logger.CtxError(ctx,"doll_equip_affix_pool_v8【人偶-装备-词条随机池】.xlsx 基础词条库缺失 ", zap.Any("装备id:", cfg.Equipment_id), zap.Any("池子id:", poolId))
 	// 				continue
 	// 			}
 	// 		}
@@ -118,17 +116,17 @@ func Reg(logger fklog.FKLogI) {
 	// 		}
 	// 		poolMap := mazeequipaffixrandpoolv8.GetEquipPoolWeightCfg(poolId)
 	// 		if len(poolMap) == 0 {
-	// 			logger.ErrorWF("doll_equip_affix_pool_v8【人偶-装备-词条随机池】.xlsx 随机词条库缺失 ", zap.Any("装备id:", cfg.Equipment_id), zap.Any("池子id:", poolId))
+	// 			logger.CtxError(ctx,"doll_equip_affix_pool_v8【人偶-装备-词条随机池】.xlsx 随机词条库缺失 ", zap.Any("装备id:", cfg.Equipment_id), zap.Any("池子id:", poolId))
 	// 			continue
 	// 		}
 	// 		if len(poolMap) < int(maxRandNum) {
-	// 			logger.ErrorWF("doll_equip_affix_pool_v8【人偶-装备-词条随机池】.xlsx 随机词条库条数不足", zap.Any("装备id:", cfg.Equipment_id), zap.Any("池子id:", poolId),
+	// 			logger.CtxError(ctx,"doll_equip_affix_pool_v8【人偶-装备-词条随机池】.xlsx 随机词条库条数不足", zap.Any("装备id:", cfg.Equipment_id), zap.Any("池子id:", poolId),
 	// 				zap.Any("当前词条数量:", len(poolMap)), zap.Any("最大词条数量", maxRandNum))
 	// 			continue
 	// 		}
 	// 		poolGroupMap := mazeequipaffixrandpoolv8.GetPoolGroupCfg(poolId)
 	// 		if len(poolGroupMap) < int(maxRandNum) {
-	// 			logger.ErrorWF("doll_equip_affix_pool_v8【人偶-装备-词条随机池】.xlsx 随机词条库条去重组不足", zap.Any("装备id:", cfg.Equipment_id), zap.Any("池子id:", poolId),
+	// 			logger.CtxError(ctx,"doll_equip_affix_pool_v8【人偶-装备-词条随机池】.xlsx 随机词条库条去重组不足", zap.Any("装备id:", cfg.Equipment_id), zap.Any("池子id:", poolId),
 	// 				zap.Any("当前词条去重组数量:", len(poolGroupMap)), zap.Any("最大词条数量", maxRandNum))
 	// 			continue
 	// 		}
@@ -147,17 +145,17 @@ func Reg(logger fklog.FKLogI) {
 	// 		}
 	// 		poolWeightMap := GDollEquipAffixModPoolV8CfgEx.GetEnchantPoolWeightCfg(poolId)
 	// 		if len(poolWeightMap) == 0 {
-	// 			logger.ErrorWF("doll_equip_affix_mod_pool_v8【人偶-装备-附魔词条随机池】.xlsx 随机词条库缺失 ", zap.Any("装备id:", cfg.Equipment_id), zap.Any("池子id:", poolId))
+	// 			logger.CtxError(ctx,"doll_equip_affix_mod_pool_v8【人偶-装备-附魔词条随机池】.xlsx 随机词条库缺失 ", zap.Any("装备id:", cfg.Equipment_id), zap.Any("池子id:", poolId))
 	// 			continue
 	// 		}
 	// 		if len(poolWeightMap) < int(maxModNum) {
-	// 			logger.ErrorWF("doll_equip_affix_mod_pool_v8【人偶-装备-附魔词条随机池】.xlsx 随机词条库条数不足", zap.Any("装备id:", cfg.Equipment_id), zap.Any("池子id:", poolId),
+	// 			logger.CtxError(ctx,"doll_equip_affix_mod_pool_v8【人偶-装备-附魔词条随机池】.xlsx 随机词条库条数不足", zap.Any("装备id:", cfg.Equipment_id), zap.Any("池子id:", poolId),
 	// 				zap.Any("当前词条数量:", len(poolWeightMap)), zap.Any("最大词条数量", maxModNum))
 	// 			continue
 	// 		}
 	// 		poolGroupMap := GDollEquipAffixModPoolV8CfgEx.GetEnchantPoolGroupCfg(poolId)
 	// 		if len(poolGroupMap) < int(maxModNum) {
-	// 			logger.ErrorWF("doll_equip_affix_mod_pool_v8【人偶-装备-附魔词条随机池】.xlsx 随机词条库条去重组不足", zap.Any("装备id:", cfg.Equipment_id), zap.Any("池子id:", poolId),
+	// 			logger.CtxError(ctx,"doll_equip_affix_mod_pool_v8【人偶-装备-附魔词条随机池】.xlsx 随机词条库条去重组不足", zap.Any("装备id:", cfg.Equipment_id), zap.Any("池子id:", poolId),
 	// 				zap.Any("当前词条去重组数量:", len(poolGroupMap)), zap.Any("最大词条数量", maxModNum))
 	// 			continue
 	// 		}
@@ -170,7 +168,7 @@ func Reg(logger fklog.FKLogI) {
 	// 		}
 	// 		poolMap := GDollEquipAffixSpPoolV8CfgEx.GetSpPoolWeightCfg(poolId)
 	// 		if len(poolMap) == 0 {
-	// 			logger.ErrorWF("doll_equip_affix_sp_pool_v8【人偶-装备-特殊词条随机库】.xlsx 随机词条库缺失 ", zap.Any("装备id:", cfg.Equipment_id), zap.Any("池子id:", poolId))
+	// 			logger.CtxError(ctx,"doll_equip_affix_sp_pool_v8【人偶-装备-特殊词条随机库】.xlsx 随机词条库缺失 ", zap.Any("装备id:", cfg.Equipment_id), zap.Any("池子id:", poolId))
 	// 			continue
 	// 		}
 	// 	}
@@ -198,13 +196,13 @@ func Reg(logger fklog.FKLogI) {
 	// 	for index := int32(1); index <= maxBaseNum; index++ {
 	// 		basePoolMap, ok := groupBasePoolMap[index]
 	// 		if !ok {
-	// 			logger.ErrorWF("doll_equip_affix_sp_rule_v8【人偶-装备-生成特殊词条规则】.xlsx 基础属性条数缺失 ", zap.Any("装备规则id：", cfg.Rule_id), zap.Any("缺失条数位置：", index))
+	// 			logger.CtxError(ctx,"doll_equip_affix_sp_rule_v8【人偶-装备-生成特殊词条规则】.xlsx 基础属性条数缺失 ", zap.Any("装备规则id：", cfg.Rule_id), zap.Any("缺失条数位置：", index))
 	// 			continue
 	// 		}
 	// 		for poolId := range basePoolMap {
 	// 			poolMap := mazeequipaffixrandpoolv8.GetEquipPoolWeightCfg(poolId)
 	// 			if len(poolMap) == 0 {
-	// 				logger.ErrorWF("doll_equip_affix_pool_v8【人偶-装备-词条随机池】.xlsx 基础词条库缺失 ", zap.Any("装备规则id:", cfg.Rule_id), zap.Any("池子id:", poolId))
+	// 				logger.CtxError(ctx,"doll_equip_affix_pool_v8【人偶-装备-词条随机池】.xlsx 基础词条库缺失 ", zap.Any("装备规则id:", cfg.Rule_id), zap.Any("池子id:", poolId))
 	// 				continue
 	// 			}
 	// 		}
@@ -223,17 +221,17 @@ func Reg(logger fklog.FKLogI) {
 	// 		}
 	// 		poolMap := mazeequipaffixrandpoolv8.GetEquipPoolWeightCfg(poolId)
 	// 		if len(poolMap) == 0 {
-	// 			logger.ErrorWF("doll_equip_affix_pool_v8【人偶-装备-词条随机池】.xlsx 随机词条库缺失 ", zap.Any("装备规则id:", cfg.Rule_id), zap.Any("池子id:", poolId))
+	// 			logger.CtxError(ctx,"doll_equip_affix_pool_v8【人偶-装备-词条随机池】.xlsx 随机词条库缺失 ", zap.Any("装备规则id:", cfg.Rule_id), zap.Any("池子id:", poolId))
 	// 			continue
 	// 		}
 	// 		if len(poolMap) < int(maxRandNum) {
-	// 			logger.ErrorWF("doll_equip_affix_pool_v8【人偶-装备-词条随机池】.xlsx 随机词条库条数不足", zap.Any("装备规则id:", cfg.Rule_id), zap.Any("池子id:", poolId),
+	// 			logger.CtxError(ctx,"doll_equip_affix_pool_v8【人偶-装备-词条随机池】.xlsx 随机词条库条数不足", zap.Any("装备规则id:", cfg.Rule_id), zap.Any("池子id:", poolId),
 	// 				zap.Any("当前词条数量:", len(poolMap)), zap.Any("最大词条数量", maxRandNum))
 	// 			continue
 	// 		}
 	// 		poolGroupMap := mazeequipaffixrandpoolv8.GetPoolGroupCfg(poolId)
 	// 		if len(poolGroupMap) < int(maxRandNum) {
-	// 			logger.ErrorWF("doll_equip_affix_pool_v8【人偶-装备-词条随机池】.xlsx 随机词条库条去重组不足", zap.Any("装备规则id:", cfg.Rule_id), zap.Any("池子id:", poolId),
+	// 			logger.CtxError(ctx,"doll_equip_affix_pool_v8【人偶-装备-词条随机池】.xlsx 随机词条库条去重组不足", zap.Any("装备规则id:", cfg.Rule_id), zap.Any("池子id:", poolId),
 	// 				zap.Any("当前词条去重组数量:", len(poolGroupMap)), zap.Any("最大词条数量", maxRandNum))
 	// 			continue
 	// 		}
@@ -252,17 +250,17 @@ func Reg(logger fklog.FKLogI) {
 	// 		}
 	// 		poolWeightMap := GDollEquipAffixModPoolV8CfgEx.GetEnchantPoolWeightCfg(poolId)
 	// 		if len(poolWeightMap) == 0 {
-	// 			logger.ErrorWF("doll_equip_affix_mod_pool_v8【人偶-装备-附魔词条随机池】.xlsx 随机词条库缺失 ", zap.Any("装备规则id:", cfg.Rule_id), zap.Any("池子id:", poolId))
+	// 			logger.CtxError(ctx,"doll_equip_affix_mod_pool_v8【人偶-装备-附魔词条随机池】.xlsx 随机词条库缺失 ", zap.Any("装备规则id:", cfg.Rule_id), zap.Any("池子id:", poolId))
 	// 			continue
 	// 		}
 	// 		if len(poolWeightMap) < int(maxModNum) {
-	// 			logger.ErrorWF("doll_equip_affix_mod_pool_v8【人偶-装备-附魔词条随机池】.xlsx 随机词条库条数不足", zap.Any("装备规则id:", cfg.Rule_id), zap.Any("池子id:", poolId),
+	// 			logger.CtxError(ctx,"doll_equip_affix_mod_pool_v8【人偶-装备-附魔词条随机池】.xlsx 随机词条库条数不足", zap.Any("装备规则id:", cfg.Rule_id), zap.Any("池子id:", poolId),
 	// 				zap.Any("当前词条数量:", len(poolWeightMap)), zap.Any("最大词条数量", maxModNum))
 	// 			continue
 	// 		}
 	// 		poolGroupMap := GDollEquipAffixModPoolV8CfgEx.GetEnchantPoolGroupCfg(poolId)
 	// 		if len(poolGroupMap) < int(maxModNum) {
-	// 			logger.ErrorWF("doll_equip_affix_mod_pool_v8【人偶-装备-附魔词条随机池】.xlsx 随机词条库条去重组不足", zap.Any("装备规则id:", cfg.Rule_id), zap.Any("池子id:", poolId),
+	// 			logger.CtxError(ctx,"doll_equip_affix_mod_pool_v8【人偶-装备-附魔词条随机池】.xlsx 随机词条库条去重组不足", zap.Any("装备规则id:", cfg.Rule_id), zap.Any("池子id:", poolId),
 	// 				zap.Any("当前词条去重组数量:", len(poolGroupMap)), zap.Any("最大词条数量", maxModNum))
 	// 			continue
 	// 		}
@@ -275,7 +273,7 @@ func Reg(logger fklog.FKLogI) {
 	// 		}
 	// 		poolMap := GDollEquipAffixSpPoolV8CfgEx.GetSpPoolWeightCfg(poolId)
 	// 		if len(poolMap) == 0 {
-	// 			logger.ErrorWF("doll_equip_affix_sp_pool_v8【人偶-装备-特殊词条随机库】.xlsx 随机词条库缺失 ", zap.Any("装备规则id:", cfg.Rule_id), zap.Any("池子id:", poolId))
+	// 			logger.CtxError(ctx,"doll_equip_affix_sp_pool_v8【人偶-装备-特殊词条随机库】.xlsx 随机词条库缺失 ", zap.Any("装备规则id:", cfg.Rule_id), zap.Any("池子id:", poolId))
 	// 			continue
 	// 		}
 	// 	}
@@ -292,12 +290,12 @@ func Reg(logger fklog.FKLogI) {
 	// 	run := fkutil.ToUint64(request.Form.Get("run"))
 	// 	leagueIDMap, err := WorldLeagueRedis.GetWorldLeagueInfo(logger, mapId)
 	// 	if err != nil {
-	// 		logger.ErrorWF("FixDelModExpEquipByMap load world leagueInfo fail",
+	// 		logger.CtxError(ctx,"FixDelModExpEquipByMap load world leagueInfo fail",
 	// 			zap.Uint64("mapID", mapId),
 	// 			zap.Error(err))
 	// 		return
 	// 	}
-	// 	logger.InfoWF("FixDelModExpEquipByMap map info",
+	// 	logger.CtxInfo(ctx,"FixDelModExpEquipByMap map info",
 	// 		zap.Uint64("map", mapId),
 	// 		zap.Int("leagueLen", len(leagueIDMap)),
 	// 	)
@@ -308,7 +306,7 @@ func Reg(logger fklog.FKLogI) {
 	// 		// 取联盟下的散人家族
 	// 		familyIDs, err := LeagueFamilyRedis.GetAllLeagueFamilyIDs(logger, leagueID)
 	// 		if err != nil {
-	// 			logger.ErrorWF("FixDelModExpEquipByMap get league familyIDs fail", zap.Any("leagueID", leagueID), zap.Error(err))
+	// 			logger.CtxError(ctx,"FixDelModExpEquipByMap get league familyIDs fail", zap.Any("leagueID", leagueID), zap.Error(err))
 	// 			continue
 	// 		}
 
@@ -317,7 +315,7 @@ func Reg(logger fklog.FKLogI) {
 	// 			// 取家族下所有人
 	// 			users, err := FamilyAllocUserRedis.GetAllFamilyUIDSliceFix(logger, familyID)
 	// 			if err != nil {
-	// 				logger.ErrorWF("FixDelModExpEquipByMap get family users fail", zap.Error(err))
+	// 				logger.CtxError(ctx,"FixDelModExpEquipByMap get family users fail", zap.Error(err))
 	// 				continue
 	// 			}
 
@@ -369,14 +367,14 @@ func Reg(logger fklog.FKLogI) {
 }
 
 func ClearUserBag(ctx context.Context, userId uint64) (err error) {
-	logger := fklog.ContextAppLogger(ctx)
+	// logger := fklog.ContextAppLogger(ctx)
 	// todo 找装配的删除
 	err = ClearDollAssembleInfo(ctx, userId)
 	if err != nil {
 		return
 	}
 	// todo 删除背包里的
-	err = ClearEquipBag(logger, userId)
+	err = ClearEquipBag(ctx, userId)
 	if err != nil {
 		return
 	}

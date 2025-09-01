@@ -12,14 +12,14 @@ import (
 
 func GetBarrierPassAward(ctx context.Context, barrierId int32) (awardMap map[int32]int64, equipMap map[int32]int32, err error) {
 	logger := fklog.ContextAppLogger(ctx)
-	cfg := GMazeBarriesV8Cfg.Get(barrierId)
+	cfg := GMazeBarriesV8Cfg.GetWithCtx(ctx,barrierId)
 	if cfg == nil {
 		logger.CtxError(ctx, "GetBarrierPassAward get barrier cfg fail", zap.Any("barrier", barrierId))
 		err = errors.New("barrier cfg nil")
 		return
 	}
 
-	boxAward := GMazeBoxV8Cfg.Get(cfg.Box_id)
+	boxAward := GMazeBoxV8Cfg.GetWithCtx(ctx,cfg.Box_id)
 	if cfg == nil {
 		logger.CtxError(ctx, "GetBarrierPassAward get box cfg fail", zap.Any("box", cfg.Box_id))
 		err = errors.New("barrier cfg nil")
@@ -45,14 +45,14 @@ func GetBarrierPassAward(ctx context.Context, barrierId int32) (awardMap map[int
 
 func GetBarrierPassAwardWithFirst(ctx context.Context, barrierId int32) (awardMap map[int32]int64, equipMap map[int32]int32, err error) {
 	logger := fklog.ContextAppLogger(ctx)
-	cfg := GMazeBarriesV8Cfg.Get(barrierId)
+	cfg := GMazeBarriesV8Cfg.GetWithCtx(ctx,barrierId)
 	if cfg == nil {
 		logger.CtxError(ctx, "GetBarrierPassAwardWithFirst get barrier cfg fail", zap.Any("barrier", barrierId))
 		err = errors.New("barrier cfg nil")
 		return
 	}
 
-	boxAward := GMazeBoxV8Cfg.Get(cfg.Box_id_first)
+	boxAward := GMazeBoxV8Cfg.GetWithCtx(ctx,cfg.Box_id_first)
 	if cfg == nil {
 		logger.CtxError(ctx, "GetBarrierPassAwardWithFirst get box cfg fail", zap.Any("box", cfg.Box_id_first))
 		err = errors.New("barrier cfg nil")

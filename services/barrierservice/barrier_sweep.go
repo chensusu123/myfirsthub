@@ -22,16 +22,16 @@ import (
 // SweepBarrier implements BarrierService.
 func (b *barrier) SweepBarrier(ctx context.Context, header *Common.PacketHeader, userID uint64, barrierID int32) (energyInfo *MazeEnergy.EnergyInfo, remainVal int32, gameID uint64, awardItem, rareItem []*MazeCommon.MazeItem, errinfo *MessageType.ErrorInfo) {
 	logger := fklog.ContextAppLogger(ctx)
-	barrierCfg := GMazeBarriesV8Cfg.Get(barrierID)
+	barrierCfg := GMazeBarriesV8Cfg.GetWithCtx(ctx, barrierID)
 	if barrierCfg == nil {
-		logger.ErrorWF("OnStartMazeSweepRQ get barrier cfg fail", zap.Int32("barrierId", barrierID))
+		logger.CtxError(ctx, "OnStartMazeSweepRQ get barrier cfg fail", zap.Int32("barrierId", barrierID))
 		errinfo = errors.COMMON_ERROR_TIPS.Wrap("找不到该关卡配置")
 		return
 	}
 
 	userInfo, err := mazeuserinfo.GetUserInfoV2(ctx, userID)
 	if err != nil {
-		logger.ErrorWF("SweepBarrier GetUserInfoV2 fail", zap.Error(err))
+		logger.CtxError(ctx, "SweepBarrier GetUserInfoV2 fail", zap.Error(err))
 		errinfo = errors.MODULE_ERROR.ToInfo()
 		return
 	}
@@ -39,7 +39,7 @@ func (b *barrier) SweepBarrier(ctx context.Context, header *Common.PacketHeader,
 	energy, _, err := barrierenergyservice.GlobalBarrierEnergyService.GetBarrierEnergy(ctx, userID)
 	if err != nil {
 		errinfo = errors.COMMON_ERROR_TIPS.Wrap("获取体力信息失败")
-		logger.ErrorWF("SweepBarrier GetBarrierEnergy fail", zap.Error(err), zap.Uint64("userID", userID))
+		logger.CtxError(ctx, "SweepBarrier GetBarrierEnergy fail", zap.Error(err), zap.Uint64("userID", userID))
 		return
 	}
 	energyInfo = &MazeEnergy.EnergyInfo{
@@ -50,14 +50,14 @@ func (b *barrier) SweepBarrier(ctx context.Context, header *Common.PacketHeader,
 
 	if barrierID > userInfo.PassBarrier {
 		errinfo = errors.COMMON_ERROR_TIPS.Wrap("不能扫荡未通关的关卡")
-		logger.ErrorWF("SweepBarrier exceed maxUserBarrierID", zap.Any("barrierID", barrierID), zap.Int32("save", userInfo.Barrier))
+		logger.CtxError(ctx, "SweepBarrier exceed maxUserBarrierID", zap.Any("barrierID", barrierID), zap.Int32("save", userInfo.Barrier))
 		return
 	}
 	// check and cost energy
 	remainVal, err = barrierenergyservice.GlobalBarrierEnergyService.SubEnergy(ctx, userID, barrierCfg.Mop_cost)
 	if err != nil {
 		errinfo = errors.COMMON_ERROR_TIPS.Wrap("体力不足")
-		logger.ErrorWF("SweepBarrier SubEnergy fail", zap.Error(err), zap.Uint64("userID", userID), zap.Any("Mop_cost", barrierCfg.Mop_cost))
+		logger.CtxError(ctx, "SweepBarrier SubEnergy fail", zap.Error(err), zap.Uint64("userID", userID), zap.Any("Mop_cost", barrierCfg.Mop_cost))
 		return
 	}
 	// make gameID
@@ -77,7 +77,7 @@ func (b *barrier) SweepBarrier(ctx context.Context, header *Common.PacketHeader,
 	awardItem, rareItem, err = calsweepbarrier.CalUserSweepBarrierAward(ctx, userID, barrierID, header)
 	if err != nil {
 		errinfo = errors.COMMON_ERROR_TIPS.Wrap("获取扫荡奖励失败")
-		logger.ErrorWF("SweepBarrier CalUserSweepBarrierAward fail", zap.Int32("barrierId", barrierID), zap.Error(err))
+		logger.CtxError(ctx, "SweepBarrier CalUserSweepBarrierAward fail", zap.Int32("barrierId", barrierID), zap.Error(err))
 		return
 	}
 

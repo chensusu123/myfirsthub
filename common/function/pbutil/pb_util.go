@@ -12,7 +12,7 @@ import (
 	"go.uber.org/zap"
 )
 
-func GetDollEquipName(equipInfo *MazeEquipCache.MazeEquipInfoDb, equipType int32) (equipResId int32, equipName string) {
+func GetDollEquipName(ctx context.Context, equipInfo *MazeEquipCache.MazeEquipInfoDb, equipType int32) (equipResId int32, equipName string) {
 	equipId := equipInfo.GetEquipId()
 	if equipInfo.GetEquipSubType() > 0 {
 		equipType = equipInfo.GetEquipSubType()
@@ -23,13 +23,13 @@ func GetDollEquipName(equipInfo *MazeEquipCache.MazeEquipInfoDb, equipType int32
 		equipResId = equipTypeResCfg.Order
 	}
 	if equipInfo.GetSuitId() > 0 {
-		equipSuiteNameCfg := GMazeEquipSuiteNameV8Cfg.Get(equipId)
+		equipSuiteNameCfg := GMazeEquipSuiteNameV8Cfg.GetWithCtx(ctx, equipId)
 		if equipSuiteNameCfg != nil {
 			equipName = equipSuiteNameCfg.Suite_equip_name[equipInfo.GetSuitId()]
 		}
 	}
 	if equipName == "" {
-		itemCfg := GMazeItemsV8Cfg.Get(equipId)
+		itemCfg := GMazeItemsV8Cfg.GetWithCtx(ctx, equipId)
 		if itemCfg != nil {
 			equipName = itemCfg.Prop_name
 		}
@@ -37,7 +37,7 @@ func GetDollEquipName(equipInfo *MazeEquipCache.MazeEquipInfoDb, equipType int32
 	return equipResId, equipName
 }
 
-func GetDollEquipNameEx(equipInfo *MazeEquipCache.MazeEquipInfoDb, equipType int32) (equipResId int32, equipName string, mazeModel int32, icon string, iconAtlas string) {
+func GetDollEquipNameEx(ctx context.Context, equipInfo *MazeEquipCache.MazeEquipInfoDb, equipType int32) (equipResId int32, equipName string, mazeModel int32, icon string, iconAtlas string) {
 	equipId := equipInfo.GetEquipId()
 	if equipInfo.GetEquipSubType() > 0 {
 		equipType = equipInfo.GetEquipSubType()
@@ -51,13 +51,13 @@ func GetDollEquipNameEx(equipInfo *MazeEquipCache.MazeEquipInfoDb, equipType int
 		iconAtlas = equipTypeResCfg.IconAtlas
 	}
 	if equipInfo.GetSuitId() > 0 {
-		equipSuiteNameCfg := GMazeEquipSuiteNameV8Cfg.Get(equipId)
+		equipSuiteNameCfg := GMazeEquipSuiteNameV8Cfg.GetWithCtx(ctx, equipId)
 		if equipSuiteNameCfg != nil {
 			equipName = equipSuiteNameCfg.Suite_equip_name[equipInfo.GetSuitId()]
 		}
 	}
 	if equipName == "" {
-		itemCfg := GMazeItemsV8Cfg.Get(equipId)
+		itemCfg := GMazeItemsV8Cfg.GetWithCtx(ctx, equipId)
 		if itemCfg != nil {
 			equipName = itemCfg.Prop_name
 		}
@@ -101,12 +101,12 @@ func GetEquipResId(ctx context.Context, equipInfo *MazeEquipCache.MazeEquipInfoD
 	return equipResId
 }
 
-// func ConvertIdentifyEquipDb(logger fklog.FKLogI, equipInfo *MazeEquipCache.MazeEquipInfoDb) (*MazeEquipCache.MazeEquipInfoDb, error) {
+// func ConvertIdentifyEquipDb(ctx context.Context, equipInfo *MazeEquipCache.MazeEquipInfoDb) (*MazeEquipCache.MazeEquipInfoDb, error) {
 //	return equipInfo, nil
 // }
 
 // // 批量转换接口
-// func BatchConvertIdentifyEquipDb(logger fklog.FKLogI, originalEquips map[int64]*MazeEquipCache.MazeEquipInfoDb) (realEquipMap map[int64]*MazeEquipCache.MazeEquipInfoDb, err error) {
+// func BatchConvertIdentifyEquipDb(ctx context.Context, originalEquips map[int64]*MazeEquipCache.MazeEquipInfoDb) (realEquipMap map[int64]*MazeEquipCache.MazeEquipInfoDb, err error) {
 //	realEquipMap = make(map[int64]*MazeEquipCache.MazeEquipInfoDb)
 //	for k, v := range originalEquips {
 //		r, e := ConvertIdentifyEquipDb(logger, v)

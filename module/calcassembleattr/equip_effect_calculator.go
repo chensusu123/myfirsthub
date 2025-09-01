@@ -7,6 +7,7 @@
 package calcassembleattr
 
 import (
+	"context"
 	"errors"
 	"maze_game_server/common/constdef"
 	"maze_game_server/common/function/assemble"
@@ -30,13 +31,13 @@ type EquipmentEffectInfo struct {
 	fklog.FKLogI
 }
 
-func NewEquipmentEffectInfo(logger fklog.FKLogI) *EquipmentEffectInfo {
+func NewEquipmentEffectInfo(ctx context.Context) *EquipmentEffectInfo {
 	r := new(EquipmentEffectInfo)
 	r.ChgPoss = make(map[int32]int32)
 	r.ForceAttrs = make(map[int32]int64)
 	//	r.FiveStateMap = make(map[int32]int32)
 	r.Other = &MazeBuffData.MazeBuffDb{} // 其他属性
-	r.FKLogI = logger
+	r.FKLogI = fklog.ContextAppLogger(ctx)
 	return r
 }
 
@@ -174,9 +175,9 @@ func (m *EquipmentEffectInfo) CalcBaseAttr(equip *MazeEquipCache.MazeEquipInfoDb
 // }
 
 // 计算伤害套装
-func (m *EquipmentEffectInfo) CalcHurtSuit(equips []*MazeEquipCache.MazeEquipPosInfo) error {
+func (m *EquipmentEffectInfo) CalcHurtSuit(ctx context.Context, equips []*MazeEquipCache.MazeEquipPosInfo) error {
 	// 计算套装
-	suitMgr, err := CalcEquipSuit(m, equips)
+	suitMgr, err := CalcEquipSuit(ctx, equips)
 	if err != nil {
 		return err
 	}
@@ -217,18 +218,19 @@ type EffectCalcInParam struct {
 }
 
 // 计算装备的效果
-func CalcEquipEffectAll(logger fklog.FKLogI, equips []*MazeEquipCache.MazeEquipPosInfo, ep EffectCalcInParam) (effect *EquipmentEffectInfo, err error) {
-	effect = NewEquipmentEffectInfo(logger)
+func CalcEquipEffectAll(ctx context.Context, equips []*MazeEquipCache.MazeEquipPosInfo, ep EffectCalcInParam) (effect *EquipmentEffectInfo, err error) {
+	logger := fklog.ContextAppLogger(ctx)
+	effect = NewEquipmentEffectInfo(ctx)
 	var step string
 	defer func() {
 		if err != nil {
-			logger.ErrorWF("CalcEquipEffectAll dump err", zap.Error(err),
+			logger.CtxError(ctx, "CalcEquipEffectAll dump err", zap.Error(err),
 				zap.Any("equips", equips), zap.Any("effect", effect),
 				zap.String("step", step),
 				zap.Any("suitMgr", effect.SuitCalc))
 		} else {
 			if ep.IsLog {
-				logger.DebugWF("CalcEquipEffectAll dump",
+				logger.CtxDebug(ctx, "CalcEquipEffectAll dump",
 					zap.Any("equips", equips), zap.Any("effect", effect),
 					zap.Any("suitMgr", effect.SuitCalc))
 			}
@@ -236,7 +238,7 @@ func CalcEquipEffectAll(logger fklog.FKLogI, equips []*MazeEquipCache.MazeEquipP
 	}()
 
 	// 计算套装
-	err = effect.CalcHurtSuit(equips)
+	err = effect.CalcHurtSuit(ctx, equips)
 	if err != nil {
 		return
 	}
@@ -279,7 +281,7 @@ func CalcEquipEffectAll(logger fklog.FKLogI, equips []*MazeEquipCache.MazeEquipP
 			equipPos.EquipLoadInfo.ActivateMask = proto.Int32(activateMask)
 		}
 		if pos == 1 {
-			txAttr := CalcElementEffect(logger, equipPos, suitMap, ep.IsLog)
+			txAttr := CalcElementEffect(ctx, equipPos, suitMap, ep.IsLog)
 			if txAttr != nil {
 				AppendDollAttr(effect.Other, txAttr)
 			}

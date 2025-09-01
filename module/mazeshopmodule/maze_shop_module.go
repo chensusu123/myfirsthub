@@ -18,7 +18,7 @@ import (
 //			maxAreaId = maxAreaId * barrierId
 //		}
 //	} else {
-//		areaCfg := GDollMazeBrushAreaV8Cfg.Get(maxAreaId)
+//		areaCfg := GDollMazeBrushAreaV8Cfg.GetWithCtx(ctx,maxAreaId)
 //		if areaCfg == nil {
 //			return maxAreaId
 //		}
@@ -29,14 +29,14 @@ import (
 //	return maxAreaId
 //}
 
-//func GetMazeShopInfo(logger fklog.FKLogI, userId uint64, mazeLevel int32, areaId int32) (mazeShopInfo *mazeshopseqredis.MazeShopInfo, err error) {
+//func GetMazeShopInfo(ctx context.Context, userId uint64, mazeLevel int32, areaId int32) (mazeShopInfo *mazeshopseqredis.MazeShopInfo, err error) {
 //	newLevel := GetMazeShopLv(mazeLevel, areaId)
 //	mazeShopInfo, err = mazeshopseqredis.GetMazeShopInfo(logger, userId, newLevel)
 //	if err != nil {
 //		logger.CtxError(ctx,"GetMazeShopInfo error!", zap.Error(err), zap.Any("newLevel", newLevel))
 //		return
 //	}
-//	cfg := GMazeShopV8Cfg.Get(newLevel)
+//	cfg := GMazeShopV8Cfg.GetWithCtx(ctx,newLevel)
 //	if cfg == nil {
 //		logger.CtxError(ctx,"GetMazeShopInfo GMazeShopV8Cfg fail",
 //			zap.Int32("newLevel", newLevel))
@@ -54,7 +54,7 @@ import (
 //	return mazeShopInfo, nil
 //}
 
-//func HandleMazeShopSeqInit(logger fklog.FKLogI, cfg *GMazeShopV8Cfg.MazeShopV8ConfigRow) (mazeShopInfo *mazeshopseqredis.MazeShopInfo, err error) {
+//func HandleMazeShopSeqInit(ctx context.Context, cfg *GMazeShopV8Cfg.MazeShopV8ConfigRow) (mazeShopInfo *mazeshopseqredis.MazeShopInfo, err error) {
 //	mazeShopInfo = &mazeshopseqredis.MazeShopInfo{}
 //	if cfg == nil {
 //		logger.CtxError(ctx,"HandleMazeShopSeqInit GMazeShopV8Cfg err")
@@ -80,7 +80,7 @@ func GetMazeSeqEquipId(ctx context.Context, userId uint64, mazeLevel int32, area
 	logger := fklog.ContextAppLogger(ctx)
 	newLevel := GetMazeShopLv(mazeLevel, areaId)
 	equipMap = make(map[int32]int32)
-	shopCfg := GMazeShopV8Cfg.Get(newLevel)
+	shopCfg := GMazeShopV8Cfg.GetWithCtx(ctx, newLevel)
 	if shopCfg == nil {
 		logger.CtxError(ctx, "GetMazeSeqEquipId GMazeShopV8Cfg fail",
 			zap.Int32("newLevel", newLevel))
@@ -137,9 +137,9 @@ func GetMazeSeqEquipId(ctx context.Context, userId uint64, mazeLevel int32, area
 			mazeShopInfo.TotalCount++
 			equipId = seqCfg.Equip_id[mazeShopInfo.CurSeqIndex-1]
 		}
-		convEquipId, err := ConvEquipId(logger, equipId, assignPos, equipMaxMap, shopCfg.Equip_value_max)
+		convEquipId, err := ConvEquipId(ctx, equipId, assignPos, equipMaxMap, shopCfg.Equip_value_max)
 		if equipId != convEquipId {
-			logger.InfoWF("GetMazeSeqEquipId conv equipId",
+			logger.CtxInfo(ctx, "GetMazeSeqEquipId conv equipId",
 				zap.Int32("equipId", equipId),
 				zap.Int32("convEquipId", convEquipId),
 				zap.Any("assignPos", assignPos),
@@ -155,7 +155,7 @@ func GetMazeSeqEquipId(ctx context.Context, userId uint64, mazeLevel int32, area
 		}
 		equipMap[convEquipId] += 1
 	}
-	logger.InfoWF("GetMazeSeqEquipId end",
+	logger.CtxInfo(ctx, "GetMazeSeqEquipId end",
 		zap.Int32("newLevel", newLevel),
 		zap.Int32("mazeLevel", mazeLevel),
 		zap.Int32("areaId", areaId),
@@ -168,7 +168,7 @@ func GetMazeSeqEquipId(ctx context.Context, userId uint64, mazeLevel int32, area
 	return equipMap, nil
 }
 
-func ConvEquipId(logger fklog.FKLogI, equipId int32, assignPos int32, equipMaxMap, equipValueMax map[int32]int64) (int32, error) {
+func ConvEquipId(ctx context.Context, equipId int32, assignPos int32, equipMaxMap, equipValueMax map[int32]int64) (int32, error) {
 	convEquipId := equipId
 	if assignPos > 0 {
 		if assignPos == 1 {
@@ -203,9 +203,9 @@ func ConvEquipId(logger fklog.FKLogI, equipId int32, assignPos int32, equipMaxMa
 	return convEquipId, nil
 }
 
-func GetEquipMaxMap(logger fklog.FKLogI, userId uint64, mazeLevel int32, areaId int32) (equipMaxMap map[int32]int64, isFull bool, err error) {
+func GetEquipMaxMap(ctx context.Context, userId uint64, mazeLevel int32, areaId int32) (equipMaxMap map[int32]int64, isFull bool, err error) {
 	// newLevel := GetMazeShopLv(mazeLevel, areaId)
-	// shopCfg := GMazeShopV8Cfg.Get(newLevel)
+	// shopCfg := GMazeShopV8Cfg.GetWithCtx(ctx,newLevel)
 	// if shopCfg == nil {
 	// 	logger.CtxError(ctx,"GetMazeSeqEquipId GMazeShopV8Cfg fail",
 	// 		zap.Int32("newLevel", newLevel))
@@ -256,7 +256,7 @@ func GetEquipMaxMap(logger fklog.FKLogI, userId uint64, mazeLevel int32, areaId 
 	// if attrMaxCount >= len(shopCfg.Equip_value_max) {
 	// 	isFull = true
 	// }
-	// logger.InfoWF("GetEquipMaxMap end",
+	// logger.CtxInfo(ctx,"GetEquipMaxMap end",
 	// 	zap.Int32("newLevel", newLevel),
 	// 	zap.Int32("mazeLevel", mazeLevel),
 	// 	zap.Int32("areaId", areaId),
@@ -267,7 +267,7 @@ func GetEquipMaxMap(logger fklog.FKLogI, userId uint64, mazeLevel int32, areaId 
 }
 
 func GetMazeShopLv(level int32, areaId int32) int32 {
-	// cfg := GMazeShopAreaV8Cfg.Get(areaId)
+	// cfg := GMazeShopAreaV8Cfg.GetWithCtx(ctx,areaId)
 	// if cfg == nil{
 	// 	return level
 	// }

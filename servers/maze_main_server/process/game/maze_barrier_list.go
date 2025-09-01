@@ -17,10 +17,10 @@ func (g *Game) OnMazeBarrierListRQ_10457_10458(s *session.Session, req *MazeGame
 	logger := log.Clone("Game", uint64(s.UID()), 0)
 	res := &MazeGame.MazeBarrierListRS{}
 
-	logger.InfoWF("OnMazeBarrierListRQ start", zap.Any("req", req))
+	logger.CtxInfo(ctx, "OnMazeBarrierListRQ start", zap.Any("req", req))
 	defer func() {
 		err = s.Response(res)
-		logger.InfoWF("OnMazeBarrierListRQ end", zap.Any("res", res))
+		logger.CtxInfo(ctx, "OnMazeBarrierListRQ end", zap.Any("res", res))
 	}()
 
 	res.Header = req.Header

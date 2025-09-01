@@ -2,8 +2,9 @@ package mazeconfigv8config
 
 import (
 	"context"
-	"gitlab.ifreetalk.com/maze-plate/freetk/fkserver/config_manager"
 	"maze_game_server/config/GMazeConfigV8Cfg"
+
+	"gitlab.ifreetalk.com/maze-plate/freetk/fkserver/config_manager"
 )
 
 /**
@@ -12,8 +13,8 @@ import (
  * @Description:
  */
 
-func GetMazeConfig(configId int32) map[int32]int64 {
-	row := GMazeConfigV8Cfg.Get(configId)
+func GetMazeConfig(ctx context.Context, configId int32) map[int32]int64 {
+	row := GMazeConfigV8Cfg.GetWithCtx(ctx, configId)
 	if row == nil {
 		return nil
 	}
@@ -22,7 +23,7 @@ func GetMazeConfig(configId int32) map[int32]int64 {
 }
 
 func GetBuffSelectCount() int64 {
-	//config := GMazeConfigV8Cfg.Get(999)
+	//config := GMazeConfigV8Cfg.GetWithCtx(ctx,999)
 	//if config == nil {
 	//	return 3
 	//}

@@ -24,62 +24,67 @@ func init() {
 	RoomServer = frame_model.NewServer()
 }
 
-func checkGameTick(logger fklog.FKLogI, gameTick int32) error {
+func checkGameTick(ctx context.Context, gameTick int32) error {
+	logger := fklog.ContextAppLogger(ctx)
 	// 最低帧数限制
 	if gameTick < int32(GameTickMin) {
-		logger.ErrorWF("checkGameTick gameTick invalid", zap.Int32("gameTick", gameTick))
+		logger.CtxError(ctx, "checkGameTick gameTick invalid", zap.Int32("gameTick", gameTick))
 		return errors.New("game tick invalid")
 	}
 	return nil
 }
 
-func getRoomById(logger fklog.FKLogI, roomId string) (room *frame_model.Room, err error) {
+func getRoomById(ctx context.Context, roomId string) (room *frame_model.Room, err error) {
+	logger := fklog.ContextAppLogger(ctx)
 	if len(RoomServer.Rooms) == 0 {
-		logger.ErrorWF("getRoomById RoomServer.Rooms is nil")
+		logger.CtxError(ctx, "getRoomById RoomServer.Rooms is nil")
 		return nil, errors.New("room not found")
 	}
 
 	room, ok := RoomServer.Rooms[roomId]
 	if !ok {
-		logger.ErrorWF("getRoomById roomId invalid", zap.String("roomId", roomId))
+		logger.CtxError(ctx, "getRoomById roomId invalid", zap.String("roomId", roomId))
 		return nil, errors.New("room not found")
 	}
 	return room, nil
 }
 
-func GetRoomByPlayerId(logger fklog.FKLogI, userId uint64) (room *frame_model.Room, err error) {
+func GetRoomByPlayerId(ctx context.Context, userId uint64) (room *frame_model.Room, err error) {
+	logger := fklog.ContextAppLogger(ctx)
 	roomId, ok := RoomServer.PlayerRoom[userId]
 	if !ok {
-		logger.ErrorWF("GetRoomByPlayerId userId invalid", zap.Uint64("userId", userId))
+		logger.CtxError(ctx, "GetRoomByPlayerId userId invalid", zap.Uint64("userId", userId))
 		return nil, errors.New("roomId not found")
 	}
 	room, ok = RoomServer.Rooms[roomId]
 	if !ok {
-		logger.ErrorWF("GetRoomByPlayerId roomId invalid", zap.String("roomId", roomId))
+		logger.CtxError(ctx, "GetRoomByPlayerId roomId invalid", zap.String("roomId", roomId))
 		return nil, errors.New("room not found")
 	}
 	return room, nil
 }
 
-func getRoomPlayer(logger fklog.FKLogI, room *frame_model.Room, userId uint64) (player *frame_model.Player, err error) {
+func getRoomPlayer(ctx context.Context, room *frame_model.Room, userId uint64) (player *frame_model.Player, err error) {
+	logger := fklog.ContextAppLogger(ctx)
 	player, ok := room.MemberMap[userId]
 	if !ok {
-		logger.ErrorWF("getRoomPlayer userId invalid", zap.Uint64("userId", userId))
+		logger.CtxError(ctx, "getRoomPlayer userId invalid", zap.Uint64("userId", userId))
 		return nil, errors.New("player not found in room")
 	}
 	return player, nil
 }
 
-func WritePump(logger fklog.FKLogI, userId uint64, message string) error {
-	room, err := GetRoomByPlayerId(logger, userId)
+func WritePump(ctx context.Context, userId uint64, message string) error {
+	logger := fklog.ContextAppLogger(ctx)
+	room, err := GetRoomByPlayerId(ctx, userId)
 	if err != nil {
-		logger.ErrorWF("WritePump GetRoomByPlayerId failed", zap.Error(err))
+		logger.CtxError(ctx, "WritePump GetRoomByPlayerId failed", zap.Error(err))
 		return errors.New("room not found")
 	}
 
-	player, err := getRoomPlayer(logger, room, userId)
+	player, err := getRoomPlayer(ctx, room, userId)
 	if err != nil {
-		logger.ErrorWF("WritePump getRoomPlayer failed", zap.Error(err))
+		logger.CtxError(ctx, "WritePump getRoomPlayer failed", zap.Error(err))
 		return errors.New("player not found in room")
 	}
 
@@ -97,94 +102,98 @@ func addPump(p *frame_model.Player, room *frame_model.Room, message string) {
 }
 
 // 获取或创建房间
-func CreateRoom(logger fklog.FKLogI, userId uint64, userIdList []uint64, gameTick, startPercent, gameLastTime, udpReliabilityStrategy int32, roomExtInfo string, needSeed bool) (room *frame_model.Room, err error) {
-	err = checkGameTick(logger, gameTick)
+func CreateRoom(ctx context.Context, userId uint64, userIdList []uint64, gameTick, startPercent, gameLastTime, udpReliabilityStrategy int32, roomExtInfo string, needSeed bool) (room *frame_model.Room, err error) {
+	logger := fklog.ContextAppLogger(ctx)
+	err = checkGameTick(ctx, gameTick)
 	if err != nil {
-		logger.ErrorWF("CreateRoom checkGameTick failed", zap.Error(err))
+		logger.CtxError(ctx, "CreateRoom checkGameTick failed", zap.Error(err))
 		return nil, err
 	}
-	room, err = GetRoomByPlayerId(logger, userId)
+	room, err = GetRoomByPlayerId(ctx, userId)
 	if err != nil {
-		logger.ErrorWF("CreateRoom getRoomByPlayerId failed", zap.Error(err))
+		logger.CtxError(ctx, "CreateRoom getRoomByPlayerId failed", zap.Error(err))
 		return nil, err
 	}
 
 	RoomServer.Mutex.Lock()
 	defer RoomServer.Mutex.Unlock()
-	room = frame_model.NewRoomInfo(logger, userIdList, gameTick, startPercent, gameLastTime, udpReliabilityStrategy, roomExtInfo, needSeed)
+	room = frame_model.NewRoomInfo(ctx, userIdList, gameTick, startPercent, gameLastTime, udpReliabilityStrategy, roomExtInfo, needSeed)
 	RoomServer.Rooms[room.RoomIdStr] = room
-	addRoomMember(logger, room, userId, userIdList)
+	addRoomMember(ctx, room, userId, userIdList)
 	return room, nil
 }
 
-func addRoomMember(logger fklog.FKLogI, room *frame_model.Room, userId uint64, userIdList []uint64) {
-	master := frame_model.NewPlayer(logger, userId, frame_model.ROLE_MASTER)
-	addPlayer(logger, room, master)
+func addRoomMember(ctx context.Context, room *frame_model.Room, userId uint64, userIdList []uint64) {
+	master := frame_model.NewPlayer(ctx, userId, frame_model.ROLE_MASTER)
+	addPlayer(ctx, room, master)
 	for i := 0; i < len(userIdList); i++ {
-		player := frame_model.NewPlayer(logger, userIdList[i], frame_model.ROLE_COMMON)
-		addPlayer(logger, room, player)
+		player := frame_model.NewPlayer(ctx, userIdList[i], frame_model.ROLE_COMMON)
+		addPlayer(ctx, room, player)
 	}
 }
 
-func JoinRoom(logger fklog.FKLogI, userId uint64, roomId string) (err error) {
-	room, err := getRoomById(logger, roomId)
+func JoinRoom(ctx context.Context, userId uint64, roomId string) (err error) {
+	logger := fklog.ContextAppLogger(ctx)
+	room, err := getRoomById(ctx, roomId)
 	if err != nil {
-		logger.ErrorWF("JoinRoom getRoomById failed", zap.Uint64("userId", userId), zap.String("roomId", roomId))
+		logger.CtxError(ctx, "JoinRoom getRoomById failed", zap.Uint64("userId", userId), zap.String("roomId", roomId))
 		return errors.New("room not found")
 	}
-	player, _ := getRoomPlayer(logger, room, userId)
+	player, _ := getRoomPlayer(ctx, room, userId)
 	if player != nil {
-		logger.ErrorWF("JoinRoom getRoomPlayer already join room", zap.Uint64("userId", userId))
+		logger.CtxError(ctx, "JoinRoom getRoomPlayer already join room", zap.Uint64("userId", userId))
 		return errors.New("already join room")
 	}
 
-	player = frame_model.NewPlayer(logger, userId, frame_model.ROLE_COMMON)
-	addPlayer(logger, room, player)
+	player = frame_model.NewPlayer(ctx, userId, frame_model.ROLE_COMMON)
+	addPlayer(ctx, room, player)
 	return nil
 }
 
 // 添加玩家到房间
-func addPlayer(logger fklog.FKLogI, r *frame_model.Room, player *frame_model.Player) {
+func addPlayer(ctx context.Context, r *frame_model.Room, player *frame_model.Player) {
 	r.Mutex.Lock()
 	defer r.Mutex.Unlock()
-
+	logger := fklog.ContextAppLogger(ctx)
 	r.MemberMap[player.ID] = player
-	logger.InfoWF("player %s addPlayer in room %s", zap.Uint64("playerId", player.ID), zap.String("roomId", r.RoomIdStr))
+	logger.CtxInfo(ctx, "player %s addPlayer in room %s", zap.Uint64("playerId", player.ID), zap.String("roomId", r.RoomIdStr))
 	// 如果是第一个玩家，启动房间
 	if len(r.MemberMap) == 1 && !r.Running {
-		start(logger, r)
+		start(ctx, r)
 	}
 }
 
-func ExistRoom(logger fklog.FKLogI, userId uint64) (err error) {
-	room, err := GetRoomByPlayerId(logger, userId)
+func ExistRoom(ctx context.Context, userId uint64) (err error) {
+	logger := fklog.ContextAppLogger(ctx)
+	room, err := GetRoomByPlayerId(ctx, userId)
 	if err != nil {
-		logger.ErrorWF("ExistRoom GetRoomByPlayerId failed", zap.Uint64("userId", userId))
+		logger.CtxError(ctx, "ExistRoom GetRoomByPlayerId failed", zap.Uint64("userId", userId))
 		return errors.New("already exist room")
 	}
 
-	_, err = getRoomPlayer(logger, room, userId)
+	_, err = getRoomPlayer(ctx, room, userId)
 	if err != nil {
-		logger.ErrorWF("ExistRoom getRoomPlayer failed", zap.Uint64("userId", userId))
+		logger.CtxError(ctx, "ExistRoom getRoomPlayer failed", zap.Uint64("userId", userId))
 		return errors.New("already exist room")
 	}
 
-	removePlayer(logger, room, userId)
+	removePlayer(ctx, room, userId)
 	return nil
 }
 
 // 从房间移除玩家
-func removePlayer(logger fklog.FKLogI, r *frame_model.Room, playerID uint64) {
+func removePlayer(ctx context.Context, r *frame_model.Room, playerID uint64) {
 	r.Mutex.Lock()
 	defer r.Mutex.Unlock()
 
+	logger := fklog.ContextAppLogger(ctx)
 	if _, exists := r.MemberMap[playerID]; exists {
 		delete(r.MemberMap, playerID)
 		delete(r.InputQueue, playerID) // 是否保留之前的同步信息，先按照不保留
-		logger.InfoWF("player %s removePlayer in room %s", zap.Uint64("playerId", playerID), zap.String("roomId", r.RoomIdStr))
+		logger.CtxInfo(ctx, "player %s removePlayer in room %s", zap.Uint64("playerId", playerID), zap.String("roomId", r.RoomIdStr))
 		// 如果房间空了，停止房间
 		if len(r.MemberMap) == 0 && r.Running {
-			stop(logger, r)
+			stop(ctx, r)
 		}
 	}
 }
@@ -204,7 +213,8 @@ func addInputs(r *frame_model.Room, playerID uint64, inputs []frame_model.Input)
 }
 
 // 启动房间
-func start(logger fklog.FKLogI, r *frame_model.Room) {
+func start(ctx context.Context, r *frame_model.Room) {
+	logger := fklog.ContextAppLogger(ctx)
 	if r.Running {
 		return
 	}
@@ -212,14 +222,14 @@ func start(logger fklog.FKLogI, r *frame_model.Room) {
 	r.Ticker = time.NewTicker(time.Duration(1000/r.GameTick) * time.Millisecond)
 	go func() {
 		for range r.Ticker.C {
-			updateFrame(logger, r)
+			updateFrame(ctx, r)
 		}
 	}()
-	logger.InfoWF("room %s start success, tick: %d FPS", zap.String("roomId", r.RoomIdStr), zap.Any("tick", r.GameTick))
+	logger.CtxInfo(ctx, "room %s start success, tick: %d FPS", zap.String("roomId", r.RoomIdStr), zap.Any("tick", r.GameTick))
 }
 
 // 停止房间
-func stop(logger fklog.FKLogI, r *frame_model.Room) {
+func stop(ctx context.Context, r *frame_model.Room) {
 	if !r.Running {
 		return
 	}
@@ -227,11 +237,12 @@ func stop(logger fklog.FKLogI, r *frame_model.Room) {
 	if r.Ticker != nil {
 		r.Ticker.Stop()
 	}
-	logger.InfoWF("room %s stop success", zap.String("roomId", r.RoomIdStr))
+	logger := fklog.ContextAppLogger(ctx)
+	logger.CtxInfo(ctx, "room %s stop success", zap.String("roomId", r.RoomIdStr))
 }
 
 // 更新帧
-func updateFrame(logger fklog.FKLogI, r *frame_model.Room) {
+func updateFrame(ctx context.Context, r *frame_model.Room) {
 	r.Mutex.Lock()
 	defer r.Mutex.Unlock()
 
@@ -271,21 +282,22 @@ func updateFrame(logger fklog.FKLogI, r *frame_model.Room) {
 	}
 }
 
-func GetFrame(logger fklog.FKLogI, userId uint64, beginId, endId int32) (frameDataList []*frame_model.FrameData, hasMore bool, err error) {
-	room, err := GetRoomByPlayerId(logger, userId)
+func GetFrame(ctx context.Context, userId uint64, beginId, endId int32) (frameDataList []*frame_model.FrameData, hasMore bool, err error) {
+	logger := fklog.ContextAppLogger(ctx)
+	room, err := GetRoomByPlayerId(ctx, userId)
 	if err != nil {
-		logger.ErrorWF("GetFrame getRoomByPlayerId invalid", zap.Error(err))
+		logger.CtxError(ctx, "GetFrame getRoomByPlayerId invalid", zap.Error(err))
 		return nil, false, errors.New("no found room")
 	}
 
 	queue := room.InputQueue
 	if len(queue) == 0 {
-		logger.ErrorWF("GetFrame no input queue in room", zap.Error(err))
+		logger.CtxError(ctx, "GetFrame no input queue in room", zap.Error(err))
 		return nil, false, errors.New("no input queue in room")
 	}
 
 	if endId > int32(room.CurrentFrame) {
-		logger.ErrorWF("GetFrame endId out of range", zap.Error(err))
+		logger.CtxError(ctx, "GetFrame endId out of range", zap.Error(err))
 		return nil, false, errors.New("endId out of range")
 	}
 
@@ -295,7 +307,7 @@ func GetFrame(logger fklog.FKLogI, userId uint64, beginId, endId int32) (frameDa
 
 	list := room.FrameDataList[beginId:endId]
 	if len(list) == 0 {
-		logger.ErrorWF("GetFrame is nil", zap.Error(err))
+		logger.CtxError(ctx, "GetFrame is nil", zap.Error(err))
 		return nil, false, errors.New("getFrame is nil")
 	}
 

@@ -116,7 +116,7 @@ func (mgr *RoomManager) Join(s *session.Session, msg []byte) error {
 	fakeUID := s.ID() //just use s.ID as uid !!!
 	s.Bind(fakeUID)   // binding session uids.Set(roomIDKey, room)
 	s.Set(roomIDKey, room)
-	s.Push("onMembers", &AllMembers{Members: room.group.Members()})
+	s.Push(s.Context(), "onMembers", &AllMembers{Members: room.group.Members()})
 	// notify others
 	room.group.Broadcast("onNewUser", &NewUser{Content: fmt.Sprintf("New user: %d", s.ID())})
 	// new user join group

@@ -56,7 +56,7 @@ func (g *Game) OnMazeBarrierPassRQ_10459_10460(s *session.Session, req *MazeGame
 		return
 	}
 	//if req.GetFoeExp() < 0 {
-	//	logger.ErrorWF("OnMazeBarrierPassRQ req barrier invalid", zap.Any("req", req))
+	//	logger.CtxError(ctx,"OnMazeBarrierPassRQ req barrier invalid", zap.Any("req", req))
 	//	res.ErrInfo = errors.COMMON_ERROR_TIPS.Wrap("经验参数错误")
 	//	return
 	//}
@@ -72,13 +72,13 @@ func (g *Game) OnMazeBarrierPassRQ_10459_10460(s *session.Session, req *MazeGame
 		res.BarrierRareAward = rareAwards
 	}
 
-	err = mazebarriereventredis.LeaveBarrier(logger, userId, req.GetBarrierId(), true)
+	err = mazebarriereventredis.LeaveBarrier(ctx, userId, req.GetBarrierId(), true)
 	if err != nil {
 		logger.CtxError(ctx, "OnMazeBarrierPassRQ LeaveBarrier fail", zap.Error(err))
 	}
 
 	// 触发离开关卡事件
-	events.OnLeaveBarrier(logger, userId, 0, time.Now().UnixMilli(), &MazeGame.BattleEventLeaveBarrier{BarrierId: proto.Int32(req.GetBarrierId()), Result: MazeGame.BarrierResult_PASS.Enum()})
+	events.OnLeaveBarrier(ctx, userId, 0, time.Now().UnixMilli(), &MazeGame.BattleEventLeaveBarrier{BarrierId: proto.Int32(req.GetBarrierId()), Result: MazeGame.BarrierResult_PASS.Enum()})
 
 	// 清除关卡的临时数据
 	ClearBarriersTempData(ctx, userId, req.GetBarrierId())
@@ -89,7 +89,7 @@ func (g *Game) OnMazeBarrierPassRQ_10459_10460(s *session.Session, req *MazeGame
 		UserId:         userId,
 		Barrier:        req.GetBarrierId(),
 		GameRet:        mazebarrieruserkafka.GameRetSucc,
-		Awards:         getAwards(logger, awards, rareAwards),
+		Awards:         getAwards(ctx, awards, rareAwards),
 		KillMonsterNum: int64(killMonsterNum),
 	}
 
@@ -98,7 +98,7 @@ func (g *Game) OnMazeBarrierPassRQ_10459_10460(s *session.Session, req *MazeGame
 	return nil
 }
 
-func getAwards(logger fklog.FKLogI, awards ...[]*MazeCommon.MazeItem) string {
+func getAwards(ctx context.Context, awards ...[]*MazeCommon.MazeItem) string {
 	awardStr := make([]string, 0)
 	for _, award := range awards {
 		for _, v := range award {
@@ -110,7 +110,7 @@ func getAwards(logger fklog.FKLogI, awards ...[]*MazeCommon.MazeItem) string {
 
 // 清除关卡的临时数据
 func ClearBarriersTempData(ctx context.Context, userId uint64, barrierId int32) {
-	logger := fklog.ContextAppLogger(ctx)
+	// logger := fklog.ContextAppLogger(ctx)
 	// 删除关卡存档
 	syncmazestorageinforedis.DelSyncMazeStorageInfo(userId, barrierId)
 	// 清理关卡操作状态
@@ -126,7 +126,7 @@ func ClearBarriersTempData(ctx context.Context, userId uint64, barrierId int32) 
 	//删除关卡计数
 	barrierstagecounterservice.GlobalBarrierStageCounterService.DelBarrierStageCounterOnPass(ctx, userId, barrierId)
 
-	mazebuffinforedis.DelMazeBuffBySrc(logger, userId, constdef.MazeBuffSrcSelectBuffForce)
+	mazebuffinforedis.DelMazeBuffBySrc(ctx, userId, constdef.MazeBuffSrcSelectBuffForce)
 	// 推送属性计算消息
 	calcAttrNotify := &structsdef.MazeCalcAttrNotifyMsg{
 		UserId:  userId,

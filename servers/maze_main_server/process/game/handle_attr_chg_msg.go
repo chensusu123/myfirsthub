@@ -24,7 +24,7 @@ func HandleUserAttrMsg(ctx context.Context, msg *structsdef.DollAttrChgNotify) {
 	// msg := &structsdef.DollAttrChgNotify{}
 	// err = json.Unmarshal(data, msg)
 	// if err != nil {
-	// 	logger.ErrorWF("HandleUserAttrMsg Unmarshal", zap.Error(err),
+	// 	logger.CtxError(ctx,"HandleUserAttrMsg Unmarshal", zap.Error(err),
 	// 		zap.Int("msg's len", len(data)), zap.Uint64("userId", msg.UserId))
 	// 	return
 	// }
@@ -174,7 +174,7 @@ func handleMazeBattleNotify(ctx context.Context, userId uint64, msg *structsdef.
 		if userInfo.Barrier > 0 { // 关卡ID为空时不推，可能还未进过关卡
 			mazeBattleInfo, err := GetMazeBattleData(ctx, userId, userInfo.Barrier)
 			if err != nil {
-				logger.ErrorWF("handleMazeBattleNotify GetMazeBattleData fail", zap.Error(err))
+				logger.CtxError(ctx, "handleMazeBattleNotify GetMazeBattleData fail", zap.Error(err))
 				return
 			}
 			SendMazeBarrierChgPack(ctx, userId, mazeBattleInfo)

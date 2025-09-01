@@ -2,13 +2,14 @@ package barrierstagecounterservice
 
 import (
 	"context"
-	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fklog"
-	"go.uber.org/zap"
 	"maze_game_server/config/GMazeBarriesV8Cfg"
 	"maze_game_server/config/GMazeBrushFoeV8Cfg"
 	"maze_game_server/config/GMazeFoeV8Cfg"
 	"maze_game_server/excel/dollmappuzzlenewcfgex"
 	"maze_game_server/model/barrierstagecountermodel"
+
+	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fklog"
+	"go.uber.org/zap"
 )
 
 func (s service) GetBarrierStageCounter(ctx context.Context, userId uint64, barrierId int32) (killMonsterNum int32, totalDamage, totalExp int64, guidList []int64, err error) {
@@ -132,7 +133,7 @@ func (s service) AddDamage(ctx context.Context, userId uint64, barrierId, stageI
 
 	err = recordModel.Save(ctx, userId, barrierId)
 	if err != nil {
-		logger.ErrorWF("AddDamage Save fail", zap.Error(err))
+		logger.CtxError(ctx, "AddDamage Save fail", zap.Error(err))
 		return damage, err
 	}
 
@@ -249,7 +250,7 @@ func isPassBarrierArea(stageId int32, passArea []*dollmappuzzlenewcfgex.AreaInfo
 
 func getMonsterExp(ctx context.Context, monsterId int32) int64 {
 	logger := fklog.ContextAppLogger(ctx)
-	foeCfg := GMazeFoeV8Cfg.Get(monsterId)
+	foeCfg := GMazeFoeV8Cfg.GetWithCtx(ctx, monsterId)
 	if foeCfg == nil {
 		logger.CtxError(ctx, "getMonsterExp get foe cfg fail", zap.Any("foeId", monsterId))
 		return 0
@@ -259,7 +260,7 @@ func getMonsterExp(ctx context.Context, monsterId int32) int64 {
 
 func getBarrierMonsterNum(ctx context.Context, barrierId int32) (totalMonsterNum int32, totalExpNum int64) {
 	logger := fklog.ContextAppLogger(ctx)
-	barrierCfg := GMazeBarriesV8Cfg.Get(barrierId)
+	barrierCfg := GMazeBarriesV8Cfg.GetWithCtx(ctx, barrierId)
 	if barrierCfg == nil {
 		logger.CtxError(ctx, "getBarrierMonsterNum get barrier cfg fail", zap.Any("barrierId", barrierId))
 		return 0, 0

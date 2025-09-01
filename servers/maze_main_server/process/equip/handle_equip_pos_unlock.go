@@ -46,7 +46,7 @@ type UnlockLogic struct {
 func ChkEquipPosUnlock(ctx context.Context, userId uint64, src string, needNotify bool) error {
 	logger := fklog.ContextAppLogger(ctx)
 	allEquipPos := GMazeEquipPosRankV8Cfg.GetAll()
-	equipList, err := dollassembleredis.GetDollEquipPosInfo(logger, userId, len(allEquipPos))
+	equipList, err := dollassembleredis.GetDollEquipPosInfo(ctx, userId, len(allEquipPos))
 	if err != nil {
 		logger.CtxError(ctx, "ChkEquipPosUnlock get pos info fal", zap.Error(err), zap.String("src", src))
 		return err
@@ -120,7 +120,7 @@ func ChkEquipPosUnlock(ctx context.Context, userId uint64, src string, needNotif
 		logger.CtxInfo(ctx, "ChkEquipPosUnlock no unlock pos", zap.String("src", src), zap.Any("unLockLogicList", unLockLogicList))
 		return nil
 	}
-	err = dollassembleredis.SetDollEquipPosInfo(logger, userId, unLockPosList)
+	err = dollassembleredis.SetDollEquipPosInfo(ctx, userId, unLockPosList)
 	if err != nil {
 		logger.CtxError(ctx, "ChkEquipPosUnlock unlock fal", zap.Error(err), zap.String("src", src), zap.Any("unLockLogicList", unLockLogicList))
 	} else {
@@ -128,7 +128,7 @@ func ChkEquipPosUnlock(ctx context.Context, userId uint64, src string, needNotif
 			zap.Bool("needNotify", needNotify))
 	}
 	if needNotify {
-		assembleidpack.SendAssembleChgID(logger, userId, assembleInfo,
+		assembleidpack.SendAssembleChgID(ctx, userId, assembleInfo,
 			int32(MazeGameEquip.ENUM_MAZE_ASSEMBLE_CHG_TYPE_MASK_EQUIP_POS_MASK), int32(-1), constdef.DollAssembleChgTypeEquipPosUnlock)
 	}
 

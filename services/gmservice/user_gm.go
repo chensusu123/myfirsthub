@@ -194,7 +194,7 @@ func (s *service) Attrs(writer http.ResponseWriter, request *http.Request) {
 
 	fmt.Fprintf(writer, "----------------用户属性列表----------------\n")
 	for _, attr := range attrs {
-		attrCfg := GMazeAttributeV8Cfg.Get(attr.AttrID)
+		attrCfg := GMazeAttributeV8Cfg.GetWithCtx(ctx, attr.AttrID)
 		if attrCfg != nil {
 			switch attrCfg.Figure {
 			case 1:
@@ -250,7 +250,7 @@ func (s *service) LookAssembleInfo(writer http.ResponseWriter, request *http.Req
 	logger.SetUid(userId)
 	logger.CtxInfo(ctx, "LookAssembleInfo begin")
 
-	assembleInfo, effect, err := dollassembleinfo.GetDollAssembleInfoEx(logger, userId)
+	assembleInfo, effect, err := dollassembleinfo.GetDollAssembleInfoEx(ctx, userId)
 	if err != nil {
 		logger.CtxError(ctx, "LookAssembleInfo Get Assemble info fail", zap.Error(err))
 		writer.Write([]byte(err.Error()))
@@ -275,7 +275,7 @@ func (s *service) LookAssembleInfo(writer http.ResponseWriter, request *http.Req
 	}
 	showBuff.WriteString(EndLine)
 	showBuff.WriteString(fmt.Sprintf("装备套装:%d\n", assembleInfo.GetEpSuitId()))
-	suitBuff, e := equipaassemblegm.PackEquipSuitInfo(logger, userId, assembleInfo, effect)
+	suitBuff, e := equipaassemblegm.PackEquipSuitInfo(ctx, userId, assembleInfo, effect)
 	if e == nil {
 		// 汇总套装属性加成
 		showBuff.WriteString(suitBuff)
@@ -298,7 +298,7 @@ func (s *service) LookAssembleInfo(writer http.ResponseWriter, request *http.Req
 	// showBuff.WriteString(ar)
 	// showBuff.WriteString(EndLine)
 
-	ar, err = equipaassemblegm.DumpNoForceAttr(logger, userId)
+	ar, err = equipaassemblegm.DumpNoForceAttr(ctx, userId)
 	if err != nil {
 		writer.Write([]byte(err.Error()))
 		return

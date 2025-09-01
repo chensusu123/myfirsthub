@@ -20,11 +20,11 @@ func ClearDollAssembleInfo(ctx context.Context, userId uint64) error {
 	var step int
 	var e error
 	defer func() {
-		logger.InfoWF("ClearDollAssembleInfo result", zap.Error(e),
+		logger.CtxInfo(ctx, "ClearDollAssembleInfo result", zap.Error(e),
 			zap.Int("step", step), zap.Uint64("uid", userId))
 	}()
 
-	e = dollassemblesuitredis.DelEquipSuitInfo(logger, userId)
+	e = dollassemblesuitredis.DelEquipSuitInfo(ctx, userId)
 	if e != nil {
 		return e
 	}
@@ -36,13 +36,13 @@ func ClearDollAssembleInfo(ctx context.Context, userId uint64) error {
 	for i := 1; i <= constdef.EquipPosNum; i++ {
 		delList = append(delList, assemble.EnCodeAssemblePosField(int32(i)))
 	}
-	e = dollassembleredis.BatchDelAssmebleInfo(logger, userId, delList...)
+	e = dollassembleredis.BatchDelAssmebleInfo(ctx, userId, delList...)
 	if e != nil {
 		return e
 	}
 	step = 2
 
-	e = mazebuffinforedis.DelMazeBuffBySrc(logger, userId, constdef.MazeBuffSrcEquip)
+	e = mazebuffinforedis.DelMazeBuffBySrc(ctx, userId, constdef.MazeBuffSrcEquip)
 	if e == nil {
 		step = 4
 		calcAttrNotify := &structsdef.MazeCalcAttrNotifyMsg{}
@@ -54,7 +54,7 @@ func ClearDollAssembleInfo(ctx context.Context, userId uint64) error {
 		mazeattrcalcnotifyqueue.SendMazeAttrCalcNotify(ctx, calcAttrNotify)
 	}
 
-	e = mazebuffinforedis.DelMazeBuffBySrc(logger, userId, constdef.MazeBuffSrcEquipPos)
+	e = mazebuffinforedis.DelMazeBuffBySrc(ctx, userId, constdef.MazeBuffSrcEquipPos)
 	if e == nil {
 		step = 5
 		calcAttrNotify := &structsdef.MazeCalcAttrNotifyMsg{}

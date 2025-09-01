@@ -1,16 +1,15 @@
 package gmservice
 
 import (
+	"context"
 	"maze_game_server/model/gmmodel"
 	"net/http"
-
-	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fklog"
 )
 
 type gmService interface {
 	// 注册gm接口
-	SafeGETRegister(logger fklog.FKLogI, pattern string, handler func(http.ResponseWriter, *http.Request))
-	SafePOSTRegister(logger fklog.FKLogI, pattern string, handler func(http.ResponseWriter, *http.Request))
+	SafeGETRegister(ctx context.Context, pattern string, handler func(http.ResponseWriter, *http.Request))
+	SafePOSTRegister(ctx context.Context, pattern string, handler func(http.ResponseWriter, *http.Request))
 
 	// buffGM
 	//	-- 设置临时buff
@@ -55,7 +54,7 @@ type gmService interface {
 	convertTableToJSON(table [][]string) gmmodel.Output
 
 	// 统一注册http接口
-	RegHttp(logger fklog.FKLogI)
+	RegHttp(ctx context.Context)
 }
 
 var GmService gmService

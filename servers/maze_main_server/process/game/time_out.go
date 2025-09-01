@@ -1,13 +1,13 @@
 package game
 
 import (
+	"context"
 	"fmt"
 	"strings"
 
 	"maze_game_server/common/errors"
 
 	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fkconfig/param"
-	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fklog"
 	"gitlab.ifreetalk.com/maze-plate/freetk/fkutil"
 )
 
@@ -41,8 +41,8 @@ func (dmp *DollMazeProduceMsg) Unmarshal(data []byte) (err error) {
 	return
 }
 
-// func SetTimer(logger fklog.FKLogI, uid uint64, expireTime int64, barrierId, areaId int32) (err error) {
-// 	logger.WarnWF("setTimer with", zap.Uint64("uid", uid), zap.Int32("barrierId", barrierId), zap.Int64("expireTime", expireTime))
+// func SetTimer(ctx context.Context, uid uint64, expireTime int64, barrierId, areaId int32) (err error) {
+// 	logger.CtxWarn(ctx,"setTimer with", zap.Uint64("uid", uid), zap.Int32("barrierId", barrierId), zap.Int64("expireTime", expireTime))
 
 // 	msg := &DollMazeProduceMsg{
 // 		UserId:  uid,
@@ -53,29 +53,29 @@ func (dmp *DollMazeProduceMsg) Unmarshal(data []byte) (err error) {
 // 	jsonData := msg.Marshal()
 // 	err = settimer.SetTaskExpire(context.TODO(), logger, uid, 233, expireTime, jsonData)
 // 	if err != nil {
-// 		logger.ErrorWF("setTimer push to delay task queue fail", zap.Error(err), zap.Int64("expireTime", expireTime),
+// 		logger.CtxError(ctx,"setTimer push to delay task queue fail", zap.Error(err), zap.Int64("expireTime", expireTime),
 // 			zap.Any("taskInfo", jsonData), zap.Any("jsonData", jsonData))
 // 	} else {
-// 		logger.WarnWF("setTimer push to delay task queue succ", zap.Int64("expireTime", expireTime),
+// 		logger.CtxWarn(ctx,"setTimer push to delay task queue succ", zap.Int64("expireTime", expireTime),
 // 			zap.Any("taskInfo", jsonData), zap.Any("jsonData", jsonData))
 // 	}
 // 	return
 // }
 
-// func RmTimer(logger fklog.FKLogI, uid uint64, barrierId, areaId int32) (err error) {
+// func RmTimer(ctx context.Context, uid uint64, barrierId, areaId int32) (err error) {
 // 	msg := &DollMazeProduceMsg{
 // 		UserId:  uid,
 // 		Barrier: barrierId,
 // 		AreaId:  areaId,
 // 	}
 // 	validTime := int64(0)
-// 	logger.WarnWF("RmTimer start with", zap.Uint64("uid", uid))
+// 	logger.CtxWarn(ctx,"RmTimer start with", zap.Uint64("uid", uid))
 // 	jsonData := msg.Marshal()
 // 	err = settimer.RemoveTaskTimer(logger, uid, 233, validTime, jsonData)
 // 	if err != nil {
-// 		logger.ErrorWF("RmTimer push to delay task queue fail", zap.Error(err), zap.Int64("validTime", validTime), zap.Any("taskInfo", jsonData), zap.Any("jsonData", jsonData))
+// 		logger.CtxError(ctx,"RmTimer push to delay task queue fail", zap.Error(err), zap.Int64("validTime", validTime), zap.Any("taskInfo", jsonData), zap.Any("jsonData", jsonData))
 // 	} else {
-// 		logger.WarnWF("RmTimer push to delay task queue succ", zap.Int64("validTime", validTime), zap.Any("taskInfo", jsonData), zap.Any("jsonData", jsonData))
+// 		logger.CtxWarn(ctx,"RmTimer push to delay task queue succ", zap.Int64("validTime", validTime), zap.Any("taskInfo", jsonData), zap.Any("jsonData", jsonData))
 // 	}
 // 	return
 // }
@@ -123,14 +123,14 @@ func (dmp *DollMazeProduceMsg) Unmarshal(data []byte) (err error) {
 // 	return nil
 // }
 
-func DollMazeProduceCallBack(logger fklog.FKLogI, bs []byte) (err error) {
+func DollMazeProduceCallBack(ctx context.Context, bs []byte) (err error) {
 	// defer fkprometheus.InfoPMT("DollMazeProduceCallBack")()
-	// logger.InfoWF("DollMazeProduceCallBack start", zap.Any("bs", bs))
+	// logger.CtxInfo(ctx,"DollMazeProduceCallBack start", zap.Any("bs", bs))
 
 	// msg := &DollMazeProduceMsg{}
 	// err = msg.Unmarshal(bs)
 	// if err != nil {
-	// 	logger.ErrorWF("DollMazeProduceCallBack unmarshal err", zap.Error(err))
+	// 	logger.CtxError(ctx,"DollMazeProduceCallBack unmarshal err", zap.Error(err))
 	// 	return
 	// }
 
@@ -140,34 +140,34 @@ func DollMazeProduceCallBack(logger fklog.FKLogI, bs []byte) (err error) {
 
 	// barrierId, _, highArea, err := dollmazebarrier.GetMazeInfo(logger, userId)
 	// if err != nil {
-	// 	logger.ErrorWF("DollMazeProduceCallBack GetMazeInfo fail", zap.Error(err))
+	// 	logger.CtxError(ctx,"DollMazeProduceCallBack GetMazeInfo fail", zap.Error(err))
 	// 	return
 	// }
 	// if barrier != barrierId || areaId != highArea {
-	// 	logger.WarnWF("DollMazeProduceCallBack barrier area not mathch", zap.Any("msg", msg),
+	// 	logger.CtxWarn(ctx,"DollMazeProduceCallBack barrier area not mathch", zap.Any("msg", msg),
 	// 		zap.Any("barrierId", barrierId), zap.Any("highArea", highArea))
 	// 	return
 	// }
 
 	// produce, err := dollmazeproduceredis.GetUserProduce(logger, userId)
 	// if err != nil {
-	// 	logger.ErrorWF("DollMazeProduceCallBack GetUserProduce fail", zap.Error(err))
+	// 	logger.CtxError(ctx,"DollMazeProduceCallBack GetUserProduce fail", zap.Error(err))
 	// 	return
 	// }
 
 	// _, _, tempMax, err := GetCurrProduceCfg(logger, userId)
 	// if err != nil {
-	// 	logger.ErrorWF("DollMazeProduceCallBack GetCurrProduceCfgByArea fail", zap.Error(err))
+	// 	logger.CtxError(ctx,"DollMazeProduceCallBack GetCurrProduceCfgByArea fail", zap.Error(err))
 	// 	return
 	// }
 	// if tempMax == 0 {
-	// 	logger.ErrorWF("DollMazeProduceCallBack load limit num fail")
+	// 	logger.CtxError(ctx,"DollMazeProduceCallBack load limit num fail")
 	// 	return
 	// }
 
 	// if tempMax == produce.GetProduceCount() {
 	// 	//如果当前值就是上限 则不开启下个周期
-	// 	logger.WarnWF("DollMazeProduceCallBack produce limit", zap.Any("msg", msg),
+	// 	logger.CtxWarn(ctx,"DollMazeProduceCallBack produce limit", zap.Any("msg", msg),
 	// 		zap.Any("tempMax", tempMax), zap.Any("produce", produce))
 	// 	return
 	// }
@@ -181,23 +181,23 @@ func DollMazeProduceCallBack(logger fklog.FKLogI, bs []byte) (err error) {
 
 	// newProduce, isProduce, err := checkProduceContinue(logger, userId, barrier, areaId, produce)
 	// if err != nil {
-	// 	logger.ErrorWF("DollMazeProduceCallBack checkProduceContinue fail", zap.Error(err))
+	// 	logger.CtxError(ctx,"DollMazeProduceCallBack checkProduceContinue fail", zap.Error(err))
 	// 	return
 	// }
 	// err = dollmazeproduceredis.SetUserProduce(logger, userId, newProduce)
 	// if err != nil {
-	// 	logger.ErrorWF("DollMazeProduceCallBack SetUserProduce fail", zap.Error(err), zap.Any("produce", newProduce))
+	// 	logger.CtxError(ctx,"DollMazeProduceCallBack SetUserProduce fail", zap.Error(err), zap.Any("produce", newProduce))
 	// 	return
 	// }
 
 	// if !isProduce {
-	// 	logger.WarnWF("DollMazeProduceCallBack produce no need next timer")
+	// 	logger.CtxWarn(ctx,"DollMazeProduceCallBack produce no need next timer")
 	// 	return
 	// }
 
 	// err2 := SetTimer(logger, userId, newProduce.GetLastSettleTime()+newProduce.GetCycleTime(), barrier, newProduce.GetAreaId())
 	// if err2 != nil {
-	// 	logger.ErrorWF("DollMazeProduceCallBack SetTimer fail", zap.Error(err2), zap.Any("produce", newProduce))
+	// 	logger.CtxError(ctx,"DollMazeProduceCallBack SetTimer fail", zap.Error(err2), zap.Any("produce", newProduce))
 	// 	return
 	// }
 	return

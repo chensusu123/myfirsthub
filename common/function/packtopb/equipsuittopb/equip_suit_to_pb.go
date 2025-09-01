@@ -8,6 +8,7 @@
 package equipsuittopb
 
 import (
+	"context"
 	"errors"
 	"fmt"
 	"sort"
@@ -27,7 +28,7 @@ import (
 	"google.golang.org/protobuf/proto"
 )
 
-func PackEquipSuitCliPb(logger fklog.FKLogI, pos int32, equips []*MazeEquipCache.MazeEquipPosInfo, suitId int32, dollLv int32) (cliSuitInfo *MazeGameEquip.EquipSuitInfo, err error) {
+func PackEquipSuitCliPb(ctx context.Context, pos int32, equips []*MazeEquipCache.MazeEquipPosInfo, suitId int32, dollLv int32) (cliSuitInfo *MazeGameEquip.EquipSuitInfo, err error) {
 	suitPosMap := make(map[int32]*MazeEquipCache.MazeEquipPosInfo) // 跟选定装备成套的装备 <pos,guid>
 	if suitId <= 0 {
 		return nil, nil
@@ -42,11 +43,11 @@ func PackEquipSuitCliPb(logger fklog.FKLogI, pos int32, equips []*MazeEquipCache
 	}
 
 	cliSuitInfo = &MazeGameEquip.EquipSuitInfo{}
-
+	logger := fklog.ContextAppLogger(ctx)
 	cliSuitInfo.SuitId = proto.Int32(suitId)
 	desV8Row := GMazeEquipSuiteInfoV8Cfg.GetMazeEquipSuiteInfoV8Config(suitId)
 	if desV8Row == nil {
-		logger.ErrorWF("PackEquipSuitCliPb cannot find cfg",
+		logger.CtxError(ctx, "PackEquipSuitCliPb cannot find cfg",
 			zap.Int32("suitId", suitId),
 			zap.String("sheet", GMazeEquipSuiteInfoV8Cfg.GetConfigDesc()))
 		return nil, errors.New("cannot find suit cfg")
@@ -71,10 +72,10 @@ func PackEquipSuitCliPb(logger fklog.FKLogI, pos int32, equips []*MazeEquipCache
 			if equipCfg != nil {
 				subType = equipCfg.Pos_sub_type
 			}
-			_, equipName = pbutil.GetDollEquipName(equipInfo.GetEquipInfo(), subType)
+			_, equipName = pbutil.GetDollEquipName(ctx, equipInfo.GetEquipInfo(), subType)
 
 		} else {
-			equipName = FindSuitEquipName(logger, suitPos, dollLv, suitId)
+			equipName = FindSuitEquipName(ctx, suitPos, dollLv, suitId)
 		}
 		suitPosPb.SuitEquipName = proto.String(equipName)
 		cliSuitInfo.SuitPosList = append(cliSuitInfo.SuitPosList, &suitPosPb)
@@ -106,16 +107,16 @@ func PackEquipSuitCliPb(logger fklog.FKLogI, pos int32, equips []*MazeEquipCache
 // 未获得的套装装备获取名字
 // 先找不高于当前等级最接近的等级的装备
 // 如果没有,再找高于当前等级最接近当前等级的装备
-func FindSuitEquipName(logger fklog.FKLogI, pos int32, lv int32, suitId int32) string {
+func FindSuitEquipName(ctx context.Context, pos int32, lv int32, suitId int32) string {
 	allRows := mazeequipinfocfgex.GetEquipCfgRows(pos, constdef.EquipQualityOrange)
 	var needEquipLessCfg, needEquipMoreCfg []*GMazeEquipInfoV8Cfg.MazeEquipInfoV8ConfigRow
-
+	logger := fklog.ContextAppLogger(ctx)
 	for _, row := range allRows {
 		if row.Suite_id[suitId] <= 0 {
 			continue
 		}
 		// 过滤没有配置套装名字的装备
-		// suitEquipCfg := GMazeEquipSuiteNameV8Cfg.Get(row.Equipment_id)
+		// suitEquipCfg := GMazeEquipSuiteNameV8Cfg.GetWithCtx(ctx,row.Equipment_id)
 		// if suitEquipCfg == nil {
 		// 	continue
 		// }
@@ -129,7 +130,7 @@ func FindSuitEquipName(logger fklog.FKLogI, pos int32, lv int32, suitId int32) s
 	var aimEquipId int32
 	var aimName string
 	defer func() {
-		logger.InfoWF("FindSuitEquipName",
+		logger.CtxInfo(ctx, "FindSuitEquipName",
 			zap.String("aimName", aimName),
 			zap.Int32("aimEquipId", aimEquipId),
 			zap.Int32("suitId", suitId),
@@ -158,7 +159,7 @@ func FindSuitEquipName(logger fklog.FKLogI, pos int32, lv int32, suitId int32) s
 		}
 	}
 	if aimEquipId > 0 {
-		suitEquipCfg := GMazeEquipSuiteNameV8Cfg.Get(aimEquipId)
+		suitEquipCfg := GMazeEquipSuiteNameV8Cfg.GetWithCtx(ctx, aimEquipId)
 		if suitEquipCfg != nil {
 			aimName = suitEquipCfg.Suite_equip_name[suitId]
 		} else {

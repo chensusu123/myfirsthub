@@ -23,13 +23,13 @@ func OnMazeAttrCalcMsg(ctx context.Context, logger fklog.FKLogI, index int, obj 
 	defer fkprometheus.DebugPMT("OnMazeAttrCalcMsg")()
 	msg, ok := obj.(*structsdef.MazeCalcAttrNotifyMsg)
 	if !ok {
-		logger.ErrorWF("OnMazeAttrCalcMsg invalid msg")
+		logger.CtxError(ctx, "OnMazeAttrCalcMsg invalid msg")
 		return nil
 	}
-	nLogger := logger.Clone("OnMazeAttrCalcMsg")
+	nLogger := fklog.ContextAppLogger(ctx)
 	nLogger.SetUid(msg.UserId)
 	nLogger.SetLogId(time.Now().UnixNano())
-	nLogger.WarnWF("OnMazeAttrCalcMsg pop", zap.Any("msg", msg))
+	nLogger.CtxWarn(ctx, "OnMazeAttrCalcMsg pop", zap.Any("msg", msg))
 
 	if msg.UserId <= 0 {
 		return nil

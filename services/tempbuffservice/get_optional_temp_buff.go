@@ -3,8 +3,6 @@ package tempbuffservice
 import (
 	"context"
 	"fmt"
-	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fklog"
-	"go.uber.org/zap"
 	"math/rand"
 	"maze_game_server/common/errors"
 	"maze_game_server/config/GMazeBarriesV8Cfg"
@@ -21,6 +19,9 @@ import (
 	"maze_game_server/excel/mazeenergyresetcostv8config"
 	"maze_game_server/model/tempbuffmodel"
 	"maze_game_server/pb/common/MazeTempBuff"
+
+	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fklog"
+	"go.uber.org/zap"
 )
 
 func (s *service) GetOptionalTempBuffList(ctx context.Context, userId uint64, barrierId, level, buffType, areaId, areaIndex, attrMask int32) (*OptionalBuffInfo, error) {
@@ -514,7 +515,7 @@ func (s *service) checkFrontCondition(ctx context.Context, logger fklog.FKLogI, 
 	}
 
 	if count < frontConfig.Must_num {
-		//logger.DebugWF("checkFrontCondition affix id set not enough", zap.Int32("frontId", frontId), zap.Int32("count", count))
+		//logger.CtxDebug(ctx,"checkFrontCondition affix id set not enough", zap.Int32("frontId", frontId), zap.Int32("count", count))
 		return false
 	}
 

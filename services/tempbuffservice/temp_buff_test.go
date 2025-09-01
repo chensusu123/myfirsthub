@@ -3,6 +3,15 @@ package tempbuffservice
 import (
 	"context"
 	"fmt"
+	"maze_game_server/io"
+	globalredis "maze_game_server/io/redis"
+	"maze_game_server/lib/log"
+	"maze_game_server/model/passareamodel"
+	"maze_game_server/model/tempbuffmodel"
+	"maze_game_server/usecase/business"
+	"os"
+	"testing"
+
 	"github.com/redis/go-redis/v9"
 	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fklog"
 	"gitlab.ifreetalk.com/maze-plate/freetk/fkserver"
@@ -10,14 +19,6 @@ import (
 	"gitlab.ifreetalk.com/maze-plate/freetk/fkserver/config_manager/loadconfigapi"
 	fileResolver "gitlab.ifreetalk.com/maze-plate/freetk/registry/fileresolver"
 	"go.uber.org/zap"
-	"maze_game_server/io"
-	"maze_game_server/io/redis"
-	"maze_game_server/lib/log"
-	"maze_game_server/model/passareamodel"
-	"maze_game_server/model/tempbuffmodel"
-	"maze_game_server/usecase/business"
-	"os"
-	"testing"
 )
 
 var logger = log.Clone("TempBuffTest", 0, 0)
@@ -40,13 +41,14 @@ func TestMain(m *testing.M) {
 	os.Stderr = originalStderr
 	loadconfigapi.SetLoadConfigFunc(business.GCustomBusiness.LoadCacheConfig)
 	err = business.GCustomBusiness.Init(fklog.AppLogger().Clone("loadconfigapi"))
+	ctx := context.Background()
 	if err != nil {
-		logger.ErrorWF("load file failed", zap.Error(err))
+		logger.CtxError(ctx, "load file failed", zap.Error(err))
 		return
 	}
 	err = config_manager.Init(context.Background(), logger, nil)
 	if err != nil {
-		logger.ErrorWF("parse excel failed", zap.Error(err))
+		logger.CtxError(ctx, "parse excel failed", zap.Error(err))
 		return
 	}
 	io.InitBackendCoder(globalredis.GCli, nil)

@@ -67,7 +67,7 @@ func GetCalRet(ctx context.Context, userId uint64, userLevel, forceVal int64, fo
 	logger := fklog.ContextAppLogger(ctx)
 	attrs := make([]int32, 0)
 
-	expFormula := GMazeAttributeFormulaV8Cfg.Get(constdef.MazeExp)
+	expFormula := GMazeAttributeFormulaV8Cfg.GetWithCtx(ctx,constdef.MazeExp)
 	if expFormula == nil {
 		err = errors.New("maze exp formula cfg empty")
 		return
@@ -78,7 +78,7 @@ func GetCalRet(ctx context.Context, userId uint64, userLevel, forceVal int64, fo
 	attrs = append(attrs, expFormula.Parameter_9...)
 	attrs = append(attrs, expFormula.Parameter_10...)
 
-	moneyFormula := GMazeAttributeFormulaV8Cfg.Get(constdef.MazeMoney)
+	moneyFormula := GMazeAttributeFormulaV8Cfg.GetWithCtx(ctx,constdef.MazeMoney)
 	if moneyFormula == nil {
 		err = errors.New("maze money formula cfg empty")
 		return

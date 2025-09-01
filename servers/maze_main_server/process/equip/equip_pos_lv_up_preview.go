@@ -1,7 +1,6 @@
 package equip
 
 import (
-	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fklog"
 	"maze_game_server/common/constdef"
 	"maze_game_server/common/errors"
 	"maze_game_server/common/function/itemutil"
@@ -14,6 +13,8 @@ import (
 	"maze_game_server/pb/common/MazeEquipPos"
 	"maze_game_server/pb/common/MazeGameEquip"
 	"maze_game_server/pb/server/MazeEquipCache"
+
+	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fklog"
 
 	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fkprometheus"
 	"go.uber.org/zap"
@@ -47,7 +48,7 @@ func (e *Equip) OnEquipPosLvUpPreviewRQ_10423_10424(s *session.Session, rq *Maze
 		return
 	}
 
-	assembleDb, err := dollassembleredis.GetAllAssembleInfo(logger, userId)
+	assembleDb, err := dollassembleredis.GetAllAssembleInfo(ctx, userId)
 	if err != nil {
 		logger.CtxError(ctx, "OnEquipPosLvUpPreviewRQ GetAllAssembleInfo", zap.Error(err))
 		rs.ErrInfo = errors.MODULE_ERROR.ToInfo()
@@ -62,7 +63,7 @@ func (e *Equip) OnEquipPosLvUpPreviewRQ_10423_10424(s *session.Session, rq *Maze
 	}
 
 	equipPosSuitId := assembleDb.GetEpEnSuitId()
-	rs.CurSuit, rs.NextSuit, err = equippossuit.GetCurAndNextSuit(logger, equipPosSuitId)
+	rs.CurSuit, rs.NextSuit, err = equippossuit.GetCurAndNextSuit(ctx, equipPosSuitId)
 	if err != nil {
 		logger.CtxError(ctx, "OnEquipPosLvUpPreviewRQ GetCurAndNextSuit", zap.Error(err))
 		rs.ErrInfo = errors.MODULE_ERROR.ToInfo()

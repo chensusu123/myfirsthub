@@ -65,7 +65,7 @@ func (e *Equip) OnDollEquipDismantleRQ_10410_10411(s *session.Session, req *Maze
 	}
 
 	// 获取身上的装备信息
-	assembleInfoMap, err := dollassemblesuitredis.GetAllDollAssembleSuit(logger, userId)
+	assembleInfoMap, err := dollassemblesuitredis.GetAllDollAssembleSuit(ctx, userId)
 	if err != nil {
 		logger.CtxError(ctx, "OnDollEquipDismantleRQ GetAllDollAssembleSuit fail", zap.Error(err))
 		res.ErrInfo = errors.MODULE_ERROR.ToInfo()
@@ -83,7 +83,7 @@ func (e *Equip) OnDollEquipDismantleRQ_10410_10411(s *session.Session, req *Maze
 		}
 	}
 
-	equipInfoMap, err := mazebagequipredis.GetAllEquipInfo(logger, userId)
+	equipInfoMap, err := mazebagequipredis.GetAllEquipInfo(ctx, userId)
 	if err != nil {
 		logger.CtxError(ctx, "OnDollEquipDismantleRQ GetAllEquipInfo fail", zap.Error(err))
 		res.ErrInfo = errors.MODULE_ERROR.ToInfo()
@@ -122,13 +122,13 @@ func (e *Equip) OnDollEquipDismantleRQ_10410_10411(s *session.Session, req *Maze
 		// 获取装备可以出售获得的材料
 		var equipAward map[int32]int64
 
-		equipCfg := GMazeEquipInfoV8Cfg.Get(equip.GetEquipId())
+		equipCfg := GMazeEquipInfoV8Cfg.GetWithCtx(ctx, equip.GetEquipId())
 		if equipCfg == nil {
 			logger.CtxError(ctx, "OnDollEquipDismantleRQ get equip cfg fail", zap.Any("equipId", equip.GetEquipId))
 			res.ErrInfo = errors.CONFIG_NOT_FOUND.ToInfo()
 			return
 		}
-		equipAward, err = getEquipDismantle(logger, equip.GetEquipGuid(), int64(equip.GetEquipId()), equipCfg)
+		equipAward, err = getEquipDismantle(ctx, equip.GetEquipGuid(), int64(equip.GetEquipId()), equipCfg)
 		if err != nil {
 			logger.CtxError(ctx, "OnDollEquipDismantleRQ get dismantle award fail", zap.Any("equipGuid", equip.GetEquipGuid()), zap.Error(err))
 			res.ErrInfo = errors.CONFIG_NOT_FOUND.ToInfo()
@@ -205,16 +205,16 @@ func (e *Equip) OnDollEquipDismantleRQ_10410_10411(s *session.Session, req *Maze
 	return
 }
 
-func getEquipDismantle(logger fklog.FKLogI, equipGuid, equipId int64, cfg *GMazeEquipInfoV8Cfg.MazeEquipInfoV8ConfigRow) (award map[int32]int64, err error) {
+func getEquipDismantle(ctx context.Context, equipGuid, equipId int64, cfg *GMazeEquipInfoV8Cfg.MazeEquipInfoV8ConfigRow) (award map[int32]int64, err error) {
 	award = make(map[int32]int64)
-
+	logger := fklog.ContextAppLogger(ctx)
 	for k, v := range cfg.Sell {
 		if k > 0 && v > 0 {
 			award[k] += v
 		}
 	}
 
-	logger.DebugWF("getEquipDismantle one equip succ", zap.Any("equipGuid", equipGuid),
+	logger.CtxDebug(ctx, "getEquipDismantle one equip succ", zap.Any("equipGuid", equipGuid),
 		zap.Int64("equipId", equipId), zap.Any("equip_award", award))
 
 	return

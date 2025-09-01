@@ -49,7 +49,7 @@ func HandleUserLevelExpChg(ctx context.Context, userId uint64, level int64, exp 
 	logger := fklog.ContextAppLogger(ctx)
 	commonList := make([]*CommonValueStruct, 0)
 
-	levelCfg := GMazeLevelV8Cfg.Get(int32(level))
+	levelCfg := GMazeLevelV8Cfg.GetWithCtx(ctx,int32(level))
 	if levelCfg != nil {
 		levelStruct := &CommonValueStruct{
 			DataType:     int32(MazeGame.MAZE_DATA_TYPE_ENUM_MAZE_DATA_TYPE_LEVEL),

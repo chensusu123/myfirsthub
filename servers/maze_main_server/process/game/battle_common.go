@@ -60,7 +60,7 @@ func GetUserBattleAttr(ctx context.Context, userId uint64, userAttrMap map[int32
 		}
 	}
 	//if len(skillIds) > 0 {
-	//	skillCfg := GMazeSkillInfoV8Cfg.Get(skillIds[0])
+	//	skillCfg := GMazeSkillInfoV8Cfg.GetWithCtx(ctx,skillIds[0])
 	//	if skillCfg != nil {
 	//		//if attrMap[constdef.AtkNumber] == nil {
 	//		//	attrCfg := GMazeAttributeV8Cfg.GetMazeAttributeV8Config(constdef.AtkNumber)
