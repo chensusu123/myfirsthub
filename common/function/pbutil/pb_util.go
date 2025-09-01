@@ -33,6 +33,13 @@ func GetDollEquipName(ctx context.Context, equipInfo *MazeEquipCache.MazeEquipIn
 		if itemCfg != nil {
 			equipName = itemCfg.Prop_name
 		}
+		if equipName == "" {
+			logger := fklog.ContextAppLogger(ctx)
+			logger.CtxWarn(ctx, "GetDollEquipName cannot find equipName",
+				zap.Int32("cfgId", equipInfo.GetEquipId()),
+				zap.Int64("guid", equipInfo.GetEquipGuid()),
+				zap.Int32("equipType", equipType))
+		}
 	}
 	return equipResId, equipName
 }

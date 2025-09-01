@@ -179,6 +179,7 @@ func (m *EquipmentEffectInfo) CalcHurtSuit(ctx context.Context, equips []*MazeEq
 	// 计算套装
 	suitMgr, err := CalcEquipSuit(ctx, equips)
 	if err != nil {
+		m.FKLogI.CtxError(ctx, "EquipmentEffectInfo CalcEquipSuit err", zap.Error(err))
 		return err
 	}
 	m.SuitCalc = suitMgr
@@ -194,6 +195,7 @@ func (m *EquipmentEffectInfo) CalcHurtSuit(ctx context.Context, equips []*MazeEq
 		}
 		e := m.PackEquipRealAttrKv(k, v)
 		if e != nil {
+			m.FKLogI.CtxError(ctx, "EquipmentEffectInfo buffs PackEquipRealAttrKv err", zap.Error(e), zap.Int32("attrId", k), zap.Int64("attrValue", v))
 			return e
 		}
 	}
@@ -204,6 +206,7 @@ func (m *EquipmentEffectInfo) CalcHurtSuit(ctx context.Context, equips []*MazeEq
 		}
 		e := m.PackEquipRealAttrKv(k, v)
 		if e != nil {
+			m.FKLogI.CtxError(ctx, "EquipmentEffectInfo showBuffs PackEquipRealAttrKv err", zap.Error(e), zap.Int32("attrId", k), zap.Int64("attrValue", v))
 			return e
 		}
 	}
@@ -219,18 +222,17 @@ type EffectCalcInParam struct {
 
 // 计算装备的效果
 func CalcEquipEffectAll(ctx context.Context, equips []*MazeEquipCache.MazeEquipPosInfo, ep EffectCalcInParam) (effect *EquipmentEffectInfo, err error) {
-	logger := fklog.ContextAppLogger(ctx)
 	effect = NewEquipmentEffectInfo(ctx)
 	var step string
 	defer func() {
 		if err != nil {
-			logger.CtxError(ctx, "CalcEquipEffectAll dump err", zap.Error(err),
+			effect.FKLogI.CtxError(ctx, "CalcEquipEffectAll dump err", zap.Error(err),
 				zap.Any("equips", equips), zap.Any("effect", effect),
 				zap.String("step", step),
 				zap.Any("suitMgr", effect.SuitCalc))
 		} else {
 			if ep.IsLog {
-				logger.CtxDebug(ctx, "CalcEquipEffectAll dump",
+				effect.FKLogI.CtxError(ctx, "CalcEquipEffectAll dump",
 					zap.Any("equips", equips), zap.Any("effect", effect),
 					zap.Any("suitMgr", effect.SuitCalc))
 			}
@@ -240,6 +242,7 @@ func CalcEquipEffectAll(ctx context.Context, equips []*MazeEquipCache.MazeEquipP
 	// 计算套装
 	err = effect.CalcHurtSuit(ctx, equips)
 	if err != nil {
+		effect.FKLogI.CtxError(ctx, "CalcHurtSuit err", zap.Error(err))
 		return
 	}
 

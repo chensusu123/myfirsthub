@@ -440,12 +440,14 @@ func StartEquipAssmebleRecord(ctx context.Context, userId uint64, pos, op int32,
 	if newEquip != nil {
 		record.NewEquipId = newEquip.GetEquipLoadInfo().GetEquipId()
 		record.NewGuid = uint64(newEquip.GetEquipLoadInfo().GetEquipGuid())
-		newExtra = MakeExtra(pbutil.GetDollEquipName(ctx, newEquip.GetEquipInfo(), 0))
+		newResId, newEquipName := pbutil.GetDollEquipName(ctx, newEquip.GetEquipInfo(), 0)
+		newExtra = MakeExtra(ctx, newResId, newEquipName)
 	}
 	if oldEquip != nil {
 		record.OldEquipId = oldEquip.GetEquipLoadInfo().GetEquipId()
 		record.OldGuid = uint64(oldEquip.GetEquipLoadInfo().GetEquipGuid())
-		oldExtra = MakeExtra(pbutil.GetDollEquipName(ctx, oldEquip.GetEquipInfo(), 0))
+		oldResId, oldEquipName := pbutil.GetDollEquipName(ctx, oldEquip.GetEquipInfo(), 0)
+		oldExtra = MakeExtra(ctx, oldResId, oldEquipName)
 	}
 	record.OpType = op
 	hsStr := maputil.MapToString32(oldEffect.GetSuitCalc().GetSuitNumMap())
@@ -466,7 +468,11 @@ func EndEquipAssmebleRecord(ctx context.Context, record *dollequipassmeblekakfa.
 	dollequipassmeblekakfa.SendMazeGameEquipAssembleRecord(ctx, record)
 }
 
-func MakeExtra(resId int32, equipName string) string {
+func MakeExtra(ctx context.Context, resId int32, equipName string) string {
+	if equipName == "" {
+		logger := fklog.ContextAppLogger(ctx)
+		logger.CtxWarn(ctx, "MakeExtra equipName is empty", zap.Int32("resId", resId))
+	}
 	if resId > 0 {
 		return fmt.Sprintf("equipName:%s_resId:%d", equipName, resId)
 	} else {

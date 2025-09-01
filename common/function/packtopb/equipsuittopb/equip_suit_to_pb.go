@@ -73,6 +73,12 @@ func PackEquipSuitCliPb(ctx context.Context, pos int32, equips []*MazeEquipCache
 				subType = equipCfg.Pos_sub_type
 			}
 			_, equipName = pbutil.GetDollEquipName(ctx, equipInfo.GetEquipInfo(), subType)
+			if equipName == "" {
+				logger.CtxError(ctx, "PackEquipSuitCliPb cannot find equip name",
+					zap.Int32("equipId", equipInfo.GetEquipLoadInfo().GetEquipId()),
+					zap.Int32("pos", suitPos))
+				return nil, errors.New("cannot find equip name")
+			}
 
 		} else {
 			equipName = FindSuitEquipName(ctx, suitPos, dollLv, suitId)
