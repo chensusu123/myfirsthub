@@ -9,7 +9,6 @@ import (
 
 	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fklog"
 	"go.uber.org/zap"
-	"google.golang.org/protobuf/proto"
 )
 
 type Alliance struct {
@@ -81,8 +80,8 @@ func (a *Alliance) OnQueryUserAllianceRQ_10608_10609(s *session.Session, req *Ma
 		logger.CtxError(ctx, "OnQueryUserAllianceRQ allianceService.GetAllianceInfo err", zap.Error(err))
 		return err
 	}
-
-	res.AllianceId = proto.Int32(allianceID)
+	_ = allianceID
+	// res.AllianceId = proto.Int32(allianceID)
 	return nil
 }
 
