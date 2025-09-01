@@ -14,7 +14,7 @@ func (f ProductID) MarshalJSON() ([]byte, error) {
 	return json.Marshal(100010)
 }
 
-type ServerID int32
+type ServerID uint32
 
 func (s ServerID) MarshalJSON() ([]byte, error) {
 	return json.Marshal(appconfig.GlobalConfig().Global.SectionID)

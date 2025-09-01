@@ -56,7 +56,7 @@ func (g *Game) OnMazeBarrierDeathRQ_10449_10450(s *session.Session, req *MazeGam
 		res.BarrierAward = awards
 	}
 
-	err = mazebarriereventredis.LeaveBarrier(logger, userId, req.GetBarrierId(), false)
+	err = mazebarriereventredis.LeaveBarrier(ctx, userId, req.GetBarrierId(), false)
 	if err != nil {
 		logger.CtxError(ctx, "OnMazeBarrierPassRQ LeaveBarrier fail", zap.Error(err), zap.Any("barrier", req.GetBarrierId()))
 	}
@@ -70,6 +70,7 @@ func (g *Game) OnMazeBarrierDeathRQ_10449_10450(s *session.Session, req *MazeGam
 		GameRet:        mazebarrieruserkafka.GameRetDeath,
 		Awards:         getAwards(logger, awards),
 		KillMonsterNum: int64(killMonsterNum),
+		DeathReason:    uint32(req.GetReason()),
 	}
 
 	mazebarrieruserkafka.PushMazeBarrierUserRecord(ctx, passRecord)
