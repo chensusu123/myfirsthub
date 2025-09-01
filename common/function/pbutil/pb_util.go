@@ -28,7 +28,7 @@ func GetDollEquipName(ctx context.Context, equipInfo *MazeEquipCache.MazeEquipIn
 			equipName = equipSuiteNameCfg.Suite_equip_name[equipInfo.GetSuitId()]
 		}
 	}
-	if equipName == "" {
+	if equipName == "" && equipId > int32(0) {
 		itemCfg := GMazeItemsV8Cfg.GetWithCtx(ctx, equipId)
 		if itemCfg != nil {
 			equipName = itemCfg.Prop_name
