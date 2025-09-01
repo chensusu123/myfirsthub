@@ -544,7 +544,10 @@ func (h *LocalHandler) processMessage(ctx context.Context, agent *agent, msg *me
 
 	tracer := otel.Tracer("nano.process.message")
 	ctx, span := tracer.Start(ctx, msg.Route)
-
+	span.SetAttributes(
+		attribute.Int64("agent.session", agent.session.ID()),
+		attribute.Int64("enduser.id", agent.session.UID()),
+	)
 	// agent.session.SetContext(ctx)
 	handler, found := h.localHandlers[msg.Route]
 	if !found {
