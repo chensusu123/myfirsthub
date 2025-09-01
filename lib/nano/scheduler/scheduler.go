@@ -21,14 +21,14 @@
 package scheduler
 
 import (
-	"fmt"
-	"runtime/debug"
 	"sync/atomic"
 	"time"
 
 	"maze_game_server/lib/nano/internal/env"
 	"maze_game_server/lib/nano/internal/log"
 	"maze_game_server/lib/nano/nanometrics"
+
+	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fkalert"
 )
 
 const (
@@ -56,11 +56,9 @@ var (
 
 func try(f func()) {
 	defer func() {
+		fkalert.RecoverAlertException()
 		c := taskCount.Add(-1)
 		nanometrics.GlobalTaskGauge.Set(float64(c))
-		if err := recover(); err != nil {
-			log.Println(fmt.Sprintf("Handle message panic: %+v\n%s", err, debug.Stack()))
-		}
 	}()
 	f()
 }
