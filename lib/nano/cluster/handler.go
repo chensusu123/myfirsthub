@@ -552,6 +552,8 @@ func (h *LocalHandler) remoteProcess(ctx context.Context, session *session.Sessi
 }
 
 func (h *LocalHandler) processMessage(ctx context.Context, agent *agent, msg *message.Message) {
+	defer fkalert.RecoverAlertException()
+
 	var lastMid uint64
 	switch msg.Type {
 	case message.Request:
