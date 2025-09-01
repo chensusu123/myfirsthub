@@ -88,7 +88,7 @@ func (r *service) CreateFamily(ctx context.Context, userID uint64, allianceID in
 	r.SetFamilyGroupID(ctx, familyInfoModel.FamilyID, groupInfo.ID)
 
 	//加入联盟群聊
-	err = grouppkg.InviteMember(ctx, app.Maze.ID(), allianceID, userID)
+	err = grouppkg.InviteMember(ctx, app.Maze.ID(), int64(groupInfo.ID), userID)
 	if err != nil {
 		logger.CtxError(ctx, "CreateFamily InviteMember alliance err",
 			zap.Error(err))

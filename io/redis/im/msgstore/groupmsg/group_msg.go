@@ -22,7 +22,7 @@ func getKey(args ...interface{}) string {
 }
 
 // QueryMessages 分页查询会话中的历史消息
-func QueryMessages(ctx context.Context, appID int32, groupID int32, lastID uint64, limit int) (messages []Message, err error) {
+func QueryMessages(ctx context.Context, appID int32, groupID int64, lastID uint64, limit int) (messages []Message, err error) {
 	logger := fklog.ContextAppLogger(ctx)
 	var (
 		key = getKey(appID, groupID)
@@ -61,7 +61,7 @@ func QueryMessages(ctx context.Context, appID int32, groupID int32, lastID uint6
 }
 
 // SaveMessage 在会话保存历史消息
-func SaveMessage(ctx context.Context, appID int32, groupID int32, message Message) (err error) {
+func SaveMessage(ctx context.Context, appID int32, groupID int64, message Message) (err error) {
 	logger := fklog.ContextAppLogger(ctx)
 	var (
 		key = getKey(appID, groupID)

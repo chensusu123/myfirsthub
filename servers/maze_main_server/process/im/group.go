@@ -73,7 +73,7 @@ func (im *IM) OnSendGroupMessage_10649_10650(s *session.Session, req *MazeIM.Sen
 		logger.CtxInfo(ctx, "OnSendGroupMessage SendMessage error", zap.Error(err))
 		return
 	}
-	res.GroupId = proto.Int32(groupId)
+	res.GroupId = proto.Int64(groupId)
 	res.MsgId = proto.Uint64(messageID)
 	return
 }

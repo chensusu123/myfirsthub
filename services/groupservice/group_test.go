@@ -53,7 +53,7 @@ func TestRedis(t *testing.T) {
 
 func TestSendMessages(t *testing.T) {
 
-	messageID, err := GlobalGroupService.SendMessage(context.Background(), app.Maze, int32(1), uint64(50000001), int32(1), "hello01")
+	messageID, err := GlobalGroupService.SendMessage(context.Background(), app.Maze, int64(1), uint64(50000001), int32(1), []byte("hello01"))
 	if err != nil {
 		logger.ErrorWF("SendGroupMessageTest error", zap.Error(err))
 	}
@@ -62,7 +62,7 @@ func TestSendMessages(t *testing.T) {
 }
 
 func TestQueryMessages(t *testing.T) {
-	messages, err := GlobalGroupService.QueryMessages(context.Background(), app.Maze, int32(1), uint64(50000001), int(10))
+	messages, err := GlobalGroupService.QueryMessages(context.Background(), app.Maze, int64(1), uint64(50000001), int(10))
 	if err != nil {
 		logger.ErrorWF("QueryGroupMessagesTest error", zap.Error(err))
 	}

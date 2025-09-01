@@ -17,7 +17,7 @@ type Session struct {
 	ID         string `json:"id,omitempty"`
 	CreateTime int64  `json:"create_time,omitempty"`
 	PeerID     uint64 `json:"peer_id,omitempty"`
-	GroupID    int32  `json:"group_id,omitempty"`
+	GroupID    int64  `json:"group_id,omitempty"`
 	OldestID   uint64 `json:"oldest_id,omitempty"`
 }
 
@@ -114,7 +114,7 @@ func AddP2PSession(ctx context.Context, appID int32, userID uint64, sessionID st
 }
 
 // AddGroupSession 创建群聊会话
-func AddGroupSession(ctx context.Context, appID int32, userID uint64, sessionID string, groupID int32) (err error) {
+func AddGroupSession(ctx context.Context, appID int32, userID uint64, sessionID string, groupID int64) (err error) {
 	logger := fklog.ContextAppLogger(ctx)
 	var (
 		key = getKey(appID, userID)

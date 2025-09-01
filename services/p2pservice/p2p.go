@@ -37,7 +37,7 @@ type P2PService interface {
 	//	- peerID: 接收用户
 	//	- _type: 消息类型
 	//	- content: 消息内容
-	SendMessage(ctx context.Context, a app.App, user app.User, peerID uint64, _type int32, content string) (messageID uint64, err error)
+	SendMessage(ctx context.Context, a app.App, user app.User, peerID uint64, _type int32, content []byte) (messageID uint64, err error)
 
 	// ReadMessage 标记私聊中的指定消息已读
 	//
@@ -98,7 +98,7 @@ func (p *p2p) QueryMessages(ctx context.Context, a app.App, user app.User, peerI
 }
 
 // SendMessage implements P2PService.
-func (p *p2p) SendMessage(ctx context.Context, a app.App, user app.User, peerID uint64, _type int32, content string) (messageID uint64, err error) {
+func (p *p2p) SendMessage(ctx context.Context, a app.App, user app.User, peerID uint64, _type int32, content []byte) (messageID uint64, err error) {
 	message := app.Message{}
 	messageID, err = idgenerator.NextID()
 	if err != nil {
@@ -146,7 +146,7 @@ func (p *p2p) ReadMessage(ctx context.Context, a app.App, user app.User, peerID 
 		return err
 	}
 	//通知接收者
-	err = p.notifyMessage(ctx, user.UserID(), peerID, messageID, 1, 10656, "")
+	err = p.notifyMessage(ctx, user.UserID(), peerID, messageID, 1, 10656, []byte(""))
 	if err != nil {
 		fmt.Println("notifyMessage error:", err)
 		return err
@@ -161,13 +161,11 @@ func (p *p2p) RemoveMessage(ctx context.Context, a app.App, user app.User, peerI
 }
 
 // notifyMessage 通知接收者
-func (p *p2p) notifyMessage(ctx context.Context, userId uint64, peerID uint64, messageID uint64, _type int32, packId uint16, content string) error {
+func (p *p2p) notifyMessage(ctx context.Context, userId uint64, peerID uint64, messageID uint64, _type int32, packId uint16, content []byte) error {
 	logger := fklog.ContextAppLogger(ctx)
 	// 推送消息给集群
 	notifyMessage := &MazeIM.MessageNotificationID{
-		From:    proto.Int32(1),
-		UserId:  proto.Uint64(peerID),
-		GroupId: proto.Int32(0),
+		UserId: proto.Uint64(peerID),
 		Message: &MazeIM.Message{
 			MsgId:      proto.Uint64(messageID),
 			Type:       proto.Int32(_type),

@@ -36,7 +36,7 @@ type SessionService interface {
 	//	- a: 应用
 	// 	- user: 用户标识
 	//	- groupID: 群组ID
-	CreateGroupSession(ctx context.Context, a app.App, user app.User, groupID int32) (err error)
+	CreateGroupSession(ctx context.Context, a app.App, user app.User, groupID int64) (err error)
 
 	// RemoveSession 删除会话记录
 	//
@@ -73,7 +73,7 @@ func (s *session) CreateNormalSession(ctx context.Context, a app.App, user app.U
 }
 
 // CreateGroupSession implements SessionService.
-func (s *session) CreateGroupSession(ctx context.Context, a app.App, user app.User, groupID int32) (err error) {
+func (s *session) CreateGroupSession(ctx context.Context, a app.App, user app.User, groupID int64) (err error) {
 	sessionID := s.GroupSessionID(groupID)
 	return sessionpkg.AddGroupSession(ctx, a.ID(), user.UserID(), sessionID, groupID)
 }
@@ -87,7 +87,7 @@ func (s *session) NormalSessionID(userID uint64) string {
 	return sum([]byte(fmt.Sprintf("p2p:%d", userID)))
 }
 
-func (s *session) GroupSessionID(groupID int32) string {
+func (s *session) GroupSessionID(groupID int64) string {
 	return sum([]byte(fmt.Sprintf("group:%d", groupID)))
 }
 
@@ -112,7 +112,7 @@ func (s *session) GetMessageInfo(ctx context.Context, a app.App, user app.User, 
 				messageInfo = append(messageInfo, &MazeIM.Session{
 					SessionId:  proto.String(session.ID),
 					Type:       proto.Int32(1),
-					GroupId:    proto.Int32(0),
+					GroupId:    proto.Int64(0),
 					CreateTime: proto.Int64(session.CreateTime),
 					Recent:     PbSessionMessage(p2pmsg),
 				})
@@ -128,7 +128,7 @@ func (s *session) GetMessageInfo(ctx context.Context, a app.App, user app.User, 
 					messageInfo = append(messageInfo, &MazeIM.Session{
 						SessionId:  proto.String(session.ID),
 						Type:       proto.Int32(2),
-						GroupId:    proto.Int32(groupID),
+						GroupId:    proto.Int64(groupID),
 						CreateTime: proto.Int64(session.CreateTime),
 						Recent:     PbSessionMessage(groupmsg),
 					})

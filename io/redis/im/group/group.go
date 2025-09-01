@@ -33,7 +33,7 @@ func getKey(args ...interface{}) string {
 }
 
 // GetGroupInfo
-func GetGroupInfo(ctx context.Context, appID int32, groupID int32) (group *Group, err error) {
+func GetGroupInfo(ctx context.Context, appID int32, groupID int64) (group *Group, err error) {
 	logger := fklog.ContextAppLogger(ctx)
 	var (
 		key = getKey(appID, groupID)
@@ -43,7 +43,7 @@ func GetGroupInfo(ctx context.Context, appID int32, groupID int32) (group *Group
 		logger.CtxError(ctx, "GetGroupInfo Client fail",
 			zap.Error(err),
 			zap.Any("key", key),
-			zap.Int32("groupID", groupID),
+			zap.Int64("groupID", groupID),
 		)
 		return nil, err
 	}
@@ -150,7 +150,7 @@ func CreateGroup(ctx context.Context, appID int32, creator uint64, groupID int32
 }
 
 // InviteMember
-func InviteMember(ctx context.Context, appID int32, groupID int32, memberID uint64) (err error) {
+func InviteMember(ctx context.Context, appID int32, groupID int64, memberID uint64) (err error) {
 	var (
 		key    = getKey(appID, groupID)
 		logger = fklog.ContextAppLogger(ctx)
@@ -160,7 +160,7 @@ func InviteMember(ctx context.Context, appID int32, groupID int32, memberID uint
 		logger.CtxError(ctx, "InviteMember Client fail",
 			zap.Error(err),
 			zap.Any("key", key),
-			zap.Int32("groupID", groupID),
+			zap.Int64("groupID", groupID),
 			zap.Uint64("memberID", memberID),
 		)
 		return err
@@ -174,7 +174,7 @@ func InviteMember(ctx context.Context, appID int32, groupID int32, memberID uint
 		logger.CtxError(ctx, "InviteMember Marshal fail",
 			zap.Error(err),
 			zap.Any("key", key),
-			zap.Int32("groupID", groupID),
+			zap.Int64("groupID", groupID),
 			zap.Uint64("memberID", memberID),
 			zap.Any("member", member),
 		)
@@ -188,14 +188,14 @@ func InviteMember(ctx context.Context, appID int32, groupID int32, memberID uint
 			logger.CtxError(ctx, "InviteMember HDel fail",
 				zap.Error(err),
 				zap.Any("key", key),
-				zap.Int32("groupID", groupID),
+				zap.Int64("groupID", groupID),
 				zap.Uint64("memberID", memberID),
 				zap.Any("member", member),
 			)
 			return err
 		}
 	}
-	logger.CtxInfo(ctx, "InviteMember success", zap.Any("key", key), zap.Int32("groupID", groupID), zap.Uint64("memberID", memberID))
+	logger.CtxInfo(ctx, "InviteMember success", zap.Any("key", key), zap.Int64("groupID", groupID), zap.Uint64("memberID", memberID))
 	return
 }
 
