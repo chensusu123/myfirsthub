@@ -336,6 +336,8 @@ func (dei *DEInstance) GenBaseAttr(ctx context.Context) error {
 	attrGroupList := make([]int32, 0)
 	baseAttrs := make([]*MazeEquipCache.BaseAttrInfo, 0)
 	remGroupMap := make(map[int32]struct{}, 0)
+
+	// 随机多个词条
 	for index := int32(1); index <= baseNum; index++ {
 		basePoolMap, ok := groupBasePoolMap[index]
 		if !ok {
@@ -352,12 +354,36 @@ func (dei *DEInstance) GenBaseAttr(ctx context.Context) error {
 				zap.Int32("poolId", poolId), zap.Int64("equipGuid", dei.EParam.EquipGuid))
 			return errors.New("属性配置不存在")
 		}
-		newPoolWeightMap := make(map[int32]int32, 0)
+
+		// 先随机group group的权重为所有相同group的均值
+		newGroupWeightMap := make(map[int32]int32, 0)
+		newGroupSize := make(map[int32]int32, 0)
 		for k, v := range poolMap {
 			if _, ok := remGroupMap[v.Group]; ok {
 				dei.DebugWF("随机Base属性词条去重", zap.Any("去重词条id", k), zap.Any("去重组id", v.Group), zap.Int64("equipGuid", dei.EParam.EquipGuid))
 				continue
 			}
+			newGroupWeightMap[v.Group] += v.Weight
+			newGroupSize[v.Group] += 1
+		}
+
+		for groupID := range newGroupWeightMap {
+			// 设置为均值
+			newGroupWeightMap[groupID] = newGroupWeightMap[groupID] / newGroupSize[groupID]
+		}
+
+		// 随机group
+		nowGroup := randfuncs.RandByWeightV2(dei, newGroupWeightMap, true)
+
+		// 随机词条
+		newPoolWeightMap := make(map[int32]int32, 0)
+		// 每个词条走随机池带权随机
+		for k, v := range poolMap {
+			if v.Group != nowGroup {
+				dei.DebugWF("随机Base属性抗性词条去重", zap.Any("去重词条id", k), zap.Any("去重组id", v.Group), zap.Int64("equipGuid", dei.EParam.EquipGuid))
+				continue
+			}
+
 			if limitNum >= dei.EParam.EquipInfoCfg.LimitNum {
 				if _, ok := equipInfoCfg.PoolLimitMap[v.Affix_id]; ok {
 					dei.DebugWF("随机Base属性抗性词条去重", zap.Any("去重词条id", k), zap.Any("去重组id", v.Group), zap.Int64("equipGuid", dei.EParam.EquipGuid))
@@ -465,10 +491,32 @@ func (dei *DEInstance) GenRandAttr(ctx context.Context) error {
 	}
 	poolWeightMap := mazeequipaffixrandpoolv8.GetEquipPoolWeightCfg(poolId)
 	remGroupMap := make(map[int32]struct{}, 0)
+
+	// 随机多个词条
 	for index := int32(1); index <= randNum; index++ {
-		newPoolWeightMap := make(map[int32]int32, 0)
+		// 先随机group group的权重为所有相同group的均值
+		newGroupWeightMap := make(map[int32]int32, 0)
+		newGroupSize := make(map[int32]int32, 0)
 		for k, v := range poolWeightMap {
 			if _, ok := remGroupMap[v.Group]; ok {
+				dei.DebugWF("随机Base属性词条去重", zap.Any("去重词条id", k), zap.Any("去重组id", v.Group), zap.Int64("equipGuid", dei.EParam.EquipGuid))
+				continue
+			}
+			newGroupWeightMap[v.Group] += v.Weight
+			newGroupSize[v.Group] += 1
+		}
+
+		for groupID := range newGroupWeightMap {
+			// 设置为均值
+			newGroupWeightMap[groupID] = newGroupWeightMap[groupID] / newGroupSize[groupID]
+		}
+
+		// 随机group
+		nowGroup := randfuncs.RandByWeightV2(dei, newGroupWeightMap, true)
+
+		newPoolWeightMap := make(map[int32]int32, 0)
+		for k, v := range poolWeightMap {
+			if v.Group != nowGroup {
 				dei.DebugWF("随机Base属性词条去重", zap.Any("去重词条id", k), zap.Any("去重组id", v.Group), zap.Int64("equipGuid", dei.EParam.EquipGuid))
 				continue
 			}
