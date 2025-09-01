@@ -99,6 +99,8 @@ func (g *Game) OnMazeReportBattleEventRQ_10496_10497(s *session.Session, req *Ma
 			// 触发事件
 			triggerFn()
 		}
+
+		// 上报数据打点
 		dataJson, err := json.Marshal(eventData)
 		if err != nil {
 			logger.CtxError(ctx, "OnMazeReportBattleEventRQ Marshal fail",

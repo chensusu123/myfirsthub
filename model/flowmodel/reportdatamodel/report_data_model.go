@@ -4,9 +4,8 @@ import (
 	"context"
 	"maze_game_server/io/kafka/kafkacommonstruct"
 	"maze_game_server/io/mysql"
-	"maze_game_server/io/redis/mazebarriereventredis"
+	"maze_game_server/io/redis/reportredis"
 	"maze_game_server/pb/common/MazeGame"
-	"maze_game_server/services/flowservice"
 	"strings"
 
 	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fklog"
@@ -36,19 +35,14 @@ func NewReportData(ctx context.Context, t MazeGame.BattleEventType, userID uint6
 		EventTimeMs: eventTimeMs,
 		Data:        data,
 	}
-	enterTime := flowservice.GflowService.GetUserEnterTime(userID)
-	if enterTime == 0 {
-		ret, err := mazebarriereventredis.GetBarrierEnterTime(ctx, userID)
-		if err != nil {
-			logger.CtxError(ctx, "GetUserEnterTime Fail",
-				zap.Uint64("userID", userID),
-			)
-			enterTime = 0
-		} else {
-			enterTime = uint64(ret)
-			flowservice.GflowService.SetUserEnterTime(userID, enterTime)
-		}
+	enterTime, err := reportredis.GetEnterTime(ctx, userID)
+	if err != nil {
+		logger.CtxError(ctx, "GetEnterTime Fail",
+			zap.Uint64("userID", userID),
+		)
+		enterTime = 0
 	}
+
 	res.EnterTimeMs = enterTime
 	nowDbTable := strings.Split(mysql.GetFullyQualifiedTableName(MazeUserLevelRecordTableName), ".")
 

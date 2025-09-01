@@ -11,8 +11,6 @@ type flowService interface {
 	SendFlowData(ctx context.Context, record interface{})
 	// 处理数据的地方 初始化时创建 后续把所有数据都转化为json来发送
 	ProcessFlowData()
-	SetUserEnterTime(userID uint64, enterTime uint64)
-	GetUserEnterTime(userID uint64) uint64
 }
 
 type service struct {
