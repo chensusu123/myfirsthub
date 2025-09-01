@@ -624,6 +624,7 @@ func processDataWrite(a *agent, dataWrite *WriteItem) (err error) {
 		span.SetStatus(codes.Error, "conn.Write failed.")
 		return err
 	}
+	span.AddEvent("conn.write.success")
 	return nil
 }
 
