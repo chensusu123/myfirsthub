@@ -38,7 +38,7 @@ func (e *Equip) OnEquipPosLvUpPreviewRQ_10423_10424(s *session.Session, rq *Maze
 	logger.CtxInfo(ctx, "OnEquipPosLvUpPreviewRQ start", zap.Any("rq", rq))
 	defer func() {
 		err = s.Response(rs)
-		logger.CtxError(ctx, "OnEquipPosLvUpPreviewRQ end", zap.Any("rs", rs))
+		logger.CtxInfo(ctx, "OnEquipPosLvUpPreviewRQ end", zap.Any("rs", rs))
 	}()
 
 	if posId < 1 || posId > constdef.EquipPosNum {
