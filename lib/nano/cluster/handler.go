@@ -50,6 +50,7 @@ import (
 	"maze_game_server/lib/nano/session"
 
 	"github.com/gorilla/websocket"
+	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fkalert"
 	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fklog"
 	"gitlab.ifreetalk.com/maze-plate/freetk/pkg/logidutil"
 	"go.opentelemetry.io/otel"
@@ -221,17 +222,25 @@ func (h *LocalHandler) RemoteService() []string {
 func (h *LocalHandler) handle(conn net.Conn, r *http.Request, pcodec frame.PacketCodec) {
 	uerCount := h.userCount.Add(1)
 	nanometrics.UserCountGauge.Set(float64(uerCount))
-	defer func() {
-		uerCount = h.userCount.Add(-1)
-		nanometrics.UserCountGauge.Set(float64(uerCount))
-	}()
+	var agentSessionID int64
+	var closeNoraml bool
+
 	// Select a packet codec
 	if pcodec == nil {
 		pcodec = h.pcodec
 	}
 	// create a client agent and startup write gorontine
 	agent := newAgent(conn, h.pipeline, pcodec, h.remoteProcess)
-
+	agentSessionID = agent.session.ID()
+	defer func() {
+		fkalert.RecoverAlertException()
+		uerCount = h.userCount.Add(-1)
+		nanometrics.UserCountGauge.Set(float64(uerCount))
+		fklog.AppLogger().InfoWF("agent close",
+			zap.Int64("agentSessionID", agentSessionID),
+			zap.Bool("closeNoraml", closeNoraml),
+			zap.Int64("enduser.id", agent.session.UID()))
+	}()
 	// Init session
 	// 将Websocket连接请求Header中的数据转存至Session
 	if r != nil {
@@ -259,10 +268,6 @@ func (h *LocalHandler) handle(conn net.Conn, r *http.Request, pcodec frame.Packe
 
 	// startup write goroutine
 	go agent.write()
-
-	if env.Debug {
-		log.Println(fmt.Sprintf("New session established: %s", agent.String()))
-	}
 
 	// guarantee agent related resource be destroyed
 	defer func() {
@@ -301,6 +306,7 @@ func (h *LocalHandler) handle(conn net.Conn, r *http.Request, pcodec frame.Packe
 			zap.Int64("enduser.id", agent.session.UID()),
 			zap.Any("lastErr", lastErr),
 		)
+		closeNoraml = true
 	}()
 
 	// read loop
@@ -340,6 +346,7 @@ func (h *LocalHandler) handle(conn net.Conn, r *http.Request, pcodec frame.Packe
 				// process message decoded
 				for index, m := range msgs {
 					loggerLoop.CtxInfo(ctx, "nano process packet start", zap.Uint64("ID", m.ID),
+						zap.Int64("agentSessionID", agentSessionID),
 						zap.String("remote_addr", agent.conn.RemoteAddr().String()),
 						zap.String("route", m.Route),
 						zap.Uint16("PackLen", packets[index].PackLen),
