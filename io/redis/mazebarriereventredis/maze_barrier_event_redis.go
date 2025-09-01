@@ -11,9 +11,12 @@ import (
 	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fklog"
 	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fkredis"
 	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fkredis/redis"
-	"gitlab.ifreetalk.com/maze-plate/freetk/fkutil"
 	"go.uber.org/zap"
 	"google.golang.org/protobuf/proto"
+)
+
+const (
+	FrameMax int64 = 999999
 )
 
 var (
@@ -22,7 +25,7 @@ var (
 )
 
 type BarrierEvent struct {
-	Frame int64       `json:"frame_model,omitempty"`
+	Frame int64       `json:"frame,omitempty"`
 	Time  int64       `json:"time,omitempty"`
 	Type  int32       `json:"type,omitempty"`
 	Data  interface{} `json:"data,omitempty"`
@@ -44,9 +47,9 @@ func getBackupKey(args ...interface{}) string {
 // TriggerBarrierEvent 触发关卡事件
 func TriggerBarrierEvent(ctx context.Context, userID uint64, frame int64, eventTime int64, eventType MazeGame.BattleEventType, eventData proto.Message) (err error) {
 	var (
-		key = getKey(userID)
+		key    = getKey(userID)
+		logger = fklog.ContextAppLogger(ctx)
 	)
-	logger := fklog.ContextAppLogger(ctx)
 	event := BarrierEvent{
 		Frame: frame,
 		Time:  eventTime,
@@ -65,7 +68,13 @@ func TriggerBarrierEvent(ctx context.Context, userID uint64, frame int64, eventT
 		)
 		return err
 	}
-	_, err = cli.Do(ctx, "ZADD", key, eventTime, data)
+	// 有frame则用frame，否则用时间
+	score := eventTime
+	// 进入关卡的帧序号是0
+	if frame > 0 || eventType == MazeGame.BattleEventType_ENTER_BARRIER {
+		score = frame
+	}
+	_, err = cli.Do(ctx, "ZADD", key, score, data)
 	if err != nil {
 		logger.CtxError(ctx, "TriggerBarrierEvent ZADD fail",
 			zap.Error(err),
@@ -107,7 +116,7 @@ func LeaveBarrier(ctx context.Context, userID uint64, barrierID int32, passed bo
 	} else {
 		event.Result = MazeGame.BarrierResult_DEATH.Enum()
 	}
-	err = TriggerBarrierEvent(ctx, userID, 0, time.Now().UnixMilli(), MazeGame.BattleEventType_LEAVE_BARRIER, event)
+	err = TriggerBarrierEvent(ctx, userID, FrameMax, time.Now().UnixMilli(), MazeGame.BattleEventType_LEAVE_BARRIER, event)
 	if err != nil {
 		logger.CtxError(ctx, "EnterBarrier TriggerBarrierEvent fail", zap.Error(err), zap.Uint64("userID", userID), zap.Int32("barrierID", barrierID), zap.Any("passed", passed))
 		return
@@ -125,10 +134,14 @@ func LeaveBarrier(ctx context.Context, userID uint64, barrierID int32, passed bo
 
 // GetBarrierEnterTime 获取关卡上报记录的第一条事件记录时间
 func GetBarrierEnterTime(ctx context.Context, userID uint64) (enterTime int64, err error) {
+<<<<<<< HEAD
 	logger := fklog.ContextAppLogger(ctx)
+=======
+>>>>>>> remotes/origin/dev_human_robot_0315_env
 	var (
 		key = getKey(userID)
 	)
+	logger := fklog.ContextAppLogger(ctx)
 	memberAndScore, err := redis.Strings(cli.Do(ctx, "ZRANGE", key, 0, 0, "WITHSCORES"))
 	if err != nil {
 		if err == redis.ErrNil {
@@ -142,7 +155,14 @@ func GetBarrierEnterTime(ctx context.Context, userID uint64) (enterTime int64, e
 		}
 	}
 	if len(memberAndScore) == 2 {
-		enterTime = fkutil.ToInt64(memberAndScore[1])
+		var event BarrierEvent
+		err = json.Unmarshal([]byte(memberAndScore[0]), &event)
+		if err != nil {
+			logger.CtxError(ctx, "GetBarrierEnterTime Unmarshal fail", zap.Error(err), zap.Any("memberAndScore", memberAndScore))
+			return 0, err
+		} else {
+			enterTime = event.Time
+		}
 	}
 	return
 }
@@ -150,8 +170,14 @@ func GetBarrierEnterTime(ctx context.Context, userID uint64) (enterTime int64, e
 // BackupBarrierEvents
 func BackupBarrierEvents(ctx context.Context, userID uint64, enterTime int64) (err error) {
 	var (
+<<<<<<< HEAD
 		key = getKey(userID)
 		new = getBackupKey(userID, enterTime)
+=======
+		key    = getKey(userID)
+		new    = getBackupKey(userID, enterTime)
+		logger = fklog.ContextAppLogger(ctx)
+>>>>>>> remotes/origin/dev_human_robot_0315_env
 	)
 	logger := fklog.ContextAppLogger(ctx)
 	_, err = cli.Do(ctx, "RENAME", key, new)

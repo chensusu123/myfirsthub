@@ -25,6 +25,7 @@ import (
 	"maze_game_server/services/barrierenergyservice"
 	"maze_game_server/services/barriersavedataservice"
 	"maze_game_server/services/barrierstagecounterservice"
+	"maze_game_server/services/flowservice"
 	"maze_game_server/services/itemservice"
 	"maze_game_server/services/tempbuffservice"
 	"strings"
@@ -333,6 +334,16 @@ func (g *Game) OnMazeBarrierEnterRQ_10447_10448(s *session.Session, req *MazeGam
 	if err != nil {
 		logger.CtxError(ctx, "OnMazeBarrierEnterRQ EnterBarrier fail", zap.Error(err))
 	}
+	// 设置用户进入关卡时间
+	// 备份事件流
+	enterTime, err := mazebarriereventredis.GetBarrierEnterTime(ctx, userId)
+	if err != nil {
+		logger.CtxError(ctx, "OnMazeBarrierEnterRQ GetBarrierEnterTime Fail",
+			zap.Uint64("UserId", userId),
+			zap.Error(err))
+		// 不返回 触发后续事件
+	}
+	flowservice.GflowService.SetUserEnterTime(userId, uint64(enterTime))
 
 	// 触发进入关卡事件
 	events.OnEnterBarrier(ctx, userId, 0, time.Now().UnixMilli(), &MazeGame.BattleEventEnterBarrier{BarrierId: proto.Int32(req.GetBarrierId())})
