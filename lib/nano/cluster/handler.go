@@ -34,6 +34,7 @@ import (
 	"sync/atomic"
 	"time"
 
+	packCodec "maze_game_server/lib/codec"
 	"maze_game_server/lib/nano/cluster/clusterpb"
 	"maze_game_server/lib/nano/component"
 	"maze_game_server/lib/nano/frame"
@@ -546,11 +547,15 @@ func (h *LocalHandler) processMessage(ctx context.Context, agent *agent, msg *me
 		return
 	}
 
+	sessionID, _, rsID := packCodec.SplitSessionAndPackType(msg.ID)
 	tracer := otel.Tracer("nano.process.message")
 	ctx, span := tracer.Start(ctx, msg.Route)
+
 	span.SetAttributes(
 		attribute.Int64("agent.session", agent.session.ID()),
 		attribute.Int64("enduser.id", agent.session.UID()),
+		attribute.Int64("packet.session", int64(sessionID)),
+		attribute.Int64("packet.id", int64(rsID)),
 	)
 	// agent.session.SetContext(ctx)
 	handler, found := h.localHandlers[msg.Route]
