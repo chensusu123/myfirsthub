@@ -283,6 +283,11 @@ func dressInitEquip(ctx context.Context, userId uint64, equipInfoMap map[int32]*
 
 		// 记录流水
 		recordType := dollequipassmeblekakfa.DollEquipAssembleOpInit
+		//临时打印
+		logger.CtxInfo(ctx, "dressInitEquip StartEquipAssmebleRecord record", zap.Int32("pos", row.Pos), zap.Any("equipPosInfo", equipPosInfo),
+			zap.Any("oldEquipPos", oldEquipPos),
+			zap.Int32("recordType", recordType),
+		)
 		record := StartEquipAssmebleRecord(ctx, userId, row.Pos, recordType, equipPosInfo, oldEquipPos, oldEffect)
 		recordList = append(recordList, record)
 		chgEquipPosList = append(chgEquipPosList, equipPosInfo)
