@@ -549,7 +549,14 @@ func (h *LocalHandler) remoteProcess(ctx context.Context, session *session.Sessi
 }
 
 func (h *LocalHandler) processMessage(ctx context.Context, agent *agent, msg *message.Message) {
-	defer fkalert.RecoverAlertException()
+	ctx, cancel := context.WithTimeout(ctx, 5*time.Second)
+	defer func() {
+		fkalert.RecoverAlertException()
+		cancel()
+		if ctx.Err() != nil {
+			fklog.ContextAppLogger(ctx).ErrorWF("process message timeout", zap.Error(ctx.Err()))
+		}
+	}()
 
 	var lastMid uint64
 	switch msg.Type {
