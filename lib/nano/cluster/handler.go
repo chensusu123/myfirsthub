@@ -287,6 +287,7 @@ func (h *LocalHandler) handle(conn net.Conn, r *http.Request, pcodec frame.Packe
 		request := &clusterpb.SessionClosedRequest{
 			SessionId: agent.session.ID(),
 		}
+		span.AddEvent("cluster.remoteAddrs")
 		members := h.currentNode.cluster.remoteAddrs()
 		for _, remote := range members {
 			pool, err := h.currentNode.rpcClient.getConnPool(remote)
@@ -301,17 +302,19 @@ func (h *LocalHandler) handle(conn net.Conn, r *http.Request, pcodec frame.Packe
 				continue
 			}
 		}
-
+		span.AddEvent("SessionMonitor.OnClose")
 		if env.SessionMonitor != nil {
 			env.SessionMonitor.OnClose(ctx, agent.session, lastErr)
 		}
 
+		span.AddEvent("agent.Close")
 		agent.Close()
 		closelogger.CtxDebug(ctx, "Session read goroutine exit",
 			zap.Int64("agent.session", agent.session.ID()),
 			zap.Int64("enduser.id", agent.session.UID()),
 			zap.Any("lastErr", lastErr),
 		)
+		span.AddEvent("agent.Close.end")
 		closeNoraml = true
 	}()
 
