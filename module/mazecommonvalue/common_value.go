@@ -113,7 +113,7 @@ func MakeCommonValueExtraExp(ctx context.Context, userId uint64, level int64, fo
 	return
 }
 
-func MakeAllCommonValue(logger fklog.FKLogI, userId uint64, level, exp, expMax, force, money, extra, extraExp, diamond, passValue int64, session string) (commonList []*CommonValueStruct) {
+func MakeAllCommonValue(ctx context.Context, userId uint64, level, exp, expMax, force, money, extra, extraExp, diamond, passValue int64, session string) (commonList []*CommonValueStruct) {
 	commonList = make([]*CommonValueStruct, 0)
 
 	lvStruct := &CommonValueStruct{

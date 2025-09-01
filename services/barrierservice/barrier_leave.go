@@ -35,7 +35,7 @@ import (
 func (b *barrier) BarrierPass(ctx context.Context, header *Common.PacketHeader, userID uint64, barrierID int32, foeExp int32) (
 	killMonsterNum int32, totalDamage int64, awards, rareAwards []*MazeCommon.MazeItem, errinfo *MessageType.ErrorInfo) {
 	logger := fklog.ContextAppLogger(ctx)
-	cfg := GMazeBarriesV8Cfg.Get(barrierID)
+	cfg := GMazeBarriesV8Cfg.GetWithCtx(ctx, barrierID)
 	if cfg == nil {
 		logger.CtxError(ctx, "BarrierPass get barrier cfg fail", zap.Any("barrier", barrierID), zap.Any("foeExp", foeExp))
 		return 0, 0, nil, nil, errors.COMMON_ERROR_TIPS.Wrap("关卡配置数据获取失败")
@@ -79,7 +79,7 @@ func (b *barrier) BarrierPass(ctx context.Context, header *Common.PacketHeader, 
 	// userInfo.SetBarrier(cfg.Next_id)
 	oldLevel := userInfo.Level
 	oldExp := userInfo.TotalExp
-	err = userInfo.AddExp(int64(totalExp))
+	err = userInfo.AddExp(ctx, int64(totalExp))
 	if err != nil {
 		logger.CtxError(ctx, "BarrierPass AddExp fail", zap.Error(err), zap.Any("barrier", barrierID), zap.Any("totalExp", totalExp))
 		return 0, 0, nil, nil, errors.MODULE_ERROR.ToInfo()
@@ -134,7 +134,7 @@ func (b *barrier) BarrierPass(ctx context.Context, header *Common.PacketHeader, 
 	today := now.Year()*10000 + int(now.Month())*100 + now.Day()
 
 	var awardBarrierNum int32
-	awardBarrierNumCfg := GMazeActionCountV8Cfg.Get(102)
+	awardBarrierNumCfg := GMazeActionCountV8Cfg.GetWithCtx(ctx, 102)
 	if awardBarrierNumCfg != nil {
 		awardBarrierNum = awardBarrierNumCfg.Day_count_v8
 	}
@@ -185,7 +185,7 @@ func (b *barrier) BarrierPass(ctx context.Context, header *Common.PacketHeader, 
 			}
 
 			for _, equip := range rs.GetEquipList() {
-				itemEquip, err := equiptoitem.PackEquipToItem(equip)
+				itemEquip, err := equiptoitem.PackEquipToItem(ctx, equip)
 				if err != nil {
 					logger.CtxError(ctx, "BarrierPass PackEquipToItem fail", zap.Error(err), zap.Any("equip", equip))
 					continue
@@ -237,12 +237,12 @@ func (b *barrier) BarrierDeath(ctx context.Context, header *Common.PacketHeader,
 		return 0, 0, nil, errors.MODULE_ERROR.ToInfo()
 	}
 
-	logger.InfoWF("OnMazeBarrierDeathRQ GetBarrierDeathAward", zap.Any("realItem", realItem), zap.Any("showItem", showItem), zap.Any("realEquip", realEquip), zap.Any("showEquip", showEquip), zap.Any("showExp", showExp))
+	logger.CtxInfo(ctx, "OnMazeBarrierDeathRQ GetBarrierDeathAward", zap.Any("realItem", realItem), zap.Any("showItem", showItem), zap.Any("realEquip", realEquip), zap.Any("showEquip", showEquip), zap.Any("showExp", showExp))
 
 	var nowExp int64
 	showExp -= int64(totalExp)
 	if showExp > 0 {
-		tmpSum := int64(showExp) * int64(GMazeConfigV8Cfg.Get(911).Value_int)
+		tmpSum := int64(showExp) * int64(GMazeConfigV8Cfg.GetWithCtx(ctx, 911).Value_int)
 		nowExp = tmpSum/10000 + int64(totalExp)
 	} else {
 		nowExp = int64(totalExp)
@@ -251,7 +251,7 @@ func (b *barrier) BarrierDeath(ctx context.Context, header *Common.PacketHeader,
 	//更新等级经验
 	oldLevel := userInfo.Level
 	oldExp := userInfo.TotalExp
-	err = userInfo.AddExp(nowExp)
+	err = userInfo.AddExp(ctx, nowExp)
 	if err != nil {
 		logger.CtxError(ctx, "OnMazeBarrierDeathRQ addExp fail", zap.Error(err), zap.Any("barrier", barrierID), zap.Any("totalExp", totalExp))
 		return 0, 0, nil, errors.MODULE_ERROR.ToInfo()
@@ -331,7 +331,7 @@ func (b *barrier) BarrierDeath(ctx context.Context, header *Common.PacketHeader,
 	if len(realEquip) > 0 {
 		for equipId, count := range realEquip {
 			for i := 0; i < int(count); i++ {
-				itemEquip, err := equiptoitem.PackMazeEquipInfoSvrToItem(equipId)
+				itemEquip, err := equiptoitem.PackMazeEquipInfoSvrToItem(ctx, equipId)
 				if err != nil {
 					logger.CtxError(ctx, "CalUserSweepBarrierAward PackMazeEquipInfoSvrToItem fail", zap.Error(err), zap.Any("equipId", equipId))
 					continue
@@ -341,8 +341,8 @@ func (b *barrier) BarrierDeath(ctx context.Context, header *Common.PacketHeader,
 		}
 	}
 
-	logger.InfoWF("OnMazeBarrierDeathRQ showAward", zap.Any("realItem", realItem), zap.Any("realEquip", realEquip))
-	// logger.InfoWF("OnMazeBarrierDeathRQ addItems", zap.Any("addItems", addItems), zap.Any("equipItem", equipItem), zap.Any("expCount", expCount), zap.Any("nowExp", nowExp))
+	logger.CtxInfo(ctx, "OnMazeBarrierDeathRQ showAward", zap.Any("realItem", realItem), zap.Any("realEquip", realEquip))
+	// logger.CtxInfo(ctx,"OnMazeBarrierDeathRQ addItems", zap.Any("addItems", addItems), zap.Any("equipItem", equipItem), zap.Any("expCount", expCount), zap.Any("nowExp", nowExp))
 
 	return killMonsterNum, totalDamage, awards, nil
 }

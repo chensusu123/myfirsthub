@@ -88,7 +88,7 @@ func (s *service) AddExp(writer http.ResponseWriter, request *http.Request) {
 	oldExp := userInfo.TotalExp
 
 	// 更新等级经验
-	err = userInfo.AddExp(exp)
+	err = userInfo.AddExp(ctx, exp)
 	if err != nil {
 		logger.CtxError(ctx, "AddExp CalExp fail", zap.Error(err))
 		outPut = *gmmodel.NewOutPut(http.StatusBadGateway, fmt.Sprintf("errMsg: %s", err.Error()), gmmodel.DynamicData{})

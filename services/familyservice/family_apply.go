@@ -70,7 +70,7 @@ func (r *service) RefuseApplyFamily(ctx context.Context, familyID int32, userID 
 	// 保存
 	err = familyInfoModel.Save(ctx, familyID)
 	if err != nil {
-		logger.ErrorWF("AgreeApplyFamily familyInfoModel.Save err",
+		logger.CtxError(ctx, "AgreeApplyFamily familyInfoModel.Save err",
 			zap.Int32("familyID", familyID), zap.Error(err))
 		return nil, err
 	}

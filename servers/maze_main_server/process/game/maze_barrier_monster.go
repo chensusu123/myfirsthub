@@ -76,7 +76,7 @@ func (g *Game) OnBarrierMonsterDeathRQ_10498_10499(s *session.Session, req *Maze
 	// 增加掉落物品返回
 	for itemID, count := range items {
 		if itemID > 0 {
-			itemCfg := GMazeItemsV8Cfg.Get(itemID)
+			itemCfg := GMazeItemsV8Cfg.GetWithCtx(ctx,itemID)
 			if itemCfg == nil {
 				logger.CtxInfo(ctx, "OnBarrierMonsterDeathRQ item not found", zap.Error(fmt.Errorf("item: %d not found", itemID)), zap.Any("MonsterId", req.GetMonsterId()))
 			} else {

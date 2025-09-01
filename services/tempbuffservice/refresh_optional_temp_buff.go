@@ -3,8 +3,6 @@ package tempbuffservice
 import (
 	"context"
 	"fmt"
-	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fklog"
-	"go.uber.org/zap"
 	"maze_game_server/common/errors"
 	"maze_game_server/common/function/itemutil"
 	"maze_game_server/common/tradeno"
@@ -13,6 +11,9 @@ import (
 	"maze_game_server/model/tempbuffmodel"
 	"maze_game_server/pb/common/MazeCommon"
 	"maze_game_server/services/itemservice"
+
+	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fklog"
+	"go.uber.org/zap"
 )
 
 func (s *service) RefreshOptionalMazeTempBuffList(ctx context.Context, userId uint64, barrierId, level, areaId, attrMask int32, cost []*MazeCommon.MazeItem) (*OptionalBuffInfo, error) {
@@ -96,7 +97,7 @@ func (s *service) checkCost(costMap map[int32]int64, costList []*MazeCommon.Maze
 func (s *service) refreshOptionalBuff(ctx context.Context, userId uint64, stageId, level, areaId, attrMask int32,
 	buffInfo *tempbuffmodel.TempBuffInfoModel) (err error) {
 	logger := fklog.ContextAppLogger(ctx)
-	stageConfig := mazebarriesv8config.GetStageConfig(stageId)
+	stageConfig := mazebarriesv8config.GetStageConfig(ctx, stageId)
 	if stageConfig == nil {
 		logger.CtxError(ctx, "getOptionalBuffList stage config unknown", zap.Int32("stageId", stageId))
 		return errors.New("关卡配置异常")

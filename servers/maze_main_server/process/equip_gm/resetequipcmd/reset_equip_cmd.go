@@ -28,7 +28,7 @@ func RunCmd1001(ctx context.Context, userID uint64, session string, param string
 		return e
 	}
 	// 初始装备套检查
-	e = equip.InitDollEquipSuitSeq(logger, userID)
+	e = equip.InitDollEquipSuitSeq(ctx, userID)
 	if e != nil {
 		return e
 	}
@@ -38,9 +38,9 @@ func RunCmd1001(ctx context.Context, userID uint64, session string, param string
 		return e
 	}
 	// 删除临时buff武力属性
-	err := mazebuffinforedis.DelMazeBuffBySrc(logger, userID, constdef.MazeBuffSrcSelectBuffForce)
+	err := mazebuffinforedis.DelMazeBuffBySrc(ctx, userID, constdef.MazeBuffSrcSelectBuffForce)
 	if err != nil {
-		logger.ErrorWF("MazeBarrierNotifyProcess DelMazeBuffBySrc failed", zap.Uint64("userId", userID), zap.Error(err))
+		logger.CtxError(ctx, "MazeBarrierNotifyProcess DelMazeBuffBySrc failed", zap.Uint64("userId", userID), zap.Error(err))
 		return err
 	}
 	return nil

@@ -19,8 +19,6 @@ import (
 	"maze_game_server/io/redis/mazebuffinforedis"
 	"maze_game_server/io/redis/mazecalcattrredis"
 	"maze_game_server/module/mazeattrformula"
-
-	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fklog"
 )
 
 func DumpDollCalcAttr(ctx context.Context, userId uint64) (attrInfo string, err error) {
@@ -105,7 +103,7 @@ func DumpDollCalcAttr(ctx context.Context, userId uint64) (attrInfo string, err 
 	return bs.String(), nil
 }
 
-// func DumpForceAttr(logger fklog.FKLogI, userId uint64) (attrInfo string, err error) {
+// func DumpForceAttr(ctx context.Context, userId uint64) (attrInfo string, err error) {
 // 	allAttrs, err := dollassembleattrredis.GetDollAllForce(logger, userId)
 // 	if err != nil {
 // 		return
@@ -131,7 +129,7 @@ func DumpDollCalcAttr(ctx context.Context, userId uint64) (attrInfo string, err 
 // 	return bs.String(), nil
 // }
 
-func DumpNoForceAttr(logger fklog.FKLogI, userId uint64) (attrInfo string, err error) {
+func DumpNoForceAttr(ctx context.Context, userId uint64) (attrInfo string, err error) {
 	var bs bytes.Buffer
 	bs.WriteString("\n迷宫面板初始属性:\n")
 	bs.WriteString(fmt.Sprintf("配表:%s\n", GMazeInitialAttrV8Cfg.SheetName()))
@@ -153,19 +151,19 @@ func DumpNoForceAttr(logger fklog.FKLogI, userId uint64) (attrInfo string, err e
 		}
 	}
 
-	allAttrs, err := mazebuffinforedis.GetAllMazeBuffs(logger, userId)
+	allAttrs, err := mazebuffinforedis.GetAllMazeBuffs(ctx, userId)
 	if err != nil {
 		return
 	}
 
 	var bcIds []int32
-	ids := mazeattrformula.GetGFXFormulaParamAttrs(constdef.DollFormulaAttack)
+	ids := mazeattrformula.GetGFXFormulaParamAttrs(ctx, constdef.DollFormulaAttack)
 	bcIds = append(bcIds, ids...)
-	ids = mazeattrformula.GetGFXFormulaParamAttrs(constdef.DollFormulaDefend)
+	ids = mazeattrformula.GetGFXFormulaParamAttrs(ctx, constdef.DollFormulaDefend)
 	bcIds = append(bcIds, ids...)
-	ids = mazeattrformula.GetGFXFormulaParamAttrs(constdef.DollFormulaBlood)
+	ids = mazeattrformula.GetGFXFormulaParamAttrs(ctx, constdef.DollFormulaBlood)
 	bcIds = append(bcIds, ids...)
-	ids = mazeattrformula.GetGFXFormulaParamAttrs(constdef.MazeForce)
+	ids = mazeattrformula.GetGFXFormulaParamAttrs(ctx, constdef.MazeForce)
 	bcIds = append(bcIds, ids...)
 	bs.WriteString("\n攻+防+血+武力值加成来源汇总:\n")
 	for src, attrs := range allAttrs {

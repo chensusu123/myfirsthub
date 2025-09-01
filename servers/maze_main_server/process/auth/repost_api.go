@@ -9,7 +9,7 @@ import (
 	"google.golang.org/protobuf/proto"
 )
 
-func SendArrivePacket(logger fklog.FKLogI, userID int64, packetType uint16, pack proto.Message) error {
+func SendArrivePacket(ctx context.Context, userID int64, packetType uint16, pack proto.Message) error {
 	return online.ClusterPush(context.TODO(), uint64(userID), packetType, pack)
 }
 

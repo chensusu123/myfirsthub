@@ -70,7 +70,7 @@ func (ep *Equip) OnDressMazeEquipRQ_10418_10419(s *session.Session, req *MazeGam
 			toastmsgtipexcel.GetToastMsgTip(2018, "操作太频繁")).ToInfo()
 		return
 	}
-	GtcpLimiter.UpdateTime(logger, limitKey)
+	GtcpLimiter.UpdateTime(ctx, limitKey)
 
 	var curSuitSeq int32 = 1
 	pos := req.GetEquipPos()
@@ -132,7 +132,7 @@ func (ep *Equip) OnDressMazeEquipRQ_10418_10419(s *session.Session, req *MazeGam
 		return nil
 	}
 
-	dressEquipDb, err = effectequip.GetEffectEquipInfo(logger, userId, dressEquipGuid)
+	dressEquipDb, err = effectequip.GetEffectEquipInfo(ctx, userId, dressEquipGuid)
 	if err != nil {
 		res.ErrInfo = errors.MODULE_ERROR.ToInfo()
 		logger.CtxError(ctx, "OnDressMazeEquipRQ get bag equip info fail", zap.Error(err), zap.Int64("dressEquipGuid", dressEquipGuid))
@@ -153,7 +153,7 @@ func (ep *Equip) OnDressMazeEquipRQ_10418_10419(s *session.Session, req *MazeGam
 	// 		zap.Int64("enterTime", dressEquipDb.GetEnterTime()))
 	// 	return nil
 	// }
-	assembleInfo, oldEffect, err := dollassembleinfo.GetDollAssembleInfoEx(logger, userId)
+	assembleInfo, oldEffect, err := dollassembleinfo.GetDollAssembleInfoEx(ctx, userId)
 	if err != nil {
 		res.ErrInfo = errors.MODULE_ERROR.ToInfo()
 		logger.CtxError(ctx, "OnDressMazeEquipRQ Get Assemble info fail", zap.Error(err))
@@ -174,7 +174,7 @@ func (ep *Equip) OnDressMazeEquipRQ_10418_10419(s *session.Session, req *MazeGam
 		// 如果客户端请求穿戴信息和服务器不一致时，带回正确的数据给客户端
 		if noMatch && len(res.MazeEquipPos) == 0 {
 			for _, chgEquip := range assembleInfo.GetMazeEquips() {
-				cliPb, _ := packequipostopb.PackEquipPosPb(logger, chgEquip, int32(MazeGameEquip.ENUM_MAZE_EQUIP_POS_MASK_LOAD_EQUIP_INFO))
+				cliPb, _ := packequipostopb.PackEquipPosPb(ctx, chgEquip, int32(MazeGameEquip.ENUM_MAZE_EQUIP_POS_MASK_LOAD_EQUIP_INFO))
 				if cliPb != nil {
 					res.MazeEquipPos = append(res.MazeEquipPos, cliPb)
 				}
@@ -247,11 +247,11 @@ func (ep *Equip) OnDressMazeEquipRQ_10418_10419(s *session.Session, req *MazeGam
 		oldEquipPos.EquipInfo = dressedEquip.GetEquipInfo()
 	}
 
-	module.ReplaceEquip(logger, dressedEquip, dressEquipDb)
+	module.ReplaceEquip(ctx, dressedEquip, dressEquipDb)
 	chgEquipPosList = append(chgEquipPosList, dressedEquip)
 	updateEquipPos = append(updateEquipPos, dressedEquip)
 	var effectInfo *calcassembleattr.EquipmentEffectInfo
-	effectInfo, err = calcassembleattr.CalcEquipEffect(logger, assembleInfo.MazeEquips)
+	effectInfo, err = calcassembleattr.CalcEquipEffect(ctx, assembleInfo.MazeEquips)
 	if err != nil {
 		res.ErrInfo = errors.COMMON_ERROR_TIPS.Wrap(err.Error())
 		logger.CtxError(ctx, "OnDressMazeEquipRQ CalcEquipEffect fail ",
@@ -280,7 +280,7 @@ func (ep *Equip) OnDressMazeEquipRQ_10418_10419(s *session.Session, req *MazeGam
 	// 穿戴装备引起的技能信息变化包
 	equipSkillInfoChange, changed, err := GetEquipSkillInfoChange(ctx, userId, oldEquipPos, dressedEquip)
 	if err != nil {
-		logger.ErrorWF("OnDressMazeEquipRQ GetEquipSkillInfoChange fail",
+		logger.CtxError(ctx, "OnDressMazeEquipRQ GetEquipSkillInfoChange fail",
 			zap.Error(err),
 			zap.Uint64("userId", userId),
 			zap.Any("oldEquipPos", oldEquipPos),
@@ -292,7 +292,7 @@ func (ep *Equip) OnDressMazeEquipRQ_10418_10419(s *session.Session, req *MazeGam
 		}()
 	}
 
-	record := StartEquipAssmebleRecord(userId, pos, recordType, dressedEquip,
+	record := StartEquipAssmebleRecord(ctx, userId, pos, recordType, dressedEquip,
 		oldEquipPos, oldEffect)
 
 	var opCode int32 = 1
@@ -302,11 +302,11 @@ func (ep *Equip) OnDressMazeEquipRQ_10418_10419(s *session.Session, req *MazeGam
 		EndEquipAssmebleRecord(ctx, record, opCode, opMask, effectInfo)
 	}()
 	// 保存装配数据
-	err = dollassemblesuitredis.SaveEquipAssembleInfoV2(logger, userId, assembleInfo.GetCurSuitIndex(), updateEquipPos)
+	err = dollassemblesuitredis.SaveEquipAssembleInfoV2(ctx, userId, assembleInfo.GetCurSuitIndex(), updateEquipPos)
 	if err != nil {
 		res.ErrInfo = errors.DB_SAVE_ERROR.ToInfo()
 		opMask |= demconstdef.DollEquipAssembleOpMaskDbSave
-		logger.ErrorWF("OnDressMazeEquipRQ SaveEquipAssembleInfoV2 fail", zap.Error(err), zap.Any("updateEquipPos", updateEquipPos))
+		logger.CtxError(ctx, "OnDressMazeEquipRQ SaveEquipAssembleInfoV2 fail", zap.Error(err), zap.Any("updateEquipPos", updateEquipPos))
 		return err
 	}
 	opCode = 0
@@ -317,13 +317,13 @@ func (ep *Equip) OnDressMazeEquipRQ_10418_10419(s *session.Session, req *MazeGam
 	//	award := make(map[int32]int64)
 	//	var equipAward map[int32]int64
 	//	equipId := dressedEquip.GetEquipInfo().GetEquipId()
-	//	equipCfg := GMazeEquipInfoV8Cfg.Get(equipId)
+	//	equipCfg := GMazeEquipInfoV8Cfg.GetWithCtx(ctx,equipId)
 	//	if equipCfg == nil {
 	//		logger.CtxError(ctx, "OnDressMazeEquipRQ get equip cfg fail", zap.Any("equipId", equipId))
 	//		res.ErrInfo = errors.CONFIG_NOT_FOUND.ToInfo()
 	//		return
 	//	}
-	//	equipAward, err = getEquipDismantle(logger, dressedGuid, int64(equipId), equipCfg)
+	//	equipAward, err = getEquipDismantle(ctx, dressedGuid, int64(equipId), equipCfg)
 	//	if err != nil {
 	//		logger.CtxError(ctx, "OnDressMazeEquipRQ get dismantle award fail", zap.Any("equipGuid", dressedGuid), zap.Error(err))
 	//		res.ErrInfo = errors.CONFIG_NOT_FOUND.ToInfo()
@@ -347,7 +347,7 @@ func (ep *Equip) OnDressMazeEquipRQ_10418_10419(s *session.Session, req *MazeGam
 	//	}
 	//
 	//	//分解了，只通知穿戴的装备
-	//	e := NotifyBagSvr(logger, userId, pos, 0, dressEquipGuid, 0)
+	//	e := NotifyBagSvr(ctx, userId, pos, 0, dressEquipGuid, 0)
 	//	if e != nil {
 	//		opMask |= demconstdef.DollEquipAssembleOpMaskNotifyBag
 	//		logger.CtxError(ctx, "OnDressMazeEquipRQ NotifyBagSvr fail", zap.Error(e),
@@ -355,7 +355,7 @@ func (ep *Equip) OnDressMazeEquipRQ_10418_10419(s *session.Session, req *MazeGam
 	//	}
 	//} else {
 	// 通知背包服务
-	e := NotifyBagSvr(logger, userId, pos, 0, dressEquipGuid, dressedGuid)
+	e := NotifyBagSvr(ctx, userId, pos, 0, dressEquipGuid, dressedGuid)
 	if e != nil {
 		opMask |= demconstdef.DollEquipAssembleOpMaskNotifyBag
 		logger.CtxError(ctx, "OnDressMazeEquipRQ NotifyBagSvr fail", zap.Error(e),
@@ -366,7 +366,7 @@ func (ep *Equip) OnDressMazeEquipRQ_10418_10419(s *session.Session, req *MazeGam
 	var chgMask int32
 
 	// 更新buff中心
-	e = mazebuffinforedis.SaveMazeEquipBuff(logger, userId, effectInfo.Other)
+	e = mazebuffinforedis.SaveMazeEquipBuff(ctx, userId, effectInfo.Other)
 	if e != nil {
 		opMask |= demconstdef.DollEquipAssembleOpMaskNonForceBuff
 	} else {
@@ -381,7 +381,7 @@ func (ep *Equip) OnDressMazeEquipRQ_10418_10419(s *session.Session, req *MazeGam
 		e = mazeattrcalcnotifyqueue.SendMazeAttrCalcNotify(ctx, calcAttrNotify)
 		if e != nil {
 			opMask |= demconstdef.DollEquipAssembleOpMaskCalcAttr
-			logger.ErrorWF("OnDressMazeEquipRQ SendDollAttrCalcNotify fail", zap.Error(e))
+			logger.CtxError(ctx, "OnDressMazeEquipRQ SendDollAttrCalcNotify fail", zap.Error(e))
 		}
 
 		mazebuffchgrrecordapi.SendMazeBuffChgRecord(ctx, userId,
@@ -399,7 +399,7 @@ func (ep *Equip) OnDressMazeEquipRQ_10418_10419(s *session.Session, req *MazeGam
 
 	chgAssembleInfo.MazeEquips = chgEquipPosList
 	chgMask |= int32(MazeGameEquip.ENUM_MAZE_ASSEMBLE_CHG_TYPE_MASK_EQUIP_POS_MASK)
-	assembleidpack.SendAssembleChgID(logger, userId, chgAssembleInfo,
+	assembleidpack.SendAssembleChgID(ctx, userId, chgAssembleInfo,
 		chgMask, int32(int32(MazeGameEquip.ENUM_MAZE_EQUIP_POS_MASK_LOAD_EQUIP_INFO)),
 		constdef.DollAssembleChgTypeReplaceEquip)
 
@@ -408,7 +408,7 @@ func (ep *Equip) OnDressMazeEquipRQ_10418_10419(s *session.Session, req *MazeGam
 	return nil
 }
 
-func NotifyBagSvr(logger fklog.FKLogI, userId uint64, pos, src int32, upGuid, downGuid int64) error {
+func NotifyBagSvr(ctx context.Context, userId uint64, pos, src int32, upGuid, downGuid int64) error {
 	rq := &MazeEquipSvr.SvrMazeEquipAssembleRQ{}
 	rq.UserId = proto.Uint64(userId)
 	rq.EquipPos = proto.Int32(pos)
@@ -416,8 +416,8 @@ func NotifyBagSvr(logger fklog.FKLogI, userId uint64, pos, src int32, upGuid, do
 	rq.ReplacedEquipGuid = proto.Int64(downGuid)
 	rq.EquipSrc = proto.Int32(src)
 	rs := &MazeEquipSvr.SvrMazeEquipAssembleRS{}
-	// e := dollequipbagrpc.MazeEquipAssembleRQ(logger, rq, rs)
-	e := OnSvrMazeEquipAssembleRQ(logger, int64(userId), rq, rs)
+	// e := dollequipbagrpc.MazeEquipAssembleRQ(ctx, rq, rs)
+	e := OnSvrMazeEquipAssembleRQ(ctx, int64(userId), rq, rs)
 	if e != nil {
 		return e
 	}
@@ -427,7 +427,7 @@ func NotifyBagSvr(logger fklog.FKLogI, userId uint64, pos, src int32, upGuid, do
 	return errors.New("请求背包失败")
 }
 
-func StartEquipAssmebleRecord(userId uint64, pos, op int32, newEquip, oldEquip *MazeEquipCache.MazeEquipPosInfo, oldEffect *calcassembleattr.EquipmentEffectInfo) *dollequipassmeblekakfa.MazeGameEquipAssembleRecord {
+func StartEquipAssmebleRecord(ctx context.Context, userId uint64, pos, op int32, newEquip, oldEquip *MazeEquipCache.MazeEquipPosInfo, oldEffect *calcassembleattr.EquipmentEffectInfo) *dollequipassmeblekakfa.MazeGameEquipAssembleRecord {
 	record := new(dollequipassmeblekakfa.MazeGameEquipAssembleRecord)
 	record.UserId = userId
 	record.EquipPos = pos
@@ -435,12 +435,12 @@ func StartEquipAssmebleRecord(userId uint64, pos, op int32, newEquip, oldEquip *
 	if newEquip != nil {
 		record.NewEquipId = newEquip.GetEquipLoadInfo().GetEquipId()
 		record.NewGuid = uint64(newEquip.GetEquipLoadInfo().GetEquipGuid())
-		newExtra = MakeExtra(pbutil.GetDollEquipName(newEquip.GetEquipInfo(), 0))
+		newExtra = MakeExtra(pbutil.GetDollEquipName(ctx, newEquip.GetEquipInfo(), 0))
 	}
 	if oldEquip != nil {
 		record.OldEquipId = oldEquip.GetEquipLoadInfo().GetEquipId()
 		record.OldGuid = uint64(oldEquip.GetEquipLoadInfo().GetEquipGuid())
-		oldExtra = MakeExtra(pbutil.GetDollEquipName(oldEquip.GetEquipInfo(), 0))
+		oldExtra = MakeExtra(pbutil.GetDollEquipName(ctx, oldEquip.GetEquipInfo(), 0))
 	}
 	record.OpType = op
 	hsStr := maputil.MapToString32(oldEffect.GetSuitCalc().GetSuitNumMap())

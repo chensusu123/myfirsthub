@@ -1,6 +1,7 @@
 package equiptoitem
 
 import (
+	"context"
 	"errors"
 	"fmt"
 	"maze_game_server/excel/mazeequiptyperesv8"
@@ -13,7 +14,7 @@ import (
 	"google.golang.org/protobuf/proto"
 )
 
-func PackMazeEquipInfoSvrToItem(equipId int32) (item *MazeCommon.MazeItem, err error) {
+func PackMazeEquipInfoSvrToItem(ctx context.Context, equipId int32) (item *MazeCommon.MazeItem, err error) {
 	equipTypeResCfg := mazeequiptyperesv8.GetEquipTypeResCfg(equipId, 0, 0)
 	if equipTypeResCfg == nil {
 		err = fmt.Errorf("mazeequiptyperesv8 get cfg fail, equipId:%d", equipId)
@@ -24,22 +25,22 @@ func PackMazeEquipInfoSvrToItem(equipId int32) (item *MazeCommon.MazeItem, err e
 		EquipResId: proto.Int32(equipTypeResCfg.Order),
 		EquipName:  proto.String(equipTypeResCfg.Name),
 	}
-	itemEquip, err := PackEquipToItem(equip)
+	itemEquip, err := PackEquipToItem(ctx, equip)
 	return itemEquip, err
 }
 
-func PackEquipToItem(equip *MazeEquipSvr.MazeEquipInfoSvr) (item *MazeCommon.MazeItem, err error) {
+func PackEquipToItem(ctx context.Context, equip *MazeEquipSvr.MazeEquipInfoSvr) (item *MazeCommon.MazeItem, err error) {
 	if equip == nil {
 		err = errors.New("equip nil")
 		return
 	}
 
-	equipInfoCfg := GMazeEquipInfoV8Cfg.Get(equip.GetEquipId())
+	equipInfoCfg := GMazeEquipInfoV8Cfg.GetWithCtx(ctx, equip.GetEquipId())
 	if equipInfoCfg == nil {
 		err = fmt.Errorf("get equip info cfg fail, equipId:%d", equip.GetEquipId())
 		return
 	}
-	equipResCfg := GMazeEquipTypeResV8Cfg.Get(equip.GetEquipResId())
+	equipResCfg := GMazeEquipTypeResV8Cfg.GetWithCtx(ctx, equip.GetEquipResId())
 	if equipResCfg == nil {
 		err = fmt.Errorf("get equip res cfg fail, resId:%d", equip.GetEquipResId())
 		return

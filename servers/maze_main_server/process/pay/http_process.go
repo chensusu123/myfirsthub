@@ -3,8 +3,6 @@ package pay
 import (
 	"context"
 	"encoding/json"
-	"go.uber.org/zap"
-	"google.golang.org/protobuf/proto"
 	"maze_game_server/common/constdef"
 	"maze_game_server/common/jwt"
 	"maze_game_server/common/tradeno"
@@ -15,6 +13,9 @@ import (
 	"net/http"
 	"strconv"
 	"time"
+
+	"go.uber.org/zap"
+	"google.golang.org/protobuf/proto"
 
 	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fklog"
 	"gitlab.ifreetalk.com/maze-plate/freetk/fkutil"

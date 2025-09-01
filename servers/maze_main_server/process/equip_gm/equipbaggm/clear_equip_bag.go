@@ -1,16 +1,16 @@
 package equipbaggm
 
 import (
-	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fklog"
+	"context"
 	"maze_game_server/io/redis/mazebagequipredis"
 )
 
-func ClearEquipBag(logger fklog.FKLogI, userId uint64) error {
+func ClearEquipBag(ctx context.Context, userId uint64) error {
 	// allEquip, err := mazebagequipredis.GetAllEquipInfo(context.TODO(), logger, userId)
 	// if err != nil {
 	// 	return err
 	// }
-	err := mazebagequipredis.GMDelEquip(logger, userId)
+	err := mazebagequipredis.GMDelEquip(ctx, userId)
 	if err != nil {
 		return err
 	}
@@ -23,7 +23,7 @@ func ClearEquipBag(logger fklog.FKLogI, userId uint64) error {
 	return err
 }
 
-func ClearEquipBagBatch(logger fklog.FKLogI, userId uint64, equipGuids []int64) error {
-	err := mazebagequipredis.BatchDelEquip(logger, userId, equipGuids...)
+func ClearEquipBagBatch(ctx context.Context, userId uint64, equipGuids []int64) error {
+	err := mazebagequipredis.BatchDelEquip(ctx, userId, equipGuids...)
 	return err
 }

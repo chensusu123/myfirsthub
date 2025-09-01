@@ -32,7 +32,7 @@ type MazeShopInfo struct {
 }
 
 //
-//func GetMazeShopInfo(logger fklog.FKLogI, userId uint64, level int32) (mazeShopInfo *MazeShopInfo, err error) {
+//func GetMazeShopInfo(ctx context.Context, userId uint64, level int32) (mazeShopInfo *MazeShopInfo, err error) {
 //	key := fmt.Sprintf("maze:shop:seq:%d", userId)
 //	res, err := redis.Bytes(gRedis.Do(context.TODO(), "hget", key, level))
 //	if err == redis.ErrNil {
@@ -40,42 +40,42 @@ type MazeShopInfo struct {
 //		return nil, err
 //	}
 //	if err != nil {
-//		logger.ErrorWF("GetMazeShopSeqInfo get count failed with", zap.Error(err), zap.Int32("level", level))
+//		logger.CtxError(ctx,"GetMazeShopSeqInfo get count failed with", zap.Error(err), zap.Int32("level", level))
 //		return nil, err
 //	}
 //	mazeShopInfo = &MazeShopInfo{}
 //	err = json.Unmarshal(res, mazeShopInfo)
 //	if err != nil {
-//		logger.ErrorWF("GetMazeShopSeqInfo Unmarshal fail", zap.Error(err), zap.String("key", key))
+//		logger.CtxError(ctx,"GetMazeShopSeqInfo Unmarshal fail", zap.Error(err), zap.String("key", key))
 //		return nil, err
 //	}
-//	logger.InfoWF("GetMazeShopSeqInfo succ", zap.Any("level", level), zap.Any("mazeShopInfo", mazeShopInfo), zap.String("key", key))
+//	logger.CtxInfo(ctx,"GetMazeShopSeqInfo succ", zap.Any("level", level), zap.Any("mazeShopInfo", mazeShopInfo), zap.String("key", key))
 //	return mazeShopInfo, nil
 //}
 //
-//func SetMazeShopInfo(logger fklog.FKLogI, userId uint64, level int32, mazeShopInfo *MazeShopInfo) (err error) {
+//func SetMazeShopInfo(ctx context.Context, userId uint64, level int32, mazeShopInfo *MazeShopInfo) (err error) {
 //	key := fmt.Sprintf("maze:shop:seq:%d", userId)
 //	data, err := json.Marshal(mazeShopInfo)
 //	if err != nil {
-//		logger.ErrorWF("SetRideAttrInfo marshal fail", zap.Error(err))
+//		logger.CtxError(ctx,"SetRideAttrInfo marshal fail", zap.Error(err))
 //		return
 //	}
 //
 //	_, err = gRedis.Do(context.TODO(), "hset", key, level, data)
 //	if err != nil {
-//		logger.ErrorWF("SetMazeShopInfo fail", zap.Error(err), zap.Any("mazeShopInfo", mazeShopInfo), zap.String("key", key))
+//		logger.CtxError(ctx,"SetMazeShopInfo fail", zap.Error(err), zap.Any("mazeShopInfo", mazeShopInfo), zap.String("key", key))
 //		return err
 //	}
-//	logger.InfoWF("SetMazeShopInfo succ", zap.Any("level", level), zap.Any("mazeShopInfo", mazeShopInfo), zap.String("key", key))
+//	logger.CtxInfo(ctx,"SetMazeShopInfo succ", zap.Any("level", level), zap.Any("mazeShopInfo", mazeShopInfo), zap.String("key", key))
 //	return
 //}
 //
 //// gm删除
-//func GMDel(logger fklog.FKLogI, userId uint64) (err error) {
+//func GMDel(ctx context.Context, userId uint64) (err error) {
 //	key := fmt.Sprintf("maze:shop:seq:%d", userId)
 //	_, err = redis.Int(gRedis.Do(context.TODO(), "DEL", key))
 //	if err != nil {
-//		logger.ErrorWF("GMDel fail", zap.String("key", key), zap.Error(err))
+//		logger.CtxError(ctx,"GMDel fail", zap.String("key", key), zap.Error(err))
 //		return
 //	}
 //	return

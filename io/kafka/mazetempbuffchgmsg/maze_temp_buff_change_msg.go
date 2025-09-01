@@ -60,18 +60,18 @@ func PushTempBuffChangeMsg(ctx context.Context, msg *MazeTempBuffChangeMsg) erro
 	flowservice.GflowService.SendFlowData(ctx, flowData)
 	// cnt, err := json.Marshal(msg)
 	// if err != nil {
-	// 	logger.ErrorWF("PushTempBuffChangeMsg marshal failed", zap.Uint64("uid", msg.UserId), zap.Error(err))
+	// 	logger.CtxError(ctx,"PushTempBuffChangeMsg marshal failed", zap.Uint64("uid", msg.UserId), zap.Error(err))
 	// 	return err
 	// }
 
 	// err = mazeTempBuffChangeKafka.SendWithUserID(msg.UserId, cnt)
 	// if err != nil {
-	// 	logger.ErrorWF("PushTempBuffChangeMsg SendWithUserID error", zap.Uint64("uid", msg.UserId),
+	// 	logger.CtxError(ctx,"PushTempBuffChangeMsg SendWithUserID error", zap.Uint64("uid", msg.UserId),
 	// 		zap.Any("msg", msg), zap.Error(err))
 	// 	return err
 	// }
 	d.Push(ctx, msg)
-	logger.DebugWF("PushTempBuffChangeMsg end", zap.Any("pushData", msg))
+	logger.CtxDebug(ctx, "PushTempBuffChangeMsg end", zap.Any("pushData", msg))
 	return nil
 }
 

@@ -134,6 +134,10 @@ func LeaveBarrier(ctx context.Context, userID uint64, barrierID int32, passed bo
 
 // GetBarrierEnterTime 获取关卡上报记录的第一条事件记录时间
 func GetBarrierEnterTime(ctx context.Context, userID uint64) (enterTime int64, err error) {
+<<<<<<< HEAD
+	logger := fklog.ContextAppLogger(ctx)
+=======
+>>>>>>> remotes/origin/dev_human_robot_0315_env
 	var (
 		key = getKey(userID)
 	)
@@ -166,10 +170,16 @@ func GetBarrierEnterTime(ctx context.Context, userID uint64) (enterTime int64, e
 // BackupBarrierEvents
 func BackupBarrierEvents(ctx context.Context, userID uint64, enterTime int64) (err error) {
 	var (
+<<<<<<< HEAD
+		key = getKey(userID)
+		new = getBackupKey(userID, enterTime)
+=======
 		key    = getKey(userID)
 		new    = getBackupKey(userID, enterTime)
 		logger = fklog.ContextAppLogger(ctx)
+>>>>>>> remotes/origin/dev_human_robot_0315_env
 	)
+	logger := fklog.ContextAppLogger(ctx)
 	_, err = cli.Do(ctx, "RENAME", key, new)
 	if err != nil {
 		logger.CtxError(ctx, "BackupBarrierEvents RENAME fail",
@@ -183,23 +193,23 @@ func BackupBarrierEvents(ctx context.Context, userID uint64, enterTime int64) (e
 }
 
 // ClearBarrierEvents
-func ClearBarrierEvents(logger fklog.FKLogI, userID uint64) (err error) {
+func ClearBarrierEvents(ctx context.Context, userID uint64) (err error) {
 	var (
 		key = getKey(userID)
-		ctx = context.Background()
 	)
+	logger := fklog.ContextAppLogger(ctx)
 	_, err = cli.Do(ctx, "DEL", key)
 	if err != nil {
 		if err == redis.ErrNil {
 			err = nil
 		} else {
-			logger.ErrorWF("ClearBarrierEvents command fail",
+			logger.CtxError(ctx, "ClearBarrierEvents command fail",
 				zap.Error(err),
 				zap.Any("key", key),
 			)
 			return err
 		}
 	}
-	logger.DebugWF("ClearBarrierEvents success", zap.Uint64("userID", userID))
+	logger.CtxDebug(ctx, "ClearBarrierEvents success", zap.Uint64("userID", userID))
 	return
 }

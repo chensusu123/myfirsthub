@@ -16,8 +16,9 @@ import (
 	"google.golang.org/protobuf/proto"
 )
 
-func OnSvrMazeEquipAssembleRQ(ctx fklog.FKLogI, shardingID int64, rqMsg proto.Message, rsMsg proto.Message) (err error) {
-	agent := fkserver.NewUserContext(context.TODO(), uint64(shardingID), ctx)
+func OnSvrMazeEquipAssembleRQ(ctx context.Context, shardingID int64, rqMsg proto.Message, rsMsg proto.Message) (err error) {
+	logger := fklog.ContextAppLogger(ctx)
+	agent := fkserver.NewUserContext(ctx, uint64(shardingID), logger)
 	req := rqMsg.(*MazeEquipSvr.SvrMazeEquipAssembleRQ)
 	res := rsMsg.(*MazeEquipSvr.SvrMazeEquipAssembleRS)
 	res.ErrInfo = errors.NO_ERROR
@@ -70,7 +71,7 @@ func OnSvrMazeEquipAssembleRQ(ctx fklog.FKLogI, shardingID int64, rqMsg proto.Me
 			replacedEquipCli, err := packtopb.EquipInfoToCliPB(agent, replacedEquip)
 			if err != nil {
 				res.ErrInfo = errors.MODULE_ERROR.ToInfo()
-				ctx.ErrorWF("OnSvrDollEquipAssembleRQ EquipInfoToCliPBEx error", zap.Error(err))
+				logger.CtxError(ctx, "OnSvrDollEquipAssembleRQ EquipInfoToCliPBEx error", zap.Error(err))
 				return err
 			}
 			equipAddList = append(equipAddList, replacedEquipCli)

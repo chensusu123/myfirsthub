@@ -137,7 +137,7 @@ func (s *service) SendOneSuitEquip(writer http.ResponseWriter, request *http.Req
 
 func (s *service) ReInitDollEquip(writer http.ResponseWriter, request *http.Request) {
 	ctx := request.Context()
-	logger := fklog.ContextAppLogger(ctx)
+	// logger := fklog.ContextAppLogger(ctx)
 
 	uid := fkutil.ToUint64(request.Form.Get("user_id"))
 	clear := fkutil.ToBool(request.Form.Get("clear"))
@@ -154,7 +154,7 @@ func (s *service) ReInitDollEquip(writer http.ResponseWriter, request *http.Requ
 		return
 	}
 	// 初始装备套检查
-	e = equip.InitDollEquipSuitSeq(logger, uid)
+	e = equip.InitDollEquipSuitSeq(ctx, uid)
 	if e != nil {
 		writer.Write([]byte(fmt.Sprintf("初始化当前套装失败:%s", e.Error())))
 		return

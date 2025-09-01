@@ -31,7 +31,7 @@ func (a *Auth) OnLoginQuickRQ_10550_10551(s *session.Session, req *UserLogin.Use
 
 	defer func() {
 		err = s.Response(res)
-		logger.InfoWF("OnLoginQuickRQ end", zap.Any("req", req), zap.Any("res", res))
+		logger.CtxInfo(ctx, "OnLoginQuickRQ end", zap.Any("req", req), zap.Any("res", res))
 	}()
 
 	// 认证
@@ -66,7 +66,7 @@ func (a *Auth) OnLoginQuickRQ_10550_10551(s *session.Session, req *UserLogin.Use
 		}
 		err = usersection.Set(ctx, newUserID, appconfig.GlobalConfig().Global.SectionID)
 		if err != nil {
-			logger.ErrorWF("usersection.Set fail",
+			logger.CtxError(ctx, "usersection.Set fail",
 				zap.Uint64("userID", userID),
 				zap.Error(err))
 		}

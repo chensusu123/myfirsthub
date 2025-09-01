@@ -21,9 +21,9 @@ import (
 )
 
 // 获取人偶装备位信息
-func GetDollEquipPosInfo(logger fklog.FKLogI, userId uint64, posCnt int) (equipList map[int32]*MazeEquipCache.MazeEquipSlotDb, err error) {
+func GetDollEquipPosInfo(ctx context.Context, userId uint64, posCnt int) (equipList map[int32]*MazeEquipCache.MazeEquipSlotDb, err error) {
 	key := fmt.Sprintf("maze:assemble:info:u:%d", userId)
-
+	logger := fklog.ContextAppLogger(ctx)
 	args := make([]interface{}, 0, 1+posCnt)
 	args = append(args, key)
 	for i := 1; i <= posCnt; i++ {
@@ -34,11 +34,11 @@ func GetDollEquipPosInfo(logger fklog.FKLogI, userId uint64, posCnt int) (equipL
 	res, err := redis.ByteSlices(gRedis.Do(context.TODO(), "hmget", args...))
 	if err == redis.ErrNil {
 		err = nil
-		logger.InfoWF("GetDollEquipPosInfo hmget nil", zap.String("key", key))
+		logger.CtxInfo(ctx, "GetDollEquipPosInfo hmget nil", zap.String("key", key))
 		return
 	}
 	if err != nil {
-		logger.ErrorWF("GetDollEquipPosInfo hmget fail", zap.Error(err), zap.String("key", key))
+		logger.CtxError(ctx, "GetDollEquipPosInfo hmget fail", zap.Error(err), zap.String("key", key))
 		return
 	}
 	equipList = make(map[int32]*MazeEquipCache.MazeEquipSlotDb)
@@ -51,27 +51,27 @@ func GetDollEquipPosInfo(logger fklog.FKLogI, userId uint64, posCnt int) (equipL
 		assembleDb := &MazeEquipCache.MazeEquipSlotDb{}
 		e := proto.Unmarshal(res[i], assembleDb)
 		if e != nil {
-			logger.ErrorWF("GetDollEquipPosInfo Unmarshal fail", zap.Error(e),
+			logger.CtxError(ctx, "GetDollEquipPosInfo Unmarshal fail", zap.Error(e),
 				zap.String("key", key), zap.Int("i", i))
 			return nil, e
 		}
 		if assembleDb.GetPos() <= 0 {
-			logger.ErrorWF("GetDollEquipPosInfo data err",
+			logger.CtxError(ctx, "GetDollEquipPosInfo data err",
 				zap.Any("assembleDb", assembleDb),
 				zap.String("key", key), zap.Int("i", i))
 			return nil, errors.New("data err")
 		}
 		equipList[assembleDb.GetPos()] = assembleDb
 	}
-	logger.InfoWF("GetDollEquipPosInfo hgetall succ", zap.Any("res", equipList),
+	logger.CtxInfo(ctx, "GetDollEquipPosInfo hgetall succ", zap.Any("res", equipList),
 		zap.String("key", key))
 	return equipList, err
 }
 
 // 更新装备位信息
-func SetDollEquipPosInfo(logger fklog.FKLogI, userId uint64, posList []*MazeEquipCache.MazeEquipSlotDb) (err error) {
+func SetDollEquipPosInfo(ctx context.Context, userId uint64, posList []*MazeEquipCache.MazeEquipSlotDb) (err error) {
 	key := fmt.Sprintf("maze:assemble:info:u:%d", userId)
-
+	logger := fklog.ContextAppLogger(ctx)
 	args := make([]interface{}, 0, 1+len(posList))
 	args = append(args, key)
 	for _, pos := range posList {
@@ -80,7 +80,7 @@ func SetDollEquipPosInfo(logger fklog.FKLogI, userId uint64, posList []*MazeEqui
 		data, e := proto.Marshal(pos)
 		if e != nil {
 			err = e
-			logger.ErrorWF("SetDollEquipPosInfo Marshal fail", zap.Error(err), zap.String("key", key),
+			logger.CtxError(ctx, "SetDollEquipPosInfo Marshal fail", zap.Error(err), zap.String("key", key),
 				zap.Any("pos", pos))
 			return
 		}
@@ -91,16 +91,16 @@ func SetDollEquipPosInfo(logger fklog.FKLogI, userId uint64, posList []*MazeEqui
 	}
 	_, err = gRedis.Do(context.TODO(), "hmset", args...)
 	if err != nil {
-		logger.ErrorWF("SetDollEquipPosInfo hmget fail", zap.Error(err), zap.String("key", key),
+		logger.CtxError(ctx, "SetDollEquipPosInfo hmget fail", zap.Error(err), zap.String("key", key),
 			zap.Any("posList", posList))
 		return
 	}
-	logger.InfoWF("SetDollEquipPosInfo hgetall succ", zap.Any("posList", posList),
+	logger.CtxInfo(ctx, "SetDollEquipPosInfo hgetall succ", zap.Any("posList", posList),
 		zap.String("key", key))
 	return err
 }
 
-// func SetDollEquipPosTotalInfo(logger fklog.FKLogI, userId uint64, assembleInfo *MazeEquipCache.MazeAssembleDb) error {
+// func SetDollEquipPosTotalInfo(ctx context.Context, userId uint64, assembleInfo *MazeEquipCache.MazeAssembleDb) error {
 // 	var updateFields []string
 // 	if assembleInfo.PkLevel != nil {
 // 		updateFields = append(updateFields, constdef.AssemblePrefixPKLevel)
@@ -113,9 +113,9 @@ func SetDollEquipPosInfo(logger fklog.FKLogI, userId uint64, posList []*MazeEqui
 // 	}
 // 	err := SetAssembleInfoByFields(logger, userId, updateFields, assembleInfo)
 // 	if err != nil {
-// 		logger.ErrorWF("SetDollEquipPosTotalInfo fail", zap.Error(err), zap.Any("assembleInfo", assembleInfo))
+// 		logger.CtxError(ctx,"SetDollEquipPosTotalInfo fail", zap.Error(err), zap.Any("assembleInfo", assembleInfo))
 // 	} else {
-// 		logger.InfoWF("SetDollEquipPosTotalInfo succ", zap.Any("assembleInfo", assembleInfo))
+// 		logger.CtxInfo(ctx,"SetDollEquipPosTotalInfo succ", zap.Any("assembleInfo", assembleInfo))
 // 	}
 // 	return err
 // }

@@ -149,10 +149,10 @@ package dispatchtcp
 // 	return
 // }
 
-// func DispatchKafkaMsgTcp(logger fklog.FKLogI, uid uint64, kafkaName string, data []byte) (err error) {
+// func DispatchKafkaMsgTcp(ctx context.Context, uid uint64, kafkaName string, data []byte) (err error) {
 // 	topicType := constdef.GetMsgType(kafkaName)
 // 	if topicType == 0 {
-// 		logger.ErrorWF("DispatchKafkaMsgTcp cannot find typ",
+// 		logger.CtxError(ctx,"DispatchKafkaMsgTcp cannot find typ",
 // 			zap.Uint64("uid", uid),
 // 			zap.String("kafkaName", kafkaName),
 // 			zap.String("msg", string(data)))
@@ -165,7 +165,7 @@ package dispatchtcp
 // 	rq.MsgType = proto.Int32(topicType)
 // 	tcpClients := getClientByTopic(logger, topicType)
 // 	if len(tcpClients) == 0 {
-// 		logger.WarnWF("DispatchKafkaMsgTcp 未找到后端业务", zap.Int32("topicType", topicType), zap.String("kafkaName", kafkaName))
+// 		logger.CtxWarn(ctx,"DispatchKafkaMsgTcp 未找到后端业务", zap.Int32("topicType", topicType), zap.String("kafkaName", kafkaName))
 // 		return nil
 // 	}
 // 	var wg sync.WaitGroup
@@ -181,7 +181,7 @@ package dispatchtcp
 // 			resp, _, err := tmpCli.Call(logger, uid, 20989, rq, 20990, rs)
 // 			res := resp.(*KafkaMsgNotify.KafkaMsgDistributeRS)
 // 			defer func() {
-// 				logger.InfoWF("DispatchKafkaMsgTcp end",
+// 				logger.CtxInfo(ctx,"DispatchKafkaMsgTcp end",
 // 					zap.Int32("svrType", tmpSvrType),
 // 					zap.Int32("topicType", topicType),
 // 					zap.Int("cnt", count),

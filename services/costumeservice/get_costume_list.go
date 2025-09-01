@@ -3,18 +3,19 @@ package costumeservice
 import (
 	"context"
 	"fmt"
-	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fklog"
-	"go.uber.org/zap"
 	"maze_game_server/config/GMazeEquipPosRankV8Cfg"
 	"maze_game_server/config/GMazeEquipTypeGroupResV8Cfg"
 	"maze_game_server/excel/mazeequiptyperesv8"
 	"maze_game_server/module/dollassembleinfo"
+
+	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fklog"
+	"go.uber.org/zap"
 )
 
 func (s *service) GetUserCostume(ctx context.Context, userId uint64) (map[int32]int32, error) {
 	logger := fklog.ContextAppLogger(ctx)
 	res := make(map[int32]int32)
-	assembleInfo, effect, err := dollassembleinfo.GetDollAssembleInfoEx(logger, userId)
+	assembleInfo, effect, err := dollassembleinfo.GetDollAssembleInfoEx(ctx, userId)
 	if err != nil {
 		logger.CtxError(ctx, "OnGetMazeAssembleRQ Get Assemble info fail", zap.Error(err))
 		return nil, err

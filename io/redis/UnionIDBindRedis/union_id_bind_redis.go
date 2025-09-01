@@ -26,7 +26,7 @@ func AddUnionID2UserID(ctx context.Context, logger fklog.FKLogI, unionID, userID
 
 	_, err := gRedisCli.Do(ctx, "SADD", key, userID)
 	if err != nil {
-		logger.ErrorWF("failed to sadd new userid in unionid",
+		logger.CtxError(ctx, "failed to sadd new userid in unionid",
 			zap.Error(err),
 			zap.String("key", key),
 			zap.Uint64("userID", userID),
@@ -42,7 +42,7 @@ func AddUserID2UnionID(ctx context.Context, logger fklog.FKLogI, userID, unionID
 
 	_, err := gRedisCli.Do(ctx, "SET", key, unionID)
 	if err != nil {
-		logger.ErrorWF("failed to set unionid on userid",
+		logger.CtxError(ctx, "failed to set unionid on userid",
 			zap.Error(err),
 			zap.String("key", key),
 			zap.Uint64("unionID", unionID),
@@ -58,7 +58,7 @@ func GetUsersWithUnionID(ctx context.Context, logger fklog.FKLogI, unionID uint6
 	ret, err := redis.Strings(gRedisCli.Do(ctx, "SMEMBERS", key))
 
 	if err == redis.ErrNil {
-		logger.ErrorWF("GetUsersWithUnionID empty",
+		logger.CtxError(ctx, "GetUsersWithUnionID empty",
 			zap.String("key", key),
 			fklog.Any("err", err),
 		)
@@ -66,7 +66,7 @@ func GetUsersWithUnionID(ctx context.Context, logger fklog.FKLogI, unionID uint6
 	}
 
 	if err != nil {
-		logger.ErrorWF("GetUsersWithUnionID error",
+		logger.CtxError(ctx, "GetUsersWithUnionID error",
 			fklog.Uint64("unionID", unionID),
 			fklog.String("key", key),
 			fklog.Any("err", err),
@@ -77,7 +77,7 @@ func GetUsersWithUnionID(ctx context.Context, logger fklog.FKLogI, unionID uint6
 	for _, v := range ret {
 		user := fkutil.ToUint64(v)
 		if user <= 0 {
-			logger.ErrorWF("GetUsersWithUnionID ToUint64",
+			logger.CtxError(ctx, "GetUsersWithUnionID ToUint64",
 				zap.Uint64("unionID", unionID),
 				zap.String("v", v),
 			)
@@ -94,13 +94,13 @@ func GetUserID2UnionID(ctx context.Context, logger fklog.FKLogI, userID uint64) 
 	ret, err := redis.String(gRedisCli.Do(ctx, "GET", key))
 
 	if err == redis.ErrNil {
-		logger.WarnWF("GetUserID2UnionID empty",
+		logger.CtxWarn(ctx, "GetUserID2UnionID empty",
 			zap.String("key", key))
 		return 0, nil
 	}
 
 	if err != nil {
-		logger.ErrorWF("GetValue",
+		logger.CtxError(ctx, "GetValue",
 			zap.String("key", key),
 			zap.Error(err),
 		)

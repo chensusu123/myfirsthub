@@ -121,7 +121,7 @@ func (s *service) SetMazeTempBuff(writer http.ResponseWriter, request *http.Requ
 		config := GMazeEnergyAffixV8Cfg.GetWithCtx(ctx, info.BuffId)
 		if config != nil {
 			for id := range config.Add_attr {
-				attrCfg := GMazeAttributeV8Cfg.Get(id)
+				attrCfg := GMazeAttributeV8Cfg.GetWithCtx(ctx, id)
 				if attrCfg == nil {
 					outPut = *gmmodel.NewOutPut(http.StatusBadGateway, fmt.Sprintf("词条[%d]增加的属性[%d]配置无效，请检查属性配置表: maze_attribute_v8【迷宫-属性】.xlsx", info.BuffId, id), gmmodel.DynamicData{})
 					return
@@ -171,7 +171,7 @@ func (s *service) SetMazeTempBuff(writer http.ResponseWriter, request *http.Requ
 	// // buff中心
 	// forceAttr, err := GetSelectBuffForceAttr(buffInfo.TotalBuff)
 	// if err != nil {
-	// 	logger.ErrorWF("setMazeTempBuff GetSelectBuffForceAttr failed", zap.Error(err))
+	// 	logger.CtxError(ctx,"setMazeTempBuff GetSelectBuffForceAttr failed", zap.Error(err))
 	// 	_, _ = writer.Write([]byte("\n更新人物属性失败:" + err.Error()))
 	// 	return
 	// }
@@ -182,7 +182,7 @@ func (s *service) SetMazeTempBuff(writer http.ResponseWriter, request *http.Requ
 
 	// err = mazebuffinforedis.SaveMazeBuffInfo(logger, userId, constdef.MazeBuffSrcSelectBuffForce, attrDb)
 	// if err != nil {
-	// 	logger.ErrorWF("setMazeTempBuff SaveMazeBuffInfo failed", zap.Uint64("userId", userId), zap.Error(err))
+	// 	logger.CtxError(ctx,"setMazeTempBuff SaveMazeBuffInfo failed", zap.Uint64("userId", userId), zap.Error(err))
 	// 	_, _ = writer.Write([]byte("\n更新人物属性失败:" + err.Error()))
 	// 	return
 	// }

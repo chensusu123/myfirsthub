@@ -61,7 +61,8 @@ func (tb *TaskTimerBusiness) OnInit(logger fklog.FKLogI, cfg fkconfig.FkConfiger
 			taskLogger.ErrorWF("gOnTimeout is nil", zap.Any("pack", pack))
 			return true
 		}
-		gOnTimeout(taskLogger, pack.GetUserId(), SeaTaskSvr.TaskExpireNotifyRQ{TaskInfo: &pack})
+		ctx := context.Background()
+		gOnTimeout(ctx, pack.GetUserId(), SeaTaskSvr.TaskExpireNotifyRQ{TaskInfo: &pack})
 		taskLogger.InfoWF("do task ", zap.Any("pack", pack))
 		return true
 	})

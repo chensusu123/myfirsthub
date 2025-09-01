@@ -36,19 +36,19 @@ func (s service) startUserRecoverEnergy(ctx context.Context, userId uint64, next
 		s.safeTimer(ctx, userId)
 	})
 	userMap[userId] = timer
-	logger.InfoWF("startUserRecoverEnergy success", zap.Any("userId", userId), zap.Int64("recoverTime", recoverTime), zap.Any("timer", timer))
+	logger.CtxInfo(ctx, "startUserRecoverEnergy success", zap.Any("userId", userId), zap.Int64("recoverTime", recoverTime), zap.Any("timer", timer))
 }
 
 func (s service) safeTimer(ctx context.Context, userID uint64) {
 	logger := fklog.ContextAppLogger(ctx)
 	defer func() {
 		if r := recover(); r != nil {
-			logger.ErrorWF("handleRecoverUserEnergy panic.", zap.Any("r", r))
+			logger.CtxError(ctx, "handleRecoverUserEnergy panic.", zap.Any("r", r))
 		}
 	}()
 	isOnline := online.IsOnline(userID)
 	if !isOnline {
-		s.stopUserRecoverTimer(logger, userID)
+		s.stopUserRecoverTimer(ctx, userID)
 		return
 	}
 	s.handleRecoverUserEnergy(ctx, userID)
@@ -70,29 +70,30 @@ func (s service) handleRecoverUserEnergy(ctx context.Context, userID uint64) {
 			s.safeTimer(ctx, userID)
 		})
 		userMap[userID] = timer
-		logger.InfoWF("handleRecoverUserEnergy add timer", zap.Any("userID", userID), zap.Int64("nextTriggerTime", nextTriggerTime), zap.Any("timer", timer))
+		logger.CtxInfo(ctx, "handleRecoverUserEnergy add timer", zap.Any("userID", userID), zap.Int64("nextTriggerTime", nextTriggerTime), zap.Any("timer", timer))
 	}()
 
 	curEnergy, nextTime, err := s.calEnergy(ctx, userID)
 	if err != nil {
-		logger.InfoWF("handleRecoverUserEnergy calEnergy failed", zap.Any("userID", userID), zap.Error(err))
+		logger.CtxInfo(ctx, "handleRecoverUserEnergy calEnergy failed", zap.Any("userID", userID), zap.Error(err))
 		return
 	}
 
 	err = s.SendEnergyChgPack(ctx, userID, curEnergy, nextTime)
 	if err != nil {
 		err = nil
-		logger.ErrorWF("handleRecoverUserEnergy SendEnergyChgPack fail", zap.Error(err), zap.Any("userID", userID), zap.Int32("curEnergy", curEnergy), zap.Int64("nextTime", nextTime))
+		logger.CtxError(ctx, "handleRecoverUserEnergy SendEnergyChgPack fail", zap.Error(err), zap.Any("userID", userID), zap.Int32("curEnergy", curEnergy), zap.Int64("nextTime", nextTime))
 		// return
 	}
 }
 
-func (s service) stopUserRecoverTimer(logger fklog.FKLogI, userID uint64) {
+func (s service) stopUserRecoverTimer(ctx context.Context, userID uint64) {
 	mu.Lock()
 	defer mu.Unlock()
+	logger := fklog.ContextAppLogger(ctx)
 	if timer, ok := userMap[userID]; ok {
 		timer.Stop()
 		delete(userMap, userID)
-		logger.InfoWF("StopUserRecoverTimer success", zap.Uint64("userId", userID), zap.Any("timer", timer))
+		logger.CtxInfo(ctx, "StopUserRecoverTimer success", zap.Uint64("userId", userID), zap.Any("timer", timer))
 	}
 }

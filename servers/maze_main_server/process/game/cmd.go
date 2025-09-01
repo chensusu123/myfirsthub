@@ -274,7 +274,7 @@ func ClearBarrier(ctx context.Context, userId uint64) (err error) {
 		return err
 	}
 
-	err = mazecollectredis.GMDel(logger, userId)
+	err = mazecollectredis.GMDel(ctx, userId)
 	if err != nil {
 		return
 	}
@@ -286,7 +286,7 @@ func ClearBarrier(ctx context.Context, userId uint64) (err error) {
 		return
 	}
 
-	err = mazeequipgetnumredis.GMDel(logger, userId)
+	err = mazeequipgetnumredis.GMDel(ctx, userId)
 	if err != nil {
 		return
 	}
@@ -323,7 +323,7 @@ func SetMazeUserInfo(ctx context.Context, uid uint64, level int64, exp int64) (e
 	// userInfo.Level = int64(level)
 	// userInfo.Exp = exp
 
-	// levelCfg := GMazeLevelV8Cfg.Get(int32(level))
+	// levelCfg := GMazeLevelV8Cfg.GetWithCtx(ctx,int32(level))
 	// if levelCfg == nil {
 	// 	logger.CtxError(ctx,"根据level不能读取等级配置表")
 	// 	err = errors.New("根据level不能读取等级配置表")
@@ -361,7 +361,7 @@ func CmdAddEnergy(ctx context.Context, userId uint64, args map[string]string) er
 		vInt = fkutil.ToInt32(v)
 	}
 	if vInt <= 0 {
-		logger.WarnWF("CmdAddEnergy vInt=0", zap.Any("args", args))
+		logger.CtxWarn(ctx, "CmdAddEnergy vInt=0", zap.Any("args", args))
 		return errors.New("加体力参数错误")
 	}
 	oldEnergy, _, err := barrierenergyservice.GlobalBarrierEnergyService.GetBarrierEnergy(ctx, userId)

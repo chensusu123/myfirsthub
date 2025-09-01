@@ -1,6 +1,7 @@
 package funcopencheck
 
 import (
+	"context"
 	"maze_game_server/common/errors"
 	"maze_game_server/config/GMazeActionCountV8Cfg"
 )
@@ -13,8 +14,8 @@ type FoResult struct {
 }
 
 // 根据人物等级判断功能是否开启
-func IsFuncOpen(funcId, mazeLevel int32) (result *FoResult, err error) {
-	row := GMazeActionCountV8Cfg.Get(funcId)
+func IsFuncOpen(ctx context.Context, funcId, mazeLevel int32) (result *FoResult, err error) {
+	row := GMazeActionCountV8Cfg.GetWithCtx(ctx, funcId)
 	if row == nil {
 		return nil, errors.New("no found cfg")
 	}

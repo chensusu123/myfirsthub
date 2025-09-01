@@ -51,7 +51,7 @@ func (s *service) ClearBagNotAssemble(writer http.ResponseWriter, request *http.
 	}
 
 	// 获取身上的装备信息
-	assembleInfoMap, err := dollassemblesuitredis.GetAllDollAssembleSuit(logger, uid)
+	assembleInfoMap, err := dollassemblesuitredis.GetAllDollAssembleSuit(ctx, uid)
 	if err != nil {
 		logger.CtxError(ctx, "ClearBagNotAssemble GetAllDollAssembleSuit fail", zap.Error(err))
 		writer.Write([]byte(err.Error()))
@@ -69,7 +69,7 @@ func (s *service) ClearBagNotAssemble(writer http.ResponseWriter, request *http.
 		}
 	}
 
-	equipInfoMap, err := mazebagequipredis.GetAllEquipInfo(logger, uid)
+	equipInfoMap, err := mazebagequipredis.GetAllEquipInfo(ctx, uid)
 	if err != nil {
 		logger.CtxError(ctx, "ClearBagNotAssemble GetAllEquipInfo fail", zap.Error(err))
 		writer.Write([]byte(err.Error()))
@@ -84,7 +84,7 @@ func (s *service) ClearBagNotAssemble(writer http.ResponseWriter, request *http.
 		}
 	}
 
-	err = equipbaggm.ClearEquipBagBatch(logger, uid, equipGuids)
+	err = equipbaggm.ClearEquipBagBatch(ctx, uid, equipGuids)
 	if err != nil {
 		logger.CtxError(ctx, "ClearBagNotAssemble ClearEquipBagBatch fail", zap.Error(err))
 		writer.Write([]byte(err.Error()))

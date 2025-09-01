@@ -19,7 +19,8 @@ func init() {
 	fkconfig.RegisterNameNode("dollmazeshopredis", 21560, gRedis)
 }
 
-func GetMazeShopNum(logger fklog.FKLogI, userId uint64, barrierId int32, itemId int32) (int64, error) {
+func GetMazeShopNum(ctx context.Context, userId uint64, barrierId int32, itemId int32) (int64, error) {
+	logger := fklog.ContextAppLogger(ctx)
 	key := fmt.Sprintf("doll:maze:shop:%d:%d", userId, barrierId)
 	ret, err := redis.Int64(gRedis.Do(context.TODO(), "hget", key, itemId))
 	if err == redis.ErrNil {
@@ -27,32 +28,33 @@ func GetMazeShopNum(logger fklog.FKLogI, userId uint64, barrierId int32, itemId 
 		return 0, err
 	}
 	if err != nil {
-		logger.ErrorWF("GetMazeShopNum get count failed with", zap.Error(err), zap.Int32("itemId", itemId))
+		logger.CtxError(ctx, "GetMazeShopNum get count failed with", zap.Error(err), zap.Int32("itemId", itemId))
 		return 0, err
 	}
-	logger.InfoWF("GetMazeShopNum get score with", zap.Int32("itemId", itemId), zap.Int64("score", ret))
+	logger.CtxInfo(ctx, "GetMazeShopNum get score with", zap.Int32("itemId", itemId), zap.Int64("score", ret))
 	return ret, nil
 }
 
 // 保存商店数量
-func SetMazeShopNum(logger fklog.FKLogI, userId uint64, barrierId int32, itemId, count int32) error {
+func SetMazeShopNum(ctx context.Context, userId uint64, barrierId int32, itemId, count int32) error {
 	key := fmt.Sprintf("doll:maze:shop:%d:%d", userId, barrierId)
+	logger := fklog.ContextAppLogger(ctx)
 	_, err := gRedis.Do(context.TODO(), "hset", key, itemId, count)
 	if err != nil {
-		logger.ErrorWF("SetMazeShopNum set score failed with", zap.Error(err),
+		logger.CtxError(ctx, "SetMazeShopNum set score failed with", zap.Error(err),
 			zap.Int32("itemId", itemId),
 			zap.Int32("count", count))
 		return err
 	}
-	logger.InfoWF("SetMazeShopNum set score with",
+	logger.CtxInfo(ctx, "SetMazeShopNum set score with",
 		zap.Int32("itemId", itemId),
 		zap.Int32("count", count))
 	return err
 }
 
-func BatchSetMazeShopNum(logger fklog.FKLogI, userId uint64, barrierId int32, mazeShopMap map[int32]int32) (err error) {
+func BatchSetMazeShopNum(ctx context.Context, userId uint64, barrierId int32, mazeShopMap map[int32]int32) (err error) {
 	key := fmt.Sprintf("doll:maze:shop:%d:%d", userId, barrierId)
-
+	logger := fklog.ContextAppLogger(ctx)
 	args := make([]interface{}, 0, len(mazeShopMap)*2+1)
 	args = append(args, key)
 	for k, v := range mazeShopMap {
@@ -64,14 +66,15 @@ func BatchSetMazeShopNum(logger fklog.FKLogI, userId uint64, barrierId int32, ma
 	}
 	_, err = gRedis.Do(context.TODO(), "HMSET", args...)
 	if err != nil {
-		logger.ErrorWF("BatchSetMazeShopNum fail", zap.Error(err), zap.Any("mazeShopMap", mazeShopMap), zap.String("key", key))
+		logger.CtxError(ctx, "BatchSetMazeShopNum fail", zap.Error(err), zap.Any("mazeShopMap", mazeShopMap), zap.String("key", key))
 		return err
 	}
-	logger.InfoWF("BatchSetMazeShopNum succ", zap.Any("mazeShopMap", mazeShopMap), zap.String("key", key))
+	logger.CtxInfo(ctx, "BatchSetMazeShopNum succ", zap.Any("mazeShopMap", mazeShopMap), zap.String("key", key))
 	return
 }
 
-func GetBatchMazeShopNum(logger fklog.FKLogI, userId uint64, barrierId int32, itemIds []int32) (mazeShopMap map[int32]int32, err error) {
+func GetBatchMazeShopNum(ctx context.Context, userId uint64, barrierId int32, itemIds []int32) (mazeShopMap map[int32]int32, err error) {
+	logger := fklog.ContextAppLogger(ctx)
 	mazeShopMap = make(map[int32]int32)
 	key := fmt.Sprintf("doll:maze:shop:%d:%d", userId, barrierId)
 	args := make([]interface{}, 0, len(itemIds)+1)
@@ -82,29 +85,30 @@ func GetBatchMazeShopNum(logger fklog.FKLogI, userId uint64, barrierId int32, it
 	resp, err := redis.Int64s(gRedis.Do(context.TODO(), "HMGET", args...))
 	if err != nil {
 		if err == redis.ErrNil {
-			logger.InfoWF("GetBatchMazeShopNum call HMGET empty", zap.Int32s("itemIds", itemIds))
+			logger.CtxInfo(ctx, "GetBatchMazeShopNum call HMGET empty", zap.Int32s("itemIds", itemIds))
 			return mazeShopMap, nil
 		}
-		logger.ErrorWF("GetBatchMazeShopNum call HMGET failed", zap.Int32s("itemIds", itemIds), zap.Any("err", err))
+		logger.CtxError(ctx, "GetBatchMazeShopNum call HMGET failed", zap.Int32s("itemIds", itemIds), zap.Any("err", err))
 		return mazeShopMap, err
 	}
 	if len(resp) != len(itemIds) {
-		logger.WarnWF("GetBatchMazeShopNum count not match", zap.String("key", key), zap.Int32s("itemIds", itemIds), zap.Any("resp", resp))
+		logger.CtxWarn(ctx, "GetBatchMazeShopNum count not match", zap.String("key", key), zap.Int32s("itemIds", itemIds), zap.Any("resp", resp))
 		return
 	}
 	for i, field := range itemIds {
 		mazeShopMap[field] = int32(resp[i])
 	}
-	logger.InfoWF("GetBatchMazeShopNum success", zap.String("key", key), zap.Any("mazeShopMap", mazeShopMap))
+	logger.CtxInfo(ctx, "GetBatchMazeShopNum success", zap.String("key", key), zap.Any("mazeShopMap", mazeShopMap))
 	return mazeShopMap, nil
 }
 
-func GetMazeShopAllNum(logger fklog.FKLogI, userId uint64, barrierId int32) (map[int32]int32, error) {
+func GetMazeShopAllNum(ctx context.Context, userId uint64, barrierId int32) (map[int32]int32, error) {
+	logger := fklog.ContextAppLogger(ctx)
 	mazeShopMap := make(map[int32]int32)
 	key := fmt.Sprintf("doll:maze:shop:%d:%d", userId, barrierId)
 	ret, err := redis.Int64Map(gRedis.Do(context.TODO(), "HGETALL", key))
 	if err != nil {
-		logger.ErrorWF("GetMazeShopAllNum redis op failed with ",
+		logger.CtxError(ctx, "GetMazeShopAllNum redis op failed with ",
 			zap.Error(err),
 			zap.String("key", key))
 		return mazeShopMap, err
@@ -115,7 +119,7 @@ func GetMazeShopAllNum(logger fklog.FKLogI, userId uint64, barrierId int32) (map
 		mazeShopMap[field] = degree
 	}
 
-	logger.InfoWF("GetMazeShopAllNum success",
+	logger.CtxInfo(ctx, "GetMazeShopAllNum success",
 		zap.Any("mazeShopMap", mazeShopMap),
 		zap.String("key", key))
 	return mazeShopMap, nil

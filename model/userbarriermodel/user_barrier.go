@@ -34,7 +34,7 @@ func (ub *UserBarrierModel) load(ctx context.Context) (err error) {
 	logger := fklog.ContextAppLogger(ctx)
 	data, err := mazeuserbarrierredis.GetUserBarrierInfo(ctx, ub.UserID, 0)
 	if err != nil {
-		logger.ErrorWF("load GetUserBarrierInfo fail", zap.Error(err), zap.Uint64("UserID", ub.UserID))
+		logger.CtxError(ctx, "load GetUserBarrierInfo fail", zap.Error(err), zap.Uint64("UserID", ub.UserID))
 		return err
 	}
 	ub.BarrierID = data.GetBarrierId()

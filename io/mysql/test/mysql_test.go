@@ -1,10 +1,12 @@
 package test
 
 import (
-	fileResolver "gitlab.ifreetalk.com/maze-plate/freetk/registry/fileresolver"
-	"gorm.io/gorm"
+	"context"
 	"maze_game_server/io/mysql/account"
 	"os"
+
+	fileResolver "gitlab.ifreetalk.com/maze-plate/freetk/registry/fileresolver"
+	"gorm.io/gorm"
 
 	"testing"
 	"time"
@@ -282,20 +284,24 @@ func InsertTest(db *gorm.DB, tableName string) {
 		GroupID:     1,
 		CreateTime:  time.Now().UnixMilli(),
 	}
+	ctx := context.Background()
+	logger := fklog.ContextAppLogger(ctx)
 	res := db.Table(mysql.GetFullyQualifiedTableName(flowrecord.MazeUserLevelRecordTableName)).Create(record)
 	if res.Error != nil {
-		gTestLogger.ErrorWF("SaveUserLevelRecord fail", zap.Error(res.Error), zap.Any("flowrecord", record))
+		logger.CtxError(ctx, "SaveUserLevelRecord fail", zap.Error(res.Error), zap.Any("flowrecord", record))
 		return
 	}
-	gTestLogger.InfoWF("SaveUserLevelRecord succ", zap.Any("flowrecord", record))
+	logger.CtxInfo(ctx, "SaveUserLevelRecord succ", zap.Any("flowrecord", record))
 }
 
 func TestGetAccountInfo(t *testing.T) {
-	gTestLogger = fklog.AppLogger().Clone("maze_main_server_t")
-	info, err := account.GetAccountInfo(gTestLogger, 123)
+	// gTestLogger = fklog.AppLogger().Clone("maze_main_server_t")
+	ctx := context.Background()
+	logger := fklog.ContextAppLogger(ctx)
+	info, err := account.GetAccountInfo(ctx, 123)
 	if err != nil {
-		gTestLogger.ErrorWF("GetAccountInfo fail", zap.Error(err))
+		logger.CtxError(ctx, "GetAccountInfo fail", zap.Error(err))
 		return
 	}
-	gTestLogger.InfoWF("GetAccountInfo succ", zap.Any("info", info))
+	logger.CtxInfo(ctx, "GetAccountInfo succ", zap.Any("info", info))
 }

@@ -1,13 +1,14 @@
 package equip
 
 import (
-	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fklog"
 	"maze_game_server/common/errors"
 	"maze_game_server/common/function/packtopb"
 	"maze_game_server/lib/nano/session"
 	"maze_game_server/module/bagmodule"
 	"maze_game_server/pb/common/MazeGameEquip"
 	"maze_game_server/pb/server/MazeEquipCache"
+
+	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fklog"
 
 	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fkprometheus"
 	"go.uber.org/zap"
@@ -36,11 +37,11 @@ func (e *Equip) OnGetMazeBagEquipListRQ_10405_10406(s *session.Session, req *Maz
 	logger.CtxInfo(ctx, "OnGetMazeBagEquipListRQ with", zap.Any("req", req))
 
 	// if !BreedVersionFC.IsDollVersion(logger, userId) {
-	// 	logger.ErrorWF("OnGetMazeBagEquipListRQ not doll version", zap.Uint64("userID", userId))
+	// 	logger.CtxError(ctx,"OnGetMazeBagEquipListRQ not doll version", zap.Uint64("userID", userId))
 	// 	return
 	// }
-	bagEquipMgr := bagmodule.NewBagEquipMgr(logger, userId)
-	err = bagEquipMgr.LoadBagFromRedis()
+	bagEquipMgr := bagmodule.NewBagEquipMgr(ctx, userId)
+	err = bagEquipMgr.LoadBagFromRedis(ctx)
 	if err != nil {
 		res.ErrInfo = errors.MODULE_ERROR.ToInfo()
 		logger.CtxError(ctx, "OnGetMazeBagEquipListRQ LoadBagFromRedis fail", zap.Error(err))
@@ -63,7 +64,7 @@ func (e *Equip) OnGetMazeBagEquipListRQ_10405_10406(s *session.Session, req *Maz
 			EquipGuid: proto.Int64(equipInfo.GetEquipGuid()),
 		}
 		if req.GetQueryType() == 0 {
-			equipCli, err = packtopb.EquipSimplifyToCliPB(logger, equipInfo)
+			equipCli, err = packtopb.EquipSimplifyToCliPB(ctx, equipInfo)
 			if err != nil {
 				res.ErrInfo = errors.MODULE_ERROR.ToInfo()
 				logger.CtxError(ctx, "OnGetMazeBagEquipListRQ EquipSimplifyToCliPB fail", zap.Error(err))

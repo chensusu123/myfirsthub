@@ -1,7 +1,6 @@
 package equip
 
 import (
-	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fklog"
 	"maze_game_server/common/constdef"
 	"maze_game_server/common/errors"
 	"maze_game_server/common/function/packtopb"
@@ -15,6 +14,8 @@ import (
 	"maze_game_server/pb/common/MazeGameEquip"
 	"maze_game_server/pb/server/MazeEquipCache"
 	"maze_game_server/servers/maze_main_server/process/equip/module"
+
+	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fklog"
 
 	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fkprometheus"
 	"go.uber.org/zap"
@@ -83,7 +84,7 @@ func (e *Equip) OnDressEquipPreviewRQ_10416_10417(s *session.Session, req *MazeG
 	var replaceEquipCli, selfEquipCli *MazeGameEquip.MazeEquipInfo
 
 	if replaceGuid > 0 {
-		replaceEquip, err = effectequip.GetEffectEquipInfo(logger, userId, replaceGuid)
+		replaceEquip, err = effectequip.GetEffectEquipInfo(ctx, userId, replaceGuid)
 		//	replaceEquip, isIns, err = FindEquip(userCtx, shardingID, replaceGuid, req.GetOpSrc())
 		if err != nil {
 			res.ErrInfo = errors.COMMON_ERROR_TIPS.Wrap(err.Error())
@@ -109,7 +110,7 @@ func (e *Equip) OnDressEquipPreviewRQ_10416_10417(s *session.Session, req *MazeG
 		}
 
 		var e1 error
-		replaceEquipCli, e1 = packtopb.EquipInfoToCliPB(logger, replaceEquip)
+		replaceEquipCli, e1 = packtopb.EquipInfoToCliPB(ctx, replaceEquip)
 		if e1 != nil {
 			res.ErrInfo = errors.COMMON_ERROR_TIPS.Wrap("预览失败")
 			logger.CtxError(ctx, "OnDressEquipPreviewRQ EquipInfoToCliPB fail",
@@ -118,7 +119,7 @@ func (e *Equip) OnDressEquipPreviewRQ_10416_10417(s *session.Session, req *MazeG
 			return e1
 		}
 	}
-	assembleInfo, err := dollassembleinfo.GetDollAssembleInfo(logger, userId)
+	assembleInfo, err := dollassembleinfo.GetDollAssembleInfo(ctx, userId)
 	if err != nil {
 		res.ErrInfo = errors.MODULE_ERROR.ToInfo()
 		logger.CtxError(ctx, "OnDressEquipPreviewRQ Get Assemble info fail", zap.Error(err))
@@ -147,8 +148,8 @@ func (e *Equip) OnDressEquipPreviewRQ_10416_10417(s *session.Session, req *MazeG
 		return nil
 	}
 	if dressedGuid > 0 {
-		equipSuitPb, _ := equipsuittopb.PackEquipSuitCliPb(logger, pos, assembleInfo.GetMazeEquips(), dressedEquipPos.GetEquipInfo().GetSuitId(), int32(mazeLv))
-		selfEquipCli, _ = packtopb.EquipInfoToCliPB(logger, dressedEquipPos.GetEquipInfo())
+		equipSuitPb, _ := equipsuittopb.PackEquipSuitCliPb(ctx, pos, assembleInfo.GetMazeEquips(), dressedEquipPos.GetEquipInfo().GetSuitId(), int32(mazeLv))
+		selfEquipCli, _ = packtopb.EquipInfoToCliPB(ctx, dressedEquipPos.GetEquipInfo())
 		// if assemble.IsFiveElemActivate(dressedEquipPos.GetEquipLoadInfo().GetActivateMask()) {
 		// 	fe := selfEquipCli.GetFiveElemInfo()
 		// 	if fe != nil {
@@ -161,7 +162,7 @@ func (e *Equip) OnDressEquipPreviewRQ_10416_10417(s *session.Session, req *MazeG
 	}
 
 	if replaceEquipCli != nil && replaceEquip != nil {
-		equipSuitPb, _ := equipsuittopb.PackEquipSuitCliPb(logger, pos, assembleInfo.GetMazeEquips(), replaceEquip.GetSuitId(), int32(mazeLv))
+		equipSuitPb, _ := equipsuittopb.PackEquipSuitCliPb(ctx, pos, assembleInfo.GetMazeEquips(), replaceEquip.GetSuitId(), int32(mazeLv))
 		if equipSuitPb != nil {
 			replaceEquipCli.SuitInfo = equipSuitPb
 		}
@@ -187,7 +188,7 @@ func (e *Equip) OnDressEquipPreviewRQ_10416_10417(s *session.Session, req *MazeG
 	return nil
 }
 
-// func clearEquipNew(logger fklog.FKLogI, userID uint64, bagEquips, loadEquips []int64) {
+// func clearEquipNew(ctx context.Context, userID uint64, bagEquips, loadEquips []int64) {
 // 	rq := &DollEquipSvr.SvrEquipCleanNewFlagRQ{}
 // 	rq.UserId = proto.Uint64(userID)
 // 	if len(bagEquips) > 0 {
@@ -201,7 +202,7 @@ func (e *Equip) OnDressEquipPreviewRQ_10416_10417(s *session.Session, req *MazeG
 // 	dollequipbagrpc.ClearEquipNewFlagRQ(logger, rq, rs)
 // }
 
-// func FindEquip(logger fklog.FKLogI, userId uint64, equipGuid int64, src int32) (effectEquip *MazeEquipCache.MazeEquipInfoDb, ins bool, err error) {
+// func FindEquip(ctx context.Context, userId uint64, equipGuid int64, src int32) (effectEquip *MazeEquipCache.MazeEquipInfoDb, ins bool, err error) {
 // 	defer func() {
 // 		if err == effectequip.EquipNoExist {
 // 			err = errors.New(toastmsgtipexcel.GetToastMsgTip(2027, "预览装备不存在"))

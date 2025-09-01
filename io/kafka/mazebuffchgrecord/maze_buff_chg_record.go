@@ -38,6 +38,6 @@ func SendMazeBuffAttrRecord(ctx context.Context, record *structsdef.MazeGameBuff
 	}
 
 	d.Push(ctx, record)
-	logger.InfoWF("SendMazeBuffAttrRecord SendWithUserID succ", zap.Any("record", record))
+	logger.CtxInfo(ctx, "SendMazeBuffAttrRecord SendWithUserID succ", zap.Any("record", record))
 	return nil
 }

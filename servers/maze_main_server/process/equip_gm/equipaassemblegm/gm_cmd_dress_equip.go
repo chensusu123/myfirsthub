@@ -21,12 +21,12 @@ import (
 
 func DressEquipGm(ctx context.Context, userId uint64, pos int32, equipGuid int64) error {
 	logger := fklog.ContextAppLogger(ctx)
-	assembleInfo, _, err := dollassembleinfo.GetDollAssembleInfoEx(logger, userId)
+	assembleInfo, _, err := dollassembleinfo.GetDollAssembleInfoEx(ctx, userId)
 	if err != nil {
 		logger.CtxError(ctx, "DressEquipGm Get Assemble info fail", zap.Error(err))
 		return err
 	}
-	allEquips, err := mazebagequipredis.GetAllEquipInfo(logger, userId)
+	allEquips, err := mazebagequipredis.GetAllEquipInfo(ctx, userId)
 	if err != nil {
 		logger.CtxError(ctx, "DressEquipGm GetAllEquipInfo info fail", zap.Error(err))
 		return err
@@ -72,7 +72,7 @@ func DressEquipGm(ctx context.Context, userId uint64, pos int32, equipGuid int64
 	return nil
 }
 
-// func gmDressOneEquip(logger fklog.FKLogI, userId uint64, pos, equipId int32, guid int64) error {
+// func gmDressOneEquip(ctx context.Context, userId uint64, pos, equipId int32, guid int64) error {
 // 	ctx := fknet.TCPContext{Context: context.Background(), FKLogI: logger}
 // 	rq := &MazeGameEquip.MazeDressEquipRQ{}
 // 	rs := &MazeGameEquip.MazeDressEquipRS{}

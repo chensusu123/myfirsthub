@@ -62,7 +62,7 @@ func (g *Game) OnMazeLoginRQ_10451_10452(s *session.Session, req *MazeGame.MazeL
 	}
 	level = userInfo.Level
 	exp = userInfo.Exp
-	levelCfg := GMazeLevelV8Cfg.Get(int32(level))
+	levelCfg := GMazeLevelV8Cfg.GetWithCtx(ctx, int32(level))
 	if levelCfg == nil {
 		res.ErrInfo = errors.CONFIG_NOT_FOUND.Wrap("等级表获取失败")
 		return
@@ -114,7 +114,7 @@ func (g *Game) OnMazeLoginRQ_10451_10452(s *session.Session, req *MazeGame.MazeL
 		res.ErrInfo = errors.COMMON_ERROR_TIPS.Wrap(err.Error())
 		return nil
 	}
-	commonList := mazecommonvalue.MakeAllCommonValue(logger, userId, level, exp, expMax, force, money, extra, extraExp, diamond, passValue, req.GetHeader().GetSession())
+	commonList := mazecommonvalue.MakeAllCommonValue(ctx, userId, level, exp, expMax, force, money, extra, extraExp, diamond, passValue, req.GetHeader().GetSession())
 
 	mazecommonvalue.SendCommonValueIdPack(ctx, userId, commonList)
 

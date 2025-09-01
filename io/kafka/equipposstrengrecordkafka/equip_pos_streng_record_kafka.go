@@ -42,7 +42,7 @@ func Watch(fn func(ctx context.Context, msg *EquipPosLevelUpRecord)) {
 	d.Watch(fn)
 }
 
-// func pushRecord(logger fklog.FKLogI, data *EquipPosLevelUpRecord) error {
+// func pushRecord(ctx context.Context, data *EquipPosLevelUpRecord) error {
 // msg, err := json.Marshal(data)
 // if err != nil {
 // 	return err

@@ -30,7 +30,7 @@ func HandleMazeLvChg(ctx context.Context, pack *MazeUserLevelRecord) {
 	// pack := &structsdef.MazeUserLevelRecord{}
 	// err = json.Unmarshal(data, pack)
 	// if err != nil {
-	// 	logger.ErrorWF("HandleMazeLvChg Unmarshal",
+	// 	logger.CtxError(ctx,"HandleMazeLvChg Unmarshal",
 	// 		zap.String("Value", string(data)),
 	// 		zap.Any("err", err),
 	// 	)
@@ -40,7 +40,7 @@ func HandleMazeLvChg(ctx context.Context, pack *MazeUserLevelRecord) {
 		return
 	}
 	logger.SetUid(pack.UserId)
-	logger.WarnWF("HandleMazeLvChg recv kafka notify", zap.Any("pack", pack))
+	logger.CtxWarn(ctx, "HandleMazeLvChg recv kafka notify", zap.Any("pack", pack))
 
 	ChkEquipPosUnlock(ctx, pack.UserId, UnlockSrcDollLv, true)
 
@@ -54,7 +54,7 @@ func UpdateMazeLvBuff(ctx context.Context, userId uint64) error {
 	if err != nil {
 		return err
 	}
-	mazeLvCfg := GMazeLevelV8Cfg.Get(int32(lv))
+	mazeLvCfg := GMazeLevelV8Cfg.GetWithCtx(ctx, int32(lv))
 	if mazeLvCfg == nil {
 		logger.CtxError(ctx, "UpdateMazeLvBuff no found cfg", zap.Int64("lv", lv))
 		return nil
@@ -69,7 +69,7 @@ func UpdateMazeLvBuff(ctx context.Context, userId uint64) error {
 			AttrVal: proto.Int64(v),
 		})
 	}
-	err = mazebuffinforedis.SaveMazeLvBuff(logger, userId, otherDb)
+	err = mazebuffinforedis.SaveMazeLvBuff(ctx, userId, otherDb)
 	if err != nil {
 		logger.CtxError(ctx, "UpdateMazeLvBuff SaveMazeLvBuff fail", zap.Error(err),
 			zap.Any("otherDb", otherDb),

@@ -1,10 +1,12 @@
 package account
 
 import (
+	"context"
 	"fmt"
+	"maze_game_server/io/mysql"
+
 	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fklog"
 	"go.uber.org/zap"
-	"maze_game_server/io/mysql"
 )
 
 type AccountTableInfo struct {
@@ -25,10 +27,11 @@ func GetAppTableIndex(id uint64) uint32 {
 	return uint32((id >> 4) % 16)
 }
 
-func GetAccountInfo(logger fklog.FKLogI, accountId uint64) (*AccountTableInfo, error) {
+func GetAccountInfo(ctx context.Context, accountId uint64) (*AccountTableInfo, error) {
+	logger := fklog.ContextAppLogger(ctx)
 	db, err := mysql.GetMysqlDb()
 	if err != nil {
-		logger.ErrorWF("GetMysqlDb fail", zap.Error(err))
+		logger.CtxError(ctx, "GetMysqlDb fail", zap.Error(err))
 		return nil, err
 	}
 	tableIndex := GetAppTableIndex(accountId)
@@ -36,7 +39,7 @@ func GetAccountInfo(logger fklog.FKLogI, accountId uint64) (*AccountTableInfo, e
 	accountTableInfo := &AccountTableInfo{}
 	res := db.Table(table).Where("account_id = ?", accountId).First(accountTableInfo)
 	if res.Error != nil {
-		logger.ErrorWF("GetAccountInfo fail", zap.Error(err), zap.Uint64("accountId", accountId))
+		logger.CtxError(ctx, "GetAccountInfo fail", zap.Error(err), zap.Uint64("accountId", accountId))
 		return nil, res.Error
 	}
 

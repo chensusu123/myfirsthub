@@ -21,9 +21,10 @@ import (
 	"google.golang.org/protobuf/proto"
 )
 
-func NotifyClientAttrChg(logger fklog.FKLogI, userId uint64, msg *structsdef.DollAttrChgNotify) {
+func NotifyClientAttrChg(ctx context.Context, userId uint64, msg *structsdef.DollAttrChgNotify) {
+	logger := fklog.ContextAppLogger(ctx)
 	if msg.ChgType == constdef.MazeBuffLvChg {
-		logger.InfoWF("NotifyClientAttrChg maze level chg ignore", zap.Any("msg", msg))
+		logger.CtxInfo(ctx, "NotifyClientAttrChg maze level chg ignore", zap.Any("msg", msg))
 		return
 	}
 	mazePanelChgIDMsg := &MazePropertyPanel.MazePanelAttrChgID{}
@@ -42,9 +43,9 @@ func NotifyClientAttrChg(logger fklog.FKLogI, userId uint64, msg *structsdef.Dol
 		mazePanelChgIDMsg.ChgAttrs = append(mazePanelChgIDMsg.ChgAttrs, chgIdInfo)
 	}
 	if len(mazePanelChgIDMsg.ChgAttrs) > 0 {
-		logger.InfoWF("NotifyClientAttrChg send client with", zap.Any("mazePanelChgIDMsg", mazePanelChgIDMsg))
+		logger.CtxInfo(ctx, "NotifyClientAttrChg send client with", zap.Any("mazePanelChgIDMsg", mazePanelChgIDMsg))
 		online.ClusterPush(context.TODO(), uint64(userId), 16262, mazePanelChgIDMsg)
 	} else {
-		logger.InfoWF("NotifyClientAttrChg no care attrs", zap.Any("mazePanelChgIDMsg", mazePanelChgIDMsg))
+		logger.CtxInfo(ctx, "NotifyClientAttrChg no care attrs", zap.Any("mazePanelChgIDMsg", mazePanelChgIDMsg))
 	}
 }

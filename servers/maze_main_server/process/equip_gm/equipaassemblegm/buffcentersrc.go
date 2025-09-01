@@ -6,7 +6,7 @@
  */
 package equipaassemblegm
 
-// func GetBcBuffBySrc(logger fklog.FKLogI, userID uint64, buffIDs []int32) (srcBuffsMap map[int32]map[int32]int64, e error) {
+// func GetBcBuffBySrc(ctx context.Context, userID uint64, buffIDs []int32) (srcBuffsMap map[int32]map[int32]int64, e error) {
 // 	buffMap, e := BuffManagerRedis.GetBuffs(context.TODO(), logger, userID, 0, buffIDs)
 // 	if e != nil {
 // 		return

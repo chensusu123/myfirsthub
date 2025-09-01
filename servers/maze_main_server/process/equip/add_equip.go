@@ -42,7 +42,7 @@ func OnSvrAddMazeEquipRQ(ctx context.Context, shardingID int64, rqMsg proto.Mess
 		costTime := time.Since(addStartTime).Seconds()
 		userCtx.WarnWF("OnSvrAddMazeEquipRQ end ", zap.Any("req", req), zap.Any("res", res), zap.Float64("costTime", costTime))
 		if costTime >= 0.5 {
-			userCtx.ErrorWF("OnSvrAddMazeEquipRQ timeout", zap.Any("req", req), zap.Any("res", res), zap.Float64("costTime", costTime))
+			userCtx.CtxError(ctx, "OnSvrAddMazeEquipRQ timeout", zap.Any("req", req), zap.Any("res", res), zap.Float64("costTime", costTime))
 		}
 	}()
 
@@ -50,54 +50,54 @@ func OnSvrAddMazeEquipRQ(ctx context.Context, shardingID int64, rqMsg proto.Mess
 	defer lock.Unlock()
 
 	if len(req.EquipList) <= 0 {
-		userCtx.ErrorWF("OnSvrAddMazeEquipRQ none equip", zap.Any("req", req))
+		userCtx.CtxError(ctx, "OnSvrAddMazeEquipRQ none equip", zap.Any("req", req))
 		res.ErrInfo = errors.COMMON_ERROR_TIPS.Wrap("没有要添加的装备信息")
 		return err
 	}
 	if req.GetOpType() <= 0 || req.GetTradeNumber() <= 0 {
-		userCtx.ErrorWF("OnSvrAddMazeEquipRQ input invalid args", zap.Any("req", req))
+		userCtx.CtxError(ctx, "OnSvrAddMazeEquipRQ input invalid args", zap.Any("req", req))
 		res.ErrInfo = errors.ARGS_NOT_MATCH.ToInfo()
 		return err
 	}
 
-	bagEquipMgr := bagmodule.NewBagEquipMgr(logger, uint64(shardingID))
-	err = bagEquipMgr.LoadBagFromRedis()
+	bagEquipMgr := bagmodule.NewBagEquipMgr(ctx, uint64(shardingID))
+	err = bagEquipMgr.LoadBagFromRedis(ctx)
 	if err != nil {
 		res.ErrInfo = errors.MODULE_ERROR.ToInfo()
-		userCtx.ErrorWF("OnSvrAddMazeEquipRQ LoadBagFromRedis fail", zap.Error(err))
+		userCtx.CtxError(ctx, "OnSvrAddMazeEquipRQ LoadBagFromRedis fail", zap.Error(err))
 		return err
 	}
 
 	stageAddition, err := GetUserEquipAddition(userCtx, userCtx.UserID)
 	if err != nil {
 		res.ErrInfo = errors.MODULE_ERROR.ToInfo()
-		userCtx.ErrorWF("OnSvrAddMazeEquipRQ GetUserEquipAddition fail", zap.Error(err))
+		userCtx.CtxError(ctx, "OnSvrAddMazeEquipRQ GetUserEquipAddition fail", zap.Error(err))
 		return
 	}
 
-	attrStageRow := GMazeEquipAttrStageV8Cfg.Get(stageAddition)
+	attrStageRow := GMazeEquipAttrStageV8Cfg.GetWithCtx(ctx, stageAddition)
 	if attrStageRow == nil {
 		res.ErrInfo = errors.CONFIG_NOT_FOUND.ToInfo()
-		userCtx.ErrorWF("OnSvrAddMazeEquipRQ GMazeEquipAttrStageV8Cfg fail", zap.Int32("tap", stageAddition))
+		userCtx.CtxError(ctx, "OnSvrAddMazeEquipRQ GMazeEquipAttrStageV8Cfg fail", zap.Int32("tap", stageAddition))
 		return
 	}
 	totalScoreMap, err := GetTotalScoreAndBarrierMap(userCtx, userCtx.UserID, req.EquipList)
 	if err != nil {
 		res.ErrInfo = errors.MODULE_ERROR.ToInfo()
-		userCtx.ErrorWF("OnSvrAddMazeEquipRQ GetTotalScoreMap fail", zap.Error(err))
+		userCtx.CtxError(ctx, "OnSvrAddMazeEquipRQ GetTotalScoreMap fail", zap.Error(err))
 		return
 	}
 
 	allotGuids, err := AddEquipAllotGuid(userCtx, userCtx.UserID, int32(len(req.EquipList)))
 	if err != nil {
 		res.ErrInfo = errors.MODULE_ERROR.ToInfo()
-		userCtx.ErrorWF("OnSvrAddMazeEquipRQ AddEquipAllotGuid fail", zap.Error(err))
+		userCtx.CtxError(ctx, "OnSvrAddMazeEquipRQ AddEquipAllotGuid fail", zap.Error(err))
 		return
 	}
 	// 检查guid分配数量是否充足
 	if len(allotGuids) != len(req.EquipList) {
 		res.ErrInfo = errors.COMMON_ERROR_TIPS.Wrap("alloc guid fail")
-		userCtx.ErrorWF("OnSvrAddMazeEquipRQ alloc guid less",
+		userCtx.CtxError(ctx, "OnSvrAddMazeEquipRQ alloc guid less",
 			zap.Int("need", len(req.EquipList)), zap.Int("alloc", len(allotGuids)))
 		return
 	}
@@ -118,12 +118,12 @@ func OnSvrAddMazeEquipRQ(ctx context.Context, shardingID int64, rqMsg proto.Mess
 	now := time.Now()
 	equipLock := &sync.Mutex{}
 	for i, equipInfo := range req.EquipList {
-		equipCfg := GMazeEquipInfoV8Cfg.Get(equipInfo.GetEquipId())
+		equipCfg := GMazeEquipInfoV8Cfg.GetWithCtx(ctx, equipInfo.GetEquipId())
 		if equipCfg != nil {
 			totalScoreMap[equipCfg.Score_group] += attrStageRow.Score
 		} else {
 			res.ErrInfo = errors.CONFIG_NOT_FOUND.ToInfo()
-			userCtx.ErrorWF("OnSvrAddMazeEquipRQ less equip cfg",
+			userCtx.CtxError(ctx, "OnSvrAddMazeEquipRQ less equip cfg",
 				zap.Int32("equipId", equipInfo.GetEquipId()))
 			return
 		}
@@ -143,9 +143,9 @@ func OnSvrAddMazeEquipRQ(ctx context.Context, shardingID int64, rqMsg proto.Mess
 		ep.Condition = condParam
 
 		wg.Add(1)
-		go func(logger fklog.FKLogI, userId uint64, uwparam *DEIUWParam, ewparam *DEIEWParam) {
+		go func(ctx context.Context, userId uint64, uwparam *DEIUWParam, ewparam *DEIEWParam) {
 			defer wg.Done()
-			r, e := DoInsEquip(logger, userId, uwparam, ewparam)
+			r, e := DoInsEquip(ctx, userId, uwparam, ewparam)
 			if e == nil {
 				equipLock.Lock()
 				result = append(result, r)
@@ -157,7 +157,7 @@ func OnSvrAddMazeEquipRQ(ctx context.Context, shardingID int64, rqMsg proto.Mess
 	userCtx.InfoWF("OnSvrAddMazeEquipRQ total", zap.Duration("cost", time.Since(now)))
 	if len(result) != len(req.EquipList) {
 		res.ErrInfo = errors.COMMON_ERROR_TIPS.Wrap("insEquip fail")
-		userCtx.ErrorWF("OnSvrAddMazeEquipRQ insEquip fail",
+		userCtx.CtxError(ctx, "OnSvrAddMazeEquipRQ insEquip fail",
 			zap.Any("result", len(result)), zap.Any("equipList", len(req.EquipList)))
 		return
 	}
@@ -168,9 +168,9 @@ func OnSvrAddMazeEquipRQ(ctx context.Context, shardingID int64, rqMsg proto.Mess
 		equipInstanceRecordMap[dei.Record.EquipGuid] = dei.Record
 	}
 
-	err = bagEquipMgr.SaveBagInfoToRedis()
+	err = bagEquipMgr.SaveBagInfoToRedis(ctx)
 	if err != nil {
-		userCtx.ErrorWF("OnSvrAddMazeEquipRQ BatchSaveEquipInfo error!", zap.Error(err))
+		userCtx.CtxError(ctx, "OnSvrAddMazeEquipRQ BatchSaveEquipInfo error!", zap.Error(err))
 		res.ErrInfo = errors.MODULE_ERROR.ToInfo()
 		PushMazeEquipInstanceLog(userCtx, equipInstanceRecordMap, mazeequipinstancerecord.MazeAddEquip, 1)
 		PushMazeEquipBagLogEx(userCtx, userCtx.UserID, addInstanceEquips, nil, req.GetTradeNumber(), req.GetOpType(), mazeequipbagrecord.MazeAddEquip, startTime, 1)
@@ -182,7 +182,7 @@ func OnSvrAddMazeEquipRQ(ctx context.Context, shardingID int64, rqMsg proto.Mess
 	if len(totalScoreMap) > 0 {
 		err1 := mazeequipgetnumredis.BatchSetEquipGetNum(userCtx, userCtx.UserID, totalScoreMap)
 		if err1 != nil {
-			userCtx.ErrorWF("OnSvrAddMazeEquipRQ BatchSetEquipGetNum error!",
+			userCtx.CtxError(ctx, "OnSvrAddMazeEquipRQ BatchSetEquipGetNum error!",
 				zap.Error(err1),
 				zap.Any("totalScoreMap", totalScoreMap))
 			isFail += 100
@@ -223,7 +223,7 @@ func GetUserEquipAddition(logger fkserver.UserContext, uid uint64) (int32, error
 	var stageAddition int32 = 1
 	// ok, err := UserBlackDiamondFC.IsBlackDiamondUserFC(logger, uid, 50)
 	// if err != nil {
-	// 	logger.ErrorWF("GetUserEquipAddition get black diamond user fail", zap.Error(err))
+	// 	logger.CtxError(ctx,"GetUserEquipAddition get black diamond user fail", zap.Error(err))
 	// 	return 0, err
 	// }
 	// if ok {
@@ -231,7 +231,7 @@ func GetUserEquipAddition(logger fkserver.UserContext, uid uint64) (int32, error
 	// } else {
 	// 	e, monthCardEnabled := MonthlyCardRedis.CheckMonthlyCardEx(logger, uid, 800001)
 	// 	if e != nil {
-	// 		logger.ErrorWF("GetUserEquipAddition get month card fail", zap.Error(err))
+	// 		logger.CtxError(ctx,"GetUserEquipAddition get month card fail", zap.Error(err))
 	// 		return 0, e
 	// 	}
 	// 	if monthCardEnabled {
@@ -242,13 +242,14 @@ func GetUserEquipAddition(logger fkserver.UserContext, uid uint64) (int32, error
 	return stageAddition, nil
 }
 
-func AddEquipAllotGuid(logger fklog.FKLogI, userId uint64, addCount int32) ([]int64, error) {
+func AddEquipAllotGuid(ctx context.Context, userId uint64, addCount int32) ([]int64, error) {
+	logger := fklog.ContextAppLogger(ctx)
 	if addCount == 0 {
 		return make([]int64, 0), nil
 	}
-	newGuid, e := mazeequipguidredis.GetNewGuid(logger, userId, addCount)
+	newGuid, e := mazeequipguidredis.GetNewGuid(ctx, userId, addCount)
 	if e != nil {
-		logger.ErrorWF("AddEquipAllotGuid GetNewGuid error", zap.Error(e))
+		logger.CtxError(ctx, "AddEquipAllotGuid GetNewGuid error", zap.Error(e))
 		return nil, e
 	}
 	allotGuids := make([]int64, 0, addCount)
@@ -256,19 +257,20 @@ func AddEquipAllotGuid(logger fklog.FKLogI, userId uint64, addCount int32) ([]in
 		guid := newGuid - int64(addCount) + int64(i)
 		allotGuids = append(allotGuids, guid)
 	}
-	logger.InfoWF("AddEquipAllotGuid success", zap.Int64s("allotGuids", allotGuids))
+	logger.CtxInfo(ctx, "AddEquipAllotGuid success", zap.Int64s("allotGuids", allotGuids))
 	return allotGuids, nil
 }
 
-func GetTotalScoreAndBarrierMap(logger fklog.FKLogI, userId uint64, equipList []*MazeEquipSvr.SvrEquipInfo) (map[int32]int32, error) {
+func GetTotalScoreAndBarrierMap(ctx context.Context, userId uint64, equipList []*MazeEquipSvr.SvrEquipInfo) (map[int32]int32, error) {
+	logger := fklog.ContextAppLogger(ctx)
 	if len(equipList) <= 0 {
 		return make(map[int32]int32), nil
 	}
 	scoreGroupMap := make(map[int32]struct{}, 0)
 	for _, equipId := range equipList {
-		equipCfg := GMazeEquipInfoV8Cfg.Get(equipId.GetEquipId())
+		equipCfg := GMazeEquipInfoV8Cfg.GetWithCtx(ctx, equipId.GetEquipId())
 		if equipCfg == nil {
-			logger.ErrorWF("GetTotalScoreAndBarrierMap GMazeEquipInfoV8Cfg error", zap.Int32("equipId", equipId.GetEquipId()))
+			logger.CtxError(ctx, "GetTotalScoreAndBarrierMap GMazeEquipInfoV8Cfg error", zap.Int32("equipId", equipId.GetEquipId()))
 			return nil, errors.New("配置不存在")
 		}
 		scoreGroupMap[equipCfg.Score_group] = struct{}{}
@@ -277,35 +279,37 @@ func GetTotalScoreAndBarrierMap(logger fklog.FKLogI, userId uint64, equipList []
 	for equipId := range scoreGroupMap {
 		equipIds = append(equipIds, equipId)
 	}
-	equipScoreMap, err := mazeequipgetnumredis.GetBatchEquipGetNum(logger, userId, equipIds)
+	equipScoreMap, err := mazeequipgetnumredis.GetBatchEquipGetNum(ctx, userId, equipIds)
 	if err != nil {
-		logger.ErrorWF("GetTotalScoreAndBarrierMap GetBatchEquipGetNum error", zap.Error(err))
+		logger.CtxError(ctx, "GetTotalScoreAndBarrierMap GetBatchEquipGetNum error", zap.Error(err))
 		return nil, err
 	}
 	return equipScoreMap, nil
 }
 
-func DoInsEquip(logger fklog.FKLogI, userId uint64, uwparam *DEIUWParam, ewparam *DEIEWParam) (ins *DEInstance, err error) {
-	dei := NewDEInstance(logger, userId)
-	err = dei.DeiInit(uwparam, ewparam)
+func DoInsEquip(ctx context.Context, userId uint64, uwparam *DEIUWParam, ewparam *DEIEWParam) (ins *DEInstance, err error) {
+	logger := fklog.ContextAppLogger(ctx)
+	dei := NewDEInstance(ctx, userId)
+	err = dei.DeiInit(ctx, uwparam, ewparam)
 	if err != nil {
-		logger.ErrorWF("DoInsEquip DeiInit error!", zap.Error(err))
+		logger.CtxError(ctx, "DoInsEquip DeiInit error!", zap.Error(err))
 		return nil, err
 	}
-	err = dei.DeiInstance()
+	err = dei.DeiInstance(ctx)
 	if err != nil {
-		logger.ErrorWF("DoInsEquip DeiInstance error!", zap.Error(err))
+		logger.CtxError(ctx, "DoInsEquip DeiInstance error!", zap.Error(err))
 		return nil, err
 	}
 	return dei, nil
 }
 
-func GetPoolLimitMap(logger fklog.FKLogI, attrLimits []int64) map[int32]struct{} {
+func GetPoolLimitMap(ctx context.Context, attrLimits []int64) map[int32]struct{} {
+	logger := fklog.ContextAppLogger(ctx)
 	affixLimits := make([]int32, 0, len(attrLimits))
 	for _, attrId := range attrLimits {
 		affixLimits = append(affixLimits, int32(attrId))
 	}
 	poolLimitMap := mazeequipaffixrandpoolv8.GetPoolLimitCfg(affixLimits)
-	logger.InfoWF("GetPoolLimitMap end", zap.Int("attrLimits", len(attrLimits)), zap.Int("poolLimitMap", len(poolLimitMap)))
+	logger.CtxInfo(ctx, "GetPoolLimitMap end", zap.Int("attrLimits", len(attrLimits)), zap.Int("poolLimitMap", len(poolLimitMap)))
 	return poolLimitMap
 }

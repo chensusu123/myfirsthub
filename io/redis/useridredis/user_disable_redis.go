@@ -36,7 +36,7 @@ func Generate(ctx context.Context, logger fklog.FKLogI) uint64 {
 	key := "uid:generate"
 	userId, err := redis.Int64(gRedis.Do(ctx, "INCR", key))
 	if err != nil {
-		logger.ErrorWF("Generate error", zap.Error(err))
+		logger.CtxError(ctx, "Generate error", zap.Error(err))
 		return 0
 	}
 	if userId <= maxUserID {
@@ -45,7 +45,7 @@ func Generate(ctx context.Context, logger fklog.FKLogI) uint64 {
 	}
 	userId, err = redis.Int64(gRedis.Do(ctx, "INCR", key))
 	if err != nil {
-		logger.ErrorWF("Generate error", zap.Error(err))
+		logger.CtxError(ctx, "Generate error", zap.Error(err))
 		return 0
 	}
 	return uint64(userId)

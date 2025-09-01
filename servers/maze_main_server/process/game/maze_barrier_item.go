@@ -9,7 +9,6 @@ import (
 	"maze_game_server/config/GMazeBarriesV8Cfg"
 	"maze_game_server/config/GMazeConfigV8Cfg"
 	"maze_game_server/config/GMazeItemsV8Cfg"
-	"maze_game_server/lib/log"
 	"maze_game_server/lib/nano/session"
 	"maze_game_server/pb/common/MazeCommon"
 	"maze_game_server/pb/common/MazeGame"
@@ -27,21 +26,22 @@ import (
 )
 
 // UseGoldCoinPile 使用金币堆，转换为金币
-func UseGoldCoinPile(logger fklog.FKLogI, userID uint64, barrierId int32, areaId int32, areaIndex int32, itemId int32, count int64) (items []*MazeCommon.MazeItem, err error) {
+func UseGoldCoinPile(ctx context.Context, userID uint64, barrierId int32, areaId int32, areaIndex int32, itemId int32, count int64) (items []*MazeCommon.MazeItem, err error) {
+	logger := fklog.ContextAppLogger(ctx)
 	items = make([]*MazeCommon.MazeItem, 0)
-	cfg := GMazeConfigV8Cfg.Get(constdef.GoldPileShow2RealCfgId)
+	cfg := GMazeConfigV8Cfg.GetWithCtx(ctx, constdef.GoldPileShow2RealCfgId)
 	if cfg == nil {
 		err = errors.New("金币堆兑换金币配置错误")
-		logger.ErrorWF("UseGoldCoinPile GMazeConfigV8Cfg.Get fail", zap.Error(err), zap.Int32("cfgId", constdef.GoldPileShow2RealCfgId))
+		logger.CtxError(ctx, "UseGoldCoinPile GMazeConfigV8Cfg.Get fail", zap.Error(err), zap.Int32("cfgId", constdef.GoldPileShow2RealCfgId))
 		return nil, err
 	}
 	goldCoinId, ok := cfg.Value_map[itemId]
 	if !ok {
 		err = errors.New("金币堆无映射金币配置")
-		logger.ErrorWF("UseGoldCoinPile no target gold coin found", zap.Error(err), zap.Int32("itemId", itemId), zap.Any("Value_map", cfg.Value_map))
+		logger.CtxError(ctx, "UseGoldCoinPile no target gold coin found", zap.Error(err), zap.Int32("itemId", itemId), zap.Any("Value_map", cfg.Value_map))
 		return nil, err
 	}
-	barrierCfg := GMazeBarriesV8Cfg.Get(barrierId)
+	barrierCfg := GMazeBarriesV8Cfg.GetWithCtx(ctx, barrierId)
 	// Add item
 	items = append(items, &MazeCommon.MazeItem{
 		ItemId: proto.Int32(int32(goldCoinId)),
@@ -51,21 +51,22 @@ func UseGoldCoinPile(logger fklog.FKLogI, userID uint64, barrierId int32, areaId
 }
 
 // UseQianghuashiPile 使用强化石堆，转换为强化石
-func UseQianghuashiPile(logger fklog.FKLogI, userID uint64, barrierId int32, areaId int32, areaIndex int32, itemId int32, count int64) (items []*MazeCommon.MazeItem, err error) {
+func UseQianghuashiPile(ctx context.Context, userID uint64, barrierId int32, areaId int32, areaIndex int32, itemId int32, count int64) (items []*MazeCommon.MazeItem, err error) {
+	logger := fklog.ContextAppLogger(ctx)
 	items = make([]*MazeCommon.MazeItem, 0)
-	cfg := GMazeConfigV8Cfg.Get(constdef.StrengthenStonePileShow2RealCfgId)
+	cfg := GMazeConfigV8Cfg.GetWithCtx(ctx, constdef.StrengthenStonePileShow2RealCfgId)
 	if cfg == nil {
 		err = errors.New("强化石堆兑换强化石配置错误")
-		logger.ErrorWF("UseQianghuashiPile GMazeConfigV8Cfg.Get fail", zap.Error(err), zap.Int32("cfgId", constdef.StrengthenStonePileShow2RealCfgId))
+		logger.CtxError(ctx, "UseQianghuashiPile GMazeConfigV8Cfg.Get fail", zap.Error(err), zap.Int32("cfgId", constdef.StrengthenStonePileShow2RealCfgId))
 		return nil, err
 	}
 	goldCoinId, ok := cfg.Value_map[itemId]
 	if !ok {
 		err = errors.New("强化石堆无映射强化石配置")
-		logger.ErrorWF("UseQianghuashiPile no target qianghuashi found", zap.Error(err), zap.Int32("itemId", itemId), zap.Any("Value_map", cfg.Value_map))
+		logger.CtxError(ctx, "UseQianghuashiPile no target qianghuashi found", zap.Error(err), zap.Int32("itemId", itemId), zap.Any("Value_map", cfg.Value_map))
 		return nil, err
 	}
-	barrierCfg := GMazeBarriesV8Cfg.Get(barrierId)
+	barrierCfg := GMazeBarriesV8Cfg.GetWithCtx(ctx, barrierId)
 	// Add item
 	items = append(items, &MazeCommon.MazeItem{
 		ItemId: proto.Int32(int32(goldCoinId)),
@@ -75,10 +76,11 @@ func UseQianghuashiPile(logger fklog.FKLogI, userID uint64, barrierId int32, are
 }
 
 // TriggerTempBuff 触发三选一
-func TriggerTempBuff(logger fklog.FKLogI, userID uint64, barrierId int32, areaId int32, areaIndex int32, itemId int32, count int64) (err error) {
+func TriggerTempBuff(ctx context.Context, userID uint64, barrierId int32, areaId int32, areaIndex int32, itemId int32, count int64) (err error) {
+	logger := fklog.ContextAppLogger(ctx)
 	optionalBuffInfo, err := tempbuffservice.GlobalTempBuffService.GetOptionalTempBuffList(context.TODO(), userID, barrierId, 0, int32(MazeTempBuff.Type_USE_ITEM), areaId, areaIndex, 0)
 	if err != nil {
-		logger.ErrorWF("TriggerTempBuff GetOptionalTempBuffList fail",
+		logger.CtxError(ctx, "TriggerTempBuff GetOptionalTempBuffList fail",
 			zap.Error(err),
 			zap.Int32("barrierId", barrierId),
 			zap.Int32("areaId", areaId),
@@ -97,7 +99,7 @@ func TriggerTempBuff(logger fklog.FKLogI, userID uint64, barrierId int32, areaId
 	// Push
 	err = online.ClusterPush(context.TODO(), userID, 10552, optionalTempBuffListID)
 	if err != nil {
-		logger.ErrorWF("TriggerTempBuff Push fail",
+		logger.CtxError(ctx, "TriggerTempBuff Push fail",
 			zap.Error(err),
 			zap.Int32("barrierId", barrierId),
 			zap.Int32("areaId", areaId),
@@ -111,15 +113,15 @@ func TriggerTempBuff(logger fklog.FKLogI, userID uint64, barrierId int32, areaId
 }
 
 func (g *Game) OnBarrierUseItemRQ_10550_10551(s *session.Session, req *MazeGame.BarrierUseItemRQ) (err error) {
+	logger := fklog.ContextAppLogger(s.Context())
 	defer fkprometheus.InfoPMT("OnBarrierUseItemRQ")()
 
-	logger := log.Clone("Game", uint64(s.UID()), 0)
 	res := &MazeGame.BarrierUseItemRS{}
 
-	logger.InfoWF("OnBarrierUseItemRQ start", zap.Any("req", req))
+	logger.CtxInfo(s.Context(), "OnBarrierUseItemRQ start", zap.Any("req", req))
 	defer func() {
 		err = s.Response(res)
-		logger.InfoWF("OnBarrierUseItemRQ end", zap.Any("res", res))
+		logger.CtxInfo(s.Context(), "OnBarrierUseItemRQ end", zap.Any("res", res))
 	}()
 
 	res.Header = req.Header
@@ -132,16 +134,16 @@ func (g *Game) OnBarrierUseItemRQ_10550_10551(s *session.Session, req *MazeGame.
 	userId := uint64(s.UID())
 
 	// 校验关卡
-	barrierCfg := GMazeBarriesV8Cfg.Get(req.GetBarrierId())
+	barrierCfg := GMazeBarriesV8Cfg.GetWithCtx(s.Context(), req.GetBarrierId())
 	if barrierCfg == nil {
-		logger.ErrorWF("OnBarrierUseItemRQ barrier not found", zap.Any("barrierId", req.GetBarrierId()))
+		logger.CtxError(s.Context(), "OnBarrierUseItemRQ barrier not found", zap.Any("barrierId", req.GetBarrierId()))
 		res.ErrInfo = errors.COMMON_ERROR_TIPS.Wrap("关卡配置不存在")
 		return
 	}
 
 	for _, item := range req.GetItemList() {
 		if item.GetItemId() <= 0 || item.GetCount() < 0 {
-			logger.ErrorWF("OnBarrierUseItemRQ invalid item param",
+			logger.CtxError(s.Context(), "OnBarrierUseItemRQ invalid item param",
 				zap.Any("barrierId",
 					req.GetBarrierId()),
 				zap.Any("ItemList", req.GetItemList()),
@@ -149,9 +151,9 @@ func (g *Game) OnBarrierUseItemRQ_10550_10551(s *session.Session, req *MazeGame.
 			res.ErrInfo = errors.COMMON_ERROR_TIPS.Wrap("道具参数错误")
 			return
 		}
-		itemCfg := GMazeItemsV8Cfg.Get(item.GetItemId())
+		itemCfg := GMazeItemsV8Cfg.GetWithCtx(s.Context(), item.GetItemId())
 		if itemCfg == nil {
-			logger.ErrorWF("OnBarrierUseItemRQ item not found",
+			logger.CtxError(s.Context(), "OnBarrierUseItemRQ item not found",
 				zap.Any("barrierId", req.GetBarrierId()),
 				zap.Any("ItemList", req.GetItemList()),
 				zap.Any("ItemID", item.GetItemId()),
@@ -165,13 +167,13 @@ func (g *Game) OnBarrierUseItemRQ_10550_10551(s *session.Session, req *MazeGame.
 	items := make([]*MazeCommon.MazeItem, 0)
 
 	for _, item := range req.GetItemList() {
-		itemCfg := GMazeItemsV8Cfg.Get(item.GetItemId())
+		itemCfg := GMazeItemsV8Cfg.GetWithCtx(s.Context(), item.GetItemId())
 		switch itemCfg.Type {
 		// 金币堆
 		case constdef.ItemTypeGoldCoinPile:
-			addItems, err := UseGoldCoinPile(logger, userId, req.GetBarrierId(), req.GetAreaId(), req.GetAreaIndex(), item.GetItemId(), item.GetCount())
+			addItems, err := UseGoldCoinPile(s.Context(), userId, req.GetBarrierId(), req.GetAreaId(), req.GetAreaIndex(), item.GetItemId(), item.GetCount())
 			if err != nil {
-				logger.ErrorWF("OnBarrierUseItemRQ UseGoldCoinPile fail",
+				logger.CtxError(s.Context(), "OnBarrierUseItemRQ UseGoldCoinPile fail",
 					zap.Any("barrierId", req.GetBarrierId()),
 					zap.Any("ItemID", item.GetItemId()),
 					zap.Any("ItemList", req.GetItemList()),
@@ -182,9 +184,9 @@ func (g *Game) OnBarrierUseItemRQ_10550_10551(s *session.Session, req *MazeGame.
 			items = append(items, addItems...)
 		// 强化石堆
 		case constdef.ItemTypeQianghuashiPile:
-			addItems, err := UseQianghuashiPile(logger, userId, req.GetBarrierId(), req.GetAreaId(), req.GetAreaIndex(), item.GetItemId(), item.GetCount())
+			addItems, err := UseQianghuashiPile(s.Context(), userId, req.GetBarrierId(), req.GetAreaId(), req.GetAreaIndex(), item.GetItemId(), item.GetCount())
 			if err != nil {
-				logger.ErrorWF("OnBarrierUseItemRQ UseQianghuashiPile fail",
+				logger.CtxError(s.Context(), "OnBarrierUseItemRQ UseQianghuashiPile fail",
 					zap.Any("barrierId", req.GetBarrierId()),
 					zap.Any("ItemID", item.GetItemId()),
 					zap.Any("ItemList", req.GetItemList()),
@@ -195,9 +197,9 @@ func (g *Game) OnBarrierUseItemRQ_10550_10551(s *session.Session, req *MazeGame.
 			items = append(items, addItems...)
 		// 三选一
 		case constdef.ItemTypeTempBuff:
-			err = TriggerTempBuff(logger, userId, req.GetBarrierId(), req.GetAreaId(), req.GetAreaIndex(), item.GetItemId(), item.GetCount())
+			err = TriggerTempBuff(s.Context(), userId, req.GetBarrierId(), req.GetAreaId(), req.GetAreaIndex(), item.GetItemId(), item.GetCount())
 			if err != nil {
-				logger.ErrorWF("OnBarrierUseItemRQ TriggerTempBuff fail",
+				logger.CtxError(s.Context(), "OnBarrierUseItemRQ TriggerTempBuff fail",
 					zap.Any("barrierId", req.GetBarrierId()),
 					zap.Any("ItemID", item.GetItemId()),
 					zap.Any("ItemList", req.GetItemList()),
@@ -215,7 +217,7 @@ func (g *Game) OnBarrierUseItemRQ_10550_10551(s *session.Session, req *MazeGame.
 		itemList := itemutil.ItemPb2ItemInfo(items)
 		errInfo := itemservice.GlobalItemService.AddItem(context.TODO(), userId, itemservice.ItemOpTypeUseItem, tradeNo, itemList...)
 		if errInfo != nil {
-			logger.ErrorWF("OnBarrierUseItemRQ AddItemEx fail", zap.Any("errInfo", errInfo), zap.Any("ItemList", items))
+			logger.CtxError(s.Context(), "OnBarrierUseItemRQ AddItemEx fail", zap.Any("errInfo", errInfo), zap.Any("ItemList", items))
 		}
 	}
 
@@ -228,7 +230,7 @@ func (g *Game) OnBarrierUseItemRQ_10550_10551(s *session.Session, req *MazeGame.
 		itemMap[i.GetItemId()] += i.GetCount()
 	}
 	if err = barrierscorerewardservice.GlobalScoreRewardService.SaveBarrierScoreRewardItem(context.TODO(), userId, req.GetBarrierId(), itemMap); err != nil {
-		logger.ErrorWF("OnBarrierUseItemRQ SaveBarrierScoreRewardItem err", zap.Error(err), zap.Any("barrier", req.GetBarrierId()))
+		logger.CtxError(s.Context(), "OnBarrierUseItemRQ SaveBarrierScoreRewardItem err", zap.Error(err), zap.Any("barrier", req.GetBarrierId()))
 		res.ErrInfo = errors.MODULE_ERROR.ToInfo()
 	}
 

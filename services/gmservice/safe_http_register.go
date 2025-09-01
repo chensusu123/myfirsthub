@@ -24,7 +24,7 @@ const (
 
 type HeaderStrKey string
 
-func (s *service) SafeGETRegister(logger fklog.FKLogI, pattern string, handler func(http.ResponseWriter, *http.Request)) {
+func (s *service) SafeGETRegister(ctx context.Context, pattern string, handler func(http.ResponseWriter, *http.Request)) {
 	appConfig := appconfig.GlobalConfig()
 	tracerPattern := http.MethodGet + pattern
 
@@ -90,7 +90,7 @@ func (s *service) SafeGETRegister(logger fklog.FKLogI, pattern string, handler f
 	http.Handle(oiginPattern, handlerFactor())
 }
 
-func (s *service) SafePOSTRegister(logger fklog.FKLogI, pattern string, handler func(http.ResponseWriter, *http.Request)) {
+func (s *service) SafePOSTRegister(ctx context.Context, pattern string, handler func(http.ResponseWriter, *http.Request)) {
 	appConfig := appconfig.GlobalConfig()
 	tracerPattern := http.MethodPost + pattern
 

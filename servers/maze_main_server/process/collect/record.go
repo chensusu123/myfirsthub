@@ -37,7 +37,7 @@ func PushDollMazeCollectInfoLog(ctx context.Context, userId uint64, collectInfo 
 		RetCode:       retCode,
 	}
 	if err := mazecollectrecord.PushMazeCollectChgRecord(ctx, saleMsg); err != nil {
-		logger.ErrorWF("PushDollMazeShopInfoLog PushDollMazeShopRecord err", zap.Error(err))
+		logger.CtxError(ctx, "PushDollMazeShopInfoLog PushDollMazeShopRecord err", zap.Error(err))
 	}
 	return nil
 }

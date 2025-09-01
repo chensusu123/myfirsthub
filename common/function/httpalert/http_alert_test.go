@@ -8,14 +8,13 @@
 package httpalert
 
 import (
+	"context"
 	"fmt"
 	"testing"
-
-	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fklog"
 )
 
 func TestAlert(t *testing.T) {
-	var logger = fklog.AppLogger().Clone("httpalert")
-	err := SendHttpAlert(logger, 1, "http_alert_test", "majian", false)
+	ctx := context.Background()
+	err := SendHttpAlert(ctx, 1, "http_alert_test", "majian", false)
 	fmt.Println("err", err)
 }

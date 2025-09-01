@@ -6,7 +6,7 @@
  */
 package equipbaggm
 
-// func GmDelExpModAttrBag(logger fklog.FKLogI, userId uint64, run bool) (need bool, err error) {
+// func GmDelExpModAttrBag(ctx context.Context, userId uint64, run bool) (need bool, err error) {
 // 	allEquips, err := mazebagequipredis.GetAllEquipInfo(logger, userId)
 // 	if err != nil {
 // 		return false, err
@@ -55,13 +55,13 @@ package equipbaggm
 // 			if run {
 // 				dollassemblesuitredis.SetDollAssembleSuit(logger, userId, 1, asEquips)
 // 			}
-// 			logger.InfoWF("GmDelExpModAttrBag del as", zap.Any("asEquips", asEquips))
+// 			logger.CtxInfo(ctx,"GmDelExpModAttrBag del as", zap.Any("asEquips", asEquips))
 // 		}
 // 		if run {
 // 			mazebagequipredis.BatchDelEquip(logger, userId, needDelEquips...)
 // 		}
 
-// 		logger.InfoWF("GmDelExpModAttrBag del", zap.Any("bagEquips", needDelEquips))
+// 		logger.CtxInfo(ctx,"GmDelExpModAttrBag del", zap.Any("bagEquips", needDelEquips))
 // 	}
 // 	return need, nil
 // }

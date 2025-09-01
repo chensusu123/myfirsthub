@@ -1,6 +1,7 @@
 package mazecollect
 
 import (
+	"context"
 	"maze_game_server/common/errors"
 	"maze_game_server/config/GMazeBarriesOnHookV8Cfg"
 	"maze_game_server/io/redis/mazecollectredis"
@@ -17,18 +18,18 @@ type CollectInfo struct {
 	FKLogI fklog.FKLogI
 }
 
-func NewCollectInfo(logger fklog.FKLogI, userId uint64) *CollectInfo {
+func NewCollectInfo(ctx context.Context, userId uint64) *CollectInfo {
 	ret := &CollectInfo{
 		UserId: userId,
-		FKLogI: logger,
+		FKLogI: fklog.ContextAppLogger(ctx),
 	}
 	return ret
 }
 
 // 获取挂机信息
-func (c *CollectInfo) GetCollectInfo() *MazeCollectCache.MazeCollectInfo {
+func (c *CollectInfo) GetCollectInfo(ctx context.Context) *MazeCollectCache.MazeCollectInfo {
 	// 是否已经初始化
-	collectInfo, err := mazecollectredis.GetCollectInfo(c.FKLogI, c.UserId)
+	collectInfo, err := mazecollectredis.GetCollectInfo(ctx, c.UserId)
 	if err != nil {
 		c.FKLogI.ErrorWF("GetCollectInfo error",
 			zap.Any("userId", c.UserId),
@@ -39,8 +40,8 @@ func (c *CollectInfo) GetCollectInfo() *MazeCollectCache.MazeCollectInfo {
 }
 
 // 初始化迷宫挂机
-func (c *CollectInfo) NewMazeCollectInfo(barrierId int32) (err error, info *MazeCollectCache.MazeCollectInfo) {
-	cfg := GMazeBarriesOnHookV8Cfg.Get(barrierId)
+func (c *CollectInfo) NewMazeCollectInfo(ctx context.Context, barrierId int32) (err error, info *MazeCollectCache.MazeCollectInfo) {
+	cfg := GMazeBarriesOnHookV8Cfg.GetWithCtx(ctx, barrierId)
 	if cfg == nil {
 		c.FKLogI.ErrorWF("InitMazeCollectLand error",
 			zap.Any("barrierId", barrierId))
@@ -48,7 +49,7 @@ func (c *CollectInfo) NewMazeCollectInfo(barrierId int32) (err error, info *Maze
 	}
 
 	// 是否已经初始化
-	collectInfo := c.GetCollectInfo()
+	collectInfo := c.GetCollectInfo(ctx)
 	if collectInfo != nil {
 		return nil, collectInfo
 	}
@@ -64,7 +65,7 @@ func (c *CollectInfo) NewMazeCollectInfo(barrierId int32) (err error, info *Maze
 	collectInfo.AvailableTime = proto.Int64(now + int64(cfg.Can_receive_time))
 	c.FKLogI.InfoWF("InitMazeCollectLand init pet", zap.Any("collectInfo", collectInfo))
 
-	err = mazecollectredis.SetCollectInfo(c.FKLogI, c.UserId, collectInfo)
+	err = mazecollectredis.SetCollectInfo(ctx, c.UserId, collectInfo)
 	if err != nil {
 		c.FKLogI.ErrorWF("InitMazeCollectLand SetCollectInfo error", zap.Any("collectInfo", collectInfo), zap.Error(err))
 		return

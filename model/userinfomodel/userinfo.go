@@ -57,7 +57,7 @@ func (u *UserInfoModel) load(ctx context.Context) (err error) {
 	logger := fklog.ContextAppLogger(ctx)
 	userMap, err := mazeuserlevelredis.GetUserInfo(ctx, u.UserID)
 	if err != nil {
-		logger.ErrorWF("load GetUserInfo fail", zap.Error(err), zap.Uint64("userID", u.UserID))
+		logger.CtxError(ctx, "load GetUserInfo fail", zap.Error(err), zap.Uint64("userID", u.UserID))
 		return
 	}
 	u.Level = userMap[UserLevel]
@@ -74,10 +74,10 @@ func (u *UserInfoModel) load(ctx context.Context) (err error) {
 }
 
 // AddExp 加经验
-func (u *UserInfoModel) AddExp(addExp int64) (err error) {
+func (u *UserInfoModel) AddExp(ctx context.Context, addExp int64) (err error) {
 
 	for {
-		levelCfg := GMazeLevelV8Cfg.Get(int32(u.Level))
+		levelCfg := GMazeLevelV8Cfg.GetWithCtx(ctx, int32(u.Level))
 		if levelCfg == nil {
 			return ErrUserLevelConfigNotFound
 		}
@@ -96,10 +96,10 @@ func (u *UserInfoModel) AddExp(addExp int64) (err error) {
 }
 
 // CalExp 根据设置的经验总值更新等级经验
-func (u *UserInfoModel) CalExp() (err error) {
+func (u *UserInfoModel) CalExp(ctx context.Context) (err error) {
 	curLevel := int32(1)
 	for {
-		levelCfg := GMazeLevelV8Cfg.Get(int32(curLevel))
+		levelCfg := GMazeLevelV8Cfg.GetWithCtx(ctx, int32(curLevel))
 		if levelCfg == nil {
 			return ErrUserLevelConfigNotFound
 		}
@@ -132,7 +132,7 @@ func (u *UserInfoModel) Save(ctx context.Context) (err error) {
 	}
 	err = mazeuserlevelredis.SetUserInfo(ctx, u.UserID, userMap)
 	if err != nil {
-		logger.ErrorWF("load SetUserInfo fail", zap.Error(err), zap.Uint64("userID", u.UserID), zap.Any("userMap", userMap))
+		logger.CtxError(ctx, "load SetUserInfo fail", zap.Error(err), zap.Uint64("userID", u.UserID), zap.Any("userMap", userMap))
 	}
 	return
 }

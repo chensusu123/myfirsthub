@@ -11,7 +11,7 @@ type EquipDropService interface {
 	//装备掉落
 	GetNewEquip(ctx context.Context, userId uint64, mazeLevel int32, barrierId int32, equipNum int32) (newEquip map[int32]int32, err error)
 
-	GetMazeBarrierLv(level int32, barrier int32) int32
+	GetMazeBarrierLv(ctx context.Context, level int32, barrier int32) int32
 
 	GmDelete(ctx context.Context, userId uint64) error
 }

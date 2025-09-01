@@ -23,7 +23,7 @@ func (*Rob) OnMazeRobGuaJiRQ_10490_10491(s *session.Session, req *MazeRobGuaJi.M
 	defer fkprometheus.DebugPMT("OnMazeRobGuaJiRQ")()
 	defer func() {
 		err = s.Response(res)
-		logger.InfoWF("OnMazeRobGuaJiRQ end",
+		logger.CtxInfo(s.Context(), "OnMazeRobGuaJiRQ end",
 			zap.Any("req", req),
 			zap.Any("res", res),
 		)

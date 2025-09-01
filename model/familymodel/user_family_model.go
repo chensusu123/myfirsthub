@@ -37,7 +37,7 @@ func (r *UserFamilyModel) SetUserLastLeaveFamilyTime(ctx context.Context) error 
 	lastLeaveFamilyTime := time.Now().Unix()
 	err := familyredis.SetUserLastLeaveFamilyTime(r.UserID, lastLeaveFamilyTime)
 	if err != nil {
-		logger.ErrorWF("SetUserLastLeaveFamilyTime SetUserLastLeaveFamilyTime err",
+		logger.CtxError(ctx, "SetUserLastLeaveFamilyTime SetUserLastLeaveFamilyTime err",
 			zap.Uint64("userID", r.UserID), zap.Int64("lastLeaveFamilyTime", lastLeaveFamilyTime), zap.Error(err))
 		return err
 	}
@@ -49,7 +49,7 @@ func (r *UserFamilyModel) GetUserLastLeaveFamilyTime(ctx context.Context) (int64
 	logger := fklog.ContextAppLogger(ctx)
 	lastLeaveFamilyTime, err := familyredis.GetUserLastLeaveFamilyTime(r.UserID)
 	if err != nil {
-		logger.ErrorWF("GetUserLastLeaveFamilyTime GetUserLastLeaveFamilyTime err",
+		logger.CtxError(ctx, "GetUserLastLeaveFamilyTime GetUserLastLeaveFamilyTime err",
 			zap.Uint64("userID", r.UserID), zap.Error(err))
 		return 0, err
 	}
@@ -61,7 +61,7 @@ func (r *UserFamilyModel) SetUserFamily(ctx context.Context, familyID int32) err
 	logger := fklog.ContextAppLogger(ctx)
 	err := familyredis.SetUserFamilyID(r.UserID, familyID)
 	if err != nil {
-		logger.ErrorWF("SetUserFamilyID SetUserFamilyID err",
+		logger.CtxError(ctx, "SetUserFamilyID SetUserFamilyID err",
 			zap.Uint64("userID", r.UserID), zap.Int32("familyID", familyID), zap.Error(err))
 		return err
 	}
@@ -73,7 +73,7 @@ func (r *UserFamilyModel) DelUserFamily(ctx context.Context) error {
 	logger := fklog.ContextAppLogger(ctx)
 	err := familyredis.DelUserFamilyID(r.UserID)
 	if err != nil {
-		logger.ErrorWF("DelUserFamilyID DelUserFamilyID err",
+		logger.CtxError(ctx, "DelUserFamilyID DelUserFamilyID err",
 			zap.Uint64("userID", r.UserID), zap.Error(err))
 		return err
 	}

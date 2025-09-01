@@ -7,6 +7,7 @@
 package packequipostopb
 
 import (
+	"context"
 	"fmt"
 
 	"maze_game_server/common/errors"
@@ -24,7 +25,8 @@ import (
 )
 
 // 打包装备位信息
-func PackEquipPosPb(logger fklog.FKLogI, asEquip *MazeEquipCache.MazeEquipPosInfo, mask int32) (*MazeGameEquip.EquipPosInfo, error) {
+func PackEquipPosPb(ctx context.Context, asEquip *MazeEquipCache.MazeEquipPosInfo, mask int32) (*MazeGameEquip.EquipPosInfo, error) {
+	logger := fklog.ContextAppLogger(ctx)
 	equipPos := &MazeGameEquip.EquipPosInfo{}
 	equipPos.EquipPos = proto.Int32(asEquip.GetEquipPos().GetPos())
 	if mask == -1 {
@@ -41,9 +43,9 @@ func PackEquipPosPb(logger fklog.FKLogI, asEquip *MazeEquipCache.MazeEquipPosInf
 		// 打包装备
 		if asEquip.EquipInfo != nil {
 			var e error
-			equipPos.EquipInfo, e = packtopb.EquipInfoToCliPB(logger, asEquip.EquipInfo)
+			equipPos.EquipInfo, e = packtopb.EquipInfoToCliPB(ctx, asEquip.EquipInfo)
 			if e != nil {
-				logger.ErrorWF("PackEquipPosPb EquipInfoToCliPB fail", zap.Error(e), zap.Any("equip", asEquip.EquipInfo))
+				logger.CtxError(ctx, "PackEquipPosPb EquipInfoToCliPB fail", zap.Error(e), zap.Any("equip", asEquip.EquipInfo))
 				return nil, e
 			}
 			// 设置武力值,人偶不需要展示武力或者对比武力
@@ -73,7 +75,7 @@ func PackEquipPosPb(logger fklog.FKLogI, asEquip *MazeEquipCache.MazeEquipPosInf
 		lpCfg := GMazeEquipPosLvV8Cfg.GetMazeEquipPosLvV8Config(key)
 		if lpCfg == nil {
 			e := errors.New(fmt.Sprintf("no found pos pvp level cfg:%d", key))
-			logger.ErrorWF("PackEquipPosPb GetMazeEquipPosLvV8Config fail", zap.Error(e),
+			logger.CtxError(ctx, "PackEquipPosPb GetMazeEquipPosLvV8Config fail", zap.Error(e),
 				zap.Any("equip", asEquip), zap.Int32("mask", mask))
 
 			return nil, errors.New(fmt.Sprintf("no found pos pvp level cfg:%d", key))

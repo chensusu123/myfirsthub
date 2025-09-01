@@ -65,7 +65,7 @@ func (g *Game) OnReportDataRQ_10453_10454(s *session.Session, req *MazeGame.Repo
 		}
 
 		userInfo.SetTotalExp(reportInfo.GetExpTotal())
-		err = userInfo.CalExp()
+		err = userInfo.CalExp(ctx)
 		if err != nil {
 			logger.CtxError(ctx, "ReportDataRQ CalTotalExp fail", zap.Error(err), zap.Any("totalExp", reportInfo.GetExpTotal()))
 			res.ErrInfo = errors.MODULE_ERROR.ToInfo()
@@ -143,7 +143,7 @@ func (g *Game) OnReportDataRQ_10453_10454(s *session.Session, req *MazeGame.Repo
 	}
 
 	if reportInfo.GetReportMask()&4 == 4 {
-		newLevel := equipdropservice.GlobalEquipDropService.GetMazeBarrierLv(int32(userInfo.Level), userInfo.Barrier)
+		newLevel := equipdropservice.GlobalEquipDropService.GetMazeBarrierLv(ctx, int32(userInfo.Level), userInfo.Barrier)
 		err = dropInfo.Save(ctx, userId)
 		if err != nil {
 			logger.CtxError(ctx, "ReportDataRQ EquipSpecialDropModel save fail", zap.Error(err), zap.Any("level", newLevel), zap.Any("dropInfo", dropInfo))

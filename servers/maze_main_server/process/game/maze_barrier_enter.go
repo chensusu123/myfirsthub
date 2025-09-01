@@ -1,6 +1,7 @@
 package game
 
 import (
+	"context"
 	"maze_game_server/common/constdef"
 	"maze_game_server/common/errors"
 	"maze_game_server/config/GMazeBarriesV8Cfg"
@@ -30,7 +31,6 @@ import (
 	"strings"
 	"time"
 
-	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fklog"
 	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fkprometheus"
 	"go.uber.org/zap"
 	"google.golang.org/protobuf/proto"
@@ -67,7 +67,7 @@ func (g *Game) OnMazeBarrierEnterRQ_10447_10448(s *session.Session, req *MazeGam
 		res.ErrInfo = errors.COMMON_ERROR_TIPS.Wrap("关卡id未设置")
 		return
 	}
-	barrierCfg := GMazeBarriesV8Cfg.Get(req.GetBarrierId())
+	barrierCfg := GMazeBarriesV8Cfg.GetWithCtx(ctx, req.GetBarrierId())
 	if barrierCfg == nil {
 		logger.CtxError(ctx, "OnMazeBarrierEnterRQ get barrier cfg fail", zap.Any("barrier", req.GetBarrierId()))
 		res.ErrInfo = errors.COMMON_ERROR_TIPS.Wrap("找不到该关卡配置")
@@ -236,7 +236,7 @@ func (g *Game) OnMazeBarrierEnterRQ_10447_10448(s *session.Session, req *MazeGam
 		}()
 		//扣次数
 		//var maxNum int32
-		//maxNumCfg := GMazeActionCountV8Cfg.Get(101)
+		//maxNumCfg := GMazeActionCountV8Cfg.GetWithCtx(ctx,101)
 		//if maxNumCfg == nil {
 		//	logger.CtxError(ctx,"OnMazeBarrierEnterRQ GMazeActionCountV8Cfg fail", zap.Error(err))
 		//	res.ErrInfo = errors.CONFIG_NOT_FOUND.ToInfo()
@@ -346,11 +346,11 @@ func (g *Game) OnMazeBarrierEnterRQ_10447_10448(s *session.Session, req *MazeGam
 	flowservice.GflowService.SetUserEnterTime(userId, uint64(enterTime))
 
 	// 触发进入关卡事件
-	events.OnEnterBarrier(logger, userId, 0, time.Now().UnixMilli(), &MazeGame.BattleEventEnterBarrier{BarrierId: proto.Int32(req.GetBarrierId())})
+	events.OnEnterBarrier(ctx, userId, 0, time.Now().UnixMilli(), &MazeGame.BattleEventEnterBarrier{BarrierId: proto.Int32(req.GetBarrierId())})
 	return nil
 }
 
-//func SubUserEnergy(logger fklog.FKLogI, uid uint64, subEnergy int32) (isSucc bool, newEnergy int32, err error) {
+//func SubUserEnergy(ctx context.Context, uid uint64, subEnergy int32) (isSucc bool, newEnergy int32, err error) {
 //	req := &MazeEnergySvr.SubMazeEnergyRQ{
 //		UserId:      proto.Uint64(uid),
 //		SubVal:      proto.Int32(subEnergy),
@@ -435,5 +435,5 @@ func (g *Game) OnGetStorageInfoRQ_10529_10530(s *session.Session, req *MazeGame.
 	return nil
 }
 
-func GetUserMoney(logger fklog.FKLogI, uid uint64) {
+func GetUserMoney(ctx context.Context, uid uint64) {
 }

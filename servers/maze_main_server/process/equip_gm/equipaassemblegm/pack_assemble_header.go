@@ -12,8 +12,6 @@ import (
 	"fmt"
 	"time"
 
-	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fklog"
-
 	"maze_game_server/common/constdef"
 	"maze_game_server/io/redis/dollassembleredis"
 	"maze_game_server/io/redis/mazecalcattrredis"
@@ -24,7 +22,7 @@ import (
 var EndLine = "-----------------------------------------------------------\n"
 
 func PackAssembleHeader(ctx context.Context, userId uint64, as *MazeEquipCache.MazeAssembleDb) (header string, err error) {
-	logger := fklog.ContextAppLogger(ctx)
+	// logger := fklog.ContextAppLogger(ctx)
 	var headerBs bytes.Buffer
 	headerBs.WriteString("基本信息:\n")
 	dollLv, err := mazeuserlevelredis.GetUserLevel(ctx, userId)
@@ -43,7 +41,7 @@ func PackAssembleHeader(ctx context.Context, userId uint64, as *MazeEquipCache.M
 	var fields []string
 	fields = append(fields, constdef.AssemblePrefixCurAssembleSuitIndex,
 		constdef.AssemblePrefixSwitchSuitTime, constdef.AssemblePrefixInitEquip)
-	s, e := dollassembleredis.GetDollAssembleMetaInfo(logger, userId, fields...)
+	s, e := dollassembleredis.GetDollAssembleMetaInfo(ctx, userId, fields...)
 	if e == nil {
 		initTime := time.Unix(s.GetSwitchTime(), 0).Format("2006-01-02 15:04:05")
 		var stateName string = "未初始化"

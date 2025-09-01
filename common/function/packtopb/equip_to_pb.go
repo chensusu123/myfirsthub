@@ -26,12 +26,13 @@ import (
 	"google.golang.org/protobuf/proto"
 )
 
-func EquipInfoToCliPB(logger fklog.FKLogI, equipInfo *MazeEquipCache.MazeEquipInfoDb) (*MazeGameEquip.MazeEquipInfo, error) {
+func EquipInfoToCliPB(ctx context.Context, equipInfo *MazeEquipCache.MazeEquipInfoDb) (*MazeGameEquip.MazeEquipInfo, error) {
+	logger := fklog.ContextAppLogger(ctx)
 	res := &MazeGameEquip.MazeEquipInfo{}
 	res.EquipGuid = proto.Int64(equipInfo.GetEquipGuid())
-	equipCfg := GMazeEquipInfoV8Cfg.Get(equipInfo.GetEquipId())
+	equipCfg := GMazeEquipInfoV8Cfg.GetWithCtx(ctx, equipInfo.GetEquipId())
 	if equipCfg == nil {
-		logger.ErrorWF("EquipInfoToCliPB get doll equip info cfg nil", zap.Int32("equipId", equipInfo.GetEquipId()))
+		logger.CtxError(ctx, "EquipInfoToCliPB get doll equip info cfg nil", zap.Int32("equipId", equipInfo.GetEquipId()))
 		return nil, errors.New("装备详情配置不存在")
 	}
 	equipSubType := equipCfg.Pos_sub_type
@@ -42,14 +43,14 @@ func EquipInfoToCliPB(logger fklog.FKLogI, equipInfo *MazeEquipCache.MazeEquipIn
 	res.EquipQuality = proto.Int32(equipCfg.Quality)
 	res.EquipLevel = proto.Int32(equipCfg.Level)
 	res.EquipId = proto.Int32(equipCfg.Equipment_id)
-	_, equipName, mazeModel, icon, iconAtlas := pbutil.GetDollEquipNameEx(equipInfo, equipSubType)
+	_, equipName, mazeModel, icon, iconAtlas := pbutil.GetDollEquipNameEx(ctx, equipInfo, equipSubType)
 	//	res.EquipResId = proto.Int32(equipResId)
 	res.EquipName = proto.String(equipName)
 	res.MazeModel = proto.Int32(mazeModel)
 	res.Icon = proto.String(icon)
 	res.IconAtlas = proto.String(iconAtlas)
-	mainAttrs, baseAttrs, _, _, _ := EquipBaseAttrToCliPB(logger, equipInfo.BaseAttrs)
-	EquipBaseAttrSort(baseAttrs, equipCfg.Pos)
+	mainAttrs, baseAttrs, _, _, _ := EquipBaseAttrToCliPB(ctx, equipInfo.BaseAttrs)
+	EquipBaseAttrSort(ctx, baseAttrs, equipCfg.Pos)
 	res.MainAttrs = mainAttrs
 	res.BaseAttrs = baseAttrs
 	if equipInfo.GetSuitId() > 0 {
@@ -60,17 +61,18 @@ func EquipInfoToCliPB(logger fklog.FKLogI, equipInfo *MazeEquipCache.MazeEquipIn
 	return res, nil
 }
 
-func EquipInfoToCliPBEx(logger fklog.FKLogI, equip *MazeEquipCache.MazeEquipInfoDb) (*MazeGameEquip.MazeEquipInfo, int32, error) {
+func EquipInfoToCliPBEx(ctx context.Context, equip *MazeEquipCache.MazeEquipInfoDb) (*MazeGameEquip.MazeEquipInfo, int32, error) {
 	// newEquipInfo, err := pbutil.ConvertIdentifyEquipDb(logger, equip)
 	// if err != nil {
-	//	logger.ErrorWF("EquipInfoToCliPBEx ConvertIdentifyEquipDb error", zap.Any("equip", equip), zap.Error(err))
+	//	logger.CtxError(ctx,"EquipInfoToCliPBEx ConvertIdentifyEquipDb error", zap.Any("equip", equip), zap.Error(err))
 	//	return nil, 0, err
 	// }
+	logger := fklog.ContextAppLogger(ctx)
 	res := &MazeGameEquip.MazeEquipInfo{}
 	res.EquipGuid = proto.Int64(equip.GetEquipGuid())
-	equipCfg := GMazeEquipInfoV8Cfg.Get(equip.GetEquipId())
+	equipCfg := GMazeEquipInfoV8Cfg.GetWithCtx(ctx, equip.GetEquipId())
 	if equipCfg == nil {
-		logger.ErrorWF("EquipInfoToCliPB get doll equip info cfg nil", zap.Int32("equipId", equip.GetEquipId()))
+		logger.CtxError(ctx, "EquipInfoToCliPB get doll equip info cfg nil", zap.Int32("equipId", equip.GetEquipId()))
 		return nil, 0, errors.New("装备详情配置不存在")
 	}
 	equipSubType := equipCfg.Pos_sub_type
@@ -81,14 +83,14 @@ func EquipInfoToCliPBEx(logger fklog.FKLogI, equip *MazeEquipCache.MazeEquipInfo
 	res.EquipQuality = proto.Int32(equipCfg.Quality)
 	res.EquipLevel = proto.Int32(equipCfg.Level)
 	res.EquipId = proto.Int32(equipCfg.Equipment_id)
-	equipResId, equipName, mazeModel, icon, iconAtlas := pbutil.GetDollEquipNameEx(equip, equipSubType)
+	equipResId, equipName, mazeModel, icon, iconAtlas := pbutil.GetDollEquipNameEx(ctx, equip, equipSubType)
 	//	res.EquipResId = proto.Int32(equipResId)
 	res.EquipName = proto.String(equipName)
 	res.MazeModel = proto.Int32(mazeModel)
 	res.Icon = proto.String(icon)
 	res.IconAtlas = proto.String(iconAtlas)
-	mainAttrs, baseAttrs, _, _, _ := EquipBaseAttrToCliPB(logger, equip.BaseAttrs)
-	EquipBaseAttrSort(baseAttrs, equipCfg.Pos)
+	mainAttrs, baseAttrs, _, _, _ := EquipBaseAttrToCliPB(ctx, equip.BaseAttrs)
+	EquipBaseAttrSort(ctx, baseAttrs, equipCfg.Pos)
 	res.MainAttrs = mainAttrs
 	res.BaseAttrs = baseAttrs
 	if equip.GetSuitId() > 0 {
@@ -99,9 +101,9 @@ func EquipInfoToCliPBEx(logger fklog.FKLogI, equip *MazeEquipCache.MazeEquipInfo
 	return res, equipResId, nil
 }
 
-func EquipBaseAttrSort(equipAttrs []*MazeGameEquip.BaseAttrInfo, pos int32) {
+func EquipBaseAttrSort(ctx context.Context, equipAttrs []*MazeGameEquip.BaseAttrInfo, pos int32) {
 	attrSortMap := make(map[int32]int32, 0)
-	attrSortCfg := GMazeEquipAffixOrderV8Cfg.Get(pos)
+	attrSortCfg := GMazeEquipAffixOrderV8Cfg.GetWithCtx(ctx, pos)
 	if attrSortCfg != nil {
 		attrSortMap = attrSortCfg.Attr_order
 	}
@@ -130,7 +132,7 @@ func EquipInfoToCliPbGuid(equipInfo *MazeEquipCache.MazeEquipInfoDb) *MazeGameEq
 	return res
 }
 
-func EquipAttrToCliPb(showAttrInfo *MazeEquipCache.EquipAttrInfo, showAttrMin, showAttrMax map[int32]int64) *MazeGameEquip.EquipAttrInfo {
+func EquipAttrToCliPb(ctx context.Context, showAttrInfo *MazeEquipCache.EquipAttrInfo, showAttrMin, showAttrMax map[int32]int64) *MazeGameEquip.EquipAttrInfo {
 	attrInfo := &MazeGameEquip.EquipAttrInfo{}
 	attrInfo.AttrId = proto.Int32(showAttrInfo.GetAttrId())
 	attrInfo.Value = proto.Int64(showAttrInfo.GetAttrValue())
@@ -142,7 +144,7 @@ func EquipAttrToCliPb(showAttrInfo *MazeEquipCache.EquipAttrInfo, showAttrMin, s
 	} else {
 		randWeight = int32((showAttrInfo.GetAttrValue() - showAttrMin[showAttrInfo.GetAttrId()]) * 10000 / (showAttrMax[showAttrInfo.GetAttrId()] - showAttrMin[showAttrInfo.GetAttrId()]))
 	}
-	attrInfo.ScoreTap = proto.Int32(GetEquipAttrScoreTap(randWeight))
+	attrInfo.ScoreTap = proto.Int32(GetEquipAttrScoreTap(ctx, randWeight))
 	attrCfg := GMazeAttributeV8Cfg.GetMazeAttributeV8Config(attrInfo.GetAttrId())
 	if attrCfg == nil {
 		return attrInfo
@@ -169,8 +171,8 @@ func GetEquipAttrType(attrId int32, attrType int32) int32 {
 	return attrType
 }
 
-func GetEquipAttackScopeCfg() int32 {
-	equipConfig := GMazeEquipConfigV8Cfg.Get(constdef.DollEquipCfg501)
+func GetEquipAttackScopeCfg(ctx context.Context) int32 {
+	equipConfig := GMazeEquipConfigV8Cfg.GetWithCtx(ctx, constdef.DollEquipCfg501)
 	if equipConfig != nil {
 		for _, v := range equipConfig.Value_map {
 			return int32(v)
@@ -178,8 +180,8 @@ func GetEquipAttackScopeCfg() int32 {
 	}
 	return 0
 }
-func GetEquipAttackNumberCfg() int32 {
-	equipConfig := GMazeEquipConfigV8Cfg.Get(constdef.DollEquipCfg502)
+func GetEquipAttackNumberCfg(ctx context.Context) int32 {
+	equipConfig := GMazeEquipConfigV8Cfg.GetWithCtx(ctx, constdef.DollEquipCfg502)
 	if equipConfig != nil {
 		for _, v := range equipConfig.Value_map {
 			return int32(v)
@@ -188,8 +190,8 @@ func GetEquipAttackNumberCfg() int32 {
 	return 0
 }
 
-func GetEquipAttrScoreTap(randWeight int32) int32 {
-	equipConfig := GMazeEquipConfigV8Cfg.Get(constdef.DollEquipCfg701)
+func GetEquipAttrScoreTap(ctx context.Context, randWeight int32) int32 {
+	equipConfig := GMazeEquipConfigV8Cfg.GetWithCtx(ctx, constdef.DollEquipCfg701)
 	if equipConfig == nil {
 		return 0
 	}

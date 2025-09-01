@@ -43,7 +43,7 @@ func RunDac(ctx context.Context, userId uint64, dacParam *DACParam) (needRetry b
 	}
 	dac.Prepare()
 
-	err = dac.Calc()
+	err = dac.Calc(ctx)
 	if err != nil {
 		return
 	}

@@ -1,6 +1,7 @@
 package main
 
 import (
+	"context"
 	"time"
 
 	"maze_game_server/lib/net/raw_pkg"
@@ -38,7 +39,8 @@ func initService() {
 		process.OnTestRQ)
 }
 
-func sendMsgToUser(logger fklog.FKLogI) {
+func sendMsgToUser(ctx context.Context) {
+	logger := fklog.ContextAppLogger(ctx)
 	for i := 0; i < 10; i++ {
 		data := makeOtherData()
 		websocket_service.SendBytes(logger, 999, 1, data)
@@ -46,13 +48,14 @@ func sendMsgToUser(logger fklog.FKLogI) {
 	}
 }
 
-func svr_run(logger fklog.FKLogI) {
+func svr_run(ctx context.Context) {
 	initService()
+	logger := fklog.ContextAppLogger(ctx)
 	websocket_service.MockOnInit(logger, gAddr)
 	websocket_service.MockOnStart(logger)
 
 	// go client(logger, gAddr)
-	go sendMsgToUser(logger)
+	go sendMsgToUser(ctx)
 	// go client(logger, gAddr)
 	time.Sleep(time.Second * 120)
 }

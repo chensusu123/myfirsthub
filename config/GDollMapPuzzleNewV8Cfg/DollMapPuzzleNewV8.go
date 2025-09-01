@@ -3,13 +3,14 @@ package GDollMapPuzzleNewV8Cfg
 import (
 	"context"
 	"errors"
-	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fklog"
-	"gitlab.ifreetalk.com/maze-plate/freetk/fkserver/config_manager"
-	"go.uber.org/zap"
 	"strconv"
 	"sync"
 	"sync/atomic"
 	"unsafe"
+
+	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fklog"
+	"gitlab.ifreetalk.com/maze-plate/freetk/fkserver/config_manager"
+	"go.uber.org/zap"
 )
 
 // DollMapPuzzleNewV8ConfigRow from doll_map_puzzle_new_v8【人偶-地图数据-新解谜】.xlsx doll_map_puzzle_new_v8
@@ -150,7 +151,7 @@ func doConfigUpdateCallback(c *DollMapPuzzleNewV8Config) {
 var RegisterDollMapPuzzleNewV8InitCallBack = RegisterLoadedCallBack
 
 // RegisterLoadedCallBack reg config update func.
-func RegisterLoadedCallBack(key string, f func(*DollMapPuzzleNewV8Config)) {
+func RegisterLoadedCallBack(key string, f func(cfg *DollMapPuzzleNewV8Config)) {
 	cfgUpdateCallBack.Store(key, f)
 }
 

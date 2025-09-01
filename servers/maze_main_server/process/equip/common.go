@@ -23,12 +23,12 @@ var globalLock = grouplock.NewGroupLock(10240)
 
 var EQUIP_BAG_FULL_ERROR = &MessageType.ErrorInfo{ErrCode: proto.Int64(81001), ErrMsg: []byte("装备背包已满")}
 
-func GetEquipSuitRemGroupMap(suitId int32) (map[int32]struct{}, error) {
+func GetEquipSuitRemGroupMap(ctx context.Context, suitId int32) (map[int32]struct{}, error) {
 	attrMap := make(map[int32]struct{})
 	if suitId <= 0 {
 		return attrMap, nil
 	}
-	suitCfg := GMazeEquipSuiteInfoV8Cfg.Get(suitId)
+	suitCfg := GMazeEquipSuiteInfoV8Cfg.GetWithCtx(ctx, suitId)
 	if suitCfg == nil {
 		return nil, errors.New("cannot find suit cfg")
 	}
@@ -41,15 +41,16 @@ func GetToken() int64 {
 	return time.Now().UnixNano() / 1000000
 }
 
-// func GetEquipBagLimit(logger fklog.FKLogI, userId uint64) int {
-//	equipConfig := GMazeEquipConfigV8Cfg.Get(201)
+// func GetEquipBagLimit(ctx context.Context, userId uint64) int {
+//	equipConfig := GMazeEquipConfigV8Cfg.GetWithCtx(ctx,201)
 //	if equipConfig != nil {
 //		return int(equipConfig.Value_int)
 //	}
 //	return 50
 // }
 
-func SendMazeBagEquipChgIDEx(logger fklog.FKLogI, userId uint64, addList, delList, chgList []*MazeGameEquip.MazeEquipInfo, opType int32, opData string) {
+func SendMazeBagEquipChgIDEx(ctx context.Context, userId uint64, addList, delList, chgList []*MazeGameEquip.MazeEquipInfo, opType int32, opData string) {
+	logger := fklog.ContextAppLogger(ctx)
 	var mask int32
 	if len(addList) > 0 {
 		mask |= constdef.EquipChgTypeAdd
@@ -77,11 +78,11 @@ func SendMazeBagEquipChgIDEx(logger fklog.FKLogI, userId uint64, addList, delLis
 	if opType == int32(MazeEquipSvr.ENUM_EQUIP_BAG_OP_TYPE_MAZE_DRESS_EQUIP) {
 		req.NeedRefreshForce = proto.Int32(0)
 	}
-	logger.InfoWF("SendMazeBagEquipChgIDEx send client with", zap.Any("res", req))
+	logger.CtxInfo(ctx, "SendMazeBagEquipChgIDEx send client with", zap.Any("res", req))
 	err := online.ClusterPush(context.TODO(), uint64(userId), 10409, req)
 	if err != nil {
-		logger.ErrorWF("SendMazeBagEquipChgIDEx SendArrivePacket error", zap.Error(err))
+		logger.CtxError(ctx, "SendMazeBagEquipChgIDEx SendArrivePacket error", zap.Error(err))
 	} else {
-		logger.InfoWF("SendMazeBagEquipChgIDEx SendArrivePacket success")
+		logger.CtxInfo(ctx, "SendMazeBagEquipChgIDEx SendArrivePacket success")
 	}
 }

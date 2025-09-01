@@ -32,7 +32,7 @@ func OnSvrDollEquipSaleRQ(ctx context.Context, shardingID int64, rqMsg proto.Mes
 	defer lock.Unlock()
 
 	bagEquipMgr := bagmodule.NewBagEquipMgr(agent, agent.UserID)
-	err = bagEquipMgr.LoadBagFromRedis()
+	err = bagEquipMgr.LoadBagFromRedis(ctx)
 	if err != nil {
 		agent.ErrorWF("OnSvrDollEquipSaleRQ LoadBagFromRedis error!", zap.Error(err))
 		res.ErrInfo = errors.MODULE_ERROR.ToInfo()
@@ -50,7 +50,7 @@ func OnSvrDollEquipSaleRQ(ctx context.Context, shardingID int64, rqMsg proto.Mes
 		}
 	}
 
-	err = bagEquipMgr.SaveBagInfoToRedis()
+	err = bagEquipMgr.SaveBagInfoToRedis(ctx)
 	if err != nil {
 		agent.ErrorWF("OnSvrDollEquipSaleRQ SaveBagInfoToRedis error!", zap.Error(err))
 		res.ErrInfo = errors.DB_SAVE_ERROR.ToInfo()

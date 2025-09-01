@@ -19,13 +19,13 @@ func HandleMazeLevelMsg(ctx context.Context, msg *MazeUserLevelRecord) {
 	// msg := &MazeUserLevelRecord{}
 	// err = json.Unmarshal(data, msg)
 	// if err != nil {
-	// 	logger.ErrorWF("HandleMazeLevelMsg Unmarshal", zap.Error(err),
+	// 	logger.CtxError(ctx,"HandleMazeLevelMsg Unmarshal", zap.Error(err),
 	// 		zap.Int("msg's len", len(data)), zap.Uint64("userId", msg.UserId))
 	// 	return
 	// }
 
 	userId := msg.UserId
-	logger.InfoWF("HandleMazeLevelMsg start", zap.Any("msg", msg),
+	logger.CtxInfo(ctx, "HandleMazeLevelMsg start", zap.Any("msg", msg),
 		zap.Uint64("userId", userId))
 	if userId <= 0 {
 		return
@@ -33,33 +33,33 @@ func HandleMazeLevelMsg(ctx context.Context, msg *MazeUserLevelRecord) {
 	// 道具产出信息
 	//collectInfo, err := mazecollectredis.GetCollectInfo(logger, userId)
 	//if err != nil {
-	//	logger.ErrorWF("HandleMazeLevelMsg GetCollectInfo", zap.Error(err))
+	//	logger.CtxError(ctx,"HandleMazeLevelMsg GetCollectInfo", zap.Error(err))
 	//	return
 	//}
 	//collectInfo := mazecollect.GetCollectInfo(logger, userId)
 	//if collectInfo == nil {
-	//	logger.ErrorWF("HandleMazeLevelMsg GetCollectInfo is nil")
+	//	logger.CtxError(ctx,"HandleMazeLevelMsg GetCollectInfo is nil")
 	//	return
 	//}
 
 	userInfo, err := mazeuserinfo.GetUserInfoV2(ctx, userId)
 	if err != nil {
-		logger.ErrorWF("HandleMazeLevelMsg GetUserInfoV2 fail", zap.Error(err))
+		logger.CtxError(ctx, "HandleMazeLevelMsg GetUserInfoV2 fail", zap.Error(err))
 		return
 	}
 	if userInfo.PassBarrier <= 0 {
 		return
 	}
 
-	result, err := funcopencheck.IsFuncOpen(1, int32(userInfo.Level))
+	result, err := funcopencheck.IsFuncOpen(ctx, 1, int32(userInfo.Level))
 	if !result.IsOpen {
 		return
 	}
 	//err = InitMazeCollectLand(logger, userId, userInfo.PassBarrier)
-	cInfo := mazecollect.NewCollectInfo(logger, userId)
-	err, collectInfo := cInfo.NewMazeCollectInfo(userInfo.PassBarrier)
+	cInfo := mazecollect.NewCollectInfo(ctx, userId)
+	err, collectInfo := cInfo.NewMazeCollectInfo(ctx, userInfo.PassBarrier)
 	if err != nil {
-		logger.ErrorWF("HandleMazeLevelMsg InitMazeCollectLand", zap.Error(err))
+		logger.CtxError(ctx, "HandleMazeLevelMsg InitMazeCollectLand", zap.Error(err))
 		return
 	}
 	NewCollectAfter(ctx, userId, collectInfo)

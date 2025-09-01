@@ -1,6 +1,7 @@
 package bagmodule
 
 import (
+	"context"
 	"maze_game_server/pb/server/MazeEquipCache"
 
 	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fklog"
@@ -23,8 +24,8 @@ type BagChangeEquip struct {
 	ChgType  int32
 }
 
-func NewBagChangeInfo(logger fklog.FKLogI) *BagChangeInfo {
-	return &BagChangeInfo{FKLogI: logger, changeEquips: []*BagChangeEquip{}}
+func NewBagChangeInfo(ctx context.Context) *BagChangeInfo {
+	return &BagChangeInfo{FKLogI: fklog.ContextAppLogger(ctx), changeEquips: []*BagChangeEquip{}}
 }
 
 func (b *BagChangeInfo) addInfo(equip *MazeEquipCache.MazeEquipInfoDb, chgType int32) {

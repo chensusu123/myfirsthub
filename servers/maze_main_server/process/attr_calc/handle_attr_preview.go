@@ -28,10 +28,10 @@ func RunPreviewDac(ctx context.Context, userId uint64, dacParam *mazeattrlogic.D
 	pp.CareAttrs = careAttrs
 	pp.PreviewId = preViewId
 	pp.RepalceAttrs = repalceAttrs
-	dac.SetPreviewInfo(pp)
+	dac.SetPreviewInfo(ctx, pp)
 	dac.Prepare()
 
-	err = dac.Calc()
+	err = dac.Calc(ctx)
 	if err != nil {
 		return
 	}
@@ -85,10 +85,10 @@ func DoEquipBatchPreview(ctx context.Context, userId uint64, previewList []*Prev
 		pp.CareAttrs = previewInfo.CareAttrs
 		pp.PreviewId = previewInfo.PreviewId
 		pp.RepalceAttrs = previewInfo.RepalceAttrs
-		cp.SetPreviewInfo(pp)
+		cp.SetPreviewInfo(ctx, pp)
 
 		cp.Prepare()
-		err = dac.Calc()
+		err = dac.Calc(ctx)
 		if err != nil {
 			return nil, err
 		}
@@ -116,10 +116,10 @@ func DoEquipBatchPairPreview(ctx context.Context, userId uint64, previewList []*
 		pp.CareAttrs = previewInfo.CareAttrs
 		pp.PreviewId = previewInfo.PreviewId
 		pp.RepalceAttrs = previewInfo.RepalceAttrs1
-		cp.SetPreviewInfo(pp)
+		cp.SetPreviewInfo(ctx, pp)
 
 		cp.Prepare()
-		err = cp.Calc()
+		err = cp.Calc(ctx)
 		if err != nil {
 			return nil, err
 		}
@@ -132,10 +132,10 @@ func DoEquipBatchPairPreview(ctx context.Context, userId uint64, previewList []*
 		pp.CareAttrs = previewInfo.CareAttrs
 		pp.PreviewId = previewInfo.PreviewId
 		pp.RepalceAttrs = previewInfo.RepalceAttrs2
-		cp.SetPreviewInfo(pp)
+		cp.SetPreviewInfo(ctx, pp)
 
 		cp.Prepare()
-		err = cp.Calc()
+		err = cp.Calc(ctx)
 		if err != nil {
 			return nil, err
 		}

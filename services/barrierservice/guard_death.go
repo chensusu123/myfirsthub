@@ -15,7 +15,7 @@ import (
 // GuardDeath implements BarrierService.
 func (b *barrier) GuardDeath(ctx context.Context, userID uint64, barrierID int32, monsterID int32, monsterGuid int32) (kongfu int32, equips map[int32]int32, items map[int32]int64, errinfo *MessageType.ErrorInfo) {
 	logger := fklog.ContextAppLogger(ctx)
-	foeCfg := GMazeFoeV8Cfg.Get(monsterID)
+	foeCfg := GMazeFoeV8Cfg.GetWithCtx(ctx,monsterID)
 	if foeCfg == nil {
 		logger.CtxError(ctx, "GuardDeath get foe cfg fail", zap.Any("monsterID", monsterID))
 		return 0, nil, nil, errors.CONFIG_NOT_FOUND.ToInfo()
