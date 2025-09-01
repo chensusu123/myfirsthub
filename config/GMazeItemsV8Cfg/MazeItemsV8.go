@@ -3,14 +3,15 @@ package GMazeItemsV8Cfg
 import (
 	"context"
 	"errors"
-	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fklog"
-	"gitlab.ifreetalk.com/maze-plate/freetk/fkserver/config_manager"
-	"go.uber.org/zap"
 	"strconv"
 	"strings"
 	"sync"
 	"sync/atomic"
 	"unsafe"
+
+	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fklog"
+	"gitlab.ifreetalk.com/maze-plate/freetk/fkserver/config_manager"
+	"go.uber.org/zap"
 )
 
 // MazeItemsV8ConfigRow from maze_items_v8【迷宫-道具】.xlsx maze_items_v8
@@ -124,6 +125,8 @@ func GetWithCtx(ctx context.Context, configId int32, otps ...config_manager.Quer
 	cfg := gConfigData.Get(configId)
 	if cfg == nil {
 		config_manager.MissRecord(ctx, "maze_items_v8", configId, otps...)
+		logger := fklog.ContextAppLogger(ctx)
+		logger.CtxWarn(ctx, "config not found", zap.Int32("config_id", configId), zap.Any("otps", otps))
 	}
 	return cfg
 }
