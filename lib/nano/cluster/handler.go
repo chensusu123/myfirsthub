@@ -229,16 +229,25 @@ func (h *LocalHandler) handle(conn net.Conn, r *http.Request, pcodec frame.Packe
 	if pcodec == nil {
 		pcodec = h.pcodec
 	}
+	handleLogger := fklog.AppLogger().Clone("nano_handle")
+
 	// create a client agent and startup write gorontine
 	agent := newAgent(conn, h.pipeline, pcodec, h.remoteProcess)
 	agentSessionID = agent.session.ID()
+
+	handleLogger.InfoWF("agent handle entry",
+		zap.Int64("agentSessionID", agentSessionID),
+		zap.String("remote_addr", agent.conn.RemoteAddr().String()),
+	)
+
 	defer func() {
 		fkalert.RecoverAlertException()
 		uerCount = h.userCount.Add(-1)
 		nanometrics.UserCountGauge.Set(float64(uerCount))
-		fklog.AppLogger().InfoWF("agent close",
+		fklog.AppLogger().InfoWF("agent handle end",
 			zap.Int64("agentSessionID", agentSessionID),
 			zap.Bool("closeNoraml", closeNoraml),
+			zap.String("remote_addr", agent.conn.RemoteAddr().String()),
 			zap.Int64("enduser.id", agent.session.UID()))
 	}()
 	// Init session
