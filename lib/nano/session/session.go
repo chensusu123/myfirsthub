@@ -40,6 +40,7 @@ type NetworkEntity interface {
 	ResponseMid(ctx context.Context, mid uint64, v interface{}) error
 	Close() error
 	RemoteAddr() net.Addr
+	PushTask(task func()) int64
 }
 
 // ErrIllegalUID represents a invalid uid
@@ -59,6 +60,7 @@ type Session struct {
 	router       *Router
 	ctx          atomic.Value
 	taskCount    atomic.Int64
+	isClose      atomic.Bool
 }
 
 // New returns a new session instance
@@ -444,4 +446,16 @@ func (s *Session) TaskCountInc() int64 {
 
 func (s *Session) TaskCountDec() int64 {
 	return s.taskCount.Add(-1)
+}
+
+func (s *Session) PushTask(task func()) int64 {
+	return s.entity.PushTask(task)
+}
+
+func (s *Session) IsClose() bool {
+	return s.isClose.Load()
+}
+
+func (s *Session) SetClose() {
+	s.isClose.Store(true)
 }

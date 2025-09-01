@@ -29,6 +29,7 @@ import (
 	"sync/atomic"
 	"time"
 
+	"maze_game_server/lib/nano/agentscheduler"
 	"maze_game_server/lib/nano/frame"
 	"maze_game_server/lib/nano/internal/codec"
 	"maze_game_server/lib/nano/internal/env"
@@ -81,6 +82,7 @@ type (
 
 		rpcHandler rpcHandler
 		srv        reflect.Value // cached session reflect.Value
+		scheduler  *agentscheduler.AgentScheduler
 	}
 
 	pendingMessage struct {
@@ -107,14 +109,20 @@ func newAgent(conn net.Conn, pipeline pipeline.Pipeline, pcodec frame.PacketCode
 		serializer: pcodec.Serializer(),
 		pipeline:   pipeline,
 		rpcHandler: rpcHandler,
+		scheduler:  agentscheduler.NewAgentScheduler(0),
 	}
 
 	// binding session
 	s := session.New(a)
 	a.session = s
 	a.srv = reflect.ValueOf(s)
-
+	go a.scheduler.Sched()
+	a.scheduler.SetAgentSession(a.session.ID())
 	return a
+}
+
+func (a *agent) PushTask(task func()) int64 {
+	return a.scheduler.PushTask(task)
 }
 
 func (a *agent) send(m pendingMessage) (err error) {
@@ -272,7 +280,7 @@ func (a *agent) Close() error {
 		close(a.chDie)
 		scheduler.PushTask(func() { session.Lifetime.Close(a.session) })
 	}
-
+	a.scheduler.Close()
 	return a.conn.Close()
 }
 
@@ -583,7 +591,9 @@ func processPendingMessage(a *agent, data pendingMessage, chWrite chan WriteItem
 	// span.End()
 	span.AddEvent("send.to.chWrite")
 	allOK = true
-	chWrite <- WriteItem{ctx: ctx, data: p}
+	// chWrite <- WriteItem{ctx: ctx, data: p}
+
+	safeSend(chWrite, WriteItem{ctx: ctx, data: p})
 	return nil
 }
 

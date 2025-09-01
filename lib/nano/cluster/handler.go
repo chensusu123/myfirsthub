@@ -241,6 +241,10 @@ func (h *LocalHandler) handle(conn net.Conn, r *http.Request, pcodec frame.Packe
 		}
 	}
 
+	defer func() {
+		agent.session.SetClose()
+	}()
+
 	// Logger
 	logger := fklog.AppLogger().Clone("nano")
 
@@ -629,6 +633,11 @@ func (h *LocalHandler) localProcess(ctx context.Context, handler *component.Hand
 			session.TaskCountDec()
 		}()
 
+		if session.IsClose() {
+			span.AddEvent("session.isclose")
+			return
+		}
+
 		result := handler.Method.Func.Call(args)
 		span.AddEvent("nano.func.call.end")
 
@@ -661,6 +670,7 @@ func (h *LocalHandler) localProcess(ctx context.Context, handler *component.Hand
 		}
 
 		local, ok := sched.(scheduler.LocalScheduler)
+		_ = local
 		if !ok {
 			log.Println(fmt.Sprintf("nanl/handler: Type %T does not implement the `schedular.LocalScheduler` interface",
 				sched))
@@ -670,18 +680,21 @@ func (h *LocalHandler) localProcess(ctx context.Context, handler *component.Hand
 		}
 		span.AddEvent("nano.schedule.task")
 		taskCount := h.taskCount.Add(1)
-		sesstionTaskCount := session.TaskCountInc()
+		// sesstionTaskCount := session.TaskCountInc()
+		sesstionTaskCount := session.PushTask(task)
 		span.SetAttributes(attribute.Int64("nano.current.task.count", taskCount))
 		span.SetAttributes(attribute.Int64("nano.session.task.count", sesstionTaskCount))
 		span.SetAttributes(attribute.String("nano.task.scheduler.name", service))
-		local.Schedule(task)
+		// local.Schedule(task)
 	} else {
 		span.AddEvent("nano.schedule.task")
 		taskCount := h.taskCount.Add(1)
-		sesstionTaskCount := session.TaskCountInc()
+		sesstionTaskCount := session.PushTask(task)
 		span.SetAttributes(attribute.Int64("nano.current.task.count", taskCount))
 		span.SetAttributes(attribute.Int64("nano.session.task.count", sesstionTaskCount))
 		span.SetAttributes(attribute.String("nano.task.scheduler.name", "global"))
-		scheduler.PushTask(task)
+		// scheduler.PushTask(task)
+		// session.PushTask(task)
+		// session.session.scheduler.PushTask(task)
 	}
 }

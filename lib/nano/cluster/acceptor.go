@@ -91,3 +91,7 @@ func (a *acceptor) Close() error {
 func (*acceptor) RemoteAddr() net.Addr {
 	return mock.NetAddr{}
 }
+
+func (a *acceptor) PushTask(task func()) int64 {
+	return a.session.PushTask(task)
+}
