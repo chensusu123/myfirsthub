@@ -90,19 +90,11 @@ func (g *Game) OnMazeReportBattleEventRQ_10496_10497(s *session.Session, req *Ma
 			}
 		}
 		if eventData == nil {
-<<<<<<< HEAD
-			logger.CtxError(s.Context(), "OnMazeReportBattleEventRQ event type not supported", zap.Int32("eventType", int32(eventType)))
-		} else {
-			err = mazebarriereventredis.TriggerBarrierEvent(s.Context(), userID, event.GetEventFrame(), event.GetEventTimeMs(), eventType, eventData)
-			if err != nil {
-				logger.CtxError(s.Context(), "OnMazeReportBattleEventRQ TriggerBarrierEvent fail", zap.Error(err), zap.Int32("eventType", int32(eventType)))
-=======
 			logger.CtxError(ctx, "OnMazeReportBattleEventRQ event type not supported", zap.Int32("eventType", int32(eventType)))
 		} else {
 			err = mazebarriereventredis.TriggerBarrierEvent(ctx, userID, event.GetEventFrame(), event.GetEventTimeMs(), eventType, eventData)
 			if err != nil {
 				logger.CtxError(ctx, "OnMazeReportBattleEventRQ TriggerBarrierEvent fail", zap.Error(err), zap.Int32("eventType", int32(eventType)))
->>>>>>> remotes/origin/dev_human_robot_0315_env
 			}
 			// 触发事件
 			triggerFn()
