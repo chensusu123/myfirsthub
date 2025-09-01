@@ -244,6 +244,7 @@ func (h *LocalHandler) handle(conn net.Conn, r *http.Request, pcodec frame.Packe
 		fkalert.RecoverAlertException()
 		uerCount = h.userCount.Add(-1)
 		nanometrics.UserCountGauge.Set(float64(uerCount))
+		agent.session.SetClose()
 		fklog.AppLogger().InfoWF("agent handle end",
 			zap.Int64("agentSessionID", agentSessionID),
 			zap.Bool("closeNoraml", closeNoraml),
@@ -259,10 +260,6 @@ func (h *LocalHandler) handle(conn net.Conn, r *http.Request, pcodec frame.Packe
 			agent.session.Set("ClientAddr", addr)
 		}
 	}
-
-	defer func() {
-		agent.session.SetClose()
-	}()
 
 	// Logger
 	logger := fklog.AppLogger().Clone("nano")
