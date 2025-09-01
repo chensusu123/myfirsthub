@@ -544,7 +544,10 @@ func (h *LocalHandler) processMessage(ctx context.Context, agent *agent, msg *me
 
 	tracer := otel.Tracer("nano.process.message")
 	ctx, span := tracer.Start(ctx, msg.Route)
-
+	span.SetAttributes(
+		attribute.Int64("agent.session", agent.session.ID()),
+		attribute.Int64("enduser.id", agent.session.UID()),
+	)
 	// agent.session.SetContext(ctx)
 	handler, found := h.localHandlers[msg.Route]
 	if !found {
@@ -615,15 +618,20 @@ func (h *LocalHandler) localProcess(ctx context.Context, handler *component.Hand
 		// span := trace.SpanFromContext(ctx)
 		span.AddEvent("nano.func.call.begin")
 		session.SetContext(ctx)
-		result := handler.Method.Func.Call(args)
-		span.AddEvent("nano.func.call.end")
 		defer func() {
+			if err := recover(); err != nil {
+				fklog.ContextAppLogger(ctx).ErrorWF("local process panic", zap.Any("err", err))
+			}
 			span.AddEvent("nano.local.process.end")
 			session.SetContext(context.TODO())
 			span.End()
 			h.taskCount.Add(-1)
 			session.TaskCountDec()
 		}()
+
+		result := handler.Method.Func.Call(args)
+		span.AddEvent("nano.func.call.end")
+
 		if len(result) > 0 {
 			if err := result[0].Interface(); err != nil {
 				log.Println(fmt.Sprintf("Service %s error: %+v", msg.Route, err))
