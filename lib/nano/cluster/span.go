@@ -4,6 +4,7 @@ import (
 	"context"
 
 	packCodec "maze_game_server/lib/codec"
+	"maze_game_server/lib/nano/session"
 
 	"go.opentelemetry.io/otel"
 	"go.opentelemetry.io/otel/attribute"
@@ -47,6 +48,18 @@ func closeHandleSpan(ctx context.Context, a *agent, closeName string) (context.C
 		attribute.Int64("agent.session", a.session.ID()),
 		attribute.Int64("enduser.id", a.session.UID()),
 		attribute.String("nano.close.name", closeName),
+	)
+	return ctx, span
+}
+
+func callSpan(ctx context.Context, s *session.Session, callName string) (context.Context, trace.Span) {
+	tracer := otel.Tracer("nano.call")
+	ctx, span := tracer.Start(ctx, "nano.call.handle")
+	span.AddEvent("nano.call.span.init")
+	span.SetAttributes(
+		attribute.Int64("agent.session", s.ID()),
+		attribute.Int64("enduser.id", s.UID()),
+		attribute.String("nano.callName", callName),
 	)
 	return ctx, span
 }

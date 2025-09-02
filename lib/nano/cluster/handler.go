@@ -651,38 +651,42 @@ func (h *LocalHandler) localProcess(ctx context.Context, handler *component.Hand
 		}
 		// span := trace.SpanFromContext(ctx)
 		span.AddEvent("nano.func.call.begin")
-		session.SetContext(ctx)
+		ctxCall, spanCall := callSpan(ctx, session, msg.Route)
+		session.SetContext(ctxCall)
 		defer func() {
 			if err := recover(); err != nil {
-				fklog.ContextAppLogger(ctx).ErrorWF("local process panic", zap.Any("err", err))
+				fklog.ContextAppLogger(ctxCall).ErrorWF("local process panic", zap.Any("err", err))
 			}
 			span.AddEvent("nano.local.process.end")
 			session.SetContext(context.TODO())
+			spanCall.AddEvent("nano.local.process.end")
+			spanCall.End()
 			span.End()
+
 			h.taskCount.Add(-1)
 			session.TaskCountDec()
 		}()
 
 		if session.IsClose() {
+			spanCall.AddEvent("session.isclose")
 			span.AddEvent("session.isclose")
 			return
 		}
-
+		spanCall.AddEvent("nano.func.call.begin")
 		result := handler.Method.Func.Call(args)
+		spanCall.AddEvent("nano.func.call.end")
 		span.AddEvent("nano.func.call.end")
 
 		if len(result) > 0 {
 			if err := result[0].Interface(); err != nil {
-				log.Println(fmt.Sprintf("Service %s error: %+v", msg.Route, err))
-				span.RecordError(err.(error))
-				span.SetStatus(codes.Error, "handler.Method.Func.Call failed.")
+				spanCall.RecordError(err.(error))
+				spanCall.SetStatus(codes.Error, "handler.Method.Func.Call failed.")
 			}
 		}
 	}
 
 	index := strings.LastIndex(msg.Route, ".")
 	if index < 0 {
-		log.Println(fmt.Sprintf("nano/handler: invalid route %s", msg.Route))
 		span.SetStatus(codes.Error, "nano/handler: invalid route")
 		span.End()
 		return
@@ -693,7 +697,6 @@ func (h *LocalHandler) localProcess(ctx context.Context, handler *component.Hand
 	if s, found := h.localServices[service]; found && s.SchedName != "" {
 		sched := session.Value(s.SchedName)
 		if sched == nil {
-			log.Println(fmt.Sprintf("nanl/handler: cannot found `schedular.LocalScheduler` by %s", s.SchedName))
 			span.SetStatus(codes.Error, "nanl/handler: cannot found schedular.LocalScheduler")
 			span.End()
 			return
@@ -702,8 +705,6 @@ func (h *LocalHandler) localProcess(ctx context.Context, handler *component.Hand
 		local, ok := sched.(scheduler.LocalScheduler)
 		_ = local
 		if !ok {
-			log.Println(fmt.Sprintf("nanl/handler: Type %T does not implement the `schedular.LocalScheduler` interface",
-				sched))
 			span.SetStatus(codes.Error, "nanl/handler: cannot found schedular.LocalScheduler")
 			span.End()
 			return
