@@ -23,6 +23,8 @@ package agentscheduler
 import (
 	"sync/atomic"
 
+	"maze_game_server/lib/nano/nanometrics"
+
 	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fkalert"
 	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fklog"
 	"gitlab.ifreetalk.com/maze-plate/freetk/pkg/metricsreport"
@@ -38,6 +40,8 @@ type Task func()
 
 type Hook func()
 
+var AgentSchedulerCount atomic.Int64
+
 type AgentScheduler struct {
 	agentSession int64
 	chDie        chan struct{}
@@ -49,6 +53,8 @@ type AgentScheduler struct {
 }
 
 func NewAgentScheduler(agentSession int64) *AgentScheduler {
+	c := AgentSchedulerCount.Add(1)
+	nanometrics.AgentSchedulerCountGauge.Set(float64(c))
 	return &AgentScheduler{
 		agentSession: agentSession,
 		chDie:        make(chan struct{}),
@@ -102,6 +108,8 @@ func (ac *AgentScheduler) Sched() {
 			zap.Int64("closeTaskCount", int64(closeTaskCount)),
 			zap.Int64("agentSession", int64(ac.agentSession)),
 		)
+		c := AgentSchedulerCount.Add(-1)
+		nanometrics.AgentSchedulerCountGauge.Set(float64(c))
 	}()
 
 	for {
