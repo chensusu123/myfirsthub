@@ -13,7 +13,7 @@ import (
 	"google.golang.org/protobuf/proto"
 )
 
-func (im *IM) OnQueryMessages_10643_10644(s *session.Session, req *MazeIM.QueryMessagesRQ) (err error) {
+func (im *IM) OnQueryMessages_10663_10664(s *session.Session, req *MazeIM.QueryMessagesRQ) (err error) {
 	defer fkprometheus.InfoPMT("OnQueryMessages")()
 	ctx := s.Context()
 	logger := fklog.ContextAppLogger(ctx)
