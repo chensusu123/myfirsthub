@@ -321,12 +321,36 @@ func GetMazeAIMonsterConfig(ctx context.Context, userId uint64, force int64, foe
 		UserValue:     proto.Int32(foeCfg.Tough_max),
 		UserValueType: proto.Int32(1),
 	})
+	// 寒冰元素抗性万分比
+	monsterConfigInfo.AttrInfo = append(monsterConfigInfo.AttrInfo, &MazeAIBattle.MazeAIAttrInfo{
+		Type:          proto.Int32(int32(MazeAIBattle.MAZE_AI_ATTR_TYPE_ICE_DEF_VALUE_PER)),
+		UserValue:     proto.Int32(foeCfg.Ice_res),
+		UserValueType: proto.Int32(2),
+	})
+	// 火焰元素抗性万分比
+	monsterConfigInfo.AttrInfo = append(monsterConfigInfo.AttrInfo, &MazeAIBattle.MazeAIAttrInfo{
+		Type:          proto.Int32(int32(MazeAIBattle.MAZE_AI_ATTR_TYPE_FIRE_DEF_VALUE_PER)),
+		UserValue:     proto.Int32(foeCfg.Fire_res),
+		UserValueType: proto.Int32(2),
+	})
+	// 剧毒元素抗性万分比
+	monsterConfigInfo.AttrInfo = append(monsterConfigInfo.AttrInfo, &MazeAIBattle.MazeAIAttrInfo{
+		Type:          proto.Int32(int32(MazeAIBattle.MAZE_AI_ATTR_TYPE_POISON_DEF_VALUE_PER)),
+		UserValue:     proto.Int32(foeCfg.Poi_res),
+		UserValueType: proto.Int32(2),
+	})
+	// 闪电元素抗性万分比
+	monsterConfigInfo.AttrInfo = append(monsterConfigInfo.AttrInfo, &MazeAIBattle.MazeAIAttrInfo{
+		Type:          proto.Int32(int32(MazeAIBattle.MAZE_AI_ATTR_TYPE_ELECTRICITY_DEF_VALUE_PER)),
+		UserValue:     proto.Int32(foeCfg.Ele_res),
+		UserValueType: proto.Int32(2),
+	})
 	skillIds := make([]int32, 0)
 	if foeCfg.Nor_attack_skill_id > 0 {
 		skillIds = append(skillIds, foeCfg.Nor_attack_skill_id)
 	}
-	for _, skillId := range foeCfg.Passive_skill_id {
-		skillIds = append(skillIds, skillId)
+	if len(foeCfg.Passive_skill_id) > 0 {
+		skillIds = append(skillIds, foeCfg.Passive_skill_id...)
 	}
 	skillTotalInfo := &MazeAIBattle.MazeAISkillTotalInfo{}
 	skillTotalInfo.SkillInfoList = make([]*MazeAIBattle.MazeAISkillInfo, 0)
