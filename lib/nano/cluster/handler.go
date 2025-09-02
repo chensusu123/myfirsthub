@@ -719,6 +719,7 @@ func (h *LocalHandler) localProcess(ctx context.Context, handler *component.Hand
 		span.SetAttributes(attribute.Bool("nano.task.push.ok", pushTaskOK))
 		if !pushTaskOK {
 			span.AddEvent("nano.push.task.fail")
+			span.SetStatus(codes.Error, "nano.push.task.fail")
 			span.End()
 		}
 		// local.Schedule(task)
@@ -735,6 +736,7 @@ func (h *LocalHandler) localProcess(ctx context.Context, handler *component.Hand
 		// session.session.scheduler.PushTask(task)
 		if !pushTaskOK {
 			span.AddEvent("nano.push.task.fail")
+			span.SetStatus(codes.Error, "nano.push.task.fail")
 			span.End()
 		}
 	}
