@@ -72,6 +72,8 @@ type FamilyService interface {
 		privilegeLevel int32, operateUsers []uint64) error
 	// 解散家族
 	DissolutionFamily(ctx context.Context, userID uint64, familyID int32) error
+	//设置家族群组id
+	SetFamilyGroupID(ctx context.Context, familyID int32, groupID int32) error
 }
 
 var GlobalFamilyService FamilyService

@@ -63,6 +63,7 @@ type FamilyInfoModel struct {
 	MemberCountLimit int32           `json:"member_count_limit,omitempty"`
 	FamilyMembers    []*FamilyMember `json:"family_members,omitempty"`
 	FamilyApplyUsers []*FamilyMember `json:"family_apply_users,omitempty"`
+	FamilyGroupID    int32           `json:"group_id,omitempty"`
 }
 
 type FamilysInfoModel []*FamilyInfoModel
@@ -251,6 +252,7 @@ func (r *FamilyInfoModel) DataToFamilyInfoPb(ctx context.Context) *MazeFamily.Fa
 		FamilySetting: &MazeFamily.FamilySetting{
 			FamilyJoinType: MazeFamily.FamilyJoinType(r.FamilySetting.FamilyJoinType).Enum(),
 		},
+		GroupId: proto.Int32(r.FamilyGroupID),
 	}
 }
 
@@ -401,4 +403,13 @@ func (r *FamilyInfoModel) CheckUserInApplyList(ctx context.Context, userID uint6
 		}
 	}
 	return false
+}
+
+// 设置家族群组ID
+func (r *FamilyInfoModel) SetFamilyGroupID(ctx context.Context, groupID int32) error {
+	if r.FamilyGroupID != 0 {
+		return errors.New("family group id has set")
+	}
+	r.FamilyGroupID = groupID
+	return nil
 }

@@ -39,6 +39,7 @@ require (
 
 require (
 	github.com/iancoleman/orderedmap v0.3.0
+	github.com/sony/sonyflake/v2 v2.2.0
 	go.opentelemetry.io/contrib/instrumentation/net/http/otelhttp v0.62.0
 )
 

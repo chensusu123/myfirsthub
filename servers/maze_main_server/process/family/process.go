@@ -1,6 +1,7 @@
 package family
 
 import (
+	"maze_game_server/app"
 	"maze_game_server/common/errors"
 	"maze_game_server/lib/nano/component"
 	"maze_game_server/lib/nano/session"
@@ -8,6 +9,9 @@ import (
 	"maze_game_server/pb/common/MazeCommon"
 	"maze_game_server/pb/common/MazeFamily"
 	"maze_game_server/services/familyservice"
+	"maze_game_server/services/groupservice"
+
+	"maze_game_server/model/alliancemodel"
 
 	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fklog"
 	"go.uber.org/zap"
@@ -138,6 +142,14 @@ func (f *Family) OnCreateFamilyRQ_10585_10586(s *session.Session, req *MazeFamil
 		res.ErrInfo = errors.MODULE_ERROR.Wrap("创建家族失败")
 		return
 	}
+	//创建家族群聊
+	groupInfo, err := groupservice.Default.CreateGroup(ctx, app.Maze, uid, make([]uint64, 0))
+	if err != nil {
+		res.ErrInfo = errors.MODULE_ERROR.Wrap("设置玩家所在家族失败")
+		logger.CtxError(ctx, "OnCreateFamilyRQ CreateGroup error", zap.Error(err), zap.Any("req", req))
+		return err
+	}
+	familyservice.GlobalFamilyService.SetFamilyGroupID(ctx, res.FamilyInfo.GetFamilyId(), groupInfo.ID)
 
 	res.FamilyInfo = familyInfo.DataToFamilyInfoPb(ctx)
 	res.MemberList = familyInfo.DataToFamilyMembersPb(ctx)
@@ -146,6 +158,7 @@ func (f *Family) OnCreateFamilyRQ_10585_10586(s *session.Session, req *MazeFamil
 	err = familyservice.GlobalFamilyService.SetUserFamily(ctx, uid, res.FamilyInfo.GetFamilyId())
 	if err != nil {
 		res.ErrInfo = errors.MODULE_ERROR.Wrap("设置玩家所在家族失败")
+		logger.CtxError(ctx, "OnCreateFamilyRQ SetUserFamily error", zap.Error(err), zap.Any("req", req))
 		return
 	}
 
@@ -433,6 +446,26 @@ func (f *Family) OnConfirmApplyFamilyRQ_10589_10590(s *session.Session, req *Maz
 		err = familyservice.GlobalFamilyService.SetUserFamily(ctx, req.GetApplyUser().GetUserId(), req.GetFamilyId())
 		if err != nil {
 			res.ErrInfo = errors.MODULE_ERROR.Wrap("设置玩家所在家族失败")
+			return err
+		}
+		//加入家族群聊
+		err = groupservice.Default.InviteMember(ctx, app.Maze, int64(familyInfo.FamilyGroupID), req.GetApplyUser().GetUserId())
+		if err != nil {
+			res.ErrInfo = errors.MODULE_ERROR.Wrap("加入家族群聊失败")
+			logger.CtxError(ctx, "加入家族群聊失败", zap.Error(err))
+			return err
+		}
+		//加入联盟群聊
+		alliance := alliancemodel.NewFamilyToAllianceModel(ctx, req.GetFamilyId())
+		allianceID, err := alliance.GetUserAlliance(ctx)
+		if err != nil {
+			res.ErrInfo = errors.MODULE_ERROR.Wrap("获取联盟ID失败")
+			return err
+		}
+		err = groupservice.Default.InviteMember(ctx, app.Maze, int64(allianceID), req.GetApplyUser().GetUserId())
+		if err != nil {
+			res.ErrInfo = errors.MODULE_ERROR.Wrap("加入联盟群聊失败")
+			logger.CtxError(ctx, "加入联盟群聊失败", zap.Error(err))
 			return err
 		}
 
