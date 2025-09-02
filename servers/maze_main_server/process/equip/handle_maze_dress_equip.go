@@ -36,7 +36,6 @@ import (
 	"maze_game_server/servers/maze_main_server/process/equip/demconstdef"
 	"maze_game_server/servers/maze_main_server/process/equip/module"
 	"maze_game_server/services/costumeservice"
-	"maze_game_server/services/itemservice"
 	"maze_game_server/usecase/online"
 
 	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fklog"
@@ -315,8 +314,98 @@ func (ep *Equip) OnDressMazeEquipRQ_10418_10419(s *session.Session, req *MazeGam
 	opCode = 0
 
 	//是否自动分解
+	//if req.GetIsAutoDismantle() {
+	//	// 获取装备可以出售获得的材料
+	//	award := make(map[int32]int64)
+	//	var equipAward map[int32]int64
+	//	equipId := dressedEquip.GetEquipInfo().GetEquipId()
+	//	equipCfg := GMazeEquipInfoV8Cfg.Get(equipId)
+	//	if equipCfg == nil {
+	//		logger.CtxError(ctx, "OnDressMazeEquipRQ get equip cfg fail", zap.Any("equipId", equipId))
+	//		res.ErrInfo = errors.CONFIG_NOT_FOUND.ToInfo()
+	//		return
+	//	}
+	//	equipAward, err = getEquipDismantle(ctx, dressedGuid, int64(equipId), equipCfg)
+	//	if err != nil {
+	//		logger.CtxError(ctx, "OnDressMazeEquipRQ get dismantle award fail", zap.Any("equipGuid", dressedGuid), zap.Error(err))
+	//		res.ErrInfo = errors.CONFIG_NOT_FOUND.ToInfo()
+	//		return
+	//	}
+	//
+	//	for k, v := range equipAward {
+	//		award[k] += v
+	//	}
+	//	awardItems := itemutil.Map2Common(award)
+	//	res.DismantleAward = awardItems
+	//
+	//	if len(awardItems) > 0 {
+	//		// 699	UN_CGK_COMMON_BILL_TYPE_699	迷宫分解装备
+	//		tradeNo := tradeno.GetTradeNum()
+	//		items := itemutil.Map2ItemInfo(award)
+	//		errInfo := itemservice.GlobalItemService.AddItem(context.TODO(), userId, itemservice.ItemOpTypeDismantle, tradeNo, items...)
+	//		if errInfo != nil {
+	//			logger.CtxError(ctx, "OnDressMazeEquipRQ AddItemEx fail", zap.Any("errInfo", errInfo), zap.Any("rq", req))
+	//		}
+	//	}
+
+	//bagEquipMgr := bagmodule.NewBagEquipMgr(ctx, userId)
+	//err = bagEquipMgr.LoadBagFromRedis(ctx)
+	//if err != nil {
+	//	logger.CtxError(ctx, "OnDressMazeEquipRQ LoadBagFromRedis error!", zap.Error(err))
+	//	res.ErrInfo = errors.MODULE_ERROR.ToInfo()
+	//	return
+	//}
+	//delEquipList := make([]*MazeEquipCache.MazeEquipInfoDb, 0)
+	//delEquipList = append(delEquipList, dressedEquip.EquipInfo)
+	//
+	//bagEquipMgr.AddBagRem(dressedEquip.EquipInfo)
+	//err = bagEquipMgr.SaveBagInfoToRedis(ctx)
+	//if err != nil {
+	//	tradeNo := tradeno.GetTradeNum()
+	//	logger.CtxError(ctx, "OnDressMazeEquipRQ SaveBagInfoToRedis error!", zap.Error(err))
+	//	res.ErrInfo = errors.DB_SAVE_ERROR.ToInfo()
+	//	PushMazeEquipBagLogEx(ctx, userId, nil, delEquipList, tradeNo, 5, mazeequipbagrecord.MazeDelEquip, 0, 1)
+	//	return
+	//}
+
+	//分解了，只通知穿戴的装备
+	//	arr := make([]int64, 0)
+	//	arr = append(arr, dressedGuid)
+	//	e := NotifyBagSvrV2(ctx, userId, pos, 0, dressEquipGuid, 0, arr)
+	//	if e != nil {
+	//		opMask |= demconstdef.DollEquipAssembleOpMaskNotifyBag
+	//		logger.CtxError(ctx, "OnDressMazeEquipRQ NotifyBagSvr fail", zap.Error(e),
+	//			zap.Int64("upGuid", dressEquipGuid), zap.Int64("downGuid", dressedGuid))
+	//	}
+	//} else {
+	// 通知背包服务
+	e := NotifyBagSvr(ctx, userId, pos, 0, dressEquipGuid, dressedGuid)
+	if e != nil {
+		opMask |= demconstdef.DollEquipAssembleOpMaskNotifyBag
+		logger.CtxError(ctx, "OnDressMazeEquipRQ NotifyBagSvr fail", zap.Error(e),
+			zap.Int64("upGuid", dressEquipGuid), zap.Int64("downGuid", dressedGuid))
+	}
+	//}
+
 	if req.GetIsAutoDismantle() {
-		// 获取装备可以出售获得的材料
+		// 分解装备
+		guidsBag := make([]int64, 0)
+		guidsBag = append(guidsBag, dressedGuid)
+		tradeNo := tradeno.GetTradeNum()
+		rqSale := &MazeEquipSvr.SvrMazeEquipSaleRQ{
+			UserId:     proto.Uint64(userId),
+			EquipGuids: guidsBag,
+			TradeNum:   proto.Uint64(tradeNo),
+		}
+		rsSale := &MazeEquipSvr.SvrMazeEquipSaleRS{}
+		logger.CtxError(ctx, "OnDollEquipDismantleRQ SvrDollEquipSaleRS dump", zap.Any("rqSale", rqSale), zap.Any("rsSale", rsSale))
+		err = OnSvrDollEquipSaleRQ(ctx, int64(userId), rqSale, rsSale)
+		if err != nil {
+			logger.CtxError(ctx, "OnDollEquipDismantleRQ SvrDollEquipSaleRS fail", zap.Error(err), zap.Any("rq", rqSale))
+			res.ErrInfo = errors.MODULE_ERROR.ToInfo()
+			return
+		}
+
 		award := make(map[int32]int64)
 		var equipAward map[int32]int64
 		equipId := dressedEquip.GetEquipInfo().GetEquipId()
@@ -338,39 +427,13 @@ func (ep *Equip) OnDressMazeEquipRQ_10418_10419(s *session.Session, req *MazeGam
 		}
 		awardItems := itemutil.Map2Common(award)
 		res.DismantleAward = awardItems
-
-		if len(awardItems) > 0 {
-			// 699	UN_CGK_COMMON_BILL_TYPE_699	迷宫分解装备
-			tradeNo := tradeno.GetTradeNum()
-			items := itemutil.Map2ItemInfo(award)
-			errInfo := itemservice.GlobalItemService.AddItem(context.TODO(), userId, itemservice.ItemOpTypeDismantle, tradeNo, items...)
-			if errInfo != nil {
-				logger.CtxError(ctx, "OnDressMazeEquipRQ AddItemEx fail", zap.Any("errInfo", errInfo), zap.Any("rq", req))
-			}
-		}
-
-		//分解了，只通知穿戴的装备
-		e := NotifyBagSvr(ctx, userId, pos, 0, dressEquipGuid, 0)
-		if e != nil {
-			opMask |= demconstdef.DollEquipAssembleOpMaskNotifyBag
-			logger.CtxError(ctx, "OnDressMazeEquipRQ NotifyBagSvr fail", zap.Error(e),
-				zap.Int64("upGuid", dressEquipGuid), zap.Int64("downGuid", dressedGuid))
-		}
-	} else {
-		// 通知背包服务
-		e := NotifyBagSvr(ctx, userId, pos, 0, dressEquipGuid, dressedGuid)
-		if e != nil {
-			opMask |= demconstdef.DollEquipAssembleOpMaskNotifyBag
-			logger.CtxError(ctx, "OnDressMazeEquipRQ NotifyBagSvr fail", zap.Error(e),
-				zap.Int64("upGuid", dressEquipGuid), zap.Int64("downGuid", dressedGuid))
-		}
 	}
 
 	var chgMask int32
 
 	// 更新buff中心
 
-	e := mazebuffinforedis.SaveMazeEquipBuff(ctx, userId, effectInfo.Other)
+	e = mazebuffinforedis.SaveMazeEquipBuff(ctx, userId, effectInfo.Other)
 
 	if e != nil {
 		opMask |= demconstdef.DollEquipAssembleOpMaskNonForceBuff
