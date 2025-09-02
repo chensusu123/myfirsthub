@@ -111,7 +111,8 @@ func getAwards(ctx context.Context, awards ...[]*MazeCommon.MazeItem) string {
 
 // 清除关卡的临时数据
 func ClearBarriersTempData(ctx context.Context, userId uint64, barrierId int32) {
-	// logger := fklog.ContextAppLogger(ctx)
+	logger := fklog.ContextAppLogger(ctx)
+	logger.CtxInfo(ctx, "ClearBarriersTempData start", zap.Int32("barrierId", barrierId))
 	// 删除关卡存档
 	syncmazestorageinforedis.DelSyncMazeStorageInfo(ctx, userId, barrierId)
 	// 清理关卡操作状态
@@ -136,4 +137,5 @@ func ClearBarriersTempData(ctx context.Context, userId uint64, barrierId int32) 
 		BuffSrc: constdef.MazeBuffSrcSelectBuffForce,
 	}
 	mazeattrcalcnotifyqueue.SendMazeAttrCalcNotify(ctx, calcAttrNotify)
+	logger.CtxInfo(ctx, "ClearBarriersTempData end", zap.Int32("barrierId", barrierId))
 }
