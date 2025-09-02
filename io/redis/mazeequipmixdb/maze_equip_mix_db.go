@@ -40,7 +40,7 @@ const (
 func GetEquipMixData(ctx context.Context, uid uint64) (data *equipmix.MixData, err error) {
 	k := getKey(uid)
 
-	res, err := redis.Int64s(db.Do(context.Background(), "HMGET", k, field_lv, field_cfg, field_idx))
+	res, err := redis.Int64s(db.Do(ctx, "HMGET", k, field_lv, field_cfg, field_idx))
 	if errors.Is(err, redis.ErrNil) {
 		err = nil
 	}
@@ -63,6 +63,6 @@ func GetEquipMixData(ctx context.Context, uid uint64) (data *equipmix.MixData, e
 
 func SetEquipMixData(ctx context.Context, uid uint64, data *equipmix.MixData) (err error) {
 	k := getKey(uid)
-	_, err = db.Do(context.Background(), "HMSET", k, field_lv, data.Lv, field_cfg, data.Cfg, field_idx, data.Idx)
+	_, err = db.Do(ctx, "HMSET", k, field_lv, data.Lv, field_cfg, data.Cfg, field_idx, data.Idx)
 	return
 }
