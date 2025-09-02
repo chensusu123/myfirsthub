@@ -9,6 +9,7 @@ package calcassembleattr
 import (
 	"context"
 	"errors"
+
 	"maze_game_server/common/constdef"
 	"maze_game_server/common/function/assemble"
 	"maze_game_server/config/GMazeAttributeV8Cfg"
@@ -232,7 +233,7 @@ func CalcEquipEffectAll(ctx context.Context, equips []*MazeEquipCache.MazeEquipP
 				zap.Any("suitMgr", effect.SuitCalc))
 		} else {
 			if ep.IsLog {
-				effect.FKLogI.CtxError(ctx, "CalcEquipEffectAll dump",
+				effect.FKLogI.CtxInfo(ctx, "CalcEquipEffectAll dump",
 					zap.Any("equips", equips), zap.Any("effect", effect),
 					zap.Any("suitMgr", effect.SuitCalc))
 			}
