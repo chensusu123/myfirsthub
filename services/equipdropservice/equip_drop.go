@@ -18,6 +18,7 @@ import (
 
 func (s service) GetNewEquip(ctx context.Context, userId uint64, level int32, barrierId int32, equipNum int32) (newEquip map[int32]int32, err error) {
 	logger := fklog.ContextAppLogger(ctx)
+	logger.CtxInfo(ctx, "GetNewEquip start", zap.Uint64("userId", userId), zap.Int32("level", level), zap.Int32("barrierId", barrierId), zap.Int32("equipNum", equipNum))
 	userInfo, err := mazeuserinfo.GetUserInfoV2(ctx, userId)
 	if err != nil {
 		logger.CtxError(ctx, "GetNewEquip GetNewEquip fail", zap.Error(err))
