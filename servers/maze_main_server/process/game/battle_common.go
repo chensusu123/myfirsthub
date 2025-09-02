@@ -246,7 +246,7 @@ func SendMazeBarrierChgPack(ctx context.Context, userId uint64, mazeBattleInfo *
 		MazeBarrierInfo: mazeBattleInfo,
 	}
 	logger.CtxInfo(ctx, "SendMazeBarrierChgPack send client with", zap.Uint64("userId", userId), zap.Any("moneyPack", moneyPack))
-	return online.ClusterPush(context.TODO(), uint64(userId), 10485, moneyPack)
+	return online.ClusterPush(ctx, uint64(userId), 10485, moneyPack)
 }
 
 func GetEffectAttrValue(attrValue int32, attrValueVariableId map[int32]int32, userAttrMap map[int32]int64) int64 {

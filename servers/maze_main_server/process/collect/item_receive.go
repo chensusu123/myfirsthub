@@ -121,7 +121,7 @@ func (c *Collect) OnMazeCollectItemReceiveRQ_10467_10468(s *session.Session, req
 	tradeNo := tradeno.GetTradeNum()
 	items := Map2Common(addItems)
 	awardItems := itemutil.Map2ItemInfo(addItems)
-	errInfo := itemservice.GlobalItemService.AddItem(context.TODO(), userId, itemservice.ItemOpTypeCollect, tradeNo, awardItems...)
+	errInfo := itemservice.GlobalItemService.AddItem(ctx, userId, itemservice.ItemOpTypeCollect, tradeNo, awardItems...)
 	if errInfo != nil {
 		logger.CtxError(ctx, "GetAllEquipDismantleAward AddItemEx fail", zap.Any("items", items))
 		//res.ErrInfo = errInfo

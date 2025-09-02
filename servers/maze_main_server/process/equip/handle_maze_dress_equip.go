@@ -290,7 +290,7 @@ func (ep *Equip) OnDressMazeEquipRQ_10418_10419(s *session.Session, req *MazeGam
 		)
 	} else if changed {
 		defer func() {
-			online.ClusterPush(context.TODO(), userId, 10510, equipSkillInfoChange)
+			online.ClusterPush(ctx, userId, 10510, equipSkillInfoChange)
 		}()
 	}
 
@@ -342,7 +342,7 @@ func (ep *Equip) OnDressMazeEquipRQ_10418_10419(s *session.Session, req *MazeGam
 	//		// 699	UN_CGK_COMMON_BILL_TYPE_699	迷宫分解装备
 	//		tradeNo := tradeno.GetTradeNum()
 	//		items := itemutil.Map2ItemInfo(award)
-	//		errInfo := itemservice.GlobalItemService.AddItem(context.TODO(), userId, itemservice.ItemOpTypeDismantle, tradeNo, items...)
+	//		errInfo := itemservice.GlobalItemService.AddItem(ctx, userId, itemservice.ItemOpTypeDismantle, tradeNo, items...)
 	//		if errInfo != nil {
 	//			logger.CtxError(ctx, "OnDressMazeEquipRQ AddItemEx fail", zap.Any("errInfo", errInfo), zap.Any("rq", req))
 	//		}
@@ -472,7 +472,7 @@ func (ep *Equip) OnDressMazeEquipRQ_10418_10419(s *session.Session, req *MazeGam
 		constdef.DollAssembleChgTypeReplaceEquip)
 
 	// 换装备推送装扮变化id包
-	costumeservice.GlobalCostumeService.ChangeCostume(context.TODO(), userId)
+	costumeservice.GlobalCostumeService.ChangeCostume(ctx, userId)
 	return nil
 }
 

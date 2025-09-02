@@ -194,7 +194,7 @@ func (e *Equip) OnDollEquipDismantleRQ_10410_10411(s *session.Session, req *Maze
 	if len(awardItems) > 0 && req.GetDismantleFrom() != 4 {
 		// 699	UN_CGK_COMMON_BILL_TYPE_699	迷宫分解装备
 		items := itemutil.Map2ItemInfo(award)
-		errInfo := itemservice.GlobalItemService.AddItem(context.TODO(), userId, itemservice.ItemOpTypeDismantle, tradeNo, items...)
+		errInfo := itemservice.GlobalItemService.AddItem(ctx, userId, itemservice.ItemOpTypeDismantle, tradeNo, items...)
 		if errInfo != nil {
 			logger.CtxError(ctx, "OnDollEquipDismantleRQ AddItemEx fail", zap.Any("errInfo", errInfo), zap.Any("rq", rqSale))
 		}

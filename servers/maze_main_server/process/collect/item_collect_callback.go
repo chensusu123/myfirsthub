@@ -269,7 +269,7 @@ func NewCollectAfter(ctx context.Context, userId uint64, collectInfo *MazeCollec
 		return
 	}
 	pack.MazeCollectInfo = mazeCollectInfoPb
-	err = online.ClusterPush(context.TODO(), uint64(userId), 10480, pack)
+	err = online.ClusterPush(ctx, uint64(userId), 10480, pack)
 	if err != nil {
 		logger.CtxError(ctx, "NewCollectAfter SendArrivePacket", zap.Any("pack", pack), zap.Error(err))
 		return

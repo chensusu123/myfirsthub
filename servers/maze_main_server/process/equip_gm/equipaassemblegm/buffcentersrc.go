@@ -7,7 +7,7 @@
 package equipaassemblegm
 
 // func GetBcBuffBySrc(ctx context.Context, userID uint64, buffIDs []int32) (srcBuffsMap map[int32]map[int32]int64, e error) {
-// 	buffMap, e := BuffManagerRedis.GetBuffs(context.TODO(), logger, userID, 0, buffIDs)
+// 	buffMap, e := BuffManagerRedis.GetBuffs(ctx, logger, userID, 0, buffIDs)
 // 	if e != nil {
 // 		return
 // 	}
@@ -16,7 +16,7 @@ package equipaassemblegm
 // 		if id <= 0 || val <= 0 {
 // 			continue
 // 		}
-// 		srcMap, e := BuffManagerRedis.GetBuffDetail(context.TODO(), logger, userID, 0, id)
+// 		srcMap, e := BuffManagerRedis.GetBuffDetail(ctx, logger, userID, 0, id)
 // 		if e != nil {
 // 			return srcBuffsMap, e
 // 		}

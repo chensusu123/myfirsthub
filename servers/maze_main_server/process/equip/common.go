@@ -79,7 +79,7 @@ func SendMazeBagEquipChgIDEx(ctx context.Context, userId uint64, addList, delLis
 		req.NeedRefreshForce = proto.Int32(0)
 	}
 	logger.CtxInfo(ctx, "SendMazeBagEquipChgIDEx send client with", zap.Any("res", req))
-	err := online.ClusterPush(context.TODO(), uint64(userId), 10409, req)
+	err := online.ClusterPush(ctx, uint64(userId), 10409, req)
 	if err != nil {
 		logger.CtxError(ctx, "SendMazeBagEquipChgIDEx SendArrivePacket error", zap.Error(err))
 	} else {

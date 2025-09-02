@@ -87,7 +87,7 @@ func CopyAssembleData(ctx context.Context, srcUserId uint64, dstUsers []uint64, 
 		if err != nil {
 			return err
 		}
-		CalcDollAttr(context.TODO(), dstId, assembleInfo, ef)
+		CalcDollAttr(ctx, dstId, assembleInfo, ef)
 		logger.CtxInfo(ctx, "CopyAssembleData user succ",
 			zap.Uint64("src", srcUserId),
 			zap.Int("dst", int(dstId)))

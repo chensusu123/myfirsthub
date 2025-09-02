@@ -2,6 +2,7 @@ package game
 
 import (
 	"context"
+
 	"maze_game_server/common/constdef"
 	"maze_game_server/common/errors"
 	"maze_game_server/common/function/addequip"
@@ -83,7 +84,7 @@ func UseQianghuashiPile(ctx context.Context, userID uint64, barrierId int32, are
 // TriggerTempBuff 触发三选一
 func TriggerTempBuff(ctx context.Context, userID uint64, barrierId int32, areaId int32, areaIndex int32, itemId int32, count int64) (err error) {
 	logger := fklog.ContextAppLogger(ctx)
-	optionalBuffInfo, err := tempbuffservice.GlobalTempBuffService.GetOptionalTempBuffList(context.TODO(), userID, barrierId, 0, int32(MazeTempBuff.Type_USE_ITEM), areaId, areaIndex, 0)
+	optionalBuffInfo, err := tempbuffservice.GlobalTempBuffService.GetOptionalTempBuffList(ctx, userID, barrierId, 0, int32(MazeTempBuff.Type_USE_ITEM), areaId, areaIndex, 0)
 	if err != nil {
 		logger.CtxError(ctx, "TriggerTempBuff GetOptionalTempBuffList fail",
 			zap.Error(err),
@@ -102,7 +103,7 @@ func TriggerTempBuff(ctx context.Context, userID uint64, barrierId int32, areaId
 		OptionalBuffInfo: buff.OptionalBuffInfo2PbOptionalBuffInfo(optionalBuffInfo),
 	}
 	// Push
-	err = online.ClusterPush(context.TODO(), userID, 10552, optionalTempBuffListID)
+	err = online.ClusterPush(ctx, userID, 10552, optionalTempBuffListID)
 	if err != nil {
 		logger.CtxError(ctx, "TriggerTempBuff Push fail",
 			zap.Error(err),
@@ -151,7 +152,7 @@ func (g *Game) OnBarrierUseItemRQ_10550_10551(s *session.Session, req *MazeGame.
 	defer fkprometheus.InfoPMT("OnBarrierUseItemRQ")()
 
 	res := &MazeGame.BarrierUseItemRS{}
-
+	ctx := s.Context()
 	logger.CtxInfo(s.Context(), "OnBarrierUseItemRQ start", zap.Any("req", req))
 	defer func() {
 		err = s.Response(res)
@@ -300,7 +301,7 @@ func (g *Game) OnBarrierUseItemRQ_10550_10551(s *session.Session, req *MazeGame.
 	// 处理需要加入背包的道具
 	if len(items) > 0 {
 		itemList := itemutil.ItemPb2ItemInfo(items)
-		errInfo := itemservice.GlobalItemService.AddItem(context.TODO(), userId, itemservice.ItemOpTypeUseItem, tradeNo, itemList...)
+		errInfo := itemservice.GlobalItemService.AddItem(ctx, userId, itemservice.ItemOpTypeUseItem, tradeNo, itemList...)
 		if errInfo != nil {
 			logger.CtxError(s.Context(), "OnBarrierUseItemRQ AddItemEx fail", zap.Any("errInfo", errInfo), zap.Any("ItemList", items))
 		}

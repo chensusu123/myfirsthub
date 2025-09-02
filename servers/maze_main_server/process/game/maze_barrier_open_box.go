@@ -1,8 +1,8 @@
 package game
 
 import (
-	"context"
 	"fmt"
+
 	"maze_game_server/common/constdef"
 	"maze_game_server/common/errors"
 	"maze_game_server/common/function/addequip"
@@ -102,14 +102,14 @@ func (g *Game) OnBarrierOpenBoxRQ_10445_10446(s *session.Session, req *MazeGame.
 	// 处理需要加入背包的道具
 	if len(bagItems) > 0 {
 		itemList := itemutil.ItemPb2ItemInfo(bagItems)
-		errInfo := itemservice.GlobalItemService.AddItem(context.TODO(), userId, itemservice.ItemOpTypeOpenBox, tradeNo, itemList...)
+		errInfo := itemservice.GlobalItemService.AddItem(ctx, userId, itemservice.ItemOpTypeOpenBox, tradeNo, itemList...)
 		if errInfo != nil {
 			logger.CtxError(ctx, "OnBarrierOpenBoxRQ AddItemEx fail", zap.Any("errInfo", errInfo), zap.Any("bagItems", bagItems))
 		}
 	}
 
 	// 保存到已获取的道具
-	if err = barrierscorerewardservice.GlobalScoreRewardService.SaveBarrierScoreReward(context.TODO(), userId, req.GetBarrierId(), equips, items); err != nil {
+	if err = barrierscorerewardservice.GlobalScoreRewardService.SaveBarrierScoreReward(ctx, userId, req.GetBarrierId(), equips, items); err != nil {
 		logger.CtxError(ctx, "OnBarrierPickItemRQ SaveBarrierScoreRewardItem err", zap.Error(err), zap.Any("barrier", req.GetBarrierId()))
 		res.ErrInfo = errors.MODULE_ERROR.ToInfo()
 	}

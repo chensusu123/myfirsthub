@@ -222,7 +222,7 @@ func (*Interact) OnMazeEquipMixRQ_10443_10444(s *session.Session, req *MazeEquip
 
 		var errorInfo *MessageType.ErrorInfo
 		items := itemutil.ItemPb2ItemInfo(cfg.Cost)
-		itemservice.GlobalItemService.SubItem(context.TODO(), uid, itemservice.ItemOpTypeEquipMix, tradeNo, items...)
+		itemservice.GlobalItemService.SubItem(ctx, uid, itemservice.ItemOpTypeEquipMix, tradeNo, items...)
 		if err != nil {
 			logger.CtxError(ctx, "OnMazeEquipMixRQ DeductItems err", zap.Uint64("tradeNo", tradeNo), zap.Any("cost", cost),
 				zap.Any("errorInfo", errorInfo), zap.Error(err),

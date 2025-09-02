@@ -1,7 +1,6 @@
 package game
 
 import (
-	"context"
 	"maze_game_server/common/errors"
 	"maze_game_server/config/GMazeLevelV8Cfg"
 	"maze_game_server/io/kafka/mazeuserlevelkafka"
@@ -69,7 +68,7 @@ func (g *Game) OnMazeLoginRQ_10451_10452(s *session.Session, req *MazeGame.MazeL
 	}
 	expMax = levelCfg.Next_level_need_exp
 
-	money, diamond, err = moneyservice.GlobalMoneyService.GetUserMoney(context.TODO(), userId)
+	money, diamond, err = moneyservice.GlobalMoneyService.GetUserMoney(ctx, userId)
 	if err != nil {
 		logger.CtxError(ctx, "OnMazeLoginRQ GetUserMoney fail", zap.Error(err))
 		res.ErrInfo = errors.MODULE_ERROR.ToInfo()
@@ -109,7 +108,7 @@ func (g *Game) OnMazeLoginRQ_10451_10452(s *session.Session, req *MazeGame.MazeL
 	// 	return
 	// }
 
-	passValue, err := barriersavedataservice.GlobalBarrierSaveDataService.GetPassValue(context.TODO(), userId, userInfo.Barrier)
+	passValue, err := barriersavedataservice.GlobalBarrierSaveDataService.GetPassValue(ctx, userId, userInfo.Barrier)
 	if err != nil {
 		res.ErrInfo = errors.COMMON_ERROR_TIPS.Wrap(err.Error())
 		return nil

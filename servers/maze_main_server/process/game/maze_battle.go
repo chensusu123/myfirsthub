@@ -50,7 +50,7 @@ func GetMazeBattleData(ctx context.Context, userId uint64, barrierId int32) (maz
 		return nil, err
 	}
 
-	tempBuffInfo, err := tempbuffservice.GlobalTempBuffService.GetTempBuffInfo(context.TODO(), userId, barrierId)
+	tempBuffInfo, err := tempbuffservice.GlobalTempBuffService.GetTempBuffInfo(ctx, userId, barrierId)
 	if err != nil {
 		logger.CtxError(ctx, "GetMazeBattleData GetBarrierTempBuff err", zap.Error(err))
 		return nil, err

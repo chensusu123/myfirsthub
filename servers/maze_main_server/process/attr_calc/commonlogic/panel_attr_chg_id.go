@@ -44,7 +44,7 @@ func NotifyClientAttrChg(ctx context.Context, userId uint64, msg *structsdef.Dol
 	}
 	if len(mazePanelChgIDMsg.ChgAttrs) > 0 {
 		logger.CtxInfo(ctx, "NotifyClientAttrChg send client with", zap.Any("mazePanelChgIDMsg", mazePanelChgIDMsg))
-		online.ClusterPush(context.TODO(), uint64(userId), 16262, mazePanelChgIDMsg)
+		online.ClusterPush(ctx, uint64(userId), 16262, mazePanelChgIDMsg)
 	} else {
 		logger.CtxInfo(ctx, "NotifyClientAttrChg no care attrs", zap.Any("mazePanelChgIDMsg", mazePanelChgIDMsg))
 	}

@@ -23,7 +23,7 @@ func PushMazeEquipInstanceLog(ctx context.Context, equipInstanceRecordMap map[in
 	for _, equipRecord := range equipInstanceRecordMap {
 		equipRecord.ChgType = chgType
 		equipRecord.IsFail = isFail
-		mazeequipinstancerecord.PushMazeGameEquipInstanceRecord(context.TODO(), equipRecord.MazeGameEquipInstanceRecord)
+		mazeequipinstancerecord.PushMazeGameEquipInstanceRecord(ctx, equipRecord.MazeGameEquipInstanceRecord)
 	}
 	return nil
 }

@@ -51,7 +51,7 @@ func (dmp *DollMazeProduceMsg) Unmarshal(data []byte) (err error) {
 // 	}
 
 // 	jsonData := msg.Marshal()
-// 	err = settimer.SetTaskExpire(context.TODO(), logger, uid, 233, expireTime, jsonData)
+// 	err = settimer.SetTaskExpire(ctx, logger, uid, 233, expireTime, jsonData)
 // 	if err != nil {
 // 		logger.CtxError(ctx,"setTimer push to delay task queue fail", zap.Error(err), zap.Int64("expireTime", expireTime),
 // 			zap.Any("taskInfo", jsonData), zap.Any("jsonData", jsonData))

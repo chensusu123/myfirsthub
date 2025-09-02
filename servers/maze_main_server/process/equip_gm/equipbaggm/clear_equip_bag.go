@@ -6,7 +6,7 @@ import (
 )
 
 func ClearEquipBag(ctx context.Context, userId uint64) error {
-	// allEquip, err := mazebagequipredis.GetAllEquipInfo(context.TODO(), logger, userId)
+	// allEquip, err := mazebagequipredis.GetAllEquipInfo(ctx, logger, userId)
 	// if err != nil {
 	// 	return err
 	// }

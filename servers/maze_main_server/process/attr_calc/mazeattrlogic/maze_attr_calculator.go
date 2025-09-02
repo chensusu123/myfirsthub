@@ -135,7 +135,7 @@ func (m *DAC) InitData(ctx context.Context, iParam *DACParam) error {
 	// attrIdSet.Add(constdef.DollAttrTypeForce)
 	// attrSet := commonlogic.GetAllMazeAttrByType(attrIdSet)
 	// if len(attrSet) > 0 {
-	// 	m.BuffCenterAttrsIn, err = BuffManagerRedis.GetBuffs(context.TODO(), m, m.UserId, 0, attrSet)
+	// 	m.BuffCenterAttrsIn, err = BuffManagerRedis.GetBuffs(ctx, m, m.UserId, 0, attrSet)
 	// 	if err != nil {
 	// 		return err
 	// 	}

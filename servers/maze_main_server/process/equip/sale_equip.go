@@ -18,7 +18,7 @@ import (
 
 func OnSvrDollEquipSaleRQ(ctx context.Context, shardingID int64, rqMsg proto.Message, rsMsg proto.Message) (err error) {
 	logger := fklog.ContextAppLogger(ctx)
-	agent := fkserver.NewUserContext(context.TODO(), uint64(shardingID), logger)
+	agent := fkserver.NewUserContext(ctx, uint64(shardingID), logger)
 	req := rqMsg.(*MazeEquipSvr.SvrMazeEquipSaleRQ)
 	res := rsMsg.(*MazeEquipSvr.SvrMazeEquipSaleRS)
 	res.ErrInfo = errors.NO_ERROR

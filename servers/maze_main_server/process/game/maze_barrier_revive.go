@@ -8,7 +8,9 @@
 package game
 
 import (
-	"context"
+	"sort"
+	"time"
+
 	"maze_game_server/common/errors"
 	"maze_game_server/common/function/itemutil"
 	"maze_game_server/common/tradeno"
@@ -20,8 +22,6 @@ import (
 	"maze_game_server/pb/common/MazeCommon"
 	"maze_game_server/pb/common/MazeGame"
 	"maze_game_server/services/itemservice"
-	"sort"
-	"time"
 
 	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fklog"
 	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fkprometheus"
@@ -135,7 +135,7 @@ func (g *Game) OnMazeBarrierRebornRQ_10461_10462(s *session.Session, req *MazeGa
 		if len(svrCost) > 0 {
 			// 通用	698	UN_CGK_COMMON_BILL_TYPE_698	迷宫挑战复活		否	马健	2025-03-25 13:48:10
 			items := itemutil.ItemPb2ItemInfo(svrCost)
-			errInfo := itemservice.GlobalItemService.SubItem(context.TODO(), userId, itemservice.ItemOpTypeReborn, tid, items...)
+			errInfo := itemservice.GlobalItemService.SubItem(ctx, userId, itemservice.ItemOpTypeReborn, tid, items...)
 			if errInfo != nil {
 				logger.CtxError(ctx, "OnMazeBarrierRebornRQ DeductItemsEx",
 					zap.Any("svrCost", svrCost),
@@ -195,7 +195,8 @@ func GetReviveCost(reviveCnt int32) ([]*MazeCommon.MazeItem, int32, bool) {
 				}
 				ret = append(ret, &MazeCommon.MazeItem{
 					ItemId: proto.Int32(k),
-					Count:  proto.Int64(v)})
+					Count:  proto.Int64(v),
+				})
 			}
 			// break
 		}

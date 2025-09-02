@@ -221,7 +221,7 @@ func (e *Equip) OnEquipPosLvUpRQ_10425_10426(s *session.Session, rq *MazeEquipPo
 	if len(careCost) > 0 {
 		// 通用	693	UN_CGK_COMMON_BILL_TYPE_693	迷宫装备位强化		否	马健	2025-03-22 17:28:42
 		items := itemutil.ItemPb2ItemInfo(careCost)
-		errInfo := itemservice.GlobalItemService.SubItem(context.TODO(), userId, itemservice.ItemOpTypeEquipPosLvUp, tid, items...)
+		errInfo := itemservice.GlobalItemService.SubItem(ctx, userId, itemservice.ItemOpTypeEquipPosLvUp, tid, items...)
 		if errInfo != nil {
 			logger.CtxError(ctx, "OnEquipPosLvUpRQ DeductItemsEx",
 				zap.Any("svrCost", svrCost),

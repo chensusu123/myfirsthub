@@ -1,7 +1,6 @@
 package game
 
 import (
-	"context"
 	"maze_game_server/common/constdef"
 	"maze_game_server/common/errors"
 	"maze_game_server/common/tradeno"
@@ -76,7 +75,7 @@ func (g *Game) OnReportDataRQ_10453_10454(s *session.Session, req *MazeGame.Repo
 	}
 
 	var dropInfo *equipdropmodel.EquipSpecialDropModel
-	//var shopInfo *mazeshopseqredis.MazeShopInfo
+	// var shopInfo *mazeshopseqredis.MazeShopInfo
 	if reportInfo.GetReportMask()&4 == 4 {
 		// 上报装备积分
 		dropInfo, err = equipdropmodel.NewEquipSpecialDropModel(ctx, userId)
@@ -113,14 +112,14 @@ func (g *Game) OnReportDataRQ_10453_10454(s *session.Session, req *MazeGame.Repo
 
 	if reportInfo.GetReportMask()&2 == 2 {
 		var oldCoin int64
-		oldCoin, _, err = moneyservice.GlobalMoneyService.GetUserMoney(context.TODO(), userId)
+		oldCoin, _, err = moneyservice.GlobalMoneyService.GetUserMoney(ctx, userId)
 		if err != nil {
 			logger.CtxError(ctx, "MazeCommonValueQueryRQ GetUserMoney fail", zap.Error(err))
 			res.ErrInfo = errors.MODULE_ERROR.ToInfo()
 		}
 
 		// rpc不支持set 他们也需要加锁 目前先自己直接设置
-		err = moneyservice.GlobalMoneyService.SetMoney(context.TODO(), userId, constdef.MazeCommonItemCoin, reportInfo.GetMoneyCount())
+		err = moneyservice.GlobalMoneyService.SetMoney(ctx, userId, constdef.MazeCommonItemCoin, reportInfo.GetMoneyCount())
 		if err != nil {
 			logger.CtxError(ctx, "ReportDataRQ SetMoney fail", zap.Error(err))
 			res.ErrInfo = errors.MODULE_ERROR.ToInfo()

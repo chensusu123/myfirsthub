@@ -485,7 +485,7 @@ func GetEquipSkillInfoChange(ctx context.Context, userID uint64, oldEquip, newEq
 		return nil, false, err
 	}
 
-	tempBuffInfo, err := tempbuffservice.GlobalTempBuffService.GetTempBuffInfo(context.TODO(), userID, userInfo.Barrier)
+	tempBuffInfo, err := tempbuffservice.GlobalTempBuffService.GetTempBuffInfo(ctx, userID, userInfo.Barrier)
 	if err != nil {
 		logger.CtxError(ctx, "GetMazeBattleData GetBarrierTempBuff err", zap.Error(err))
 		return nil, false, err

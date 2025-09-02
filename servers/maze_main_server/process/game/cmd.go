@@ -193,12 +193,12 @@ func SetMazeMoney(ctx context.Context, uid uint64, diamond int32, money int64, s
 		err = errors.New("userId不能小于等于0,diamond、moneyCount不能小于0")
 		return
 	}
-	err = moneyservice.GlobalMoneyService.SetMoney(context.TODO(), uid, constdef.MazeCommonItemCoin, money)
+	err = moneyservice.GlobalMoneyService.SetMoney(ctx, uid, constdef.MazeCommonItemCoin, money)
 	if err != nil {
 		logger.CtxError(ctx, "SetMazeMoney GMSet fail", zap.Error(err))
 		return
 	}
-	err = moneyservice.GlobalMoneyService.SetMoney(context.TODO(), uid, constdef.MazeCommonItemDiamond, int64(diamond))
+	err = moneyservice.GlobalMoneyService.SetMoney(ctx, uid, constdef.MazeCommonItemDiamond, int64(diamond))
 	if err != nil {
 		logger.CtxError(ctx, "SetMazeMoney GMSet fail", zap.Error(err))
 		return
@@ -292,7 +292,7 @@ func ClearBarrier(ctx context.Context, userId uint64) (err error) {
 	}
 
 	// 清除关卡已获得奖励存档
-	err = barrierscorerewardservice.GlobalScoreRewardService.DelBarrierScoreRewardItem(context.TODO(), userId, userInfo.Barrier)
+	err = barrierscorerewardservice.GlobalScoreRewardService.DelBarrierScoreRewardItem(ctx, userId, userInfo.Barrier)
 	if err != nil {
 		return
 	}

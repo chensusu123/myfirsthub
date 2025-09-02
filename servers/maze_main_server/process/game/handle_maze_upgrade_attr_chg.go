@@ -58,7 +58,7 @@ func HandleMazeLvUpgradeAttrChgId(ctx context.Context, userId uint64, msg *struc
 
 	logger.CtxInfo(ctx, "HandleMazeLvUpgradeAttrChgId send client with",
 		zap.Any("mazeLvChgIDMsg", mazeLvChgIDMsg), zap.Uint64("userId", userId))
-	online.ClusterPush(context.TODO(), uint64(userId), 10479, mazeLvChgIDMsg)
+	online.ClusterPush(ctx, uint64(userId), 10479, mazeLvChgIDMsg)
 }
 
 // func IsMazeUpgradeCareAttr(attrId int32) bool {

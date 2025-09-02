@@ -1,7 +1,6 @@
 package mail
 
 import (
-	"context"
 	"maze_game_server/common/errors"
 	"maze_game_server/common/function/addequip"
 	"maze_game_server/common/function/itemutil"
@@ -48,8 +47,8 @@ func (g *Mail) OnMazeGetMailAttachmentsRQ_10630_10631(s *session.Session, req *M
 	}
 
 	mails := make([]*mailmodel.MailInfo, 0)
-	equipMap := make(map[int32]int32) //装备列表
-	itemMap := make(map[int32]int64)  //道具列表
+	equipMap := make(map[int32]int32) // 装备列表
+	itemMap := make(map[int32]int64)  // 道具列表
 
 	if req.GetIsAll() {
 		mailList, attachements, err := mailservice.GlobalMailService.GetAllMailAttachment(ctx, userId, req.GetLabel())
@@ -89,7 +88,7 @@ func (g *Mail) OnMazeGetMailAttachmentsRQ_10630_10631(s *session.Session, req *M
 
 	tradeNo := tradeno.GetTradeNum()
 	if len(equipMap) > 0 {
-		//TODO 差一个邮件领取枚举，看业务是否需要邮件支持发装备附件
+		// TODO 差一个邮件领取枚举，看业务是否需要邮件支持发装备附件
 		_, err := addequip.AddEquipToBag(ctx, userId, int32(MazeEquipSvr.ENUM_EQUIP_BAG_OP_TYPE_MAZE_EQUIP_SWEEP_AWARD), tradeNo, equipMap)
 		if err != nil {
 			logger.CtxError(ctx, "OnMazeGetMailAttachmentsRQ addEquipToBag fail", zap.Error(err), zap.Any("optype", int32(MazeEquipSvr.ENUM_EQUIP_BAG_OP_TYPE_MAZE_EQUIP_BOX_AWARD)),
@@ -108,7 +107,7 @@ func (g *Mail) OnMazeGetMailAttachmentsRQ_10630_10631(s *session.Session, req *M
 		}
 
 		itemList := itemutil.Map2ItemInfo(itemMap)
-		errInfo := itemservice.GlobalItemService.AddItem(context.TODO(), userId, itemservice.ItemOpTypeMail, tradeNo, itemList...)
+		errInfo := itemservice.GlobalItemService.AddItem(ctx, userId, itemservice.ItemOpTypeMail, tradeNo, itemList...)
 		if errInfo != nil {
 			logger.CtxError(ctx, "OnMazeGetMailAttachmentsRQ AddItemEx fail", zap.Any("errInfo", errInfo), zap.Any("ItemList", realAddItemList))
 		}
