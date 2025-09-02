@@ -4,12 +4,15 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"time"
+
 	"maze_game_server/io/kafka"
 	flowmodel "maze_game_server/model/flowmodel/flow_model"
-	"time"
 
 	"github.com/bytedance/gopkg/util/logger"
 	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fklog"
+	"go.opentelemetry.io/otel/codes"
+	"go.opentelemetry.io/otel/trace"
 	"go.uber.org/zap"
 )
 
@@ -33,27 +36,45 @@ func (s *service) ProcessFlowData() {
 				logger.CtxWarnf(context.TODO(), "flowservice ProcessFlowData Size Greater than WARNFLOWCHANSIZE",
 					zap.Any("ERRORFLOWCHANSIZE", flowmodel.WARNFLOWCHANSIZE))
 			}
-
-			// 打到kafka 中
-			ctx, record := data.Ctx, data.Data
-			logger := fklog.ContextAppLogger(ctx)
-
-			jsonData, err := json.Marshal(record)
-			if err != nil {
-				logger.CtxError(ctx, "flowservice ProcessFlowData Marshal Fail",
-					zap.Any("record", record),
-					zap.Error(err),
-				)
-				continue
-			}
-
-			err = kafka.GflowKafka.SendMsg(ctx, fmt.Sprintf("%v", time.Now().UnixNano()), jsonData)
-			if err != nil {
-				logger.CtxError(ctx, "flowservice ProcessFlowData SendMsg Fail",
-					zap.Any("record", record),
-					zap.Error(err),
-				)
-			}
+			_processFlowData(data)
 		}
 	}
+}
+
+func _processFlowData(data *flowmodel.FlowData) error {
+	// 打到kafka 中
+	ctx, record := data.Ctx, data.Data
+	span := trace.SpanFromContext(ctx)
+
+	defer func() {
+		span.AddEvent("process_flow_data_end")
+		span.End()
+	}()
+
+	span.AddEvent("process_flow_data")
+
+	logger := fklog.ContextAppLogger(ctx)
+
+	jsonData, err := json.Marshal(record)
+	if err != nil {
+		logger.CtxError(ctx, "flowservice ProcessFlowData Marshal Fail",
+			zap.Any("record", record),
+			zap.Error(err),
+		)
+		span.RecordError(err)
+		span.SetStatus(codes.Error, err.Error())
+		return err
+	}
+
+	span.AddEvent("SendMsg")
+	err = kafka.GflowKafka.SendMsg(ctx, fmt.Sprintf("%v", time.Now().UnixNano()), jsonData)
+	if err != nil {
+		logger.CtxError(ctx, "flowservice ProcessFlowData SendMsg Fail",
+			zap.Any("record", record),
+			zap.Error(err),
+		)
+		span.RecordError(err)
+		span.SetStatus(codes.Error, err.Error())
+	}
+	return nil
 }
