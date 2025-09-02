@@ -2,6 +2,8 @@ package equip
 
 import (
 	"context"
+	"regexp"
+
 	"maze_game_server/common/errors"
 	"maze_game_server/config/GMazeActInfoV8Cfg"
 	"maze_game_server/config/GMazeSkillActV8Cfg"
@@ -13,7 +15,6 @@ import (
 	"maze_game_server/pb/common/MazeAIBattle"
 	"maze_game_server/pb/server/MazeEquipCache"
 	"maze_game_server/services/tempbuffservice"
-	"regexp"
 
 	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fklog"
 	"gitlab.ifreetalk.com/maze-plate/freetk/fkserver/config_manager"
@@ -62,7 +63,7 @@ func GetUserBattleSkillInfo(ctx context.Context, skillId int32, attrMap map[int3
 		effectID         int32
 		actDamageConfigs = make([]*MazeAIBattle.MazeAIActAttackValue, 0)
 	)
-	skillActCfg := GMazeSkillActV8Cfg.GetWithCtx(context.Background(), skillId, config_manager.QueryNullable())
+	skillActCfg := GMazeSkillActV8Cfg.GetWithCtx(ctx, skillId, config_manager.QueryNullable())
 	if skillActCfg != nil {
 		if len(skillActCfg.Act_id) > 0 {
 			for _, actId := range skillActCfg.Act_id {
@@ -430,9 +431,7 @@ func FilterSliceZeroValue[T int | int32 | int64](values []T) []T {
 	return values
 }
 
-var (
-	regexpnum = regexp.MustCompile(`[1-9][0-9]+`)
-)
+var regexpnum = regexp.MustCompile(`[1-9][0-9]+`)
 
 // filterConditionIDs 用来提取条件字符串中的所有技能条件ID
 func filterConditionIDs(condition string) (conditionIDs []int32, err error) {
