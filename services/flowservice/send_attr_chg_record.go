@@ -13,7 +13,8 @@ import (
 	"go.uber.org/zap"
 )
 
-func (s *service) SendFlowData(ctx context.Context, record interface{}) {
+func (s *service) SendFlowData(parentCtx context.Context, record interface{}) {
+	ctx := context.WithoutCancel(parentCtx)
 	ctx, span := sendFlowDataSpan(ctx)
 	logger := fklog.ContextAppLogger(ctx)
 	defer func() {
