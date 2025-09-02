@@ -133,6 +133,9 @@ func (ac *AgentScheduler) Close() {
 func (ac *AgentScheduler) PushTask(task Task) (int64, bool) {
 	c := ac.taskCount.Add(1)
 	ok := safeSend(ac.chTasks, task)
+	if !ok {
+		ac.taskCount.Add(-1)
+	}
 	return c, ok
 }
 
