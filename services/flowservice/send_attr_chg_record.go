@@ -8,6 +8,7 @@ import (
 	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fklog"
 
 	"go.opentelemetry.io/otel"
+	"go.opentelemetry.io/otel/attribute"
 	"go.opentelemetry.io/otel/trace"
 	"go.uber.org/zap"
 )
@@ -22,8 +23,10 @@ func (s *service) SendFlowData(ctx context.Context, record interface{}) {
 	logger.CtxInfo(ctx, "flowservice SendFlowData Start",
 		zap.Any("data", record),
 	)
-	span.AddEvent("SendFlowData.start")
 	data := flowmodel.NewFlowData(ctx, record)
+	c := s.queueLen.Add(1)
+	span.SetAttributes(attribute.Int64("flowdata.queue.len", c))
+	span.AddEvent("push.channel")
 	s.ch <- data
 }
 

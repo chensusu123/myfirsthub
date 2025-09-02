@@ -36,22 +36,23 @@ func (s *service) ProcessFlowData() {
 				logger.CtxWarnf(context.TODO(), "flowservice ProcessFlowData Size Greater than WARNFLOWCHANSIZE",
 					zap.Any("ERRORFLOWCHANSIZE", flowmodel.WARNFLOWCHANSIZE))
 			}
-			_processFlowData(data)
+			s._processFlowData(data)
 		}
 	}
 }
 
-func _processFlowData(data *flowmodel.FlowData) error {
+func (s *service) _processFlowData(data *flowmodel.FlowData) error {
 	// 打到kafka 中
 	ctx, record := data.Ctx, data.Data
 	span := trace.SpanFromContext(ctx)
 
 	defer func() {
+		s.queueLen.Add(-1)
 		span.AddEvent("process_flow_data_end")
 		span.End()
 	}()
 
-	span.AddEvent("process_flow_data")
+	span.AddEvent("Marshal")
 
 	logger := fklog.ContextAppLogger(ctx)
 
