@@ -36,6 +36,7 @@ import (
 	"maze_game_server/servers/maze_main_server/process/equip/demconstdef"
 	"maze_game_server/servers/maze_main_server/process/equip/module"
 	"maze_game_server/services/costumeservice"
+	"maze_game_server/services/itemservice"
 	"maze_game_server/usecase/online"
 
 	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fklog"
@@ -427,6 +428,16 @@ func (ep *Equip) OnDressMazeEquipRQ_10418_10419(s *session.Session, req *MazeGam
 		}
 		awardItems := itemutil.Map2Common(award)
 		res.DismantleAward = awardItems
+
+		if len(awardItems) > 0 {
+			// 699	UN_CGK_COMMON_BILL_TYPE_699	迷宫分解装备
+			tradeNo := tradeno.GetTradeNum()
+			items := itemutil.Map2ItemInfo(award)
+			errInfo := itemservice.GlobalItemService.AddItem(context.TODO(), userId, itemservice.ItemOpTypeDismantle, tradeNo, items...)
+			if errInfo != nil {
+				logger.CtxError(ctx, "OnDressMazeEquipRQ AddItemEx fail", zap.Any("errInfo", errInfo), zap.Any("rq", req))
+			}
+		}
 	}
 
 	var chgMask int32
