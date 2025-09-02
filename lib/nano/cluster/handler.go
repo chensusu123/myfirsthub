@@ -712,20 +712,30 @@ func (h *LocalHandler) localProcess(ctx context.Context, handler *component.Hand
 		span.AddEvent("nano.schedule.task")
 		taskCount := h.taskCount.Add(1)
 		// sesstionTaskCount := session.TaskCountInc()
-		sesstionTaskCount := session.PushTask(task)
+		sesstionTaskCount, pushTaskOK := session.PushTask(task)
 		span.SetAttributes(attribute.Int64("nano.current.task.count", taskCount))
 		span.SetAttributes(attribute.Int64("nano.session.task.count", sesstionTaskCount))
 		span.SetAttributes(attribute.String("nano.task.scheduler.name", service))
+		span.SetAttributes(attribute.Bool("nano.task.push.ok", pushTaskOK))
+		if !pushTaskOK {
+			span.AddEvent("nano.push.task.fail")
+			span.End()
+		}
 		// local.Schedule(task)
 	} else {
 		span.AddEvent("nano.schedule.task")
 		taskCount := h.taskCount.Add(1)
-		sesstionTaskCount := session.PushTask(task)
+		sesstionTaskCount, pushTaskOK := session.PushTask(task)
 		span.SetAttributes(attribute.Int64("nano.current.task.count", taskCount))
 		span.SetAttributes(attribute.Int64("nano.session.task.count", sesstionTaskCount))
 		span.SetAttributes(attribute.String("nano.task.scheduler.name", "global"))
+		span.SetAttributes(attribute.Bool("nano.task.push.ok", pushTaskOK))
 		// scheduler.PushTask(task)
 		// session.PushTask(task)
 		// session.session.scheduler.PushTask(task)
+		if !pushTaskOK {
+			span.AddEvent("nano.push.task.fail")
+			span.End()
+		}
 	}
 }

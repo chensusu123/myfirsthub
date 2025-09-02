@@ -25,6 +25,7 @@ import (
 
 	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fkalert"
 	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fklog"
+	"gitlab.ifreetalk.com/maze-plate/freetk/pkg/metricsreport"
 	"go.uber.org/zap"
 )
 
@@ -129,17 +130,24 @@ func (ac *AgentScheduler) Close() {
 	// log.Println("Scheduler stopped")
 }
 
-func (ac *AgentScheduler) PushTask(task Task) int64 {
+func (ac *AgentScheduler) PushTask(task Task) (int64, bool) {
 	c := ac.taskCount.Add(1)
-	safeSend(ac.chTasks, task)
-	return c
+	ok := safeSend(ac.chTasks, task)
+	return c, ok
 }
 
 func (ac *AgentScheduler) TaskCount() int64 {
 	return ac.taskCount.Load()
 }
 
-func safeSend[T any](ch chan T, data T) {
-	defer fkalert.RecoverAlertException()
+func safeSend[T any](ch chan T, data T) (ok bool) {
+	ok = true
+	defer func() {
+		if err := recover(); err != nil {
+			ok = false
+			metricsreport.PanicNum.Incr()
+		}
+	}()
 	ch <- data
+	return
 }

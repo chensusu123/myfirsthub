@@ -92,6 +92,6 @@ func (*acceptor) RemoteAddr() net.Addr {
 	return mock.NetAddr{}
 }
 
-func (a *acceptor) PushTask(task func()) int64 {
+func (a *acceptor) PushTask(task func()) (int64, bool) {
 	return a.session.PushTask(task)
 }

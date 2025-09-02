@@ -40,7 +40,7 @@ type NetworkEntity interface {
 	ResponseMid(ctx context.Context, mid uint64, v interface{}) error
 	Close() error
 	RemoteAddr() net.Addr
-	PushTask(task func()) int64
+	PushTask(task func()) (int64, bool)
 }
 
 // ErrIllegalUID represents a invalid uid
@@ -448,7 +448,7 @@ func (s *Session) TaskCountDec() int64 {
 	return s.taskCount.Add(-1)
 }
 
-func (s *Session) PushTask(task func()) int64 {
+func (s *Session) PushTask(task func()) (int64, bool) {
 	return s.entity.PushTask(task)
 }
 

@@ -121,7 +121,7 @@ func newAgent(conn net.Conn, pipeline pipeline.Pipeline, pcodec frame.PacketCode
 	return a
 }
 
-func (a *agent) PushTask(task func()) int64 {
+func (a *agent) PushTask(task func()) (int64, bool) {
 	return a.scheduler.PushTask(task)
 }
 
