@@ -600,7 +600,7 @@ func (x *MessageNotificationID) GetUserInfo() *User {
 	return nil
 }
 
-//## 10643 UN_TCP_PACK_CLI_QUERY_MESSAGE_LIST_RQ
+//## 10663 UN_TCP_PACK_CLI_QUERY_MESSAGE_LIST_RQ
 // 查询私聊消息请求包
 type QueryMessagesRQ struct {
 	state         protoimpl.MessageState
@@ -665,7 +665,7 @@ func (x *QueryMessagesRQ) GetLastMsgId() uint64 {
 	return 0
 }
 
-//## 10644 UN_TCP_PACK_CLI_QUERY_MESSAGE_LIST_RS
+//## 10664 UN_TCP_PACK_CLI_QUERY_MESSAGE_LIST_RS
 // 查询私聊消息响应包
 type QueryMessagesRS struct {
 	state         protoimpl.MessageState
