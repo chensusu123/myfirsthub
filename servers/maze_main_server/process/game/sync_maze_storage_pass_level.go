@@ -39,7 +39,7 @@ func (g *Game) OnSyncMazeStoragePassLevelRQ_10517_10518(s *session.Session, req 
 
 	data := req.GetPassLevel()
 	// 道具产出信息
-	err = syncmazestorageinforedis.SaveSyncMazeStorageInfo(userId, userInfo.Barrier, syncmazestorageinforedis.StorageInfo_PassLevel, data)
+	err = syncmazestorageinforedis.SaveSyncMazeStorageInfo(ctx, userId, userInfo.Barrier, syncmazestorageinforedis.StorageInfo_PassLevel, data)
 	if err != nil {
 		logger.CtxError(ctx, "OnSyncMazeStoragePassLevelRQ SaveSyncMazeStorageInfo", zap.Int64("passLevel", req.GetPassLevel()), zap.Error(err))
 		res.ErrInfo = errors.MODULE_ERROR.ToInfo()

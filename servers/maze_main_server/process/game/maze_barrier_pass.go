@@ -3,6 +3,9 @@ package game
 import (
 	"context"
 	"fmt"
+	"strings"
+	"time"
+
 	"maze_game_server/common/constdef"
 	"maze_game_server/common/errors"
 	"maze_game_server/common/structsdef"
@@ -21,8 +24,6 @@ import (
 	"maze_game_server/services/barrierservice"
 	"maze_game_server/services/barrierstagecounterservice"
 	"maze_game_server/services/tempbuffservice"
-	"strings"
-	"time"
 
 	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fklog"
 	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fkprometheus"
@@ -112,10 +113,10 @@ func getAwards(ctx context.Context, awards ...[]*MazeCommon.MazeItem) string {
 func ClearBarriersTempData(ctx context.Context, userId uint64, barrierId int32) {
 	// logger := fklog.ContextAppLogger(ctx)
 	// 删除关卡存档
-	syncmazestorageinforedis.DelSyncMazeStorageInfo(userId, barrierId)
+	syncmazestorageinforedis.DelSyncMazeStorageInfo(ctx, userId, barrierId)
 	// 清理关卡操作状态
 	mazebarrieropstatusredis.ClearOpStatus(ctx, userId, barrierId)
-	//清除关卡已获得奖励存档
+	// 清除关卡已获得奖励存档
 	barrierscorerewardservice.GlobalScoreRewardService.DelBarrierScoreRewardItem(context.TODO(), userId, barrierId)
 	// 删除关卡存档 new
 	barriersavedataservice.GlobalBarrierSaveDataService.DelBarrierSaveData(context.TODO(), userId, barrierId)
@@ -123,7 +124,7 @@ func ClearBarriersTempData(ctx context.Context, userId uint64, barrierId int32) 
 	tempbuffservice.GlobalTempBuffService.DelTempBuff(context.TODO(), userId, barrierId)
 	// 删除通过的区域
 	tempbuffservice.GlobalTempBuffService.DelPassArea(context.TODO(), userId, barrierId)
-	//删除关卡计数
+	// 删除关卡计数
 	barrierstagecounterservice.GlobalBarrierStageCounterService.DelBarrierStageCounterOnPass(ctx, userId, barrierId)
 
 	mazebuffinforedis.DelMazeBuffBySrc(ctx, userId, constdef.MazeBuffSrcSelectBuffForce)

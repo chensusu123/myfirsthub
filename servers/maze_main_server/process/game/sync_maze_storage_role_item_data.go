@@ -38,7 +38,7 @@ func (g *Game) OnSyncMazeStorageRoleItemDataRQ_10515_10516(s *session.Session, r
 
 	data := req.GetRoleItemData()
 	// 道具产出信息
-	err = syncmazestorageinforedis.SaveSyncMazeStorageInfo(userId, userInfo.Barrier, syncmazestorageinforedis.StorageInfo_RoleItemData, data)
+	err = syncmazestorageinforedis.SaveSyncMazeStorageInfo(ctx, userId, userInfo.Barrier, syncmazestorageinforedis.StorageInfo_RoleItemData, data)
 	if err != nil {
 		logger.CtxError(ctx, "OnSyncMazeStorageRoleItemDataRQ GetCollectInfo", zap.String("roleItemData", req.GetRoleItemData()), zap.Error(err))
 		res.ErrInfo = errors.MODULE_ERROR.ToInfo()

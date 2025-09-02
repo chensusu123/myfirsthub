@@ -38,7 +38,7 @@ func (g *Game) OnSyncMazeStorageMonsterAreaInfoRQ_10548_10549(s *session.Session
 
 	data := req.GetMonsterAreaInfo()
 	// 道具产出信息
-	err = syncmazestorageinforedis.SaveSyncMazeStorageInfo(userId, userInfo.Barrier, syncmazestorageinforedis.StorageInfo_MonsterAreaInfo, data)
+	err = syncmazestorageinforedis.SaveSyncMazeStorageInfo(ctx, userId, userInfo.Barrier, syncmazestorageinforedis.StorageInfo_MonsterAreaInfo, data)
 	if err != nil {
 		logger.CtxError(ctx, "OnSyncMazeStorageMonsterAreaInfoRQ SaveSyncMazeStorageInfo failed", zap.String("roleItemData", req.GetMonsterAreaInfo()), zap.Error(err))
 		res.ErrInfo = errors.MODULE_ERROR.ToInfo()

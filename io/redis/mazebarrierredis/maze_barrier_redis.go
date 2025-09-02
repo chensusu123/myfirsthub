@@ -27,7 +27,7 @@ func GetCurrBarrier(ctx context.Context, userId uint64) (barrierId int32, err er
 	logger := fklog.ContextAppLogger(ctx)
 	key := fmt.Sprintf("maze:u:%d:barrier:%d", userId)
 
-	res, err := redis.Int(gRedis.Do(context.TODO(), "hget", key, CURR_BARRIER_FIELD))
+	res, err := redis.Int(gRedis.Do(ctx, "hget", key, CURR_BARRIER_FIELD))
 	if err == redis.ErrNil {
 		err = nil
 		logger.CtxInfo(ctx, "GetCurrBarrier nil", zap.String("key", key))
@@ -47,7 +47,7 @@ func GetCurrBarrier(ctx context.Context, userId uint64) (barrierId int32, err er
 func GetBarrierAndArea(ctx context.Context, userId uint64) (barrierId int32, areaId int32, highArea int32, err error) {
 	logger := fklog.ContextAppLogger(ctx)
 	key := fmt.Sprintf("maze:u:%d:barrier:%d", userId)
-	res, err := redis.StringMap(gRedis.Do(context.TODO(), "hgetall", key))
+	res, err := redis.StringMap(gRedis.Do(ctx, "hgetall", key))
 	if err == redis.ErrNil {
 		err = nil
 		logger.CtxInfo(ctx, "GetCurrBarrierAndArea nil", zap.String("key", key))
@@ -95,7 +95,7 @@ func BatchSet(ctx context.Context, userId uint64, setMap map[string]int32) (err 
 		args = append(args, k)
 		args = append(args, v)
 	}
-	_, err = gRedis.Do(context.TODO(), "hmset", args...)
+	_, err = gRedis.Do(ctx, "hmset", args...)
 	if err != nil {
 		logger.CtxError(ctx, "BatchSet hmset fail", zap.String("key", key), zap.Any("args", args), zap.Error(err))
 		return
@@ -109,7 +109,7 @@ func GMDel(ctx context.Context, userId uint64) (err error) {
 	logger := fklog.ContextAppLogger(ctx)
 	key := fmt.Sprintf("maze:u:%d:barrier:%d", userId)
 
-	_, err = gRedis.Do(context.TODO(), "DEL", key)
+	_, err = gRedis.Do(ctx, "DEL", key)
 	if err != nil {
 		logger.CtxError(ctx, "GMDel fail", zap.Error(err), zap.String("key", key))
 		return err
@@ -122,7 +122,7 @@ func GMHDEL(ctx context.Context, userId uint64, barrierId int32) (err error) {
 	logger := fklog.ContextAppLogger(ctx)
 	key := fmt.Sprintf("maze:u:%d:barrier:%d", userId)
 
-	_, err = gRedis.Do(context.TODO(), "HDEL", key, barrierId)
+	_, err = gRedis.Do(ctx, "HDEL", key, barrierId)
 	if err != nil {
 		logger.CtxError(ctx, "GMHDEL fail", zap.Error(err), zap.String("key", key), zap.Any("barrierId", barrierId))
 		return err

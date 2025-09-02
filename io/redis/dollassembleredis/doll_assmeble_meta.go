@@ -56,7 +56,7 @@ func GetDollAssembleMetaInfo(ctx context.Context, userId uint64, fields ...strin
 	if len(args) == 1 {
 		return
 	}
-	res, err := redis.ByteSlices(gRedis.Do(context.TODO(), "hmget", args...))
+	res, err := redis.ByteSlices(gRedis.Do(ctx, "hmget", args...))
 	if err == redis.ErrNil {
 		err = nil
 		logger.CtxInfo(ctx, "GetDollAssembleMetaInfo hmget nil", zap.String("key", key), zap.Any("fields", fields))
@@ -125,7 +125,7 @@ func SetDollAssmebleMetaInfo(ctx context.Context, userId uint64, info *DollAssem
 	if len(args) == 1 {
 		return
 	}
-	_, err = gRedis.Do(context.TODO(), "hmset", args...)
+	_, err = gRedis.Do(ctx, "hmset", args...)
 	if err != nil {
 		logger.CtxError(ctx, "SetDollAssmebleMetaInfo hmset fail", zap.Error(err),
 			zap.String("key", key), zap.Any("info", info))

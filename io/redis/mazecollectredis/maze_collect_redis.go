@@ -29,14 +29,14 @@ func SetCollectInfo(ctx context.Context, uid uint64, info *MazeCollectCache.Maze
 	if err != nil {
 		return
 	}
-	_, err = gRedis.Do(context.TODO(), "set", fmt.Sprintf(collectKsy, uid), bts)
+	_, err = gRedis.Do(ctx, "set", fmt.Sprintf(collectKsy, uid), bts)
 	logger.CtxInfo(ctx, "SetCollectInfo", zap.Uint64("userId", uid), zap.Any("info", info))
 	return
 }
 
 func GetCollectInfo(ctx context.Context, uid uint64) (info *MazeCollectCache.MazeCollectInfo, err error) {
 	logger := fklog.ContextAppLogger(ctx)
-	bts, err := redis.Bytes(gRedis.Do(context.TODO(), "get", fmt.Sprintf(collectKsy, uid)))
+	bts, err := redis.Bytes(gRedis.Do(ctx, "get", fmt.Sprintf(collectKsy, uid)))
 	if err != nil {
 		if err == redis.ErrNil {
 			return nil, nil
@@ -52,7 +52,7 @@ func GetCollectInfo(ctx context.Context, uid uint64) (info *MazeCollectCache.Maz
 func GMDel(ctx context.Context, userId uint64) (err error) {
 	logger := fklog.ContextAppLogger(ctx)
 	key := fmt.Sprintf(collectKsy, userId)
-	_, err = redis.Int64(gRedis.Do(context.TODO(), "del", key))
+	_, err = redis.Int64(gRedis.Do(ctx, "del", key))
 	if err != nil {
 		logger.CtxError(ctx, "GMDel fail", zap.String("key", key), zap.Error(err))
 		return

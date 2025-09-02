@@ -21,7 +21,7 @@ func init() {
 func GetMazeCardExpirationTime(ctx context.Context, userId uint64) (int64, error) {
 	logger := fklog.ContextAppLogger(ctx)
 	key := fmt.Sprintf("u:%d:riddle:monthly", userId)
-	expirationTime, err := redis.Int64(gRedis.Do(context.TODO(), "get", key))
+	expirationTime, err := redis.Int64(gRedis.Do(ctx, "get", key))
 	if err != nil && err != redis.ErrNil {
 		logger.CtxInfo(ctx, "GetMazeCardExpirationTime get failed", zap.String("key", key), zap.Error(err))
 		return 0, err

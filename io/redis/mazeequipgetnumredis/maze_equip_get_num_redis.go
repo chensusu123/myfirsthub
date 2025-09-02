@@ -22,7 +22,7 @@ func init() {
 func GMDel(ctx context.Context, userId uint64) error {
 	logger := fklog.ContextAppLogger(ctx)
 	key := fmt.Sprintf("maze:equip:get:num:%d", userId)
-	_, err := redis.Int64(gRedis.Do(context.TODO(), "del", key))
+	_, err := redis.Int64(gRedis.Do(ctx, "del", key))
 	if err != nil {
 		logger.CtxError(ctx, "GMDel failed with", zap.Error(err), zap.Any("key", key))
 		return err
@@ -34,7 +34,7 @@ func GMDel(ctx context.Context, userId uint64) error {
 func GetEquipGetNum(ctx context.Context, userId uint64, equipId int32) (int64, error) {
 	logger := fklog.ContextAppLogger(ctx)
 	key := fmt.Sprintf("maze:equip:get:num:%d", userId)
-	ret, err := redis.Int64(gRedis.Do(context.TODO(), "hget", key, equipId))
+	ret, err := redis.Int64(gRedis.Do(ctx, "hget", key, equipId))
 	if err == redis.ErrNil {
 		err = nil
 		return 0, err
@@ -50,7 +50,7 @@ func GetEquipGetNum(ctx context.Context, userId uint64, equipId int32) (int64, e
 func GetEquipGetNumInc(ctx context.Context, userId uint64, equipId int32, addition int32) (int64, error) {
 	logger := fklog.ContextAppLogger(ctx)
 	key := fmt.Sprintf("maze:equip:get:num:%d", userId)
-	ret, err := redis.Int64(gRedis.Do(context.TODO(), "HINCRBY", key, equipId, addition))
+	ret, err := redis.Int64(gRedis.Do(ctx, "HINCRBY", key, equipId, addition))
 	if err != nil {
 		logger.CtxError(ctx, "GetEquipGetNumInc get new guid failed with", zap.Error(err), zap.Int32("equipId", equipId), zap.Int32("add", addition))
 		return 0, err
@@ -63,7 +63,7 @@ func GetEquipGetNumInc(ctx context.Context, userId uint64, equipId int32, additi
 func SetEquipGetNum(ctx context.Context, userId uint64, equipId, score int32) error {
 	logger := fklog.ContextAppLogger(ctx)
 	key := fmt.Sprintf("maze:equip:get:num:%d", userId)
-	_, err := gRedis.Do(context.TODO(), "hset", key, equipId, score)
+	_, err := gRedis.Do(ctx, "hset", key, equipId, score)
 	if err != nil {
 		logger.CtxError(ctx, "SetEquipGetNum set score failed with", zap.Error(err),
 			zap.Int32("equipId", equipId),
@@ -89,7 +89,7 @@ func BatchSetEquipGetNum(ctx context.Context, userId uint64, equipScoreMap map[i
 	if len(args) <= 1 {
 		return nil
 	}
-	_, err = gRedis.Do(context.TODO(), "HMSET", args...)
+	_, err = gRedis.Do(ctx, "HMSET", args...)
 	if err != nil {
 		logger.CtxError(ctx, "BatchSetEquipGetNum fail", zap.Error(err), zap.Any("equipScoreMap", equipScoreMap), zap.String("key", key))
 		return err
@@ -107,7 +107,7 @@ func GetBatchEquipGetNum(ctx context.Context, userId uint64, equipIds []int32) (
 	for _, field := range equipIds {
 		args = append(args, field)
 	}
-	resp, err := redis.Int64s(gRedis.Do(context.TODO(), "HMGET", args...))
+	resp, err := redis.Int64s(gRedis.Do(ctx, "HMGET", args...))
 	if err != nil {
 		if err == redis.ErrNil {
 			logger.CtxInfo(ctx, "GetBatchEquipGetNum call HMGET empty", zap.Int32s("equipIds", equipIds))
@@ -132,7 +132,7 @@ func GetAllEquipGetNum(ctx context.Context, userId uint64) (map[int32]int32, err
 	logger := fklog.ContextAppLogger(ctx)
 	equipScoreMap := make(map[int32]int32)
 	key := fmt.Sprintf("maze:equip:get:num:%d", userId)
-	ret, err := redis.Int64Map(gRedis.Do(context.TODO(), "HGETALL", key))
+	ret, err := redis.Int64Map(gRedis.Do(ctx, "HGETALL", key))
 	if err != nil {
 		logger.CtxError(ctx, "GetAllEquipGetNum redis op failed with ",
 			zap.Error(err),

@@ -22,7 +22,7 @@ func init() {
 // func GetUserProduce(ctx context.Context, userId uint64) (producePb *DollMazeBarrierCache.DollMazeMoneyDb, err error) {
 // 	key := fmt.Sprintf("maze:produce:u:%d",userId)
 
-// 	res, err := redis.Bytes(gRedis.Do(context.TODO(), "get", key))
+// 	res, err := redis.Bytes(gRedis.Do(ctx, "get", key))
 // 	if err == redis.ErrNil {
 // 		err = nil
 // 		logger.CtxInfo(ctx,"GetUserProduce nil", zap.String("key", key))
@@ -53,7 +53,7 @@ func init() {
 // 		return
 // 	}
 // 	key := fmt.Sprintf("maze:produce:u:%d",userId)
-// 	_, err = gRedis.Do(context.TODO(), "set", key, data)
+// 	_, err = gRedis.Do(ctx, "set", key, data)
 // 	if err != nil {
 // 		logger.CtxError(ctx,"SetUserProduce set fail", zap.String("key", key), zap.Any("producePb", producePb), zap.Error(err))
 // 		return
@@ -66,7 +66,7 @@ func init() {
 func ClearProduce(ctx context.Context, userId uint64, barrierId int32) (err error) {
 	logger := fklog.ContextAppLogger(ctx)
 	key := fmt.Sprintf("maze:produce:u:%d", userId)
-	_, err = redis.Int(gRedis.Do(context.TODO(), "DEL", key))
+	_, err = redis.Int(gRedis.Do(ctx, "DEL", key))
 	if err != nil {
 		logger.CtxError(ctx, "ClearProduce fail", zap.String("key", key), zap.Error(err))
 		return
@@ -78,7 +78,7 @@ func ClearProduce(ctx context.Context, userId uint64, barrierId int32) (err erro
 func GMDel(ctx context.Context, userId uint64) (err error) {
 	logger := fklog.ContextAppLogger(ctx)
 	key := fmt.Sprintf("maze:produce:u:%d", userId)
-	_, err = redis.Int(gRedis.Do(context.TODO(), "DEL", key))
+	_, err = redis.Int(gRedis.Do(ctx, "DEL", key))
 	if err != nil {
 		logger.CtxError(ctx, "GMDel fail", zap.String("key", key), zap.Error(err))
 		return

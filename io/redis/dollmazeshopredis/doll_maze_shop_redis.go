@@ -22,7 +22,7 @@ func init() {
 func GetMazeShopNum(ctx context.Context, userId uint64, barrierId int32, itemId int32) (int64, error) {
 	logger := fklog.ContextAppLogger(ctx)
 	key := fmt.Sprintf("doll:maze:shop:%d:%d", userId, barrierId)
-	ret, err := redis.Int64(gRedis.Do(context.TODO(), "hget", key, itemId))
+	ret, err := redis.Int64(gRedis.Do(ctx, "hget", key, itemId))
 	if err == redis.ErrNil {
 		err = nil
 		return 0, err
@@ -39,7 +39,7 @@ func GetMazeShopNum(ctx context.Context, userId uint64, barrierId int32, itemId 
 func SetMazeShopNum(ctx context.Context, userId uint64, barrierId int32, itemId, count int32) error {
 	key := fmt.Sprintf("doll:maze:shop:%d:%d", userId, barrierId)
 	logger := fklog.ContextAppLogger(ctx)
-	_, err := gRedis.Do(context.TODO(), "hset", key, itemId, count)
+	_, err := gRedis.Do(ctx, "hset", key, itemId, count)
 	if err != nil {
 		logger.CtxError(ctx, "SetMazeShopNum set score failed with", zap.Error(err),
 			zap.Int32("itemId", itemId),
@@ -64,7 +64,7 @@ func BatchSetMazeShopNum(ctx context.Context, userId uint64, barrierId int32, ma
 	if len(args) <= 1 {
 		return nil
 	}
-	_, err = gRedis.Do(context.TODO(), "HMSET", args...)
+	_, err = gRedis.Do(ctx, "HMSET", args...)
 	if err != nil {
 		logger.CtxError(ctx, "BatchSetMazeShopNum fail", zap.Error(err), zap.Any("mazeShopMap", mazeShopMap), zap.String("key", key))
 		return err
@@ -82,7 +82,7 @@ func GetBatchMazeShopNum(ctx context.Context, userId uint64, barrierId int32, it
 	for _, field := range itemIds {
 		args = append(args, field)
 	}
-	resp, err := redis.Int64s(gRedis.Do(context.TODO(), "HMGET", args...))
+	resp, err := redis.Int64s(gRedis.Do(ctx, "HMGET", args...))
 	if err != nil {
 		if err == redis.ErrNil {
 			logger.CtxInfo(ctx, "GetBatchMazeShopNum call HMGET empty", zap.Int32s("itemIds", itemIds))
@@ -106,7 +106,7 @@ func GetMazeShopAllNum(ctx context.Context, userId uint64, barrierId int32) (map
 	logger := fklog.ContextAppLogger(ctx)
 	mazeShopMap := make(map[int32]int32)
 	key := fmt.Sprintf("doll:maze:shop:%d:%d", userId, barrierId)
-	ret, err := redis.Int64Map(gRedis.Do(context.TODO(), "HGETALL", key))
+	ret, err := redis.Int64Map(gRedis.Do(ctx, "HGETALL", key))
 	if err != nil {
 		logger.CtxError(ctx, "GetMazeShopAllNum redis op failed with ",
 			zap.Error(err),

@@ -16,7 +16,7 @@ func init() {
 // func GetDollAssembleInfo(ctx context.Context, userId uint64) (assembleInfo *MazeEquipCache.MazeAssembleDb, err error) {
 // 	assembleInfo = new(MazeEquipCache.MazeAssembleDb)
 // 	key := fmt.Sprintf("maze:assemble:info:u:%d",userId)
-// 	res, err := redis.ByteSlices(gRedis.Do(context.TODO(), "hgetall", key))
+// 	res, err := redis.ByteSlices(gRedis.Do(ctx, "hgetall", key))
 // 	if err == redis.ErrNil {
 // 		err = nil
 // 		logger.CtxInfo(ctx,"GetDollAssembleInfo hgetall nil", zap.String("key", key))

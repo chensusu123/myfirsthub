@@ -2,6 +2,7 @@ package familymodel
 
 import (
 	"context"
+
 	"maze_game_server/io/redis/familyredis"
 	"maze_game_server/lib/serialize"
 
@@ -25,7 +26,7 @@ func LoadFamilyListModel(ctx context.Context) (r *FamilyListModel, err error) {
 
 func (r *FamilyListModel) load(ctx context.Context) (err error) {
 	logger := fklog.ContextAppLogger(ctx)
-	value, err := familyredis.GetFamilyList()
+	value, err := familyredis.GetFamilyList(ctx)
 	if err != nil {
 		logger.CtxError(ctx, "LoadFamilyInfoModel err",
 			zap.Error(err))
@@ -54,7 +55,7 @@ func (r *FamilyListModel) Save(ctx context.Context) (err error) {
 			zap.Error(err))
 		return err
 	}
-	err = familyredis.SetFamilyIDs(value)
+	err = familyredis.SetFamilyIDs(ctx, value)
 	if err != nil {
 		logger.CtxError(ctx, "Save SetFamilyIDs err")
 		return
@@ -64,7 +65,7 @@ func (r *FamilyListModel) Save(ctx context.Context) (err error) {
 
 func (r *FamilyListModel) Delete(ctx context.Context) (err error) {
 	logger := fklog.ContextAppLogger(ctx)
-	err = familyredis.DelFamilyList()
+	err = familyredis.DelFamilyList(ctx)
 	if err != nil {
 		logger.CtxError(ctx, "Delete DelFamilyList err")
 		return

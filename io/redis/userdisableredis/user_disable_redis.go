@@ -24,7 +24,7 @@ func getKey(userId uint64) string {
 // 获取用户信息是否封禁
 func IsUserDisable(ctx context.Context, userId uint64) bool {
 	logger := fklog.ContextAppLogger(ctx)
-	r, err := redis.Bool(gRedis.Do(context.TODO(), "EXISTS", getKey(userId)))
+	r, err := redis.Bool(gRedis.Do(ctx, "EXISTS", getKey(userId)))
 	if err != nil {
 		if err != redis.ErrNil {
 			logger.CtxError(ctx, "IsUserDisable exists error", zap.Uint64("userId", userId), zap.Error(err))

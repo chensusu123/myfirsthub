@@ -23,7 +23,7 @@ func init() {
 func GMDel(ctx context.Context, userId uint64, barrierId int32) (err error) {
 	logger := fklog.ContextAppLogger(ctx)
 	key := fmt.Sprintf("maze:u:%d:barrier:%d", userId, 0)
-	_, err = redis.Int(gRedis.Do(context.TODO(), "DEL", key))
+	_, err = redis.Int(gRedis.Do(ctx, "DEL", key))
 	if err != nil {
 		logger.CtxError(ctx, "GMDel fail", zap.String("key", key), zap.Error(err))
 		return
@@ -36,7 +36,7 @@ func GetUserBarrierInfo(ctx context.Context, userId uint64, barrierId int32) (da
 	data = &MazeBarrierCache.MazeBarrierCache{}
 	key := fmt.Sprintf("maze:u:%d:barrier:%d", userId, 0)
 
-	res, err := redis.Bytes(gRedis.Do(context.TODO(), "get", key))
+	res, err := redis.Bytes(gRedis.Do(ctx, "get", key))
 	if err == redis.ErrNil {
 		err = nil
 		logger.CtxInfo(ctx, "GetUserBarrierInfo nil", zap.String("key", key))
@@ -65,7 +65,7 @@ func SetUserBarrierInfo(ctx context.Context, userId uint64, barrierId int32, dat
 	}
 
 	key := fmt.Sprintf("maze:u:%d:barrier:%d", userId, 0)
-	_, err = gRedis.Do(context.TODO(), "set", key, res)
+	_, err = gRedis.Do(ctx, "set", key, res)
 	if err != nil {
 		logger.CtxError(ctx, "SetUserBarrierInfo set fail", zap.String("key", key), zap.Error(err))
 		return

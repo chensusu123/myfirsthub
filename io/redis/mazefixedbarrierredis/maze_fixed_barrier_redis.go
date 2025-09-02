@@ -22,7 +22,7 @@ func GetUserFixedBarrierID(ctx context.Context, userId uint64) (barrierId int32,
 	logger := fklog.ContextAppLogger(ctx)
 	key := fmt.Sprintf("maze:u:%d:fixed:barrier", userId)
 
-	res, err := redis.Int(gRedis.Do(context.TODO(), "get", key))
+	res, err := redis.Int(gRedis.Do(ctx, "get", key))
 	if err == redis.ErrNil {
 		err = nil
 		logger.CtxInfo(ctx, "GetUserFixedBarrierID nil", zap.String("key", key))

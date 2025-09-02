@@ -2,6 +2,9 @@ package game
 
 import (
 	"context"
+	"strings"
+	"time"
+
 	"maze_game_server/common/constdef"
 	"maze_game_server/common/errors"
 	"maze_game_server/io/kafka/mazeenergyrecord"
@@ -21,8 +24,6 @@ import (
 	"maze_game_server/services/barrierscorerewardservice"
 	"maze_game_server/services/equipdropservice"
 	"maze_game_server/services/moneyservice"
-	"strings"
-	"time"
 
 	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fklog"
 	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fkprometheus"
@@ -207,13 +208,12 @@ func SetMazeMoney(ctx context.Context, uid uint64, diamond int32, money int64, s
 }
 
 func SetMazeBarrier(ctx context.Context, userId uint64, barrierId int32) (err error) {
-
 	if userId <= 0 || barrierId <= 0 {
 		err = errors.New("userId、barrierId不能小于等于0")
 		return
 	}
 
-	//设置关卡升级
+	// 设置关卡升级
 	// err = mazebarrierredis.SetBarrier(logger, uint64(userId), int32(barrierId))
 	// if err != nil {
 	// 	return
@@ -229,24 +229,24 @@ func ClearBarrier(ctx context.Context, userId uint64) (err error) {
 		return
 	}
 
-	//清楚关卡信息
+	// 清楚关卡信息
 	// err = mazebarrierredis.GMDel(logger, uint64(userId))
 	// if err != nil {
 	// 	return
 	// }
 
-	//清除关卡存档
+	// 清除关卡存档
 	userInfo, err := mazeuserinfo.GetUserInfoV2(ctx, userId)
 	if err != nil {
 		return
 	}
-	err = syncmazestorageinforedis.DelSyncMazeStorageInfo(userId, userInfo.Barrier)
+	err = syncmazestorageinforedis.DelSyncMazeStorageInfo(ctx, userId, userInfo.Barrier)
 	logger.CtxInfo(ctx, "ClearBarrier end", zap.Error(err), zap.Any("userInfo", userInfo), zap.Any("user", userId))
 	if err != nil {
 		return err
 	}
 
-	//清除等级经验通用数值
+	// 清除等级经验通用数值
 	err = mazeuserlevelredis.GMDel(ctx, userId)
 	if err != nil {
 		return
@@ -291,13 +291,13 @@ func ClearBarrier(ctx context.Context, userId uint64) (err error) {
 		return
 	}
 
-	//清除关卡已获得奖励存档
+	// 清除关卡已获得奖励存档
 	err = barrierscorerewardservice.GlobalScoreRewardService.DelBarrierScoreRewardItem(context.TODO(), userId, userInfo.Barrier)
 	if err != nil {
 		return
 	}
 
-	//重置体力
+	// 重置体力
 	err = barrierenergyservice.GlobalBarrierEnergyService.ResetEnergy(ctx, userId)
 	if err != nil {
 		return
@@ -305,7 +305,6 @@ func ClearBarrier(ctx context.Context, userId uint64) (err error) {
 
 	ClearBarriersTempData(ctx, userId, userInfo.Barrier)
 	return
-
 }
 
 func SetMazeUserInfo(ctx context.Context, uid uint64, level int64, exp int64) (err error) {
@@ -377,15 +376,15 @@ func CmdAddEnergy(ctx context.Context, userId uint64, args map[string]string) er
 	}
 	barrierenergyservice.GlobalBarrierEnergyService.PushEnergyRecord(ctx, userId, oldEnergy, newEnergy, mazeenergyrecord.GMAdd, nextUpdateTime)
 
-	//rq := &MazeEnergySvr.AddMazeEnergyRQ{}
-	//rs := &MazeEnergySvr.AddMazeEnergyRS{}
-	//rq.UserId = proto.Uint64(userId)
-	//rq.AddVal = proto.Int32(vInt)
-	//rq.OpType = proto.Int32(int32(MazeEnergySvr.ENUM_MAZE_ENERGY_OP_TYPE_GMADD))
-	//rq.OpDesc = proto.String("CmdGmAdd")
-	//rq.TradeNumber = proto.Uint64(uniqueid.GenUniqueIdUInt64())
+	// rq := &MazeEnergySvr.AddMazeEnergyRQ{}
+	// rs := &MazeEnergySvr.AddMazeEnergyRS{}
+	// rq.UserId = proto.Uint64(userId)
+	// rq.AddVal = proto.Int32(vInt)
+	// rq.OpType = proto.Int32(int32(MazeEnergySvr.ENUM_MAZE_ENERGY_OP_TYPE_GMADD))
+	// rq.OpDesc = proto.String("CmdGmAdd")
+	// rq.TradeNumber = proto.Uint64(uniqueid.GenUniqueIdUInt64())
 	// 合并服务，直接访问函数
 	// return mazeenergyrpc.AddMazeEnergyRQ(logger, rq, rs)
-	//return energy.AddMazeEnergyRQ(logger, userId, rq, rs)
+	// return energy.AddMazeEnergyRQ(logger, userId, rq, rs)
 	return err
 }

@@ -23,7 +23,7 @@ func GetMail(ctx context.Context, userId uint64) ([]byte, error) {
 	}
 	key := db.MakeSectionKey(getMailKey(userId))
 
-	bytes, err := db.Get(context.TODO(), key).Bytes()
+	bytes, err := db.Get(ctx, key).Bytes()
 	if err != nil {
 		if err == redis.Nil {
 			return nil, nil
@@ -42,7 +42,7 @@ func SetMail(ctx context.Context, userId uint64, data []byte) (err error) {
 	}
 	key := db.MakeSectionKey(getMailKey(userId))
 
-	err = db.Set(context.TODO(), key, data, 0).Err()
+	err = db.Set(ctx, key, data, 0).Err()
 	if err != nil {
 		logger.CtxError(ctx, "SetMail Set err", zap.String("key", key), zap.Any("mail", string(data)),
 			zap.Error(err))
@@ -60,7 +60,7 @@ func DelMail(ctx context.Context, userId uint64, barrierId int32) (err error) {
 	}
 	key := db.MakeSectionKey(getMailKey(userId))
 
-	err = db.Del(context.TODO(), key).Err()
+	err = db.Del(ctx, key).Err()
 	if err != nil {
 		logger.CtxError(ctx, "DelMail Del err", zap.String("key", key), zap.Error(err))
 		return err

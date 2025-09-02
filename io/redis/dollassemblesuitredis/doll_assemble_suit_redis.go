@@ -43,7 +43,7 @@ func GetDollAssembleSuit(ctx context.Context, userId uint64, index int32, posCnt
 		args = append(args, field)
 	}
 
-	res, err := redis.ByteSlices(gRedis.Do(context.TODO(), "hmget", args...))
+	res, err := redis.ByteSlices(gRedis.Do(ctx, "hmget", args...))
 	if err == redis.ErrNil {
 		err = nil
 		logger.CtxInfo(ctx, "GetDollAssembleSuit hmget nil", zap.String("key", key), zap.Int32("index", index))
@@ -76,7 +76,7 @@ func GetDollAssembleByPos(ctx context.Context, userId uint64, index int32, pos i
 	logger := fklog.ContextAppLogger(ctx)
 	field := assemble.EnCodeAssembleEquipField(index, pos)
 
-	res, err := redis.Bytes(gRedis.Do(context.TODO(), "hget", key, field))
+	res, err := redis.Bytes(gRedis.Do(ctx, "hget", key, field))
 	if err == redis.ErrNil {
 		err = nil
 		logger.CtxInfo(ctx, "GetDollAssembleByPos hmget nil", zap.String("key", key), zap.Int32("index", index))
@@ -103,7 +103,7 @@ func GetDollAssembleByPos(ctx context.Context, userId uint64, index int32, pos i
 func GetAllDollAssembleSuit(ctx context.Context, userId uint64) (allEquipSuit map[int32][]*MazeEquipCache.MazeEquipPosDb, err error) {
 	key := fmt.Sprintf("maze:dressed:equip:u:%d", userId)
 	logger := fklog.ContextAppLogger(ctx)
-	res, err := redis.ByteSlices(gRedis.Do(context.TODO(), "hgetall", key))
+	res, err := redis.ByteSlices(gRedis.Do(ctx, "hgetall", key))
 	if err == redis.ErrNil {
 		err = nil
 		logger.CtxInfo(ctx, "GetAllDollAssembleSuit hgetall nil", zap.String("key", key))
@@ -158,7 +158,7 @@ func SetDollAssembleSuit(ctx context.Context, userId uint64, index int32, equips
 		return nil
 	}
 	// redis操作
-	_, err = gRedis.Do(context.TODO(), "HMSET", args...)
+	_, err = gRedis.Do(ctx, "HMSET", args...)
 	if err != nil {
 		logger.CtxError(ctx, "SetDollAssembleSuit redis with fail",
 			zap.Error(err),
@@ -206,7 +206,7 @@ func SaveEquipAssembleInfoV2(ctx context.Context, userId uint64, index int32, eq
 func DelEquipSuitInfo(ctx context.Context, userId uint64) error {
 	key := fmt.Sprintf("maze:dressed:equip:u:%d", userId)
 	logger := fklog.ContextAppLogger(ctx)
-	_, err := gRedis.Do(context.TODO(), "DEL", key)
+	_, err := gRedis.Do(ctx, "DEL", key)
 	if err != nil {
 		logger.CtxError(ctx, "DelEquipSuitInfo fail",
 			zap.Error(err),
@@ -236,7 +236,7 @@ func BatchSaveDollAssembleSuit(ctx context.Context, userId uint64, equipsMap map
 	}
 
 	// redis操作
-	_, err = gRedis.Do(context.TODO(), "HMSET", args...)
+	_, err = gRedis.Do(ctx, "HMSET", args...)
 	if err != nil {
 		logger.CtxError(ctx, "BatchSaveDollAssembleSuit redis with fail",
 			zap.Error(err),

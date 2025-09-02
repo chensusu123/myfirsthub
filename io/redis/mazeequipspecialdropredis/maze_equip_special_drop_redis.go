@@ -15,7 +15,7 @@ func getRedisKey(userId uint64) string {
 //		return nil, err
 //	}
 //	key := db.MakeSectionKey(getRedisKey(userId))
-//	bytes, err := db.Get(context.TODO(), key).Bytes()
+//	bytes, err := db.Get(ctx, key).Bytes()
 //	if err != nil {
 //		if err == redis.Nil {
 //			return nil, nil
@@ -34,7 +34,7 @@ func getRedisKey(userId uint64) string {
 //		return err
 //	}
 //	key := db.MakeSectionKey(getRedisKey(userId))
-//	_, err = db.Set(context.TODO(), key, bytes, 0).Result()
+//	_, err = db.Set(ctx, key, bytes, 0).Result()
 //	if err != nil {
 //		if err == redis.Nil {
 //			return nil
@@ -54,7 +54,7 @@ func getRedisKey(userId uint64) string {
 //		return err
 //	}
 //	key := db.MakeSectionKey(getRedisKey(userId))
-//	err = db.Del(context.TODO(), key).Err()
+//	err = db.Del(ctx, key).Err()
 //	if err != nil {
 //		logger.CtxError(ctx, "SetMazeEquipSpecialDropInfo GMDel fail", zap.String("key", key), zap.Error(err))
 //		return

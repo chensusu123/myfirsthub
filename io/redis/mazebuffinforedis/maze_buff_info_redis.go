@@ -54,7 +54,7 @@ func SaveMazeBuffInfo(ctx context.Context, userId uint64, field int32, attrs *Ma
 			zap.Any("attrs", attrs))
 		return err
 	}
-	_, err = gRedis.Do(context.TODO(), "HSET", key, field, data)
+	_, err = gRedis.Do(ctx, "HSET", key, field, data)
 	if err != nil {
 		logger.CtxError(ctx, "SaveMazeBuffInfo fail",
 			zap.Error(err),
@@ -72,7 +72,7 @@ func SaveMazeBuffInfo(ctx context.Context, userId uint64, field int32, attrs *Ma
 
 func GetMazeBuffBySrc(ctx context.Context, userId uint64, field int32) (attrDb *MazeBuffData.MazeBuffDb, err error) {
 	key := fmt.Sprintf("maze:buff:center:u:%d", userId)
-	res, err := redis.Bytes(gRedis.Do(context.TODO(), "hget", key, field))
+	res, err := redis.Bytes(gRedis.Do(ctx, "hget", key, field))
 	logger := fklog.ContextAppLogger(ctx)
 	if err == redis.ErrNil {
 		err = nil
@@ -106,7 +106,7 @@ func GetMazeEquipBuff(ctx context.Context, userId uint64) (attrDb *MazeBuffData.
 func GetMazeBuffsV2(ctx context.Context, userId uint64, mask int32) (attrDbs map[int32][]*MazeBuffData.MazeBuffAttr, err error) {
 	logger := fklog.ContextAppLogger(ctx)
 	key := fmt.Sprintf("maze:buff:center:u:%d", userId)
-	res, err := redis.ByteSlices(gRedis.Do(context.TODO(), "HGETALL", key))
+	res, err := redis.ByteSlices(gRedis.Do(ctx, "HGETALL", key))
 	if err == redis.ErrNil {
 		err = nil
 		logger.CtxWarn(ctx, "GetMazeBuffsV2 HGETALL nil", zap.String("key", key), zap.Int32("mask", mask))
@@ -149,7 +149,7 @@ func GetMazeBuffsV2(ctx context.Context, userId uint64, mask int32) (attrDbs map
 func GetAllMazeBuffs(ctx context.Context, userId uint64) (attrDbs map[int32]*MazeBuffData.MazeBuffDb, err error) {
 	logger := fklog.ContextAppLogger(ctx)
 	key := fmt.Sprintf("maze:buff:center:u:%d", userId)
-	res, err := redis.ByteSlices(gRedis.Do(context.TODO(), "HGETALL", key))
+	res, err := redis.ByteSlices(gRedis.Do(ctx, "HGETALL", key))
 	if err == redis.ErrNil {
 		err = nil
 		logger.CtxWarn(ctx, "GetAllMazeBuffs HGETALL nil", zap.String("key", key))
@@ -185,7 +185,7 @@ func DelMazeBuff(ctx context.Context, userId uint64) error {
 	logger := fklog.ContextAppLogger(ctx)
 	key := fmt.Sprintf("maze:buff:center:u:%d", userId)
 
-	_, err := gRedis.Do(context.TODO(), "DEL", key)
+	_, err := gRedis.Do(ctx, "DEL", key)
 	if err != nil {
 		logger.CtxError(ctx, "DelMazeBuff fail",
 			zap.Error(err),
@@ -201,7 +201,7 @@ func DelMazeBuffBySrc(ctx context.Context, userId uint64, field int32) error {
 	logger := fklog.ContextAppLogger(ctx)
 	key := fmt.Sprintf("maze:buff:center:u:%d", userId)
 
-	_, err := gRedis.Do(context.TODO(), "HDEL", key, field)
+	_, err := gRedis.Do(ctx, "HDEL", key, field)
 	if err != nil {
 		logger.CtxError(ctx, "DelMazeBuffBySrc fail",
 			zap.Error(err),

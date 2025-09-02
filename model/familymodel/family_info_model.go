@@ -3,10 +3,11 @@ package familymodel
 import (
 	"context"
 	"errors"
+	"time"
+
 	"maze_game_server/io/redis/familyredis"
 	"maze_game_server/lib/serialize"
 	"maze_game_server/pb/common/MazeFamily"
-	"time"
 
 	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fklog"
 	"go.uber.org/zap"
@@ -79,7 +80,7 @@ func LoadFamilyInfoModel(ctx context.Context, familyID int32) (r *FamilyInfoMode
 
 func LoadFamilyListInfoModel(ctx context.Context, familyIDs []int32) (r FamilysInfoModel, err error) {
 	logger := fklog.ContextAppLogger(ctx)
-	result, err := familyredis.BatchGetFamilyInfo(familyIDs)
+	result, err := familyredis.BatchGetFamilyInfo(ctx, familyIDs)
 	if err != nil {
 		logger.CtxError(ctx, "BatchGetFamilyInfo err",
 			zap.Int32s("familyIDs", familyIDs), zap.Error(err))
@@ -108,7 +109,7 @@ func NewFamilyInfoModel(ctx context.Context, familyName string, joinType int32) 
 	if joinType == 0 && familyName == "" {
 		return nil, errors.New("familyName or familySetting is nil")
 	}
-	familyID, err := familyredis.CreateFamilyId()
+	familyID, err := familyredis.CreateFamilyId(ctx)
 	if err != nil {
 		logger.CtxError(ctx, "CreateFamilyId err",
 			zap.String("familyName", familyName), zap.Any("joinType", joinType),
@@ -185,7 +186,7 @@ func (r *FamilyInfoModel) RemApplyUser(ctx context.Context, userInfo FamilyMembe
 
 func (r *FamilyInfoModel) load(ctx context.Context, familyID int32) (err error) {
 	logger := fklog.ContextAppLogger(ctx)
-	value, err := familyredis.GetFamilyInfo(familyID)
+	value, err := familyredis.GetFamilyInfo(ctx, familyID)
 	if err != nil {
 		logger.CtxError(ctx, "LoadFamilyInfoModel err",
 			zap.Int32("familyID", familyID), zap.Error(err))
@@ -208,7 +209,7 @@ func (r *FamilyInfoModel) Save(ctx context.Context, familyID int32) (err error) 
 			zap.Int32("familyID", familyID), zap.Error(err))
 		return err
 	}
-	err = familyredis.SetFamilyInfo(familyID, value)
+	err = familyredis.SetFamilyInfo(ctx, familyID, value)
 	if err != nil {
 		logger.CtxError(ctx, "save SetFamilyInfo err",
 			zap.Int32("familyID", familyID), zap.Error(err))
@@ -220,7 +221,7 @@ func (r *FamilyInfoModel) Save(ctx context.Context, familyID int32) (err error) 
 // Delete 解散家族
 func (r *FamilyInfoModel) Delete(ctx context.Context, familyID int32) (err error) {
 	logger := fklog.ContextAppLogger(ctx)
-	err = familyredis.DelFamilyInfo(familyID)
+	err = familyredis.DelFamilyInfo(ctx, familyID)
 	if err != nil {
 		logger.CtxError(ctx, "delete DelFamilyInfo err",
 			zap.Int32("familyID", familyID), zap.Error(err))
@@ -229,7 +230,7 @@ func (r *FamilyInfoModel) Delete(ctx context.Context, familyID int32) (err error
 
 	// 删除家族所有成员的绑定家族关系
 	for _, member := range r.FamilyMembers {
-		err = familyredis.DelUserFamilyID(member.UserID)
+		err = familyredis.DelUserFamilyID(ctx, member.UserID)
 		if err != nil {
 			logger.CtxError(ctx, "delete DelUserFamilyID err",
 				zap.Uint64("userID", member.UserID), zap.Error(err))
@@ -375,7 +376,7 @@ func (r *FamilyInfoModel) CheckHaveLeader(ctx context.Context, userIDs []uint64)
 // 校验用户是否在家族
 func (r *FamilyInfoModel) CheckUserInFamily(ctx context.Context, userID uint64) bool {
 	logger := fklog.ContextAppLogger(ctx)
-	familyID, err := familyredis.GetUserFamilyID(userID)
+	familyID, err := familyredis.GetUserFamilyID(ctx, userID)
 	if err != nil {
 		logger.CtxError(ctx, "CheckUserInFamily GetUserFamilyID err",
 			zap.Uint64("userID", userID), zap.Error(err))

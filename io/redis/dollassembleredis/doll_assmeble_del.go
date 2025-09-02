@@ -18,7 +18,7 @@ import (
 func DelAssmebleInfo(ctx context.Context, userId uint64) error {
 	key := fmt.Sprintf("maze:assemble:info:u:%d", userId)
 	logger := fklog.ContextAppLogger(ctx)
-	_, err := gRedis.Do(context.TODO(), "DEL", key)
+	_, err := gRedis.Do(ctx, "DEL", key)
 	if err != nil {
 		logger.CtxError(ctx, "DelAssmebleInfo fail",
 			zap.Error(err),
@@ -38,7 +38,7 @@ func BatchDelAssmebleInfo(ctx context.Context, userId uint64, fields ...string) 
 	for _, field := range fields {
 		args = append(args, field)
 	}
-	_, err := gRedis.Do(context.TODO(), "HDEL", args...)
+	_, err := gRedis.Do(ctx, "HDEL", args...)
 	if err != nil {
 		logger.CtxError(ctx, "BatchDelAssmebleInfo fail",
 			zap.Error(err),

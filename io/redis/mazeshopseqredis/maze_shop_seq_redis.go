@@ -34,7 +34,7 @@ type MazeShopInfo struct {
 //
 //func GetMazeShopInfo(ctx context.Context, userId uint64, level int32) (mazeShopInfo *MazeShopInfo, err error) {
 //	key := fmt.Sprintf("maze:shop:seq:%d", userId)
-//	res, err := redis.Bytes(gRedis.Do(context.TODO(), "hget", key, level))
+//	res, err := redis.Bytes(gRedis.Do(ctx, "hget", key, level))
 //	if err == redis.ErrNil {
 //		err = nil
 //		return nil, err
@@ -61,7 +61,7 @@ type MazeShopInfo struct {
 //		return
 //	}
 //
-//	_, err = gRedis.Do(context.TODO(), "hset", key, level, data)
+//	_, err = gRedis.Do(ctx, "hset", key, level, data)
 //	if err != nil {
 //		logger.CtxError(ctx,"SetMazeShopInfo fail", zap.Error(err), zap.Any("mazeShopInfo", mazeShopInfo), zap.String("key", key))
 //		return err
@@ -73,7 +73,7 @@ type MazeShopInfo struct {
 //// gm删除
 //func GMDel(ctx context.Context, userId uint64) (err error) {
 //	key := fmt.Sprintf("maze:shop:seq:%d", userId)
-//	_, err = redis.Int(gRedis.Do(context.TODO(), "DEL", key))
+//	_, err = redis.Int(gRedis.Do(ctx, "DEL", key))
 //	if err != nil {
 //		logger.CtxError(ctx,"GMDel fail", zap.String("key", key), zap.Error(err))
 //		return

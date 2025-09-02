@@ -28,7 +28,7 @@ func getKey() string {
 func SetMazeCard(ctx context.Context, userId uint64, expirationTime int64) error {
 	logger := fklog.ContextAppLogger(ctx)
 	key := getKey()
-	_, err := gRedis.Do(context.TODO(), "zadd", key, expirationTime, userId)
+	_, err := gRedis.Do(ctx, "zadd", key, expirationTime, userId)
 	if err != nil {
 		logger.CtxError(ctx, "SetMazeCard zadd failed", zap.String("key", key), zap.Uint64("userId", userId),
 			zap.Int64("time", expirationTime), zap.Error(err))
@@ -42,7 +42,7 @@ func SetMazeCard(ctx context.Context, userId uint64, expirationTime int64) error
 func GetMazeCard(ctx context.Context, userId uint64) (int64, error) {
 	logger := fklog.ContextAppLogger(ctx)
 	key := getKey()
-	expirationTime, err := redis.Int64(gRedis.Do(context.TODO(), "zscore", key, userId))
+	expirationTime, err := redis.Int64(gRedis.Do(ctx, "zscore", key, userId))
 	if err != nil && err != redis.ErrNil {
 		logger.CtxError(ctx, "GetMazeCard zscore failed", zap.Uint64("userId", userId), zap.Error(err))
 		return 0, err
@@ -63,7 +63,7 @@ func BatchDelMazeCard(ctx context.Context, userList []int64) error {
 		param = append(param, userId)
 	}
 
-	_, err := gRedis.Do(context.TODO(), "zrem", param...)
+	_, err := gRedis.Do(ctx, "zrem", param...)
 	if err != nil {
 		logger.CtxError(ctx, "BatchDelMazeCard zrem failed", zap.Int64s("userList", userList), zap.Error(err))
 		return err
@@ -76,7 +76,7 @@ func BatchDelMazeCard(ctx context.Context, userList []int64) error {
 func DelMazeCard(ctx context.Context, userId uint64) error {
 	logger := fklog.ContextAppLogger(ctx)
 	key := getKey()
-	_, err := gRedis.Do(context.TODO(), "zrem", key, userId)
+	_, err := gRedis.Do(ctx, "zrem", key, userId)
 	if err != nil {
 		logger.CtxError(ctx, "DelMazeCard zrem failed", zap.Uint64("userId", userId), zap.Error(err))
 		return err
@@ -89,7 +89,7 @@ func DelMazeCard(ctx context.Context, userId uint64) error {
 func GetMazeCardExpirationList(ctx context.Context) ([]int64, error) {
 	logger := fklog.ContextAppLogger(ctx)
 	key := getKey()
-	userList, err := redis.Int64s(gRedis.Do(context.TODO(), "zrangebyscore", key, "-inf", time.Now().Unix()))
+	userList, err := redis.Int64s(gRedis.Do(ctx, "zrangebyscore", key, "-inf", time.Now().Unix()))
 	if err != nil {
 		logger.CtxError(ctx, "GetMazeCardExpirationList zrangebyscore failed", zap.Error(err))
 		return nil, err

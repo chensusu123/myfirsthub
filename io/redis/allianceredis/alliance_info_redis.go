@@ -3,6 +3,7 @@ package allianceredis
 import (
 	"context"
 	"fmt"
+
 	globalredis "maze_game_server/io/redis"
 
 	"github.com/redis/go-redis/v9"
@@ -16,20 +17,20 @@ func getAllianceIDRedisKey() string {
 	return "alliance:id"
 }
 
-func SetAllianceInfo(allianceID int32, data []byte) error {
+func SetAllianceInfo(ctx context.Context, allianceID int32, data []byte) error {
 	db, err := globalredis.GCli.GetDB()
 	if err != nil {
 		return err
 	}
-	return db.Set(context.TODO(), db.MakeSectionKey(getAllianceInfoRedisKey(allianceID)), data, 0).Err()
+	return db.Set(ctx, db.MakeSectionKey(getAllianceInfoRedisKey(allianceID)), data, 0).Err()
 }
 
-func GetAllianceInfo(allianceID int32) ([]byte, error) {
+func GetAllianceInfo(ctx context.Context, allianceID int32) ([]byte, error) {
 	db, err := globalredis.GCli.GetDB()
 	if err != nil {
 		return nil, err
 	}
-	res, err := db.Get(context.TODO(), db.MakeSectionKey(getAllianceInfoRedisKey(allianceID))).Bytes()
+	res, err := db.Get(ctx, db.MakeSectionKey(getAllianceInfoRedisKey(allianceID))).Bytes()
 	if err != nil {
 		if err == redis.Nil {
 			return nil, nil
@@ -39,7 +40,7 @@ func GetAllianceInfo(allianceID int32) ([]byte, error) {
 	return res, nil
 }
 
-func BatchGetAllianceInfo(allianceIDs []int32) ([][]byte, error) {
+func BatchGetAllianceInfo(ctx context.Context, allianceIDs []int32) ([][]byte, error) {
 	db, err := globalredis.GCli.GetDB()
 	if err != nil {
 		return nil, err
@@ -48,7 +49,7 @@ func BatchGetAllianceInfo(allianceIDs []int32) ([][]byte, error) {
 	for i, allianceID := range allianceIDs {
 		args[i] = db.MakeSectionKey(getAllianceInfoRedisKey(allianceID))
 	}
-	result, err := db.MGet(context.TODO(), args...).Result()
+	result, err := db.MGet(ctx, args...).Result()
 	if err != nil {
 		if err == redis.Nil {
 			return nil, nil
@@ -66,12 +67,12 @@ func BatchGetAllianceInfo(allianceIDs []int32) ([][]byte, error) {
 	return ret, err
 }
 
-func GetAllianceID() int32 {
+func GetAllianceID(ctx context.Context) int32 {
 	db, err := globalredis.GCli.GetDB()
 	if err != nil {
 		return 0
 	}
-	value, err := db.Incr(context.TODO(), db.MakeSectionKey(getAllianceIDRedisKey())).Result()
+	value, err := db.Incr(ctx, db.MakeSectionKey(getAllianceIDRedisKey())).Result()
 	if err == redis.Nil {
 		return 0
 	}

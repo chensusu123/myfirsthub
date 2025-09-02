@@ -2,6 +2,9 @@ package game
 
 import (
 	"context"
+	"strings"
+	"time"
+
 	"maze_game_server/common/constdef"
 	"maze_game_server/common/errors"
 	"maze_game_server/config/GMazeBarriesV8Cfg"
@@ -27,8 +30,6 @@ import (
 	"maze_game_server/services/barrierstagecounterservice"
 	"maze_game_server/services/itemservice"
 	"maze_game_server/services/tempbuffservice"
-	"strings"
-	"time"
 
 	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fkprometheus"
 	"go.uber.org/zap"
@@ -100,7 +101,7 @@ func (g *Game) OnMazeBarrierEnterRQ_10447_10448(s *session.Session, req *MazeGam
 
 	//	res.Energy = proto.Int32(userInfo.Energy)
 	var isNewBarrier bool
-	storageInfo, _ := syncmazestorageinforedis.GetSyncMazeStorageInfo(userId, req.GetBarrierId())
+	storageInfo, _ := syncmazestorageinforedis.GetSyncMazeStorageInfo(ctx, userId, req.GetBarrierId())
 
 	// 获取存档数据 new
 	saveData, err := barriersavedataservice.GlobalBarrierSaveDataService.GetBarrierSaveData(ctx, userId, req.GetBarrierId())
@@ -406,7 +407,7 @@ func (g *Game) OnGetStorageInfoRQ_10529_10530(s *session.Session, req *MazeGame.
 	}
 
 	// 默认是从存档进入
-	storageInfo, err := syncmazestorageinforedis.GetSyncMazeStorageInfo(userId, userInfo.Barrier)
+	storageInfo, err := syncmazestorageinforedis.GetSyncMazeStorageInfo(ctx, userId, userInfo.Barrier)
 	if err != nil {
 		logger.CtxError(ctx, "OnGetStorageInfoRQ GetSyncMazeStorageInfo fail", zap.Error(err))
 		return

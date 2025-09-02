@@ -20,7 +20,7 @@ func init() {
 func GetUserChallengeNum(ctx context.Context, userId uint64, dateTime int) (num int, err error) {
 	logger := fklog.ContextAppLogger(ctx)
 	key := fmt.Sprintf("maze:u:%d:date:%d", userId, dateTime)
-	num, err = redis.Int(gRedis.Do(context.TODO(), "get", key))
+	num, err = redis.Int(gRedis.Do(ctx, "get", key))
 	if err == redis.ErrNil {
 		err = nil
 		logger.CtxInfo(ctx, "GetUserChallengeNum nil", zap.String("key", key))
@@ -37,7 +37,7 @@ func GetUserChallengeNum(ctx context.Context, userId uint64, dateTime int) (num 
 func AddUserChallengeNum(ctx context.Context, userId uint64, dateTime int, count int32) (err error) {
 	logger := fklog.ContextAppLogger(ctx)
 	key := fmt.Sprintf("maze:u:%d:date:%d", userId, dateTime)
-	newCount, err := redis.Int(gRedis.Do(context.TODO(), "incrby", key, count))
+	newCount, err := redis.Int(gRedis.Do(ctx, "incrby", key, count))
 	if err != nil {
 		logger.CtxError(ctx, "AddUserChallengeNum incr fail", zap.String("key", key), zap.Error(err))
 		return
@@ -49,7 +49,7 @@ func AddUserChallengeNum(ctx context.Context, userId uint64, dateTime int, count
 func GMDel(ctx context.Context, userId uint64, dateTime int) (err error) {
 	logger := fklog.ContextAppLogger(ctx)
 	key := fmt.Sprintf("maze:u:%d:date:%d", userId, dateTime)
-	_, err = redis.Int(gRedis.Do(context.TODO(), "del", key))
+	_, err = redis.Int(gRedis.Do(ctx, "del", key))
 	if err != nil {
 		logger.CtxError(ctx, "GMDel del fail", zap.String("key", key), zap.Error(err))
 		return

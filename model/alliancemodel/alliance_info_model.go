@@ -2,6 +2,7 @@ package alliancemodel
 
 import (
 	"context"
+
 	"maze_game_server/io/redis/allianceredis"
 	"maze_game_server/lib/serialize"
 	"maze_game_server/pb/common/MazeFamily"
@@ -41,9 +42,10 @@ func NewAllianceInfoModel(ctx context.Context, allianceID int32, allianceName st
 		FamilyIDs:          []int32{},
 	}
 }
+
 func (r *AllianceInfoModel) load(ctx context.Context, allianceID int32) (err error) {
 	logger := fklog.ContextAppLogger(ctx)
-	value, err := allianceredis.GetAllianceInfo(allianceID)
+	value, err := allianceredis.GetAllianceInfo(ctx, allianceID)
 	if err != nil {
 		logger.CtxError(ctx, "LoadAllianceInfoModel err",
 			zap.Int32("allianceID", allianceID), zap.Error(err))
@@ -68,7 +70,7 @@ func (r *AllianceInfoModel) Save(ctx context.Context) (err error) {
 		logger.CtxError(ctx, "Save err", zap.Error(err))
 		return err
 	}
-	return allianceredis.SetAllianceInfo(r.AllianceID, value)
+	return allianceredis.SetAllianceInfo(ctx, r.AllianceID, value)
 }
 
 func (r *AllianceInfoModel) DataToAllianceInfoPb() *MazeFamily.AllianceInfo {

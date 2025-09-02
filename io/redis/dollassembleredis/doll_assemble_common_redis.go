@@ -55,7 +55,7 @@ func hmgetAssembleData(ctx context.Context, uid uint64, fields []string) (rs map
 	for _, field := range fields {
 		args = append(args, field)
 	}
-	rs1, err1 := redis.ByteSlices(gRedis.Do(context.TODO(), "HMGET", args...))
+	rs1, err1 := redis.ByteSlices(gRedis.Do(ctx, "HMGET", args...))
 	if err1 != nil {
 		return rs, err1
 	}
@@ -76,7 +76,7 @@ func hgetAllAssembleData(ctx context.Context, uid uint64) (rs map[string][]byte,
 	rs = make(map[string][]byte)
 	key := fmt.Sprintf("maze:assemble:info:u:%d", uid)
 
-	rs1, e := redis.ByteSlices(gRedis.Do(context.TODO(), "HGETALL", key))
+	rs1, e := redis.ByteSlices(gRedis.Do(ctx, "HGETALL", key))
 	if e == redis.ErrNil {
 		err = nil
 		return
@@ -106,7 +106,7 @@ func hmsetAssembleData(ctx context.Context, uid uint64, fields map[string]interf
 		args = append(args, k)
 		args = append(args, v)
 	}
-	_, err = gRedis.Do(context.TODO(), "HMSET", args...)
+	_, err = gRedis.Do(ctx, "HMSET", args...)
 	if err != nil {
 		logger.CtxError(ctx, "hmsetAssembleData save fail", zap.Error(err), zap.String("key", key))
 		return err

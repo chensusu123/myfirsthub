@@ -2,6 +2,7 @@ package allianceservice
 
 import (
 	"context"
+
 	"maze_game_server/model/alliancemodel"
 
 	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fklog"
@@ -15,7 +16,7 @@ func (s *service) AddAlliance(ctx context.Context, allianceName string) error {
 		logger.CtxError(ctx, "AddAlliance LoadAllianceListModel err", zap.Error(err))
 		return err
 	}
-	allianceID := allianceListModel.GetAllianceID()
+	allianceID := allianceListModel.GetAllianceID(ctx)
 
 	allianceInfoModel := alliancemodel.NewAllianceInfoModel(ctx, allianceID, allianceName)
 	err = allianceInfoModel.Save(ctx)

@@ -31,7 +31,7 @@ func GetDollEquipPosInfo(ctx context.Context, userId uint64, posCnt int) (equipL
 		args = append(args, field)
 	}
 
-	res, err := redis.ByteSlices(gRedis.Do(context.TODO(), "hmget", args...))
+	res, err := redis.ByteSlices(gRedis.Do(ctx, "hmget", args...))
 	if err == redis.ErrNil {
 		err = nil
 		logger.CtxInfo(ctx, "GetDollEquipPosInfo hmget nil", zap.String("key", key))
@@ -89,7 +89,7 @@ func SetDollEquipPosInfo(ctx context.Context, userId uint64, posList []*MazeEqui
 	if len(args) <= 1 {
 		return
 	}
-	_, err = gRedis.Do(context.TODO(), "hmset", args...)
+	_, err = gRedis.Do(ctx, "hmset", args...)
 	if err != nil {
 		logger.CtxError(ctx, "SetDollEquipPosInfo hmget fail", zap.Error(err), zap.String("key", key),
 			zap.Any("posList", posList))

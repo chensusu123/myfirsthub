@@ -37,7 +37,7 @@ func (g *Game) OnSyncMazeStageLevelRQ_10546_10547(s *session.Session, req *MazeG
 
 	data := req.GetStageLevel()
 	// 道具产出信息
-	err = syncmazestorageinforedis.SaveSyncMazeStorageInfo(userId, userInfo.Barrier, syncmazestorageinforedis.StorageInfo_StageLevel, data)
+	err = syncmazestorageinforedis.SaveSyncMazeStorageInfo(ctx, userId, userInfo.Barrier, syncmazestorageinforedis.StorageInfo_StageLevel, data)
 	if err != nil {
 		logger.CtxError(ctx, "OnSyncMazeStageLevelRQ SaveSyncMazeStorageInfo", zap.Int32("StageLevel", req.GetStageLevel()), zap.Error(err))
 		res.ErrInfo = errors.MODULE_ERROR.ToInfo()

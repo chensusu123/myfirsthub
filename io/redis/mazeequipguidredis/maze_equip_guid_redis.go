@@ -21,7 +21,7 @@ func init() {
 func GetNewGuid(ctx context.Context, userId uint64, addCount int32) (int64, error) {
 	logger := fklog.ContextAppLogger(ctx)
 	key := fmt.Sprintf("doll:equip:guid:%d", userId)
-	ret, err := redis.Int64(gRedis.Do(context.TODO(), "HINCRBY", key, "equipMaxId", addCount))
+	ret, err := redis.Int64(gRedis.Do(ctx, "HINCRBY", key, "equipMaxId", addCount))
 	if err != nil {
 		logger.CtxError(ctx, "get new guid failed with", zap.Error(err))
 		return 0, err
@@ -33,7 +33,7 @@ func GetNewGuid(ctx context.Context, userId uint64, addCount int32) (int64, erro
 func SetEquipGuidGm(ctx context.Context, userId uint64, equipMaxGuid int64) error {
 	logger := fklog.ContextAppLogger(ctx)
 	key := fmt.Sprintf("doll:equip:guid:%d", userId)
-	_, err := redis.Int64(gRedis.Do(context.TODO(), "hset", key, "equipMaxId", equipMaxGuid))
+	_, err := redis.Int64(gRedis.Do(ctx, "hset", key, "equipMaxId", equipMaxGuid))
 	if err != nil {
 		logger.CtxError(ctx, "SetEquipGuidGm failed with", zap.Error(err))
 		return err

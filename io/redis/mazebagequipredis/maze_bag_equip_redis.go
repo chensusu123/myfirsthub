@@ -24,7 +24,7 @@ func init() {
 func GetEquipInfo(ctx context.Context, userId uint64, equipGuid int64) (equipInfo *MazeEquipCache.MazeEquipInfoDb, err error) {
 	logger := fklog.ContextAppLogger(ctx)
 	key := fmt.Sprintf("maze:bag:equip:info:%d", userId)
-	ret, err := redis.Bytes(gRedis.Do(context.TODO(), "hget", key, equipGuid))
+	ret, err := redis.Bytes(gRedis.Do(ctx, "hget", key, equipGuid))
 	if err != nil {
 		if err == redis.ErrNil {
 			return nil, nil
@@ -50,7 +50,7 @@ func GetBatchEquipInfo(ctx context.Context, userId uint64, equipGuids ...int64) 
 	for _, equipGuid := range equipGuids {
 		args = append(args, equipGuid)
 	}
-	ret, err := redis.ByteSlices(gRedis.Do(context.TODO(), "HMGET", args...))
+	ret, err := redis.ByteSlices(gRedis.Do(ctx, "HMGET", args...))
 	if err != nil {
 		logger.CtxError(ctx, "GetBatchEquipInfo get equip failed", zap.Error(err), zap.String("key", key), zap.Any("args", args))
 		return nil, err
@@ -82,7 +82,7 @@ func SaveEquipInfo(ctx context.Context, userId uint64, equipInfo *MazeEquipCache
 		return
 	}
 
-	_, err = redis.Int(gRedis.Do(context.TODO(), "hset", key, equipInfo.GetEquipGuid(), data))
+	_, err = redis.Int(gRedis.Do(ctx, "hset", key, equipInfo.GetEquipGuid(), data))
 	if err != nil {
 		logger.CtxError(ctx, "SaveOneAuction hset error", zap.Int64("equipGuid", equipInfo.GetEquipGuid()),
 			zap.Any("equipInfo", equipInfo), zap.Error(err))
@@ -111,7 +111,7 @@ func BatchSaveEquipInfo(ctx context.Context, userId uint64, equipList []*MazeEqu
 		return nil
 	}
 	// redis操作
-	_, err := gRedis.Do(context.TODO(), "HMSET", args...)
+	_, err := gRedis.Do(ctx, "HMSET", args...)
 	if err != nil {
 		logger.CtxError(ctx, "BatchSaveEquipInfo redis with fail",
 			zap.Error(err),
@@ -130,7 +130,7 @@ func GMDelEquip(ctx context.Context, userId uint64) (err error) {
 	logger := fklog.ContextAppLogger(ctx)
 	key := fmt.Sprintf("maze:bag:equip:info:%d", userId)
 
-	_, err = gRedis.Do(context.TODO(), "DEL", key)
+	_, err = gRedis.Do(ctx, "DEL", key)
 	if err != nil {
 		logger.CtxError(ctx, "del equip info fail", zap.Error(err), zap.String("key", key))
 		return err
@@ -151,7 +151,7 @@ func BatchDelEquip(ctx context.Context, userId uint64, equipGuids ...int64) (err
 		logger.CtxWarn(ctx, "no has equip to save", zap.Any("args", args), zap.String("key", key))
 		return errors.New("配置参数错误")
 	}
-	_, err = gRedis.Do(context.TODO(), "HDEL", args...)
+	_, err = gRedis.Do(ctx, "HDEL", args...)
 	if err != nil {
 		logger.CtxError(ctx, "del equip info fail", zap.Error(err), zap.String("key", key), zap.Any("args", args))
 		return err
@@ -167,7 +167,7 @@ func GetAllEquipInfo(ctx context.Context, userId uint64) (equipMap map[int64]*Ma
 	cursor := 0 // 初始hscan游标
 	equipMap = make(map[int64]*MazeEquipCache.MazeEquipInfoDb, 0)
 	for {
-		r, err := gRedis.Do(context.TODO(), "HSCAN", key, cursor, "match", "*", "count", batchCount)
+		r, err := gRedis.Do(ctx, "HSCAN", key, cursor, "match", "*", "count", batchCount)
 		if err != nil {
 			return equipMap, err
 		}
