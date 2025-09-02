@@ -8,6 +8,8 @@ import (
 	"maze_game_server/usecase/online"
 
 	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fklog"
+	"go.opentelemetry.io/otel"
+	"go.opentelemetry.io/otel/attribute"
 	"go.uber.org/zap"
 )
 
@@ -40,17 +42,30 @@ func (s service) startUserRecoverEnergy(ctx context.Context, userId uint64, next
 }
 
 func (s service) safeTimer(ctx context.Context, userID uint64) {
-	logger := fklog.ContextAppLogger(ctx)
+	logger := fklog.AppLogger().Clone("barrierenergyservice")
+	logger.SetUid(userID)
+	ctx = fklog.ContextWithLogger(context.Background(), logger)
+	tracer := otel.Tracer("barrierenergyservice")
+	ctx, span := tracer.Start(ctx, "UserRecoverEnergyTimer")
+
+	span.SetAttributes(
+		attribute.Int64("enduser.id", int64(userID)),
+	)
+	span.AddEvent("UserRecoverEnergy")
+	// logger := fklog.ContextAppLogger(ctx)
 	defer func() {
 		if r := recover(); r != nil {
 			logger.CtxError(ctx, "handleRecoverUserEnergy panic.", zap.Any("r", r))
 		}
+		span.End()
 	}()
 	isOnline := online.IsOnline(userID)
 	if !isOnline {
+		span.AddEvent("stopUserRecoverTimer")
 		s.stopUserRecoverTimer(ctx, userID)
 		return
 	}
+	span.AddEvent("handleRecoverUserEnergy")
 	s.handleRecoverUserEnergy(ctx, userID)
 }
 
