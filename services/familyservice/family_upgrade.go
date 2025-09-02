@@ -48,7 +48,7 @@ func (r *service) SendUpgradeFamilyIDPack(ctx context.Context, familyID int32) e
 
 	familyMembers := familymodel.DataToFamilyMembersPb(ctx)
 	for _, v := range familyMembers {
-		online.ClusterPush(context.TODO(), v.GetUserId(), 0, pack)
+		online.ClusterPush(ctx, v.GetUserId(), 0, pack)
 	}
 	return nil
 }

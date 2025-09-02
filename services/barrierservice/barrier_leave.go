@@ -161,7 +161,7 @@ func (b *barrier) BarrierPass(ctx context.Context, header *Common.PacketHeader, 
 		if len(awardMap) > 0 {
 			awardItems := itemutil.Map2Common(awardMap)
 			itemList := itemutil.Map2ItemInfo(awardMap)
-			errInfo := itemservice.GlobalItemService.AddItem(context.TODO(), userID, itemservice.ItemOpTypePass, tradeNo, itemList...)
+			errInfo := itemservice.GlobalItemService.AddItem(ctx, userID, itemservice.ItemOpTypePass, tradeNo, itemList...)
 			if errInfo != nil {
 				logger.CtxError(ctx, "BarrierPass AddItemEx fail", zap.Any("errInfo", errInfo), zap.Any("awardItems", awardItems))
 			}
@@ -305,7 +305,7 @@ func (b *barrier) BarrierDeath(ctx context.Context, header *Common.PacketHeader,
 	if len(otherItem) > 0 {
 		//697	UN_CGK_COMMON_BILL_TYPE_697	迷宫扫荡
 		itemList := itemutil.Map2ItemInfo(realItem)
-		errInfo := itemservice.GlobalItemService.AddItem(context.TODO(), userID, itemservice.ItemOpTypeDeath, tradeNo, itemList...)
+		errInfo := itemservice.GlobalItemService.AddItem(ctx, userID, itemservice.ItemOpTypeDeath, tradeNo, itemList...)
 		if errInfo != nil {
 			logger.CtxError(ctx, "CalUserSweepBarrierAward AddItemEx fail", zap.Any("errInfo", errInfo), zap.Any("otherItem", otherItem))
 			return 0, 0, nil, errors.MODULE_ERROR.ToInfo()

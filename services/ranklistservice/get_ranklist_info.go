@@ -22,7 +22,7 @@ func (s *service) GetRankListLimit(ctx context.Context, r *ranklistmodel.RankLis
 	var rankList []ranklistmodel.RankItem
 	rankListKey := r.GetRankListKey()
 
-	tmprankList, err := mazeranklistredis.GetNowRankListLimit(context.TODO(), rankListKey, start, stop, r.Order)
+	tmprankList, err := mazeranklistredis.GetNowRankListLimit(ctx, rankListKey, start, stop, r.Order)
 	if err != nil {
 		logger.CtxError(ctx, "GetRankListLimit fail",
 			zap.String("rankListname", rankListKey),
@@ -98,7 +98,7 @@ func (s *service) GetRankListLimitWithScore(ctx context.Context, r *ranklistmode
 	var rankList []ranklistmodel.RankItem
 	rankListKey := r.GetRankListKey()
 
-	tmprankList, err := mazeranklistredis.GetNowRankListLimitWithScore(context.TODO(), rankListKey, start, stop, r.Order)
+	tmprankList, err := mazeranklistredis.GetNowRankListLimitWithScore(ctx, rankListKey, start, stop, r.Order)
 	if err != nil {
 		logger.CtxError(ctx, "GetRankListLimitWithScore fail",
 			zap.String("rankListname", rankListKey),

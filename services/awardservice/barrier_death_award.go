@@ -31,7 +31,7 @@ func (s *service) GetBarrierDeathAward(ctx context.Context, userId uint64, barri
 	logger.CtxInfo(ctx, "GetBarrierDeathAward GetSweepBarrierAward", zap.Any("equipItem", equipItem), zap.Any("ohterItem", ohterItem), zap.Any("expItem", expItem), zap.Any("equipNum", equipNum))
 
 	// 获取存储的当前关卡的奖励数据
-	nowBarrierEquipList, nowBarrierItemList, err := barrierscorerewardservice.GlobalScoreRewardService.GetBarrierScoreReward(context.TODO(), userId, barrier)
+	nowBarrierEquipList, nowBarrierItemList, err := barrierscorerewardservice.GlobalScoreRewardService.GetBarrierScoreReward(ctx, userId, barrier)
 	if err != nil {
 		logger.CtxError(ctx, "GetBarrierDeathAward GetBarrierScoreReward err", zap.Error(err),
 			zap.Any("barrier", barrier),

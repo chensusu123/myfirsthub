@@ -1,7 +1,6 @@
 package flowservice
 
 import (
-	"context"
 	"encoding/json"
 	"fmt"
 	"time"
@@ -9,7 +8,6 @@ import (
 	"maze_game_server/io/kafka"
 	flowmodel "maze_game_server/model/flowmodel/flow_model"
 
-	"github.com/bytedance/gopkg/util/logger"
 	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fklog"
 	"go.opentelemetry.io/otel/codes"
 	"go.opentelemetry.io/otel/trace"
@@ -19,7 +17,7 @@ import (
 func (s *service) ProcessFlowData() {
 	defer func() {
 		if err := recover(); err != nil {
-			logger.CtxErrorf(context.TODO(), "flowservice ProcessFlowData Restart")
+			fklog.AppLogger().ErrorWF("flowservice ProcessFlowData Restart")
 			// 重启该携程 防止panic退出
 			go s.ProcessFlowData()
 		}
@@ -28,12 +26,14 @@ func (s *service) ProcessFlowData() {
 	for {
 		select {
 		case data := <-s.ch:
+			ctx := data.Ctx
+			logger := fklog.ContextAppLogger(data.Ctx)
 			// 检测容量告警
 			if len(s.ch) >= flowmodel.ERRORFLOWCHANSIZE {
-				logger.CtxErrorf(context.TODO(), "flowservice ProcessFlowData Size Greater than ERRORFLOWCHANSIZE",
+				logger.CtxError(ctx, "flowservice ProcessFlowData Size Greater than ERRORFLOWCHANSIZE",
 					zap.Any("ERRORFLOWCHANSIZE", flowmodel.ERRORFLOWCHANSIZE))
 			} else if len(s.ch) >= flowmodel.WARNFLOWCHANSIZE {
-				logger.CtxWarnf(context.TODO(), "flowservice ProcessFlowData Size Greater than WARNFLOWCHANSIZE",
+				logger.CtxWarn(ctx, "flowservice ProcessFlowData Size Greater than WARNFLOWCHANSIZE",
 					zap.Any("ERRORFLOWCHANSIZE", flowmodel.WARNFLOWCHANSIZE))
 			}
 			s._processFlowData(data)

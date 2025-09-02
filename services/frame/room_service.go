@@ -278,7 +278,7 @@ func updateFrame(ctx context.Context, r *frame_model.Room) {
 	// 广播帧数据给所有玩家
 	for _, player := range r.MemberMap {
 		// push其他人
-		_ = online.ClusterPush(context.TODO(), player.ID, 10544, idPack)
+		_ = online.ClusterPush(ctx, player.ID, 10544, idPack)
 	}
 }
 
