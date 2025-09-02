@@ -81,6 +81,7 @@ func (r *AllianceInfoModel) DataToAllianceInfoPb() *MazeFamily.AllianceInfo {
 		AllianceName:       proto.String(r.AllianceName),
 		AllianceCountLimit: proto.Int32(r.AllianceCountLimit),
 		FamilyIds:          r.FamilyIDs,
+		AllianceGroupId:    proto.Int32(r.AllianceGroupID),
 	}
 }
 

@@ -9,6 +9,7 @@ import (
 	"maze_game_server/module/mazecommonvalue"
 	"maze_game_server/module/mazeuserinfo"
 	"maze_game_server/pb/common/MazeGame"
+	"maze_game_server/services/allianceservice"
 	"maze_game_server/services/barriersavedataservice"
 	"maze_game_server/services/moneyservice"
 
@@ -117,5 +118,11 @@ func (g *Game) OnMazeLoginRQ_10451_10452(s *session.Session, req *MazeGame.MazeL
 
 	mazecommonvalue.SendCommonValueIdPack(ctx, userId, commonList)
 
+	allianceInfo, err := allianceservice.GlobalAllianceService.QueryAllianceInfo(ctx, 1)
+	if err != nil {
+		logger.CtxError(ctx, "OnMazeLoginRQ QueryAllianceInfo Fail",
+			zap.Error(err))
+	}
+	res.AllianceInfo = allianceInfo.DataToAllianceInfoPb()
 	return nil
 }
