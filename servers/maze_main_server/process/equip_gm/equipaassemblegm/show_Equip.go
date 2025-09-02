@@ -157,9 +157,11 @@ func ShowEquip(ctx context.Context, userId uint64, equipDb *MazeEquipCache.MazeE
 	resId, _ := pbutil.GetDollEquipName(ctx, equipDb, equipDb.GetEquipSubType())
 	w.WriteString(fmt.Sprintf("展示资源配置ID: %d\n", resId))
 
-	_, equipName := pbutil.GetDollEquipName(ctx, equipDb, 0) // 子类型无用，内部会自己取
+	equipName := ""
+	if equipDb.GetEquipId() > int32(0) {
+		_, equipName = pbutil.GetDollEquipName(ctx, equipDb, 0) // 子类型无用，内部会自己取
+	}
 	w.WriteString(fmt.Sprintf("装备名: %s\n", equipName))
-
 	suitRow := GMazeEquipSuiteInfoV8Cfg.GetMazeEquipSuiteInfoV8Config(equipDb.GetSuitId())
 	if suitRow != nil {
 		suitName = suitRow.Suite_name

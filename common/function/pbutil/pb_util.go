@@ -22,7 +22,7 @@ func GetDollEquipName(ctx context.Context, equipInfo *MazeEquipCache.MazeEquipIn
 		equipName = equipTypeResCfg.Name
 		equipResId = equipTypeResCfg.Order
 	}
-	if equipInfo.GetSuitId() > 0 {
+	if equipInfo.GetSuitId() > int32(0) {
 		equipSuiteNameCfg := GMazeEquipSuiteNameV8Cfg.GetWithCtx(ctx, equipId)
 		if equipSuiteNameCfg != nil {
 			equipName = equipSuiteNameCfg.Suite_equip_name[equipInfo.GetSuitId()]
@@ -56,13 +56,13 @@ func GetDollEquipNameEx(ctx context.Context, equipInfo *MazeEquipCache.MazeEquip
 		icon = equipTypeResCfg.Icon
 		iconAtlas = equipTypeResCfg.IconAtlas
 	}
-	if equipInfo.GetSuitId() > 0 {
+	if equipInfo.GetSuitId() > int32(0) {
 		equipSuiteNameCfg := GMazeEquipSuiteNameV8Cfg.GetWithCtx(ctx, equipId)
 		if equipSuiteNameCfg != nil {
 			equipName = equipSuiteNameCfg.Suite_equip_name[equipInfo.GetSuitId()]
 		}
 	}
-	if equipName == "" {
+	if equipName == "" && equipId > int32(0) {
 		itemCfg := GMazeItemsV8Cfg.GetWithCtx(ctx, equipId)
 		if itemCfg != nil {
 			equipName = itemCfg.Prop_name
