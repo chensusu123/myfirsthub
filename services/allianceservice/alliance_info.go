@@ -9,6 +9,7 @@ import (
 )
 
 func (s *service) QueryAllianceInfo(ctx context.Context, allianceID int32) (*alliancemodel.AllianceInfoModel, error) {
+	allianceID = 1
 	logger := fklog.ContextAppLogger(ctx)
 	allianceInfoModel, err := alliancemodel.LoadAllianceInfoModel(ctx, allianceID)
 	if err != nil {

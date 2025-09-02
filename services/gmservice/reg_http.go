@@ -38,4 +38,8 @@ func (s *service) RegHttp(ctx context.Context) {
 	s.SafeGETRegister(ctx, "/GetExcelList", s.GetExcelList)
 	s.SafeGETRegister(ctx, "/GetExcelSheet", s.GetExcelSheet)
 	s.SafeGETRegister(ctx, "/GetExcelData", s.GetExcelData)
+
+	// alliance
+	s.SafeGETRegister(ctx, "/CreateAlliance", s.CreateAlliance)
+	s.SafeGETRegister(ctx, "/GetAllianceInfo", s.GetAllianceInfo)
 }

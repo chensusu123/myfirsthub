@@ -53,6 +53,10 @@ type gmService interface {
 	readExcelFile(filePath, sheetName string) ([][]string, error)
 	convertTableToJSON(table [][]string) gmmodel.Output
 
+	// family alliacne
+	CreateAlliance(writer http.ResponseWriter, request *http.Request)
+	GetAllianceInfo(writer http.ResponseWriter, request *http.Request)
+
 	// 统一注册http接口
 	RegHttp(ctx context.Context)
 }

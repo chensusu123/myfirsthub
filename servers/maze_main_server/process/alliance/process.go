@@ -89,7 +89,7 @@ func (a *Alliance) OnCreateAllianceRQ_10610_10611(s *session.Session, allianceNa
 	ctx := s.Context()
 	logger := fklog.ContextAppLogger(ctx)
 
-	err = allianceservice.GlobalAllianceService.AddAlliance(ctx, allianceName)
+	err = allianceservice.GlobalAllianceService.CreateAlliance(ctx, allianceName)
 	if err != nil {
 		logger.CtxError(ctx, "OnCreateAllianceRQ allianceService.AddAlliance err", zap.Error(err))
 		return err

@@ -14,7 +14,7 @@ import (
 	"go.uber.org/zap"
 )
 
-func (s *service) AddAlliance(ctx context.Context, allianceName string) error {
+func (s *service) CreateAlliance(ctx context.Context, allianceName string) error {
 	logger := fklog.ContextAppLogger(ctx)
 	allianceListModel, err := alliancemodel.LoadAllianceListModel(ctx)
 	if err != nil {

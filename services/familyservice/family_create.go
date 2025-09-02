@@ -19,7 +19,7 @@ func (r *service) CreateFamily(ctx context.Context, userID uint64, allianceID in
 	familySetting int32, userInfo familymodel.FamilyMember) (*familymodel.FamilyInfoModel, error) {
 	logger := fklog.ContextAppLogger(ctx)
 	// 创建新家族
-	familyInfoModel, err := familymodel.NewFamilyInfoModel(ctx, familyName, familySetting)
+	familyInfoModel, err := familymodel.CreateFamilyInfoModel(ctx, familyName, familySetting)
 	if err != nil {
 		logger.CtxError(ctx, "CreateFamily NewFamilyInfoModel failed",
 			zap.Any("familyName", familyName), zap.Any("familySetting", familySetting))

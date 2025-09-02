@@ -15,7 +15,7 @@ type AllianceService interface {
 	// 申请更改联盟
 	ApplyChangeAlliance(ctx context.Context, userID uint64, allianceID int32) error
 	// 增加联盟
-	AddAlliance(ctx context.Context, allianceName string) error
+	CreateAlliance(ctx context.Context, allianceName string) error
 }
 
 var GlobalAllianceService AllianceService

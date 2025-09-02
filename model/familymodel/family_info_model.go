@@ -105,7 +105,7 @@ func LoadFamilyListInfoModel(ctx context.Context, familyIDs []int32) (r FamilysI
 }
 
 // NewFamilyInfoModel 新创建家族
-func NewFamilyInfoModel(ctx context.Context, familyName string, joinType int32) (*FamilyInfoModel, error) {
+func CreateFamilyInfoModel(ctx context.Context, familyName string, joinType int32) (*FamilyInfoModel, error) {
 	logger := fklog.ContextAppLogger(ctx)
 	if joinType == 0 && familyName == "" {
 		return nil, errors.New("familyName or familySetting is nil")
