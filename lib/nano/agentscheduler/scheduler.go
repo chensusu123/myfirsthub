@@ -52,7 +52,7 @@ func NewAgentScheduler(agentSession int64) *AgentScheduler {
 		agentSession: agentSession,
 		chDie:        make(chan struct{}),
 		chExit:       make(chan struct{}),
-		chTasks:      make(chan Task, 1<<8),
+		chTasks:      make(chan Task, 2048),
 	}
 }
 
