@@ -4,15 +4,20 @@ import (
 	"context"
 	"maze_game_server/common/constdef"
 	"maze_game_server/common/errors"
+	"maze_game_server/common/function/addequip"
 	"maze_game_server/common/function/itemutil"
 	"maze_game_server/common/tradeno"
+	"maze_game_server/config/GMazeAttrItemAttrV8Cfg"
 	"maze_game_server/config/GMazeBarriesV8Cfg"
 	"maze_game_server/config/GMazeConfigV8Cfg"
 	"maze_game_server/config/GMazeItemsV8Cfg"
+	"maze_game_server/excel/mazeskillattrcfg"
 	"maze_game_server/lib/nano/session"
+	"maze_game_server/pb/common/MazeAIBattle"
 	"maze_game_server/pb/common/MazeCommon"
 	"maze_game_server/pb/common/MazeGame"
 	"maze_game_server/pb/common/MazeTempBuff"
+	"maze_game_server/pb/server/MazeEquipSvr"
 	"maze_game_server/servers/maze_main_server/process/buff"
 	"maze_game_server/services/barrierscorerewardservice"
 	"maze_game_server/services/itemservice"
@@ -112,6 +117,35 @@ func TriggerTempBuff(ctx context.Context, userID uint64, barrierId int32, areaId
 	return
 }
 
+// TriggerSkill 触发客户端使用技能
+func TriggerSkill(ctx context.Context, userID uint64, barrierId int32, areaId int32, areaIndex int32, itemId int32, count int64, skillID int32) (err error) {
+	logger := fklog.ContextAppLogger(ctx)
+	triggerSkill := &MazeAIBattle.MazeUserTriggerSkillInfoID{}
+	triggerSkill.SkillIds = append(triggerSkill.SkillIds, skillID)
+	err = online.ClusterPush(ctx, userID, 10666, triggerSkill)
+	if err != nil {
+		logger.CtxError(ctx, "TriggerSkill ClusterPush fail",
+			zap.Error(err),
+			zap.Int32("barrierId", barrierId),
+			zap.Int32("areaId", areaId),
+			zap.Int32("areaIndex", areaIndex),
+			zap.Int32("itemId", itemId),
+			zap.Int64("count", count),
+			zap.Int32("skillID", skillID),
+		)
+	}
+	logger.CtxInfo(ctx, "TriggerSkill success",
+		zap.Error(err),
+		zap.Int32("barrierId", barrierId),
+		zap.Int32("areaId", areaId),
+		zap.Int32("areaIndex", areaIndex),
+		zap.Int32("itemId", itemId),
+		zap.Int64("count", count),
+		zap.Int32("skillID", skillID),
+	)
+	return
+}
+
 func (g *Game) OnBarrierUseItemRQ_10550_10551(s *session.Session, req *MazeGame.BarrierUseItemRQ) (err error) {
 	logger := fklog.ContextAppLogger(s.Context())
 	defer fkprometheus.InfoPMT("OnBarrierUseItemRQ")()
@@ -166,6 +200,7 @@ func (g *Game) OnBarrierUseItemRQ_10550_10551(s *session.Session, req *MazeGame.
 	tradeNo := tradeno.GetTradeNum()
 	items := make([]*MazeCommon.MazeItem, 0)
 
+	// 使用道具
 	for _, item := range req.GetItemList() {
 		itemCfg := GMazeItemsV8Cfg.GetWithCtx(s.Context(), item.GetItemId())
 		switch itemCfg.Type {
@@ -207,9 +242,59 @@ func (g *Game) OnBarrierUseItemRQ_10550_10551(s *session.Session, req *MazeGame.
 				res.ErrInfo = errors.COMMON_ERROR_TIPS.Wrap("道具使用失败")
 				return
 			}
-		case constdef.ItemTypeEnergyPotion:
-			//
+		// 技能道具
+		case constdef.ItemTypeSkill:
+			skillItemCfg := GMazeAttrItemAttrV8Cfg.GetWithCtx(s.Context(), item.GetItemId())
+			if skillItemCfg == nil {
+				logger.CtxError(s.Context(), "OnBarrierUseItemRQ GMazeAttrItemAttrV8Cfg.GetWithCtx fail",
+					zap.Any("barrierId", req.GetBarrierId()),
+					zap.Any("ItemID", item.GetItemId()),
+					zap.Any("ItemList", req.GetItemList()),
+				)
+				res.ErrInfo = errors.COMMON_ERROR_TIPS.Wrap("道具使用失败")
+				return
+			}
+			skillCfg := mazeskillattrcfg.GetAttrSkill(skillItemCfg.Add_attr)
+			if skillCfg == nil {
+				logger.CtxError(s.Context(), "OnBarrierUseItemRQ mazeskillattrcfg.GetAttrSkill fail",
+					zap.Any("barrierId", req.GetBarrierId()),
+					zap.Any("ItemID", item.GetItemId()),
+					zap.Any("ItemList", req.GetItemList()),
+				)
+				res.ErrInfo = errors.COMMON_ERROR_TIPS.Wrap("道具使用失败")
+				return
+			}
+			err = TriggerSkill(s.Context(), userId, req.GetBarrierId(), req.GetAreaId(), req.GetAreaIndex(), item.GetItemId(), item.GetCount(), skillCfg.Id)
+			if err != nil {
+				logger.CtxError(s.Context(), "OnBarrierUseItemRQ TriggerSkill fail",
+					zap.Any("barrierId", req.GetBarrierId()),
+					zap.Any("ItemID", item.GetItemId()),
+					zap.Any("ItemList", req.GetItemList()),
+				)
+				res.ErrInfo = errors.COMMON_ERROR_TIPS.Wrap("道具使用失败")
+				return
+			}
 		}
+	}
+
+	addEquipMap := make(map[int32]int32)
+	// 捡装备
+	for _, equip := range req.GetEquipList() {
+		var (
+			count   = equip.GetCount()
+			equipID = equip.GetItemId()
+		)
+		if equipID <= 0 || count <= 0 {
+			logger.CtxWarn(s.Context(), "OnBarrierUseItemRQ TriggerSkill fail",
+				zap.Any("barrierId", req.GetBarrierId()),
+				zap.Any("equipID", equipID),
+				zap.Any("count", count),
+				zap.Any("EquipList", req.GetEquipList()),
+			)
+			res.ErrInfo = errors.COMMON_ERROR_TIPS.Wrap("无效装备参数")
+			return
+		}
+		addEquipMap[equipID] += int32(count)
 	}
 
 	// 处理需要加入背包的道具
@@ -219,19 +304,31 @@ func (g *Game) OnBarrierUseItemRQ_10550_10551(s *session.Session, req *MazeGame.
 		if errInfo != nil {
 			logger.CtxError(s.Context(), "OnBarrierUseItemRQ AddItemEx fail", zap.Any("errInfo", errInfo), zap.Any("ItemList", items))
 		}
+		// 保存到已获取的道具
+		itemMap := make(map[int32]int64)
+		for _, i := range items {
+			itemMap[i.GetItemId()] += i.GetCount()
+		}
+		if err = barrierscorerewardservice.GlobalScoreRewardService.SaveBarrierScoreRewardItem(s.Context(), userId, req.GetBarrierId(), itemMap); err != nil {
+			logger.CtxError(s.Context(), "OnBarrierUseItemRQ SaveBarrierScoreRewardItem err", zap.Error(err), zap.Any("barrier", req.GetBarrierId()))
+			res.ErrInfo = errors.MODULE_ERROR.ToInfo()
+			return
+		}
 	}
-
 	// 返回新增道具列表
 	res.ItemList = items
 
-	// 保存到已获取的道具
-	itemMap := make(map[int32]int64)
-	for _, i := range items {
-		itemMap[i.GetItemId()] += i.GetCount()
-	}
-	if err = barrierscorerewardservice.GlobalScoreRewardService.SaveBarrierScoreRewardItem(context.TODO(), userId, req.GetBarrierId(), itemMap); err != nil {
-		logger.CtxError(s.Context(), "OnBarrierUseItemRQ SaveBarrierScoreRewardItem err", zap.Error(err), zap.Any("barrier", req.GetBarrierId()))
-		res.ErrInfo = errors.MODULE_ERROR.ToInfo()
+	if len(addEquipMap) > 0 {
+		rs, err2 := addequip.AddEquipToBag(s.Context(), userId, int32(MazeEquipSvr.ENUM_EQUIP_BAG_OP_TYPE_MAZE_EQUIP_FOE), tradeNo, addEquipMap)
+		if err2 != nil {
+			logger.CtxError(s.Context(), "OnBarrierUseItemRQ addEquipToBag fail", zap.Error(err2), zap.Any("optype", MazeEquipSvr.ENUM_EQUIP_BAG_OP_TYPE_MAZE_EQUIP_FOE),
+				zap.Any("tradeNo", tradeNo), zap.Any("addEquip", addEquipMap), zap.Any("rs", rs))
+		}
+		if err = barrierscorerewardservice.GlobalScoreRewardService.SaveBarrierScoreRewardEquip(s.Context(), userId, req.GetBarrierId(), addEquipMap); err != nil {
+			logger.CtxError(s.Context(), "OnBarrierUseItemRQ SaveBarrierScoreRewardEquip err", zap.Error(err), zap.Any("barrier", req.GetBarrierId()))
+			res.ErrInfo = errors.MODULE_ERROR.ToInfo()
+			return
+		}
 	}
 
 	return
