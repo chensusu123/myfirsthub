@@ -2,6 +2,7 @@ package flowservice
 
 import (
 	"context"
+	"reflect"
 
 	flowmodel "maze_game_server/model/flowmodel/flow_model"
 
@@ -12,6 +13,10 @@ import (
 	"go.opentelemetry.io/otel/trace"
 	"go.uber.org/zap"
 )
+
+func getTypeName(i interface{}) string {
+	return reflect.TypeOf(i).String() // 返回完整类型路径（如"main.Person"）
+}
 
 func (s *service) SendFlowData(parentCtx context.Context, record interface{}) {
 	ctx := context.WithoutCancel(parentCtx)
@@ -26,7 +31,10 @@ func (s *service) SendFlowData(parentCtx context.Context, record interface{}) {
 	)
 	data := flowmodel.NewFlowData(ctx, record)
 	c := s.queueLen.Add(1)
-	span.SetAttributes(attribute.Int64("flowdata.queue.len", c))
+
+	span.SetAttributes(attribute.Int64("flowdata.queue.len", c),
+		attribute.String("flowdata.type", getTypeName(record)),
+	)
 	span.AddEvent("push.channel")
 	s.ch <- data
 }
