@@ -5533,8 +5533,8 @@ type BarrierKillMonsterRQ struct {
 	AreaIndex   *int32               `protobuf:"varint,5,opt,name=area_index,json=areaIndex" json:"area_index,omitempty"`       // 子区域id
 	MonsterId   *int32               `protobuf:"varint,6,opt,name=monster_id,json=monsterId" json:"monster_id,omitempty"`       // 怪物配置id
 	MonsterGuid *int64               `protobuf:"varint,7,opt,name=monster_guid,json=monsterGuid" json:"monster_guid,omitempty"` //怪物唯一guid
-	CurHp       *int64               `protobuf:"varint,8,opt,name=cur_hp,json=curHp" json:"cur_hp,omitempty"`                   // 当前血量
-	MaxHp       *int64               `protobuf:"varint,9,opt,name=max_hp,json=maxHp" json:"max_hp,omitempty"`                   // 最大血量
+	CurHp       *int64               `protobuf:"varint,8,opt,name=cur_hp,json=curHp" json:"cur_hp,omitempty"`                   // 角色当前血量
+	MaxHp       *int64               `protobuf:"varint,9,opt,name=max_hp,json=maxHp" json:"max_hp,omitempty"`                   // 角色最大血量
 	MonsterPos  *string              `protobuf:"bytes,10,opt,name=monster_pos,json=monsterPos" json:"monster_pos,omitempty"`    // 位置 “x_y_z”
 }
 
