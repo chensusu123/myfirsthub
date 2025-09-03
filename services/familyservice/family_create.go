@@ -99,7 +99,7 @@ func (r *service) CreateFamily(ctx context.Context, userID uint64, allianceID in
 }
 
 // 设置家族群组id
-func (r *service) SetFamilyGroupID(ctx context.Context, familyID int32, groupID int32) error {
+func (r *service) SetFamilyGroupID(ctx context.Context, familyID int32, groupID int64) error {
 	familymodel, err := familymodel.LoadFamilyInfoModel(ctx, familyID)
 	logger := fklog.ContextAppLogger(ctx)
 	if err != nil {

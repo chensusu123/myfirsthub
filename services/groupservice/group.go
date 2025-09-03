@@ -133,7 +133,7 @@ func (*group) GetGroupInfo(ctx context.Context, a app.App, groupID int64) (g *ap
 // CreateGroup implements GroupService.
 func (*group) CreateGroup(ctx context.Context, a app.App, userID uint64, memberIDs []uint64) (g *app.Group, err error) {
 	// TODO 群组ID生成器
-	groupID := int32(time.Now().Unix())
+	groupID := int64(time.Now().Unix())
 	return grouppkg.CreateGroup(ctx, a.ID(), userID, groupID, memberIDs)
 }
 

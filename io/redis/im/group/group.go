@@ -15,7 +15,7 @@ import (
 )
 
 type Group struct {
-	ID         int32    `json:"id,omitempty"`
+	ID         int64    `json:"id,omitempty"`
 	Creator    uint64   `json:"creator,omitempty"`
 	CreateTime int64    `json:"create_time,omitempty"`
 	Members    []Member `json:"-"`
@@ -81,7 +81,7 @@ func GetGroupInfo(ctx context.Context, appID int32, groupID int64) (group *Group
 }
 
 // CreateGroup
-func CreateGroup(ctx context.Context, appID int32, creator uint64, groupID int32, invitees []uint64) (group *Group, err error) {
+func CreateGroup(ctx context.Context, appID int32, creator uint64, groupID int64, invitees []uint64) (group *Group, err error) {
 	var (
 		now    = time.Now()
 		key    = getKey(appID, groupID)
@@ -92,7 +92,7 @@ func CreateGroup(ctx context.Context, appID int32, creator uint64, groupID int32
 		logger.CtxError(ctx, "CreateGroup Client fail",
 			zap.Error(err),
 			zap.Any("key", key),
-			zap.Int32("groupID", groupID),
+			zap.Int64("groupID", groupID),
 		)
 		return nil, err
 	}
@@ -107,7 +107,7 @@ func CreateGroup(ctx context.Context, appID int32, creator uint64, groupID int32
 		logger.CtxError(ctx, "CreateGroup Marshal fail",
 			zap.Error(err),
 			zap.Any("key", key),
-			zap.Int32("groupID", groupID),
+			zap.Int64("groupID", groupID),
 			zap.Any("group", group),
 		)
 		return nil, err
@@ -125,7 +125,7 @@ func CreateGroup(ctx context.Context, appID int32, creator uint64, groupID int32
 			logger.CtxError(ctx, "CreateGroup Marshal fail",
 				zap.Error(err),
 				zap.Any("key", key),
-				zap.Int32("groupID", groupID),
+				zap.Int64("groupID", groupID),
 				zap.Uint64("memberID", memberID),
 				zap.Any("member", member),
 			)
@@ -140,12 +140,12 @@ func CreateGroup(ctx context.Context, appID int32, creator uint64, groupID int32
 		logger.CtxError(ctx, "CreateGroup HMSet fail",
 			zap.Error(err),
 			zap.Any("key", key),
-			zap.Int32("groupID", groupID),
+			zap.Int64("groupID", groupID),
 			zap.Any("group", group),
 		)
 		return nil, err
 	}
-	logger.CtxInfo(ctx, "CreateGroup success", zap.Any("key", key), zap.Int32("groupID", groupID), zap.Any("group", group))
+	logger.CtxInfo(ctx, "CreateGroup success", zap.Any("key", key), zap.Int64("groupID", groupID), zap.Any("group", group))
 	return group, nil
 }
 
