@@ -6,7 +6,6 @@ import (
 	"maze_game_server/app"
 
 	"maze_game_server/model/alliancemodel"
-	"time"
 
 	grouppkg "maze_game_server/io/redis/im/group"
 
@@ -24,7 +23,6 @@ func (s *service) CreateAlliance(ctx context.Context, allianceName string) error
 	allianceID := allianceListModel.GetAllianceID(ctx)
 
 	allianceInfoModel := alliancemodel.NewAllianceInfoModel(ctx, allianceID, allianceName)
-	allianceInfoModel.SetAllianceGroupID(ctx, int32(time.Now().Unix()))
 	err = allianceInfoModel.Save(ctx)
 	if err != nil {
 		logger.CtxError(ctx, "AddAlliance Save allianceInfoModel err", zap.Error(err))
