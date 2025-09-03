@@ -162,7 +162,7 @@ func ItemPb2ItemInfo(items []*MazeCommon.MazeItem) []*itemservice.ItemInfo {
 }
 
 func ItemInfo2ItemPb(items []*itemservice.ItemInfo) []*MazeCommon.MazeItem {
-	res := make([]*MazeCommon.MazeItem, len(items))
+	res := make([]*MazeCommon.MazeItem, 0)
 	for _, item := range items {
 		res = append(res, &MazeCommon.MazeItem{
 			ItemId: proto.Int32(item.ItemId),

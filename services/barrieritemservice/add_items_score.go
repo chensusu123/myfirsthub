@@ -59,7 +59,7 @@ func (s *service) AddItemScore(ctx context.Context, userID uint64, barrierID int
 		return nil
 	}
 
-	dropItems := make([]*itemservice.ItemInfo, 0)
+	var dropItems []*itemservice.ItemInfo
 
 	var realyItemID int32
 	if itemType == constdef.MazeCfgId901 {

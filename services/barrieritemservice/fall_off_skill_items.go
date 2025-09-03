@@ -2,7 +2,6 @@ package barrieritemservice
 
 import (
 	"context"
-	"fmt"
 	"maze_game_server/config/GMazeBariresDropConditionV8Cfg"
 	"maze_game_server/config/GMazeBariresDropV8Cfg"
 	"maze_game_server/excel/mazebarriesv8config"
@@ -60,52 +59,52 @@ func (s *service) FallOffSkillItems(ctx context.Context, userID uint64, barrierI
 		for _, barrierDrop := range barrierDrops {
 			// 指定掉落id
 			if barrierDrop.Drop_id != itemID {
-				fmt.Println("指定掉落id过滤", itemID, barrierDrop.Drop_id)
 				continue
 			}
 
 			for dropItemID, dropCount := range barrierDrop.Drop_items {
+				isCondition := true
 				// 判断掉落条件id
 				for _, condionID := range barrierDrop.Drop_condition {
 					if !checkCondition(ctx, condionID, nowBloodVolume, allBloodVolume, data.SkillsCount[dropItemID], data.Items[int64(dropItemID)]) {
-						fmt.Println("条件过滤", itemID, dropItemID)
-						continue
+						isCondition = false
 					}
-
-					// 判断杀怪
-					if killMonsterNum > barrierDrop.In_barries_kill_max || killMonsterNum < barrierDrop.In_barries_kill_min {
-						fmt.Println("判断杀怪过滤", itemID, dropItemID)
-						continue
-					}
-
-					// 判断百分比
-					nowRandNum := fkutil.RandInt(1, 10000)
-					if nowRandNum > int(barrierDrop.Drop_ratio_max) || nowRandNum < int(barrierDrop.Drop_ratio_min) {
-						fmt.Println("判断百分比过滤", itemID, dropItemID)
-						continue
-					}
-
-					// 判断掉落cd
-					nowTime := time.Now().UnixMilli()
-					if _, ok := data.SkillDropTime[dropItemID]; ok {
-						if data.SkillDropTime[dropItemID]-nowTime < int64(barrierDrop.Drop_cd) {
-							fmt.Println("判断掉落cd过滤", data.SkillDropTime[dropItemID], nowTime)
-							continue
-						}
-					}
-
-					// 实际添加物品 并设置此类物品掉落cd
-					data.Items[int64(dropItemID)] += dropCount
-					data.SkillDropTime[dropItemID] = nowTime
-					dropItems = append(dropItems, &itemservice.ItemInfo{
-						ItemId: dropItemID,
-						Count:  dropCount,
-					})
 				}
 
+				if !isCondition {
+					break
+				}
+
+				// 判断杀怪
+				if killMonsterNum > barrierDrop.In_barries_kill_max || killMonsterNum < barrierDrop.In_barries_kill_min {
+					continue
+				}
+
+				// 判断百分比
+				nowRandNum := fkutil.RandInt(1, 10000)
+				if nowRandNum > int(barrierDrop.Drop_ratio_max) || nowRandNum < int(barrierDrop.Drop_ratio_min) {
+					continue
+				}
+
+				// 判断掉落cd
+				nowTime := time.Now().UnixMilli()
+				if _, ok := data.SkillDropTime[itemID]; ok {
+					if data.SkillDropTime[itemID]-nowTime < int64(barrierDrop.Drop_cd) {
+						continue
+					}
+				}
+
+				// 实际添加物品 并设置此类物品掉落cd
+				data.Items[int64(dropItemID)] += dropCount
+				data.SkillDropTime[itemID] = nowTime
+				dropItems = append(dropItems, &itemservice.ItemInfo{
+					ItemId: dropItemID,
+					Count:  dropCount,
+				})
 			}
 
 		}
+
 	}
 
 	err = data.Save(ctx, userID, barrierID)
