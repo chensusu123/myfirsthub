@@ -162,4 +162,4 @@ require (
 	gorm.io/driver/mysql v1.6.0 // indirect
 )
 
-replace gitlab.ifreetalk.com/maze-plate/freetk => /Users/majiange/data/dev/go_work/maze/maze-plate/freetk
+//replace gitlab.ifreetalk.com/maze-plate/freetk => /Users/majiange/data/dev/go_work/maze/maze-plate/freetk
