@@ -34,6 +34,7 @@ type MazeBarrierUserGameRecord struct {
 	CreateTime     int64  `json:"create_time" gorm:"column:create_time"`    // 操作时间
 	KillMonsterNum int64  `json:"kill_monster_num" gorm:"kill_monster_num"` // 杀怪数量
 	DeathReason    uint32 `json:"death_reason" gorm:"death_reason"`         // 死亡原因
+	UserData       string
 }
 
 // var gKafka = &fkafka.KafkaProducer{}
@@ -49,7 +50,8 @@ func PushMazeBarrierUserRecord(ctx context.Context, record *MazeBarrierUserGameR
 		flowservice.GflowService.SendFlowData(ctx, flowData)
 	}
 	record.CreateTime = time.Now().UnixNano() / 1e6
-	flowData := mazebarrieruserrecordmodel.NewMazeBarrierUserGameRecord(record.UserId, record.Barrier, record.GameRet, record.Awards, record.KillMonsterNum, record.DeathReason)
+	flowData := mazebarrieruserrecordmodel.NewMazeBarrierUserGameRecord(record.UserId, record.Barrier, record.GameRet, record.Awards,
+		record.KillMonsterNum, record.DeathReason, record.UserData)
 	flowservice.GflowService.SendFlowData(ctx, flowData)
 	// record.GroupID = fkconfig.EnvVal.GroupID
 	// cnt, err := json.Marshal(record)

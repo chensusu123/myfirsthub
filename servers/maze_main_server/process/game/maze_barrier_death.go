@@ -1,7 +1,9 @@
 package game
 
 import (
+	"maze_game_server/common/constdef"
 	"maze_game_server/common/errors"
+	"maze_game_server/common/function/flowutil"
 	"maze_game_server/io/kafka/mazebarrieruserkafka"
 	"maze_game_server/io/redis/mazebarriereventredis"
 	"maze_game_server/lib/nano/session"
@@ -64,6 +66,7 @@ func (g *Game) OnMazeBarrierDeathRQ_10449_10450(s *session.Session, req *MazeGam
 	// 触发离开关卡事件
 	events.OnLeaveBarrier(ctx, userId, 0, time.Now().UnixMilli(), &MazeGame.BattleEventLeaveBarrier{BarrierId: proto.Int32(req.GetBarrierId()), Result: MazeGame.BarrierResult_DEATH.Enum()})
 
+	attrMap, err := GetUserAttrMap(ctx, userId)
 	passRecord := &mazebarrieruserkafka.MazeBarrierUserGameRecord{
 		UserId:         userId,
 		Barrier:        req.GetBarrierId(),
@@ -71,6 +74,10 @@ func (g *Game) OnMazeBarrierDeathRQ_10449_10450(s *session.Session, req *MazeGam
 		Awards:         getAwards(ctx, awards),
 		KillMonsterNum: int64(killMonsterNum),
 		DeathReason:    uint32(req.GetReason()),
+		UserData: flowutil.UserType2Flow(constdef.DollFormulaAttack, attrMap[constdef.DollFormulaAttack],
+			constdef.DollFormulaDefend, attrMap[constdef.DollFormulaDefend],
+			constdef.DollFormulaBlood, attrMap[constdef.DollFormulaBlood],
+		),
 	}
 
 	mazebarrieruserkafka.PushMazeBarrierUserRecord(ctx, passRecord)

@@ -8,6 +8,7 @@ import (
 
 	"maze_game_server/common/constdef"
 	"maze_game_server/common/errors"
+	"maze_game_server/common/function/flowutil"
 	"maze_game_server/common/structsdef"
 	"maze_game_server/io/kafka/mazebarrieruserkafka"
 	"maze_game_server/io/redis/mazeattrcalcnotifyqueue"
@@ -86,12 +87,18 @@ func (g *Game) OnMazeBarrierPassRQ_10459_10460(s *session.Session, req *MazeGame
 
 	logger.CtxInfo(ctx, "OnMazeBarrierPassRQ award dump", zap.Any("exp", req.GetFoeExp()), zap.Any("awards", awards), zap.Any("rareAwards", rareAwards))
 
+	attrMap, err := GetUserAttrMap(ctx, userId)
+	fmt.Println(attrMap)
 	passRecord := &mazebarrieruserkafka.MazeBarrierUserGameRecord{
 		UserId:         userId,
 		Barrier:        req.GetBarrierId(),
 		GameRet:        mazebarrieruserkafka.GameRetSucc,
 		Awards:         getAwards(ctx, awards, rareAwards),
 		KillMonsterNum: int64(killMonsterNum),
+		UserData: flowutil.UserType2Flow(constdef.DollFormulaAttack, attrMap[constdef.DollFormulaAttack],
+			constdef.DollFormulaDefend, attrMap[constdef.DollFormulaDefend],
+			constdef.DollFormulaBlood, attrMap[constdef.DollFormulaBlood],
+		),
 	}
 
 	mazebarrieruserkafka.PushMazeBarrierUserRecord(ctx, passRecord)
