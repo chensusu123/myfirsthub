@@ -142,14 +142,6 @@ func (f *Family) OnCreateFamilyRQ_10585_10586(s *session.Session, req *MazeFamil
 		res.ErrInfo = errors.MODULE_ERROR.Wrap("创建家族失败")
 		return
 	}
-	//创建家族群聊
-	groupInfo, err := groupservice.Default.CreateGroup(ctx, app.Maze, uid, make([]uint64, 0))
-	if err != nil {
-		res.ErrInfo = errors.MODULE_ERROR.Wrap("设置玩家所在家族失败")
-		logger.CtxError(ctx, "OnCreateFamilyRQ CreateGroup error", zap.Error(err), zap.Any("req", req))
-		return err
-	}
-	familyservice.GlobalFamilyService.SetFamilyGroupID(ctx, res.FamilyInfo.GetFamilyId(), groupInfo.ID)
 
 	res.FamilyInfo = familyInfo.DataToFamilyInfoPb(ctx)
 	res.MemberList = familyInfo.DataToFamilyMembersPb(ctx)

@@ -2,11 +2,12 @@ package alliancemodel
 
 import (
 	"context"
-	"time"
 
 	"maze_game_server/io/redis/allianceredis"
 	"maze_game_server/lib/serialize"
 	"maze_game_server/pb/common/MazeFamily"
+
+	"maze_game_server/lib/idgenerator"
 
 	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fklog"
 	"go.uber.org/zap"
@@ -117,6 +118,10 @@ func (r *AllianceInfoModel) RemoveFamilyID(ctx context.Context, familyID int32) 
 
 // 生成GroupID
 func NewAllianceGroupID(ctx context.Context) int64 {
-	groupID := int64(time.Now().Unix())
+	groupID, err := idgenerator.NextID()
+	if err != nil {
+		logger := fklog.ContextAppLogger(ctx)
+		logger.CtxError(ctx, "NewAllianceGroupID err", zap.Error(err))
+	}
 	return groupID
 }

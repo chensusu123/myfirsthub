@@ -16,11 +16,11 @@ func init() {
 	}
 }
 
-// NextID generates a next unique ID as uint64.
-func NextID() (uint64, error) {
+// NextID generates a next unique ID as int64.
+func NextID() (int64, error) {
 	i, err := flake.NextID()
 	if err != nil {
 		return 0, err
 	}
-	return uint64(i), nil
+	return i, nil
 }
