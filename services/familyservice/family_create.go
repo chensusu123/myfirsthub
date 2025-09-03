@@ -6,8 +6,6 @@ import (
 	"maze_game_server/model/familymodel"
 	"maze_game_server/services/groupservice"
 
-	grouppkg "maze_game_server/io/redis/im/group"
-
 	"maze_game_server/app"
 
 	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fklog"
@@ -27,6 +25,23 @@ func (r *service) CreateFamily(ctx context.Context, userID uint64, allianceID in
 	}
 	// 加入成员
 	familyInfoModel.AddMember(ctx, userInfo)
+
+	//创建家族群聊
+	groupInfo, err := groupservice.Default.CreateGroup(ctx, app.Maze, userID, make([]uint64, 0))
+	if err != nil {
+		logger.CtxError(ctx, "OnCreateFamilyRQ CreateGroup error", zap.Error(err))
+		return nil, err
+	}
+	familyInfoModel.SetFamilyGroupID(ctx, groupInfo.ID)
+
+	// //加入联盟群聊
+	// err = grouppkg.InviteMember(ctx, app.Maze.ID(), int64(groupInfo.ID), userID)
+	// if err != nil {
+	// 	logger.CtxError(ctx, "CreateFamily InviteMember alliance err",
+	// 		zap.Error(err))
+	// 	return nil, err
+	// }
+
 	// 保存家族信息
 	err = familyInfoModel.Save(ctx, familyInfoModel.FamilyID)
 	if err != nil {
@@ -79,37 +94,8 @@ func (r *service) CreateFamily(ctx context.Context, userID uint64, allianceID in
 			zap.Error(err))
 		return nil, err
 	}
-	//创建家族群聊
-	groupInfo, err := groupservice.Default.CreateGroup(ctx, app.Maze, userID, make([]uint64, 0))
-	if err != nil {
-		logger.CtxError(ctx, "OnCreateFamilyRQ CreateGroup error", zap.Error(err))
-		return nil, err
-	}
-	r.SetFamilyGroupID(ctx, familyInfoModel.FamilyID, groupInfo.ID)
-
-	//加入联盟群聊
-	err = grouppkg.InviteMember(ctx, app.Maze.ID(), int64(groupInfo.ID), userID)
-	if err != nil {
-		logger.CtxError(ctx, "CreateFamily InviteMember alliance err",
-			zap.Error(err))
-		return nil, err
-	}
 
 	return familyInfoModel, nil
-}
-
-// 设置家族群组id
-func (r *service) SetFamilyGroupID(ctx context.Context, familyID int32, groupID int64) error {
-	familymodel, err := familymodel.LoadFamilyInfoModel(ctx, familyID)
-	logger := fklog.ContextAppLogger(ctx)
-	if err != nil {
-		logger.CtxError(ctx, "UpgradeFamily familymodel.LoadFamilyInfoModel err",
-			zap.Int32("familyID", familyID), zap.Error(err))
-		return err
-	}
-	familymodel.SetFamilyGroupID(ctx, groupID)
-	familymodel.Save(ctx, familyID)
-	return nil
 }
 
 // DeductCreateFamilyCost 创建家族扣物品
