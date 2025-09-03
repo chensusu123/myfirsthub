@@ -39,13 +39,16 @@ func (s *service) FallOffEquip(ctx context.Context, userID uint64, barrierID int
 		return nil, errors.New("请求的关卡id和上报存储的关卡不一致")
 	}
 
-	addEquipMap, err := equipdropservice.GlobalEquipDropService.GetNewEquip(ctx, userID, int32(level), barrierID, equipNum)
-	if err != nil {
-		logger.CtxError(ctx, "DropEquip GetNewEquip fail",
-			zap.Uint64("userID", userID),
-			zap.Int32("barrierID", barrierID),
-		)
-		return nil, errors.New("获取数据失败")
+	addEquipMap := make(map[int32]int32)
+	if equipNum > 0 {
+		addEquipMap, err = equipdropservice.GlobalEquipDropService.GetNewEquip(ctx, userID, int32(level), barrierID, equipNum)
+		if err != nil {
+			logger.CtxError(ctx, "DropEquip GetNewEquip fail",
+				zap.Uint64("userID", userID),
+				zap.Int32("barrierID", barrierID),
+			)
+			return nil, errors.New("获取数据失败")
+		}
 	}
 
 	for equipID, equipCount := range addEquipMap {

@@ -123,17 +123,19 @@ func (s *service) FallOffSkillItems(ctx context.Context, userID uint64, barrierI
 	}
 
 	// 推送物品
-	err = item.OnSendItemsPack(ctx, userID, dropItems, make([]*itemservice.ItemInfo, 0), monsterGuid, monsterPos)
-	if err != nil {
-		logger.CtxWarn(ctx, "AddEquipScore OnSendItemsPack Fail",
-			zap.Uint64("userID", userID),
-			zap.Int32("barrierID", barrierID),
-			zap.Int64("monsterGuid", monsterGuid),
-			zap.String("monsterPos", monsterPos),
-			zap.Any("dropItems", dropItems),
-			zap.Error(err),
-		)
-		return err
+	if len(dropItems) > 0 {
+		err = item.OnSendItemsPack(ctx, userID, dropItems, nil, monsterGuid, monsterPos)
+		if err != nil {
+			logger.CtxWarn(ctx, "AddEquipScore OnSendItemsPack Fail",
+				zap.Uint64("userID", userID),
+				zap.Int32("barrierID", barrierID),
+				zap.Int64("monsterGuid", monsterGuid),
+				zap.String("monsterPos", monsterPos),
+				zap.Any("dropItems", dropItems),
+				zap.Error(err),
+			)
+			return err
+		}
 	}
 
 	return nil

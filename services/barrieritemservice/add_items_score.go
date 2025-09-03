@@ -72,11 +72,13 @@ func (s *service) AddItemScore(ctx context.Context, userID uint64, barrierID int
 		data.ItemsScore[realyItemID] = nowScore % barrierCfg.Need_item1_score
 
 		itemNum := nowScore / barrierCfg.Need_item1_score
-		data.Items[int64(realyItemID)] += int64(itemNum)
-		dropItems = append(dropItems, &itemservice.ItemInfo{
-			ItemId: realyItemID,
-			Count:  int64(itemNum),
-		})
+		if itemNum > 0 {
+			data.Items[int64(realyItemID)] += int64(itemNum)
+			dropItems = append(dropItems, &itemservice.ItemInfo{
+				ItemId: realyItemID,
+				Count:  int64(itemNum),
+			})
+		}
 	} else if itemType == constdef.MazeCfgId902 {
 		itemMap := mazeconfigv8.GetReallyItemMap(ctx, itemType)
 		for k := range itemMap {
@@ -87,11 +89,13 @@ func (s *service) AddItemScore(ctx context.Context, userID uint64, barrierID int
 		data.ItemsScore[realyItemID] = nowScore % barrierCfg.Need_item2_score
 
 		itemNum := nowScore / barrierCfg.Need_item2_score
-		data.Items[int64(realyItemID)] += int64(itemNum)
-		dropItems = append(dropItems, &itemservice.ItemInfo{
-			ItemId: realyItemID,
-			Count:  int64(itemNum),
-		})
+		if itemNum > 0 {
+			data.Items[int64(realyItemID)] += int64(itemNum)
+			dropItems = append(dropItems, &itemservice.ItemInfo{
+				ItemId: realyItemID,
+				Count:  int64(itemNum),
+			})
+		}
 	} else {
 		data.Items[int64(itemType)] += int64(score)
 		dropItems = append(dropItems, &itemservice.ItemInfo{
@@ -114,18 +118,20 @@ func (s *service) AddItemScore(ctx context.Context, userID uint64, barrierID int
 	}
 
 	// 推包
-	err = item.OnSendItemsPack(ctx, userID, dropItems, make([]*itemservice.ItemInfo, 0), monsterGuid, monsterPos)
-	if err != nil {
-		logger.CtxWarn(ctx, "AddEquipScore OnSendItemsPack Fail",
-			zap.Uint64("userID", userID),
-			zap.Int32("barrierID", barrierID),
-			zap.Int32("score", score),
-			zap.Int64("monsterGuid", monsterGuid),
-			zap.String("monsterPos", monsterPos),
-			zap.Any("dropItems", dropItems),
-			zap.Error(err),
-		)
-		return
+	if len(dropItems) > 0 {
+		err = item.OnSendItemsPack(ctx, userID, dropItems, nil, monsterGuid, monsterPos)
+		if err != nil {
+			logger.CtxWarn(ctx, "AddEquipScore OnSendItemsPack Fail",
+				zap.Uint64("userID", userID),
+				zap.Int32("barrierID", barrierID),
+				zap.Int32("score", score),
+				zap.Int64("monsterGuid", monsterGuid),
+				zap.String("monsterPos", monsterPos),
+				zap.Any("dropItems", dropItems),
+				zap.Error(err),
+			)
+			return
+		}
 	}
 
 	return err
