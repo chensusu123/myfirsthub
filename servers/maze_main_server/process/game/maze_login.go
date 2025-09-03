@@ -122,6 +122,7 @@ func (g *Game) OnMazeLoginRQ_10451_10452(s *session.Session, req *MazeGame.MazeL
 	if err != nil {
 		logger.CtxError(ctx, "OnMazeLoginRQ QueryAllianceInfo Fail",
 			zap.Error(err))
+		return
 	}
 	res.AllianceInfo = allianceInfo.DataToAllianceInfoPb()
 	return nil
