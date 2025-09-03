@@ -12,6 +12,8 @@ import (
 	"maze_game_server/lib/nano/component"
 	"maze_game_server/lib/nano/frame"
 	"maze_game_server/lib/nano/serialize"
+
+	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/protocol/svrheader"
 )
 
 // TODO 需要补全日志
@@ -108,10 +110,11 @@ func (c *EsPacketCodec) Decode(data []byte) (msgs []*frame.Message, packets []*r
 		copy(packet, twoBytes[:])
 		copy(packet[2:], c.buf.Next(packetLen-2))
 
-		stru := raw_pkg.StruSvrEsRawBaseHead{}
+		// stru := raw_pkg.StruSvrEsRawBaseHead{}
 		// Decode
-		err = stru.UnPack(packet)
-		if err != nil {
+		stru, errX := decode(packet)
+		if errX != nil {
+			err = errX
 			return
 		}
 
@@ -128,7 +131,7 @@ func (c *EsPacketCodec) Decode(data []byte) (msgs []*frame.Message, packets []*r
 			Data:  stru.Data,
 		})
 
-		packets = append(packets, &stru)
+		packets = append(packets, stru)
 	}
 
 	return
@@ -167,3 +170,55 @@ func splitSessionAndPackType(messageID uint64) (sessionID uint32, rqTime uint64,
 }
 
 var SplitSessionAndPackType = splitSessionAndPackType
+
+func decode(data []byte) (pack *raw_pkg.StruSvrEsRawBaseHead, err error) {
+	isSvrHeader := svrheader.IsSvrHeader(data)
+	// pack.IsSvrHeader = isSvrHeader
+	// _ = isSvrHeader
+	// xxx := &raw_pkg.StruSvrEsRawBaseHead{
+	// 	Header: make(map[string]string),
+	// }
+	// ctx, span := receiveSpan()
+	// carrier := otel.GetTextMapPropagator()
+	// carrier.Inject(ctx, NewBaseHeader(xxx))
+	// hhh := svrheader.SvrHeader{
+	// 	Header: xxx.Header,
+	// 	Body:   data,
+	// }
+	// yyy, err := hhh.Encode()
+
+	if isSvrHeader {
+		zzz, err := svrheader.ParseSvrHeader(data)
+		if err != nil {
+			return nil, err
+		}
+		pack = &raw_pkg.StruSvrEsRawBaseHead{
+			Header:      zzz.Header,
+			IsSvrHeader: isSvrHeader,
+		}
+		// Decode
+		err = pack.UnPack(data)
+		if err != nil {
+			return nil, err
+		}
+		return pack, nil
+	}
+
+	// if isSvrHeader {
+	// 	pack = &raw_pkg.StruSvrEsRawBaseHead{}
+	// 	// Decode
+	// 	err = pack.UnPack(data)
+	// 	if err != nil {
+	// 		return
+	// 	}
+	// 	return
+	// }
+	// defer span.End()
+	pack = &raw_pkg.StruSvrEsRawBaseHead{}
+	// Decode
+	err = pack.UnPack(data)
+	if err != nil {
+		return
+	}
+	return
+}
