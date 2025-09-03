@@ -95,7 +95,7 @@ func (g *group) QueryMessages(ctx context.Context, a app.App, groupID int64, las
 func (g *group) SendMessage(ctx context.Context, a app.App, groupID int64, sender uint64, _type int32, content []byte) (messageID uint64, err error) {
 	logger := fklog.ContextAppLogger(ctx)
 	message := app.Message{}
-	messageID = idgenerator.MessageID(time.Now().Unix(), 0)
+	messageID = idgenerator.MessageID(time.Now().UnixMilli(), idgenerator.GenerateSeed())
 	// if err != nil {
 	// 	return 0, err
 	// }

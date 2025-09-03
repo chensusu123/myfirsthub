@@ -29,7 +29,7 @@ type Member struct {
 
 // getKey 获取缓存操作key。
 func getKey(args ...interface{}) string {
-	return fmt.Sprintf("im:app:%d:group:%d:", args...)
+	return fmt.Sprintf("im:app:%d:group:%d", args...)
 }
 
 // GetGroupInfo

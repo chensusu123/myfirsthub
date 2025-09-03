@@ -1,5 +1,9 @@
 package idgenerator
 
+import (
+	"math/rand"
+)
+
 const (
 	// 起始时间戳，2021-01-01 00:00:00 的毫秒时间戳
 	epoch = 1609459200000
@@ -34,4 +38,11 @@ func MessageID(timestamp int64, sequence uint64) uint64 {
 	// 组合时间戳和序列号生成消息 ID
 	messageID := (relative << timestampShift) | sequence
 	return messageID
+}
+
+// 生成随机数
+func GenerateSeed() uint64 {
+	// rand.Seed(time.Now().UnixNano())
+	// rng := rand.New(rand.NewSource(time.Now().UnixNano()))
+	return uint64(rand.Int63n(maxSequence))
 }

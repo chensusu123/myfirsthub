@@ -53,7 +53,7 @@ func TestRedis(t *testing.T) {
 
 func TestSendMessages(t *testing.T) {
 
-	messageID, err := GlobalGroupService.SendMessage(context.Background(), app.Maze, int64(1), uint64(50000001), int32(1), []byte("hello01"))
+	messageID, err := GlobalGroupService.SendMessage(context.Background(), app.Maze, int64(1), uint64(50000002), int32(1), []byte("hello03"))
 	if err != nil {
 		logger.ErrorWF("SendGroupMessageTest error", zap.Error(err))
 	}
