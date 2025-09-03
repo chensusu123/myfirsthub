@@ -20,6 +20,7 @@ import (
 	"maze_game_server/pb/common/MazeTempBuff"
 	"maze_game_server/pb/server/MazeEquipSvr"
 	"maze_game_server/servers/maze_main_server/process/buff"
+	"maze_game_server/services/barrieritemservice"
 	"maze_game_server/services/barrierscorerewardservice"
 	"maze_game_server/services/itemservice"
 	"maze_game_server/services/tempbuffservice"
@@ -101,6 +102,8 @@ func TriggerTempBuff(ctx context.Context, userID uint64, barrierId int32, areaId
 		AreaId:           proto.Int32(areaId),
 		AreaIndex:        proto.Int32(areaIndex),
 		OptionalBuffInfo: buff.OptionalBuffInfo2PbOptionalBuffInfo(optionalBuffInfo),
+		Type:             MazeTempBuff.Type_USE_ITEM.Enum(),
+		Level:            proto.Int32(optionalBuffInfo.Level),
 	}
 	// Push
 	err = online.ClusterPush(ctx, userID, 10552, optionalTempBuffListID)
@@ -176,11 +179,15 @@ func (g *Game) OnBarrierUseItemRQ_10550_10551(s *session.Session, req *MazeGame.
 		return
 	}
 
+	var (
+		subItems  = make([]*itemservice.ItemInfo, 0)
+		subEquips = make([]*itemservice.ItemInfo, 0)
+	)
+
 	for _, item := range req.GetItemList() {
 		if item.GetItemId() <= 0 || item.GetCount() < 0 {
 			logger.CtxError(s.Context(), "OnBarrierUseItemRQ invalid item param",
-				zap.Any("barrierId",
-					req.GetBarrierId()),
+				zap.Any("barrierId", req.GetBarrierId()),
 				zap.Any("ItemList", req.GetItemList()),
 			)
 			res.ErrInfo = errors.COMMON_ERROR_TIPS.Wrap("道具参数错误")
@@ -196,10 +203,40 @@ func (g *Game) OnBarrierUseItemRQ_10550_10551(s *session.Session, req *MazeGame.
 			res.ErrInfo = errors.COMMON_ERROR_TIPS.Wrap("道具参数错误")
 			return
 		}
+		subEquips = append(subEquips, &itemservice.ItemInfo{ItemId: item.GetItemId(), Count: item.GetCount()})
+	}
+	for _, equip := range req.GetEquipList() {
+		if equip.GetItemId() <= 0 || equip.GetCount() < 0 {
+			logger.CtxError(s.Context(), "OnBarrierUseItemRQ invalid equip param",
+				zap.Any("barrierId", req.GetBarrierId()),
+				zap.Any("EquipList", req.GetEquipList()),
+			)
+			res.ErrInfo = errors.COMMON_ERROR_TIPS.Wrap("道具参数错误")
+			return
+		}
+		subEquips = append(subEquips, &itemservice.ItemInfo{ItemId: equip.GetItemId(), Count: equip.GetCount()})
 	}
 
 	tradeNo := tradeno.GetTradeNum()
 	items := make([]*MazeCommon.MazeItem, 0)
+
+	// 扣减场中物品
+	ok, err := barrieritemservice.GbarrierItemsService.TrySubBarrierItems(s.Context(), userId, req.GetBarrierId(), subItems, subEquips)
+	if err != nil {
+		logger.CtxError(s.Context(), "OnBarrierUseItemRQ UseGoldCoinPile fail",
+			zap.Any("barrierId", req.GetBarrierId()),
+			zap.Any("subItems", subItems),
+			zap.Any("ItemList", req.GetItemList()),
+			zap.Any("subEquips", subEquips),
+			zap.Any("EquipList", req.GetEquipList()),
+		)
+		res.ErrInfo = errors.COMMON_ERROR_TIPS.Wrap("检查掉落物品失败")
+		return err
+	}
+	if !ok {
+		res.ErrInfo = errors.COMMON_ERROR_TIPS.Wrap("掉落物品不存在")
+		return nil
+	}
 
 	// 使用道具
 	for _, item := range req.GetItemList() {
