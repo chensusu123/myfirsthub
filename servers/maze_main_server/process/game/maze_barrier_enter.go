@@ -26,6 +26,7 @@ import (
 	"maze_game_server/pb/common/MazeEnergy"
 	"maze_game_server/pb/common/MazeGame"
 	"maze_game_server/services/barrierenergyservice"
+	"maze_game_server/services/barrieritemservice"
 	"maze_game_server/services/barriersavedataservice"
 	"maze_game_server/services/barrierstagecounterservice"
 	"maze_game_server/services/itemservice"
@@ -96,6 +97,17 @@ func (g *Game) OnMazeBarrierEnterRQ_10447_10448(s *session.Session, req *MazeGam
 	if !isForce && req.GetBarrierId() < userInfo.Barrier {
 		logger.CtxError(ctx, "OnMazeBarrierEnterRQ req barrier lt pass barrier", zap.Any("req", req), zap.Int32("save", userInfo.Barrier))
 		res.ErrInfo = errors.BARRIER_ID_ERROR.ToInfo()
+		return
+	}
+
+	// 删除关卡内物品和装备存储
+	err = barrieritemservice.GbarrierItemsService.ClearBarrierItems(ctx, userId, req.GetBarrierId())
+	if err != nil {
+		logger.CtxError(ctx, "OnMazeBarrierEnterRQ ClearBarrierItems",
+			zap.Uint64("userID", userId),
+			zap.Int32("barrierID", req.GetBarrierId()),
+		)
+		res.ErrInfo = errors.MODULE_ERROR.ToInfo()
 		return
 	}
 

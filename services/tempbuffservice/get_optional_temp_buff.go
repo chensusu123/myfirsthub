@@ -51,6 +51,8 @@ func (s *service) GetOptionalTempBuffList(ctx context.Context, userId uint64, ba
 
 	optionalBuffInfo := s.packOptionalInfo(ctx, buffInfo)
 	if optionalBuffInfo != nil {
+		// 能力等级
+		optionalBuffInfo.Level = buffInfo.BuffSequence.Level
 		return optionalBuffInfo, nil
 	}
 

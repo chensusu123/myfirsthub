@@ -234,7 +234,7 @@ func (s *service) GmEquipPosLvUp(writer http.ResponseWriter, request *http.Reque
 	defer func() {
 		jsonOut, err := json.Marshal(outPut)
 		if err != nil {
-			logger.CtxError(ctx, "Post: /AddItem  Marshal Fail",
+			logger.CtxError(ctx, "Post: /GmEquipPosLvUp  Marshal Fail",
 				zap.Any("request", request),
 				zap.Any("ouput", outPut),
 				zap.Error(err),
@@ -262,7 +262,7 @@ func (s *service) AddEquip(writer http.ResponseWriter, request *http.Request) {
 	defer func() {
 		jsonOut, err := json.Marshal(outPut)
 		if err != nil {
-			logger.CtxError(ctx, "Post: /AddItem  Marshal Fail",
+			logger.CtxError(ctx, "Post: /AddEquip  Marshal Fail",
 				zap.Any("request", request),
 				zap.Any("ouput", outPut),
 				zap.Error(err),

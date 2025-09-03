@@ -71,6 +71,7 @@ type OptionalBuffInfo struct {
 	IsRefresh      int32       // 是否可以刷新 0=不可以 1=可以
 	Cost           []*Item     // 刷新消耗
 	SelectBuffTime int32       // 选择buff时间配置
+	Level          int32
 }
 type Item struct {
 	ItemId    int32  //物品Id
