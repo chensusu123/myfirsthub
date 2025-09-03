@@ -6061,9 +6061,9 @@ func (x *SaveBarrierDataRS) GetHeader() *Common.PacketHeader {
 	return nil
 }
 
-//## 10665 UN_TCP_PACK_CLI_MAZE_ITEM_ID
-// 发送物品id包
-type SendMazeItemID struct {
+//## 10665 UN_TCP_PACK_CLI_MAZE_DROP_ITEM_ID
+// 物品掉落id包
+type MazeDropItemID struct {
 	state         protoimpl.MessageState
 	sizeCache     protoimpl.SizeCache
 	unknownFields protoimpl.UnknownFields
@@ -6072,8 +6072,8 @@ type SendMazeItemID struct {
 	EquipList []*MazeCommon.MazeItem `protobuf:"bytes,2,rep,name=equip_list,json=equipList" json:"equip_list,omitempty"` // 装备列表
 }
 
-func (x *SendMazeItemID) Reset() {
-	*x = SendMazeItemID{}
+func (x *MazeDropItemID) Reset() {
+	*x = MazeDropItemID{}
 	if protoimpl.UnsafeEnabled {
 		mi := &file_common_MazeGame_proto_msgTypes[76]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
@@ -6081,13 +6081,13 @@ func (x *SendMazeItemID) Reset() {
 	}
 }
 
-func (x *SendMazeItemID) String() string {
+func (x *MazeDropItemID) String() string {
 	return protoimpl.X.MessageStringOf(x)
 }
 
-func (*SendMazeItemID) ProtoMessage() {}
+func (*MazeDropItemID) ProtoMessage() {}
 
-func (x *SendMazeItemID) ProtoReflect() protoreflect.Message {
+func (x *MazeDropItemID) ProtoReflect() protoreflect.Message {
 	mi := &file_common_MazeGame_proto_msgTypes[76]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
@@ -6099,19 +6099,19 @@ func (x *SendMazeItemID) ProtoReflect() protoreflect.Message {
 	return mi.MessageOf(x)
 }
 
-// Deprecated: Use SendMazeItemID.ProtoReflect.Descriptor instead.
-func (*SendMazeItemID) Descriptor() ([]byte, []int) {
+// Deprecated: Use MazeDropItemID.ProtoReflect.Descriptor instead.
+func (*MazeDropItemID) Descriptor() ([]byte, []int) {
 	return file_common_MazeGame_proto_rawDescGZIP(), []int{76}
 }
 
-func (x *SendMazeItemID) GetItemList() []*MazeCommon.MazeItem {
+func (x *MazeDropItemID) GetItemList() []*MazeCommon.MazeItem {
 	if x != nil {
 		return x.ItemList
 	}
 	return nil
 }
 
-func (x *SendMazeItemID) GetEquipList() []*MazeCommon.MazeItem {
+func (x *MazeDropItemID) GetEquipList() []*MazeCommon.MazeItem {
 	if x != nil {
 		return x.EquipList
 	}
@@ -6996,7 +6996,7 @@ var file_common_MazeGame_proto_rawDesc = []byte{
 	0x6f, 0x12, 0x2c, 0x0a, 0x06, 0x68, 0x65, 0x61, 0x64, 0x65, 0x72, 0x18, 0x02, 0x20, 0x01, 0x28,
 	0x0b, 0x32, 0x14, 0x2e, 0x43, 0x6f, 0x6d, 0x6d, 0x6f, 0x6e, 0x2e, 0x50, 0x61, 0x63, 0x6b, 0x65,
 	0x74, 0x48, 0x65, 0x61, 0x64, 0x65, 0x72, 0x52, 0x06, 0x68, 0x65, 0x61, 0x64, 0x65, 0x72, 0x22,
-	0x78, 0x0a, 0x0e, 0x53, 0x65, 0x6e, 0x64, 0x4d, 0x61, 0x7a, 0x65, 0x49, 0x74, 0x65, 0x6d, 0x49,
+	0x78, 0x0a, 0x0e, 0x4d, 0x61, 0x7a, 0x65, 0x44, 0x72, 0x6f, 0x70, 0x49, 0x74, 0x65, 0x6d, 0x49,
 	0x44, 0x12, 0x31, 0x0a, 0x09, 0x69, 0x74, 0x65, 0x6d, 0x5f, 0x6c, 0x69, 0x73, 0x74, 0x18, 0x01,
 	0x20, 0x03, 0x28, 0x0b, 0x32, 0x14, 0x2e, 0x4d, 0x61, 0x7a, 0x65, 0x43, 0x6f, 0x6d, 0x6d, 0x6f,
 	0x6e, 0x2e, 0x4d, 0x61, 0x7a, 0x65, 0x49, 0x74, 0x65, 0x6d, 0x52, 0x08, 0x69, 0x74, 0x65, 0x6d,
@@ -7165,7 +7165,7 @@ var file_common_MazeGame_proto_goTypes = []interface{}{
 	(*RescueItemInfo)(nil),                   // 81: MazeGame.RescueItemInfo
 	(*SaveBarrierDataRQ)(nil),                // 82: MazeGame.SaveBarrierDataRQ
 	(*SaveBarrierDataRS)(nil),                // 83: MazeGame.SaveBarrierDataRS
-	(*SendMazeItemID)(nil),                   // 84: MazeGame.SendMazeItemID
+	(*MazeDropItemID)(nil),                   // 84: MazeGame.MazeDropItemID
 	(*Common.PacketHeader)(nil),              // 85: Common.PacketHeader
 	(*MessageType.ErrorInfo)(nil),            // 86: MessageType.ErrorInfo
 	(*MazeFamily.AllianceInfo)(nil),          // 87: MazeFamily.AllianceInfo
@@ -7307,8 +7307,8 @@ var file_common_MazeGame_proto_depIdxs = []int32{
 	81,  // 128: MazeGame.SaveBarrierDataRQ.rescue_items:type_name -> MazeGame.RescueItemInfo
 	86,  // 129: MazeGame.SaveBarrierDataRS.err_info:type_name -> MessageType.ErrorInfo
 	85,  // 130: MazeGame.SaveBarrierDataRS.header:type_name -> Common.PacketHeader
-	88,  // 131: MazeGame.SendMazeItemID.item_list:type_name -> MazeCommon.MazeItem
-	88,  // 132: MazeGame.SendMazeItemID.equip_list:type_name -> MazeCommon.MazeItem
+	88,  // 131: MazeGame.MazeDropItemID.item_list:type_name -> MazeCommon.MazeItem
+	88,  // 132: MazeGame.MazeDropItemID.equip_list:type_name -> MazeCommon.MazeItem
 	133, // [133:133] is the sub-list for method output_type
 	133, // [133:133] is the sub-list for method input_type
 	133, // [133:133] is the sub-list for extension type_name
@@ -8235,7 +8235,7 @@ func file_common_MazeGame_proto_init() {
 			}
 		}
 		file_common_MazeGame_proto_msgTypes[76].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*SendMazeItemID); i {
+			switch v := v.(*MazeDropItemID); i {
 			case 0:
 				return &v.state
 			case 1:
