@@ -100,10 +100,10 @@ func (p *p2p) QueryMessages(ctx context.Context, a app.App, user app.User, peerI
 // SendMessage implements P2PService.
 func (p *p2p) SendMessage(ctx context.Context, a app.App, user app.User, peerID uint64, _type int32, content []byte) (messageID uint64, err error) {
 	message := app.Message{}
-	messageID, err = idgenerator.NextID()
-	if err != nil {
-		return 0, err
-	}
+	messageID = idgenerator.MessageID(time.Now().Unix(), 0)
+	// if err != nil {
+	// 	return 0, err
+	// }
 	message.MessageID = messageID
 	message.UserID = user.UserID()
 	message.CreateTime = time.Now().Unix()

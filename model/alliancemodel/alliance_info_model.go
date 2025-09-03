@@ -2,6 +2,7 @@ package alliancemodel
 
 import (
 	"context"
+	"time"
 
 	"maze_game_server/io/redis/allianceredis"
 	"maze_game_server/lib/serialize"
@@ -41,7 +42,7 @@ func NewAllianceInfoModel(ctx context.Context, allianceID int32, allianceName st
 		AllianceName:       allianceName,
 		AllianceCountLimit: allianceCountLimit,
 		FamilyIDs:          []int32{},
-		AllianceGroupID:    0,
+		AllianceGroupID:    NewAllianceGroupID(ctx),
 	}
 }
 
@@ -100,10 +101,22 @@ func (r *AllianceInfoModel) RemoveFamilyID(ctx context.Context, familyID int32) 
 	return nil
 }
 
-func (r *AllianceInfoModel) SetAllianceGroupID(ctx context.Context, allianceGroupID int64) error {
-	if r.AllianceGroupID != 0 {
-		return nil
-	}
-	r.AllianceGroupID = allianceGroupID
-	return r.Save(ctx)
+// func (r *AllianceInfoModel) SetAllianceGroupID(ctx context.Context, allianceGroupID int64) error {
+// 	// 联盟所属组ID只能设置一次 如果存在就返还
+// 	if r.AllianceGroupID != 0 {
+// 		logger := fklog.ContextAppLogger(ctx)
+// 		logger.CtxError(ctx, "SetAllianceGroupID err",
+// 			zap.Int32("allianceID", r.AllianceID),
+// 			zap.Int64("allianceGroupID", r.AllianceGroupID),
+// 			zap.Int64("newAllianceGroupID", allianceGroupID))
+// 		return nil
+// 	}
+// 	r.AllianceGroupID = allianceGroupID
+// 	return r.Save(ctx)
+// }
+
+// 生成GroupID
+func NewAllianceGroupID(ctx context.Context) int64 {
+	groupID := int64(time.Now().Unix())
+	return groupID
 }

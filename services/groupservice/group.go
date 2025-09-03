@@ -95,10 +95,10 @@ func (g *group) QueryMessages(ctx context.Context, a app.App, groupID int64, las
 func (g *group) SendMessage(ctx context.Context, a app.App, groupID int64, sender uint64, _type int32, content []byte) (messageID uint64, err error) {
 	logger := fklog.ContextAppLogger(ctx)
 	message := app.Message{}
-	messageID, err = idgenerator.NextID()
-	if err != nil {
-		return 0, err
-	}
+	messageID = idgenerator.MessageID(time.Now().Unix(), 0)
+	// if err != nil {
+	// 	return 0, err
+	// }
 	//TODO 需要判断这个组是否存在，通过家族或者联盟判断
 	message.MessageID = messageID
 	message.UserID = sender
