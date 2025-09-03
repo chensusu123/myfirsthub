@@ -2,7 +2,6 @@ package barrieritemservice
 
 import (
 	"context"
-	"fmt"
 	"maze_game_server/excel/mazebarriesv8config"
 	"maze_game_server/model/barrieritemsmodel"
 	"maze_game_server/servers/maze_main_server/process/item"
@@ -59,7 +58,6 @@ func (s *service) AddEquipScore(ctx context.Context, userID uint64, barrierID in
 	}
 
 	nowScore := data.EquipScore + score
-	fmt.Println(nowScore)
 
 	equipNum := nowScore / barrierCfg.Need_equip_score
 	// if equipNum
