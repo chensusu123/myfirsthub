@@ -160,3 +160,14 @@ func ItemPb2ItemInfo(items []*MazeCommon.MazeItem) []*itemservice.ItemInfo {
 	}
 	return res
 }
+
+func ItemInfo2ItemPb(items []*itemservice.ItemInfo) []*MazeCommon.MazeItem {
+	res := make([]*MazeCommon.MazeItem, len(items))
+	for _, item := range items {
+		res = append(res, &MazeCommon.MazeItem{
+			ItemId: proto.Int32(item.ItemId),
+			Count:  proto.Int64(item.Count),
+		})
+	}
+	return res
+}
