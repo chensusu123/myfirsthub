@@ -2,10 +2,10 @@ package barrieritemservice
 
 import (
 	"context"
+	"fmt"
 	"maze_game_server/excel/mazebarriesv8config"
 	"maze_game_server/model/barrieritemsmodel"
 	"maze_game_server/servers/maze_main_server/process/item"
-	"maze_game_server/services/itemservice"
 
 	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fklog"
 	"go.uber.org/zap"
@@ -59,8 +59,10 @@ func (s *service) AddEquipScore(ctx context.Context, userID uint64, barrierID in
 	}
 
 	nowScore := data.EquipScore + score
+	fmt.Println(nowScore)
 
 	equipNum := nowScore / barrierCfg.Need_equip_score
+	// if equipNum
 	data.EquipScore = nowScore % barrierCfg.Need_equip_score
 	equips, err := s.FallOffEquip(ctx, userID, barrierID, equipNum)
 	if err != nil {
@@ -97,18 +99,20 @@ func (s *service) AddEquipScore(ctx context.Context, userID uint64, barrierID in
 	}
 
 	// 推包
-	err = item.OnSendItemsPack(ctx, userID, make([]*itemservice.ItemInfo, 0), equips, monsterGuid, monsterPos)
-	if err != nil {
-		logger.CtxWarn(ctx, "AddEquipScore OnSendItemsPack Fail",
-			zap.Uint64("userID", userID),
-			zap.Int32("barrierID", barrierID),
-			zap.Int32("score", score),
-			zap.Int64("monsterGuid", monsterGuid),
-			zap.String("monsterPos", monsterPos),
-			zap.Any("equips", equips),
-			zap.Error(err),
-		)
-		return
+	if len(equips) > 0 {
+		err = item.OnSendItemsPack(ctx, userID, nil, equips, monsterGuid, monsterPos)
+		if err != nil {
+			logger.CtxWarn(ctx, "AddEquipScore OnSendItemsPack Fail",
+				zap.Uint64("userID", userID),
+				zap.Int32("barrierID", barrierID),
+				zap.Int32("score", score),
+				zap.Int64("monsterGuid", monsterGuid),
+				zap.String("monsterPos", monsterPos),
+				zap.Any("equips", equips),
+				zap.Error(err),
+			)
+			return
+		}
 	}
 
 	return err

@@ -203,7 +203,7 @@ func (g *Game) OnBarrierUseItemRQ_10550_10551(s *session.Session, req *MazeGame.
 			res.ErrInfo = errors.COMMON_ERROR_TIPS.Wrap("道具参数错误")
 			return
 		}
-		subEquips = append(subEquips, &itemservice.ItemInfo{ItemId: item.GetItemId(), Count: item.GetCount()})
+		subItems = append(subItems, &itemservice.ItemInfo{ItemId: item.GetItemId(), Count: item.GetCount()})
 	}
 	for _, equip := range req.GetEquipList() {
 		if equip.GetItemId() <= 0 || equip.GetCount() < 0 {
