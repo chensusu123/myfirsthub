@@ -13,34 +13,34 @@ import (
 	"go.uber.org/zap"
 )
 
-func (s *service) AddItemScore(ctx context.Context, userID uint64, barrierID int32, itemType int32, score int32, monsterGuid int64, monsterPos string) (err error) {
+func (s *service) AddScoreItem(ctx context.Context, userID uint64, barrierID int32, itemType int32, score int32, guid int64, pos string) (err error) {
 	logger := fklog.ContextAppLogger(ctx)
-	logger.CtxInfo(ctx, "AddItemScore Start",
+	logger.CtxInfo(ctx, "AddScoreItem Start",
 		zap.Uint64("userID", userID),
 		zap.Int32("barrierID", barrierID),
 		zap.Int32("score", score),
-		zap.Int64("monsterGuid", monsterGuid),
-		zap.String("monsterPos", monsterPos),
+		zap.Int64("guid", guid),
+		zap.String("pos", pos),
 	)
 
 	defer func() {
-		logger.CtxInfo(ctx, "AddItemScore End",
+		logger.CtxInfo(ctx, "AddScoreItem End",
 			zap.Uint64("userID", userID),
 			zap.Int32("barrierID", barrierID),
 			zap.Int32("score", score),
-			zap.Int64("monsterGuid", monsterGuid),
-			zap.String("monsterPos", monsterPos),
+			zap.Int64("guid", guid),
+			zap.String("pos", pos),
 		)
 	}()
 
 	data, err := barrieritemsmodel.NewBarrierItems(ctx, userID, barrierID)
 	if err != nil {
-		logger.CtxError(ctx, "AddItemScore NewBarrierItems Fail",
+		logger.CtxError(ctx, "AddScoreItem NewBarrierItems Fail",
 			zap.Uint64("userID", userID),
 			zap.Int32("barrierID", barrierID),
 			zap.Int32("score", score),
-			zap.Int64("monsterGuid", monsterGuid),
-			zap.String("monsterPos", monsterPos),
+			zap.Int64("guid", guid),
+			zap.String("pos", pos),
 			zap.Error(err),
 		)
 		return err
@@ -48,12 +48,12 @@ func (s *service) AddItemScore(ctx context.Context, userID uint64, barrierID int
 
 	barrierCfg := mazebarriesv8config.GetStageConfig(ctx, barrierID)
 	if barrierCfg.Need_item1_score == 0 || barrierCfg.Need_item2_score == 0 {
-		logger.CtxError(ctx, "AddItemScore barrierCfg Need_item1_score or Need_item2_score Equal zero",
+		logger.CtxError(ctx, "AddScoreItem barrierCfg Need_item1_score or Need_item2_score Equal zero",
 			zap.Uint64("userID", userID),
 			zap.Int32("barrierID", barrierID),
 			zap.Int32("score", score),
-			zap.Int64("monsterGuid", monsterGuid),
-			zap.String("monsterPos", monsterPos),
+			zap.Int64("guid", guid),
+			zap.String("pos", pos),
 			zap.Any("data", data),
 		)
 		return nil
@@ -106,12 +106,12 @@ func (s *service) AddItemScore(ctx context.Context, userID uint64, barrierID int
 
 	err = data.Save(ctx, userID, barrierID)
 	if err != nil {
-		logger.CtxError(ctx, "AddItemScore Save Fail",
+		logger.CtxError(ctx, "AddScoreItem Save Fail",
 			zap.Uint64("userID", userID),
 			zap.Int32("barrierID", barrierID),
 			zap.Int32("score", score),
-			zap.Int64("monsterGuid", monsterGuid),
-			zap.String("monsterPos", monsterPos),
+			zap.Int64("guid", guid),
+			zap.String("pos", pos),
 			zap.Any("data", data),
 		)
 		return
@@ -119,14 +119,14 @@ func (s *service) AddItemScore(ctx context.Context, userID uint64, barrierID int
 
 	// 推包
 	if len(dropItems) > 0 {
-		err = item.OnSendItemsPack(ctx, userID, dropItems, nil, monsterGuid, monsterPos)
+		err = item.OnSendItemsPack(ctx, userID, dropItems, nil, guid, pos)
 		if err != nil {
-			logger.CtxWarn(ctx, "AddEquipScore OnSendItemsPack Fail",
+			logger.CtxWarn(ctx, "AddScoreItem OnSendItemsPack Fail",
 				zap.Uint64("userID", userID),
 				zap.Int32("barrierID", barrierID),
 				zap.Int32("score", score),
-				zap.Int64("monsterGuid", monsterGuid),
-				zap.String("monsterPos", monsterPos),
+				zap.Int64("guid", guid),
+				zap.String("pos", pos),
 				zap.Any("dropItems", dropItems),
 				zap.Error(err),
 			)
@@ -135,4 +135,44 @@ func (s *service) AddItemScore(ctx context.Context, userID uint64, barrierID int
 	}
 
 	return err
+}
+
+func (s *service) AddItems(ctx context.Context, userID uint64, barrierID int32, items []*itemservice.ItemInfo, guid int64, pos string) error {
+	logger := fklog.ContextAppLogger(ctx)
+	logger.CtxInfo(ctx, "AddScoreItem Start",
+		zap.Uint64("userID", userID),
+		zap.Int32("barrierID", barrierID),
+		zap.Int64("guid", guid),
+		zap.String("pos", pos),
+		zap.Any("items", items),
+	)
+
+	defer func() {
+		logger.CtxInfo(ctx, "AddScoreItem End",
+			zap.Uint64("userID", userID),
+			zap.Int32("barrierID", barrierID),
+			zap.Int64("guid", guid),
+			zap.String("pos", pos),
+			zap.Any("items", items),
+		)
+	}()
+
+	data, err := barrieritemsmodel.NewBarrierItems(ctx, userID, barrierID)
+	if err != nil {
+		logger.CtxError(ctx, "AddScoreItem NewBarrierItems Fail",
+			zap.Uint64("userID", userID),
+			zap.Int32("barrierID", barrierID),
+			zap.Int64("guid", guid),
+			zap.String("pos", pos),
+			zap.Any("items", items),
+			zap.Error(err),
+		)
+		return err
+	}
+
+	for _, item := range items {
+		data.Items[int64(item.ItemId)] += item.Count
+	}
+
+	return data.Save(ctx, userID, barrierID)
 }

@@ -120,7 +120,7 @@ func (s service) AddKillMonsterNum(ctx context.Context, userId uint64, barrierId
 	}
 
 	// 掉落物品
-	err = barrieritemservice.GbarrierItemsService.AddItemScore(ctx, userId, barrierId, constdef.MazeCfgId901, foeCfg.Drop_item1_score_num, monsterGuid, monsterPos)
+	err = barrieritemservice.GbarrierItemsService.AddScoreItem(ctx, userId, barrierId, constdef.MazeCfgId901, foeCfg.Drop_item1_score_num, monsterGuid, monsterPos)
 	if err != nil {
 		logger.CtxError(ctx, "AddKillMonsterNum AddItemScore Fail",
 			zap.Uint64("userID", userId),
@@ -129,7 +129,7 @@ func (s service) AddKillMonsterNum(ctx context.Context, userId uint64, barrierId
 		)
 		return 0, nil, err
 	}
-	err = barrieritemservice.GbarrierItemsService.AddItemScore(ctx, userId, barrierId, constdef.MazeCfgId902, foeCfg.Drop_item2_score_num, monsterGuid, monsterPos)
+	err = barrieritemservice.GbarrierItemsService.AddScoreItem(ctx, userId, barrierId, constdef.MazeCfgId902, foeCfg.Drop_item2_score_num, monsterGuid, monsterPos)
 	if err != nil {
 		logger.CtxError(ctx, "AddKillMonsterNum AddItemScore Fail",
 			zap.Uint64("userID", userId),
