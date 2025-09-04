@@ -174,8 +174,8 @@ func (p *p2p) notifyMessage(ctx context.Context, userId uint64, peerID uint64, m
 			CreateTime: proto.Int64(time.Now().Unix()),
 		},
 	}
-	logger.CtxInfo(ctx, "notifyMessage", zap.Any("notifyMessage", notifyMessage))
-	err := online.ClusterPush(ctx, userId, packId, notifyMessage)
+	logger.CtxInfo(ctx, "notifyMessage start", zap.Uint64("peerId", peerID), zap.Any("notifyMessage", notifyMessage))
+	err := online.ClusterPush(ctx, peerID, packId, notifyMessage)
 	if err != nil {
 		logger.CtxError(ctx, "notifyMessage error", zap.Error(err), zap.Any("notifyMessage", notifyMessage))
 	}

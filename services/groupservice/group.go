@@ -154,7 +154,7 @@ func (g *group) notifyGroupMessage(ctx context.Context, a app.App, userId uint64
 	}
 
 	for _, member := range groupInfo.Members {
-		if member.UserID == userId || member.UserID <= 0 {
+		if member.UserID <= 0 {
 			continue
 		}
 		// 推送消息给集群
@@ -168,8 +168,8 @@ func (g *group) notifyGroupMessage(ctx context.Context, a app.App, userId uint64
 				CreateTime: proto.Int64(time.Now().Unix()),
 			},
 		}
-		logger.CtxInfo(ctx, "notifyMessage group", zap.Any("notifyMessage group", notifyMessage))
-		err = online.ClusterPush(ctx, userId, packId, notifyMessage)
+		logger.CtxInfo(ctx, "notifyMessage group", zap.Uint64("member_id", member.UserID), zap.Any("notifyMessage group", notifyMessage))
+		err = online.ClusterPush(ctx, member.UserID, packId, notifyMessage)
 		if err != nil {
 			logger.CtxError(ctx, "notifyMessage error", zap.Error(err), zap.Any("notifyMessage", notifyMessage))
 		}
