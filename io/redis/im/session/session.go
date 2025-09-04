@@ -9,6 +9,7 @@ import (
 	"time"
 
 	"github.com/redis/go-redis/v9"
+	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/database/nanoredis"
 	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fklog"
 	"go.uber.org/zap"
 )
@@ -22,24 +23,22 @@ type Session struct {
 }
 
 // getKey 获取缓存操作key。
-func getKey(args ...interface{}) string {
-	return fmt.Sprintf("im:app:%d:u:%d:session:list", args...)
+func getKey(db nanoredis.NanoRedisClient, args ...interface{}) string {
+	return db.MakeSectionKey(fmt.Sprintf("im:app:%d:u:%d:session:list", args...))
 }
 
 // QuerySessions
 func QuerySessions(ctx context.Context, appID int32, userID uint64) (sessions map[string]Session, err error) {
 	logger := fklog.ContextAppLogger(ctx)
-	var (
-		key = getKey(appID, userID)
-	)
+
 	cli, err := globalredis.GCli.GetDB()
 	if err != nil {
 		logger.CtxError(ctx, "QuerySessions Client fail",
 			zap.Error(err),
-			zap.Any("key", key),
 		)
 		return nil, err
 	}
+	key := getKey(cli, appID, userID)
 	ret, err := cli.HGetAll(ctx, key).Result()
 	if err != nil {
 		if errors.Is(err, redis.Nil) {
@@ -72,9 +71,7 @@ func QuerySessions(ctx context.Context, appID int32, userID uint64) (sessions ma
 // AddP2PSession 创建私聊会话
 func AddP2PSession(ctx context.Context, appID int32, userID uint64, sessionID string, peerID uint64) (err error) {
 	logger := fklog.ContextAppLogger(ctx)
-	var (
-		key = getKey(appID, userID)
-	)
+
 	session := Session{
 		PeerID:     peerID,
 		CreateTime: time.Now().Unix(),
@@ -83,7 +80,6 @@ func AddP2PSession(ctx context.Context, appID int32, userID uint64, sessionID st
 	if err != nil {
 		logger.CtxError(ctx, "AddP2PSession Marshal fail",
 			zap.Error(err),
-			zap.Any("key", key),
 			zap.String("sessionID", sessionID),
 			zap.Any("session", session),
 		)
@@ -93,12 +89,12 @@ func AddP2PSession(ctx context.Context, appID int32, userID uint64, sessionID st
 	if err != nil {
 		logger.CtxError(ctx, "AddP2PSession Client fail",
 			zap.Error(err),
-			zap.Any("key", key),
 			zap.String("sessionID", sessionID),
 			zap.Any("session", session),
 		)
 		return err
 	}
+	key := getKey(cli, appID, userID)
 	err = cli.HSet(ctx, key, sessionID, value).Err()
 	if err != nil {
 		logger.CtxError(ctx, "AddP2PSession HSET fail",
@@ -116,9 +112,7 @@ func AddP2PSession(ctx context.Context, appID int32, userID uint64, sessionID st
 // AddGroupSession 创建群聊会话
 func AddGroupSession(ctx context.Context, appID int32, userID uint64, sessionID string, groupID int64) (err error) {
 	logger := fklog.ContextAppLogger(ctx)
-	var (
-		key = getKey(appID, userID)
-	)
+
 	session := Session{
 		GroupID:    groupID,
 		CreateTime: time.Now().Unix(),
@@ -127,7 +121,6 @@ func AddGroupSession(ctx context.Context, appID int32, userID uint64, sessionID 
 	if err != nil {
 		logger.CtxError(ctx, "AddGroupSession Marshal fail",
 			zap.Error(err),
-			zap.Any("key", key),
 			zap.String("sessionID", sessionID),
 			zap.Any("session", session),
 		)
@@ -137,12 +130,12 @@ func AddGroupSession(ctx context.Context, appID int32, userID uint64, sessionID 
 	if err != nil {
 		logger.CtxError(ctx, "AddGroupSession Client fail",
 			zap.Error(err),
-			zap.Any("key", key),
 			zap.String("sessionID", sessionID),
 			zap.Any("session", session),
 		)
 		return err
 	}
+	key := getKey(cli, appID, userID)
 	err = cli.HSet(ctx, key, groupID, value).Err()
 	if err != nil {
 		logger.CtxError(ctx, "AddGroupSession HSET fail",
@@ -160,18 +153,16 @@ func AddGroupSession(ctx context.Context, appID int32, userID uint64, sessionID 
 // RemoveSession 移除私聊会话
 func RemoveSession(ctx context.Context, appID int32, userID uint64, sessionID string) (err error) {
 	logger := fklog.ContextAppLogger(ctx)
-	var (
-		key = getKey(appID, userID)
-	)
+
 	cli, err := globalredis.GCli.GetDB()
 	if err != nil {
 		logger.CtxError(ctx, "RemoveSession Client fail",
 			zap.Error(err),
-			zap.Any("key", key),
 			zap.String("sessionID", sessionID),
 		)
 		return err
 	}
+	key := getKey(cli, appID, userID)
 	err = cli.HDel(ctx, key, sessionID).Err()
 	if err != nil {
 		if errors.Is(err, redis.Nil) {

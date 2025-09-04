@@ -10,6 +10,7 @@ import (
 	globalredis "maze_game_server/io/redis"
 
 	"github.com/redis/go-redis/v9"
+	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/database/nanoredis"
 	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fklog"
 	"go.uber.org/zap"
 )
@@ -28,25 +29,23 @@ type Member struct {
 }
 
 // getKey 获取缓存操作key。
-func getKey(args ...interface{}) string {
-	return fmt.Sprintf("im:app:%d:group:%d", args...)
+func getKey(db nanoredis.NanoRedisClient, args ...interface{}) string {
+	return db.MakeSectionKey(fmt.Sprintf("im:app:%d:group:%d", args...))
 }
 
 // GetGroupInfo
 func GetGroupInfo(ctx context.Context, appID int32, groupID int64) (group *Group, err error) {
 	logger := fklog.ContextAppLogger(ctx)
-	var (
-		key = getKey(appID, groupID)
-	)
+
 	cli, err := globalredis.GCli.GetDB()
 	if err != nil {
 		logger.CtxError(ctx, "GetGroupInfo Client fail",
 			zap.Error(err),
-			zap.Any("key", key),
 			zap.Int64("groupID", groupID),
 		)
 		return nil, err
 	}
+	key := getKey(cli, appID, groupID)
 	ret, err := cli.HGetAll(ctx, key).Result()
 	if err != nil {
 		if errors.Is(err, redis.Nil) {
@@ -84,18 +83,17 @@ func GetGroupInfo(ctx context.Context, appID int32, groupID int64) (group *Group
 func CreateGroup(ctx context.Context, appID int32, creator uint64, groupID int64, invitees []uint64) (group *Group, err error) {
 	var (
 		now    = time.Now()
-		key    = getKey(appID, groupID)
 		logger = fklog.ContextAppLogger(ctx)
 	)
 	cli, err := globalredis.GCli.GetDB()
 	if err != nil {
 		logger.CtxError(ctx, "CreateGroup Client fail",
 			zap.Error(err),
-			zap.Any("key", key),
 			zap.Int64("groupID", groupID),
 		)
 		return nil, err
 	}
+	key := getKey(cli, appID, groupID)
 	values := make([]any, 0)
 	group = &Group{
 		ID:         groupID,
@@ -152,19 +150,18 @@ func CreateGroup(ctx context.Context, appID int32, creator uint64, groupID int64
 // InviteMember
 func InviteMember(ctx context.Context, appID int32, groupID int64, memberID uint64) (err error) {
 	var (
-		key    = getKey(appID, groupID)
 		logger = fklog.ContextAppLogger(ctx)
 	)
 	cli, err := globalredis.GCli.GetDB()
 	if err != nil {
 		logger.CtxError(ctx, "InviteMember Client fail",
 			zap.Error(err),
-			zap.Any("key", key),
 			zap.Int64("groupID", groupID),
 			zap.Uint64("memberID", memberID),
 		)
 		return err
 	}
+	key := getKey(cli, appID, groupID)
 	member := Member{
 		UserID:     memberID,
 		CreateTime: time.Now().Unix(),

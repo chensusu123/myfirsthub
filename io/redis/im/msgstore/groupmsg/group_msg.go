@@ -9,6 +9,8 @@ import (
 	"maze_game_server/io/redis/im/msgstore"
 	"strconv"
 
+	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/database/nanoredis"
+
 	"github.com/redis/go-redis/v9"
 	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fklog"
 	"go.uber.org/zap"
@@ -17,24 +19,21 @@ import (
 type Message = msgstore.Message
 
 // getKey 获取缓存操作key。
-func getKey(args ...interface{}) string {
-	return fmt.Sprintf("im:app:%d:group:%d:history", args...)
+func getKey(db nanoredis.NanoRedisClient, args ...interface{}) string {
+	return db.MakeSectionKey(fmt.Sprintf("im:app:%d:group:%d:history", args...))
 }
 
 // QueryMessages 分页查询会话中的历史消息
 func QueryMessages(ctx context.Context, appID int32, groupID int64, lastID uint64, limit int) (messages []Message, err error) {
 	logger := fklog.ContextAppLogger(ctx)
-	var (
-		key = getKey(appID, groupID)
-	)
 	cli, err := globalredis.GCli.GetDB()
 	if err != nil {
 		logger.CtxError(ctx, "QueryMessages Client fail",
 			zap.Error(err),
-			zap.Any("key", key),
 		)
 		return nil, err
 	}
+	key := getKey(cli, appID, groupID)
 	ret, err := cli.ZRevRangeByScore(ctx, key, &redis.ZRangeBy{Max: strconv.FormatUint(exchangeTextId(lastID), 10), Count: 20}).Result()
 	if err != nil {
 		if errors.Is(err, redis.Nil) {
@@ -63,17 +62,15 @@ func QueryMessages(ctx context.Context, appID int32, groupID int64, lastID uint6
 // SaveMessage 在会话保存历史消息
 func SaveMessage(ctx context.Context, appID int32, groupID int64, message Message) (err error) {
 	logger := fklog.ContextAppLogger(ctx)
-	var (
-		key = getKey(appID, groupID)
-	)
+
 	cli, err := globalredis.GCli.GetDB()
 	if err != nil {
 		logger.CtxError(ctx, "SaveMessage Client fail",
 			zap.Error(err),
-			zap.Any("key", key),
 		)
 		return err
 	}
+	key := getKey(cli, appID, groupID)
 	data, err := json.Marshal(message)
 	if err != nil {
 		logger.CtxError(ctx, "SaveMessage Marshal fail",

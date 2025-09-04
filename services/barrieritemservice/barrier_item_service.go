@@ -9,6 +9,8 @@ import (
 type barrierItemsService interface {
 	// 清除当前关卡存储
 	ClearBarrierItems(ctx context.Context, userID uint64, barrierID int32) error
+	// 清除装备以外的物品
+	DelInAdditionToEquips(ctx context.Context, userID uint64, barrierID int32) error
 	// 尝试扣除道具
 	TrySubBarrierItems(ctx context.Context, userID uint64, barrierID int32, items []*itemservice.ItemInfo, equips []*itemservice.ItemInfo) (bool, error)
 	// 掉落装备信息生成

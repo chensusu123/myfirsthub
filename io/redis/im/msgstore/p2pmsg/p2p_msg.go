@@ -9,6 +9,8 @@ import (
 	"maze_game_server/io/redis/im/msgstore"
 	"strconv"
 
+	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/database/nanoredis"
+
 	"github.com/redis/go-redis/v9"
 	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fklog"
 	"go.uber.org/zap"
@@ -17,24 +19,22 @@ import (
 type Message = msgstore.Message
 
 // getKey 获取缓存操作key。
-func getKey(args ...interface{}) string {
-	return fmt.Sprintf("im:app:%d:p2p:%d:%d:history", args...)
+func getKey(db nanoredis.NanoRedisClient, args ...interface{}) string {
+	return db.MakeSectionKey(fmt.Sprintf("im:app:%d:p2p:%d:%d:history", args...))
 }
 
 // QueryMessages 分页查询会话中的历史消息
 func QueryMessages(ctx context.Context, appID int32, userID, peerID uint64, lastID uint64, limit int) (messages []Message, err error) {
 	logger := fklog.ContextAppLogger(ctx)
-	var (
-		key = getKey(appID, userID, peerID)
-	)
+
 	cli, err := globalredis.GCli.GetDB()
 	if err != nil {
 		logger.CtxError(ctx, "QueryMessages Client fail",
 			zap.Error(err),
-			zap.Any("key", key),
 		)
 		return nil, err
 	}
+	key := getKey(cli, appID, userID, peerID)
 	ret, err := cli.ZRevRangeByScore(ctx, key, &redis.ZRangeBy{Max: strconv.FormatUint(exchangeTextId(lastID), 10), Count: 20}).Result()
 	if err != nil {
 		if errors.Is(err, redis.Nil) {
@@ -63,17 +63,14 @@ func QueryMessages(ctx context.Context, appID int32, userID, peerID uint64, last
 // SaveMessage 在会话保存历史消息
 func SaveMessage(ctx context.Context, appID int32, userID, peerID uint64, message Message) (err error) {
 	logger := fklog.ContextAppLogger(ctx)
-	var (
-		key = getKey(appID, userID, peerID)
-	)
 	cli, err := globalredis.GCli.GetDB()
 	if err != nil {
 		logger.CtxError(ctx, "SaveMessage Client fail",
 			zap.Error(err),
-			zap.Any("key", key),
 		)
 		return err
 	}
+	key := getKey(cli, appID, userID, peerID)
 	data, err := json.Marshal(message)
 	if err != nil {
 		logger.CtxError(ctx, "SaveMessage Marshal fail",
@@ -102,17 +99,15 @@ func SaveMessage(ctx context.Context, appID int32, userID, peerID uint64, messag
 // ReadMessage 标记消息为已读
 func ReadMessage(ctx context.Context, appID int32, userID, peerID uint64, messageID uint64) (err error) {
 	logger := fklog.ContextAppLogger(ctx)
-	var (
-		key = getKey(appID, userID, peerID)
-	)
+
 	cli, err := globalredis.GCli.GetDB()
 	if err != nil {
 		logger.CtxError(ctx, "ReadMessage Client fail",
 			zap.Error(err),
-			zap.Any("key", key),
 		)
 		return err
 	}
+	key := getKey(cli, appID, userID, peerID)
 	//取出messageid对应的value
 	member, err := cli.ZRangeByScore(ctx, key, &redis.ZRangeBy{
 		Min: strconv.FormatUint(exchangeTextId(messageID), 10),
@@ -186,17 +181,15 @@ func ReadMessage(ctx context.Context, appID int32, userID, peerID uint64, messag
 // 删除消息
 func RemoveMessage(ctx context.Context, appID int32, userID, peerID uint64, messageID uint64) (err error) {
 	logger := fklog.ContextAppLogger(ctx)
-	var (
-		key = getKey(appID, userID, peerID)
-	)
+
 	cli, err := globalredis.GCli.GetDB()
 	if err != nil {
 		logger.CtxError(ctx, "RemoveMessage Client fail",
 			zap.Error(err),
-			zap.Any("key", key),
 		)
 		return err
 	}
+	key := getKey(cli, appID, userID, peerID)
 	//取出messageid对应的value
 	member, err := cli.ZRangeByScore(ctx, key, &redis.ZRangeBy{
 		Min: strconv.FormatUint(exchangeTextId(messageID), 10),

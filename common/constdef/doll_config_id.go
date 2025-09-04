@@ -55,6 +55,11 @@ const (
 	StrengthenStonePileItemCfgId = 46700101 // 强化石堆道具id
 )
 
+// 特殊掉落
+const (
+	BloodBottleID = 48300001 // 血瓶道具id
+)
+
 // 展示道具与实际道具对应配置id
 const (
 	GoldPileShow2RealCfgId            int32 = 901

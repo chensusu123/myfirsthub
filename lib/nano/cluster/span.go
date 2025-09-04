@@ -4,6 +4,7 @@ import (
 	"context"
 
 	packCodec "maze_game_server/lib/codec"
+	"maze_game_server/lib/codec/raw_pkg"
 	"maze_game_server/lib/nano/session"
 
 	"go.opentelemetry.io/otel"
@@ -61,5 +62,25 @@ func callSpan(ctx context.Context, s *session.Session, callName string) (context
 		attribute.Int64("enduser.id", s.UID()),
 		attribute.String("nano.callName", callName),
 	)
+	return ctx, span
+}
+
+func packSpan(ctx context.Context, agentSession int64, userID int64, pack *raw_pkg.StruSvrEsRawBaseHead) (context.Context, trace.Span) {
+	ctx = otel.GetTextMapPropagator().Extract(ctx, packCodec.NewBaseHeader(pack))
+	// 创建自定义Tracer
+	tracer := otel.Tracer("nano-net")
+	// 消息处理函数中手动创建Span
+	spanKind := trace.WithSpanKind(trace.SpanKindServer)
+
+	ctx, span := tracer.Start(ctx, "nano.pack.process",
+		spanKind)
+	span.SetAttributes(
+		attribute.Int64("agent.session", agentSession),
+		attribute.Int64("enduser.id", userID),
+		attribute.Int64("packet.session", int64(pack.SessionID)),
+		attribute.Int64("packet.id", int64(pack.PackType)),
+	)
+	// span.SetAttributes(attribute.String("nats.subject", subject))
+	span.AddEvent("begin")
 	return ctx, span
 }

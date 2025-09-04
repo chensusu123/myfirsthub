@@ -2,9 +2,13 @@ package barrieritemservice
 
 import (
 	"context"
+	"math"
+	"maze_game_server/common/constdef"
 	"maze_game_server/config/GMazeBariresDropConditionV8Cfg"
 	"maze_game_server/config/GMazeBariresDropV8Cfg"
+	"maze_game_server/config/GMazeConfigV8Cfg"
 	"maze_game_server/excel/mazebarriesv8config"
+	"maze_game_server/io/redis/mazecalcattrredis"
 	"maze_game_server/model/barrieritemsmodel"
 	"maze_game_server/servers/maze_main_server/process/item"
 	"maze_game_server/services/itemservice"
@@ -15,7 +19,8 @@ import (
 	"go.uber.org/zap"
 )
 
-func (s *service) FallOffSkillItems(ctx context.Context, userID uint64, barrierID int32, killMonsterNum int32, nowBloodVolume int64, allBloodVolume int64, monsterGuid int64, monsterPos string) error {
+func (s *service) FallOffSkillItems(ctx context.Context, userID uint64, barrierID int32, killMonsterNum int32, nowBloodVolume int64,
+	allBloodVolume int64, monsterGuid int64, monsterPos string) error {
 	logger := fklog.ContextAppLogger(ctx)
 	defer func() {
 		logger.CtxInfo(ctx, "FallOffSkillItems End",
@@ -50,6 +55,8 @@ func (s *service) FallOffSkillItems(ctx context.Context, userID uint64, barrierI
 		return err
 	}
 
+	row := GMazeConfigV8Cfg.GetWithCtx(ctx, constdef.MazeCfgId951)
+
 	dropItems := make([]*itemservice.ItemInfo, 0)
 
 	// 先获取当前关卡掉落物品
@@ -63,10 +70,19 @@ func (s *service) FallOffSkillItems(ctx context.Context, userID uint64, barrierI
 			}
 
 			for dropItemID, dropCount := range barrierDrop.Drop_items {
+				if dropItemID == constdef.BloodBottleID && data.Items[int64(dropItemID)] == row.Value_int {
+					continue
+				}
+
 				isCondition := true
 				// 判断掉落条件id
 				for _, condionID := range barrierDrop.Drop_condition {
-					if !checkCondition(ctx, condionID, nowBloodVolume, allBloodVolume, data.SkillsCount[dropItemID], data.Items[int64(dropItemID)]) {
+					ok, err := checkCondition(ctx, userID, condionID, nowBloodVolume, allBloodVolume, data.SkillsCount[dropItemID], data.Items[int64(dropItemID)])
+					if err != nil {
+						return err
+					}
+
+					if !ok {
 						isCondition = false
 					}
 				}
@@ -82,6 +98,7 @@ func (s *service) FallOffSkillItems(ctx context.Context, userID uint64, barrierI
 
 				// 判断百分比
 				nowRandNum := fkutil.RandInt(1, 10000)
+
 				if nowRandNum > int(barrierDrop.Drop_ratio_max) || nowRandNum < int(barrierDrop.Drop_ratio_min) {
 					continue
 				}
@@ -140,17 +157,33 @@ func (s *service) FallOffSkillItems(ctx context.Context, userID uint64, barrierI
 	return nil
 }
 
-func checkCondition(ctx context.Context, conditionID int32, nowBloodVolume int64, allBloodVolume int64, skillCount int32, nowSkillCount int64) bool {
+func checkCondition(ctx context.Context, userID uint64, conditionID int32, nowBloodVolume int64, allBloodVolume int64, skillCount int32, nowSkillCount int64) (bool, error) {
+	logger := fklog.ContextAppLogger(ctx)
+	attrDbs, err := mazecalcattrredis.GetAllMazeCalcAttr(ctx, userID)
+	if err != nil {
+		logger.CtxWarn(ctx, "checkCondition GetAllMazeCalcAttr nil", zap.Uint64("userID", userID))
+		return false, err
+	}
+
+	if err != nil {
+		logger.CtxError(ctx, "checkCondition GetUserAttrMap fail",
+			zap.Error(err))
+		return false, err
+	}
+
 	barrierDropCondition := GMazeBariresDropConditionV8Cfg.GetWithCtx(ctx, conditionID)
 	switch barrierDropCondition.Condition_type {
 	case 1:
-		return nowBloodVolume*int64(1000000) <= allBloodVolume*int64(barrierDropCondition.Value)
+		return nowBloodVolume*int64(1000000) <= allBloodVolume*(int64(barrierDropCondition.Value)+attrDbs[constdef.BloodBottleProbability]), nil
 	case 2:
-		return skillCount <= barrierDropCondition.Value
+		numerator := float64(10000+attrDbs[constdef.BloodBottlesNumber]) / 10000.0
+		count := math.Ceil(float64(barrierDropCondition.Value) * numerator)
+		intCount := int32(count)
+		return skillCount <= intCount, nil
 	case 3:
-		return nowSkillCount <= int64(barrierDropCondition.Value)
+		return nowSkillCount <= int64(barrierDropCondition.Value), nil
 	case 4:
-		return nowBloodVolume*int64(1000000) >= allBloodVolume*int64(barrierDropCondition.Value)
+		return nowBloodVolume*int64(1000000) >= allBloodVolume*(int64(barrierDropCondition.Value)+attrDbs[constdef.BloodBottleProbability]), nil
 	}
-	return false
+	return false, nil
 }

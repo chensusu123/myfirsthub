@@ -10,6 +10,7 @@ import (
 	"maze_game_server/pb/common/MazeAIBattle"
 	"maze_game_server/pb/common/MazeGame"
 	"maze_game_server/pb/server/MazeTempBuffSvr"
+	"maze_game_server/services/barrieritemservice"
 
 	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fklog"
 	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fkprometheus"
@@ -80,6 +81,13 @@ func (g *Game) OnEndAreaBattleRQ_10525_10526(s *session.Session, req *MazeGame.E
 		return
 	}
 
+	// 清理除了装备以外的物品
+	err = barrieritemservice.GbarrierItemsService.DelInAdditionToEquips(ctx, userId, req.GetStageId())
+	if err != nil {
+		logger.CtxError(ctx, "OnEndAreaBattleRQ DelInAdditionToEquips fail", zap.Error(err))
+		res.ErrInfo = errors.COMMON_ERROR_TIPS.Wrap("清理区域物品失败")
+		return
+	}
 	return nil
 }
 
