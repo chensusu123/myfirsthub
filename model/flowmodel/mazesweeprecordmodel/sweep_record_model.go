@@ -10,7 +10,7 @@ type KafkaCommon = kafkacommonstruct.KafkaCommon
 
 const MazeSweepRecordTableName = "maze_sweep_record"
 
-// 用户迷宫闯关纪录
+// 用户迷宫扫荡纪录
 type MazeBarrierSweepRecord struct {
 	KafkaCommon
 	UserId  uint64 `json:"user_id" gorm:"column:user_id"` // 用户id
