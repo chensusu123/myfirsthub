@@ -81,6 +81,6 @@ func packSpan(ctx context.Context, agentSession int64, userID int64, pack *raw_p
 		attribute.Int64("packet.id", int64(pack.PackType)),
 	)
 	// span.SetAttributes(attribute.String("nats.subject", subject))
-	span.AddEvent("pack.process.begin")
+	span.AddEvent("begin")
 	return ctx, span
 }
