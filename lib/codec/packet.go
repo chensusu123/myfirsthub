@@ -187,7 +187,7 @@ func decode(data []byte) (pack *raw_pkg.StruSvrEsRawBaseHead, err error) {
 			Header:      zzz.Header,
 			IsSvrHeader: isSvrHeader,
 		}
-		fklog.AppLogger().InfoWF("svrheader decode", zap.Any("pack", pack))
+		// fklog.AppLogger().InfoWF("svrheader decode", zap.Any("pack", pack))
 		// Decode
 		err = pack.UnPack(zzz.Body)
 		if err != nil {
