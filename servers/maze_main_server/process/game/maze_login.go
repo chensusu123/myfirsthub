@@ -1,9 +1,11 @@
 package game
 
 import (
+	"maze_game_server/app"
 	"maze_game_server/common/errors"
 	"maze_game_server/config/GMazeLevelV8Cfg"
 	"maze_game_server/io/kafka/mazeuserlevelkafka"
+	grouppkg "maze_game_server/io/redis/im/group"
 	"maze_game_server/io/redis/mazecalcattrredis"
 	"maze_game_server/lib/nano/session"
 	"maze_game_server/module/mazecommonvalue"
@@ -123,6 +125,21 @@ func (g *Game) OnMazeLoginRQ_10451_10452(s *session.Session, req *MazeGame.MazeL
 		logger.CtxError(ctx, "OnMazeLoginRQ QueryAllianceInfo Fail",
 			zap.Error(err))
 		return
+	}
+	//是否为联盟群组成员，不是的话加入
+	IsMember, err := grouppkg.IsMember(ctx, app.Maze.ID(), allianceInfo.AllianceGroupID, userId)
+	if err != nil {
+		logger.CtxError(ctx, "OnMazeLoginRQ GetGroupInfo Fail",
+			zap.Error(err))
+		return
+	}
+	if !IsMember {
+		err = grouppkg.InviteMember(ctx, app.Maze.ID(), allianceInfo.AllianceGroupID, userId)
+		if err != nil {
+			logger.CtxError(ctx, "OnMazeLoginRQ InviteMember Fail",
+				zap.Error(err))
+			return
+		}
 	}
 	res.AllianceInfo = allianceInfo.DataToAllianceInfoPb()
 	return nil

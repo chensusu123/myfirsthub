@@ -196,6 +196,40 @@ func InviteMember(ctx context.Context, appID int32, groupID int64, memberID uint
 	return
 }
 
+// 是否为群成员
+func IsMember(ctx context.Context, appID int32, groupID int64, memberID uint64) (is bool, err error) {
+	var (
+		logger = fklog.ContextAppLogger(ctx)
+	)
+	cli, err := globalredis.GCli.GetDB()
+	if err != nil {
+		logger.CtxError(ctx, "IsMember Client fail",
+			zap.Error(err),
+			zap.Int64("groupID", groupID),
+			zap.Uint64("memberID", memberID),
+		)
+		return false, err
+	}
+	key := getKey(cli, appID, groupID)
+	ret, err := cli.HExists(ctx, key, fmt.Sprintf("%d", memberID)).Result()
+	if err != nil {
+		if errors.Is(err, redis.Nil) {
+			err = nil
+		} else {
+			logger.CtxError(ctx, "IsMember HExists fail",
+				zap.Error(err),
+				zap.Any("key", key),
+				zap.Int64("groupID", groupID),
+				zap.Uint64("memberID", memberID),
+			)
+			return false, err
+		}
+	}
+
+	logger.CtxInfo(ctx, "IsMember success", zap.Any("key", key), zap.Int64("groupID", groupID), zap.Uint64("memberID", memberID), zap.Bool("is", is))
+	return ret, nil
+}
+
 // // RemoveGroup
 // func RemoveGroup(logger fklog.FKLogI, appID int32, groupID int32) (err error) {
 
