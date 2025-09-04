@@ -29,6 +29,7 @@ import (
 	"sync/atomic"
 	"time"
 
+	"maze_game_server/lib/codec/raw_pkg"
 	"maze_game_server/lib/nano/agentscheduler"
 	"maze_game_server/lib/nano/frame"
 	"maze_game_server/lib/nano/internal/codec"
@@ -44,6 +45,7 @@ import (
 	packCodec "maze_game_server/lib/codec"
 
 	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fklog"
+	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/protocol/svrheader"
 	"gitlab.ifreetalk.com/maze-plate/freetk/pkg/logidutil"
 	"go.opentelemetry.io/otel"
 	"go.opentelemetry.io/otel/attribute"
@@ -80,9 +82,10 @@ type (
 		serializer serialize.Serializer
 		pipeline   pipeline.Pipeline
 
-		rpcHandler rpcHandler
-		srv        reflect.Value // cached session reflect.Value
-		scheduler  *agentscheduler.AgentScheduler
+		rpcHandler  rpcHandler
+		srv         reflect.Value // cached session reflect.Value
+		scheduler   *agentscheduler.AgentScheduler
+		isSvrHeader atomic.Bool
 	}
 
 	pendingMessage struct {
@@ -592,7 +595,26 @@ func processPendingMessage(a *agent, data pendingMessage, chWrite chan WriteItem
 	span.AddEvent("send.to.chWrite")
 	allOK = true
 	// chWrite <- WriteItem{ctx: ctx, data: p}
+	if a.isSvrHeader.Load() {
+		xxx := &raw_pkg.StruSvrEsRawBaseHead{
+			Header: make(map[string]string),
+		}
 
+		carrier := otel.GetTextMapPropagator()
+		carrier.Inject(ctx, packCodec.NewBaseHeader(xxx))
+		hhh := svrheader.SvrHeader{
+			Header: xxx.Header,
+			Body:   p,
+		}
+
+		yyy, err := hhh.Encode()
+		if err != nil {
+			span.RecordError(err)
+			span.SetStatus(codes.Error, "svrheader.Encode failed.")
+			return err
+		}
+		p = yyy
+	}
 	safeSend(chWrite, WriteItem{ctx: ctx, data: p})
 	return nil
 }

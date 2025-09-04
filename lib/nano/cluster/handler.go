@@ -322,6 +322,7 @@ func (h *LocalHandler) handle(conn net.Conn, r *http.Request, pcodec frame.Packe
 	buf := make([]byte, 2048)
 	remoteAddr := agent.conn.RemoteAddr().String()
 	sessionID := agent.session.ID()
+	var isSvrHeader bool
 	for {
 		n, err := conn.Read(buf)
 		if err != nil {
@@ -365,7 +366,16 @@ func (h *LocalHandler) handle(conn net.Conn, r *http.Request, pcodec frame.Packe
 						zap.Uint8("CompressType", packets[index].CompressType),
 						zap.Int("rq_data_len", len(m.Data)),
 					)
-					h.processMessage(ctx, agent, m)
+					if !isSvrHeader && packets[index].IsSvrHeader {
+						isSvrHeader = true
+						agent.isSvrHeader.Store(true)
+					}
+					packCtx, packSpan := packSpan(context.Background(),
+						sessionID, agent.session.UID(), packets[index])
+					packCtx = fklog.ContextWithLogger(packCtx, loggerLoop)
+					packSpan.AddEvent("processMessage")
+					h.processMessage(packCtx, agent, m)
+					packSpan.End()
 				}
 				fklog.ContextAppLogger(ctx).CtxError(ctx, "nano message processed", zap.Error(err))
 				span.End()
@@ -385,7 +395,16 @@ func (h *LocalHandler) handle(conn net.Conn, r *http.Request, pcodec frame.Packe
 					zap.Uint8("CompressType", packets[index].CompressType),
 					zap.Int("rq_data_len", len(m.Data)),
 				)
-				h.processMessage(ctx, agent, m)
+				if !isSvrHeader && packets[index].IsSvrHeader {
+					isSvrHeader = true
+					agent.isSvrHeader.Store(true)
+				}
+				packCtx, packSpan := packSpan(context.Background(),
+					sessionID, agent.session.UID(), packets[index])
+				packCtx = fklog.ContextWithLogger(packCtx, loggerLoop)
+				packSpan.AddEvent("processMessage")
+				h.processMessage(packCtx, agent, m)
+				packSpan.End()
 			}
 
 			span.End()

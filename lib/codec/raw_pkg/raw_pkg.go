@@ -19,6 +19,8 @@ type StruSvrEsRawBaseHead struct {
 	EsRsTime     uint64
 	EsRqTime     uint64
 	Data         []byte
+	IsSvrHeader  bool
+	Header       map[string]string
 }
 
 const DEF_TCP_PACKHEAD_LEN_ES = 27

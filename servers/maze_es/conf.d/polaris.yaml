@@ -27,7 +27,7 @@ global:
         #默认值: 28080
         #如果设置为负数，则不会开启默认的http-server
         #如果设置为0，则随机选择一个可用端口进行启动 http-server
-        metricPort: 0
+        metricPort: 28080
 config:
   configConnector:
     addresses:
