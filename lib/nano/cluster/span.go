@@ -72,7 +72,7 @@ func packSpan(ctx context.Context, agentSession int64, userID int64, pack *raw_p
 	// 消息处理函数中手动创建Span
 	spanKind := trace.WithSpanKind(trace.SpanKindServer)
 
-	ctx, span := tracer.Start(ctx, "nano:pack:process",
+	ctx, span := tracer.Start(ctx, "nano.pack.process",
 		spanKind)
 	span.SetAttributes(
 		attribute.Int64("agent.session", agentSession),
