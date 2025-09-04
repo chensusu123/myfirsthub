@@ -71,6 +71,7 @@ type group struct {
 }
 
 var GlobalGroupService = newGroupService()
+var GroupMessageNotificationID = uint16(10662)
 
 func init() {
 	GlobalGroupService = newGroupService()
@@ -110,7 +111,7 @@ func (g *group) SendMessage(ctx context.Context, a app.App, groupID int64, sende
 		logger.CtxError(ctx, "SendMessage error", zap.Error(err), zap.Uint64("sender", sender), zap.Int32("_type", _type), zap.ByteString("content", content))
 		return 0, err
 	}
-	err = g.notifyGroupMessage(ctx, a, sender, messageID, _type, groupID, 10651, content)
+	err = g.notifyGroupMessage(ctx, a, sender, messageID, _type, groupID, GroupMessageNotificationID, content)
 	if err != nil {
 		logger.CtxError(ctx, "notifyGroupMessage error", zap.Error(err), zap.Uint64("sender", sender), zap.Int32("_type", _type), zap.ByteString("content", content))
 		return 0, err
