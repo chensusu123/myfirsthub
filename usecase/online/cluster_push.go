@@ -43,7 +43,8 @@ func MakeNormalPushData(packetType uint16, payload interface{}, isBytes bool) *s
 
 // ClusterPush push data to cluster
 // 注意： 如果用户不在当前分片。 则会往其他分片广播，由其他分片发送给用户
-func ClusterPush(ctx context.Context, userID uint64, packetType uint16, v interface{}) (err error) {
+func ClusterPush(ctxP context.Context, userID uint64, packetType uint16, v interface{}) (err error) {
+	ctx := context.WithoutCancel(ctxP)
 	if userID == 0 || packetType == 0 {
 		fklog.ContextAppLogger(ctx).CtxError(ctx, "ClusterPush invalid",
 			zap.Uint64("userID", userID),
@@ -85,7 +86,8 @@ func ClusterPush(ctx context.Context, userID uint64, packetType uint16, v interf
 }
 
 // PushBytes push bytes data to user
-func PushBytes(ctx context.Context, userID uint64, packetType uint16, data []byte) (err error) {
+func PushBytes(ctxP context.Context, userID uint64, packetType uint16, data []byte) (err error) {
+	ctx := context.WithoutCancel(ctxP)
 	span := nanotrace.NewSimpleTrace("PushBytesToUser")
 	ctx = span.Start(ctx)
 	defer span.Finish(ctx)
@@ -105,7 +107,8 @@ func PushBytes(ctx context.Context, userID uint64, packetType uint16, data []byt
 
 // Deprecated: 仅仅供测试的时候使用
 // PushToClusterTest push data to cluster
-func PushToClusterTest(ctx context.Context, userID uint64, packetType uint16, data []byte) (err error) {
+func PushToClusterTest(ctxP context.Context, userID uint64, packetType uint16, data []byte) (err error) {
+	ctx := context.WithoutCancel(ctxP)
 	span := nanotrace.NewSimpleTrace("PushToClusterTest")
 	ctx = span.Start(ctx)
 	defer span.Finish(ctx)
