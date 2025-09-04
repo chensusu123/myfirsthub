@@ -52,7 +52,7 @@ func (d *Dispatcher[T]) background(ctx context.Context) {
 }
 
 func (d *Dispatcher[T]) Push(c context.Context, msg T) {
-	d.ch <- msgWrapper[T]{ctx: c, message: msg}
+	d.ch <- msgWrapper[T]{ctx: context.WithoutCancel(c), message: msg}
 }
 
 // Watch
