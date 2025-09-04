@@ -37,6 +37,7 @@ func (s service) GetNewEquip(ctx context.Context, userId uint64, level int32, ba
 	if err != nil {
 		return nil, err
 	}
+	logger.CtxInfo(ctx, "GetNewEquip success", zap.Uint64("userId", userId), zap.Any("newEquip", newEquip))
 	return
 }
 
@@ -140,12 +141,13 @@ func (s service) specialEquipDrop(ctx context.Context, userId uint64, barrier, m
 		quality := cfg.Special_drop[i]
 		pos := cfg.Special_drop[i+1]
 		equipId := getEquipId(newLevel, quality, pos)
-		logger.CtxInfo(ctx, "specialEquipDrop getEquipId success", zap.Int32("level", newLevel), zap.Int32("quality", quality), zap.Int32("pos", pos), zap.Int32("equipId", equipId))
 		equipIdMap[equipId] += 1
 
 		index = int32(i + 1)
 		info.DropMap[cfg.Order] = int32(i + 1)
 		add++
+		logger.CtxInfo(ctx, "specialEquipDrop getEquipId success", zap.Int32("level", newLevel), zap.Int32("quality", quality), zap.Int32("pos", pos), zap.Int32("equipId", equipId), zap.Any("equipIdMap", equipIdMap), zap.Any("info.DropMap", info.DropMap))
+
 	}
 
 	if add > 0 {
