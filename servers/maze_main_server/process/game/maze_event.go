@@ -85,6 +85,12 @@ func (g *Game) OnMazeReportBattleEventRQ_10496_10497(s *session.Session, req *Ma
 			triggerFn = func() {
 				events.OnPauseGame(s.Context(), userID, event.GetEventFrame(), event.GetEventTimeMs(), event.GetPauseGame())
 			}
+		// 客户端日志
+		case MazeGame.BattleEventType_CLIENT_LOG:
+			eventData = event.GetClientLog()
+			triggerFn = func() {
+				events.OnClientLog(s.Context(), userID, event.GetEventFrame(), event.GetEventTimeMs(), event.GetClientLog())
+			}
 		}
 		if eventData == nil {
 			logger.CtxError(ctx, "OnMazeReportBattleEventRQ event type not supported", zap.Int32("eventType", int32(eventType)))
