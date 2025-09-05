@@ -8,6 +8,8 @@ import (
 
 	"maze_game_server/app"
 
+	"maze_game_server/common/constdef"
+
 	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fklog"
 	"go.uber.org/zap"
 )
@@ -27,7 +29,7 @@ func (r *service) CreateFamily(ctx context.Context, userID uint64, allianceID in
 	familyInfoModel.AddMember(ctx, userInfo)
 
 	//创建家族群聊
-	groupInfo, err := groupservice.Default.CreateGroup(ctx, app.Maze, userID, make([]uint64, 0))
+	groupInfo, err := groupservice.Default.CreateGroup(ctx, app.Maze, userID, constdef.GroupTypeFamily, make([]uint64, 0))
 	if err != nil {
 		logger.CtxError(ctx, "OnCreateFamilyRQ CreateGroup error", zap.Error(err))
 		return nil, err

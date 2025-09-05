@@ -2,7 +2,9 @@ package groupservice
 
 import (
 	"context"
+	"fmt"
 	"maze_game_server/app"
+	"maze_game_server/io/broadcastcli"
 	grouppkg "maze_game_server/io/redis/im/group"
 	"maze_game_server/io/redis/im/msgstore/groupmsg"
 	"maze_game_server/lib/idgenerator"
@@ -12,8 +14,6 @@ import (
 	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fklog"
 
 	"maze_game_server/pb/common/MazeIM"
-
-	"maze_game_server/usecase/online"
 
 	"go.uber.org/zap"
 	"google.golang.org/protobuf/proto"
@@ -52,7 +52,7 @@ type GroupService interface {
 	//	- a: 应用
 	//	- user: 群主用户
 	//	- memberIDs: 成员ID
-	CreateGroup(ctx context.Context, a app.App, userID uint64, memberIDs []uint64) (g *app.Group, err error)
+	CreateGroup(ctx context.Context, a app.App, userID uint64, groupType string, memberIDs []uint64) (g *app.Group, err error)
 
 	// InviteMember 群组邀请成员
 	//
@@ -132,13 +132,13 @@ func (*group) GetGroupInfo(ctx context.Context, a app.App, groupID int64) (g *ap
 }
 
 // CreateGroup implements GroupService.
-func (*group) CreateGroup(ctx context.Context, a app.App, userID uint64, memberIDs []uint64) (g *app.Group, err error) {
+func (*group) CreateGroup(ctx context.Context, a app.App, userID uint64, groupType string, memberIDs []uint64) (g *app.Group, err error) {
 	// TODO 群组ID生成器
 	groupID, err := idgenerator.NextID()
 	if err != nil {
 		return nil, err
 	}
-	return grouppkg.CreateGroup(ctx, a.ID(), userID, groupID, memberIDs)
+	return grouppkg.CreateGroup(ctx, a.ID(), userID, groupID, groupType, memberIDs)
 }
 
 // InviteMember implements GroupService.
@@ -148,40 +148,37 @@ func (g *group) InviteMember(ctx context.Context, a app.App, groupID int64, memb
 
 func (g *group) notifyGroupMessage(ctx context.Context, a app.App, userId uint64, messageID uint64, _type int32, groupID int64, packId uint16, content []byte) error {
 	logger := fklog.ContextAppLogger(ctx)
-	groupInfo, err := g.GetGroupInfo(ctx, a, groupID)
+	_, err := g.GetGroupInfo(ctx, a, groupID)
 	if err != nil {
 		logger.CtxError(ctx, "notifyGroupMessage error", zap.Error(err), zap.Uint64("userId", userId), zap.Uint64("messageID", messageID), zap.Int32("_type", _type), zap.Int64("groupID", groupID), zap.ByteString("content", content))
 		return err
 	}
-
-	for _, member := range groupInfo.Members {
-		if member.UserID <= 0 {
-			continue
-		}
-		// 推送消息给集群
-		notifyMessage := &MazeIM.GroupMessageNotificationID{
-			GroupId: proto.Int64(groupID),
-			Message: &MazeIM.Message{
-				MsgId:      proto.Uint64(messageID),
-				Type:       proto.Int32(_type),
-				Content:    []byte(content),
-				Sender:     proto.Uint64(userId),
-				CreateTime: proto.Int64(time.Now().Unix()),
-			},
-		}
-		logger.CtxInfo(ctx, "notifyMessage group", zap.Uint64("member_id", member.UserID), zap.Any("notifyMessage group", notifyMessage))
-		err = online.ClusterPush(ctx, member.UserID, packId, notifyMessage)
-		if err != nil {
-			logger.CtxError(ctx, "notifyMessage error", zap.Error(err), zap.Any("notifyMessage", notifyMessage))
-		}
-		//创建群组成员会话
-		user, err := app.WrapUser(member.UserID, "")
-		if err != nil {
-			logger.CtxError(ctx, "WrapUser error", zap.Error(err), zap.Uint64("userId", member.UserID))
-			continue
-		}
-		sessionservice.Default.CreateGroupSession(ctx, a, user, groupID)
+	// 推送消息给集群
+	notifyMessage := &MazeIM.GroupMessageNotificationID{
+		GroupId: proto.Int64(groupID),
+		Message: &MazeIM.Message{
+			MsgId:      proto.Uint64(messageID),
+			Type:       proto.Int32(_type),
+			Content:    []byte(content),
+			Sender:     proto.Uint64(userId),
+			CreateTime: proto.Int64(time.Now().Unix()),
+		},
 	}
+	logger.CtxInfo(ctx, "notifyMessage group", zap.Uint64("userId", userId), zap.Any("notifyMessage group", notifyMessage))
+
+	broadcastID := fmt.Sprintf("league.broadcast.chat.{%d}", groupID)
+	err = broadcastcli.Broadcast(ctx, broadcastID, packId, notifyMessage)
+	if err != nil {
+		logger.CtxError(ctx, "league.broadcast.chat notifyMessage error", zap.Error(err), zap.Any("broadcastID", broadcastID), zap.Any("packId", packId), zap.Any("notifyMessage", notifyMessage))
+	}
+	//TODO 先不创建session
+	// //创建群组成员会话
+	// user, err := app.WrapUser(UserID, "")
+	// if err != nil {
+	// 	logger.CtxError(ctx, "WrapUser error", zap.Error(err), zap.Uint64("userId", UserID))
+	// 	continue
+	// }
+	// sessionservice.Default.CreateGroupSession(ctx, a, user, groupID)
 	return nil
 }
 

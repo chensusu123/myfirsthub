@@ -19,6 +19,7 @@ type Group struct {
 	ID         int64    `json:"id,omitempty"`
 	Creator    uint64   `json:"creator,omitempty"`
 	CreateTime int64    `json:"create_time,omitempty"`
+	GroupType  string   `json:"group_type,omitempty"`
 	Members    []Member `json:"-"`
 }
 
@@ -80,7 +81,7 @@ func GetGroupInfo(ctx context.Context, appID int32, groupID int64) (group *Group
 }
 
 // CreateGroup
-func CreateGroup(ctx context.Context, appID int32, creator uint64, groupID int64, invitees []uint64) (group *Group, err error) {
+func CreateGroup(ctx context.Context, appID int32, creator uint64, groupID int64, grouptype string, invitees []uint64) (group *Group, err error) {
 	var (
 		now    = time.Now()
 		logger = fklog.ContextAppLogger(ctx)
@@ -99,6 +100,7 @@ func CreateGroup(ctx context.Context, appID int32, creator uint64, groupID int64
 		ID:         groupID,
 		Creator:    creator,
 		CreateTime: now.Unix(),
+		GroupType:  grouptype,
 	}
 	info, err := json.Marshal(group)
 	if err != nil {
@@ -112,7 +114,10 @@ func CreateGroup(ctx context.Context, appID int32, creator uint64, groupID int64
 	} else {
 		values = append(values, "info", info)
 	}
-	memberIDs := append([]uint64{creator}, invitees...)
+	var memberIDs = invitees
+	if creator != 0 {
+		memberIDs = append(memberIDs, creator)
+	}
 	for _, memberID := range memberIDs {
 		member := Member{
 			UserID:     memberID,

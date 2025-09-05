@@ -43,3 +43,9 @@ const (
 const (
 	ItemProducePercent = 10000 // 道具产出比例
 )
+
+// 群组类型
+const (
+	GroupTypeLeague = "league"
+	GroupTypeFamily = "family"
+)

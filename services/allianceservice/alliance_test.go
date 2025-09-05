@@ -1,9 +1,8 @@
-package groupservice
+package allianceservice
 
 import (
 	"context"
 	"fmt"
-	"maze_game_server/app"
 	globalredis "maze_game_server/io/redis"
 	"maze_game_server/lib/log"
 	"os"
@@ -15,7 +14,7 @@ import (
 	"go.uber.org/zap"
 )
 
-var logger = log.Clone("p2pservice", 0, 0)
+var logger = log.Clone("allianceservice", 0, 0)
 
 func TestMain(m *testing.M) {
 	originalStdout := os.Stdout
@@ -51,21 +50,10 @@ func TestRedis(t *testing.T) {
 	fmt.Println(res)
 }
 
-func TestSendMessages(t *testing.T) {
-
-	messageID, err := GlobalGroupService.SendMessage(context.Background(), app.Maze, int64(1), uint64(50000001), int32(1), []byte("hello03"))
+func TestCreateAlliance(t *testing.T) {
+	err := GlobalAllianceService.CreateAlliance(context.Background(), "test002")
 	if err != nil {
-		logger.ErrorWF("SendGroupMessageTest error", zap.Error(err))
+		logger.ErrorWF("TestCreateAlliance error", zap.Error(err))
 	}
-	fmt.Println("messageID:", messageID)
-
-}
-
-func TestQueryMessages(t *testing.T) {
-	messages, err := GlobalGroupService.QueryMessages(context.Background(), app.Maze, int64(1), uint64(50000001), int(10))
-	if err != nil {
-		logger.ErrorWF("QueryGroupMessagesTest error", zap.Error(err))
-	}
-	fmt.Println("messages:", messages)
-
+	fmt.Println("TestCreateAlliance success")
 }

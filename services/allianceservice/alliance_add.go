@@ -9,6 +9,8 @@ import (
 
 	grouppkg "maze_game_server/io/redis/im/group"
 
+	"maze_game_server/common/constdef"
+
 	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fklog"
 	"go.uber.org/zap"
 )
@@ -29,7 +31,7 @@ func (s *service) CreateAlliance(ctx context.Context, allianceName string) error
 		return err
 	}
 	// 创建联盟聊天组
-	_, err = grouppkg.CreateGroup(ctx, app.Maze.ID(), uint64(0), allianceInfoModel.AllianceGroupID, make([]uint64, 0))
+	_, err = grouppkg.CreateGroup(ctx, app.Maze.ID(), uint64(0), allianceInfoModel.AllianceGroupID, constdef.GroupTypeLeague, make([]uint64, 0))
 	if err != nil {
 		logger.CtxError(ctx, "AddAlliance CreateGroup err", zap.Error(err))
 		return err
