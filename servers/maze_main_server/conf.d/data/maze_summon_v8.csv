@@ -2,4 +2,4 @@ paipaiworld_config,Unnamed: 1,Unnamed: 2,Unnamed: 3,Unnamed: 4,Unnamed: 5,Unname
 INT_K,STRING_C_S,STRING,INT_C_S,INT_C_S,INT_C_S,INT_C_S,INT_C_S,LIST<INT>_C_S,INT_C_S,INT_C_S,INT_C_S,INT_C_S,INT_C_S,INT_C_S,INT_C_S,INT_C_S
 id,name,desc,suffer_damage,duration,max_number,model_id,nor_attack_skill_id,skill_id,speed,attack_speed_pro,inheritance_attack,inheritance_def,inheritance_hp,attack_value,def_value,hp_value
 召唤物id,召唤物名称,召唤物描述,是否承伤,持续时间（毫秒）,同时存在数量上限,资源组id,普通攻击技能id,技能id,移动速度(万分比）,"攻击速度系数（>10000加速 ,<10000减速",继承攻击万分比,继承防御万分比,继承生命万分比,额外攻击固定值,额外防御固定值,额外生命固定值
-1,火龙,,0,7000,6,900000001,200801001,0,-10000,10000,10000,0,0,0,0,0
+1,火龙,,0,5000,6,900000001,200801001,0,-10000,10000,10000,0,0,0,0,0
