@@ -53,6 +53,8 @@ import (
 	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fkalert"
 	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fklog"
 	"gitlab.ifreetalk.com/maze-plate/freetk/pkg/logidutil"
+	"gitlab.ifreetalk.com/maze-plate/freetk/pkg/metrics"
+	"gitlab.ifreetalk.com/maze-plate/freetk/pkg/metricsreport"
 	"go.opentelemetry.io/otel"
 	"go.opentelemetry.io/otel/attribute"
 	"go.opentelemetry.io/otel/codes"
@@ -672,6 +674,8 @@ func (h *LocalHandler) localProcess(ctx context.Context, handler *component.Hand
 		span.AddEvent("nano.func.call.begin")
 		ctxCall, spanCall := callSpan(ctx, session, msg.Route)
 		session.SetContext(ctxCall)
+		begin := time.Now()
+		var callErr error
 		defer func() {
 			if err := recover(); err != nil {
 				fklog.ContextAppLogger(ctxCall).ErrorWF("local process panic", zap.Any("err", err))
@@ -684,6 +688,18 @@ func (h *LocalHandler) localProcess(ctx context.Context, handler *component.Hand
 
 			h.taskCount.Add(-1)
 			session.TaskCountDec()
+
+			var labels []*metrics.Dimension
+			labels = getProcessLabels(msg.Route, callErr)
+
+			ms := make([]*metrics.Metrics, 0)
+			t := float64(time.Since(begin)) / float64(time.Millisecond)
+			ms = append(ms,
+				metrics.NewMetrics("time", t, metrics.PolicyHistogram),
+				metrics.NewMetrics("requests", 1.0, metrics.PolicySUM))
+			metrics.Histogram("nanohandle_time", clientBounds)
+			recored := metrics.NewMultiDimensionMetricsX("nanohandle", labels, ms)
+			_ = metricsreport.Report(recored)
 		}()
 
 		if session.IsClose() {
@@ -700,6 +716,7 @@ func (h *LocalHandler) localProcess(ctx context.Context, handler *component.Hand
 			if err := result[0].Interface(); err != nil {
 				spanCall.RecordError(err.(error))
 				spanCall.SetStatus(codes.Error, "handler.Method.Func.Call failed.")
+				callErr = err.(error)
 			}
 		}
 	}

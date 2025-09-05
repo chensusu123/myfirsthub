@@ -71,6 +71,7 @@ type group struct {
 }
 
 var GlobalGroupService = newGroupService()
+var GroupMessageNotificationID = uint16(10662)
 
 func init() {
 	GlobalGroupService = newGroupService()
@@ -110,7 +111,7 @@ func (g *group) SendMessage(ctx context.Context, a app.App, groupID int64, sende
 		logger.CtxError(ctx, "SendMessage error", zap.Error(err), zap.Uint64("sender", sender), zap.Int32("_type", _type), zap.ByteString("content", content))
 		return 0, err
 	}
-	err = g.notifyGroupMessage(ctx, a, sender, messageID, _type, groupID, 10651, content)
+	err = g.notifyGroupMessage(ctx, a, sender, messageID, _type, groupID, GroupMessageNotificationID, content)
 	if err != nil {
 		logger.CtxError(ctx, "notifyGroupMessage error", zap.Error(err), zap.Uint64("sender", sender), zap.Int32("_type", _type), zap.ByteString("content", content))
 		return 0, err
@@ -154,7 +155,7 @@ func (g *group) notifyGroupMessage(ctx context.Context, a app.App, userId uint64
 	}
 
 	for _, member := range groupInfo.Members {
-		if member.UserID == userId || member.UserID <= 0 {
+		if member.UserID <= 0 {
 			continue
 		}
 		// 推送消息给集群
@@ -168,8 +169,8 @@ func (g *group) notifyGroupMessage(ctx context.Context, a app.App, userId uint64
 				CreateTime: proto.Int64(time.Now().Unix()),
 			},
 		}
-		logger.CtxInfo(ctx, "notifyMessage group", zap.Any("notifyMessage group", notifyMessage))
-		err = online.ClusterPush(ctx, userId, packId, notifyMessage)
+		logger.CtxInfo(ctx, "notifyMessage group", zap.Uint64("member_id", member.UserID), zap.Any("notifyMessage group", notifyMessage))
+		err = online.ClusterPush(ctx, member.UserID, packId, notifyMessage)
 		if err != nil {
 			logger.CtxError(ctx, "notifyMessage error", zap.Error(err), zap.Any("notifyMessage", notifyMessage))
 		}

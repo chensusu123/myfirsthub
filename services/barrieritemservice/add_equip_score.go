@@ -10,14 +10,14 @@ import (
 	"go.uber.org/zap"
 )
 
-func (s *service) AddEquipScore(ctx context.Context, userID uint64, barrierID int32, score int32, monsterGuid int64, monsterPos string) (err error) {
+func (s *service) AddEquipScore(ctx context.Context, userID uint64, barrierID int32, score int32, guid int64, pos string) (err error) {
 	logger := fklog.ContextAppLogger(ctx)
 	logger.CtxInfo(ctx, "AddEquipScore Start",
 		zap.Uint64("userID", userID),
 		zap.Int32("barrierID", barrierID),
 		zap.Int32("score", score),
-		zap.Int64("monsterGuid", monsterGuid),
-		zap.String("monsterPos", monsterPos),
+		zap.Int64("guid", guid),
+		zap.String("pos", pos),
 	)
 
 	defer func() {
@@ -25,8 +25,8 @@ func (s *service) AddEquipScore(ctx context.Context, userID uint64, barrierID in
 			zap.Uint64("userID", userID),
 			zap.Int32("barrierID", barrierID),
 			zap.Int32("score", score),
-			zap.Int64("monsterGuid", monsterGuid),
-			zap.String("monsterPos", monsterPos),
+			zap.Int64("guid", guid),
+			zap.String("pos", pos),
 		)
 	}()
 
@@ -36,8 +36,8 @@ func (s *service) AddEquipScore(ctx context.Context, userID uint64, barrierID in
 			zap.Uint64("userID", userID),
 			zap.Int32("barrierID", barrierID),
 			zap.Int32("score", score),
-			zap.Int64("monsterGuid", monsterGuid),
-			zap.String("monsterPos", monsterPos),
+			zap.Int64("guid", guid),
+			zap.String("pos", pos),
 			zap.Any("data", data),
 			zap.Error(err),
 		)
@@ -50,8 +50,8 @@ func (s *service) AddEquipScore(ctx context.Context, userID uint64, barrierID in
 			zap.Uint64("userID", userID),
 			zap.Int32("barrierID", barrierID),
 			zap.Int32("score", score),
-			zap.Int64("monsterGuid", monsterGuid),
-			zap.String("monsterPos", monsterPos),
+			zap.Int64("guid", guid),
+			zap.String("pos", pos),
 			zap.Any("data", data),
 		)
 		return nil
@@ -68,8 +68,8 @@ func (s *service) AddEquipScore(ctx context.Context, userID uint64, barrierID in
 			zap.Uint64("userID", userID),
 			zap.Int32("barrierID", barrierID),
 			zap.Int32("score", score),
-			zap.Int64("monsterGuid", monsterGuid),
-			zap.String("monsterPos", monsterPos),
+			zap.Int64("guid", guid),
+			zap.String("pos", pos),
 			zap.Any("data", data),
 			zap.Error(err),
 		)
@@ -88,8 +88,8 @@ func (s *service) AddEquipScore(ctx context.Context, userID uint64, barrierID in
 			zap.Uint64("userID", userID),
 			zap.Int32("barrierID", barrierID),
 			zap.Int32("score", score),
-			zap.Int64("monsterGuid", monsterGuid),
-			zap.String("monsterPos", monsterPos),
+			zap.Int64("guid", guid),
+			zap.String("pos", pos),
 			zap.Any("data", data),
 			zap.Error(err),
 		)
@@ -98,14 +98,14 @@ func (s *service) AddEquipScore(ctx context.Context, userID uint64, barrierID in
 
 	// 推包
 	if len(equips) > 0 {
-		err = item.OnSendItemsPack(ctx, userID, nil, equips, monsterGuid, monsterPos)
+		err = item.OnSendItemsPack(ctx, userID, nil, equips, guid, pos)
 		if err != nil {
 			logger.CtxWarn(ctx, "AddEquipScore OnSendItemsPack Fail",
 				zap.Uint64("userID", userID),
 				zap.Int32("barrierID", barrierID),
 				zap.Int32("score", score),
-				zap.Int64("monsterGuid", monsterGuid),
-				zap.String("monsterPos", monsterPos),
+				zap.Int64("guid", guid),
+				zap.String("pos", pos),
 				zap.Any("equips", equips),
 				zap.Error(err),
 			)
