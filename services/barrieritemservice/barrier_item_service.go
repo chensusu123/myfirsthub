@@ -16,16 +16,13 @@ type barrierItemsService interface {
 	// 掉落装备信息生成
 	FallOffEquip(ctx context.Context, userID uint64, barrierID int32, equipNum int32) ([]*itemservice.ItemInfo, error)
 	// 增加装备掉落分数 如果可以增加装备 将会增加装备
-	AddEquipScore(ctx context.Context, userID uint64, barrierID int32, score int32, guid int64, pos string) error
+	AddEquipScore(ctx context.Context, userID uint64, barrierID, score, killMonsterNum int32, guid int64, pos string) (res int32, dropItems []*itemservice.ItemInfo, err error)
 	// 增加 带掉落分数的物品
-	AddScoreItem(ctx context.Context, userID uint64, barrierID int32, itemType int32, score int32, guid int64, pos string) error
+	AddScoreItem(ctx context.Context, userID uint64, barrierID int32, itemType int32, score int32, guid int64, pos string) (res int32, dropItems []*itemservice.ItemInfo, err error)
 	// 增加普通物品
 	AddItems(ctx context.Context, userID uint64, barrierID int32, items []*itemservice.ItemInfo, guid int64, pos string) error
 	// 技能道具掉落
-	FallOffSkillItems(ctx context.Context, userID uint64, barrierID int32, killMonsterNum int32, nowBloodVolume int64, allBloodVolume int64, guid int64, pos string) error
-
-	// 清理未通过的区域技能点数累计
-	// ClearBuffCountingPoints(ctx context.Context, userID uint64, barrierID int32) error
+	FallOffSkillItems(ctx context.Context, userID uint64, barrierID int32, killMonsterNum int32, nowBloodVolume int64, allBloodVolume int64, guid int64, pos string) (dropItems []*itemservice.ItemInfo, err error)
 }
 
 var GbarrierItemsService barrierItemsService

@@ -5,12 +5,13 @@ import (
 	"maze_game_server/excel/mazebarriesv8config"
 	"maze_game_server/model/barrieritemsmodel"
 	"maze_game_server/servers/maze_main_server/process/item"
+	"maze_game_server/services/itemservice"
 
 	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fklog"
 	"go.uber.org/zap"
 )
 
-func (s *service) AddEquipScore(ctx context.Context, userID uint64, barrierID int32, score int32, guid int64, pos string) (err error) {
+func (s *service) AddEquipScore(ctx context.Context, userID uint64, barrierID, score, killMonsterNum int32, guid int64, pos string) (res int32, dropItems []*itemservice.ItemInfo, err error) {
 	logger := fklog.ContextAppLogger(ctx)
 	logger.CtxInfo(ctx, "AddEquipScore Start",
 		zap.Uint64("userID", userID),
@@ -41,7 +42,7 @@ func (s *service) AddEquipScore(ctx context.Context, userID uint64, barrierID in
 			zap.Any("data", data),
 			zap.Error(err),
 		)
-		return err
+		return
 	}
 
 	barrierCfg := mazebarriesv8config.GetStageConfig(ctx, barrierID)
@@ -54,7 +55,7 @@ func (s *service) AddEquipScore(ctx context.Context, userID uint64, barrierID in
 			zap.String("pos", pos),
 			zap.Any("data", data),
 		)
-		return nil
+		return
 	}
 
 	nowScore := data.EquipScore + score
@@ -62,6 +63,8 @@ func (s *service) AddEquipScore(ctx context.Context, userID uint64, barrierID in
 	equipNum := nowScore / barrierCfg.Need_equip_score
 	// if equipNum
 	data.EquipScore = nowScore % barrierCfg.Need_equip_score
+	res = data.EquipScore
+
 	equips, err := s.FallOffEquip(ctx, userID, barrierID, equipNum)
 	if err != nil {
 		logger.CtxError(ctx, "AddEquipScore DropEquip Fail",
@@ -73,12 +76,16 @@ func (s *service) AddEquipScore(ctx context.Context, userID uint64, barrierID in
 			zap.Any("data", data),
 			zap.Error(err),
 		)
-		return err
+		return
 	}
 
 	for _, equip := range equips {
 		if equip.Count > 0 {
 			data.Equips[uint64(equip.ItemId)] += uint64(equip.Count)
+			dropItems = append(dropItems, &itemservice.ItemInfo{
+				ItemId: equip.ItemId,
+				Count:  equip.Count,
+			})
 		}
 	}
 
@@ -113,5 +120,5 @@ func (s *service) AddEquipScore(ctx context.Context, userID uint64, barrierID in
 		}
 	}
 
-	return err
+	return
 }

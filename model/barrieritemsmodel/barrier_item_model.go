@@ -39,8 +39,7 @@ func NewBarrierItems(ctx context.Context, userID uint64, barrierID int32) (*barr
 }
 
 func (s *barrierItems) load(ctx context.Context, userID uint64, barrierID int32) (err error) {
-	err = io.LoadSvrData(ctx, getKey(userID, barrierID), s)
-	return err
+	return io.LoadSvrData(ctx, getKey(userID, barrierID), s)
 }
 
 func (s *barrierItems) Save(ctx context.Context, userID uint64, barrierID int32) (err error) {

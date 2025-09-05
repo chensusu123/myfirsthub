@@ -2,6 +2,7 @@ package flowutil
 
 import (
 	"fmt"
+	"maze_game_server/services/itemservice"
 	"strings"
 )
 
@@ -26,6 +27,15 @@ func UserType2Flow(opts ...any) (res string) {
 	}
 	// 用下划线拼接所有部分
 	res = strings.Join(parts, "_")
-	fmt.Println(res)
 	return res
+}
+
+func ItemInfo2String(optss ...[]*itemservice.ItemInfo) (res string) {
+	var parts []string
+	for _, opts := range optss {
+		for _, opt := range opts {
+			parts = append(parts, fmt.Sprintf("%d:%d", opt.ItemId, opt.Count))
+		}
+	}
+	return strings.Join(parts, "_")
 }

@@ -3,6 +3,7 @@ package barrieritemservice
 import (
 	"context"
 	"maze_game_server/common/constdef"
+	"maze_game_server/common/errors"
 	"maze_game_server/excel/mazebarriesv8config"
 	"maze_game_server/excel/mazeconfigv8"
 	"maze_game_server/model/barrieritemsmodel"
@@ -13,7 +14,7 @@ import (
 	"go.uber.org/zap"
 )
 
-func (s *service) AddScoreItem(ctx context.Context, userID uint64, barrierID int32, itemType int32, score int32, guid int64, pos string) (err error) {
+func (s *service) AddScoreItem(ctx context.Context, userID uint64, barrierID int32, itemType int32, score int32, guid int64, pos string) (res int32, dropItems []*itemservice.ItemInfo, err error) {
 	logger := fklog.ContextAppLogger(ctx)
 	logger.CtxInfo(ctx, "AddScoreItem Start",
 		zap.Uint64("userID", userID),
@@ -43,11 +44,12 @@ func (s *service) AddScoreItem(ctx context.Context, userID uint64, barrierID int
 			zap.String("pos", pos),
 			zap.Error(err),
 		)
-		return err
+		return
 	}
 
 	barrierCfg := mazebarriesv8config.GetStageConfig(ctx, barrierID)
 	if barrierCfg.Need_item1_score == 0 || barrierCfg.Need_item2_score == 0 {
+		err = errors.New("配置不存在")
 		logger.CtxError(ctx, "AddScoreItem barrierCfg Need_item1_score or Need_item2_score Equal zero",
 			zap.Uint64("userID", userID),
 			zap.Int32("barrierID", barrierID),
@@ -56,10 +58,8 @@ func (s *service) AddScoreItem(ctx context.Context, userID uint64, barrierID int
 			zap.String("pos", pos),
 			zap.Any("data", data),
 		)
-		return nil
+		return
 	}
-
-	var dropItems []*itemservice.ItemInfo
 
 	var realyItemID int32
 	if itemType == constdef.MazeCfgId901 {
@@ -70,6 +70,7 @@ func (s *service) AddScoreItem(ctx context.Context, userID uint64, barrierID int
 
 		nowScore := data.ItemsScore[realyItemID] + score
 		data.ItemsScore[realyItemID] = nowScore % barrierCfg.Need_item1_score
+		res = data.ItemsScore[realyItemID]
 
 		itemNum := nowScore / barrierCfg.Need_item1_score
 		if itemNum > 0 {
@@ -87,6 +88,7 @@ func (s *service) AddScoreItem(ctx context.Context, userID uint64, barrierID int
 
 		nowScore := data.ItemsScore[realyItemID] + score
 		data.ItemsScore[realyItemID] = nowScore % barrierCfg.Need_item2_score
+		res = data.ItemsScore[realyItemID]
 
 		itemNum := nowScore / barrierCfg.Need_item2_score
 		if itemNum > 0 {
@@ -134,7 +136,7 @@ func (s *service) AddScoreItem(ctx context.Context, userID uint64, barrierID int
 		}
 	}
 
-	return err
+	return
 }
 
 func (s *service) AddItems(ctx context.Context, userID uint64, barrierID int32, items []*itemservice.ItemInfo, guid int64, pos string) error {

@@ -20,7 +20,7 @@ import (
 )
 
 func (s *service) FallOffSkillItems(ctx context.Context, userID uint64, barrierID int32, killMonsterNum int32, nowBloodVolume int64,
-	allBloodVolume int64, guid int64, pos string) error {
+	allBloodVolume int64, guid int64, pos string) (dropItems []*itemservice.ItemInfo, err error) {
 	logger := fklog.ContextAppLogger(ctx)
 	defer func() {
 		logger.CtxInfo(ctx, "FallOffSkillItems End",
@@ -29,6 +29,7 @@ func (s *service) FallOffSkillItems(ctx context.Context, userID uint64, barrierI
 			zap.Int32("killMonsterNum", killMonsterNum),
 			zap.Int64("nowBloodVolume", nowBloodVolume),
 			zap.Int64("allBloodVolume", allBloodVolume),
+
 			zap.String("pos", pos),
 		)
 	}()
@@ -52,18 +53,16 @@ func (s *service) FallOffSkillItems(ctx context.Context, userID uint64, barrierI
 			zap.String("pos", pos),
 			zap.Error(err),
 		)
-		return err
+		return
 	}
 
 	attrDbs, err := mazecalcattrredis.BatchGetMazeCalcAttr(ctx, userID, []int32{constdef.BloodBottleProbability, constdef.BloodBottlesNumber})
 	if err != nil {
 		logger.CtxError(ctx, "checkCondition GetAllMazeCalcAttr nil", zap.Uint64("userID", userID))
-		return err
+		return
 	}
 
 	row := GMazeConfigV8Cfg.GetWithCtx(ctx, constdef.MazeCfgId951)
-
-	dropItems := make([]*itemservice.ItemInfo, 0)
 
 	// 先获取当前关卡掉落物品
 	barrierCfg := mazebarriesv8config.GetStageConfig(ctx, barrierID)
@@ -85,7 +84,7 @@ func (s *service) FallOffSkillItems(ctx context.Context, userID uint64, barrierI
 				for _, condionID := range barrierDrop.Drop_condition {
 					ok, err := checkCondition(ctx, attrDbs, condionID, nowBloodVolume, allBloodVolume, data.SkillsCount[dropItemID], data.Items[int64(dropItemID)])
 					if err != nil {
-						return err
+						return nil, err
 					}
 
 					if !ok {
@@ -141,7 +140,7 @@ func (s *service) FallOffSkillItems(ctx context.Context, userID uint64, barrierI
 			zap.String("pos", pos),
 			zap.Any("data", data),
 		)
-		return err
+		return
 	}
 
 	// 推送物品
@@ -156,11 +155,11 @@ func (s *service) FallOffSkillItems(ctx context.Context, userID uint64, barrierI
 				zap.Any("dropItems", dropItems),
 				zap.Error(err),
 			)
-			return err
+			return
 		}
 	}
 
-	return nil
+	return
 }
 
 func checkCondition(ctx context.Context, attrDbs map[int32]int64, conditionID int32, nowBloodVolume int64, allBloodVolume int64, skillCount int32, nowSkillCount int64) (bool, error) {
