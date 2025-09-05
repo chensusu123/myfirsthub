@@ -12,7 +12,6 @@ import (
 	"maze_game_server/pb/common/MazeCommon"
 	"maze_game_server/pb/common/MazeGame"
 	"maze_game_server/pb/server/MazeEquipSvr"
-	"maze_game_server/services/barrieritemservice"
 	"maze_game_server/services/barrierscorerewardservice"
 	"maze_game_server/services/barrierservice"
 	"maze_game_server/services/itemservice"
@@ -55,7 +54,7 @@ func (g *Game) OnBarrierOpenBoxRQ_10445_10446(s *session.Session, req *MazeGame.
 	// 通关值
 	res.Kongfu = proto.Int32(kongfu)
 
-	var commonItems []*itemservice.ItemInfo
+	// var commonItems []*itemservice.ItemInfo
 	tradeNo := tradeno.GetTradeNum()
 
 	// 怪物掉落装备
@@ -77,31 +76,31 @@ func (g *Game) OnBarrierOpenBoxRQ_10445_10446(s *session.Session, req *MazeGame.
 				logger.CtxError(ctx, "OnBarrierOpenBoxRQ item not found", zap.Error(fmt.Errorf("item: %d not found", itemID)), zap.Any("boxId", req.GetBoxId()))
 			} else {
 				// 背包道具
-				if itemCfg.Is_bag == 3 {
-					bagItems = append(bagItems, &MazeCommon.MazeItem{
-						ItemId: proto.Int32(itemID),
-						Count:  proto.Int64(count),
-					})
-				} else {
-					// 通用逻辑
-					commonItems = append(commonItems, &itemservice.ItemInfo{
-						ItemId: itemID,
-						Count:  count,
-					})
-				}
+				// if itemCfg.Is_bag == 3 {
+				bagItems = append(bagItems, &MazeCommon.MazeItem{
+					ItemId: proto.Int32(itemID),
+					Count:  proto.Int64(count),
+				})
+				// } else {
+				// 	// 通用逻辑
+				// 	commonItems = append(commonItems, &itemservice.ItemInfo{
+				// 		ItemId: itemID,
+				// 		Count:  count,
+				// 	})
+				// }
 			}
 		}
 	}
 
-	err = barrieritemservice.GbarrierItemsService.AddItems(ctx, uint64(s.UID()), req.GetBarrierId(), commonItems, req.GetBoxGuid(), req.GetBoxPos())
-	if err != nil {
-		logger.CtxError(ctx, "OnBarrierOpenBoxRQ AddItems Fail",
-			zap.Any("items", commonItems),
-			zap.Any("boxId", req.GetBoxId()),
-		)
-		res.ErrInfo = errors.MODULE_ERROR.Wrap("通用物品添加失败")
-		return
-	}
+	// err = barrieritemservice.GbarrierItemsService.AddItems(ctx, uint64(s.UID()), req.GetBarrierId(), commonItems, req.GetBoxGuid(), req.GetBoxPos())
+	// if err != nil {
+	// 	logger.CtxError(ctx, "OnBarrierOpenBoxRQ AddItems Fail",
+	// 		zap.Any("items", commonItems),
+	// 		zap.Any("boxId", req.GetBoxId()),
+	// 	)
+	// 	res.ErrInfo = errors.MODULE_ERROR.Wrap("通用物品添加失败")
+	// 	return
+	// }
 
 	// 处理需要加入背包的道具
 	if len(bagItems) > 0 {
