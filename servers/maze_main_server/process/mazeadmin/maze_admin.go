@@ -127,6 +127,6 @@ func broadcastDel(ctx context.Context, c *app.RequestContext) {
 		c.JSON(consts.StatusOK, MakeErrReturnMsg(400, "broadcastID is empty"))
 		return
 	}
-	err = subjectchangeservice.Add(ctx, broadcastID, int64(userIDUint64))
+	err = subjectchangeservice.Del(ctx, broadcastID, int64(userIDUint64))
 	c.JSON(consts.StatusOK, MakeSuccessReturnMsg(err))
 }
