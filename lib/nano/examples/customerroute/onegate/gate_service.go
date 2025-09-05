@@ -37,7 +37,7 @@ func (bs *RegisterService) Login(s *session.Session, msg *RegisterRequest) error
 		GateUid:   uid,
 		MasterUid: uid,
 	}
-	if err := s.RPC("ChatRoomService.JoinRoom", chat); err != nil {
+	if err := s.RPC(s.Context(), "ChatRoomService.JoinRoom", chat); err != nil {
 		return errors.Trace(err)
 	}
 	return s.Response(&RegisterResponse{})

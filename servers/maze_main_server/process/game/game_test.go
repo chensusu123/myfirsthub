@@ -3,13 +3,6 @@ package game
 import (
 	"context"
 	"fmt"
-	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fklog"
-	"gitlab.ifreetalk.com/maze-plate/freetk/fkserver"
-	"gitlab.ifreetalk.com/maze-plate/freetk/fkserver/config_manager"
-	"gitlab.ifreetalk.com/maze-plate/freetk/fkserver/config_manager/loadconfigapi"
-	fileResolver "gitlab.ifreetalk.com/maze-plate/freetk/registry/fileresolver"
-	"go.uber.org/zap"
-	"google.golang.org/protobuf/proto"
 	globalredis "maze_game_server/io/redis"
 	"maze_game_server/lib/log"
 	"maze_game_server/lib/nano/session"
@@ -18,6 +11,14 @@ import (
 	"maze_game_server/usecase/business"
 	"os"
 	"testing"
+
+	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fklog"
+	"gitlab.ifreetalk.com/maze-plate/freetk/fkserver"
+	"gitlab.ifreetalk.com/maze-plate/freetk/fkserver/config_manager"
+	"gitlab.ifreetalk.com/maze-plate/freetk/fkserver/config_manager/loadconfigapi"
+	fileResolver "gitlab.ifreetalk.com/maze-plate/freetk/registry/fileresolver"
+	"go.uber.org/zap"
+	"google.golang.org/protobuf/proto"
 )
 
 var logger = log.Clone("gameTest", 0, 0)
@@ -38,15 +39,16 @@ func TestMain(m *testing.M) {
 	}
 	os.Stdout = originalStdout
 	os.Stderr = originalStderr
+	ctx := context.Background()
 	loadconfigapi.SetLoadConfigFunc(business.GCustomBusiness.LoadCacheConfig)
 	err = business.GCustomBusiness.Init(fklog.AppLogger().Clone("loadconfigapi"))
 	if err != nil {
-		logger.ErrorWF("load file failed", zap.Error(err))
+		logger.CtxError(ctx, "load file failed", zap.Error(err))
 		return
 	}
 	err = config_manager.Init(context.Background(), logger, nil)
 	if err != nil {
-		logger.ErrorWF("parse excel failed", zap.Error(err))
+		logger.CtxError(ctx, "parse excel failed", zap.Error(err))
 		return
 	}
 	m.Run()

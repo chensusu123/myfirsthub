@@ -12,7 +12,7 @@ import (
 func (s *service) DelUserRank(ctx context.Context, r *ranklistmodel.RankListModel, userID uint64) error {
 	logger := fklog.ContextAppLogger(ctx)
 	rankListKey := r.GetRankListKey()
-	err := mazeranklistredis.DelUserRank(context.TODO(), rankListKey, userID)
+	err := mazeranklistredis.DelUserRank(ctx, rankListKey, userID)
 	if err != nil {
 		logger.CtxError(ctx, "DelUserRank fail",
 			zap.String("rankListname", rankListKey),

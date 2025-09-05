@@ -141,9 +141,9 @@ func (s *service) TempBuffChangeSync(ctx context.Context, logger fklog.FKLogI, u
 		// MazeShowBuffs: PackMazeBuff(showBuff), // todo 现在暂时没有展示武力值
 	}
 
-	err = mazebuffinforedis.SaveMazeBuffInfo(logger, userId, constdef.MazeBuffSrcSelectBuffForce, attrDb)
+	err = mazebuffinforedis.SaveMazeBuffInfo(ctx, userId, constdef.MazeBuffSrcSelectBuffForce, attrDb)
 	if err != nil {
-		logger.ErrorWF("AddMazeCard SaveMazeBuffInfo failed", zap.Uint64("userId", userId), zap.Error(err))
+		logger.CtxError(ctx, "AddMazeCard SaveMazeBuffInfo failed", zap.Uint64("userId", userId), zap.Error(err))
 		return err
 	}
 

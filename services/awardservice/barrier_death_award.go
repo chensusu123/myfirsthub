@@ -31,7 +31,7 @@ func (s *service) GetBarrierDeathAward(ctx context.Context, userId uint64, barri
 	logger.CtxInfo(ctx, "GetBarrierDeathAward GetSweepBarrierAward", zap.Any("equipItem", equipItem), zap.Any("ohterItem", ohterItem), zap.Any("expItem", expItem), zap.Any("equipNum", equipNum))
 
 	// 获取存储的当前关卡的奖励数据
-	nowBarrierEquipList, nowBarrierItemList, err := barrierscorerewardservice.GlobalScoreRewardService.GetBarrierScoreReward(context.TODO(), userId, barrier)
+	nowBarrierEquipList, nowBarrierItemList, err := barrierscorerewardservice.GlobalScoreRewardService.GetBarrierScoreReward(ctx, userId, barrier)
 	if err != nil {
 		logger.CtxError(ctx, "GetBarrierDeathAward GetBarrierScoreReward err", zap.Error(err),
 			zap.Any("barrier", barrier),
@@ -44,7 +44,7 @@ func (s *service) GetBarrierDeathAward(ctx context.Context, userId uint64, barri
 	logger.CtxInfo(ctx, "GetBarrierDeathAward GetBarrierScoreReward", zap.Any("nowBarrierEquipList", nowBarrierEquipList), zap.Any("nowBarrierItemList", nowBarrierItemList))
 
 	// 先获取当前用户关卡内打开过的宝箱
-	barrierCfg := GMazeBarriesV8Cfg.Get(barrier)
+	barrierCfg := GMazeBarriesV8Cfg.GetWithCtx(ctx, barrier)
 	if barrierCfg == nil {
 		logger.CtxError(ctx, "GetBarrierDeathAward get box cfg fail", zap.Any("barrier", barrier))
 		return nil, nil, nil, nil, 0, errors.New("box cfg nil")
@@ -52,13 +52,13 @@ func (s *service) GetBarrierDeathAward(ctx context.Context, userId uint64, barri
 
 	boxEquipCount := 0
 
-	boxCfg := GMazeBoxV8Cfg.Get(barrierCfg.Box_id)
+	boxCfg := GMazeBoxV8Cfg.GetWithCtx(ctx, barrierCfg.Box_id)
 	if boxCfg == nil {
 		logger.CtxError(ctx, "GetBarrierDeathAward get box cfg fail", zap.Any("boxId", barrierCfg.Box_id))
 		return nil, nil, nil, nil, 0, errors.New("box cfg nil")
 	}
 
-	opened, err := mazeboxredis.IsOpenedBox(logger, userId, barrier, barrierCfg.Box_id)
+	opened, err := mazeboxredis.IsOpenedBox(ctx, userId, barrier, barrierCfg.Box_id)
 	if err != nil {
 		logger.CtxError(ctx, "GetBarrierDeathAward IsOpenedBox fail", zap.Error(err), zap.Any("boxId", barrierCfg.Box_id), zap.Any("barrierId", barrier))
 		return nil, nil, nil, nil, 0, err
@@ -88,7 +88,7 @@ func (s *service) GetBarrierDeathAward(ctx context.Context, userId uint64, barri
 
 	// 装备随机取整
 	equipNum -= int32(boxEquipCount)
-	sum := int64(equipNum) * int64(GMazeConfigV8Cfg.Get(912).Value_int)
+	sum := int64(equipNum) * int64(GMazeConfigV8Cfg.GetWithCtx(ctx, 912).Value_int)
 	nowequipNum := int32(sum / 10000)
 	probability := sum % 10000
 	if probability > 0 {
@@ -106,8 +106,8 @@ func (s *service) GetBarrierDeathAward(ctx context.Context, userId uint64, barri
 			return nil, nil, nil, nil, 0, err
 		}
 
-		calLv := equipdropservice.GlobalEquipDropService.GetMazeBarrierLv(int32(userInfo.Level), barrier)
-		shopCfg := GMazeShopV8Cfg.Get(calLv)
+		calLv := equipdropservice.GlobalEquipDropService.GetMazeBarrierLv(ctx, int32(userInfo.Level), barrier)
+		shopCfg := GMazeShopV8Cfg.GetWithCtx(ctx, calLv)
 		if shopCfg == nil {
 			logger.CtxError(ctx, "GetSweepBarrierAward get shop cfg fail", zap.Any("calLv", calLv))
 			err = errors.New("shop cfg nil")
@@ -137,7 +137,7 @@ func (s *service) GetBarrierDeathAward(ctx context.Context, userId uint64, barri
 
 	// 道具
 	for k, v := range ohterItem {
-		tmpSum := int64(v) * int64(GMazeConfigV8Cfg.Get(912).Value_int)
+		tmpSum := int64(v) * int64(GMazeConfigV8Cfg.GetWithCtx(ctx, 912).Value_int)
 		ohterItem[k] = tmpSum / 10000
 	}
 
@@ -149,6 +149,31 @@ func (s *service) GetBarrierDeathAward(ctx context.Context, userId uint64, barri
 
 	for k, v := range nowBarrierItemList {
 		ohterItem[k] += v
+	}
+
+	// 过滤
+	for k, v := range realItemMap {
+		if v == 0 {
+			delete(realItemMap, k)
+		}
+	}
+
+	for k, v := range ohterItem {
+		if v == 0 {
+			delete(ohterItem, k)
+		}
+	}
+
+	for k, v := range realEquipMap {
+		if v == 0 {
+			delete(realEquipMap, k)
+		}
+	}
+
+	for k, v := range equipItem {
+		if v == 0 {
+			delete(equipItem, k)
+		}
 	}
 
 	logger.CtxInfo(ctx, "GetBarrierDeathAward", zap.Any("realItemMap", realItemMap),

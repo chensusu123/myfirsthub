@@ -21,19 +21,19 @@ import (
 // 1 修复非武力值buff 2=修复武力值buff
 func ReCalcDollEquipAttr(ctx context.Context, userId uint64, fixType int32) error {
 	logger := fklog.ContextAppLogger(ctx)
-	_, effect, err := dollassembleinfo.GetDollAssembleInfoEx(logger, userId)
+	_, effect, err := dollassembleinfo.GetDollAssembleInfoEx(ctx, userId)
 	if err != nil {
-		logger.ErrorWF("ReCalcDollEquipAttr Get Assemble info fail", zap.Error(err))
+		logger.CtxError(ctx, "ReCalcDollEquipAttr Get Assemble info fail", zap.Error(err))
 		return err
 	}
 	if effect == nil {
-		logger.InfoWF("ReCalcDollEquipAttr effect nil")
+		logger.CtxInfo(ctx, "ReCalcDollEquipAttr effect nil")
 		return nil
 	}
 	_, otherAttrs := effect.ForceAttrs, effect.Other
 	if fixType&1 > 0 {
 		// 更新buff中心
-		e := mazebuffinforedis.SaveMazeEquipBuff(logger, userId, otherAttrs)
+		e := mazebuffinforedis.SaveMazeEquipBuff(ctx, userId, otherAttrs)
 		if e != nil {
 			return e
 		}

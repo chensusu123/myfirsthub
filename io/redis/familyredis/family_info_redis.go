@@ -3,6 +3,7 @@ package familyredis
 import (
 	"context"
 	"fmt"
+
 	globalredis "maze_game_server/io/redis"
 
 	"github.com/redis/go-redis/v9"
@@ -13,21 +14,21 @@ func getFamilyInfoRedisKey(familyId int32) string {
 }
 
 // SetFamilyInfo 设置家族信息
-func SetFamilyInfo(familyId int32, data []byte) error {
+func SetFamilyInfo(ctx context.Context, familyId int32, data []byte) error {
 	db, err := globalredis.GCli.GetDB()
 	if err != nil {
 		return err
 	}
-	return db.Set(context.TODO(), db.MakeSectionKey(getFamilyInfoRedisKey(familyId)), data, 0).Err()
+	return db.Set(ctx, db.MakeSectionKey(getFamilyInfoRedisKey(familyId)), data, 0).Err()
 }
 
 // GetFamilyInfo 获取家族信息
-func GetFamilyInfo(familyId int32) ([]byte, error) {
+func GetFamilyInfo(ctx context.Context, familyId int32) ([]byte, error) {
 	db, err := globalredis.GCli.GetDB()
 	if err != nil {
 		return nil, err
 	}
-	ret, err := db.Get(context.TODO(), db.MakeSectionKey(getFamilyInfoRedisKey(familyId))).Bytes()
+	ret, err := db.Get(ctx, db.MakeSectionKey(getFamilyInfoRedisKey(familyId))).Bytes()
 	if err != nil {
 		if err == redis.Nil {
 			return nil, nil
@@ -38,7 +39,7 @@ func GetFamilyInfo(familyId int32) ([]byte, error) {
 }
 
 // BatchGetFamilyInfo 批量获取家族信息
-func BatchGetFamilyInfo(familyIds []int32) ([][]byte, error) {
+func BatchGetFamilyInfo(ctx context.Context, familyIds []int32) ([][]byte, error) {
 	db, err := globalredis.GCli.GetDB()
 	if err != nil {
 		return nil, err
@@ -47,7 +48,7 @@ func BatchGetFamilyInfo(familyIds []int32) ([][]byte, error) {
 	for i, familyID := range familyIds {
 		args[i] = db.MakeSectionKey(getFamilyInfoRedisKey(familyID))
 	}
-	result, err := db.MGet(context.TODO(), args...).Result()
+	result, err := db.MGet(ctx, args...).Result()
 	if err != nil {
 		if err == redis.Nil {
 			return nil, nil
@@ -67,10 +68,10 @@ func BatchGetFamilyInfo(familyIds []int32) ([][]byte, error) {
 }
 
 // DelFamilyInfo 删除家族信息
-func DelFamilyInfo(familyID int32) error {
+func DelFamilyInfo(ctx context.Context, familyID int32) error {
 	db, err := globalredis.GCli.GetDB()
 	if err != nil {
 		return err
 	}
-	return db.Del(context.TODO(), db.MakeSectionKey(getFamilyInfoRedisKey(familyID))).Err()
+	return db.Del(ctx, db.MakeSectionKey(getFamilyInfoRedisKey(familyID))).Err()
 }

@@ -61,7 +61,7 @@ func (s *service) GetUserRankWithScoreAndComparator(ctx context.Context, r *rank
 	var err error
 	rankListKey := r.GetRankListKey()
 
-	rankList, err := mazeranklistredis.GetUserAboveSameScore(context.TODO(), rankListKey, userID, r.Order)
+	rankList, err := mazeranklistredis.GetUserAboveSameScore(ctx, rankListKey, userID, r.Order)
 	if err != nil {
 		logger.CtxError(ctx, "GetUserRank fail",
 			zap.String("rankListname", rankListKey),

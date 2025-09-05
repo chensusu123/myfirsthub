@@ -29,6 +29,8 @@ import (
 	"sync/atomic"
 	"time"
 
+	"maze_game_server/lib/codec/raw_pkg"
+	"maze_game_server/lib/nano/agentscheduler"
 	"maze_game_server/lib/nano/frame"
 	"maze_game_server/lib/nano/internal/codec"
 	"maze_game_server/lib/nano/internal/env"
@@ -43,6 +45,7 @@ import (
 	packCodec "maze_game_server/lib/codec"
 
 	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fklog"
+	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/protocol/svrheader"
 	"gitlab.ifreetalk.com/maze-plate/freetk/pkg/logidutil"
 	"go.opentelemetry.io/otel"
 	"go.opentelemetry.io/otel/attribute"
@@ -79,18 +82,21 @@ type (
 		serializer serialize.Serializer
 		pipeline   pipeline.Pipeline
 
-		rpcHandler rpcHandler
-		srv        reflect.Value // cached session reflect.Value
+		rpcHandler  rpcHandler
+		srv         reflect.Value // cached session reflect.Value
+		scheduler   *agentscheduler.AgentScheduler
+		isSvrHeader atomic.Bool
 	}
 
 	pendingMessage struct {
-		uid     int64
-		ctx     context.Context
-		typ     message.Type // message type
-		route   string       // message route(push)
-		mid     uint64       // response message id(response)
-		payload interface{}  // payload
-		isBytes bool
+		uid        int64
+		ctx        context.Context
+		typ        message.Type // message type
+		route      string       // message route(push)
+		mid        uint64       // response message id(response)
+		payload    interface{}  // payload
+		isBytes    bool
+		isResponse bool
 	}
 )
 
@@ -107,14 +113,20 @@ func newAgent(conn net.Conn, pipeline pipeline.Pipeline, pcodec frame.PacketCode
 		serializer: pcodec.Serializer(),
 		pipeline:   pipeline,
 		rpcHandler: rpcHandler,
+		scheduler:  agentscheduler.NewAgentScheduler(0),
 	}
 
 	// binding session
 	s := session.New(a)
 	a.session = s
 	a.srv = reflect.ValueOf(s)
-
+	go a.scheduler.Sched()
+	a.scheduler.SetAgentSession(a.session.ID())
 	return a
+}
+
+func (a *agent) PushTask(task func()) (int64, bool) {
+	return a.scheduler.PushTask(task)
 }
 
 func (a *agent) send(m pendingMessage) (err error) {
@@ -203,15 +215,25 @@ func (a *agent) RPC(ctx context.Context, route string, v interface{}) error {
 // Response, implementation for session.NetworkEntity interface
 // Response message to session
 func (a *agent) Response(ctx context.Context, v interface{}) error {
-	return a.ResponseMid(ctx, a.lastMid, v)
+	return a._responseMid(ctx, a.lastMid, v, true)
+}
+
+func (a *agent) ResponseMid(ctx context.Context, mid uint64, v interface{}) error {
+	return a._responseMid(ctx, mid, v, false)
 }
 
 // ResponseMid, implementation for session.NetworkEntity interface
 // Response message to session
-func (a *agent) ResponseMid(ctx context.Context, mid uint64, v interface{}) error {
+func (a *agent) _responseMid(ctx context.Context, mid uint64, v interface{}, isResponse bool) error {
 	userID := a.session.UID()
 	agentSession := a.session.ID()
-	ctx, span := agentSendSpan(ctx, "response", mid, userID, agentSession)
+	var sendTypeName string
+	if isResponse {
+		sendTypeName = "response"
+	} else {
+		sendTypeName = "notify"
+	}
+	ctx, span := agentSendSpan(ctx, sendTypeName, mid, userID, agentSession)
 	defer span.End()
 	if a.status() == statusClosed {
 		span.RecordError(ErrBrokenPipe)
@@ -242,7 +264,7 @@ func (a *agent) ResponseMid(ctx context.Context, mid uint64, v interface{}) erro
 		}
 	}
 
-	err := a.send(pendingMessage{ctx: ctx, typ: message.Response, mid: mid, payload: v, uid: userID})
+	err := a.send(pendingMessage{ctx: ctx, typ: message.Response, mid: mid, payload: v, uid: userID, isResponse: isResponse})
 	if err != nil {
 		span.RecordError(err)
 		span.SetStatus(codes.Error, err.Error())
@@ -272,7 +294,7 @@ func (a *agent) Close() error {
 		close(a.chDie)
 		scheduler.PushTask(func() { session.Lifetime.Close(a.session) })
 	}
-
+	a.scheduler.Close()
 	return a.conn.Close()
 }
 
@@ -482,7 +504,7 @@ func sendMsgSpan(data *pendingMessage) (context.Context, trace.Span) {
 	span.SetAttributes(attribute.String("route", data.route),
 		attribute.String("message.type", data.typ.String()),
 		attribute.Int64("packet.session", int64(sessionID)),
-		attribute.Int64("rsID", int64(rsID)),
+		attribute.Int64("packet.id", int64(rsID)),
 		attribute.Int64("rqTime", int64(rqTime)),
 		attribute.Int64("enduser.id", data.uid),
 	)
@@ -583,7 +605,35 @@ func processPendingMessage(a *agent, data pendingMessage, chWrite chan WriteItem
 	// span.End()
 	span.AddEvent("send.to.chWrite")
 	allOK = true
-	chWrite <- WriteItem{ctx: ctx, data: p}
+	// chWrite <- WriteItem{ctx: ctx, data: p}
+	if a.isSvrHeader.Load() {
+		xxx := &raw_pkg.StruSvrEsRawBaseHead{
+			Header: make(map[string]string),
+		}
+		if data.isResponse {
+			xxx.Header["X-isResponse"] = "1"
+		}
+		carrier := otel.GetTextMapPropagator()
+		carrier.Inject(ctx, packCodec.NewBaseHeader(xxx))
+		hhh := svrheader.SvrHeader{
+			Header: xxx.Header,
+			Body:   p,
+		}
+
+		span.AddEvent("svrheader.Encode")
+		yyy, errEncode := hhh.Encode()
+		if errEncode != nil {
+			span.RecordError(errEncode)
+			span.SetStatus(codes.Error, "svrheader.Encode failed.")
+			return errEncode
+		}
+		p = yyy
+	}
+	ok := safeSend(chWrite, WriteItem{ctx: ctx, data: p})
+	if !ok {
+		span.RecordError(errors.New("chWrite failed"))
+		span.SetStatus(codes.Error, "safeSend chWrite failed.")
+	}
 	return nil
 }
 
@@ -614,6 +664,7 @@ func processDataWrite(a *agent, dataWrite *WriteItem) (err error) {
 		span.SetStatus(codes.Error, "conn.Write failed.")
 		return err
 	}
+	span.AddEvent("conn.write.success")
 	return nil
 }
 

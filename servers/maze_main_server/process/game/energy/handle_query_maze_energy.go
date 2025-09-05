@@ -60,7 +60,7 @@ func (e *Energy) OnQueryMazeEnergyRQ_10469_10470(s *session.Session, req *MazeEn
 //	return rd
 //}
 //
-//func EndRecord(logger fklog.FKLogI, record *mazeenergyrecord.MazeEnergyChgRecord, chgval int32, energyInfo *mazeuserinfo.UserInfo) error {
+//func EndRecord(ctx context.Context, record *mazeenergyrecord.MazeEnergyChgRecord, chgval int32, energyInfo *mazeuserinfo.UserInfo) error {
 //	record.NewVal = energyInfo.Energy
 //	record.ChgVal = chgval
 //	record.LastTime = energyInfo.EnergyLastTime

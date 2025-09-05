@@ -3,51 +3,55 @@ package syncmazestorageinforedis
 import (
 	"context"
 	"fmt"
+	"strconv"
+
+	"maze_game_server/pb/common/MazeGame"
+
 	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fkconfig"
 	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fkredis"
 	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fkredis/redis"
 	"google.golang.org/protobuf/proto"
-	"maze_game_server/pb/common/MazeGame"
-	"strconv"
 )
 
 const (
-	StorageInfo_RoleItemData    = "roleItemData"    //角色物品列表
-	StorageInfo_PassLevel       = "passLevel"       //角色通关值
-	StorageInfo_RolePos         = "rolePos"         //角色位置
-	StorageInfo_StorageItemInfo = "storageItemInfo" //机关列表
-	StorageInfo_StageLevel      = "stageLevel"      //阶段等级
-	StorageInfo_MonsterAreaInfo = "monsterAreaInfo" //已经打过的刷怪区域
+	StorageInfo_RoleItemData    = "roleItemData"    // 角色物品列表
+	StorageInfo_PassLevel       = "passLevel"       // 角色通关值
+	StorageInfo_RolePos         = "rolePos"         // 角色位置
+	StorageInfo_StorageItemInfo = "storageItemInfo" // 机关列表
+	StorageInfo_StageLevel      = "stageLevel"      // 阶段等级
+	StorageInfo_MonsterAreaInfo = "monsterAreaInfo" // 已经打过的刷怪区域
 )
 
-var gRedis = &fkredis.FkRedis{}
-var redisKey = "u:%d:stage:%d:storage:info"
+var (
+	gRedis   = &fkredis.FkRedis{}
+	redisKey = "u:%d:stage:%d:storage:info"
+)
 
 func init() {
 	fkconfig.RegisterNameNode("syncmazestorageinforedis", 21727, gRedis)
 }
 
-func DelSyncMazeStorageInfo(userId uint64, barrierId int32) error {
+func DelSyncMazeStorageInfo(ctx context.Context, userId uint64, barrierId int32) error {
 	key := fmt.Sprintf(redisKey, userId, barrierId)
-	_, err := gRedis.Do(context.TODO(), "DEL", key)
+	_, err := gRedis.Do(ctx, "DEL", key)
 	return err
 }
 
-func DelSyncMazeStorageInfoByKey(userId uint64, barrierId int32, field string) error {
+func DelSyncMazeStorageInfoByKey(ctx context.Context, userId uint64, barrierId int32, field string) error {
 	key := fmt.Sprintf(redisKey, userId, barrierId)
-	_, err := gRedis.Do(context.TODO(), "HDEL", key, field)
+	_, err := gRedis.Do(ctx, "HDEL", key, field)
 	return err
 }
 
-func SaveSyncMazeStorageInfo(userId uint64, barrierId int32, field string, data interface{}) error {
+func SaveSyncMazeStorageInfo(ctx context.Context, userId uint64, barrierId int32, field string, data interface{}) error {
 	key := fmt.Sprintf(redisKey, userId, barrierId)
-	_, err := gRedis.Do(context.TODO(), "HSET", key, field, data)
+	_, err := gRedis.Do(ctx, "HSET", key, field, data)
 	return err
 }
 
-func GetSyncMazeStorageInfo(userId uint64, barrierId int32) (info *MazeGame.MazeStorageInfo, err error) {
+func GetSyncMazeStorageInfo(ctx context.Context, userId uint64, barrierId int32) (info *MazeGame.MazeStorageInfo, err error) {
 	key := fmt.Sprintf(redisKey, userId, barrierId)
-	res, err := redis.StringMap(gRedis.Do(context.TODO(), "hgetall", key))
+	res, err := redis.StringMap(gRedis.Do(ctx, "hgetall", key))
 	if err != nil {
 		return
 	}

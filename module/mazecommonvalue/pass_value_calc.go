@@ -3,8 +3,6 @@ package mazecommonvalue
 import (
 	"context"
 	"fmt"
-	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fklog"
-	"go.uber.org/zap"
 	"maze_game_server/common/constdef"
 	"maze_game_server/config/GMazeBarriesV8Cfg"
 	"maze_game_server/config/GMazeConfigV8Cfg"
@@ -12,6 +10,9 @@ import (
 	"maze_game_server/excel/mazemapeditorconfigidcfgex"
 	"maze_game_server/pb/common/MazeGame"
 	"strconv"
+
+	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fklog"
+	"go.uber.org/zap"
 )
 
 // 计算通关值
@@ -64,7 +65,8 @@ func CalcInitPassValue(ctx context.Context, logger fklog.FKLogI, barrier int32) 
 }
 
 // 发送通关值变化id包
-func SendPassValueIdPack(ctx context.Context, logger fklog.FKLogI, userId uint64, barrierId, stage int32) error {
+func SendPassValueIdPack(ctx context.Context, userId uint64, barrierId, stage int32) error {
+	logger := fklog.ContextAppLogger(ctx)
 	passValue, err := CalcPassValue(ctx, logger, barrierId, stage)
 	if err != nil {
 
@@ -77,7 +79,7 @@ func SendPassValueIdPack(ctx context.Context, logger fklog.FKLogI, userId uint64
 			// ChgReason:    int32(1),
 		},
 	}
-	err = SendCommonValueIdPack(logger, userId, commonList)
+	err = SendCommonValueIdPack(ctx, userId, commonList)
 	if err != nil {
 		logger.CtxError(ctx, "SendCommonValueIdPack err", zap.Error(err))
 	}

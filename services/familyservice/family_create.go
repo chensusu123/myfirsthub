@@ -4,6 +4,9 @@ import (
 	"context"
 	"maze_game_server/model/alliancemodel"
 	"maze_game_server/model/familymodel"
+	"maze_game_server/services/groupservice"
+
+	"maze_game_server/app"
 
 	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fklog"
 	"go.uber.org/zap"
@@ -14,7 +17,7 @@ func (r *service) CreateFamily(ctx context.Context, userID uint64, allianceID in
 	familySetting int32, userInfo familymodel.FamilyMember) (*familymodel.FamilyInfoModel, error) {
 	logger := fklog.ContextAppLogger(ctx)
 	// 创建新家族
-	familyInfoModel, err := familymodel.NewFamilyInfoModel(ctx, familyName, familySetting)
+	familyInfoModel, err := familymodel.CreateFamilyInfoModel(ctx, familyName, familySetting)
 	if err != nil {
 		logger.CtxError(ctx, "CreateFamily NewFamilyInfoModel failed",
 			zap.Any("familyName", familyName), zap.Any("familySetting", familySetting))
@@ -22,6 +25,23 @@ func (r *service) CreateFamily(ctx context.Context, userID uint64, allianceID in
 	}
 	// 加入成员
 	familyInfoModel.AddMember(ctx, userInfo)
+
+	//创建家族群聊
+	groupInfo, err := groupservice.Default.CreateGroup(ctx, app.Maze, userID, make([]uint64, 0))
+	if err != nil {
+		logger.CtxError(ctx, "OnCreateFamilyRQ CreateGroup error", zap.Error(err))
+		return nil, err
+	}
+	familyInfoModel.SetFamilyGroupID(ctx, groupInfo.ID)
+
+	// //加入联盟群聊
+	// err = grouppkg.InviteMember(ctx, app.Maze.ID(), int64(groupInfo.ID), userID)
+	// if err != nil {
+	// 	logger.CtxError(ctx, "CreateFamily InviteMember alliance err",
+	// 		zap.Error(err))
+	// 	return nil, err
+	// }
+
 	// 保存家族信息
 	err = familyInfoModel.Save(ctx, familyInfoModel.FamilyID)
 	if err != nil {

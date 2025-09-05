@@ -46,8 +46,8 @@ func (m *Monitor) OnClose(ctx context.Context, s *session.Session, err error) {
 }
 
 // SessionMonitor returns a session monitor.
-func SessionMonitor(logger fklog.FKLogI) *Monitor {
-	monitor.logger = logger
+func SessionMonitor(ctx context.Context) *Monitor {
+	monitor.logger = fklog.ContextAppLogger(ctx)
 	return monitor
 }
 
@@ -65,13 +65,15 @@ func Bind(ctx context.Context, s *session.Session, userID uint64) (err error) {
 
 // Deprecated: 不带trace信息。 以后废弃。使用ClusterPush
 // Push
-func Push(logger fklog.FKLogI, userID uint64, packetType uint16, v interface{}) (err error) {
+func Push(ctxP context.Context, userID uint64, packetType uint16, v interface{}) (err error) {
+	ctx := context.WithoutCancel(ctxP)
 	s, found := monitor.online.Load(userID)
+	logger := fklog.ContextAppLogger(ctx)
 	if !found {
-		logger.ErrorWF("Push session not found", zap.Error(ErrSessionNotFound), zap.Uint64("userID", userID), zap.Any("v", v))
+		logger.CtxError(ctx, "Push session not found", zap.Error(ErrSessionNotFound), zap.Uint64("userID", userID), zap.Any("v", v))
 		return ErrSessionNotFound
 	}
-	return s.(*session.Session).ResponseMID(context.TODO(), codec.ToMessageID(uint32(time.Now().Unix()), 0, packetType), v)
+	return s.(*session.Session).ResponseMID(ctx, codec.ToMessageID(uint32(time.Now().Unix()), 0, packetType), v)
 }
 
 // Scan
@@ -89,7 +91,8 @@ func IsOnline(userID uint64) bool {
 
 // PushWithContext 带ctx的push。 会带trace信息.往本分片用户推送。 用户当前不在本分片。就收不到
 // 注意： 只能往本分片用户推送。 不能往其他分片用户推送
-func PushWithContext(ctx context.Context, userID uint64, packetType uint16, v interface{}) (err error) {
+func PushWithContext(ctxP context.Context, userID uint64, packetType uint16, v interface{}) (err error) {
+	ctx := context.WithoutCancel(ctxP)
 	s, found := monitor.online.Load(userID)
 	if !found {
 		fklog.ContextAppLogger(ctx).CtxError(ctx, "Push session not found", zap.Uint64("userID", userID), zap.Any("v", v))

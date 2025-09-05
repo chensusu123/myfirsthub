@@ -40,7 +40,7 @@ func AddRankList(ctx context.Context, name string, score int64, userID uint64) e
 		return err
 	}
 
-	return db.ZAdd(context.TODO(), key, redis.Z{
+	return db.ZAdd(ctx, key, redis.Z{
 		Score:  realScore,
 		Member: userID,
 	}).Err()
@@ -247,7 +247,7 @@ func DelUserRank(ctx context.Context, name string, userID uint64) error {
 	return db.ZRem(ctx, key, strconv.FormatUint(userID, 10)).Err()
 }
 
-func SetTime(userID uint64) error {
+func SetTime(ctx context.Context, userID uint64) error {
 	key := fmt.Sprintf("test:time:%d", userID)
 	db, err := globalredis.GCli.GetDB()
 	if err != nil {
@@ -256,14 +256,14 @@ func SetTime(userID uint64) error {
 
 	value := strconv.FormatInt(time.Now().UnixNano(), 10)
 
-	return db.Set(context.TODO(), key, value, 0).Err()
+	return db.Set(ctx, key, value, 0).Err()
 }
 
-func GetTime(userID uint64) (int64, error) {
+func GetTime(ctx context.Context, userID uint64) (int64, error) {
 	key := fmt.Sprintf("test:time:%d", userID)
 	db, err := globalredis.GCli.GetDB()
 	if err != nil {
 		return 0, err
 	}
-	return db.Get(context.TODO(), key).Int64()
+	return db.Get(ctx, key).Int64()
 }

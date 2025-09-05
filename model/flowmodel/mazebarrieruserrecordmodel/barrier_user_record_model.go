@@ -22,17 +22,21 @@ type MazeBarrierUserGameRecord struct {
 	GameRet        int32  `json:"game_ret"`         // 用户闯关结果 1-通关成功 2-死亡失败 3-扫荡
 	Awards         string `json:"awards"`           // 本次获得的奖励
 	KillMonsterNum int64  `json:"kill_monster_num"` // 杀怪数量
+	DeathReason    uint32 `json:"death_reason"`     // 死亡原因 0-未死亡 1-角色死亡 2-猪妖胜利
+	UserData       string `json:"user_data"`        // 用户当前属性
 }
 
 const MazeBarrierUserRecordTableName = "maze_barrier_user_record"
 
-func NewMazeBarrierUserGameRecord(useID uint64, barrier int32, gameRet int32, awards string, killMonsterNum int64) *MazeBarrierUserGameRecord {
+func NewMazeBarrierUserGameRecord(useID uint64, barrier int32, gameRet int32, awards string, killMonsterNum int64, deathReason uint32, userData string) *MazeBarrierUserGameRecord {
 	res := &MazeBarrierUserGameRecord{
 		UserId:         useID,
 		Barrier:        barrier,
 		GameRet:        gameRet,
 		Awards:         awards,
 		KillMonsterNum: killMonsterNum,
+		DeathReason:    deathReason,
+		UserData:       userData,
 	}
 	nowDbTable := strings.Split(mysql.GetFullyQualifiedTableName(MazeBarrierUserRecordTableName), ".")
 

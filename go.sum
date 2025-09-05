@@ -679,8 +679,6 @@ github.com/prometheus/procfs v0.11.1 h1:xRC8Iq1yyca5ypa9n1EZnWZkt7dwcoRPQwX/5gwa
 github.com/prometheus/procfs v0.11.1/go.mod h1:eesXgaPo1q7lBpVMoMy0ZOFTth9hBn4W/y0/p/ScXhY=
 github.com/redis/go-redis/extra/rediscmd/v9 v9.12.1 h1:DR14pbiA9cjS5btoGU7oKuBcaYGzpxMsAyswO6mHqSk=
 github.com/redis/go-redis/extra/rediscmd/v9 v9.12.1/go.mod h1:mWGfYiY4x0lamv7XbhF0M1hxwa6EkfxzEpVsv9yG7PY=
-github.com/redis/go-redis/extra/redisotel/v9 v9.12.1 h1:2MioZj2s8Ovom2Yrpb/bBCJ88fR9L0MfMq2wAH44R8M=
-github.com/redis/go-redis/extra/redisotel/v9 v9.12.1/go.mod h1:nw1BvV+EW5TmXbfUOhFsPETFR390JLmtdWut88T1VAE=
 github.com/redis/go-redis/v9 v9.12.1 h1:k5iquqv27aBtnTm2tIkROUDp8JBXhXZIVu1InSgvovg=
 github.com/redis/go-redis/v9 v9.12.1/go.mod h1:huWgSWd8mW6+m0VPhJjSSQ+d6Nh1VICQ6Q5lHuCH/Iw=
 github.com/rogpeppe/fastuuid v1.2.0/go.mod h1:jVj6XXZzXRy/MSR5jhDC/2q6DgLz+nrA6LYCDYWNEvQ=
@@ -709,6 +707,8 @@ github.com/smartystreets/assertions v1.2.0/go.mod h1:tcbTF8ujkAEcZ8TElKY+i30BzYl
 github.com/smartystreets/goconvey v1.6.4/go.mod h1:syvi0/a8iFYH4r/RixwvyeAJjdLS9QV7WQ/tjFTllLA=
 github.com/smartystreets/goconvey v1.7.2 h1:9RBaZCeXEQ3UselpuwUQHltGVXvdwm6cv1hgR6gDIPg=
 github.com/smartystreets/goconvey v1.7.2/go.mod h1:Vw0tHAZW6lzCRk3xgdin6fKYcG+G3Pg9vgXWeJpQFMM=
+github.com/sony/sonyflake/v2 v2.2.0 h1:wSzEoewlWnUtc3SZX/MpT8zsWTuAnjwrprUYfuPl9Jg=
+github.com/sony/sonyflake/v2 v2.2.0/go.mod h1:09EcfmR846JLupbkgVfzp8QtQwJ+Y8e69VVayHdawzg=
 github.com/spaolacci/murmur3 v0.0.0-20180118202830-f09979ecbc72/go.mod h1:JwIasOWyU6f++ZhiEuf87xNszmSA2myDM2Kzu9HwQUA=
 github.com/spaolacci/murmur3 v1.1.0 h1:7c1g84S4BPRrfL5Xrdp6fOJ206sU9y293DDHaoy0bLI=
 github.com/spaolacci/murmur3 v1.1.0/go.mod h1:JwIasOWyU6f++ZhiEuf87xNszmSA2myDM2Kzu9HwQUA=
@@ -768,8 +768,8 @@ github.com/yuin/goldmark v1.3.5/go.mod h1:mwnBkeHKe2W/ZEtQ+71ViKU8L12m81fl3OWwC1
 github.com/yuin/goldmark v1.4.13/go.mod h1:6yULJ656Px+3vBD8DxQVa3kxgyrAnzto9xy5taEt/CY=
 gitlab.ifreetalk.com/maze-plate/extra v1.0.1-0.20250401060651-722653168d37 h1:lyB5pFQppuBFwhWaEaJN54c9dNnKVjoJoS9ZMezSfhc=
 gitlab.ifreetalk.com/maze-plate/extra v1.0.1-0.20250401060651-722653168d37/go.mod h1:ZHwfNF+727RvJctXbXHW/8kdkKBMIyUNHgUdwjqZ9E0=
-gitlab.ifreetalk.com/maze-plate/freetk v1.0.1-0.20250826072210-2a03015b596c h1:RlFYeANMulWSMPaiCFNsZgSDoMpHGsB9vU6FDnfGB1E=
-gitlab.ifreetalk.com/maze-plate/freetk v1.0.1-0.20250826072210-2a03015b596c/go.mod h1:/KgTb+qmreokiK+nGh9ZTLhzrJN0C+ZXjmQRLb+f1Ik=
+gitlab.ifreetalk.com/maze-plate/freetk v1.0.1-0.20250903122527-1c44ee6641ab h1:4jQ6GpWnhKgRqjtHun9xvq5K+DRu5n+7Oqox4TZ8baI=
+gitlab.ifreetalk.com/maze-plate/freetk v1.0.1-0.20250903122527-1c44ee6641ab/go.mod h1:5BgAfmxGfMMixu2VVzG5rjKPpZxiUmeYLStgMkK965A=
 gitlab.ifreetalk.com/nano-ecosystem/fklog v0.0.0-20250813072008-4577841956ed h1:vi1Miaxky3Agh7JC3t6LP6/BBfEA5AdYXf6QdGzevUA=
 gitlab.ifreetalk.com/nano-ecosystem/fklog v0.0.0-20250813072008-4577841956ed/go.mod h1:EBlTAtJ7j+E85oFKb2G1hAjAVxTVUWvYTObbK2HlaY4=
 gitlab.ifreetalk.com/nano-ecosystem/nlog v0.0.0-20250821135715-fb9c1259891f h1:tfcCAN3S+cwJMSEcVOLofmFBPLGCgc+Mng71Nw5D928=

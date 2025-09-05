@@ -141,4 +141,9 @@ const (
 	PoisonContinuousDamageBeHurtValue         = 3080801 // 受到毒元素持续伤害提高，万分比
 	PoisonContinuousDamageExtraHurtValueAdd   = 3080901 // 额外毒元素持续伤害，固定值
 	PoisonContinuousDamageExtraBeHurtValueAdd = 3081001 // 受到额外毒元素持续伤害，固定值
+
+	// 血瓶属性id列表
+	BloodBottleProbability = 890021 // 血瓶掉落概率 万分比
+	BloodBottlesNumber     = 890022 // 血瓶掉落数量 向上取整
+
 )

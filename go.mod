@@ -25,7 +25,7 @@ require (
 	github.com/samber/slog-zap/v2 v2.6.2
 	github.com/spf13/cast v1.9.2
 	github.com/urfave/cli v1.22.16
-	gitlab.ifreetalk.com/maze-plate/freetk v1.0.1-0.20250826072210-2a03015b596c
+	gitlab.ifreetalk.com/maze-plate/freetk v1.0.1-0.20250903122527-1c44ee6641ab
 	gitlab.ifreetalk.com/nano-ecosystem/fklog v0.0.0-20250813072008-4577841956ed // indirect
 	go.opentelemetry.io/otel v1.37.0
 	go.opentelemetry.io/otel/trace v1.37.0
@@ -38,9 +38,8 @@ require (
 )
 
 require (
-	github.com/go-redis/redis/v8 v8.11.5
 	github.com/iancoleman/orderedmap v0.3.0
-	github.com/stretchr/testify v1.10.0
+	github.com/sony/sonyflake/v2 v2.2.0
 	go.opentelemetry.io/contrib/instrumentation/net/http/otelhttp v0.62.0
 )
 
@@ -58,7 +57,6 @@ require (
 	github.com/cloudwego/gopkg v0.1.5 // indirect
 	github.com/cloudwego/netpoll v0.7.1 // indirect
 	github.com/cpuguy83/go-md2man/v2 v2.0.5 // indirect
-	github.com/davecgh/go-spew v1.1.2-0.20180830191138-d8f796af33cc // indirect
 	github.com/dgryski/go-rendezvous v0.0.0-20200823014737-9f7001d12a5f // indirect
 	github.com/dlclark/regexp2 v1.11.0 // indirect
 	github.com/emirpasic/gods v1.18.1 // indirect
@@ -109,20 +107,19 @@ require (
 	github.com/nats-io/nkeys v0.4.11 // indirect
 	github.com/nats-io/nuid v1.0.1 // indirect
 	github.com/nyaruka/phonenumbers v1.0.55 // indirect
+	github.com/onsi/ginkgo v1.16.5 // indirect
 	github.com/onsi/gomega v1.37.0 // indirect
 	github.com/opentracing/opentracing-go v1.2.0 // indirect
 	github.com/orcaman/concurrent-map v1.0.0 // indirect
 	github.com/pierrec/lz4/v4 v4.1.22 // indirect
 	github.com/pingcap/log v0.0.0-20191012051959-b742a5d432e9 // indirect
 	github.com/pkg/errors v0.9.1 // indirect
-	github.com/pmezard/go-difflib v1.0.1-0.20181226105442-5d4384ee4fb2 // indirect
 	github.com/polarismesh/specification v1.5.5-alpha.1 // indirect
 	github.com/prometheus/client_golang v1.17.0 // indirect
 	github.com/prometheus/client_model v0.5.0 // indirect
 	github.com/prometheus/common v0.44.0 // indirect
 	github.com/prometheus/procfs v0.11.1 // indirect
 	github.com/redis/go-redis/extra/rediscmd/v9 v9.12.1 // indirect
-	github.com/redis/go-redis/extra/redisotel/v9 v9.12.1 // indirect
 	github.com/russross/blackfriday/v2 v2.1.0 // indirect
 	github.com/samber/lo v1.47.0 // indirect
 	github.com/samber/slog-common v0.18.1 // indirect

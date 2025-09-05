@@ -34,21 +34,21 @@ func (g *Game) OnStartMazeSweepRQ_10471_10472(s *session.Session, req *MazeGame.
 
 	defer func() {
 		err = s.Response(res)
-		logger.InfoWF("OnStartMazeSweepRQ end", zap.Any("res", res), zap.Any("errMsg", string(res.GetErrInfo().GetErrMsg())))
+		logger.CtxInfo(ctx, "OnStartMazeSweepRQ end", zap.Any("res", res), zap.Any("errMsg", string(res.GetErrInfo().GetErrMsg())))
 		err = s.ResponseMID(ctx, codec.ToMessageID(uint32(time.Now().Unix()), 0, 10610), energyID)
-		logger.InfoWF("OnStartMazeSweepRQ end send EnergyChangeID", zap.Any("energyID", energyID))
+		logger.CtxInfo(ctx, "OnStartMazeSweepRQ end send EnergyChangeID", zap.Any("energyID", energyID))
 	}()
 
 	barrierId := req.GetBarrierId()
 	res.BarrierId = req.BarrierId
 	if userID <= 0 {
-		logger.ErrorWF("OnStartMazeSweepRQ userId invalid", zap.Any("req", req))
+		logger.CtxError(ctx, "OnStartMazeSweepRQ userId invalid", zap.Any("req", req))
 		res.ErrInfo = errors.COMMON_ERROR_TIPS.Wrap("无效的用户ID")
 		return
 	}
 	// check barrier
 	if req.GetBarrierId() <= 0 {
-		logger.ErrorWF("OnStartMazeSweepRQ req barrier invalid", zap.Any("req", req))
+		logger.CtxError(ctx, "OnStartMazeSweepRQ req barrier invalid", zap.Any("req", req))
 		res.ErrInfo = errors.COMMON_ERROR_TIPS.Wrap("未设置关卡id")
 		return
 	}

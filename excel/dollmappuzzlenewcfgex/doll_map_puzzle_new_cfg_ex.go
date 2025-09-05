@@ -1,13 +1,14 @@
 package dollmappuzzlenewcfgex
 
 import (
-	"go.uber.org/zap"
 	"maze_game_server/config/GDollMapPuzzleNewV8Cfg"
 	"maze_game_server/lib/log"
 	"strconv"
 	"strings"
 	"sync/atomic"
 	"unsafe"
+
+	"go.uber.org/zap"
 )
 
 type AreaInfo struct {
@@ -90,4 +91,17 @@ func GetPassAreaInfos(barrierId, stageId int32) []*AreaInfo {
 		passArea = append(passArea, i)
 	}
 	return passArea
+}
+
+// 获取当前未通过的区域
+func GetUnPassAreaInfos(barrierID, stageID int32) []*AreaInfo {
+	areaInfos := GetBarrierAreaInfos(barrierID)
+	unPassArea := make([]*AreaInfo, 0)
+	for _, areaInfo := range areaInfos {
+		if areaInfo.StageId == 0 || areaInfo.StageId > stageID {
+			unPassArea = append(unPassArea, areaInfo)
+		}
+	}
+
+	return unPassArea
 }

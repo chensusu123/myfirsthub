@@ -31,7 +31,7 @@ func (s *service) SaveBarrierScoreReward(ctx context.Context, userId uint64, bar
 	logger := fklog.ContextAppLogger(ctx)
 	model, err := barrierscorerewardmodel.NewBarrierScoreRewardModel(ctx, userId, barrier)
 	if err != nil {
-		logger.ErrorWF("SaveBarrierScoreReward NewBarrierScoreRewardModel err", zap.Error(err))
+		logger.CtxError(ctx, "SaveBarrierScoreReward NewBarrierScoreRewardModel err", zap.Error(err))
 		return fmt.Errorf("获取用户关卡积分奖励信息失败")
 	}
 	if len(equipList) != 0 {
@@ -71,7 +71,7 @@ func (s *service) SaveBarrierScoreReward(ctx context.Context, userId uint64, bar
 
 	err = model.Save(ctx, userId, barrier)
 	if err != nil {
-		logger.ErrorWF("SaveBarrierScoreReward Save err", zap.Error(err))
+		logger.CtxError(ctx, "SaveBarrierScoreReward Save err", zap.Error(err))
 		return fmt.Errorf("保存关卡奖励失败")
 	}
 

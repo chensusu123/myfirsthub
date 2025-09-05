@@ -1,6 +1,7 @@
 package packtopb
 
 import (
+	"context"
 	"maze_game_server/common/errors"
 	"maze_game_server/common/function/pbutil"
 	"maze_game_server/config/GMazeEquipInfoV8Cfg"
@@ -12,12 +13,13 @@ import (
 	"google.golang.org/protobuf/proto"
 )
 
-func EquipSimplifyToCliPB(logger fklog.FKLogI, equipInfo *MazeEquipCache.MazeEquipInfoDb) (*MazeGameEquip.MazeEquipInfo, error) {
+func EquipSimplifyToCliPB(ctx context.Context, equipInfo *MazeEquipCache.MazeEquipInfoDb) (*MazeGameEquip.MazeEquipInfo, error) {
+	logger := fklog.ContextAppLogger(ctx)
 	res := &MazeGameEquip.MazeEquipInfo{}
 	res.EquipGuid = proto.Int64(equipInfo.GetEquipGuid())
-	equipCfg := GMazeEquipInfoV8Cfg.Get(equipInfo.GetEquipId())
+	equipCfg := GMazeEquipInfoV8Cfg.GetWithCtx(ctx, equipInfo.GetEquipId())
 	if equipCfg == nil {
-		logger.ErrorWF("EquipSimplifyToCliPB get doll equip info cfg nil", zap.Int32("equipId", equipInfo.GetEquipId()))
+		logger.CtxError(ctx, "EquipSimplifyToCliPB get doll equip info cfg nil", zap.Int32("equipId", equipInfo.GetEquipId()))
 		return nil, errors.New("装备详情配置不存在")
 	}
 	res.Pos = proto.Int32(equipCfg.Pos)
@@ -30,29 +32,29 @@ func EquipSimplifyToCliPB(logger fklog.FKLogI, equipInfo *MazeEquipCache.MazeEqu
 			SuitId: proto.Int32(equipInfo.GetSuitId()),
 		}
 	}
-	_, equipName, mazeModel, icon, iconAtlas := pbutil.GetDollEquipNameEx(equipInfo, equipInfo.GetEquipSubType())
+	_, equipName, mazeModel, icon, iconAtlas := pbutil.GetDollEquipNameEx(ctx, equipInfo, equipInfo.GetEquipSubType())
 	//	res.EquipResId = proto.Int32(equipResId)
 	res.EquipName = proto.String(equipName)
 	res.MazeModel = proto.Int32(mazeModel)
 	res.Icon = proto.String(icon)
 	res.IconAtlas = proto.String(iconAtlas)
 
-	mainAttrs, _, _, _, _ := EquipBaseAttrToCliPB(logger, equipInfo.BaseAttrs)
+	mainAttrs, _, _, _, _ := EquipBaseAttrToCliPB(ctx, equipInfo.BaseAttrs)
 	res.MainAttrs = mainAttrs
 	return res, nil
 }
 
-// func BagEquipChgIDToCliPBEx(logger fklog.FKLogI, equip *MazeEquipCache.MazeEquipInfoDb) (*MazeGameEquip.MazeEquipInfo, error) {
+// func BagEquipChgIDToCliPBEx(ctx context.Context, equip *MazeEquipCache.MazeEquipInfoDb) (*MazeGameEquip.MazeEquipInfo, error) {
 //	newEquipInfo, err := pbutil.ConvertIdentifyEquipDb(logger, equip)
 //	if err != nil {
-//		logger.ErrorWF("BagEquipChgIDToCliPBEx ConvertIdentifyEquipDb error", zap.Any("equip", equip), zap.Error(err))
+//		logger.CtxError(ctx,"BagEquipChgIDToCliPBEx ConvertIdentifyEquipDb error", zap.Any("equip", equip), zap.Error(err))
 //		return nil, err
 //	}
 //	res := &MazeGameEquip.MazeEquipInfo{}
 //	res.EquipGuid = proto.Int64(newEquipInfo.GetEquipGuid())
-//	equipCfg := GMazeEquipInfoV8Cfg.Get(newEquipInfo.GetEquipId())
+//	equipCfg := GMazeEquipInfoV8Cfg.GetWithCtx(ctx,newEquipInfo.GetEquipId())
 //	if equipCfg == nil {
-//		logger.ErrorWF("EquipSimplifyToCliPB get doll equip info cfg nil", zap.Int32("equipId", newEquipInfo.GetEquipId()))
+//		logger.CtxError(ctx,"EquipSimplifyToCliPB get doll equip info cfg nil", zap.Int32("equipId", newEquipInfo.GetEquipId()))
 //		return nil, errors.New("装备详情配置不存在")
 //	}
 //	res.Pos = proto.Int32(equipCfg.Pos)

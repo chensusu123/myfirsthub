@@ -1,10 +1,12 @@
 package tasktimer
 
 import (
+	"context"
 	"errors"
 
-	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fklog"
 	"maze_game_server/pb/server/SeaTaskSvr"
+
+	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fklog"
 )
 
 func init() {
@@ -16,11 +18,12 @@ func RegOnTimeoutFunc(f TimeoutFunc) {
 	gOnTimeout = f
 }
 
-func SetSeaTask(logger fklog.FKLogI, uid, session uint64, op SeaTaskSvr.TaskNotifyType, info *SeaTaskSvr.TaskInfo) (err error) {
+func SetSeaTask(ctx context.Context, uid, session uint64, op SeaTaskSvr.TaskNotifyType, info *SeaTaskSvr.TaskInfo) (err error) {
 	if gOnTimeout == nil {
 		return errors.New("gOnTimeout is nil")
 	}
+	logger := fklog.ContextAppLogger(ctx)
 	return GTaskTimerBusiness.SetSeaTask(logger, uid, session, op, info)
 }
 
-type TimeoutFunc func(logger fklog.FKLogI, shardingID uint64, req SeaTaskSvr.TaskExpireNotifyRQ) (res SeaTaskSvr.TaskExpireNotifyRS, err error)
+type TimeoutFunc func(ctx context.Context, shardingID uint64, req SeaTaskSvr.TaskExpireNotifyRQ) (res SeaTaskSvr.TaskExpireNotifyRS, err error)

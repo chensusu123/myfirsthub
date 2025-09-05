@@ -46,7 +46,7 @@ func (s *service) GatherItem(ctx context.Context, userId uint64, opType int32, t
 	}
 
 	// 货币变化推包
-	s.sendMoneyItemChgID(logger, userId, moneyMap)
+	s.sendMoneyItemChgID(ctx, userId, moneyMap)
 	// 流水
 	s.sendFlow(ctx, userId, items, oldMap, moneyMap, tradeNo, opType)
 
@@ -83,7 +83,7 @@ func (s *service) DeductItem(ctx context.Context, userId uint64, opType int32, t
 	}
 
 	// 货币变化推包
-	s.sendMoneyItemChgID(logger, userId, moneyMap)
+	s.sendMoneyItemChgID(ctx, userId, moneyMap)
 	// 流水
 	s.sendFlow(ctx, userId, items, oldMap, moneyMap, tradeNo, opType)
 
@@ -150,7 +150,7 @@ func (s *service) GetItem(ctx context.Context, userId uint64, items []*itemservi
 }
 
 // 通知货币变化
-func (s *service) sendMoneyItemChgID(logger fklog.FKLogI, userId uint64, moneyMap map[int32]int64) {
+func (s *service) sendMoneyItemChgID(ctx context.Context, userId uint64, moneyMap map[int32]int64) {
 	commonList := make([]*mazecommonvalue.CommonValueStruct, 0)
 	commonValueMap := make(map[int32]int64)
 	for k, v := range moneyMap {
@@ -160,9 +160,9 @@ func (s *service) sendMoneyItemChgID(logger fklog.FKLogI, userId uint64, moneyMa
 			commonValueMap[int32(MazeGame.MAZE_DATA_TYPE_ENUM_MAZE_DATA_TYPE_DIAMOND)] = v
 		}
 	}
-	moneyCommon := mazecommonvalue.MakeCommonValueList(logger, commonValueMap, map[int32]int32{}, map[int32]string{})
+	moneyCommon := mazecommonvalue.MakeCommonValueList(ctx, commonValueMap, map[int32]int32{}, map[int32]string{})
 	commonList = append(commonList, moneyCommon...)
-	mazecommonvalue.SendCommonValueIdPack(logger, userId, commonList)
+	mazecommonvalue.SendCommonValueIdPack(ctx, userId, commonList)
 }
 
 // 流水

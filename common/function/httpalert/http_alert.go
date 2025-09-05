@@ -1,12 +1,12 @@
 package httpalert
 
 import (
+	"context"
 	"fmt"
 	"strings"
 	"time"
 
 	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fkconfig"
-	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fklog"
 	//"gitlab.ifreetalk.com/maze-plate/io/common/alert"
 )
 
@@ -15,7 +15,7 @@ import (
 // typ参数: 告警类型 服务内部保证唯一，区分不同的告警
 // recevier参数: 接收者列表，多人用逗号分隔
 // 告警示例 #190909195 告警 11:35:58 warship-gm-server-c0-g7-0 2024:04:29-11:35:58, ServerID:233731, ServerType:17712, Group:7 content [ 这是一条测试告警 ] @majian
-func SendHttpAlert(logger fklog.FKLogI, typ int32, content, recevier string, online bool) error {
+func SendHttpAlert(ctx context.Context, typ int32, content, recevier string, online bool) error {
 	sb := strings.Builder{}
 	sb.WriteString(time.Now().Format("2006:01:02-15:04:05"))
 	sb.WriteString(fmt.Sprintf(", ServerID:%d, ServerType:%d, Group:%d", fkconfig.EnvVal.ServerID, fkconfig.EnvVal.ServerType, fkconfig.EnvVal.GroupID))

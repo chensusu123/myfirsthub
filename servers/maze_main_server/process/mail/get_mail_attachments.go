@@ -1,7 +1,6 @@
 package mail
 
 import (
-	"context"
 	"maze_game_server/common/errors"
 	"maze_game_server/common/function/addequip"
 	"maze_game_server/common/function/itemutil"
@@ -29,10 +28,10 @@ func (g *Mail) OnMazeGetMailAttachmentsRQ_10630_10631(s *session.Session, req *M
 	logger := fklog.ContextAppLogger(ctx)
 	res := &MazeMail.MazeGetMailAttachmentsRS{}
 
-	logger.InfoWF("OnMazeGetMailAttachmentsRQ start", zap.Any("req", req))
+	logger.CtxInfo(ctx, "OnMazeGetMailAttachmentsRQ start", zap.Any("req", req))
 	defer func() {
 		err = s.Response(res)
-		logger.InfoWF("OnMazeGetMailAttachmentsRQ end", zap.Any("res", res))
+		logger.CtxInfo(ctx, "OnMazeGetMailAttachmentsRQ end", zap.Any("res", res))
 	}()
 
 	res.Header = req.Header
@@ -42,19 +41,19 @@ func (g *Mail) OnMazeGetMailAttachmentsRQ_10630_10631(s *session.Session, req *M
 
 	_, err = mazeuserinfo.GetUserInfoV2(ctx, userId)
 	if err != nil {
-		logger.ErrorWF("OnMazeGetMailAttachmentsRQ GetUserInfoV2 fail", zap.Error(err))
+		logger.CtxError(ctx, "OnMazeGetMailAttachmentsRQ GetUserInfoV2 fail", zap.Error(err))
 		res.ErrInfo = errors.MODULE_ERROR.ToInfo()
 		return
 	}
 
 	mails := make([]*mailmodel.MailInfo, 0)
-	equipMap := make(map[int32]int32) //装备列表
-	itemMap := make(map[int32]int64)  //道具列表
+	equipMap := make(map[int32]int32) // 装备列表
+	itemMap := make(map[int32]int64)  // 道具列表
 
 	if req.GetIsAll() {
 		mailList, attachements, err := mailservice.GlobalMailService.GetAllMailAttachment(ctx, userId, req.GetLabel())
 		if err != nil {
-			logger.ErrorWF("OnMazeGetMailAttachmentsRQ GetAllMailAttachment fail", zap.Error(err), zap.Int32("label", req.GetLabel()))
+			logger.CtxError(ctx, "OnMazeGetMailAttachmentsRQ GetAllMailAttachment fail", zap.Error(err), zap.Int32("label", req.GetLabel()))
 			res.ErrInfo = errors.COMMON_ERROR_TIPS.Wrap(err.Error())
 			return err
 		}
@@ -72,7 +71,7 @@ func (g *Mail) OnMazeGetMailAttachmentsRQ_10630_10631(s *session.Session, req *M
 	} else {
 		mailInfo, attachements, err := mailservice.GlobalMailService.GetMailAttachment(ctx, userId, req.GetMailId(), req.GetLabel())
 		if err != nil {
-			logger.ErrorWF("OnMazeGetMailAttachmentsRQ GetMailAttachment fail", zap.Error(err), zap.Uint64("mId", req.GetMailId()))
+			logger.CtxError(ctx, "OnMazeGetMailAttachmentsRQ GetMailAttachment fail", zap.Error(err), zap.Uint64("mId", req.GetMailId()))
 			res.ErrInfo = errors.COMMON_ERROR_TIPS.Wrap(err.Error())
 			return err
 		}
@@ -89,10 +88,10 @@ func (g *Mail) OnMazeGetMailAttachmentsRQ_10630_10631(s *session.Session, req *M
 
 	tradeNo := tradeno.GetTradeNum()
 	if len(equipMap) > 0 {
-		//TODO 差一个邮件领取枚举，看业务是否需要邮件支持发装备附件
+		// TODO 差一个邮件领取枚举，看业务是否需要邮件支持发装备附件
 		_, err := addequip.AddEquipToBag(ctx, userId, int32(MazeEquipSvr.ENUM_EQUIP_BAG_OP_TYPE_MAZE_EQUIP_SWEEP_AWARD), tradeNo, equipMap)
 		if err != nil {
-			logger.ErrorWF("OnMazeGetMailAttachmentsRQ addEquipToBag fail", zap.Error(err), zap.Any("optype", int32(MazeEquipSvr.ENUM_EQUIP_BAG_OP_TYPE_MAZE_EQUIP_BOX_AWARD)),
+			logger.CtxError(ctx, "OnMazeGetMailAttachmentsRQ addEquipToBag fail", zap.Error(err), zap.Any("optype", int32(MazeEquipSvr.ENUM_EQUIP_BAG_OP_TYPE_MAZE_EQUIP_BOX_AWARD)),
 				zap.Any("tradeNo", tradeNo), zap.Any("addEquip", equipMap))
 		}
 	}
@@ -108,21 +107,21 @@ func (g *Mail) OnMazeGetMailAttachmentsRQ_10630_10631(s *session.Session, req *M
 		}
 
 		itemList := itemutil.Map2ItemInfo(itemMap)
-		errInfo := itemservice.GlobalItemService.AddItem(context.TODO(), userId, itemservice.ItemOpTypeMail, tradeNo, itemList...)
+		errInfo := itemservice.GlobalItemService.AddItem(ctx, userId, itemservice.ItemOpTypeMail, tradeNo, itemList...)
 		if errInfo != nil {
-			logger.ErrorWF("OnMazeGetMailAttachmentsRQ AddItemEx fail", zap.Any("errInfo", errInfo), zap.Any("ItemList", realAddItemList))
+			logger.CtxError(ctx, "OnMazeGetMailAttachmentsRQ AddItemEx fail", zap.Any("errInfo", errInfo), zap.Any("ItemList", realAddItemList))
 		}
 	}
 
 	err = mailservice.GlobalMailService.GetMailAttachmentAfter(ctx, userId, mails)
 	if err != nil {
-		logger.ErrorWF("OnMazeGetMailAttachmentsRQ GetMailAttachmentAfter fail", zap.Error(err))
+		logger.CtxError(ctx, "OnMazeGetMailAttachmentsRQ GetMailAttachmentAfter fail", zap.Error(err))
 		return err
 	}
 
 	list, err := mailservice.GlobalMailService.GetMailListByLabel(ctx, userId, req.GetLabel(), 0, 30)
 	if err != nil {
-		logger.ErrorWF("OnMazeGetMailAttachmentsRQ GetMailList fail", zap.Error(err))
+		logger.CtxError(ctx, "OnMazeGetMailAttachmentsRQ GetMailList fail", zap.Error(err))
 		res.ErrInfo = errors.MODULE_ERROR.ToInfo()
 		return err
 	}

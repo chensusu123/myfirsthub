@@ -99,3 +99,13 @@ func GetSpecialBuffGroupId(ctx context.Context) int64 {
 	}
 	return 6009
 }
+
+// 获取展示道具和实际道具的对应map
+func GetReallyItemMap(ctx context.Context, itemType int32) map[int32]int64 {
+	row := GMazeConfigV8Cfg.GetWithCtx(ctx, itemType)
+	if row != nil {
+		return row.Value_map
+	}
+
+	return make(map[int32]int64)
+}

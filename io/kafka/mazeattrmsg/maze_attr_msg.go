@@ -32,15 +32,15 @@ func SendMazeAttrChgNotify(ctx context.Context, msg *structsdef.DollAttrChgNotif
 
 	// jbs, e := json.Marshal(msg)
 	// if e != nil {
-	// 	logger.ErrorWF("SendMazeAttrChgNotify Marshal fail", zap.Error(e), zap.Any("msg", msg))
+	// 	logger.CtxError(ctx,"SendMazeAttrChgNotify Marshal fail", zap.Error(e), zap.Any("msg", msg))
 	// 	return e
 	// }
 	// e = kp.SendWithUserID(msg.UserId, jbs)
 	// if e != nil {
-	// 	logger.ErrorWF("SendMazeAttrChgNotify SendWithUserID fail", zap.Error(e), zap.Any("msg", msg))
+	// 	logger.CtxError(ctx,"SendMazeAttrChgNotify SendWithUserID fail", zap.Error(e), zap.Any("msg", msg))
 	// 	return e
 	// }
-	// logger.InfoWF("SendMazeAttrChgNotify SendWithUserID succ", zap.Any("msg", msg))
+	// logger.CtxInfo(ctx,"SendMazeAttrChgNotify SendWithUserID succ", zap.Any("msg", msg))
 	d.Push(ctx, msg)
 	return nil
 }

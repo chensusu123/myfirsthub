@@ -67,7 +67,7 @@ func (c *cluster) Register(_ context.Context, req *clusterpb.RegisterRequest) (*
 				c.members = append(c.members[:k], c.members[k+1:]...)
 			}
 			break
-			//return nil, fmt.Errorf("address %s has registered", req.MemberInfo.ServiceAddr)
+			// return nil, fmt.Errorf("address %s has registered", req.MemberInfo.ServiceAddr)
 		}
 	}
 	c.mu.Unlock()
@@ -106,7 +106,7 @@ func (c *cluster) Unregister(_ context.Context, req *clusterpb.UnregisterRequest
 		return nil, ErrInvalidRegisterReq
 	}
 
-	var index = -1
+	index := -1
 	resp := &clusterpb.UnregisterResponse{}
 	for i, m := range c.members {
 		if m.memberInfo.ServiceAddr == req.ServiceAddr {
@@ -262,7 +262,7 @@ func (c *cluster) addMember(info *clusterpb.MemberInfo) {
 
 func (c *cluster) delMember(addr string) {
 	c.mu.Lock()
-	var index = -1
+	index := -1
 	for i, member := range c.members {
 		if member.memberInfo.ServiceAddr == addr {
 			index = i

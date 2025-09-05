@@ -17,33 +17,33 @@ import (
 func (b *barrier) OpenBox(ctx context.Context, userID uint64, barrierID int32, boxID int32) (
 	kongfu int32, equips map[int32]int32, items map[int32]int64, errinfo *MessageType.ErrorInfo) {
 	logger := fklog.ContextAppLogger(ctx)
-	boxCfg := GMazeBoxV8Cfg.Get(boxID)
+	boxCfg := GMazeBoxV8Cfg.GetWithCtx(ctx,boxID)
 	if boxCfg == nil {
-		logger.ErrorWF("OpenBox get box cfg fail", zap.Any("boxId", boxID))
+		logger.CtxError(ctx, "OpenBox get box cfg fail", zap.Any("boxId", boxID))
 		return 0, nil, nil, errors.CONFIG_NOT_FOUND.ToInfo()
 	}
 
 	// // 更新box表格 读表校验宝箱对应的关卡id
 	// if fkutil.ToInt64(boxCfg.Level_id) != int64(barrierID) {
-	// 	logger.ErrorWF("OpenBox barrier and box not match", zap.Any("boxId", boxID), zap.Any("barrierId", barrierID))
+	// 	logger.CtxError(ctx,"OpenBox barrier and box not match", zap.Any("boxId", boxID), zap.Any("barrierId", barrierID))
 	// 	return 0, nil, nil, errors.COMMON_ERROR_TIPS.Wrap("宝箱关卡信息不匹配")
 	// }
 
 	// 防重复操作校验
-	triggered, triggerFn, err := mazebarrieropstatusredis.IsTriggered(logger, userID, barrierID, fmt.Sprintf("openbox:%d", boxID))
+	triggered, triggerFn, err := mazebarrieropstatusredis.IsTriggered(ctx, userID, barrierID, fmt.Sprintf("openbox:%d", boxID))
 	if err != nil {
-		logger.ErrorWF("OpenBox IsTriggered fail", zap.Error(err), zap.Any("boxId", boxID), zap.Any("barrierId", barrierID))
+		logger.CtxError(ctx, "OpenBox IsTriggered fail", zap.Error(err), zap.Any("boxId", boxID), zap.Any("barrierId", barrierID))
 		return 0, nil, nil, errors.COMMON_ERROR_TIPS.Wrap("数据校验失败")
 	}
 	if triggered {
-		logger.WarnWF("OpenBox already opened", zap.Any("boxId", boxID), zap.Any("barrierId", barrierID))
+		logger.CtxWarn(ctx, "OpenBox already opened", zap.Any("boxId", boxID), zap.Any("barrierId", barrierID))
 		return 0, nil, nil, errors.COMMON_ERROR_TIPS.Wrap("宝箱已打开")
 	} else {
 		defer triggerFn()
 	}
-	opened, err := mazeboxredis.IsOpenedBox(logger, userID, barrierID, boxID)
+	opened, err := mazeboxredis.IsOpenedBox(ctx, userID, barrierID, boxID)
 	if err != nil {
-		logger.ErrorWF("OpenBox IsOpenedBox fail", zap.Error(err), zap.Any("boxId", boxID), zap.Any("barrierId", barrierID))
+		logger.CtxError(ctx, "OpenBox IsOpenedBox fail", zap.Error(err), zap.Any("boxId", boxID), zap.Any("barrierId", barrierID))
 		return 0, nil, nil, errors.COMMON_ERROR_TIPS.Wrap("宝箱打开失败")
 	}
 
@@ -70,9 +70,9 @@ func (b *barrier) OpenBox(ctx context.Context, userID uint64, barrierID int32, b
 	}
 
 	// 标记宝箱已打开过
-	err = mazeboxredis.SetOpenBoxTime(logger, userID, barrierID, boxID)
+	err = mazeboxredis.SetOpenBoxTime(ctx, userID, barrierID, boxID)
 	if err != nil {
-		logger.ErrorWF("OpenBox SetOpenBoxTime fail", zap.Error(err), zap.Any("boxId", boxID), zap.Any("barrierId", barrierID))
+		logger.CtxError(ctx, "OpenBox SetOpenBoxTime fail", zap.Error(err), zap.Any("boxId", boxID), zap.Any("barrierId", barrierID))
 	}
 
 	return kongfu, equips, items, errors.NO_ERROR

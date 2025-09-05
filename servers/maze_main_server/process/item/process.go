@@ -1,15 +1,22 @@
 package item
 
 import (
-	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fklog"
-	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fkprometheus"
-	"go.uber.org/zap"
+	"context"
 	"maze_game_server/common/errors"
 	"maze_game_server/common/function/itemutil"
+	"maze_game_server/common/function/packtopb/equiptoitem"
 	"maze_game_server/lib/nano/component"
 	"maze_game_server/lib/nano/session"
 	"maze_game_server/pb/common/MazeBag"
+	"maze_game_server/pb/common/MazeGame"
 	"maze_game_server/services/bagservice"
+	"maze_game_server/services/itemservice"
+	"maze_game_server/usecase/online"
+
+	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fklog"
+	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fkprometheus"
+	"go.uber.org/zap"
+	"google.golang.org/protobuf/proto"
 )
 
 type Item struct {
@@ -46,7 +53,7 @@ func (i *Item) OnMazeBagListRQ_10400_10401(s *session.Session, req *MazeBag.Maze
 		if id <= 0 || count <= 0 {
 			continue
 		}
-		res.Items = append(res.Items, itemutil.BuildMazeBagItem(logger, id, count))
+		res.Items = append(res.Items, itemutil.BuildMazeBagItem(ctx, id, count))
 	}
 	return
 }
@@ -75,4 +82,43 @@ func (i *Item) OnResetMazeBagRQ_10402_10403(s *session.Session, req *MazeBag.Res
 	}
 
 	return
+}
+
+func OnSendItemsPack(ctx context.Context, userID uint64, items []*itemservice.ItemInfo, equips []*itemservice.ItemInfo, monsterGuid int64, monsterPos string) (err error) {
+	logger := fklog.ContextAppLogger(ctx)
+	rs := &MazeGame.MazeDropItemID{}
+
+	logger.CtxInfo(ctx, "OnSendItemsPack start", zap.Any("rs", rs))
+
+	defer func() {
+		logger.CtxInfo(ctx, "OnSendItemsPack end", zap.Any("rs", rs))
+	}()
+
+	for _, equip := range equips {
+		equip, err := equiptoitem.PackMazeEquipInfoSvrToItem(ctx, equip.ItemId)
+		if err != nil {
+			logger.CtxError(ctx, "OnSendItemsPack PackMazeEquipInfoSvrToItem fail",
+				zap.Any("equip", equip),
+				zap.Uint64("userID", userID),
+			)
+			return err
+		}
+		rs.EquipList = append(rs.EquipList, equip)
+	}
+
+	rs.ItemList = itemutil.ItemInfo2ItemPb(items)
+
+	rs.MonsterGuid = proto.Int64(monsterGuid)
+	rs.MonsterPos = proto.String(monsterPos)
+
+	err = online.ClusterPush(ctx, uint64(userID), 10665, rs)
+	if err != nil {
+		logger.CtxError(ctx, "OnSendItemsPack ClusterPush",
+			zap.Any("items", items),
+			zap.Any("equips", equips),
+		)
+		return
+	}
+
+	return err
 }

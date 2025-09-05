@@ -30,12 +30,12 @@ func HandleMazeLvUpgradeAttrChgId(ctx context.Context, userId uint64, msg *struc
 	}
 	mazeLv, e := mazeuserlevelredis.GetUserLevel(ctx, userId)
 	if e != nil {
-		logger.ErrorWF("HandleMazeLvUpgradeAttrChgId GetUserLevel fail", zap.Error(e),
+		logger.CtxError(ctx, "HandleMazeLvUpgradeAttrChgId GetUserLevel fail", zap.Error(e),
 			zap.Uint64("uid", userId))
 		return
 	}
 	if mazeLv <= 1 {
-		logger.InfoWF("HandleMazeLvUpgradeAttrChgId level1 ignore",
+		logger.CtxInfo(ctx, "HandleMazeLvUpgradeAttrChgId level1 ignore",
 			zap.Uint64("uid", userId))
 		return
 	}
@@ -56,9 +56,9 @@ func HandleMazeLvUpgradeAttrChgId(ctx context.Context, userId uint64, msg *struc
 		mazeLvChgIDMsg.ChgAttrs = append(mazeLvChgIDMsg.ChgAttrs, chgIdInfo)
 	}
 
-	logger.InfoWF("HandleMazeLvUpgradeAttrChgId send client with",
+	logger.CtxInfo(ctx, "HandleMazeLvUpgradeAttrChgId send client with",
 		zap.Any("mazeLvChgIDMsg", mazeLvChgIDMsg), zap.Uint64("userId", userId))
-	online.ClusterPush(context.TODO(), uint64(userId), 10479, mazeLvChgIDMsg)
+	online.ClusterPush(ctx, uint64(userId), 10479, mazeLvChgIDMsg)
 }
 
 // func IsMazeUpgradeCareAttr(attrId int32) bool {

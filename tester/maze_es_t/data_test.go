@@ -6,8 +6,9 @@ import (
 	"testing"
 	"time"
 
-	"go.uber.org/zap"
 	"maze_game_server/lib/net/websocket_service"
+
+	"go.uber.org/zap"
 )
 
 func dataProcess(c *websocket_service.Client, data []byte) {
@@ -41,7 +42,7 @@ func makeData() []byte {
 		data[i] = byte(rand.Intn(256))
 	}
 	binary.LittleEndian.PutUint16(data[0:2], uint16(n))
-	gTestLogger.InfoWF("make data", zap.Any("data", len(data)))
+	gTestlogger.CtxInfo(ctx, "make data", zap.Any("data", len(data)))
 	return data[0:n]
 }
 

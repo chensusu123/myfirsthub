@@ -45,18 +45,19 @@ func (a *CollectMsg) Unmarshal(data []byte) error {
 	return nil
 }
 
-func ItemCollectCallback(logger fklog.FKLogI, userId uint64, bs []byte) error {
-	logger.InfoWF("ItemCollectCallback start warship skin callback", zap.Any("bs", bs))
+func ItemCollectCallback(ctx context.Context, userId uint64, bs []byte) error {
+	logger := fklog.ContextAppLogger(ctx)
+	logger.CtxInfo(ctx, "ItemCollectCallback start warship skin callback", zap.Any("bs", bs))
 
 	msg := &CollectMsg{}
 	err := msg.Unmarshal(bs)
 	if err != nil {
-		logger.ErrorWF("ItemCollectCallback json unmarshal err", zap.Error(err))
+		logger.CtxError(ctx, "ItemCollectCallback json unmarshal err", zap.Error(err))
 		return err
 	}
 
 	if msg.UserId != userId {
-		logger.ErrorWF("ItemCollectCallback petCfgId no match", zap.Any("timerUserId", msg.UserId), zap.Any("userId", userId))
+		logger.CtxError(ctx, "ItemCollectCallback petCfgId no match", zap.Any("timerUserId", msg.UserId), zap.Any("userId", userId))
 		return errors.New("用户id不匹配")
 	}
 
@@ -75,22 +76,22 @@ func ItemCollectCallback(logger fklog.FKLogI, userId uint64, bs []byte) error {
 	// 是否已经初始化
 	//collectInfo, err := mazecollectredis.GetCollectInfo(logger, userId)
 	//if err != nil {
-	//	logger.ErrorWF("ItemCollectCallback GetCollectInfo error",
+	//	logger.CtxError(ctx,"ItemCollectCallback GetCollectInfo error",
 	//		zap.Any("userId", userId),
 	//		zap.Error(err))
 	//	return err
 	//}
-	cInfo := mazecollect.NewCollectInfo(logger, userId)
-	collectInfo := cInfo.GetCollectInfo()
+	cInfo := mazecollect.NewCollectInfo(ctx, userId)
+	collectInfo := cInfo.GetCollectInfo(ctx)
 	if collectInfo == nil {
-		logger.ErrorWF("ItemCollectCallback collectInfo not exist",
+		logger.CtxError(ctx, "ItemCollectCallback collectInfo not exist",
 			zap.Any("userId", userId),
 			zap.Error(err))
 		return nil
 	}
-	err = ItemCollect(context.TODO(), userId, collectInfo)
+	err = ItemCollect(ctx, userId, collectInfo)
 	if err != nil {
-		logger.ErrorWF("ItemCollectCallback ItemCollect", zap.Error(err))
+		logger.CtxError(ctx, "ItemCollectCallback ItemCollect", zap.Error(err))
 		return err
 	}
 	return nil
@@ -108,7 +109,7 @@ func ItemCollect(ctx context.Context, userId uint64, collectInfo *MazeCollectCac
 	addItems := make(map[int32]int64) // 增加道具
 
 	defer func() {
-		logger.InfoWF("ItemCollect end",
+		logger.CtxInfo(ctx, "ItemCollect end",
 			zap.Any("err", err), zap.Any("collect times", collectTimes),
 			zap.Int64("startTime", startTime), zap.Int64("endTime", endTime),
 			zap.Int64("lastTime", lastTime), zap.Int64("newLastTime", newLastTime),
@@ -118,12 +119,12 @@ func ItemCollect(ctx context.Context, userId uint64, collectInfo *MazeCollectCac
 	}()
 
 	if collectInfo.GetLastTime() >= collectInfo.GetEndTime() {
-		logger.ErrorWF("ItemCollect PetCollectIsEnd")
+		logger.CtxError(ctx, "ItemCollect PetCollectIsEnd")
 		return
 	}
-	cfg := GMazeBarriesOnHookV8Cfg.Get(collectInfo.GetBarrierId())
+	cfg := GMazeBarriesOnHookV8Cfg.GetWithCtx(ctx, collectInfo.GetBarrierId())
 	if cfg == nil {
-		logger.ErrorWF("ItemCollect error",
+		logger.CtxError(ctx, "ItemCollect error",
 			zap.Any("barrierId", collectInfo.GetBarrierId()))
 		return errors.New("配置不存在")
 	}
@@ -136,10 +137,10 @@ func ItemCollect(ctx context.Context, userId uint64, collectInfo *MazeCollectCac
 	timeCap := collectTime - lastTime      // 距离上次结算的时间
 	collectTimes = timeCap / periodSeconds // 道具产出周期数
 	if collectTimes == 0 {                 // 定时器回调提前了，不结算收集
-		logger.WarnWF("ItemCollect timer ahead", zap.Int64("collectTime", collectTime), zap.Int64("lastTime", lastTime),
+		logger.CtxWarn(ctx, "ItemCollect timer ahead", zap.Int64("collectTime", collectTime), zap.Int64("lastTime", lastTime),
 			zap.Int64("startTime", startTime), zap.Int64("endTime", endTime),
 			zap.Int64("timeCap", timeCap), zap.Int64("periodSeconds", periodSeconds))
-		err = SetCollectTimer(logger, userId, collectInfo)
+		err = SetCollectTimer(ctx, userId, collectInfo)
 		if err != nil {
 			err = fmt.Errorf("SetCollectTimer err: %v", err)
 			return
@@ -176,13 +177,13 @@ func ItemCollect(ctx context.Context, userId uint64, collectInfo *MazeCollectCac
 	collectInfo.LastTime = proto.Int64(newLastTime)
 	userInfo, err := mazeuserinfo.GetUserInfoV2(ctx, userId)
 	if err != nil {
-		logger.ErrorWF("ItemCollect GetUserInfoV2", zap.Error(err))
+		logger.CtxError(ctx, "ItemCollect GetUserInfoV2", zap.Error(err))
 		return
 	}
 	if userInfo.PassBarrier != collectInfo.GetBarrierId() {
-		newCfg := GMazeBarriesOnHookV8Cfg.Get(userInfo.PassBarrier)
+		newCfg := GMazeBarriesOnHookV8Cfg.GetWithCtx(ctx, userInfo.PassBarrier)
 		if newCfg == nil {
-			logger.ErrorWF("ItemCollect error",
+			logger.CtxError(ctx, "ItemCollect error",
 				zap.Any("barrierId", userInfo.PassBarrier))
 			return errors.New("配置不存在")
 		}
@@ -191,34 +192,35 @@ func ItemCollect(ctx context.Context, userId uint64, collectInfo *MazeCollectCac
 	}
 
 	// 更新收集信息
-	err = mazecollectredis.SetCollectInfo(logger, userId, collectInfo)
+	err = mazecollectredis.SetCollectInfo(ctx, userId, collectInfo)
 	if err != nil {
-		logger.ErrorWF("ItemCollect SetCollectInfo", zap.Error(err))
+		logger.CtxError(ctx, "ItemCollect SetCollectInfo", zap.Error(err))
 		return
 	}
 
 	if newLastTime == endTime {
-		logger.InfoWF("ItemCollect collect stop", zap.Any("collectInfo", collectInfo))
+		logger.CtxInfo(ctx, "ItemCollect collect stop", zap.Any("collectInfo", collectInfo))
 		return nil
 	}
 
 	// 设置下一周期定时器
-	err = SetCollectTimer(logger, userId, collectInfo)
+	err = SetCollectTimer(ctx, userId, collectInfo)
 	if err != nil {
-		logger.ErrorWF("ItemCollect SetCollectTimer err", zap.Any("collectInfo", collectInfo), zap.Error(err))
+		logger.CtxError(ctx, "ItemCollect SetCollectTimer err", zap.Any("collectInfo", collectInfo), zap.Error(err))
 		return
 	}
 
 	err = PushDollMazeCollectInfoLog(ctx, userId, collectInfo, lastTime, collectTimes, mazecollectrecord.MazeCollectTimeOut, 0, nil, 0)
 	if err != nil {
-		logger.ErrorWF("ItemCollect PushDollMazeCollectInfoLog err", zap.Any("collectInfo", collectInfo), zap.Error(err))
+		logger.CtxError(ctx, "ItemCollect PushDollMazeCollectInfoLog err", zap.Any("collectInfo", collectInfo), zap.Error(err))
 		return
 	}
 	return
 }
 
 // 设置道具收集定时器
-func SetCollectTimer(logger fklog.FKLogI, userId uint64, info *MazeCollectCache.MazeCollectInfo) (err error) {
+func SetCollectTimer(ctx context.Context, userId uint64, info *MazeCollectCache.MazeCollectInfo) (err error) {
+	logger := fklog.ContextAppLogger(ctx)
 	lastTime := info.GetLastTime()
 	periodSeconds := info.GetPeriodTime() // 产出周期
 	endTime := info.GetEndTime()
@@ -231,14 +233,14 @@ func SetCollectTimer(logger fklog.FKLogI, userId uint64, info *MazeCollectCache.
 		TimerType: constdef.CollectNotice,
 	}
 	jsonData := msg.Marshal()
-	err = settimer.SetTaskExpire(logger, userId,
+	err = settimer.SetTaskExpire(ctx, userId,
 		234, expireAt, jsonData)
 	if err != nil {
 		err = fmt.Errorf("SetTaskExpire err: %v", err)
 		return
 	}
 
-	logger.InfoWF("SetCollectTimer",
+	logger.CtxInfo(ctx, "SetCollectTimer",
 		zap.Any("msg", msg), zap.Int64("expireAt", expireAt),
 		zap.Int64("lastTime", lastTime), zap.Int64("endTime", endTime))
 	return
@@ -247,30 +249,30 @@ func SetCollectTimer(logger fklog.FKLogI, userId uint64, info *MazeCollectCache.
 func NewCollectAfter(ctx context.Context, userId uint64, collectInfo *MazeCollectCache.MazeCollectInfo) {
 	logger := fklog.ContextAppLogger(ctx)
 	// 设置下一周期定时器
-	err := SetCollectTimer(logger, userId, collectInfo)
+	err := SetCollectTimer(ctx, userId, collectInfo)
 	if err != nil {
-		logger.ErrorWF("NewCollectAfter SetCollectTimer err", zap.Any("collectInfo", collectInfo), zap.Error(err))
+		logger.CtxError(ctx, "NewCollectAfter SetCollectTimer err", zap.Any("collectInfo", collectInfo), zap.Error(err))
 		return
 	}
 	err = PushDollMazeCollectInfoLog(ctx, userId, collectInfo, collectInfo.GetLastTime(), 0, mazecollectrecord.MazeCollectInit, 0, nil, 0)
 	if err != nil {
-		logger.ErrorWF("NewCollectAfter PushDollMazeCollectInfoLog err", zap.Any("collectInfo", collectInfo), zap.Error(err))
+		logger.CtxError(ctx, "NewCollectAfter PushDollMazeCollectInfoLog err", zap.Any("collectInfo", collectInfo), zap.Error(err))
 		return
 	}
 
 	pack := &MazeCollect.MazeCollectOpenID{
 		FreshTime: proto.Int64(GetFreshTime(collectInfo)),
 	}
-	mazeCollectInfoPb, err := MazeCollectToCliPB(logger, collectInfo, collectInfo.GetBarrierId())
+	mazeCollectInfoPb, err := MazeCollectToCliPB(ctx, collectInfo, collectInfo.GetBarrierId())
 	if err != nil {
-		logger.ErrorWF("NewCollectAfter MazeCollectToCliPB err", zap.Any("collectInfo", collectInfo), zap.Error(err))
+		logger.CtxError(ctx, "NewCollectAfter MazeCollectToCliPB err", zap.Any("collectInfo", collectInfo), zap.Error(err))
 		return
 	}
 	pack.MazeCollectInfo = mazeCollectInfoPb
-	err = online.ClusterPush(context.TODO(), uint64(userId), 10480, pack)
+	err = online.ClusterPush(ctx, uint64(userId), 10480, pack)
 	if err != nil {
-		logger.ErrorWF("NewCollectAfter SendArrivePacket", zap.Any("pack", pack), zap.Error(err))
+		logger.CtxError(ctx, "NewCollectAfter SendArrivePacket", zap.Any("pack", pack), zap.Error(err))
 		return
 	}
-	logger.InfoWF("NewCollectAfter SendArrivePacket", zap.Any("pack", pack))
+	logger.CtxInfo(ctx, "NewCollectAfter SendArrivePacket", zap.Any("pack", pack))
 }

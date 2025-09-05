@@ -1,7 +1,8 @@
 package energy
 
 import (
-	"context"
+	"time"
+
 	"maze_game_server/common/errors"
 	"maze_game_server/common/tradeno"
 	"maze_game_server/io/kafka/mazeenergyrecord"
@@ -10,7 +11,6 @@ import (
 	"maze_game_server/pb/common/MazeEnergy"
 	"maze_game_server/services/barrierenergyservice"
 	"maze_game_server/services/itemservice"
-	"time"
 
 	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fklog"
 	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fkprometheus"
@@ -55,7 +55,7 @@ func (e *Energy) OnUseMazeEnergyItemRQ_10611_10612(s *session.Session, req *Maze
 		err = barrierenergyservice.GlobalBarrierEnergyService.SendEnergyChgPack(ctx, userId, uInfo.Energy, nextTime)
 		if err != nil {
 			logger.CtxError(ctx, "OnUseMazeEnergyItemRQ SendEnergyChgPack failed", zap.Error(err))
-			//return err
+			// return err
 			err = nil
 		}
 
@@ -80,7 +80,7 @@ func (e *Energy) OnUseMazeEnergyItemRQ_10611_10612(s *session.Session, req *Maze
 		ItemId: itemId,
 		Count:  1,
 	}
-	errInfo := itemservice.GlobalItemService.SubItem(context.TODO(), userId, itemservice.ItemOpTypeUseEnergy, tid, careCost)
+	errInfo := itemservice.GlobalItemService.SubItem(ctx, userId, itemservice.ItemOpTypeUseEnergy, tid, careCost)
 	if errInfo != nil {
 		logger.CtxError(ctx, "OnUseMazeEnergyItemRQ DeductItemsEx", zap.Any("careCost", careCost), zap.Uint64("tid", tid), zap.Any("errInfo", errInfo))
 
@@ -103,7 +103,8 @@ func (e *Energy) OnUseMazeEnergyItemRQ_10611_10612(s *session.Session, req *Maze
 	res.EnergyInfo = &MazeEnergy.EnergyInfo{
 		CurVal:           proto.Int32(energy),
 		MaxVal:           proto.Int32(maxVal),
-		NextRecoveryTime: proto.Int64(nextTime)}
+		NextRecoveryTime: proto.Int64(nextTime),
+	}
 
 	defer func() {
 		barrierenergyservice.GlobalBarrierEnergyService.PushEnergyRecord(ctx, userId, oldEnergy, energy, mazeenergyrecord.ItemEnergy, uInfo.EnergyLastTime)

@@ -1,6 +1,10 @@
 package game
 
 import (
+	"context"
+	"strings"
+	"time"
+
 	"maze_game_server/common/constdef"
 	"maze_game_server/common/errors"
 	"maze_game_server/config/GMazeBarriesV8Cfg"
@@ -9,6 +13,7 @@ import (
 	"maze_game_server/io/redis/mazebarriereventredis"
 	"maze_game_server/io/redis/mazebarrieropstatusredis"
 	"maze_game_server/io/redis/mazeuserbarrierredis"
+	"maze_game_server/io/redis/reportredis"
 	"maze_game_server/io/redis/syncmazestorageinforedis"
 	"maze_game_server/lib/codec"
 	"maze_game_server/lib/log"
@@ -20,16 +25,13 @@ import (
 	"maze_game_server/pb/common/MazeCommon"
 	"maze_game_server/pb/common/MazeEnergy"
 	"maze_game_server/pb/common/MazeGame"
-	"maze_game_server/servers/maze_main_server/process/game/events"
 	"maze_game_server/services/barrierenergyservice"
+	"maze_game_server/services/barrieritemservice"
 	"maze_game_server/services/barriersavedataservice"
 	"maze_game_server/services/barrierstagecounterservice"
 	"maze_game_server/services/itemservice"
 	"maze_game_server/services/tempbuffservice"
-	"strings"
-	"time"
 
-	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fklog"
 	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fkprometheus"
 	"go.uber.org/zap"
 	"google.golang.org/protobuf/proto"
@@ -43,13 +45,13 @@ func (g *Game) OnMazeBarrierEnterRQ_10447_10448(s *session.Session, req *MazeGam
 	res := &MazeGame.MazeBarrierEnterRS{}
 	energyID := &MazeEnergy.EnergyChangeID{} // defer时多补一个体力ID包
 
-	logger.InfoWF("OnMazeBarrierEnterRQ start", zap.Any("req", req))
+	logger.CtxInfo(ctx, "OnMazeBarrierEnterRQ start", zap.Any("req", req))
 	defer func() {
 		err = s.Response(res)
-		logger.InfoWF("OnMazeBarrierEnterRQ end", zap.Any("res", res))
+		logger.CtxInfo(ctx, "OnMazeBarrierEnterRQ end", zap.Any("res", res))
 
 		err = s.ResponseMID(ctx, codec.ToMessageID(uint32(time.Now().Unix()), 0, 10610), energyID)
-		logger.InfoWF("OnMazeBarrierEnterRQ end send EnergyChangeID", zap.Any("energyID", energyID))
+		logger.CtxInfo(ctx, "OnMazeBarrierEnterRQ end send EnergyChangeID", zap.Any("energyID", energyID))
 	}()
 
 	res.Header = req.Header
@@ -62,20 +64,20 @@ func (g *Game) OnMazeBarrierEnterRQ_10447_10448(s *session.Session, req *MazeGam
 	userId := uint64(s.UID())
 
 	if req.GetBarrierId() <= 0 {
-		logger.ErrorWF("OnMazeBarrierEnterRQ req barrier invalid", zap.Any("req", req))
+		logger.CtxError(ctx, "OnMazeBarrierEnterRQ req barrier invalid", zap.Any("req", req))
 		res.ErrInfo = errors.COMMON_ERROR_TIPS.Wrap("关卡id未设置")
 		return
 	}
-	barrierCfg := GMazeBarriesV8Cfg.Get(req.GetBarrierId())
+	barrierCfg := GMazeBarriesV8Cfg.GetWithCtx(ctx, req.GetBarrierId())
 	if barrierCfg == nil {
-		logger.ErrorWF("OnMazeBarrierEnterRQ get barrier cfg fail", zap.Any("barrier", req.GetBarrierId()))
+		logger.CtxError(ctx, "OnMazeBarrierEnterRQ get barrier cfg fail", zap.Any("barrier", req.GetBarrierId()))
 		res.ErrInfo = errors.COMMON_ERROR_TIPS.Wrap("找不到该关卡配置")
 		return
 	}
 
 	userInfo, err := mazeuserinfo.GetUserInfoV2(ctx, userId)
 	if err != nil {
-		logger.ErrorWF("OnMazeBarrierEnterRQ GetUserInfoV2 fail", zap.Error(err))
+		logger.CtxError(ctx, "OnMazeBarrierEnterRQ GetUserInfoV2 fail", zap.Error(err))
 		res.ErrInfo = errors.MODULE_ERROR.ToInfo()
 		return
 	}
@@ -93,19 +95,30 @@ func (g *Game) OnMazeBarrierEnterRQ_10447_10448(s *session.Session, req *MazeGam
 	oldEnergy := energy
 
 	if !isForce && req.GetBarrierId() < userInfo.Barrier {
-		logger.ErrorWF("OnMazeBarrierEnterRQ req barrier lt pass barrier", zap.Any("req", req), zap.Int32("save", userInfo.Barrier))
+		logger.CtxError(ctx, "OnMazeBarrierEnterRQ req barrier lt pass barrier", zap.Any("req", req), zap.Int32("save", userInfo.Barrier))
 		res.ErrInfo = errors.BARRIER_ID_ERROR.ToInfo()
+		return
+	}
+
+	// 删除关卡内物品和装备存储
+	err = barrieritemservice.GbarrierItemsService.ClearBarrierItems(ctx, userId, req.GetBarrierId())
+	if err != nil {
+		logger.CtxError(ctx, "OnMazeBarrierEnterRQ ClearBarrierItems",
+			zap.Uint64("userID", userId),
+			zap.Int32("barrierID", req.GetBarrierId()),
+		)
+		res.ErrInfo = errors.MODULE_ERROR.ToInfo()
 		return
 	}
 
 	//	res.Energy = proto.Int32(userInfo.Energy)
 	var isNewBarrier bool
-	storageInfo, _ := syncmazestorageinforedis.GetSyncMazeStorageInfo(userId, req.GetBarrierId())
+	storageInfo, _ := syncmazestorageinforedis.GetSyncMazeStorageInfo(ctx, userId, req.GetBarrierId())
 
 	// 获取存档数据 new
 	saveData, err := barriersavedataservice.GlobalBarrierSaveDataService.GetBarrierSaveData(ctx, userId, req.GetBarrierId())
 	if err != nil {
-		logger.ErrorWF("OnMazeBarrierEnterRQ GetBarrierSaveData err", zap.Error(err))
+		logger.CtxError(ctx, "OnMazeBarrierEnterRQ GetBarrierSaveData err", zap.Error(err))
 		res.ErrInfo = errors.MODULE_ERROR.ToInfo()
 		return err
 	}
@@ -113,7 +126,7 @@ func (g *Game) OnMazeBarrierEnterRQ_10447_10448(s *session.Session, req *MazeGam
 		// 有存档的情况需要检查三选一是否有问题
 		tempBuff, err := tempbuffservice.GlobalTempBuffService.CheckTempBuff(ctx, userId, req.GetBarrierId(), saveData.StageId)
 		if err != nil {
-			logger.ErrorWF("OnMazeBarrierEnterRQ checkTempBuff", zap.Error(err))
+			logger.CtxError(ctx, "OnMazeBarrierEnterRQ checkTempBuff", zap.Error(err))
 			res.ErrInfo = errors.MODULE_ERROR.ToInfo()
 			return err
 		}
@@ -124,11 +137,20 @@ func (g *Game) OnMazeBarrierEnterRQ_10447_10448(s *session.Session, req *MazeGam
 		// 有存档的情况需要把未通过的区域杀怪记录删除
 		err = barrierstagecounterservice.GlobalBarrierStageCounterService.DelBarrierStageCounter(ctx, userId, req.GetBarrierId(), saveData.StageId)
 		if err != nil {
-			logger.ErrorWF("OnMazeBarrierEnterRQ DelBarrierAreaRecord fail", zap.Error(err))
+			logger.CtxError(ctx, "OnMazeBarrierEnterRQ DelBarrierAreaRecord fail", zap.Error(err))
+			res.ErrInfo = errors.MODULE_ERROR.ToInfo()
+			return err
+		}
+
+		// 存档的情况需要buff能力点存储删除
+		err = tempbuffservice.GlobalTempBuffService.ClearBuffCountingPoints(ctx, userId, req.GetBarrierId(), saveData.StageId)
+		if err != nil {
+			logger.CtxError(ctx, "OnMazeBarrierEnterRQ ClearBuffCountingPoints fail", zap.Error(err))
 			res.ErrInfo = errors.MODULE_ERROR.ToInfo()
 			return err
 		}
 	}
+
 	rescueItems := make([]*MazeGame.RescueItemInfo, 0, len(saveData.RescueItems))
 	for _, i := range saveData.RescueItems {
 		rescueItems = append(rescueItems, &MazeGame.RescueItemInfo{
@@ -144,19 +166,19 @@ func (g *Game) OnMazeBarrierEnterRQ_10447_10448(s *session.Session, req *MazeGam
 	}
 	initPassValue, err := mazecommonvalue.CalcInitPassValue(ctx, logger, req.GetBarrierId())
 	if err != nil {
-		logger.ErrorWF("OnMazeBarrierEnterRQ CalcInitPassvalue fail", zap.Error(err))
+		logger.CtxError(ctx, "OnMazeBarrierEnterRQ CalcInitPassvalue fail", zap.Error(err))
 		res.ErrInfo = errors.MODULE_ERROR.ToInfo()
 		return
 	}
 	res.InitPassValue = proto.Int32(int32(initPassValue))
 	// 推送通关值
-	mazecommonvalue.SendPassValueIdPack(ctx, logger, userId, req.GetBarrierId(), saveData.StageId)
+	mazecommonvalue.SendPassValueIdPack(ctx, userId, req.GetBarrierId(), saveData.StageId)
 	// 清理关卡操作状态
-	mazebarrieropstatusredis.ClearOpStatus(logger, userId, req.GetBarrierId())
+	mazebarrieropstatusredis.ClearOpStatus(ctx, userId, req.GetBarrierId())
 
-	mazeBattleInfo, err3 := GetMazeBattleData(logger, userId, req.GetBarrierId())
+	mazeBattleInfo, err3 := GetMazeBattleData(ctx, userId, req.GetBarrierId())
 	if err3 != nil {
-		logger.ErrorWF("OnMazeBarrierEnterRQ GetMazeBattleData fail", zap.Error(err3))
+		logger.CtxError(ctx, "OnMazeBarrierEnterRQ GetMazeBattleData fail", zap.Error(err3))
 		if strings.Contains(err3.Error(), "属性配置不存在:") {
 			res.ErrInfo = errors.MODULE_ERROR.Wrap(err3.Error())
 		} else {
@@ -166,9 +188,9 @@ func (g *Game) OnMazeBarrierEnterRQ_10447_10448(s *session.Session, req *MazeGam
 	}
 	res.MazeBarrierInfo = mazeBattleInfo
 
-	userBarrier, err := mazeuserbarrierredis.GetUserBarrierInfo(logger, userId, 0)
+	userBarrier, err := mazeuserbarrierredis.GetUserBarrierInfo(ctx, userId, 0)
 	if err != nil {
-		logger.ErrorWF("OnMazeBarrierEnterRQ GetUserBarrierInfo fail", zap.Error(err3))
+		logger.CtxError(ctx, "OnMazeBarrierEnterRQ GetUserBarrierInfo fail", zap.Error(err3))
 		res.ErrInfo = errors.MODULE_ERROR.ToInfo()
 		return
 	}
@@ -184,12 +206,12 @@ func (g *Game) OnMazeBarrierEnterRQ_10447_10448(s *session.Session, req *MazeGam
 
 	//shopInfo, err := calequipsequence.GetMazeShopInfo(logger, userId, int32(userInfo.Level), req.GetBarrierId())
 	//if err != nil {
-	//	logger.ErrorWF("OnMazeBarrierEnterRQ GetMazeShopInfo fail", zap.Error(err))
+	//	logger.CtxError(ctx,"OnMazeBarrierEnterRQ GetMazeShopInfo fail", zap.Error(err))
 	//	return
 	//}
 	dropInfo, err := equipdropmodel.NewEquipSpecialDropModel(ctx, userId)
 	if err != nil {
-		logger.ErrorWF("OnMazeBarrierEnterRQ GetEquipSpecialDropModel fail", zap.Error(err))
+		logger.CtxError(ctx, "OnMazeBarrierEnterRQ GetEquipSpecialDropModel fail", zap.Error(err))
 		return
 	}
 
@@ -205,12 +227,12 @@ func (g *Game) OnMazeBarrierEnterRQ_10447_10448(s *session.Session, req *MazeGam
 		// 首次进入判断体力是否足够 直接扣根据错误码判断
 		// isEnergyEnough, remainVal, err2 := SubUserEnergy(logger, userId, barrierCfg.Mop_cost)
 		// if err2 != nil {
-		// 	logger.ErrorWF("OnMazeBarrierEnterRQ SubUserEnergy fail", zap.Error(err2))
+		// 	logger.CtxError(ctx,"OnMazeBarrierEnterRQ SubUserEnergy fail", zap.Error(err2))
 		// 	res.ErrInfo = errors.MODULE_ERROR.ToInfo()
 		// 	return
 		// }
 		// if !isEnergyEnough {
-		// 	logger.WarnWF("OnMazeBarrierEnterRQ user energy not enough", zap.Any("user", remainVal), zap.Any("need", barrierCfg.Mop_cost))
+		// 	logger.CtxWarn(ctx,"OnMazeBarrierEnterRQ user energy not enough", zap.Any("user", remainVal), zap.Any("need", barrierCfg.Mop_cost))
 		// 	res.ErrInfo = errors.COMMON_ERROR_TIPS.Wrap("体力不足")
 		// 	return
 		// }
@@ -220,7 +242,7 @@ func (g *Game) OnMazeBarrierEnterRQ_10447_10448(s *session.Session, req *MazeGam
 		curEnergy, err = barrierenergyservice.GlobalBarrierEnergyService.SubEnergy(ctx, userId, barrierCfg.Mop_cost)
 		if err != nil {
 			res.ErrInfo = errors.COMMON_ERROR_TIPS.Wrap("体力不足")
-			logger.ErrorWF("OnMazeBarrierEnterRQ SubEnergy fail", zap.Error(err))
+			logger.CtxError(ctx, "OnMazeBarrierEnterRQ SubEnergy fail", zap.Error(err))
 			return err
 		}
 
@@ -235,9 +257,9 @@ func (g *Game) OnMazeBarrierEnterRQ_10447_10448(s *session.Session, req *MazeGam
 		}()
 		//扣次数
 		//var maxNum int32
-		//maxNumCfg := GMazeActionCountV8Cfg.Get(101)
+		//maxNumCfg := GMazeActionCountV8Cfg.GetWithCtx(ctx,101)
 		//if maxNumCfg == nil {
-		//	logger.ErrorWF("OnMazeBarrierEnterRQ GMazeActionCountV8Cfg fail", zap.Error(err))
+		//	logger.CtxError(ctx,"OnMazeBarrierEnterRQ GMazeActionCountV8Cfg fail", zap.Error(err))
 		//	res.ErrInfo = errors.CONFIG_NOT_FOUND.ToInfo()
 		//	return
 		//}
@@ -247,7 +269,7 @@ func (g *Game) OnMazeBarrierEnterRQ_10447_10448(s *session.Session, req *MazeGam
 		//
 		//useNumToday, err2 := mazechallengenumredis.GetUserChallengeNum(logger, userId, today)
 		//if err2 != nil {
-		//	logger.ErrorWF("OnMazeBarrierEnterRQ GetUserChallengeNum fail", zap.Error(err2))
+		//	logger.CtxError(ctx,"OnMazeBarrierEnterRQ GetUserChallengeNum fail", zap.Error(err2))
 		//	res.ErrInfo = errors.MODULE_ERROR.ToInfo()
 		//	return
 		//}
@@ -257,14 +279,14 @@ func (g *Game) OnMazeBarrierEnterRQ_10447_10448(s *session.Session, req *MazeGam
 		//}
 		//err = mazechallengenumredis.AddUserChallengeNum(logger, userId, today, barrierCfg.Challenge_cost)
 		//if err != nil {
-		//	logger.ErrorWF("OnMazeBarrierEnterRQ AddUserChallengeNum fail", zap.Error(err))
+		//	logger.CtxError(ctx,"OnMazeBarrierEnterRQ AddUserChallengeNum fail", zap.Error(err))
 		//	res.ErrInfo = errors.MODULE_ERROR.ToInfo()
 		//	return
 		//}
 		//
 		err = mazeuserinfo.SetUserInfoV2(ctx, userId, userInfo)
 		if err != nil {
-			logger.ErrorWF("OnMazeBarrierEnterRQ SetUserInfoV2 fail", zap.Error(err))
+			logger.CtxError(ctx, "OnMazeBarrierEnterRQ SetUserInfoV2 fail", zap.Error(err))
 			res.ErrInfo = errors.MODULE_ERROR.ToInfo()
 			return
 		}
@@ -275,9 +297,9 @@ func (g *Game) OnMazeBarrierEnterRQ_10447_10448(s *session.Session, req *MazeGam
 		userBarrier.RebornCount = proto.Int32(0)
 		userBarrier.StartTime = proto.Int64(time.Now().Unix())
 		userBarrier.EndTime = proto.Int64(0)
-		err = mazeuserbarrierredis.SetUserBarrierInfo(logger, userId, 0, userBarrier)
+		err = mazeuserbarrierredis.SetUserBarrierInfo(ctx, userId, 0, userBarrier)
 		if err != nil {
-			logger.ErrorWF("OnMazeBarrierEnterRQ SetUserBarrierInfo fail", zap.Error(err))
+			logger.CtxError(ctx, "OnMazeBarrierEnterRQ SetUserBarrierInfo fail", zap.Error(err))
 		}
 
 		// 2. 判断是否切换装备序列 清空装备积分 (不需要清 旧关卡积分保留 扫荡会继续加)
@@ -296,7 +318,7 @@ func (g *Game) OnMazeBarrierEnterRQ_10447_10448(s *session.Session, req *MazeGam
 
 	// 同步给客户端当前服务器记录的通用数值
 	var expMax, money, diamond int64
-	levelCfg := GMazeLevelV8Cfg.Get(int32(userInfo.Level))
+	levelCfg := GMazeLevelV8Cfg.GetWithCtx(ctx, int32(userInfo.Level))
 	if levelCfg != nil {
 		expMax = levelCfg.Next_level_need_exp
 	}
@@ -316,7 +338,7 @@ func (g *Game) OnMazeBarrierEnterRQ_10447_10448(s *session.Session, req *MazeGam
 		}
 	}
 
-	income, err := mazecommonvalue.MakeCommonValueExtra(logger, userId, userInfo.Level, 0)
+	income, err := mazecommonvalue.MakeCommonValueExtra(ctx, userId, userInfo.Level, 0)
 
 	res.SyncData = &MazeGame.MazeCommonValueSync{
 		Level:      proto.Int64(userInfo.Level),
@@ -329,17 +351,24 @@ func (g *Game) OnMazeBarrierEnterRQ_10447_10448(s *session.Session, req *MazeGam
 		Energy:     proto.Int32(curEnergy),
 	}
 
-	err = mazebarriereventredis.EnterBarrier(logger, userId, req.GetBarrierId())
+	err = mazebarriereventredis.EnterBarrier(ctx, userId, req.GetBarrierId())
 	if err != nil {
-		logger.ErrorWF("OnMazeBarrierEnterRQ EnterBarrier fail", zap.Error(err))
+		logger.CtxError(ctx, "OnMazeBarrierEnterRQ EnterBarrier fail", zap.Error(err))
 	}
 
-	// 触发进入关卡事件
-	events.OnEnterBarrier(logger, userId, 0, time.Now().UnixMilli(), &MazeGame.BattleEventEnterBarrier{BarrierId: proto.Int32(req.GetBarrierId())})
+	// 设置用户进入关卡时间
+	enterTime := uint64(time.Now().UnixMilli())
+	err = reportredis.SetEnterTime(ctx, userId, enterTime)
+	if err != nil {
+		logger.CtxError(ctx, "OnMazeBarrierEnterRQ SetEnterTime Fail",
+			zap.Uint64("UserId", userId),
+			zap.Error(err))
+		// 不返回 触发后续事件
+	}
 	return nil
 }
 
-//func SubUserEnergy(logger fklog.FKLogI, uid uint64, subEnergy int32) (isSucc bool, newEnergy int32, err error) {
+//func SubUserEnergy(ctx context.Context, uid uint64, subEnergy int32) (isSucc bool, newEnergy int32, err error) {
 //	req := &MazeEnergySvr.SubMazeEnergyRQ{
 //		UserId:      proto.Uint64(uid),
 //		SubVal:      proto.Int32(subEnergy),
@@ -352,7 +381,7 @@ func (g *Game) OnMazeBarrierEnterRQ_10447_10448(s *session.Session, req *MazeGam
 //	// err = mazeenergyrpc.SubMazeEnergyRQ(logger, req, res)
 //	err = energy.SubMazeEnergyRQ(logger, uid, req, res)
 //	if err != nil {
-//		logger.ErrorWF("OnMazeBarrierEnterRQ SubMazeEnergyRQ fail", zap.Error(err), zap.Any("req", req), zap.Any("res", res))
+//		logger.CtxError(ctx,"OnMazeBarrierEnterRQ SubMazeEnergyRQ fail", zap.Error(err), zap.Any("req", req), zap.Any("res", res))
 //		return
 //	}
 //	// 体力不足，返回错误码(80000 // 体力不足),并带回剩余的体力值
@@ -373,10 +402,10 @@ func (g *Game) OnGetStorageInfoRQ_10529_10530(s *session.Session, req *MazeGame.
 	logger := log.Clone("Game", uint64(s.UID()), 0)
 	res := &MazeGame.GetStorageInfoRS{}
 
-	logger.InfoWF("OnGetStorageInfoRQ start", zap.Any("req", req))
+	logger.CtxInfo(ctx, "OnGetStorageInfoRQ start", zap.Any("req", req))
 	defer func() {
 		err = s.Response(res)
-		logger.InfoWF("OnGetStorageInfoRQ end", zap.Any("res", res))
+		logger.CtxInfo(ctx, "OnGetStorageInfoRQ end", zap.Any("res", res))
 	}()
 
 	res.Header = req.Header
@@ -386,22 +415,22 @@ func (g *Game) OnGetStorageInfoRQ_10529_10530(s *session.Session, req *MazeGame.
 	userId := uint64(s.UID())
 
 	if req.GetBarrierId() <= 0 {
-		logger.ErrorWF("OnGetStorageInfoRQ req barrier invalid", zap.Any("req", req))
+		logger.CtxError(ctx, "OnGetStorageInfoRQ req barrier invalid", zap.Any("req", req))
 		res.ErrInfo = errors.COMMON_ERROR_TIPS.Wrap("关卡id未设置")
 		return
 	}
 
 	userInfo, err := mazeuserinfo.GetUserInfoV2(ctx, userId)
 	if err != nil {
-		logger.ErrorWF("OnGetStorageInfoRQ GetUserInfoV2 fail", zap.Error(err))
+		logger.CtxError(ctx, "OnGetStorageInfoRQ GetUserInfoV2 fail", zap.Error(err))
 		res.ErrInfo = errors.MODULE_ERROR.ToInfo()
 		return
 	}
 
 	// 默认是从存档进入
-	storageInfo, err := syncmazestorageinforedis.GetSyncMazeStorageInfo(userId, userInfo.Barrier)
+	storageInfo, err := syncmazestorageinforedis.GetSyncMazeStorageInfo(ctx, userId, userInfo.Barrier)
 	if err != nil {
-		logger.ErrorWF("OnGetStorageInfoRQ GetSyncMazeStorageInfo fail", zap.Error(err))
+		logger.CtxError(ctx, "OnGetStorageInfoRQ GetSyncMazeStorageInfo fail", zap.Error(err))
 		return
 	}
 	res.StorageInfo = storageInfo
@@ -424,5 +453,5 @@ func (g *Game) OnGetStorageInfoRQ_10529_10530(s *session.Session, req *MazeGame.
 	return nil
 }
 
-func GetUserMoney(logger fklog.FKLogI, uid uint64) {
+func GetUserMoney(ctx context.Context, uid uint64) {
 }

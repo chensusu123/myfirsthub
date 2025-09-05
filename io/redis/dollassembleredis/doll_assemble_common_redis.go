@@ -10,17 +10,18 @@ import (
 	"context"
 	"fmt"
 
+	"maze_game_server/common/errors"
+	"maze_game_server/pb/server/MazeEquipCache"
+
 	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fklog"
 	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fkredis/redis"
 	"gitlab.ifreetalk.com/maze-plate/freetk/fkutil"
 	"go.uber.org/zap"
-	"maze_game_server/common/errors"
-	"maze_game_server/pb/server/MazeEquipCache"
 )
 
 // 按指定字段查询装配数据
-func GetAssembleInfoByFields(agent fklog.FKLogI, uid uint64, fields []string) (assembleInfo *MazeEquipCache.MazeAssembleDb, err error) {
-	rsMap, e := hmgetAssembleData(agent, uid, fields)
+func GetAssembleInfoByFields(ctx context.Context, uid uint64, fields []string) (assembleInfo *MazeEquipCache.MazeAssembleDb, err error) {
+	rsMap, e := hmgetAssembleData(ctx, uid, fields)
 	if e != nil {
 		err = e
 		return
@@ -31,8 +32,8 @@ func GetAssembleInfoByFields(agent fklog.FKLogI, uid uint64, fields []string) (a
 }
 
 // 查询全量装配数据
-func GetAllAssembleInfo(agent fklog.FKLogI, uid uint64) (assembleInfo *MazeEquipCache.MazeAssembleDb, err error) {
-	rsMap, e := hgetAllAssembleData(agent, uid)
+func GetAllAssembleInfo(ctx context.Context, uid uint64) (assembleInfo *MazeEquipCache.MazeAssembleDb, err error) {
+	rsMap, e := hgetAllAssembleData(ctx, uid)
 	if e != nil {
 		err = e
 		return
@@ -42,7 +43,7 @@ func GetAllAssembleInfo(agent fklog.FKLogI, uid uint64) (assembleInfo *MazeEquip
 	return assembleInfo, err
 }
 
-func hmgetAssembleData(logger fklog.FKLogI, uid uint64, fields []string) (rs map[string][]byte, err error) {
+func hmgetAssembleData(ctx context.Context, uid uint64, fields []string) (rs map[string][]byte, err error) {
 	rs = make(map[string][]byte)
 	if len(fields) == 0 {
 		return
@@ -54,7 +55,7 @@ func hmgetAssembleData(logger fklog.FKLogI, uid uint64, fields []string) (rs map
 	for _, field := range fields {
 		args = append(args, field)
 	}
-	rs1, err1 := redis.ByteSlices(gRedis.Do(context.TODO(), "HMGET", args...))
+	rs1, err1 := redis.ByteSlices(gRedis.Do(ctx, "HMGET", args...))
 	if err1 != nil {
 		return rs, err1
 	}
@@ -70,17 +71,18 @@ func hmgetAssembleData(logger fklog.FKLogI, uid uint64, fields []string) (rs map
 	return
 }
 
-func hgetAllAssembleData(agent fklog.FKLogI, uid uint64) (rs map[string][]byte, err error) {
+func hgetAllAssembleData(ctx context.Context, uid uint64) (rs map[string][]byte, err error) {
+	logger := fklog.ContextAppLogger(ctx)
 	rs = make(map[string][]byte)
 	key := fmt.Sprintf("maze:assemble:info:u:%d", uid)
 
-	rs1, e := redis.ByteSlices(gRedis.Do(context.TODO(), "HGETALL", key))
+	rs1, e := redis.ByteSlices(gRedis.Do(ctx, "HGETALL", key))
 	if e == redis.ErrNil {
 		err = nil
 		return
 	}
 	if e != nil {
-		agent.ErrorWF("hgetAllAssembleData with err", zap.Error(e), zap.String("key", key))
+		logger.CtxError(ctx, "hgetAllAssembleData with err", zap.Error(e), zap.String("key", key))
 		err = e
 		return
 	}
@@ -92,11 +94,11 @@ func hgetAllAssembleData(agent fklog.FKLogI, uid uint64) (rs map[string][]byte, 
 	return
 }
 
-func hmsetAssembleData(agent fklog.FKLogI, uid uint64, fields map[string]interface{}) (err error) {
+func hmsetAssembleData(ctx context.Context, uid uint64, fields map[string]interface{}) (err error) {
 	if len(fields) == 0 {
 		return
 	}
-
+	logger := fklog.ContextAppLogger(ctx)
 	key := fmt.Sprintf("maze:assemble:info:u:%d", uid)
 	args := make([]interface{}, 0, len(fields)*2+1)
 	args = append(args, key)
@@ -104,21 +106,21 @@ func hmsetAssembleData(agent fklog.FKLogI, uid uint64, fields map[string]interfa
 		args = append(args, k)
 		args = append(args, v)
 	}
-	_, err = gRedis.Do(context.TODO(), "HMSET", args...)
+	_, err = gRedis.Do(ctx, "HMSET", args...)
 	if err != nil {
-		agent.ErrorWF("hmsetAssembleData save fail", zap.Error(err), zap.String("key", key))
+		logger.CtxError(ctx, "hmsetAssembleData save fail", zap.Error(err), zap.String("key", key))
 		return err
 	}
 	return err
 }
 
 // 保存装配数据
-func SetAssembleInfoByFields(agent fklog.FKLogI, uid uint64, fields []string,
+func SetAssembleInfoByFields(ctx context.Context, uid uint64, fields []string,
 	assembleInfo *MazeEquipCache.MazeAssembleDb) (err error) {
 	rs, e := packFieldsFromPb(assembleInfo, fields)
 	if e != nil {
 		err = e
 		return err
 	}
-	return hmsetAssembleData(agent, uid, rs)
+	return hmsetAssembleData(ctx, uid, rs)
 }

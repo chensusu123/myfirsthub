@@ -40,10 +40,10 @@ func AddEquipToBag(ctx context.Context, userId uint64, opType int32, tradeNo uin
 	rsAdd = &MazeEquipSvr.SvrAddMazeEquipRS{}
 	err = dollequipbagrpc.MazeBagAddRQ(ctx, rqAdd, rsAdd)
 	if err != nil {
-		logger.ErrorWF("addEquipToBag fail", zap.Error(err), zap.Any("req", rqAdd), zap.Any("rs", rsAdd))
+		logger.CtxError(ctx, "addEquipToBag fail", zap.Error(err), zap.Any("req", rqAdd), zap.Any("rs", rsAdd))
 	} else {
 		if rsAdd.GetErrInfo().GetErrCode() != errors.NO_ERROR_CODE {
-			logger.ErrorWF("addEquipToBag rs fail", zap.Any("req", rqAdd), zap.Any("rs", rsAdd))
+			logger.CtxError(ctx, "addEquipToBag rs fail", zap.Any("req", rqAdd), zap.Any("rs", rsAdd))
 			err = errors.New("装备加背包失败")
 		}
 	}
@@ -78,10 +78,10 @@ func AddEquipToBagWithOpdata(ctx context.Context, userId uint64, opType int32, o
 	rsAdd = &MazeEquipSvr.SvrAddMazeEquipRS{}
 	err = dollequipbagrpc.MazeBagAddRQWithOpData(ctx, rqAdd, rsAdd, opData)
 	if err != nil {
-		logger.ErrorWF("AddEquipToBagWithOpdata fail", zap.Error(err), zap.Any("req", rqAdd), zap.Any("rs", rsAdd))
+		logger.CtxError(ctx, "AddEquipToBagWithOpdata fail", zap.Error(err), zap.Any("req", rqAdd), zap.Any("rs", rsAdd))
 	} else {
 		if rsAdd.GetErrInfo().GetErrCode() != errors.NO_ERROR_CODE {
-			logger.ErrorWF("AddEquipToBagWithOpdata rs fail", zap.Any("req", rqAdd), zap.Any("rs", rsAdd))
+			logger.CtxError(ctx, "AddEquipToBagWithOpdata rs fail", zap.Any("req", rqAdd), zap.Any("rs", rsAdd))
 			err = errors.New("装备加背包失败")
 		}
 	}
@@ -89,7 +89,7 @@ func AddEquipToBagWithOpdata(ctx context.Context, userId uint64, opType int32, o
 }
 
 // // 实例化装备
-// func InstanceEquip(logger fklog.FKLogI, userId uint64, opType int32, tradeNo uint64, equipNumPerCycle int32, equipMap map[int32]int32) (rsAdd *MazeEquipSvr.SvrMazeEquipInstanceRS, err error) {
+// func InstanceEquip(ctx context.Context, userId uint64, opType int32, tradeNo uint64, equipNumPerCycle int32, equipMap map[int32]int32) (rsAdd *MazeEquipSvr.SvrMazeEquipInstanceRS, err error) {
 //	rqAdd := &MazeEquipSvr.SvrMazeEquipInstanceRQ{
 //		UserId:      proto.Uint64(userId),
 //		EquipList:   make([]*MazeEquipSvr.SvrInstanceEquipInfo, 0),
@@ -107,10 +107,10 @@ func AddEquipToBagWithOpdata(ctx context.Context, userId uint64, opType int32, o
 //	rsAdd = &MazeEquipSvr.SvrMazeEquipInstanceRS{}
 //	err = dollequipbagrpc.MazeBagInstanceRQ(logger, rqAdd, rsAdd)
 //	if err != nil {
-//		logger.ErrorWF("InstanceEquip fail", zap.Error(err), zap.Any("req", rqAdd), zap.Any("rs", rsAdd))
+//		logger.CtxError(ctx,"InstanceEquip fail", zap.Error(err), zap.Any("req", rqAdd), zap.Any("rs", rsAdd))
 //	} else {
 //		if rsAdd.GetErrInfo().GetErrCode() != errors.NO_ERROR_CODE {
-//			logger.ErrorWF("InstanceEquip rs fail", zap.Any("req", rqAdd), zap.Any("rs", rsAdd))
+//			logger.CtxError(ctx,"InstanceEquip rs fail", zap.Any("req", rqAdd), zap.Any("rs", rsAdd))
 //			err = errors.New("装备实例化失败")
 //		}
 //	}

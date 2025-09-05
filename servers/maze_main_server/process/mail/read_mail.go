@@ -1,14 +1,15 @@
 package mail
 
 import (
-	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fkprometheus"
-	"go.uber.org/zap"
 	"maze_game_server/common/errors"
 	"maze_game_server/lib/log"
 	"maze_game_server/lib/nano/session"
 	"maze_game_server/module/mazeuserinfo"
 	"maze_game_server/pb/common/MazeMail"
 	"maze_game_server/services/mailservice"
+
+	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fkprometheus"
+	"go.uber.org/zap"
 )
 
 // 邮件阅读
@@ -18,10 +19,10 @@ func (g *Mail) OnMazeReadMailRQ_10628_10629(s *session.Session, req *MazeMail.Ma
 	logger := log.Clone("Frame", uint64(s.UID()), 0)
 	res := &MazeMail.MazeReadMailRS{}
 
-	logger.InfoWF("OnMazeReadMailRQ start", zap.Any("req", req))
+	logger.CtxInfo(ctx, "OnMazeReadMailRQ start", zap.Any("req", req))
 	defer func() {
 		err = s.Response(res)
-		logger.InfoWF("OnMazeReadMailRQ end", zap.Any("res", res))
+		logger.CtxInfo(ctx, "OnMazeReadMailRQ end", zap.Any("res", res))
 	}()
 
 	res.Header = req.Header
@@ -31,7 +32,7 @@ func (g *Mail) OnMazeReadMailRQ_10628_10629(s *session.Session, req *MazeMail.Ma
 
 	_, err = mazeuserinfo.GetUserInfoV2(ctx, userId)
 	if err != nil {
-		logger.ErrorWF("OnMazeReadMailRQ GetUserInfoV2 fail", zap.Error(err))
+		logger.CtxError(ctx, "OnMazeReadMailRQ GetUserInfoV2 fail", zap.Error(err))
 		res.ErrInfo = errors.MODULE_ERROR.ToInfo()
 		return
 	}
@@ -39,14 +40,14 @@ func (g *Mail) OnMazeReadMailRQ_10628_10629(s *session.Session, req *MazeMail.Ma
 	if req.GetIsAll() {
 		_, err := mailservice.GlobalMailService.ReadAllMail(ctx, userId, req.GetLabel())
 		if err != nil {
-			logger.ErrorWF("OnMazeReadMailRQ ReadMail fail", zap.Error(err), zap.Uint64("userId", userId), zap.Int32("Label", req.GetLabel()))
+			logger.CtxError(ctx, "OnMazeReadMailRQ ReadMail fail", zap.Error(err), zap.Uint64("userId", userId), zap.Int32("Label", req.GetLabel()))
 			res.ErrInfo = errors.COMMON_ERROR_TIPS.Wrap(err.Error())
 			return err
 		}
 	} else {
 		_, err = mailservice.GlobalMailService.ReadMail(ctx, userId, req.GetMailId(), req.GetLabel())
 		if err != nil {
-			logger.ErrorWF("OnMazeReadMailRQ ReadMail fail", zap.Error(err), zap.Uint64("mailId", req.GetMailId()))
+			logger.CtxError(ctx, "OnMazeReadMailRQ ReadMail fail", zap.Error(err), zap.Uint64("mailId", req.GetMailId()))
 			res.ErrInfo = errors.COMMON_ERROR_TIPS.Wrap(err.Error())
 			return err
 		}
@@ -54,7 +55,7 @@ func (g *Mail) OnMazeReadMailRQ_10628_10629(s *session.Session, req *MazeMail.Ma
 
 	list, err := mailservice.GlobalMailService.GetMailListByLabel(ctx, userId, req.GetLabel(), 0, 30)
 	if err != nil {
-		logger.ErrorWF("OnMazeGetMailListRQ GetMailList fail", zap.Error(err))
+		logger.CtxError(ctx, "OnMazeGetMailListRQ GetMailList fail", zap.Error(err))
 		res.ErrInfo = errors.MODULE_ERROR.ToInfo()
 		return err
 	}

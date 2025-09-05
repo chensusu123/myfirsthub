@@ -7,10 +7,9 @@
 package attr_calc
 
 import (
+	"context"
 	"fmt"
 
-	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fklog"
-	"go.uber.org/zap"
 	"maze_game_server/common/constdef"
 	"maze_game_server/common/function/dollattr"
 	"maze_game_server/common/vardef"
@@ -18,6 +17,9 @@ import (
 	"maze_game_server/config/GMazeEquipConfigV8Cfg"
 	"maze_game_server/pb/server/MazeBuffData"
 	"maze_game_server/servers/maze_main_server/process/attr_calc/commonlogic"
+
+	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fklog"
+	"go.uber.org/zap"
 )
 
 func AddtionMazeAttr(in map[int32]int64, attr *MazeBuffData.MazeBuffAttr) {
@@ -43,16 +45,18 @@ func IsDollCalcAttr(attrId int32) bool {
 	return false
 }
 
-func DumpAttrBySrc(logger fklog.FKLogI, src int, k int32, v int64, extra string) {
-	logger.InfoWF("DumpAttrBySrc", zap.Int("src", src), zap.String("srcName", GetSrcName(src)),
+func DumpAttrBySrc(ctx context.Context, src int, k int32, v int64, extra string) {
+	logger := fklog.ContextAppLogger(ctx)
+	logger.CtxInfo(ctx, "DumpAttrBySrc", zap.Int("src", src), zap.String("srcName", GetSrcName(src)),
 		zap.Int32("k", k), zap.Int64("v", v), zap.String("extra", extra))
 }
 
 // 抗性属性转换
-func ResistanceAttrConvert(logger fklog.FKLogI, attrsMap map[int32]int64) {
+func ResistanceAttrConvert(ctx context.Context, attrsMap map[int32]int64) {
+	logger := fklog.ContextAppLogger(ctx)
 	rowCfg := GMazeEquipConfigV8Cfg.GetMazeEquipConfigV8Config(constdef.DollResistanceConvert)
 	if rowCfg == nil {
-		logger.InfoWF("ResistanceAttrConvert no cfg")
+		logger.CtxInfo(ctx, "ResistanceAttrConvert no cfg")
 		return
 	}
 	var hasConvert bool
@@ -74,9 +78,9 @@ func ResistanceAttrConvert(logger fklog.FKLogI, attrsMap map[int32]int64) {
 		}
 	}
 	if hasConvert {
-		logger.InfoWF("ResistanceAttrConvert", zap.String("result", logInfo))
+		logger.CtxInfo(ctx, "ResistanceAttrConvert", zap.String("result", logInfo))
 	} else {
-		logger.InfoWF("ResistanceAttrConvert no chg")
+		logger.CtxInfo(ctx, "ResistanceAttrConvert no chg")
 	}
 }
 

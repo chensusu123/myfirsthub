@@ -18,14 +18,15 @@ func init() {
 	fkconfig.RegisterNameNode("UserRiddleMonthlyRedis", 21681, gRedis)
 }
 
-func GetMazeCardExpirationTime(logger fklog.FKLogI, userId uint64) (int64, error) {
+func GetMazeCardExpirationTime(ctx context.Context, userId uint64) (int64, error) {
+	logger := fklog.ContextAppLogger(ctx)
 	key := fmt.Sprintf("u:%d:riddle:monthly", userId)
-	expirationTime, err := redis.Int64(gRedis.Do(context.TODO(), "get", key))
+	expirationTime, err := redis.Int64(gRedis.Do(ctx, "get", key))
 	if err != nil && err != redis.ErrNil {
-		logger.InfoWF("GetMazeCardExpirationTime get failed", zap.String("key", key), zap.Error(err))
+		logger.CtxInfo(ctx, "GetMazeCardExpirationTime get failed", zap.String("key", key), zap.Error(err))
 		return 0, err
 	}
 
-	logger.InfoWF("GetMazeCardExpirationTime end", zap.String("key", key), zap.Int64("time", expirationTime))
+	logger.CtxInfo(ctx, "GetMazeCardExpirationTime end", zap.String("key", key), zap.Int64("time", expirationTime))
 	return expirationTime, nil
 }

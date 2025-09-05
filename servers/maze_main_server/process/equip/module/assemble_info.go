@@ -1,10 +1,10 @@
 package module
 
 import (
+	"context"
 	"maze_game_server/common/function/assemble"
 	"maze_game_server/pb/server/MazeEquipCache"
 
-	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fklog"
 	"google.golang.org/protobuf/proto"
 )
 
@@ -36,7 +36,7 @@ func GetDressedGuid(equip *MazeEquipCache.MazeEquipPosInfo) int64 {
 	return 0
 }
 
-func ReplaceEquip(logger fklog.FKLogI, equipPos *MazeEquipCache.MazeEquipPosInfo, equip *MazeEquipCache.MazeEquipInfoDb) {
+func ReplaceEquip(ctx context.Context, equipPos *MazeEquipCache.MazeEquipPosInfo, equip *MazeEquipCache.MazeEquipInfoDb) {
 	equipPos.EquipLoadInfo = &MazeEquipCache.MazeEquipPosDb{}
 	equipPos.EquipLoadInfo.EquipGuid = proto.Int64(equip.GetEquipGuid())
 	equipPos.EquipLoadInfo.EquipId = proto.Int32(equip.GetEquipId())

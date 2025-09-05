@@ -17,15 +17,16 @@ import (
 	"google.golang.org/protobuf/proto"
 )
 
-func GetUserAttrMap(logger fklog.FKLogI, userId uint64) (map[int32]int64, error) {
+func GetUserAttrMap(ctx context.Context, userId uint64) (map[int32]int64, error) {
 	//attrIds := GetAttrIds()
 	//skillAttrIds := GetSkillAttrIds()
 	//if len(skillAttrIds) > 0 {
 	//	attrIds = append(attrIds, skillAttrIds...)
 	//}
-	attrDbs, err := mazecalcattrredis.GetAllMazeCalcAttr(logger, userId)
+	logger := fklog.ContextAppLogger(ctx)
+	attrDbs, err := mazecalcattrredis.GetAllMazeCalcAttr(ctx, userId)
 	if err != nil {
-		logger.WarnWF("GetUserBattleAttr BatchGetDollCalcAttr nil", zap.Uint64("userId", userId))
+		logger.CtxWarn(ctx, "GetUserBattleAttr BatchGetDollCalcAttr nil", zap.Uint64("userId", userId))
 		return nil, err
 	}
 	attrMap := make(map[int32]int64, 0)
@@ -39,8 +40,9 @@ func GetUserAttrMap(logger fklog.FKLogI, userId uint64) (map[int32]int64, error)
 	return attrMap, nil
 }
 
-func GetUserBattleAttr(logger fklog.FKLogI, userId uint64, userAttrMap map[int32]int64) (map[int32]*MazeAIBattle.MazeAIAttrInfo, error) {
+func GetUserBattleAttr(ctx context.Context, userId uint64, userAttrMap map[int32]int64) (map[int32]*MazeAIBattle.MazeAIAttrInfo, error) {
 	// attrTypeMap := GetAttrType()
+	logger := fklog.ContextAppLogger(ctx)
 	attrMap := make(map[int32]*MazeAIBattle.MazeAIAttrInfo, 0)
 	for attrId, attrVal := range userAttrMap {
 		if attrId <= 0 {
@@ -48,7 +50,7 @@ func GetUserBattleAttr(logger fklog.FKLogI, userId uint64, userAttrMap map[int32
 		}
 		attrCfg := GMazeAttributeV8Cfg.GetMazeAttributeV8Config(attrId)
 		if attrCfg == nil {
-			logger.WarnWF("GetUserBattleAttr GetAttributeConfig error", zap.Uint64("userId", userId), zap.Any("attrId", attrId))
+			logger.CtxWarn(ctx, "GetUserBattleAttr GetAttributeConfig error", zap.Uint64("userId", userId), zap.Any("attrId", attrId))
 			return nil, fmt.Errorf("属性配置不存在: %d", attrId)
 		}
 		attrMap[attrId] = &MazeAIBattle.MazeAIAttrInfo{
@@ -58,12 +60,12 @@ func GetUserBattleAttr(logger fklog.FKLogI, userId uint64, userAttrMap map[int32
 		}
 	}
 	//if len(skillIds) > 0 {
-	//	skillCfg := GMazeSkillInfoV8Cfg.Get(skillIds[0])
+	//	skillCfg := GMazeSkillInfoV8Cfg.GetWithCtx(ctx,skillIds[0])
 	//	if skillCfg != nil {
 	//		//if attrMap[constdef.AtkNumber] == nil {
 	//		//	attrCfg := GMazeAttributeV8Cfg.GetMazeAttributeV8Config(constdef.AtkNumber)
 	//		//	if attrCfg == nil {
-	//		//		logger.WarnWF("GetUserBattleAttr GetAttributeConfig error", zap.Uint64("userId", userId), zap.Any("attrId", constdef.AtkNumber))
+	//		//		logger.CtxWarn(ctx,"GetUserBattleAttr GetAttributeConfig error", zap.Uint64("userId", userId), zap.Any("attrId", constdef.AtkNumber))
 	//		//		return nil, errors.New("配置不存在")
 	//		//	}
 	//		//	attrMap[constdef.AtkNumber] = &MazeAIBattle.MazeAIAttrInfo{
@@ -75,7 +77,7 @@ func GetUserBattleAttr(logger fklog.FKLogI, userId uint64, userAttrMap map[int32
 	//		if attrMap[constdef.AtkDis] == nil {
 	//			attrCfg := GMazeAttributeV8Cfg.GetMazeAttributeV8Config(constdef.AtkDis)
 	//			if attrCfg == nil {
-	//				logger.WarnWF("GetUserBattleAttr GetAttributeConfig error", zap.Uint64("userId", userId), zap.Any("attrId", constdef.AtkDis))
+	//				logger.CtxWarn(ctx,"GetUserBattleAttr GetAttributeConfig error", zap.Uint64("userId", userId), zap.Any("attrId", constdef.AtkDis))
 	//				return nil, errors.New("配置不存在")
 	//			}
 	//			attrMap[constdef.AtkDis] = &MazeAIBattle.MazeAIAttrInfo{
@@ -238,12 +240,13 @@ func GetSkillAttrIds() []int32 {
 	return attrIds
 }
 
-func SendMazeBarrierChgPack(logger fklog.FKLogI, userId uint64, mazeBattleInfo *MazeAIBattle.MazeBarrierInfo) (err error) {
+func SendMazeBarrierChgPack(ctx context.Context, userId uint64, mazeBattleInfo *MazeAIBattle.MazeBarrierInfo) (err error) {
+	logger := fklog.ContextAppLogger(ctx)
 	moneyPack := &MazeAIBattle.MazeBarrierInfoChangeID{
 		MazeBarrierInfo: mazeBattleInfo,
 	}
-	logger.InfoWF("SendMazeBarrierChgPack send client with", zap.Uint64("userId", userId), zap.Any("moneyPack", moneyPack))
-	return online.ClusterPush(context.TODO(), uint64(userId), 10485, moneyPack)
+	logger.CtxInfo(ctx, "SendMazeBarrierChgPack send client with", zap.Uint64("userId", userId), zap.Any("moneyPack", moneyPack))
+	return online.ClusterPush(ctx, uint64(userId), 10485, moneyPack)
 }
 
 func GetEffectAttrValue(attrValue int32, attrValueVariableId map[int32]int32, userAttrMap map[int32]int64) int64 {

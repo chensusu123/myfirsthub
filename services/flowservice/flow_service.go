@@ -2,6 +2,9 @@ package flowservice
 
 import (
 	"context"
+	"sync"
+	"sync/atomic"
+
 	flowmodel "maze_game_server/model/flowmodel/flow_model"
 )
 
@@ -13,12 +16,16 @@ type flowService interface {
 }
 
 type service struct {
-	ch chan *flowmodel.FlowData
+	sync.RWMutex
+	ch         chan *flowmodel.FlowData
+	reportTime map[uint64]uint64
+	queueLen   atomic.Int64
 }
 
 func NewFlowService() flowService {
 	svr := &service{}
 	svr.ch = make(chan *flowmodel.FlowData, flowmodel.MAXFLOWCHANSIZE)
+	svr.reportTime = make(map[uint64]uint64)
 	go svr.ProcessFlowData()
 	return svr
 }

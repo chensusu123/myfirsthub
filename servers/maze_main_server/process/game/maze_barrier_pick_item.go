@@ -1,10 +1,6 @@
 package game
 
 import (
-	"context"
-	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fkprometheus"
-	"go.uber.org/zap"
-	"google.golang.org/protobuf/proto"
 	"maze_game_server/common/constdef"
 	"maze_game_server/common/errors"
 	"maze_game_server/common/function/itemutil"
@@ -18,18 +14,22 @@ import (
 	"maze_game_server/pb/common/MazeGame"
 	"maze_game_server/services/barrierscorerewardservice"
 	"maze_game_server/services/itemservice"
+
+	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fkprometheus"
+	"go.uber.org/zap"
+	"google.golang.org/protobuf/proto"
 )
 
 func (g *Game) OnBarrierPickItemRQ_10527_10528(s *session.Session, req *MazeGame.BarrierPickItemRQ) (err error) {
 	defer fkprometheus.InfoPMT("OnBarrierPickItemRQ")()
-
+	ctx := s.Context()
 	logger := log.Clone("Game", uint64(s.UID()), 0)
 	res := &MazeGame.BarrierPickItemRS{}
 
-	logger.InfoWF("OnBarrierPickItemRQ start", zap.Any("req", req))
+	logger.CtxInfo(ctx, "OnBarrierPickItemRQ start", zap.Any("req", req))
 	defer func() {
 		err = s.Response(res)
-		logger.InfoWF("OnBarrierPickItemRQ end", zap.Any("res", res))
+		logger.CtxInfo(ctx, "OnBarrierPickItemRQ end", zap.Any("res", res))
 	}()
 
 	res.Header = req.Header
@@ -43,13 +43,13 @@ func (g *Game) OnBarrierPickItemRQ_10527_10528(s *session.Session, req *MazeGame
 
 	for _, item := range req.GetItemList() {
 		if item.GetItemId() <= 0 || item.GetCount() < 0 {
-			logger.ErrorWF("OnBarrierPickItemRQ invalid item param", zap.Any("barrierId", req.GetBarrierId()), zap.Any("ItemList", req.GetItemList()))
+			logger.CtxError(ctx, "OnBarrierPickItemRQ invalid item param", zap.Any("barrierId", req.GetBarrierId()), zap.Any("ItemList", req.GetItemList()))
 			res.ErrInfo = errors.COMMON_ERROR_TIPS.Wrap("道具参数错误")
 			return
 		}
-		itemCfg := GMazeItemsV8Cfg.Get(item.GetItemId())
+		itemCfg := GMazeItemsV8Cfg.GetWithCtx(ctx, item.GetItemId())
 		if itemCfg == nil {
-			logger.ErrorWF("OnBarrierPickItemRQ item not found", zap.Any("barrierId", req.GetBarrierId()), zap.Any("ItemList", req.GetItemList()), zap.Any("ItemID", item.GetItemId()))
+			logger.CtxError(ctx, "OnBarrierPickItemRQ item not found", zap.Any("barrierId", req.GetBarrierId()), zap.Any("ItemList", req.GetItemList()), zap.Any("ItemID", item.GetItemId()))
 			res.ErrInfo = errors.COMMON_ERROR_TIPS.Wrap("道具参数错误")
 			return
 		}
@@ -58,7 +58,7 @@ func (g *Game) OnBarrierPickItemRQ_10527_10528(s *session.Session, req *MazeGame
 	//equip := make(map[int32]int32)
 	//for _, eq := range req.GetEquipList() {
 	//	if eq.GetItemId() <= 0 || eq.GetCount() <= 0 {
-	//		logger.ErrorWF("OnBarrierPickItemRQ invalid equip param", zap.Any("barrierId", req.GetBarrierId()), zap.Any("EquipList", req.GetEquipList()))
+	//		logger.CtxError(ctx,"OnBarrierPickItemRQ invalid equip param", zap.Any("barrierId", req.GetBarrierId()), zap.Any("EquipList", req.GetEquipList()))
 	//		res.ErrInfo = errors.COMMON_ERROR_TIPS.Wrap("装备参数错误")
 	//		return
 	//	}
@@ -70,7 +70,7 @@ func (g *Game) OnBarrierPickItemRQ_10527_10528(s *session.Session, req *MazeGame
 	//if len(equip) > 0 {
 	//	_, err = addequip.AddEquipToBagWithOpdata(logger, userId, int32(MazeEquipSvr.ENUM_EQUIP_BAG_OP_TYPE_MAZE_EQUIP_BOX_AWARD), req.GetOpData(), tradeNo, equip)
 	//	if err != nil {
-	//		logger.ErrorWF("OnBarrierPickItemRQ addEquipToBag fail", zap.Error(err), zap.Any("optype", int32(MazeEquipSvr.ENUM_EQUIP_BAG_OP_TYPE_MAZE_EQUIP_BOX_AWARD)),
+	//		logger.CtxError(ctx,"OnBarrierPickItemRQ addEquipToBag fail", zap.Error(err), zap.Any("optype", int32(MazeEquipSvr.ENUM_EQUIP_BAG_OP_TYPE_MAZE_EQUIP_BOX_AWARD)),
 	//			zap.Any("tradeNo", tradeNo), zap.Any("addEquip", equip))
 	//	}
 	//}
@@ -84,18 +84,18 @@ func (g *Game) OnBarrierPickItemRQ_10527_10528(s *session.Session, req *MazeGame
 		} else if item.GetItemId() == constdef.StrengthenStonePileItemCfgId {
 			cfgId = constdef.StrengthenStonePileShow2RealCfgId
 		} else {
-			logger.ErrorWF("OnBarrierPickItemRQ cfg not exist", zap.Int32("cfgId", item.GetItemId()))
+			logger.CtxError(ctx, "OnBarrierPickItemRQ cfg not exist", zap.Int32("cfgId", item.GetItemId()))
 			return errors.New("拾取道具错误")
 		}
-		cfg := GMazeConfigV8Cfg.Get(cfgId)
+		cfg := GMazeConfigV8Cfg.GetWithCtx(ctx, cfgId)
 		if cfg == nil {
-			logger.ErrorWF("OnBarrierPickItemRQ cfg not exist", zap.Int32("cfgId", item.GetItemId()))
+			logger.CtxError(ctx, "OnBarrierPickItemRQ cfg not exist", zap.Int32("cfgId", item.GetItemId()))
 			return errors.New("道具配置不存在")
 		}
 		realAddItemId := cfg.Value_map[item.GetItemId()]
-		barrierCfg := GMazeBarriesV8Cfg.Get(req.GetBarrierId())
+		barrierCfg := GMazeBarriesV8Cfg.GetWithCtx(ctx, req.GetBarrierId())
 		if barrierCfg == nil {
-			logger.ErrorWF("OnBarrierPickItemRQ cfg not exist", zap.Int32("barrier", req.GetBarrierId()))
+			logger.CtxError(ctx, "OnBarrierPickItemRQ cfg not exist", zap.Int32("barrier", req.GetBarrierId()))
 			return errors.New("关卡配置不存在")
 		}
 		var realCount int32 = 0
@@ -114,9 +114,9 @@ func (g *Game) OnBarrierPickItemRQ_10527_10528(s *session.Session, req *MazeGame
 	// 处理需要加入背包的道具
 	if len(realAddItemList) > 0 {
 		itemList := itemutil.ItemPb2ItemInfo(realAddItemList)
-		errInfo := itemservice.GlobalItemService.AddItem(context.TODO(), userId, itemservice.ItemOpTypePickItem, tradeNo, itemList...)
+		errInfo := itemservice.GlobalItemService.AddItem(ctx, userId, itemservice.ItemOpTypePickItem, tradeNo, itemList...)
 		if errInfo != nil {
-			logger.ErrorWF("OnBarrierPickItemRQ AddItemEx fail", zap.Any("errInfo", errInfo), zap.Any("ItemList", realAddItemList))
+			logger.CtxError(ctx, "OnBarrierPickItemRQ AddItemEx fail", zap.Any("errInfo", errInfo), zap.Any("ItemList", realAddItemList))
 		}
 	}
 
@@ -125,8 +125,8 @@ func (g *Game) OnBarrierPickItemRQ_10527_10528(s *session.Session, req *MazeGame
 	for _, i := range realAddItemList {
 		itemMap[i.GetItemId()] += i.GetCount()
 	}
-	if err = barrierscorerewardservice.GlobalScoreRewardService.SaveBarrierScoreRewardItem(context.TODO(), userId, req.GetBarrierId(), itemMap); err != nil {
-		logger.ErrorWF("OnBarrierPickItemRQ SaveBarrierScoreRewardItem err", zap.Error(err), zap.Any("barrier", req.GetBarrierId()))
+	if err = barrierscorerewardservice.GlobalScoreRewardService.SaveBarrierScoreRewardItem(ctx, userId, req.GetBarrierId(), itemMap); err != nil {
+		logger.CtxError(ctx, "OnBarrierPickItemRQ SaveBarrierScoreRewardItem err", zap.Error(err), zap.Any("barrier", req.GetBarrierId()))
 		res.ErrInfo = errors.MODULE_ERROR.ToInfo()
 	}
 

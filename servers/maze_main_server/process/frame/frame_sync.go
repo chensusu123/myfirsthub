@@ -1,14 +1,15 @@
 package frame
 
 import (
-	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fkprometheus"
-	"go.uber.org/zap"
 	"maze_game_server/common/errors"
 	"maze_game_server/lib/log"
 	"maze_game_server/lib/nano/session"
 	"maze_game_server/module/mazeuserinfo"
 	"maze_game_server/pb/common/MazeRoom"
 	frame_service "maze_game_server/services/frame"
+
+	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fkprometheus"
+	"go.uber.org/zap"
 )
 
 // 客户端上报房间
@@ -19,10 +20,10 @@ func (g *Frame) OnFrameSyncRQ_10539_10540(s *session.Session, req *MazeRoom.Maze
 	logger := log.Clone("Frame", uint64(s.UID()), 0)
 	res := &MazeRoom.MazeFrameSyncRS{}
 
-	logger.InfoWF("OnFrameSyncRQ start", zap.Any("req", req))
+	logger.CtxInfo(ctx, "OnFrameSyncRQ start", zap.Any("req", req))
 	defer func() {
 		err = s.Response(res)
-		logger.InfoWF("OnFrameSyncRQ end", zap.Any("res", res))
+		logger.CtxInfo(ctx, "OnFrameSyncRQ end", zap.Any("res", res))
 	}()
 
 	res.Header = req.Header
@@ -32,12 +33,12 @@ func (g *Frame) OnFrameSyncRQ_10539_10540(s *session.Session, req *MazeRoom.Maze
 
 	_, err = mazeuserinfo.GetUserInfoV2(ctx, userId)
 	if err != nil {
-		logger.ErrorWF("OnFrameSyncRQ GetUserInfoV2 fail", zap.Error(err))
+		logger.CtxError(ctx, "OnFrameSyncRQ GetUserInfoV2 fail", zap.Error(err))
 		res.ErrInfo = errors.MODULE_ERROR.ToInfo()
 		return
 	}
 
-	err = frame_service.WritePump(logger, userId, req.GetBytes())
+	err = frame_service.WritePump(ctx, userId, req.GetBytes())
 	if err != nil {
 		res.ErrInfo = errors.MODULE_ERROR.ToInfo()
 		return err

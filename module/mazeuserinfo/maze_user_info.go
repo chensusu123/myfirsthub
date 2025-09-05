@@ -4,9 +4,10 @@ import (
 	"context"
 	"errors"
 
-	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fklog"
 	"maze_game_server/config/GMazeLevelV8Cfg"
 	"maze_game_server/io/redis/mazeuserlevelredis"
+
+	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fklog"
 )
 
 const (
@@ -54,10 +55,10 @@ func (u *UserInfo) SetTotalExp(totalExp int64) {
 }
 
 // 加经验
-func (u *UserInfo) AddExp(addExp int64) (err error) {
+func (u *UserInfo) AddExp(ctx context.Context, addExp int64) (err error) {
 
 	for {
-		levelCfg := GMazeLevelV8Cfg.Get(int32(u.Level))
+		levelCfg := GMazeLevelV8Cfg.GetWithCtx(ctx, int32(u.Level))
 		if levelCfg == nil {
 			return errors.New("cant find level cfg")
 		}
@@ -79,10 +80,10 @@ func (u *UserInfo) AddExp(addExp int64) (err error) {
 }
 
 // 根据设置的经验总值更新等级经验
-func (u *UserInfo) CalExp() (err error) {
+func (u *UserInfo) CalExp(ctx context.Context) (err error) {
 	curLevel := int32(1)
 	for {
-		levelCfg := GMazeLevelV8Cfg.Get(int32(curLevel))
+		levelCfg := GMazeLevelV8Cfg.GetWithCtx(ctx, int32(curLevel))
 		if levelCfg == nil {
 			return errors.New("cant find level cfg")
 		}

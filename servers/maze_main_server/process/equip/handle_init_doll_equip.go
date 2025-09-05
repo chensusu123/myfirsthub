@@ -39,19 +39,20 @@ import (
 )
 
 // redis + 内存缓存
-func GetEquipInitState(logger fklog.FKLogI, userId uint64) (state int64, err error) {
-	return dollassembleredis.GetDollEquipInitState(logger, userId)
+func GetEquipInitState(ctx context.Context, userId uint64) (state int64, err error) {
+	return dollassembleredis.GetDollEquipInitState(ctx, userId)
 }
 
-func SaveEquipInitState(logger fklog.FKLogI, userId uint64, state int64) error {
-	return dollassembleredis.SetDollEquipInitState(logger, userId, state)
+func SaveEquipInitState(ctx context.Context, userId uint64, state int64) error {
+	return dollassembleredis.SetDollEquipInitState(ctx, userId, state)
 }
 
 // 从背包找
-func getInitquipFromBag(logger fklog.FKLogI, userId uint64, equipIds map[int32]int64) (equipInfoMap map[int32]*MazeEquipCache.MazeEquipInfoDb, err error) {
-	equipMap, err := effectequip.GetAllEffectEquipInfo(logger, userId)
+func getInitquipFromBag(ctx context.Context, userId uint64, equipIds map[int32]int64) (equipInfoMap map[int32]*MazeEquipCache.MazeEquipInfoDb, err error) {
+	logger := fklog.ContextAppLogger(ctx)
+	equipMap, err := effectequip.GetAllEffectEquipInfo(ctx, userId)
 	if err != nil {
-		logger.ErrorWF("getInitquipFromBag GetAllEquipInfo error", zap.Error(err))
+		logger.CtxError(ctx, "getInitquipFromBag GetAllEquipInfo error", zap.Error(err))
 		return nil, err
 	}
 	// 找到一个即可,不用guid最小，包括穿在身上的
@@ -71,7 +72,7 @@ func getInitquipFromBag(logger fklog.FKLogI, userId uint64, equipIds map[int32]i
 
 func HandleDollEquipInit(ctx context.Context, userId uint64, needNotify bool) error {
 	logger := fklog.ContextAppLogger(ctx)
-	state, e := GetEquipInitState(logger, userId)
+	state, e := GetEquipInitState(ctx, userId)
 	if e != nil {
 		logger.CtxError(ctx, "HandleDollEquipInit get init state fail", zap.Error(e))
 		return e
@@ -99,19 +100,20 @@ func HandleDollEquipInit(ctx context.Context, userId uint64, needNotify bool) er
 		}
 	}
 	if len(initEquips) == 0 {
-		return NoEquipInit(logger, userId)
+		return NoEquipInit(ctx, userId)
 	}
 	return doInitDollEquip(ctx, userId, state, initEquips, needNotify)
 }
 
-func NoEquipInit(logger fklog.FKLogI, userId uint64) error {
+func NoEquipInit(ctx context.Context, userId uint64) error {
+	logger := fklog.ContextAppLogger(ctx)
 	state := constdef.DollEquipInitDoing | constdef.DollEquipInitStateDress | constdef.DollEquipInitStateBag
-	err := SaveEquipInitState(logger, userId, int64(state))
+	err := SaveEquipInitState(ctx, userId, int64(state))
 	if err != nil {
-		logger.ErrorWF("NoEquipInit init fail", zap.Error(err), zap.Int("state", state))
+		logger.CtxError(ctx, "NoEquipInit init fail", zap.Error(err), zap.Int("state", state))
 		return err
 	}
-	logger.WarnWF("NoEquipInit init ok", zap.Int("state", state))
+	logger.CtxWarn(ctx, "NoEquipInit init ok", zap.Int("state", state))
 	return err
 }
 
@@ -120,7 +122,7 @@ func doInitDollEquip(ctx context.Context, userId uint64, state int64, equips map
 	// 先加入背包
 	var err error
 
-	initEquipInfoMap, err := getInitquipFromBag(logger, userId, equips)
+	initEquipInfoMap, err := getInitquipFromBag(ctx, userId, equips)
 	if err != nil {
 		logger.CtxError(ctx, "doInitDollEquip getInitquipFromBag fail", zap.Error(err), zap.Any("equips", equips),
 			zap.Int64("state", state))
@@ -128,7 +130,7 @@ func doInitDollEquip(ctx context.Context, userId uint64, state int64, equips map
 	}
 	// 设置开始初始化状态
 	state |= constdef.DollEquipInitDoing
-	err = SaveEquipInitState(logger, userId, state)
+	err = SaveEquipInitState(ctx, userId, state)
 	if err != nil {
 		logger.CtxError(ctx, "doInitDollEquip set init doing state fail", zap.Error(err), zap.Any("equips", equips),
 			zap.Int64("state", state))
@@ -144,7 +146,7 @@ func doInitDollEquip(ctx context.Context, userId uint64, state int64, equips map
 				zap.Int64("state", state))
 			return
 		}
-		err = SaveEquipInitState(logger, userId, state)
+		err = SaveEquipInitState(ctx, userId, state)
 		if err != nil {
 			logger.CtxError(ctx, "doInitDollEquip SaveEquipInitState fail", zap.Error(err), zap.Any("equips", equips),
 				zap.Any("initEquipInfoMap", initEquipInfoMap),
@@ -162,7 +164,7 @@ func doInitDollEquip(ctx context.Context, userId uint64, state int64, equips map
 		if state&constdef.DollEquipInitStateBag == 0 {
 			// 添加到背包后，再次查询装备
 			addInitEquipToBag(ctx, userId, equips)
-			initEquipInfoMap, err = getInitquipFromBag(logger, userId, equips)
+			initEquipInfoMap, err = getInitquipFromBag(ctx, userId, equips)
 		}
 	}
 	if err != nil {
@@ -210,7 +212,7 @@ func addInitEquipToBag(ctx context.Context, userId uint64, equips map[int32]int6
 	}
 
 	rsAdd := &MazeEquipSvr.SvrAddMazeEquipRS{}
-	// err = dollequipbagrpc.MazeBagAddRQ(logger, rqAdd, rsAdd)
+	// err = dollequipbagrpc.MazeBagAddRQ(ctx, rqAdd, rsAdd)
 	err = OnSvrAddMazeEquipRQ(ctx, int64(userId), rqAdd, rsAdd, "")
 	if err != nil {
 		logger.CtxError(ctx, "addInitEquipToBag MazeBagAddRQ fail", zap.Error(err), zap.Any("req", rqAdd), zap.Any("rs", rsAdd))
@@ -236,7 +238,7 @@ func dressInitEquip(ctx context.Context, userId uint64, equipInfoMap map[int32]*
 		return errors.New("未找到装备通用配置")
 	}
 
-	assembleInfo, oldEffect, err := dollassembleinfo.GetDollAssembleInfoEx(logger, userId)
+	assembleInfo, oldEffect, err := dollassembleinfo.GetDollAssembleInfoEx(ctx, userId)
 	if err != nil {
 		logger.CtxError(ctx, "dressInitEquip Get Assemble info fail", zap.Error(err))
 		return err
@@ -277,11 +279,16 @@ func dressInitEquip(ctx context.Context, userId uint64, equipInfoMap map[int32]*
 		oldEquipPos.EquipLoadInfo = warpEquipPosOld
 		oldEquipPos.EquipInfo = equipPosInfo.GetEquipInfo()
 
-		module.ReplaceEquip(logger, equipPosInfo, equipInfo)
+		module.ReplaceEquip(ctx, equipPosInfo, equipInfo)
 
 		// 记录流水
 		recordType := dollequipassmeblekakfa.DollEquipAssembleOpInit
-		record := StartEquipAssmebleRecord(userId, row.Pos, recordType, equipPosInfo, oldEquipPos, oldEffect)
+		//临时打印
+		logger.CtxInfo(ctx, "dressInitEquip StartEquipAssmebleRecord record", zap.Int32("pos", row.Pos), zap.Any("equipPosInfo", equipPosInfo),
+			zap.Any("oldEquipPos", oldEquipPos),
+			zap.Int32("recordType", recordType),
+		)
+		record := StartEquipAssmebleRecord(ctx, userId, row.Pos, recordType, equipPosInfo, oldEquipPos, oldEffect)
 		recordList = append(recordList, record)
 		chgEquipPosList = append(chgEquipPosList, equipPosInfo)
 
@@ -296,7 +303,7 @@ func dressInitEquip(ctx context.Context, userId uint64, equipInfoMap map[int32]*
 			tmpMask := opMask
 			if opCode == 0 {
 				// 通知背包服务
-				e := NotifyBagSvr(logger, userId, record.EquipPos, 0, int64(record.NewGuid), 0)
+				e := NotifyBagSvr(ctx, userId, record.EquipPos, 0, int64(record.NewGuid), 0)
 				if e != nil {
 					tmpMask |= demconstdef.DollEquipAssembleOpMaskNotifyBag
 				}
@@ -306,7 +313,7 @@ func dressInitEquip(ctx context.Context, userId uint64, equipInfoMap map[int32]*
 		}
 	}()
 	// 保存装配数据
-	err = dollassemblesuitredis.SaveEquipAssembleInfoV2(logger, userId, assembleInfo.GetCurSuitIndex(), chgEquipPosList)
+	err = dollassemblesuitredis.SaveEquipAssembleInfoV2(ctx, userId, assembleInfo.GetCurSuitIndex(), chgEquipPosList)
 	if err != nil {
 		opMask |= demconstdef.DollEquipAssembleOpMaskDbSave
 		logger.CtxError(ctx, "dressInitEquip SaveEquipAssembleInfoV2 fail", zap.Error(err), zap.Any("chgEquipPosList", chgEquipPosList))
@@ -314,11 +321,11 @@ func dressInitEquip(ctx context.Context, userId uint64, equipInfoMap map[int32]*
 	}
 	opCode = 0
 	var e error
-	effect, e = calcassembleattr.CalcEquipEffect(logger, assembleInfo.MazeEquips)
+	effect, e = calcassembleattr.CalcEquipEffect(ctx, assembleInfo.MazeEquips)
 	if e != nil {
 		opMask |= demconstdef.DollEquipAssembleOpMaskCalcBuff
 	} else {
-		e = mazebuffinforedis.SaveMazeEquipBuff(logger, userId, effect.Other)
+		e = mazebuffinforedis.SaveMazeEquipBuff(ctx, userId, effect.Other)
 		if e != nil {
 			opMask |= demconstdef.DollEquipAssembleOpMaskNonForceBuff
 		} else {
@@ -331,7 +338,7 @@ func dressInitEquip(ctx context.Context, userId uint64, equipInfoMap map[int32]*
 			e = mazeattrcalcnotifyqueue.SendMazeAttrCalcNotify(ctx, calcAttrNotify)
 			if e != nil {
 				opMask |= demconstdef.DollEquipAssembleOpMaskCalcAttr
-				logger.ErrorWF("dressInitEquip SendDollAttrCalcNotify fail", zap.Error(e))
+				logger.CtxError(ctx, "dressInitEquip SendDollAttrCalcNotify fail", zap.Error(e))
 			}
 
 			mazebuffchgrrecordapi.SendMazeBuffChgRecord(ctx, userId,
@@ -350,7 +357,7 @@ func dressInitEquip(ctx context.Context, userId uint64, equipInfoMap map[int32]*
 
 		chgAssembleInfo.MazeEquips = chgEquipPosList
 		chgMask |= int32(MazeGameEquip.ENUM_MAZE_ASSEMBLE_CHG_TYPE_MASK_EQUIP_POS_MASK)
-		assembleidpack.SendAssembleChgID(logger, userId, chgAssembleInfo,
+		assembleidpack.SendAssembleChgID(ctx, userId, chgAssembleInfo,
 			chgMask, int32(int32(MazeGameEquip.ENUM_MAZE_EQUIP_POS_MASK_LOAD_EQUIP_INFO)),
 			constdef.DollAssembleChgTypeReplaceEquip)
 	}
@@ -359,9 +366,9 @@ func dressInitEquip(ctx context.Context, userId uint64, equipInfoMap map[int32]*
 }
 
 // 设置初始装备套序号
-func InitDollEquipSuitSeq(logger fklog.FKLogI, userId uint64) error {
+func InitDollEquipSuitSeq(ctx context.Context, userId uint64) error {
 	// 初始装备套检查
-	r, err := dollassembleredis.GetDollAssembleMetaInfo(logger, userId, constdef.AssemblePrefixCurAssembleSuitIndex)
+	r, err := dollassembleredis.GetDollAssembleMetaInfo(ctx, userId, constdef.AssemblePrefixCurAssembleSuitIndex)
 	if err != nil {
 		return err
 	}
@@ -372,7 +379,7 @@ func InitDollEquipSuitSeq(logger fklog.FKLogI, userId uint64) error {
 		switchTime := time.Now().Unix()
 		dm.CurAssmebleSuitIndex = &initSuitIndex
 		dm.LastSwitchSuitTime = &switchTime
-		err = dollassembleredis.SetDollAssmebleMetaInfo(logger, userId, dm)
+		err = dollassembleredis.SetDollAssmebleMetaInfo(ctx, userId, dm)
 		if err != nil {
 			return err
 		}
@@ -382,8 +389,8 @@ func InitDollEquipSuitSeq(logger fklog.FKLogI, userId uint64) error {
 
 // 人偶属性初始化
 func HandleDollAttrInit(ctx context.Context, userId uint64, session string) {
-	logger := fklog.ContextAppLogger(ctx)
-	slen, err := mazecalcattrredis.HlenMazeCalcAttr(logger, userId)
+	// logger := fklog.ContextAppLogger(ctx)
+	slen, err := mazecalcattrredis.HlenMazeCalcAttr(ctx, userId)
 	if err != nil {
 		return
 	}

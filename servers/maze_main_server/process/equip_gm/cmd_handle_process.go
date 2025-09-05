@@ -43,10 +43,10 @@ func (eg *EquipGM) OnSendMazeEquipCmdRQ_10412_10413(s *session.Session, req *Maz
 
 	defer func() {
 		err = s.Response(res)
-		logger.InfoWF("OnSendMazeEquipCmdRQ end", zap.Any("res", res))
+		logger.CtxInfo(ctx, "OnSendMazeEquipCmdRQ end", zap.Any("res", res))
 	}()
 
-	logger.InfoWF("OnSendMazeEquipCmdRQ with", zap.Any("req", req))
+	logger.CtxInfo(ctx, "OnSendMazeEquipCmdRQ with", zap.Any("req", req))
 
 	codeS := req.GetCmdCode()
 	code := fkutil.ToInt32(codeS)

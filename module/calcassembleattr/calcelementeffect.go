@@ -7,6 +7,7 @@
 package calcassembleattr
 
 import (
+	"context"
 	"maze_game_server/config/GMazeEquipSuiteInfoV8Cfg"
 	"maze_game_server/excel/mazeequipconfigv8"
 	"maze_game_server/pb/server/MazeBuffData"
@@ -24,14 +25,15 @@ import (
 // 情况4:武器(套装) 伤害类型与套装伤害类型一致
 // 属性值:情况类型*100+伤害类型枚举(1234) 例如: 情况4 + 火属性  402
 // 情况4
-func CalcElementEffect(logger fklog.FKLogI, equip *MazeEquipCache.MazeEquipPosInfo, suitMap map[int32]int32, isLog bool) (a1 *MazeBuffData.MazeBuffAttr) {
+func CalcElementEffect(ctx context.Context, equip *MazeEquipCache.MazeEquipPosInfo, suitMap map[int32]int32, isLog bool) (a1 *MazeBuffData.MazeBuffAttr) {
+	logger := fklog.ContextAppLogger(ctx)
 	wpSuitId := equip.GetEquipInfo().GetSuitId()
 	var attrVal int32 // 存放结果  情况(n)*1000+伤害类型枚举(x:1 2 3 4)
 	var elemId, effectType int32
 	a1 = &MazeBuffData.MazeBuffAttr{}
 	defer func() {
 		if isLog {
-			logger.InfoWF("CalcElementEffect end",
+			logger.CtxInfo(ctx, "CalcElementEffect end",
 				zap.Int32("equipId", equip.GetEquipInfo().GetEquipId()),
 				zap.Int64("guid", equip.GetEquipInfo().GetEquipGuid()),
 				zap.Int32("suitId", wpSuitId),
@@ -44,7 +46,7 @@ func CalcElementEffect(logger fklog.FKLogI, equip *MazeEquipCache.MazeEquipPosIn
 		var tmpSuitId int32
 		elemId, tmpSuitId = findElemAttr(equip.GetEquipInfo())
 		if tmpSuitId != wpSuitId {
-			logger.ErrorWF("CalcElementEffect config not match",
+			logger.CtxError(ctx, "CalcElementEffect config not match",
 				zap.Int32("equipId", equip.GetEquipInfo().GetEquipId()),
 				zap.Int32("guid", int32(equip.GetEquipInfo().GetEquipGuid())),
 				zap.Int32("suitId", wpSuitId), zap.Int32("tmpSuitId", tmpSuitId))
@@ -70,7 +72,7 @@ func CalcElementEffect(logger fklog.FKLogI, equip *MazeEquipCache.MazeEquipPosIn
 		} else if attrVal == 1 {
 			a1.AttrId = proto.Int32(10411)
 		}
-		// logger.InfoWF("CalcElementEffect succ", zap.Any("effect", effectInfo.GetAttrVal()))
+		// logger.CtxInfo(ctx,"CalcElementEffect succ", zap.Any("effect", effectInfo.GetAttrVal()))
 		return a1
 	}
 	return nil

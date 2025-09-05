@@ -12,17 +12,16 @@ import (
 	"maze_game_server/io/redis/dollassemblesuitredis"
 	"maze_game_server/pb/server/MazeEquipCache"
 
-	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fklog"
 	"google.golang.org/protobuf/proto"
 )
 
 func UnlockPosByEquip(ctx context.Context, userId uint64) (cnt int32, err error) {
-	logger := fklog.ContextAppLogger(ctx)
-	suitInfo, e := dollassemblesuitredis.GetDollAssembleSuit(logger, userId, 1, 8)
+	// logger := fklog.ContextAppLogger(ctx)
+	suitInfo, e := dollassemblesuitredis.GetDollAssembleSuit(ctx, userId, 1, 8)
 	if e != nil {
 		return 0, e
 	}
-	posMap, e := dollassembleredis.GetDollEquipPosInfo(logger, userId, 8)
+	posMap, e := dollassembleredis.GetDollEquipPosInfo(ctx, userId, 8)
 	if e != nil {
 		return 0, e
 	}
@@ -42,6 +41,6 @@ func UnlockPosByEquip(ctx context.Context, userId uint64) (cnt int32, err error)
 			Pos:   proto.Int32(equip.GetPos()),
 			Level: proto.Int32(0)})
 	}
-	e = dollassembleredis.SetDollEquipPosInfo(logger, userId, unlockList)
+	e = dollassembleredis.SetDollEquipPosInfo(ctx, userId, unlockList)
 	return int32(len(unlockList)), e
 }

@@ -13,7 +13,7 @@ import (
 func (s *service) UpdateRankList(ctx context.Context, r *ranklistmodel.RankListModel, userID uint64, score int64) error {
 	logger := fklog.ContextAppLogger(ctx)
 	rankListKey := r.GetRankListKey()
-	err := mazeranklistredis.AddRankList(context.TODO(), rankListKey, score, userID)
+	err := mazeranklistredis.AddRankList(ctx, rankListKey, score, userID)
 	if err != nil {
 		logger.CtxError(ctx, "UpdateRankList fail",
 			zap.String("rankListname", rankListKey),

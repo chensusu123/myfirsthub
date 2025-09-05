@@ -2,6 +2,7 @@ package alliancemodel
 
 import (
 	"context"
+
 	"maze_game_server/io/redis/allianceredis"
 	"maze_game_server/lib/serialize"
 	"maze_game_server/pb/common/MazeFamily"
@@ -26,7 +27,7 @@ func LoadAllianceListModel(ctx context.Context) (r *AllianceListModel, err error
 
 func (r *AllianceListModel) load(ctx context.Context) (err error) {
 	logger := fklog.ContextAppLogger(ctx)
-	value, err := allianceredis.GetAllianceList()
+	value, err := allianceredis.GetAllianceList(ctx)
 	if err != nil {
 		logger.CtxError(ctx, "LoadAllianceListModel err", zap.Error(err))
 		return err
@@ -49,11 +50,11 @@ func (r *AllianceListModel) Save(ctx context.Context) (err error) {
 		logger.CtxError(ctx, "Save err", zap.Error(err))
 		return err
 	}
-	return allianceredis.SetAllianceList(value)
+	return allianceredis.SetAllianceList(ctx, value)
 }
 
 func (r *AllianceListModel) Delete(ctx context.Context) (err error) {
-	return allianceredis.DelAllianceList()
+	return allianceredis.DelAllianceList(ctx)
 }
 
 func (r *AllianceListModel) AddAlliance(ctx context.Context, allianceID int32) error {
@@ -85,6 +86,6 @@ func (r *AllianceListModel) DataToAllianceListPb(ctx context.Context) []*MazeFam
 	return allianceList
 }
 
-func (r *AllianceListModel) GetAllianceID() int32 {
-	return allianceredis.GetAllianceID()
+func (r *AllianceListModel) GetAllianceID(ctx context.Context) int32 {
+	return allianceredis.GetAllianceID(ctx)
 }

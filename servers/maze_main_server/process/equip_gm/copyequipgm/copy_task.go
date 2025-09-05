@@ -7,13 +7,13 @@
 package copyequipgm
 
 import (
-	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fklog"
+	"context"
 	"maze_game_server/servers/maze_main_server/process/equip_gm/copyequipgm/copyinterface"
 )
 
-func RunCopyTask(logger fklog.FKLogI, srcUserId uint64, dstUserId []uint64) bool {
+func RunCopyTask(ctx context.Context, srcUserId uint64, dstUserId []uint64) bool {
 	var runParam copyinterface.CopyParam
-	copyinterface.RangeAiCopy(logger, srcUserId, dstUserId, runParam)
+	copyinterface.RangeAiCopy(ctx, srcUserId, dstUserId, runParam)
 	return true
 }
 

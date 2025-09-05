@@ -3,8 +3,6 @@ package tempbuffservice
 import (
 	"context"
 	"fmt"
-	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fklog"
-	"go.uber.org/zap"
 	"math/rand"
 	"maze_game_server/common/errors"
 	"maze_game_server/config/GMazeBarriesV8Cfg"
@@ -15,11 +13,15 @@ import (
 	"maze_game_server/config/GMazeEnergyLevelV8Cfg"
 	"maze_game_server/excel/mazeconfigv8"
 	"maze_game_server/excel/mazeconfigv8config"
+	"maze_game_server/excel/mazeenergyaffixlibrarycfgex"
 	"maze_game_server/excel/mazeenergyaffixrandrulev8config"
 	"maze_game_server/excel/mazeenergylevelv8config"
 	"maze_game_server/excel/mazeenergyresetcostv8config"
 	"maze_game_server/model/tempbuffmodel"
 	"maze_game_server/pb/common/MazeTempBuff"
+
+	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fklog"
+	"go.uber.org/zap"
 )
 
 func (s *service) GetOptionalTempBuffList(ctx context.Context, userId uint64, barrierId, level, buffType, areaId, areaIndex, attrMask int32) (*OptionalBuffInfo, error) {
@@ -49,6 +51,8 @@ func (s *service) GetOptionalTempBuffList(ctx context.Context, userId uint64, ba
 
 	optionalBuffInfo := s.packOptionalInfo(ctx, buffInfo)
 	if optionalBuffInfo != nil {
+		// 能力等级
+		optionalBuffInfo.Level = buffInfo.BuffSequence.Level
 		return optionalBuffInfo, nil
 	}
 
@@ -237,8 +241,17 @@ func (s *service) createOptionalBuffList(ctx context.Context, buffInfo *tempbuff
 		}
 		selectedBuffGroupMap[buffConfig.Affix_group_id] += 1
 	}
+	// 统计随机库的选择次数
+	selectAffixLibraryCountMap := map[int32]int32{}
+	for _, i := range buffInfo.SelectedBuff {
+		libraryList := mazeenergyaffixlibrarycfgex.GetLibrary(i.BuffId)
+		for _, libraryId := range libraryList {
+			selectAffixLibraryCountMap[libraryId] += 1
+		}
+	}
 
-	optionalMap := make(map[int32]struct{})
+	optionalBuffMap := make(map[int32]struct{})
+	libraryMap := make(map[int32]int32) // 本次已选择的库
 	num := mazeconfigv8config.GetBuffSelectCount()
 	for i := int64(1); i <= num; i++ {
 		var libraryId int32
@@ -256,19 +269,19 @@ func (s *service) createOptionalBuffList(ctx context.Context, buffInfo *tempbuff
 		}
 		maxRandLibCount := len(posLib)
 		for j := 1; j <= maxRandLibCount; j++ {
-			libraryId, _ = s.randLibraryId(posLib)
+			// 随机一个库
+			libraryId, _ = s.randLibraryId(ctx, posLib, selectAffixLibraryCountMap, libraryMap)
 			if libraryId == 0 {
 				logger.CtxError(ctx, "randLibraryId libraryId id=0", zap.Any("posLib", posLib), zap.Any("configId", configId))
 				break
 			}
-			// 随机库id
 			libraryConfig := GMazeEnergyAffixLibraryV8Cfg.GetWithCtx(ctx, libraryId)
 			if libraryConfig == nil || len(libraryConfig.Affix_id_list) == 0 {
 				return nil, errors.New("affixList is nil")
 			}
 
 			// 过滤出可选择的词条
-			optionalList, totalWeight := s.filterBuffList(ctx, optionalMap, libraryConfig.Affix_id_list, libraryConfig.Certainly_affix_id_list,
+			optionalList, totalWeight := s.filterBuffList(ctx, optionalBuffMap, libraryConfig.Affix_id_list, libraryConfig.Certainly_affix_id_list,
 				selectedBuffMap, selectedBuffGroupMap, attrMask)
 			// 随机选择个词条
 			buffId, weight := s.randomId(optionalList, totalWeight)
@@ -278,7 +291,8 @@ func (s *service) createOptionalBuffList(ctx context.Context, buffInfo *tempbuff
 				zap.Int32("weight", weight), zap.Int32("id", buffId), zap.Int("randLibCount", j))
 
 			if buffId != 0 {
-				optionalMap[buffId] = struct{}{}
+				optionalBuffMap[buffId] = struct{}{}
+				libraryMap[libraryConfig.Order] += 1
 				break
 			} else {
 				// 这次没随机到就把这个库删掉重新随机
@@ -295,7 +309,7 @@ func (s *service) createOptionalBuffList(ctx context.Context, buffInfo *tempbuff
 	}
 
 	var optionalList []int32
-	for optionId := range optionalMap {
+	for optionId := range optionalBuffMap {
 		optionalList = append(optionalList, optionId)
 	}
 
@@ -303,7 +317,35 @@ func (s *service) createOptionalBuffList(ctx context.Context, buffInfo *tempbuff
 	return optionalList, nil
 }
 
-func (s *service) randLibraryId(libraryMap map[int32]int32) (int32, int32) {
+func (s *service) calcLibraryAddWeight(weight int32, weightAdjust1Add []int32, buffCount int32) int32 {
+	if len(weightAdjust1Add) == 0 || buffCount <= 0 {
+		return weight
+	}
+	addIndex := buffCount - 1
+	addCount := int32(len(weightAdjust1Add))
+	if buffCount >= addCount {
+		addIndex = addCount - 1
+	}
+	weightCoefficient := weightAdjust1Add[addIndex]
+	weight = weight * (weightCoefficient + 10000) / 10000
+	return weight
+}
+
+func (s *service) calcLibrarySubWeight(weight int32, weightAdjust2Sub []int32, thisSelectCount int32) int32 {
+	if len(weightAdjust2Sub) == 0 || thisSelectCount <= 0 {
+		return weight
+	}
+	subCount := int32(len(weightAdjust2Sub))
+	subIndex := thisSelectCount - 1
+	if thisSelectCount >= subCount {
+		subIndex = subCount - 1
+	}
+	weightCoefficient := weightAdjust2Sub[subIndex]
+	weight = weight * (10000 - weightCoefficient) / 10000
+	return weight
+}
+
+func (s *service) randLibraryId(ctx context.Context, libraryMap map[int32]int32, selectAffixLibraryCountMap map[int32]int32, thisSelectLibraryMap map[int32]int32) (int32, int32) {
 	var (
 		weightList  []*WeightInfo
 		totalWeight int32
@@ -312,6 +354,22 @@ func (s *service) randLibraryId(libraryMap map[int32]int32) (int32, int32) {
 		if weight == 0 {
 			continue
 		}
+		libraryConfig := GMazeEnergyAffixLibraryV8Cfg.GetWithCtx(ctx, id)
+		if libraryConfig == nil {
+			continue
+		}
+		if selectAffixLibraryCountMap[id] > 0 {
+			// 计算增加的权重系数
+			weight = s.calcLibraryAddWeight(weight, libraryConfig.Weight_adjust1_add, selectAffixLibraryCountMap[id])
+		}
+		if thisSelectLibraryMap[id] > 0 {
+			// 计算减少的权重系数
+			weight = s.calcLibrarySubWeight(weight, libraryConfig.Weight_adjust2_sub, thisSelectLibraryMap[id])
+			if weight <= 0 {
+				continue
+			}
+		}
+
 		weightList = append(weightList, &WeightInfo{
 			Id:     id,
 			Weight: weight,
@@ -459,7 +517,7 @@ func (s *service) checkFrontCondition(ctx context.Context, logger fklog.FKLogI, 
 	}
 
 	if count < frontConfig.Must_num {
-		//logger.DebugWF("checkFrontCondition affix id set not enough", zap.Int32("frontId", frontId), zap.Int32("count", count))
+		//logger.CtxDebug(ctx,"checkFrontCondition affix id set not enough", zap.Int32("frontId", frontId), zap.Int32("count", count))
 		return false
 	}
 

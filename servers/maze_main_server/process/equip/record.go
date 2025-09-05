@@ -19,11 +19,11 @@ type MazeGameEquipInstanceRecord struct {
 	*mazeequipinstancerecord.MazeGameEquipInstanceRecord
 }
 
-func PushMazeEquipInstanceLog(logger fklog.FKLogI, equipInstanceRecordMap map[int64]*MazeGameEquipInstanceRecord, chgType, isFail int32) error {
+func PushMazeEquipInstanceLog(ctx context.Context, equipInstanceRecordMap map[int64]*MazeGameEquipInstanceRecord, chgType, isFail int32) error {
 	for _, equipRecord := range equipInstanceRecordMap {
 		equipRecord.ChgType = chgType
 		equipRecord.IsFail = isFail
-		mazeequipinstancerecord.PushMazeGameEquipInstanceRecord(context.TODO(), equipRecord.MazeGameEquipInstanceRecord)
+		mazeequipinstancerecord.PushMazeGameEquipInstanceRecord(ctx, equipRecord.MazeGameEquipInstanceRecord)
 	}
 	return nil
 }
@@ -65,7 +65,7 @@ func PushMazeEquipBagLog(ctx context.Context, userId uint64, addEquipList, delEq
 		CreateTime: time.Now().UnixNano() / 1000000,
 	}
 	if err := mazeequipbagrecord.PushMazeGameEquipBagRecord(ctx, record); err != nil {
-		logger.ErrorWF("PushMazeEquipBagLog PushMazeGameEquipBagRecord err", zap.Error(err))
+		logger.CtxError(ctx, "PushMazeEquipBagLog PushMazeGameEquipBagRecord err", zap.Error(err))
 	}
 	return nil
 }

@@ -1,9 +1,9 @@
 package game
 
 import (
-	"context"
 	"encoding/json"
 	"fmt"
+
 	"maze_game_server/common/errors"
 	"maze_game_server/common/function/addequip"
 	"maze_game_server/common/function/itemutil"
@@ -76,7 +76,7 @@ func (g *Game) OnBarrierMonsterDeathRQ_10498_10499(s *session.Session, req *Maze
 	// 增加掉落物品返回
 	for itemID, count := range items {
 		if itemID > 0 {
-			itemCfg := GMazeItemsV8Cfg.Get(itemID)
+			itemCfg := GMazeItemsV8Cfg.GetWithCtx(ctx, itemID)
 			if itemCfg == nil {
 				logger.CtxInfo(ctx, "OnBarrierMonsterDeathRQ item not found", zap.Error(fmt.Errorf("item: %d not found", itemID)), zap.Any("MonsterId", req.GetMonsterId()))
 			} else {
@@ -97,7 +97,7 @@ func (g *Game) OnBarrierMonsterDeathRQ_10498_10499(s *session.Session, req *Maze
 	// 处理需要加入背包的道具
 	if len(bagItems) > 0 {
 		itemList := itemutil.ItemPb2ItemInfo(bagItems)
-		errInfo := itemservice.GlobalItemService.AddItem(context.TODO(), userId, itemservice.ItemOpTypeMonsterDeath, tradeNo, itemList...)
+		errInfo := itemservice.GlobalItemService.AddItem(ctx, userId, itemservice.ItemOpTypeMonsterDeath, tradeNo, itemList...)
 		if errInfo != nil {
 			logger.CtxInfo(ctx, "OnBarrierMonsterDeathRQ AddItemEx fail", zap.Any("errInfo", errInfo), zap.Any("bagItems", bagItems))
 		}

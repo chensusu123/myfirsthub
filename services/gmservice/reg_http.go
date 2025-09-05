@@ -1,43 +1,45 @@
 package gmservice
 
-import (
-	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fklog"
-)
+import "context"
 
-func (s *service) RegHttp(logger fklog.FKLogI) {
+func (s *service) RegHttp(ctx context.Context) {
 	// user
-	s.SafeGETRegister(logger, "/LookAssembleInfo", s.LookAssembleInfo)
-	s.SafeGETRegister(logger, "/SetBarrier", s.SetBarrier)
-	s.SafeGETRegister(logger, "/DumpBattleData", s.DumpBattleData)
-	s.SafeGETRegister(logger, "/attrs", s.Attrs)
-	s.SafePOSTRegister(logger, "/SetLevel", s.SetUserLevel)
+	s.SafeGETRegister(ctx, "/LookAssembleInfo", s.LookAssembleInfo)
+	s.SafeGETRegister(ctx, "/SetBarrier", s.SetBarrier)
+	s.SafeGETRegister(ctx, "/DumpBattleData", s.DumpBattleData)
+	s.SafeGETRegister(ctx, "/attrs", s.Attrs)
+	s.SafePOSTRegister(ctx, "/SetLevel", s.SetUserLevel)
 	// buff
-	s.SafePOSTRegister(logger, "/setMazeTempBuff", s.SetMazeTempBuff)
+	s.SafePOSTRegister(ctx, "/setMazeTempBuff", s.SetMazeTempBuff)
 	// equip
-	s.SafePOSTRegister(logger, "/AddEquip", s.AddEquip)
-	s.SafePOSTRegister(logger, "/GmEquipPosLvUp", s.GmEquipPosLvUp)
-	s.SafeGETRegister(logger, "/GetEquipInfoByCfgId", s.GetEquipInfoByCfgId)
-	s.SafeGETRegister(logger, "/GetEquipInfoByGuid", s.GetEquipInfoByGuid)
-	s.SafeGETRegister(logger, "/SendOneSuitEquip", s.SendOneSuitEquip)
-	s.SafeGETRegister(logger, "/ReInitDollEquip", s.ReInitDollEquip)
-	s.SafeGETRegister(logger, "/FixDollAttr", s.FixDollAttr)
-	s.SafeGETRegister(logger, "/FixEquipPosUnlock", s.FixEquipPosUnlock)
-	s.SafeGETRegister(logger, "/FixAssembleEquipInfo", s.FixAssembleEquipInfo)
-	s.SafeGETRegister(logger, "/SetEquipRollScore", s.SetEquipRollScore)
-	s.SafeGETRegister(logger, "/BatchAddEquip", s.BatchAddEquip)
+	s.SafePOSTRegister(ctx, "/AddEquip", s.AddEquip)
+	s.SafePOSTRegister(ctx, "/GmEquipPosLvUp", s.GmEquipPosLvUp)
+	s.SafeGETRegister(ctx, "/GetEquipInfoByCfgId", s.GetEquipInfoByCfgId)
+	s.SafeGETRegister(ctx, "/GetEquipInfoByGuid", s.GetEquipInfoByGuid)
+	s.SafeGETRegister(ctx, "/SendOneSuitEquip", s.SendOneSuitEquip)
+	s.SafeGETRegister(ctx, "/ReInitDollEquip", s.ReInitDollEquip)
+	s.SafeGETRegister(ctx, "/FixDollAttr", s.FixDollAttr)
+	s.SafeGETRegister(ctx, "/FixEquipPosUnlock", s.FixEquipPosUnlock)
+	s.SafeGETRegister(ctx, "/FixAssembleEquipInfo", s.FixAssembleEquipInfo)
+	s.SafeGETRegister(ctx, "/SetEquipRollScore", s.SetEquipRollScore)
+	s.SafeGETRegister(ctx, "/BatchAddEquip", s.BatchAddEquip)
 	// ohter
-	s.SafeGETRegister(logger, "/ClearBag", s.ClearBag)
-	s.SafeGETRegister(logger, "/ClearBagNotAssemble", s.ClearBagNotAssemble)
-	s.SafeGETRegister(logger, "/generateUser", s.GenerateUser)
-	s.SafeGETRegister(logger, "/online", s.Online)
+	s.SafeGETRegister(ctx, "/ClearBag", s.ClearBag)
+	s.SafeGETRegister(ctx, "/ClearBagNotAssemble", s.ClearBagNotAssemble)
+	s.SafeGETRegister(ctx, "/generateUser", s.GenerateUser)
+	s.SafeGETRegister(ctx, "/online", s.Online)
 	// item
-	s.SafePOSTRegister(logger, "/AddExp", s.AddExp)
-	s.SafePOSTRegister(logger, "/addRefreshCost", s.AddRefreshCost)
-	s.SafePOSTRegister(logger, "/addEnergy", s.AddEnergy)
-	s.SafePOSTRegister(logger, "/addItem", s.AddItem)
+	s.SafePOSTRegister(ctx, "/AddExp", s.AddExp)
+	s.SafePOSTRegister(ctx, "/addRefreshCost", s.AddRefreshCost)
+	s.SafePOSTRegister(ctx, "/addEnergy", s.AddEnergy)
+	s.SafePOSTRegister(ctx, "/addItem", s.AddItem)
 	// excel
-	s.SafeGETRegister(logger, "/showSheet", s.ShowSheet)
-	s.SafeGETRegister(logger, "/GetExcelList", s.GetExcelList)
-	s.SafeGETRegister(logger, "/GetExcelSheet", s.GetExcelSheet)
-	s.SafeGETRegister(logger, "/GetExcelData", s.GetExcelData)
+	s.SafeGETRegister(ctx, "/showSheet", s.ShowSheet)
+	s.SafeGETRegister(ctx, "/GetExcelList", s.GetExcelList)
+	s.SafeGETRegister(ctx, "/GetExcelSheet", s.GetExcelSheet)
+	s.SafeGETRegister(ctx, "/GetExcelData", s.GetExcelData)
+
+	// alliance
+	s.SafeGETRegister(ctx, "/CreateAlliance", s.CreateAlliance)
+	s.SafeGETRegister(ctx, "/GetAllianceInfo", s.GetAllianceInfo)
 }

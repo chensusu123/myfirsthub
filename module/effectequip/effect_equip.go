@@ -7,101 +7,106 @@
 package effectequip
 
 import (
+	"context"
 	"errors"
+
+	"maze_game_server/io/redis/mazebagequipredis"
+	"maze_game_server/pb/server/MazeEquipCache"
 
 	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fklog"
 	"go.uber.org/zap"
-	"maze_game_server/io/redis/mazebagequipredis"
-	"maze_game_server/pb/server/MazeEquipCache"
 )
 
 var EquipNoExist = errors.New("equip not exist")
 
-func GetEffectEquipInfo(logger fklog.FKLogI, userId uint64, equipGuid int64) (effectEquip *MazeEquipCache.MazeEquipInfoDb, err error) {
-	effectEquip, err = mazebagequipredis.GetEquipInfo(logger, userId, equipGuid)
+func GetEffectEquipInfo(ctx context.Context, userId uint64, equipGuid int64) (effectEquip *MazeEquipCache.MazeEquipInfoDb, err error) {
+	logger := fklog.ContextAppLogger(ctx)
+	effectEquip, err = mazebagequipredis.GetEquipInfo(ctx, userId, equipGuid)
 	if err != nil {
-		logger.ErrorWF("GetEffectEquipInfo GetEquipInfo fail", zap.Error(err),
+		logger.CtxError(ctx, "GetEffectEquipInfo GetEquipInfo fail", zap.Error(err),
 			zap.Int64("guid", equipGuid))
 		return nil, err
 	}
 
 	if effectEquip == nil || effectEquip.GetEquipGuid() <= 0 {
-		logger.ErrorWF("GetEffectEquipInfo equip not exist", zap.Int64("equipGuid", equipGuid))
+		logger.CtxError(ctx, "GetEffectEquipInfo equip not exist", zap.Int64("equipGuid", equipGuid))
 		return nil, EquipNoExist
 	}
 
 	// effectEquip, err = pbutil.ConvertIdentifyEquipDb(logger, equipInfo)
 	// if err != nil {
-	//	logger.ErrorWF("GetEffectEquipInfo ConvertIdentifyEquipDb fail",
+	//	logger.CtxError(ctx,"GetEffectEquipInfo ConvertIdentifyEquipDb fail",
 	//		zap.Error(err),
 	//		zap.Any("equipInfo", equipInfo))
 	//
 	//	return nil, err
 	// }
-	logger.DebugWF("GetEffectEquipInfo succ",
+	logger.CtxDebug(ctx, "GetEffectEquipInfo succ",
 		zap.Any("effectEquip", effectEquip))
 	return effectEquip, nil
 }
 
-func BatchGetEffectEquipInfo(logger fklog.FKLogI, userId uint64, equipGuids ...int64) (effectEquipMap map[int64]*MazeEquipCache.MazeEquipInfoDb, err error) {
+func BatchGetEffectEquipInfo(ctx context.Context, userId uint64, equipGuids ...int64) (effectEquipMap map[int64]*MazeEquipCache.MazeEquipInfoDb, err error) {
+	logger := fklog.ContextAppLogger(ctx)
 	// 从背包查询装备信息
-	effectEquipMap, err = mazebagequipredis.GetBatchEquipInfo(logger, userId, equipGuids...)
+	effectEquipMap, err = mazebagequipredis.GetBatchEquipInfo(ctx, userId, equipGuids...)
 	if err != nil {
-		logger.ErrorWF("BatchGetEffectEquipInfo GetBatchEquipInfo fail", zap.Error(err),
+		logger.CtxError(ctx, "BatchGetEffectEquipInfo GetBatchEquipInfo fail", zap.Error(err),
 			zap.Any("equipGuids", equipGuids))
 		return
 	}
 	// effectEquipMap, err = pbutil.BatchConvertIdentifyEquipDb(logger, equipDatails)
 	// if err != nil {
-	//	logger.ErrorWF("BatchGetEffectEquipInfo BatchConvertIdentifyEquipDb fail", zap.Error(err),
+	//	logger.CtxError(ctx,"BatchGetEffectEquipInfo BatchConvertIdentifyEquipDb fail", zap.Error(err),
 	//		zap.Any("equipDatails", equipDatails))
 	//	return
 	// }
-	logger.DebugWF("BatchGetEffectEquipInfo succ",
+	logger.CtxDebug(ctx, "BatchGetEffectEquipInfo succ",
 		zap.Any("effectEquip", effectEquipMap))
 	return effectEquipMap, nil
 }
 
-func GetAllEffectEquipInfo(logger fklog.FKLogI, userId uint64) (effectEquipMap map[int64]*MazeEquipCache.MazeEquipInfoDb, err error) {
-	effectEquipMap, err = mazebagequipredis.GetAllEquipInfo(logger, userId)
+func GetAllEffectEquipInfo(ctx context.Context, userId uint64) (effectEquipMap map[int64]*MazeEquipCache.MazeEquipInfoDb, err error) {
+	logger := fklog.ContextAppLogger(ctx)
+	effectEquipMap, err = mazebagequipredis.GetAllEquipInfo(ctx, userId)
 	if err != nil {
-		logger.ErrorWF("GetAllEffectEquipInfo GetAllEquipInfo error", zap.Error(err))
+		logger.CtxError(ctx, "GetAllEffectEquipInfo GetAllEquipInfo error", zap.Error(err))
 		return nil, err
 	}
 	// effectEquipMap, err = pbutil.BatchConvertIdentifyEquipDb(logger, equipMap)
 	// if err != nil {
-	//	logger.ErrorWF("GetAllEffectEquipInfo BatchConvertIdentifyEquipDb fail", zap.Error(err),
+	//	logger.CtxError(ctx,"GetAllEffectEquipInfo BatchConvertIdentifyEquipDb fail", zap.Error(err),
 	//		zap.Any("equipDatails", equipMap))
 	//	return
 	// }
-	logger.DebugWF("BatchGetEffectEquipInfo succ",
+	logger.CtxDebug(ctx, "BatchGetEffectEquipInfo succ",
 		zap.Any("effectEquip", effectEquipMap))
 	return effectEquipMap, nil
 }
 
 // 获取实例化装备
-// func GetInstanceEffectEquipInfo(logger fklog.FKLogI, userId uint64, equipGuid int64) (effectEquip *MazeEquipCache.MazeEquipInfoDb, err error) {
+// func GetInstanceEffectEquipInfo(ctx context.Context, userId uint64, equipGuid int64) (effectEquip *MazeEquipCache.MazeEquipInfoDb, err error) {
 // 	effectEquip, err = dollequipinstanceredis.GetEquipInstance(logger, userId, equipGuid)
 // 	if err != nil {
-// 		logger.ErrorWF("GetInstanceEffectEquipInfo GetEquipInfo fail", zap.Error(err),
+// 		logger.CtxError(ctx,"GetInstanceEffectEquipInfo GetEquipInfo fail", zap.Error(err),
 // 			zap.Int64("guid", equipGuid))
 // 		return nil, err
 // 	}
 
 // 	if effectEquip == nil || effectEquip.GetEquipGuid() <= 0 {
-// 		logger.ErrorWF("GetInstanceEffectEquipInfo equip not exist", zap.Int64("equipGuid", equipGuid))
+// 		logger.CtxError(ctx,"GetInstanceEffectEquipInfo equip not exist", zap.Int64("equipGuid", equipGuid))
 // 		return nil, EquipNoExist
 // 	}
 
 // 	//effectEquip, err = pbutil.ConvertIdentifyEquipDb(logger, equipInfo)
 // 	//if err != nil {
-// 	//	logger.ErrorWF("GetInstanceEffectEquipInfo ConvertIdentifyEquipDb fail",
+// 	//	logger.CtxError(ctx,"GetInstanceEffectEquipInfo ConvertIdentifyEquipDb fail",
 // 	//		zap.Error(err),
 // 	//		zap.Any("equipInfo", equipInfo))
 // 	//
 // 	//	return nil, err
 // 	//}
-// 	logger.DebugWF("GetInstanceEffectEquipInfo succ",
+// 	logger.CtxDebug(ctx,"GetInstanceEffectEquipInfo succ",
 // 		zap.Any("effectEquip", effectEquip))
 // 	return effectEquip, nil
 // }

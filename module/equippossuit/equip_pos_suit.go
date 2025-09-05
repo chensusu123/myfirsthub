@@ -1,6 +1,7 @@
 package equippossuit
 
 import (
+	"context"
 	"fmt"
 	"maze_game_server/common/constdef"
 	"maze_game_server/config/GMazeEquipPosLvSuiteV8Cfg"
@@ -18,7 +19,8 @@ import (
 // 无激活套装:1级套装和1级套装(客户端需要)
 // 套装已满级:当前套装和套装ID为-1的下级套装
 // 已激活套装并且未满级:当前套装和下级套装
-func GetCurAndNextSuit(logger fklog.FKLogI, curSuitId int32) (cur, next *MazeGameEquip.EquipPosSuitInfo, err error) {
+func GetCurAndNextSuit(ctx context.Context, curSuitId int32) (cur, next *MazeGameEquip.EquipPosSuitInfo, err error) {
+	logger := fklog.ContextAppLogger(ctx)
 	var suitId, nextSuitId int32
 	if curSuitId == 0 {
 		suitId = findFirstSuit()
@@ -27,17 +29,17 @@ func GetCurAndNextSuit(logger fklog.FKLogI, curSuitId int32) (cur, next *MazeGam
 	}
 
 	defer func() {
-		logger.InfoWF("GetCurAndNextSuit",
+		logger.CtxInfo(ctx, "GetCurAndNextSuit",
 			zap.Int32("curSuitId", curSuitId),
 			zap.Any("curSuit", cur), zap.Any("nextSuit", next),
 			zap.Bool("is init suit", curSuitId == 0),
 			zap.Bool("is max level suit", nextSuitId == -1))
 	}()
 
-	cfg := GMazeEquipPosLvSuiteV8Cfg.Get(suitId)
+	cfg := GMazeEquipPosLvSuiteV8Cfg.GetWithCtx(ctx, suitId)
 	if cfg == nil {
 		err = fmt.Errorf("GetCurAndNextSuit no cfg, sheetName: %s, id: %d", GMazeEquipPosLvSuiteV8Cfg.SheetName(), suitId)
-		logger.ErrorWF("GetCurAndNextSuit", zap.Error(err))
+		logger.CtxError(ctx, "GetCurAndNextSuit", zap.Error(err))
 		return
 	}
 	nextSuitId = cfg.Next_level
@@ -65,10 +67,10 @@ func GetCurAndNextSuit(logger fklog.FKLogI, curSuitId int32) (cur, next *MazeGam
 		return
 	}
 
-	nextCfg := GMazeEquipPosLvSuiteV8Cfg.Get(nextSuitId)
+	nextCfg := GMazeEquipPosLvSuiteV8Cfg.GetWithCtx(ctx, nextSuitId)
 	if nextCfg == nil {
 		err = fmt.Errorf("GetCurAndNextSuit no cfg, sheetName: %s, id: %d", GMazeEquipPosLvSuiteV8Cfg.SheetName(), nextSuitId)
-		logger.ErrorWF("GetCurAndNextSuit", zap.Error(err))
+		logger.CtxError(ctx, "GetCurAndNextSuit", zap.Error(err))
 		return
 	}
 
@@ -87,9 +89,9 @@ func GetCurAndNextSuit(logger fklog.FKLogI, curSuitId int32) (cur, next *MazeGam
 }
 
 // 装备位套装是否能升级
-// func IsEquipPosSuitCanLevelUp(logger fklog.FKLogI, curSuitId int32, poss []*MazeEquipCache.MazeEquipPosInfo) (can bool, err error) {
+// func IsEquipPosSuitCanLevelUp(ctx context.Context, curSuitId int32, poss []*MazeEquipCache.MazeEquipPosInfo) (can bool, err error) {
 // 	if len(poss) < constdef.EquipPosNum { // 有装备位未解锁
-// 		logger.InfoWF("IsEquipPosSuitCanLevelUp equip pos num not enough",
+// 		logger.CtxInfo(ctx,"IsEquipPosSuitCanLevelUp equip pos num not enough",
 // 			zap.Int("curNum", len(poss)), zap.Int("needNum", constdef.EquipPosNum))
 // 		return
 // 	}
@@ -97,35 +99,36 @@ func GetCurAndNextSuit(logger fklog.FKLogI, curSuitId int32) (cur, next *MazeGam
 // 	for _, pos := range poss {
 // 		lv := pos.GetEquipPos().GetLevel()
 // 		if lv <= curSuitId { // 装备等级不够
-// 			logger.InfoWF("IsEquipPosSuitCanLevelUp equip pos level not enough",
+// 			logger.CtxInfo(ctx,"IsEquipPosSuitCanLevelUp equip pos level not enough",
 // 				zap.Int32("posId", pos.GetEquipPos().GetPos()),
 // 				zap.Int32("curLevel", lv), zap.Int32("needLevel", curSuitId))
 // 			return
 // 		}
 // 	}
 
-// 	cfg := GMazeEquipPosLvSuiteV8Cfg.Get(curSuitId)
+// 	cfg := GMazeEquipPosLvSuiteV8Cfg.GetWithCtx(ctx,curSuitId)
 // 	if cfg == nil {
 // 		err = fmt.Errorf("GetCurAndNextSuit no cfg, sheetName: %s, id: %d", GMazeEquipPosLvSuiteV8Cfg.SheetName(), curSuitId)
-// 		logger.ErrorWF("IsEquipPosSuitCanLevelUp", zap.Error(err))
+// 		logger.CtxError(ctx,"IsEquipPosSuitCanLevelUp", zap.Error(err))
 // 		return
 // 	}
 
 // 	if cfg.Next_level == -1 { // 套装已满级
-// 		logger.InfoWF("IsEquipPosSuitCanLevelUp suit is max level", zap.Int32("curSuitId", curSuitId))
+// 		logger.CtxInfo(ctx,"IsEquipPosSuitCanLevelUp suit is max level", zap.Int32("curSuitId", curSuitId))
 // 		return
 // 	}
 
-// 	logger.InfoWF("IsEquipPosSuitCanLevelUp can level up", zap.Int32("curSuitId", curSuitId), zap.Int32("nextSuitId", cfg.Next_level))
+// 	logger.CtxInfo(ctx,"IsEquipPosSuitCanLevelUp can level up", zap.Int32("curSuitId", curSuitId), zap.Int32("nextSuitId", cfg.Next_level))
 // 	can = true
 
 // 	return
 // }
 
 // 计算装备套装
-func CalcPosSuit(logger fklog.FKLogI, poss []*MazeEquipCache.MazeEquipPosInfo) (suitId int32, err error) {
+func CalcPosSuit(ctx context.Context, poss []*MazeEquipCache.MazeEquipPosInfo) (suitId int32, err error) {
+	logger := fklog.ContextAppLogger(ctx)
 	if len(poss) < constdef.EquipPosNum { // 有装备位未解锁
-		logger.InfoWF("IsEquipPosSuitCanLevelUp equip pos num not enough",
+		logger.CtxInfo(ctx, "IsEquipPosSuitCanLevelUp equip pos num not enough",
 			zap.Int("curNum", len(poss)), zap.Int("needNum", constdef.EquipPosNum))
 		return
 	}

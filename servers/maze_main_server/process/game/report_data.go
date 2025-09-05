@@ -1,7 +1,6 @@
 package game
 
 import (
-	"context"
 	"maze_game_server/common/constdef"
 	"maze_game_server/common/errors"
 	"maze_game_server/common/tradeno"
@@ -28,10 +27,10 @@ func (g *Game) OnReportDataRQ_10453_10454(s *session.Session, req *MazeGame.Repo
 
 	res := &MazeGame.ReportDataRS{}
 
-	logger.InfoWF("ReportDataRQ start", zap.Any("req", req))
+	logger.CtxInfo(ctx, "ReportDataRQ start", zap.Any("req", req))
 	defer func() {
 		err = s.Response(res)
-		logger.InfoWF("ReportDataRQ end", zap.Any("res", res))
+		logger.CtxInfo(ctx, "ReportDataRQ end", zap.Any("res", res))
 	}()
 
 	res.Header = req.Header
@@ -51,7 +50,7 @@ func (g *Game) OnReportDataRQ_10453_10454(s *session.Session, req *MazeGame.Repo
 
 	userInfo, err = mazeuserinfo.GetUserInfoV2(ctx, userId)
 	if err != nil {
-		logger.ErrorWF("ReportDataRQ GetUserInfoV2 fail", zap.Error(err))
+		logger.CtxError(ctx, "ReportDataRQ GetUserInfoV2 fail", zap.Error(err))
 		res.ErrInfo = errors.MODULE_ERROR.ToInfo()
 		return
 	}
@@ -65,9 +64,9 @@ func (g *Game) OnReportDataRQ_10453_10454(s *session.Session, req *MazeGame.Repo
 		}
 
 		userInfo.SetTotalExp(reportInfo.GetExpTotal())
-		err = userInfo.CalExp()
+		err = userInfo.CalExp(ctx)
 		if err != nil {
-			logger.ErrorWF("ReportDataRQ CalTotalExp fail", zap.Error(err), zap.Any("totalExp", reportInfo.GetExpTotal()))
+			logger.CtxError(ctx, "ReportDataRQ CalTotalExp fail", zap.Error(err), zap.Any("totalExp", reportInfo.GetExpTotal()))
 			res.ErrInfo = errors.MODULE_ERROR.ToInfo()
 			return
 		}
@@ -76,12 +75,12 @@ func (g *Game) OnReportDataRQ_10453_10454(s *session.Session, req *MazeGame.Repo
 	}
 
 	var dropInfo *equipdropmodel.EquipSpecialDropModel
-	//var shopInfo *mazeshopseqredis.MazeShopInfo
+	// var shopInfo *mazeshopseqredis.MazeShopInfo
 	if reportInfo.GetReportMask()&4 == 4 {
 		// 上报装备积分
 		dropInfo, err = equipdropmodel.NewEquipSpecialDropModel(ctx, userId)
 		if err != nil {
-			logger.ErrorWF("ReportDataRQ GetEquipSpecialDropModel fail", zap.Error(err), zap.Uint64("userId", userId))
+			logger.CtxError(ctx, "ReportDataRQ GetEquipSpecialDropModel fail", zap.Error(err), zap.Uint64("userId", userId))
 			res.ErrInfo = errors.MODULE_ERROR.ToInfo()
 			return
 		}
@@ -89,7 +88,7 @@ func (g *Game) OnReportDataRQ_10453_10454(s *session.Session, req *MazeGame.Repo
 
 		//shopInfo, err = calequipsequence.GetMazeShopInfo(logger, userId, int32(userInfo.Level), userInfo.Barrier)
 		//if err != nil {
-		//	logger.ErrorWF("ReportDataRQ GetMazeShopInfo fail", zap.Error(err))
+		//	logger.CtxError(ctx,"ReportDataRQ GetMazeShopInfo fail", zap.Error(err))
 		//	res.ErrInfo = errors.MODULE_ERROR.ToInfo()
 		//	return
 		//}
@@ -100,11 +99,11 @@ func (g *Game) OnReportDataRQ_10453_10454(s *session.Session, req *MazeGame.Repo
 	if reportInfo.GetReportMask()&1 == 1 {
 		err = mazeuserinfo.SetUserInfoV2(ctx, userId, userInfo)
 		if err != nil {
-			logger.ErrorWF("ReportDataRQ SetUserInfoV2 fail", zap.Error(err))
+			logger.CtxError(ctx, "ReportDataRQ SetUserInfoV2 fail", zap.Error(err))
 			res.ErrInfo = errors.MODULE_ERROR.ToInfo()
 			return
 		}
-		mazecommonvalue.HandleUserLevelExpChg(logger, userId, userInfo.Level, userInfo.Exp, req.GetHeader().GetSession())
+		mazecommonvalue.HandleUserLevelExpChg(ctx, userId, userInfo.Level, userInfo.Exp, req.GetHeader().GetSession())
 		if levelRecord.OldLevel != levelRecord.NewLevel {
 			mazeuserlevelkafka.PushMazeLevelRecord(ctx, levelRecord)
 		}
@@ -113,16 +112,16 @@ func (g *Game) OnReportDataRQ_10453_10454(s *session.Session, req *MazeGame.Repo
 
 	if reportInfo.GetReportMask()&2 == 2 {
 		var oldCoin int64
-		oldCoin, _, err = moneyservice.GlobalMoneyService.GetUserMoney(context.TODO(), userId)
+		oldCoin, _, err = moneyservice.GlobalMoneyService.GetUserMoney(ctx, userId)
 		if err != nil {
-			logger.ErrorWF("MazeCommonValueQueryRQ GetUserMoney fail", zap.Error(err))
+			logger.CtxError(ctx, "MazeCommonValueQueryRQ GetUserMoney fail", zap.Error(err))
 			res.ErrInfo = errors.MODULE_ERROR.ToInfo()
 		}
 
 		// rpc不支持set 他们也需要加锁 目前先自己直接设置
-		err = moneyservice.GlobalMoneyService.SetMoney(context.TODO(), userId, constdef.MazeCommonItemCoin, reportInfo.GetMoneyCount())
+		err = moneyservice.GlobalMoneyService.SetMoney(ctx, userId, constdef.MazeCommonItemCoin, reportInfo.GetMoneyCount())
 		if err != nil {
-			logger.ErrorWF("ReportDataRQ SetMoney fail", zap.Error(err))
+			logger.CtxError(ctx, "ReportDataRQ SetMoney fail", zap.Error(err))
 			res.ErrInfo = errors.MODULE_ERROR.ToInfo()
 			return
 		}
@@ -143,16 +142,16 @@ func (g *Game) OnReportDataRQ_10453_10454(s *session.Session, req *MazeGame.Repo
 	}
 
 	if reportInfo.GetReportMask()&4 == 4 {
-		newLevel := equipdropservice.GlobalEquipDropService.GetMazeBarrierLv(int32(userInfo.Level), userInfo.Barrier)
+		newLevel := equipdropservice.GlobalEquipDropService.GetMazeBarrierLv(ctx, int32(userInfo.Level), userInfo.Barrier)
 		err = dropInfo.Save(ctx, userId)
 		if err != nil {
-			logger.ErrorWF("ReportDataRQ EquipSpecialDropModel save fail", zap.Error(err), zap.Any("level", newLevel), zap.Any("dropInfo", dropInfo))
+			logger.CtxError(ctx, "ReportDataRQ EquipSpecialDropModel save fail", zap.Error(err), zap.Any("level", newLevel), zap.Any("dropInfo", dropInfo))
 			return err
 		}
 
 		//err = mazeshopseqredis.SetMazeShopInfo(logger, userId, int32(newLevel), shopInfo)
 		//if err != nil {
-		//	logger.ErrorWF("ReportDataRQ SetMazeShopInfo fail", zap.Error(err), zap.Any("level", newLevel), zap.Any("shopInfo", shopInfo))
+		//	logger.CtxError(ctx,"ReportDataRQ SetMazeShopInfo fail", zap.Error(err), zap.Any("level", newLevel), zap.Any("shopInfo", shopInfo))
 		//}
 	}
 

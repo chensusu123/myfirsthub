@@ -19,7 +19,6 @@ import (
 	"maze_game_server/pb/common/MazeGameEquip"
 	"maze_game_server/pb/server/MazeEquipSvr"
 
-	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fklog"
 	"google.golang.org/protobuf/proto"
 )
 
@@ -62,8 +61,8 @@ func CheckEquipParam(p *EquipParam) error {
 }
 
 func AddEquipByCond(ctx context.Context, userId uint64, cond EquipParam) (result []*EquipResult, err error) {
-	logger := fklog.ContextAppLogger(ctx)
-	equipIds, findAll := FindEquipIdsByCond(logger, cond)
+	// logger := fklog.ContextAppLogger(ctx)
+	equipIds, findAll := FindEquipIdsByCond(ctx, cond)
 	if !findAll {
 		err = fmt.Errorf("按条件未找到装备配置，请检查参数 已找到%d条配置", len(equipIds))
 		return
@@ -77,7 +76,7 @@ func AddEquipByCond(ctx context.Context, userId uint64, cond EquipParam) (result
 }
 
 // 根据指定条件查询装备ID
-func FindEquipIdsByCond(logger fklog.FKLogI, cond EquipParam) (equipIds map[int32]int32, findAll bool) {
+func FindEquipIdsByCond(ctx context.Context, cond EquipParam) (equipIds map[int32]int32, findAll bool) {
 	equipIds = make(map[int32]int32)
 	allRow := GMazeEquipInfoV8Cfg.GetAllMazeEquipInfoV8Config()
 	posCnt := len(GMazeEquipPosRankV8Cfg.GetAll())
@@ -133,7 +132,7 @@ func FindEquipIdsByCond(logger fklog.FKLogI, cond EquipParam) (equipIds map[int3
 }
 
 func AddCondEquipToBag(ctx context.Context, userId uint64, equipIds map[int32]int32, suitId, subType int32) (equipInfos map[int64]*MazeGameEquip.MazeEquipInfo, err error) {
-	logger := fklog.ContextAppLogger(ctx)
+	// logger := fklog.ContextAppLogger(ctx)
 	tradeNo := tradeno.GetTradeNum()
 	rqAdd := &MazeEquipSvr.SvrAddMazeEquipRQ{
 		UserId:      proto.Uint64(userId),
@@ -177,10 +176,10 @@ func AddCondEquipToBag(ctx context.Context, userId uint64, equipIds map[int32]in
 			guidList = append(guidList, equip.GetEquipGuid())
 		}
 		if len(guidList) > 0 {
-			equipDatails, e := effectequip.BatchGetEffectEquipInfo(logger, userId, guidList...)
+			equipDatails, e := effectequip.BatchGetEffectEquipInfo(ctx, userId, guidList...)
 			if e == nil {
 				for _, equipDetail := range equipDatails {
-					equipCli, e1 := packtopb.EquipInfoToCliPB(logger, equipDetail)
+					equipCli, e1 := packtopb.EquipInfoToCliPB(ctx, equipDetail)
 					if e1 == nil {
 						equipInfos[equipDetail.GetEquipGuid()] = equipCli
 					}

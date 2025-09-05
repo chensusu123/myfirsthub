@@ -7,6 +7,7 @@
 package equip
 
 import (
+	"context"
 	"fmt"
 	"strings"
 	"time"
@@ -119,9 +120,9 @@ type DEInstance struct {
 	Record    *MazeGameEquipInstanceRecord
 }
 
-func NewDEInstance(logger fklog.FKLogI, userID uint64) *DEInstance {
+func NewDEInstance(ctx context.Context, userID uint64) *DEInstance {
 	ins := &DEInstance{}
-	ins.FKLogI = logger
+	ins.FKLogI = fklog.ContextAppLogger(ctx)
 	ins.UserID = userID
 	return ins
 }
@@ -150,24 +151,24 @@ func NewDEIEWParam(equipInfo *MazeEquipSvr.SvrEquipInfo) *DEIEWParam {
 }
 
 // 初始化用户参数和装备参数
-func (dei *DEInstance) DeiInit(uwparam *DEIUWParam, ewparam *DEIEWParam) error {
-	e := dei.InitUParam(uwparam)
+func (dei *DEInstance) DeiInit(ctx context.Context, uwparam *DEIUWParam, ewparam *DEIEWParam) error {
+	e := dei.InitUParam(ctx, uwparam)
 	if e != nil {
 		return e
 	}
-	e = dei.InitEParam(uwparam, ewparam)
+	e = dei.InitEParam(ctx, uwparam, ewparam)
 	if e != nil {
 		return e
 	}
-	dei.InitEquipInstanceLog(uwparam, ewparam)
+	dei.InitEquipInstanceLog(ctx, uwparam, ewparam)
 	return e
 }
 
 // 初始化用户参数
-func (dei *DEInstance) InitUParam(uwparam *DEIUWParam) error {
+func (dei *DEInstance) InitUParam(ctx context.Context, uwparam *DEIUWParam) error {
 	dei.UParam = &DEIUParam{}
 	dei.UParam.ChargeStage = uwparam.ChargeStage
-	e := initStageInfo(dei, dei.UParam)
+	e := initStageInfo(ctx, dei.UParam)
 	if e != nil {
 		dei.ErrorWF("DEInstance InitUParam initStageInfo err", zap.Any("uwp", uwparam), zap.Error(e))
 		return e
@@ -177,7 +178,7 @@ func (dei *DEInstance) InitUParam(uwparam *DEIUWParam) error {
 }
 
 // 初始化装备参数
-func (dei *DEInstance) InitEParam(uwparam *DEIUWParam, ewparam *DEIEWParam) error {
+func (dei *DEInstance) InitEParam(ctx context.Context, uwparam *DEIUWParam, ewparam *DEIEWParam) error {
 	dei.EParam = &DEIEParam{}
 	var (
 		e error
@@ -192,13 +193,13 @@ func (dei *DEInstance) InitEParam(uwparam *DEIUWParam, ewparam *DEIEWParam) erro
 			dei.InfoWF("DEInstance InitEParam dump", zap.Any("ewp", ewparam), zap.Any("ep", dei.EParam))
 		}
 	}()
-	equipCfg := GMazeEquipInfoV8Cfg.Get(ewparam.EquipId)
+	equipCfg := GMazeEquipInfoV8Cfg.GetWithCtx(ctx, ewparam.EquipId)
 	if equipCfg == nil {
 		e = errors.New("装备配置不存在")
 		return e
 	}
 	if ewparam.RuleId > 0 {
-		equipRuleCfg := GMazeEquipAffixSpRuleV8Cfg.Get(ewparam.RuleId)
+		equipRuleCfg := GMazeEquipAffixSpRuleV8Cfg.GetWithCtx(ctx, ewparam.RuleId)
 		if equipRuleCfg == nil {
 			e = errors.New("特殊装备配置不存在")
 			return e
@@ -209,7 +210,7 @@ func (dei *DEInstance) InitEParam(uwparam *DEIUWParam, ewparam *DEIEWParam) erro
 		equipInfoCfg = InitEquipInfoCfg(equipCfg.Id, equipCfg.Affix_base_num, equipCfg.Affix_base_pool,
 			equipCfg.Affix_rand_num, equipCfg.Affix_rand_pool, equipCfg.Suite_id, equipCfg.Sub_type_random, equipCfg.Score_group)
 	}
-	equipAffixLimitCfg := GMazeEquipAffixLimitV8Cfg.Get(equipCfg.Quality*10000 + equipCfg.Pos*1000)
+	equipAffixLimitCfg := GMazeEquipAffixLimitV8Cfg.GetWithCtx(ctx, equipCfg.Quality*10000+equipCfg.Pos*1000)
 	if equipAffixLimitCfg != nil {
 		equipInfoCfg.LimitNum = equipAffixLimitCfg.Limit_num
 		equipInfoCfg.LimitBase2Num = equipAffixLimitCfg.Limit_base2_num
@@ -239,7 +240,7 @@ func (dei *DEInstance) InitEParam(uwparam *DEIUWParam, ewparam *DEIEWParam) erro
 	return nil
 }
 
-func (dei *DEInstance) InitEquipInstanceLog(uwparam *DEIUWParam, ewparam *DEIEWParam) *MazeGameEquipInstanceRecord {
+func (dei *DEInstance) InitEquipInstanceLog(ctx context.Context, uwparam *DEIUWParam, ewparam *DEIEWParam) *MazeGameEquipInstanceRecord {
 	obj := &MazeGameEquipInstanceRecord{}
 	obj.MazeGameEquipInstanceRecord = new(mazeequipinstancerecord.MazeGameEquipInstanceRecord)
 	obj.UserId = dei.UserID
@@ -252,7 +253,7 @@ func (dei *DEInstance) InitEquipInstanceLog(uwparam *DEIUWParam, ewparam *DEIEWP
 }
 
 // 实例化
-func (dei *DEInstance) DeiInstance() error {
+func (dei *DEInstance) DeiInstance(ctx context.Context) error {
 	// 填充装备信息
 	dei.EquipInfo = &MazeEquipCache.MazeEquipInfoDb{}
 	dei.EquipInfo.EquipGuid = proto.Int64(dei.EParam.EquipGuid)
@@ -269,12 +270,12 @@ func (dei *DEInstance) DeiInstance() error {
 		return e
 	}
 	// 生成基础属性
-	e = dei.GenBaseAttr()
+	e = dei.GenBaseAttr(ctx)
 	if e != nil {
 		return e
 	}
 	// 生成初始属性属性
-	e = dei.GenRandAttr()
+	e = dei.GenRandAttr(ctx)
 	if e != nil {
 		return e
 	}
@@ -299,7 +300,7 @@ func (dei *DEInstance) GetResult() *EDIResult {
 }
 
 // 生成基础属性
-func (dei *DEInstance) GenBaseAttr() error {
+func (dei *DEInstance) GenBaseAttr(ctx context.Context) error {
 	dei.DebugWF("开始实例化Base属性",
 		zap.Int32("equipId", dei.EParam.EquipId), zap.Int64("equipGuid", dei.EParam.EquipGuid))
 	equipInfoCfg := dei.EParam.EquipInfoCfg
@@ -313,7 +314,7 @@ func (dei *DEInstance) GenBaseAttr() error {
 	//	fkfmt.Println("GenBaseAttr1")
 	// poolLimitMap := GMazeEquipAffixRandPoolV8CfgEx.GetPoolLimitCfg(dei.EParam.EquipInfoCfg.LimitAttr)
 	// poolLimitBase2Map := GMazeEquipAffixRandPoolV8CfgEx.GetPoolLimitCfg(dei.EParam.EquipInfoCfg.LimitBase2Attr)
-	suitRemGroupMap, err := GetEquipSuitRemGroupMap(dei.EquipInfo.GetSuitId())
+	suitRemGroupMap, err := GetEquipSuitRemGroupMap(ctx, dei.EquipInfo.GetSuitId())
 	if err != nil {
 		dei.ErrorWF("GenBaseAttr GetEquipSuitRemGroupMap error",
 			zap.Int32("suitId", dei.EquipInfo.GetSuitId()), zap.Int32("equipId", dei.EParam.EquipId), zap.Error(err))
@@ -335,6 +336,8 @@ func (dei *DEInstance) GenBaseAttr() error {
 	attrGroupList := make([]int32, 0)
 	baseAttrs := make([]*MazeEquipCache.BaseAttrInfo, 0)
 	remGroupMap := make(map[int32]struct{}, 0)
+
+	// 随机多个词条
 	for index := int32(1); index <= baseNum; index++ {
 		basePoolMap, ok := groupBasePoolMap[index]
 		if !ok {
@@ -351,12 +354,36 @@ func (dei *DEInstance) GenBaseAttr() error {
 				zap.Int32("poolId", poolId), zap.Int64("equipGuid", dei.EParam.EquipGuid))
 			return errors.New("属性配置不存在")
 		}
-		newPoolWeightMap := make(map[int32]int32, 0)
+
+		// 先随机group group的权重为所有相同group的均值
+		newGroupWeightMap := make(map[int32]int32, 0)
+		newGroupSize := make(map[int32]int32, 0)
 		for k, v := range poolMap {
 			if _, ok := remGroupMap[v.Group]; ok {
 				dei.DebugWF("随机Base属性词条去重", zap.Any("去重词条id", k), zap.Any("去重组id", v.Group), zap.Int64("equipGuid", dei.EParam.EquipGuid))
 				continue
 			}
+			newGroupWeightMap[v.Group] += v.Weight
+			newGroupSize[v.Group] += 1
+		}
+
+		for groupID := range newGroupWeightMap {
+			// 设置为均值
+			newGroupWeightMap[groupID] = newGroupWeightMap[groupID] / newGroupSize[groupID]
+		}
+
+		// 随机group
+		nowGroup := randfuncs.RandByWeightV2(dei, newGroupWeightMap, true)
+
+		// 随机词条
+		newPoolWeightMap := make(map[int32]int32, 0)
+		// 每个词条走随机池带权随机
+		for k, v := range poolMap {
+			if v.Group != nowGroup {
+				dei.DebugWF("随机Base属性抗性词条去重", zap.Any("去重词条id", k), zap.Any("去重组id", v.Group), zap.Int64("equipGuid", dei.EParam.EquipGuid))
+				continue
+			}
+
 			if limitNum >= dei.EParam.EquipInfoCfg.LimitNum {
 				if _, ok := equipInfoCfg.PoolLimitMap[v.Affix_id]; ok {
 					dei.DebugWF("随机Base属性抗性词条去重", zap.Any("去重词条id", k), zap.Any("去重组id", v.Group), zap.Int64("equipGuid", dei.EParam.EquipGuid))
@@ -379,7 +406,7 @@ func (dei *DEInstance) GenBaseAttr() error {
 		attrGroupId := randfuncs.RandByWeightV2(dei, newPoolWeightMap, true)
 		dei.DebugWF("随机Base属性词条id结果", zap.Any("attrGroupId", attrGroupId), zap.Int64("equipGuid", dei.EParam.EquipGuid))
 		attrGroupList = append(attrGroupList, attrGroupId)
-		equipAffixCfg := GMazeEquipAffixRandPoolV8Cfg.Get(attrGroupId)
+		equipAffixCfg := GMazeEquipAffixRandPoolV8Cfg.GetWithCtx(ctx, attrGroupId)
 		if equipAffixCfg == nil {
 			dei.ErrorWF("GenBaseAttr get GMazeEquipAffixRandPoolV8Cfg fail",
 				zap.Int32("poolId", poolId),
@@ -390,7 +417,7 @@ func (dei *DEInstance) GenBaseAttr() error {
 		baseAttr := &MazeEquipCache.BaseAttrInfo{
 			AttrGroup: proto.Int32(attrGroupId),
 		}
-		showAttrList, realAttrList, randWeight, err := calcEquipAttrValueEx(dei, equipAffixCfg, dei.EParam.TotalScore, dei.EParam.EquipGuid)
+		showAttrList, realAttrList, randWeight, err := calcEquipAttrValueEx(ctx, equipAffixCfg, dei.EParam.TotalScore, dei.EParam.EquipGuid)
 		if err != nil {
 			dei.ErrorWF("GenBaseAttr calcEquipAttrValueEx fail", zap.Error(err), zap.Any("attrGroupId", attrGroupId), zap.Int64("equipGuid", dei.EParam.EquipGuid))
 			return err
@@ -426,7 +453,7 @@ func (dei *DEInstance) GenBaseAttr() error {
 }
 
 // 生成初始属性
-func (dei *DEInstance) GenRandAttr() error {
+func (dei *DEInstance) GenRandAttr(ctx context.Context) error {
 	dei.DebugWF("开始实例化Rand属性",
 		zap.Int32("equipId", dei.EParam.EquipId), zap.Int64("equipGuid", dei.EParam.EquipGuid))
 	equipInfoCfg := dei.EParam.EquipInfoCfg
@@ -464,10 +491,32 @@ func (dei *DEInstance) GenRandAttr() error {
 	}
 	poolWeightMap := mazeequipaffixrandpoolv8.GetEquipPoolWeightCfg(poolId)
 	remGroupMap := make(map[int32]struct{}, 0)
+
+	// 随机多个词条
 	for index := int32(1); index <= randNum; index++ {
-		newPoolWeightMap := make(map[int32]int32, 0)
+		// 先随机group group的权重为所有相同group的均值
+		newGroupWeightMap := make(map[int32]int32, 0)
+		newGroupSize := make(map[int32]int32, 0)
 		for k, v := range poolWeightMap {
 			if _, ok := remGroupMap[v.Group]; ok {
+				dei.DebugWF("随机Base属性词条去重", zap.Any("去重词条id", k), zap.Any("去重组id", v.Group), zap.Int64("equipGuid", dei.EParam.EquipGuid))
+				continue
+			}
+			newGroupWeightMap[v.Group] += v.Weight
+			newGroupSize[v.Group] += 1
+		}
+
+		for groupID := range newGroupWeightMap {
+			// 设置为均值
+			newGroupWeightMap[groupID] = newGroupWeightMap[groupID] / newGroupSize[groupID]
+		}
+
+		// 随机group
+		nowGroup := randfuncs.RandByWeightV2(dei, newGroupWeightMap, true)
+
+		newPoolWeightMap := make(map[int32]int32, 0)
+		for k, v := range poolWeightMap {
+			if v.Group != nowGroup {
 				dei.DebugWF("随机Base属性词条去重", zap.Any("去重词条id", k), zap.Any("去重组id", v.Group), zap.Int64("equipGuid", dei.EParam.EquipGuid))
 				continue
 			}
@@ -495,7 +544,7 @@ func (dei *DEInstance) GenRandAttr() error {
 		dei.DebugWF("开始随机Rand属性词条id", zap.Any("条数", index), zap.Int64("equipGuid", dei.EParam.EquipGuid))
 		attrGroupId := randfuncs.RandByWeightV2(dei, newPoolWeightMap, true)
 		dei.DebugWF("随机Rand属性词条id结果", zap.Any("attrGroupId", attrGroupId), zap.Int64("equipGuid", dei.EParam.EquipGuid))
-		equipAffixCfg := GMazeEquipAffixRandPoolV8Cfg.Get(attrGroupId)
+		equipAffixCfg := GMazeEquipAffixRandPoolV8Cfg.GetWithCtx(ctx, attrGroupId)
 		if equipAffixCfg == nil {
 			dei.ErrorWF("GenRandAttr GMazeEquipAffixRandPoolV8Cfg fail",
 				zap.Int32("poolId", poolId),
@@ -507,7 +556,7 @@ func (dei *DEInstance) GenRandAttr() error {
 		randAttr := &MazeEquipCache.BaseAttrInfo{
 			AttrGroup: proto.Int32(attrGroupId),
 		}
-		showAttrList, realAttrList, randWeight, err := calcEquipAttrValueEx(dei, equipAffixCfg, dei.EParam.TotalScore, dei.EParam.EquipGuid)
+		showAttrList, realAttrList, randWeight, err := calcEquipAttrValueEx(ctx, equipAffixCfg, dei.EParam.TotalScore, dei.EParam.EquipGuid)
 		if err != nil {
 			dei.ErrorWF("GenRandAttr calcEquipAttrValueEx fail", zap.Error(err), zap.Any("attrGroupId", attrGroupId), zap.Int64("equipGuid", dei.EParam.EquipGuid))
 			return err
@@ -646,10 +695,11 @@ func (dei *DEInstance) BeforeRecord() {
 	dei.Record.BaseAttrs = strings.Join(baseAttrs, "|")
 }
 
-func initStageInfo(logger fklog.FKLogI, uparam *DEIUParam) error {
-	row := GMazeEquipAttrStageV8Cfg.Get(uparam.ChargeStage)
+func initStageInfo(ctx context.Context, uparam *DEIUParam) error {
+	logger := fklog.ContextAppLogger(ctx)
+	row := GMazeEquipAttrStageV8Cfg.GetWithCtx(ctx, uparam.ChargeStage)
 	if row == nil {
-		logger.ErrorWF("initStageInfo  GDollEquipAttrStageV8Cfg error", zap.Int32("stageId", uparam.ChargeStage))
+		logger.CtxError(ctx, "initStageInfo  GDollEquipAttrStageV8Cfg error", zap.Int32("stageId", uparam.ChargeStage))
 		return errors.New("配置不存在")
 	}
 	uparam.StageDropScore = row.Score
@@ -658,31 +708,32 @@ func initStageInfo(logger fklog.FKLogI, uparam *DEIUParam) error {
 	return nil
 }
 
-func calcEquipAttrValueEx(logger fklog.FKLogI, cfg *GMazeEquipAffixRandPoolV8Cfg.MazeEquipAffixRandPoolV8ConfigRow, totalScore int32, equipGuid int64) (showAttrList, realAttrList []*MazeEquipCache.EquipAttrInfo, randWeight int64, err error) {
+func calcEquipAttrValueEx(ctx context.Context, cfg *GMazeEquipAffixRandPoolV8Cfg.MazeEquipAffixRandPoolV8ConfigRow, totalScore int32, equipGuid int64) (showAttrList, realAttrList []*MazeEquipCache.EquipAttrInfo, randWeight int64, err error) {
 	rollWeightMap := mazeequipaffixrolltypev8.GetMazeEquipRollCfgByRollTypeAndScore(cfg.Roll_type, totalScore)
+	logger := fklog.ContextAppLogger(ctx)
 
 	if len(rollWeightMap) <= 0 {
-		logger.ErrorWF("calcEquipAttrValueEx GetDollEquipRollCfgByRollTypeAndScore err",
+		logger.CtxError(ctx, "calcEquipAttrValueEx GetDollEquipRollCfgByRollTypeAndScore err",
 			zap.Int32("rollType", cfg.Roll_type),
 			zap.Any("totalScore", totalScore))
 		return nil, nil, 0, errors.New("配置不存在")
 	}
-	logger.DebugWF("开始随机roll值", zap.Any("roll", cfg.Roll_type), zap.Any("分数", totalScore), zap.Int64("equipGuid", equipGuid))
+	logger.CtxDebug(ctx, "开始随机roll值", zap.Any("roll", cfg.Roll_type), zap.Any("分数", totalScore), zap.Int64("equipGuid", equipGuid))
 	rollId := randfuncs.RandByWeightV2(logger, rollWeightMap, true)
-	logger.DebugWF("随机roll类型结果", zap.Any("rollId", rollId), zap.Int64("equipGuid", equipGuid))
-	rollTypeCfg := GMazeEquipAffixRollTypeV8Cfg.Get(rollId)
+	logger.CtxDebug(ctx, "随机roll类型结果", zap.Any("rollId", rollId), zap.Int64("equipGuid", equipGuid))
+	rollTypeCfg := GMazeEquipAffixRollTypeV8Cfg.GetWithCtx(ctx, rollId)
 	if rollTypeCfg == nil {
-		logger.ErrorWF("calcEquipAttrValueEx GMazeEquipAffixRollTypeV8Cfg err",
+		logger.CtxError(ctx, "calcEquipAttrValueEx GMazeEquipAffixRollTypeV8Cfg err",
 			zap.Int32("rollId", rollId),
 			zap.Any("rollWeightMap", rollWeightMap))
 		return nil, nil, 0, errors.New("配置不存在")
 	}
 	rollCount := int64(fkutil.RandInt32(int(rollTypeCfg.Roll_range_min), int(rollTypeCfg.Roll_range_max+1)))
 	showAttrList = make([]*MazeEquipCache.EquipAttrInfo, 0)
-	calcAddCount, calcRangeCount := CalcAttrRealRoll(logger, cfg.Add_attr_min, cfg.Add_attr_max, cfg.Show_attr_min, cfg.Show_attr_max, rollCount, rollTypeCfg.Round_value)
+	calcAddCount, calcRangeCount := CalcAttrRealRoll(ctx, cfg.Add_attr_min, cfg.Add_attr_max, cfg.Show_attr_min, cfg.Show_attr_max, rollCount, rollTypeCfg.Round_value)
 	for attrId, attrMax := range cfg.Show_attr_max {
 		if attrId == 0 {
-			logger.ErrorWF("calcEquipAttrValueEx GMazeEquipAffixRandPoolV8Cfg err",
+			logger.CtxError(ctx, "calcEquipAttrValueEx GMazeEquipAffixRandPoolV8Cfg err",
 				zap.Int32("attrGroupId", cfg.Affix_id),
 				zap.Any("ShowAttrMax", cfg.Show_attr_max))
 			return nil, nil, 0, errors.New("配置不存在")
@@ -690,7 +741,7 @@ func calcEquipAttrValueEx(logger fklog.FKLogI, cfg *GMazeEquipAffixRandPoolV8Cfg
 		attrMin := cfg.Show_attr_min[attrId]
 		// todo 如果max小于min，配置错误报错
 		if attrMax < attrMin {
-			logger.ErrorWF("calcEquipAttrValueEx GMazeEquipAffixRandPoolV8Cfg err",
+			logger.CtxError(ctx, "calcEquipAttrValueEx GMazeEquipAffixRandPoolV8Cfg err",
 				zap.Int32("attrGroupId", cfg.Affix_id),
 				zap.Any("ShowAttrMax", cfg.Show_attr_max),
 				zap.Any("ShowAttrMax", cfg.Show_attr_min))
@@ -703,14 +754,14 @@ func calcEquipAttrValueEx(logger fklog.FKLogI, cfg *GMazeEquipAffixRandPoolV8Cfg
 	realAttrList = make([]*MazeEquipCache.EquipAttrInfo, 0)
 	for attrId, attrMax := range cfg.Add_attr_max {
 		if attrId == 0 {
-			logger.ErrorWF("calcEquipAttrValueEx GMazeEquipAffixRandPoolV8Cfg err",
+			logger.CtxError(ctx, "calcEquipAttrValueEx GMazeEquipAffixRandPoolV8Cfg err",
 				zap.Int32("attrGroupId", cfg.Affix_id),
 				zap.Any("AddAttrMax", cfg.Add_attr_max))
 			return nil, nil, 0, errors.New("配置不存在")
 		}
 		attrMin := cfg.Add_attr_min[attrId]
 		if attrMax < attrMin {
-			logger.ErrorWF("calcEquipAttrValueEx GMazeEquipAffixRandPoolV8Cfg err",
+			logger.CtxError(ctx, "calcEquipAttrValueEx GMazeEquipAffixRandPoolV8Cfg err",
 				zap.Int32("attrGroupId", cfg.Affix_id),
 				zap.Any("ShowAttrMax", cfg.Add_attr_max),
 				zap.Any("ShowAttrMax", cfg.Add_attr_min))
@@ -718,7 +769,7 @@ func calcEquipAttrValueEx(logger fklog.FKLogI, cfg *GMazeEquipAffixRandPoolV8Cfg
 		}
 		realAttrList = append(realAttrList, packAttrInfoDb(attrId, attrMin, attrMax, rollTypeCfg.Round_value, calcAddCount, calcRangeCount))
 	}
-	logger.InfoWF("calcEquipAttrValueEx result", zap.Int64("equipGuid", equipGuid), zap.Any("affixId", cfg.Affix_id), zap.Any("showAttr", showAttrList), zap.Any("realAttr", realAttrList), zap.Any("rollCount", rollCount), zap.Any("calcAdd", calcAddCount), zap.Any("calcRange", calcRangeCount))
+	logger.CtxInfo(ctx, "calcEquipAttrValueEx result", zap.Int64("equipGuid", equipGuid), zap.Any("affixId", cfg.Affix_id), zap.Any("showAttr", showAttrList), zap.Any("realAttr", realAttrList), zap.Any("rollCount", rollCount), zap.Any("calcAdd", calcAddCount), zap.Any("calcRange", calcRangeCount))
 	return showAttrList, realAttrList, rollCount, nil
 }
 
@@ -772,7 +823,7 @@ func packAttrInfoDb(attrId int32, attrMin, attrMax int64, round int32, calcAddCo
 	return attrInfo
 }
 
-func CalcAttrRealRoll(logger fklog.FKLogI, addAttrMin, addAttrMax, showAttrMin, showAttrMax map[int32]int64, rollCount int64, round int32) (int64, int64) {
+func CalcAttrRealRoll(ctx context.Context, addAttrMin, addAttrMax, showAttrMin, showAttrMax map[int32]int64, rollCount int64, round int32) (int64, int64) {
 	var minAttrId int32
 	var minRangeCount, minAttrCount, maxAttrCount int64
 	for attrId, attrMaxVal := range addAttrMax {
@@ -814,7 +865,7 @@ func CalcAttrRealRoll(logger fklog.FKLogI, addAttrMin, addAttrMax, showAttrMin, 
 		}
 	}
 	addAttrCount := CalcRealAttrVal(minAttrCount, maxAttrCount, rollCount, round)
-	// logger.DebugWF("CalcAttrRealRoll end", zap.Any("minAttrId", minAttrId), zap.Any("minAttrCount", minAttrCount), zap.Any("maxAttrCount", maxAttrCount), zap.Any("addAttrCount", addAttrCount))
+	// logger.CtxDebug(ctx,"CalcAttrRealRoll end", zap.Any("minAttrId", minAttrId), zap.Any("minAttrCount", minAttrCount), zap.Any("maxAttrCount", maxAttrCount), zap.Any("addAttrCount", addAttrCount))
 	return addAttrCount - minAttrCount, maxAttrCount - minAttrCount
 }
 

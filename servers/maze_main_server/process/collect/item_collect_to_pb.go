@@ -1,6 +1,7 @@
 package collect
 
 import (
+	"context"
 	"maze_game_server/common/errors"
 	"maze_game_server/config/GMazeBarriesOnHookV8Cfg"
 	"maze_game_server/pb/common/MazeCollect"
@@ -12,19 +13,20 @@ import (
 	"google.golang.org/protobuf/proto"
 )
 
-func MazeCollectToCliPB(logger fklog.FKLogI, collectInfo *MazeCollectCache.MazeCollectInfo, passBarrier int32) (*MazeCollect.MazeCollectInfo, error) {
+func MazeCollectToCliPB(ctx context.Context, collectInfo *MazeCollectCache.MazeCollectInfo, passBarrier int32) (*MazeCollect.MazeCollectInfo, error) {
+	logger := fklog.ContextAppLogger(ctx)
 	res := &MazeCollect.MazeCollectInfo{}
 	res.StartTime = proto.Int64(collectInfo.GetStartTime())
 	res.EndTime = proto.Int64(collectInfo.GetEndTime())
 	res.AvailableTime = proto.Int64(collectInfo.GetAvailableTime())
 	res.StageId = proto.Int32(passBarrier)
-	cfg := GMazeBarriesOnHookV8Cfg.Get(collectInfo.GetBarrierId())
+	cfg := GMazeBarriesOnHookV8Cfg.GetWithCtx(ctx, collectInfo.GetBarrierId())
 	if cfg == nil {
-		logger.ErrorWF("MazeCollectToCliPB GMazeBarriesOnHookV8Cfg error",
+		logger.CtxError(ctx, "MazeCollectToCliPB GMazeBarriesOnHookV8Cfg error",
 			zap.Any("barrierId", collectInfo.GetBarrierId()))
 		return nil, errors.New("装备详情配置不存在")
 	}
-	userItems, _ := GetUserItemsAndRemains(logger, collectInfo.GetItems())
+	userItems, _ := GetUserItemsAndRemains(ctx, collectInfo.GetItems())
 	for _, item := range userItems {
 		if _, ok := cfg.Cycle_award_2[item.GetItemId()]; ok {
 			res.RareItems = append(res.RareItems, item)

@@ -8,30 +8,34 @@ import (
 	"maze_game_server/io/redis/UnionIDBindRedis"
 	"maze_game_server/io/redis/useridredis"
 	"maze_game_server/io/redis/usersection"
-	"maze_game_server/lib/log"
 	"maze_game_server/lib/nano/session"
 	"maze_game_server/pb/common/UserLogin"
 	"maze_game_server/usecase/online"
 
+	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fklog"
 	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fkprometheus"
 	"gitlab.ifreetalk.com/maze-plate/freetk/fkserver/appconfig"
 	"go.uber.org/zap"
 	"google.golang.org/protobuf/proto"
 )
 
-func (a *Auth) OnLoginQuickRQ_10550_10551(s *session.Session, req *UserLogin.UserLoginRq) (err error) {
-	defer fkprometheus.InfoPMT("OnLoginQuickRQ")()
+func (a *Auth) OnReloginRQ_10685_10686(s *session.Session, req *UserLogin.UserLoginRq) (err error) {
+	defer fkprometheus.InfoPMT("OnReloginRQ")()
 	ctx := s.Context()
-	logger := log.Clone("Auth", uint64(req.GetAuthId()), 0)
+	logger := fklog.ContextAppLogger(ctx)
 	res := &UserLogin.UserLoginRs{}
 
-	// res.Session = req.Session
-	// res.ClientTime = req.ClientTime
-	// res.ServerTime = proto.Int64(time.Now().UnixMilli())
+	res.Session = req.Session
+	res.ClientTime = req.ClientTime
+	res.ServerTime = proto.Int64(time.Now().UnixMilli())
 
 	defer func() {
 		err = s.Response(res)
-		logger.InfoWF("OnLoginQuickRQ end", zap.Any("req", req), zap.Any("res", res))
+		if !checkResResult(res) {
+			// logger.CtxError(ctx, "OnReloginRQ end", zap.Any("req", req), zap.Any("res", res), zap.String("ClientAddr", s.String("ClientAddr")))
+		} else {
+			logger.CtxInfo(ctx, "OnReloginRQ end", zap.Any("req", req), zap.Any("res", res), zap.String("ClientAddr", s.String("ClientAddr")))
+		}
 	}()
 
 	// 认证
@@ -66,7 +70,7 @@ func (a *Auth) OnLoginQuickRQ_10550_10551(s *session.Session, req *UserLogin.Use
 		}
 		err = usersection.Set(ctx, newUserID, appconfig.GlobalConfig().Global.SectionID)
 		if err != nil {
-			logger.ErrorWF("usersection.Set fail",
+			logger.CtxError(ctx, "usersection.Set fail",
 				zap.Uint64("userID", userID),
 				zap.Error(err))
 		}

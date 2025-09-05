@@ -137,7 +137,7 @@ func (s service) SendEnergyChgPack(ctx context.Context, userId uint64, curEnergy
 			NextRecoveryTime: proto.Int64(nextRecoverTime),
 		},
 	}
-	err := online.ClusterPush(context.TODO(), userId, 10610, energyPack)
+	err := online.ClusterPush(ctx, userId, 10610, energyPack)
 	if err != nil {
 		logger.CtxError(ctx, "SendEnergyChgPack send client failed", zap.Uint64("userID", userId), zap.Error(err), zap.Any("energyPack", energyPack))
 	} else {

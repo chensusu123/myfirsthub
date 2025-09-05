@@ -8,15 +8,15 @@ package equipaassemblegm
 
 import (
 	"bytes"
+	"context"
 	"fmt"
 
-	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fklog"
 	"maze_game_server/config/GMazeEquipPosLvSuiteV8Cfg"
 	"maze_game_server/module/calcassembleattr"
 	"maze_game_server/pb/server/MazeEquipCache"
 )
 
-func PackEquipSuitInfo(logger fklog.FKLogI, userId uint64, assembleInfo *MazeEquipCache.MazeAssembleDb, effectInfo *calcassembleattr.EquipmentEffectInfo) (s string, e error) {
+func PackEquipSuitInfo(ctx context.Context, userId uint64, assembleInfo *MazeEquipCache.MazeAssembleDb, effectInfo *calcassembleattr.EquipmentEffectInfo) (s string, e error) {
 	// 打包装备套装属性
 	var suitString bytes.Buffer
 	suitString.WriteString("装备套装信息:\n")
@@ -47,7 +47,7 @@ func PackEquipSuitInfo(logger fklog.FKLogI, userId uint64, assembleInfo *MazeEqu
 	suitString.WriteString("装备位强化套装信息:\n")
 	if enSuitId > 0 {
 		suitString.WriteString(fmt.Sprintf("套装Id:%d\t", enSuitId))
-		enSuitCfg := GMazeEquipPosLvSuiteV8Cfg.Get(enSuitId)
+		enSuitCfg := GMazeEquipPosLvSuiteV8Cfg.GetWithCtx(ctx, enSuitId)
 		if enSuitCfg != nil {
 			for id, val := range enSuitCfg.Add_attr {
 				suitString.WriteString(fmt.Sprintf("属性Id(真):%d 属性值:%d|", id, val))

@@ -73,13 +73,13 @@ var gIsLocalDev bool
 // func (flow *BizFlow) OnInstancesUpdate(change *discovery.Change) {
 // 	logger := fklog.AppLogger().Clone("BizFlow")
 // 	if change == nil {
-// 		logger.ErrorWF("OnInstancesUpdate change is nil")
+// 		logger.CtxError(ctx,"OnInstancesUpdate change is nil")
 // 		return
 // 	}
 
 // 	if len(change.Result.Instances) > 0 {
 // 		for _, xx := range change.Result.Instances {
-// 			logger.InfoWF("BizFlow OnInstancesUpdate ",
+// 			logger.CtxInfo(ctx,"BizFlow OnInstancesUpdate ",
 // 				zap.Any("Address", xx.Address().String()),
 // 				zap.Any("Tags", xx.Tags()), zap.Any("Vsersion", change.Result.Vsersion))
 // 		}
@@ -98,11 +98,11 @@ var gIsLocalDev bool
 
 // 	mysqlInfo, err := flow.resolver.Resolve(context.TODO(), resolveName)
 // 	if err != nil {
-// 		logger.ErrorWF("BizFlow Init Resolve failed", zap.Any("err", err))
+// 		logger.CtxError(ctx,"BizFlow Init Resolve failed", zap.Any("err", err))
 // 		return err
 // 	}
 // 	if len(mysqlInfo.Instances) == 0 {
-// 		logger.ErrorWF("BizFlow Init Resolve failed, Instances is empty")
+// 		logger.CtxError(ctx,"BizFlow Init Resolve failed, Instances is empty")
 // 		return errors.New("BizFlow Init Resolve failed, Instances is empty")
 // 	}
 
@@ -110,24 +110,24 @@ var gIsLocalDev bool
 
 // 	dataBaseInfo := configuration.GetDatabase(flow.bizeName)
 // 	if dataBaseInfo == nil {
-// 		logger.ErrorWF("BizFlow  GetDatabase failed")
+// 		logger.CtxError(ctx,"BizFlow  GetDatabase failed")
 // 		return errors.New("BizFlow GetDatabase failed")
 // 	}
 
 // 	dbCfg, ok := dataBaseInfo.Get().(*datastruct.MysqlDBCfg)
 // 	if !ok {
-// 		logger.ErrorWF("BizFlow  GetDatabase failed")
+// 		logger.CtxError(ctx,"BizFlow  GetDatabase failed")
 // 		return errors.New("BizFlow GetDatabase failed")
 // 	}
 
-// 	logger.InfoWF("BizFlow Init  mysqlInfo GetMysqlCfg show ",
+// 	logger.CtxInfo(ctx,"BizFlow Init  mysqlInfo GetMysqlCfg show ",
 // 		zap.Any("addr", addr), zap.Any("InstancesLen",
 // 			len(mysqlInfo.Instances)), zap.Any("dbCfg", dbCfg))
 
 // 	// 监听实例变化
 // 	err = flow.resolver.Watcher(context.Background(), resolveName, flow)
 // 	if err != nil {
-// 		logger.ErrorWF("BizFlow Init Watcher failed", zap.Any("err", err))
+// 		logger.CtxError(ctx,"BizFlow Init Watcher failed", zap.Any("err", err))
 // 	}
 
 // 	bizCfg.Addr = addr

@@ -78,7 +78,8 @@ func NewReplaceData() *ReplaceData {
 	return obj
 }
 
-func NewDAC(logger fklog.FKLogI, userId uint64) *DAC {
+func NewDAC(ctx context.Context, userId uint64) *DAC {
+	logger := fklog.ContextAppLogger(ctx)
 	dac := &DAC{}
 	dac.UserId = userId
 	dac.FKLogI = logger
@@ -94,8 +95,8 @@ func NewDAC(logger fklog.FKLogI, userId uint64) *DAC {
 	return dac
 }
 
-func (m *DAC) CloneData() *DAC {
-	cp := NewDAC(m, m.UserId)
+func (m *DAC) CloneData(ctx context.Context) *DAC {
+	cp := NewDAC(ctx, m.UserId)
 	cp.CalcAttrOldMap = m.CalcAttrOldMap
 	//	cp.BuffCenterAttrsIn = m.BuffCenterAttrsIn
 	cp.ErrNoRetry = m.ErrNoRetry
@@ -113,7 +114,7 @@ func (m *DAC) CloneData() *DAC {
 }
 
 // 初始化
-func (m *DAC) InitData(iParam *DACParam) error {
+func (m *DAC) InitData(ctx context.Context, iParam *DACParam) error {
 	var err error
 	defer func() {
 		if err != nil {
@@ -134,21 +135,21 @@ func (m *DAC) InitData(iParam *DACParam) error {
 	// attrIdSet.Add(constdef.DollAttrTypeForce)
 	// attrSet := commonlogic.GetAllMazeAttrByType(attrIdSet)
 	// if len(attrSet) > 0 {
-	// 	m.BuffCenterAttrsIn, err = BuffManagerRedis.GetBuffs(context.TODO(), m, m.UserId, 0, attrSet)
+	// 	m.BuffCenterAttrsIn, err = BuffManagerRedis.GetBuffs(ctx, m, m.UserId, 0, attrSet)
 	// 	if err != nil {
 	// 		return err
 	// 	}
 	// }
 
 	// 初始化人偶buff中心
-	dollBuffs, e := mazebuffinforedis.GetMazeBuffsV2(m, m.UserId, 3)
+	dollBuffs, e := mazebuffinforedis.GetMazeBuffsV2(ctx, m.UserId, 3)
 	if e != nil {
 		err = e
 		return err
 	}
 	m.DollBuffCenterIn = dollBuffs
 	// 初始化旧值
-	m.CalcAttrOldMap, err = mazecalcattrredis.HScanMazeCalcAttr(m, m.UserId)
+	m.CalcAttrOldMap, err = mazecalcattrredis.HScanMazeCalcAttr(ctx, m.UserId)
 	if err != nil {
 		return err
 	}
@@ -170,7 +171,7 @@ func (m *DAC) Prepare() error {
 }
 
 // 计算
-func (m *DAC) Calc() error {
+func (m *DAC) Calc(ctx context.Context) error {
 
 	var err error
 	var step string
@@ -199,7 +200,7 @@ func (m *DAC) Calc() error {
 			zap.String("srcName", srcName))
 	}
 	// 计算公式属性，比如攻击 防御 耐久需要按公式计算
-	err = m.CalcFormulaAttr()
+	err = m.CalcFormulaAttr(ctx)
 	if err != nil {
 		step = "CalcFormulaAttr"
 		return err
@@ -208,9 +209,9 @@ func (m *DAC) Calc() error {
 }
 
 // 计算公式属性
-func (m *DAC) CalcFormulaAttr() error {
+func (m *DAC) CalcFormulaAttr(ctx context.Context) error {
 	for _, formulaAttrId := range m.FormulaAttrIds {
-		v, ext, e := mazeattrformula.CalcMazeFormulaAttr(m, formulaAttrId, m.AttrResultMap)
+		v, ext, e := mazeattrformula.CalcMazeFormulaAttr(ctx, formulaAttrId, m.AttrResultMap)
 		if e != nil {
 			return e
 		}
@@ -241,14 +242,14 @@ func (m *DAC) End(ctx context.Context) error {
 	if len(chgAttrs) <= 0 {
 		return nil
 	}
-	err = mazecalcattrredis.SaveMazeCalcAttr(m, m.UserId, chgAttrs)
+	err = mazecalcattrredis.SaveMazeCalcAttr(ctx, m.UserId, chgAttrs)
 	if err != nil {
 		return err
 	}
 
 	// 删除0值的ID，节省空间，放置key过大，失败可以忽略
 	if len(delIds) > 0 && len(m.CalcAttrOldMap) > int(commonlogic.CleanIdLen) {
-		mazecalcattrredis.HDelMazeCalcAttr(m, m.UserId, delIds)
+		mazecalcattrredis.HDelMazeCalcAttr(ctx, m.UserId, delIds)
 	}
 
 	// 记录流水
@@ -349,7 +350,7 @@ func (m *DAC) Notify(ctx context.Context, chgAttrs map[int32]int64) {
 		msg.ChgAttrs = append(msg.ChgAttrs, chgAttr)
 	}
 	mazeattrmsg.SendMazeAttrChgNotify(ctx, msg)
-	commonlogic.NotifyClientAttrChg(m, m.UserId, msg)
+	commonlogic.NotifyClientAttrChg(ctx, m.UserId, msg)
 }
 
 func (m *DAC) NeedReplaceAttr() bool {
@@ -369,13 +370,13 @@ func (m *DAC) GetCareAttrs(careAttrs []int32) map[int32]int64 {
 	return rs
 }
 
-func (m *DAC) SetPreviewInfo(param *PreviewParam) {
+func (m *DAC) SetPreviewInfo(ctx context.Context, param *PreviewParam) {
 	m.ReplaceData.ReplaceSrc = param.BuffSrc
 	m.ReplaceData.ReplaceAttrs = param.RepalceAttrs
 	m.ReplaceData.PreviewId = param.PreviewId
 
 	if len(param.CareAttrs) == 1 && param.CareAttrs[0] == constdef.MazeForce {
-		cares := mazeattrformula.GetGFXFormulaParamAttrs(constdef.MazeForce)
+		cares := mazeattrformula.GetGFXFormulaParamAttrs(ctx, constdef.MazeForce)
 		for _, attr := range cares {
 			m.CareAttrs[attr] = true
 		}

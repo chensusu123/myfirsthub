@@ -1,5 +1,5 @@
 paipaiworld_config,Unnamed: 1,Unnamed: 2,Unnamed: 3,Unnamed: 4,Unnamed: 5,Unnamed: 6,Unnamed: 7,Unnamed: 8,Unnamed: 9
-INT_K,INT_C,INT_C,INT_C,INT_C,INT_C,INT_C,STRING,MAP<INT:LONG>_C,LIST<INT>_C
+INT_K,INT_C_S,INT_C_S,INT_C_S,INT_C_S,INT_C_S,INT_C_S,STRING,MAP<INT:LONG>_C_S,LIST<INT>_C_S
 order,drop_id,drop_cd,in_barries_kill_min,in_barries_kill_max,drop_ratio_min,drop_ratio_max,desc,drop_items,drop_condition
 序号,掉落id,掉落cd（毫秒）,杀怪数小,杀怪数大,掉落几率万分比,掉落几率万分比,备注,掉落物品：数量,掉落条件id
 10001,1,6000,6,12,0,1500,,48300001:1,"10001,20000,30001,40001"

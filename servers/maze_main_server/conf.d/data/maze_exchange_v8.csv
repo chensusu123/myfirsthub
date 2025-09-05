@@ -1,0 +1,9 @@
+paipaiworld_config,Unnamed: 1,Unnamed: 2,Unnamed: 3,Unnamed: 4,Unnamed: 5,Unnamed: 6,Unnamed: 7
+INT_K,INT_S,INT_S,MAP<INT:LONG>_S,MAP<INT:LONG>_S,INT_S,INT_S,INT_S
+id,shop_id,sort,item_num,buy_cost,limit_type,limit_num,discount
+商品id,商城id,排序,单次出售物品：数量,购买需要消耗物品：数量,限购类型（0-不限购，1~4日周月终身),限购数量,显示折扣（万分比）
+1,1,1,46700001:10,46900001:100,0,0,
+2,1,2,46700001:20,46900001:100,1,5,8000
+3,2,1,46700001:30,46900001:100,2,10,
+4,2,2,46700001:40,46900001:100,3,15,
+5,2,3,46700001:50,46900001:100,4,20,

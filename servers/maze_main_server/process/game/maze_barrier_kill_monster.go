@@ -37,7 +37,7 @@ func (g *Game) OnBarrierKillMonsterRQ_10620_10621(s *session.Session, req *MazeG
 		res.ErrInfo = errors.COMMON_ERROR_TIPS.Wrap("关卡id未设置")
 		return
 	}
-	barrierCfg := GMazeBarriesV8Cfg.Get(req.GetBarrierId())
+	barrierCfg := GMazeBarriesV8Cfg.GetWithCtx(ctx, req.GetBarrierId())
 	if barrierCfg == nil {
 		logger.CtxError(ctx, "OnBarrierKillMonsterRQ get barrier cfg fail", zap.Any("barrier", req.GetStageId()))
 		res.ErrInfo = errors.COMMON_ERROR_TIPS.Wrap("找不到该关卡配置")
@@ -57,7 +57,8 @@ func (g *Game) OnBarrierKillMonsterRQ_10620_10621(s *session.Session, req *MazeG
 		return
 	}
 
-	_, _, err = barrierstagecounterservice.GlobalBarrierStageCounterService.AddKillMonsterNum(ctx, userId, req.GetBarrierId(), req.GetStageId(), req.GetMonsterId(), 1, req.GetMonsterGuid())
+	_, _, err = barrierstagecounterservice.GlobalBarrierStageCounterService.AddKillMonsterNum(ctx, userId, req.GetBarrierId(), req.GetStageId(), req.GetAreaId(), req.GetAreaIndex(),
+		req.GetMonsterId(), 1, req.GetMonsterGuid(), req.GetCurHp(), req.GetMaxHp(), req.GetMonsterPos())
 	if err != nil {
 		logger.CtxError(ctx, "OnBarrierKillMonsterRQ AddKillMonsterNum fail", zap.Any("req", req), zap.Error(err))
 		return err

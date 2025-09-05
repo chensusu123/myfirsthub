@@ -1,10 +1,6 @@
 package equip
 
 import (
-	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fkconfig/param"
-	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fklog"
-	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fkprometheus"
-	"go.uber.org/zap"
 	"maze_game_server/common/errors"
 	"maze_game_server/common/function/packtopb"
 	"maze_game_server/config/GMazeEquipInfoV8Cfg"
@@ -15,6 +11,11 @@ import (
 	"maze_game_server/pb/common/MazeGameEquip"
 	"maze_game_server/pb/server/MazeEquipCache"
 	"sort"
+
+	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fkconfig/param"
+	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fklog"
+	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fkprometheus"
+	"go.uber.org/zap"
 )
 
 var MaxEquipNum int32 // 分解列表可显示最大装备数
@@ -53,7 +54,7 @@ func (e *Equip) OnEquipDismantleListRQ_10616_10617(s *session.Session, req *Maze
 		posRankMap[v.Pos_id] = v.Rank
 	}
 
-	equipInfoMap, err := mazebagequipredis.GetAllEquipInfo(userCtx, shardingID)
+	equipInfoMap, err := mazebagequipredis.GetAllEquipInfo(ctx, shardingID)
 	if err != nil {
 		userCtx.CtxError(ctx, "OnMazeEquipDismantleListRQ GetAllEquipInfo fail", zap.Error(err))
 		res.ErrInfo = errors.MODULE_ERROR.ToInfo()
@@ -61,7 +62,7 @@ func (e *Equip) OnEquipDismantleListRQ_10616_10617(s *session.Session, req *Maze
 	}
 
 	// 获取身上的装备信息
-	assembleInfoMap, err := dollassemblesuitredis.GetAllDollAssembleSuit(userCtx, shardingID)
+	assembleInfoMap, err := dollassemblesuitredis.GetAllDollAssembleSuit(ctx, shardingID)
 	if err != nil {
 		userCtx.CtxError(ctx, "OnDollEquipSaleSelectRQ GetAllDollAssembleSuit fail", zap.Error(err))
 		res.ErrInfo = errors.MODULE_ERROR.ToInfo()
@@ -89,7 +90,7 @@ func (e *Equip) OnEquipDismantleListRQ_10616_10617(s *session.Session, req *Maze
 			continue
 		}
 
-		equipCfg := GMazeEquipInfoV8Cfg.Get(equip.GetEquipId())
+		equipCfg := GMazeEquipInfoV8Cfg.GetWithCtx(ctx, equip.GetEquipId())
 		if equipCfg == nil {
 			userCtx.CtxError(ctx, "OnDollEquipDismantleListRQ getEquipInfoCfg fail", zap.Any("equipId", equip.GetEquipId()))
 			res.ErrInfo = errors.MODULE_ERROR.Wrap("配置数据错误")
@@ -104,7 +105,7 @@ func (e *Equip) OnEquipDismantleListRQ_10616_10617(s *session.Session, req *Maze
 		//	return err
 		//}
 
-		equipInfoPb, err := packtopb.EquipSimplifyToCliPB(userCtx, equip)
+		equipInfoPb, err := packtopb.EquipSimplifyToCliPB(ctx, equip)
 		if err != nil {
 			res.ErrInfo = errors.MODULE_ERROR.ToInfo()
 			userCtx.CtxError(ctx, "OnDollEquipDismantleListRQ EquipSimplifyToCliPB fail", zap.Error(err))

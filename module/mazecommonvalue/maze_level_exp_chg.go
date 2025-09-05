@@ -1,24 +1,27 @@
 package mazecommonvalue
 
 import (
-	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fklog"
-	"go.uber.org/zap"
+	"context"
 	"maze_game_server/config/GMazeLevelV8Cfg"
 	"maze_game_server/pb/common/MazeGame"
+
+	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fklog"
+	"go.uber.org/zap"
 )
 
 // 上报数据后 只更新额外加成
-func HandleUserLevelChg(logger fklog.FKLogI, userId uint64, level int64, session string) (err error) {
+func HandleUserLevelChg(ctx context.Context, userId uint64, level int64, session string) (err error) {
+	logger := fklog.ContextAppLogger(ctx)
 	commonList := make([]*CommonValueStruct, 0)
 
-	addMoney, err := MakeMoneyExtra(logger, userId, int64(level), 0)
+	addMoney, err := MakeMoneyExtra(ctx, userId, int64(level), 0)
 	if err != nil {
-		logger.ErrorWF("handleUserLevelChg MakeMoneyExtra fail", zap.Error(err))
+		logger.CtxError(ctx, "handleUserLevelChg MakeMoneyExtra fail", zap.Error(err))
 		return
 	}
 	// addExp, err := MakeExpExtra(logger, userId, int64(level), force)
 	// if err != nil {
-	// 	logger.ErrorWF("handleUserLevelChg MakeExpExtra fail", zap.Error(err))
+	// 	logger.CtxError(ctx,"handleUserLevelChg MakeExpExtra fail", zap.Error(err))
 	// 	return
 	// }
 
@@ -38,14 +41,15 @@ func HandleUserLevelChg(logger fklog.FKLogI, userId uint64, level int64, session
 
 	commonList = append(commonList, extraMoney)
 
-	return SendCommonValueIdPack(logger, userId, commonList)
+	return SendCommonValueIdPack(ctx, userId, commonList)
 }
 
 // 等级经验变化后 都推送 用于通关、死亡、扫荡
-func HandleUserLevelExpChg(logger fklog.FKLogI, userId uint64, level int64, exp int64, session string) (err error) {
+func HandleUserLevelExpChg(ctx context.Context, userId uint64, level int64, exp int64, session string) (err error) {
+	logger := fklog.ContextAppLogger(ctx)
 	commonList := make([]*CommonValueStruct, 0)
 
-	levelCfg := GMazeLevelV8Cfg.Get(int32(level))
+	levelCfg := GMazeLevelV8Cfg.GetWithCtx(ctx,int32(level))
 	if levelCfg != nil {
 		levelStruct := &CommonValueStruct{
 			DataType:     int32(MazeGame.MAZE_DATA_TYPE_ENUM_MAZE_DATA_TYPE_LEVEL),
@@ -68,14 +72,14 @@ func HandleUserLevelExpChg(logger fklog.FKLogI, userId uint64, level int64, exp 
 		commonList = append(commonList, levelStruct, expMaxStruct, expStruct)
 	}
 
-	addMoney, err := MakeMoneyExtra(logger, userId, int64(level), 0)
+	addMoney, err := MakeMoneyExtra(ctx, userId, int64(level), 0)
 	if err != nil {
-		logger.ErrorWF("handleUserLevelChg MakeMoneyExtra fail", zap.Error(err))
+		logger.CtxError(ctx, "handleUserLevelChg MakeMoneyExtra fail", zap.Error(err))
 		return
 	}
 	// addExp, err := MakeExpExtra(logger, userId, int64(level), force)
 	// if err != nil {
-	// 	logger.ErrorWF("handleUserLevelChg MakeExpExtra fail", zap.Error(err))
+	// 	logger.CtxError(ctx,"handleUserLevelChg MakeExpExtra fail", zap.Error(err))
 	// 	return
 	// }
 
@@ -95,20 +99,20 @@ func HandleUserLevelExpChg(logger fklog.FKLogI, userId uint64, level int64, exp 
 
 	commonList = append(commonList, extraMoney)
 
-	return SendCommonValueIdPack(logger, userId, commonList)
+	return SendCommonValueIdPack(ctx, userId, commonList)
 }
 
-func MakeMoneyExtra(logger fklog.FKLogI, userId uint64, level int64, force int64) (extra int64, err error) {
-
-	moneyAddEquip, err := GetMoneyExtraAdditionEquip(logger, userId)
+func MakeMoneyExtra(ctx context.Context, userId uint64, level int64, force int64) (extra int64, err error) {
+	logger := fklog.ContextAppLogger(ctx)
+	moneyAddEquip, err := GetMoneyExtraAdditionEquip(ctx, userId)
 	if err != nil {
-		logger.ErrorWF("MakeMoneyExtra GetMoneyExtraAdditionEquip fail", zap.Error(err))
+		logger.CtxError(ctx, "MakeMoneyExtra GetMoneyExtraAdditionEquip fail", zap.Error(err))
 		return
 	}
 
 	// moneyAddForce, _, _, err := GetExtraAdditionForce(logger, userId, level, force)
 	// if err != nil {
-	// 	logger.ErrorWF("MakeMoneyExtra GetExtraAdditionForce fail", zap.Error(err))
+	// 	logger.CtxError(ctx,"MakeMoneyExtra GetExtraAdditionForce fail", zap.Error(err))
 	// 	return
 	// }
 	moneyAddForce := int64(0)
@@ -117,17 +121,17 @@ func MakeMoneyExtra(logger fklog.FKLogI, userId uint64, level int64, force int64
 	return
 }
 
-func MakeExpExtra(logger fklog.FKLogI, userId uint64, level int64, force int64) (extra int64, err error) {
-
-	expAddEquip, err := GetExpExtraAdditionEquip(logger, userId)
+func MakeExpExtra(ctx context.Context, userId uint64, level int64, force int64) (extra int64, err error) {
+	logger := fklog.ContextAppLogger(ctx)
+	expAddEquip, err := GetExpExtraAdditionEquip(ctx, userId)
 	if err != nil {
-		logger.ErrorWF("MakeExpExtra GetExpExtraAdditionEquip fail", zap.Error(err))
+		logger.CtxError(ctx, "MakeExpExtra GetExpExtraAdditionEquip fail", zap.Error(err))
 		return
 	}
 
 	// _, _, expAddForce, err := GetExtraAdditionForce(logger, userId, level, force)
 	// if err != nil {
-	// 	logger.ErrorWF("MakeExpExtra GetExtraAdditionForce fail", zap.Error(err))
+	// 	logger.CtxError(ctx,"MakeExpExtra GetExtraAdditionForce fail", zap.Error(err))
 	// 	return
 	// }
 

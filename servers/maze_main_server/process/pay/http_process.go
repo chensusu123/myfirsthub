@@ -3,8 +3,10 @@ package pay
 import (
 	"context"
 	"encoding/json"
-	"go.uber.org/zap"
-	"google.golang.org/protobuf/proto"
+	"fmt"
+	"net/http"
+	"strconv"
+
 	"maze_game_server/common/constdef"
 	"maze_game_server/common/jwt"
 	"maze_game_server/common/tradeno"
@@ -12,36 +14,107 @@ import (
 	"maze_game_server/pb/common/MazePay"
 	"maze_game_server/services/itemservice"
 	"maze_game_server/usecase/online"
-	"net/http"
-	"strconv"
-	"time"
+
+	"github.com/google/uuid"
+	"gitlab.ifreetalk.com/maze-plate/freetk/pkg/logidutil"
+	"go.opentelemetry.io/contrib/instrumentation/net/http/otelhttp"
+	"go.opentelemetry.io/otel"
+	"go.opentelemetry.io/otel/attribute"
+	"go.uber.org/zap"
+	"google.golang.org/protobuf/proto"
 
 	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fklog"
+	"gitlab.ifreetalk.com/maze-plate/freetk/fkserver/appconfig"
 	"gitlab.ifreetalk.com/maze-plate/freetk/fkutil"
 )
+
+const (
+	headerKey     = "X-Trace-Id"
+	USER_ID_FIELD = "user_id"
+)
+
+type HeaderStrKey string
 
 type payDeliveryResponse struct {
 	Code    int    `json:"code"`
 	Message string `json:"message"`
 }
 
-func safeHttpRegister(logger fklog.FKLogI, pattern string, handler func(http.ResponseWriter, *http.Request)) {
-	http.HandleFunc(pattern, func(writer http.ResponseWriter, request *http.Request) {
-		defer fkutil.CaptureException()
+func SafeGETRegister(logger fklog.FKLogI, pattern string, handler func(http.ResponseWriter, *http.Request)) {
+	appConfig := appconfig.GlobalConfig()
+	tracerPattern := http.MethodGet + pattern
 
-		request.ParseForm()
-		uid := fkutil.ToUint64(request.Form.Get("userId"))
+	handlerFactor := func() http.Handler {
+		return otelhttp.NewHandler(
+			http.HandlerFunc(func(writer http.ResponseWriter, request *http.Request) {
+				defer fkutil.CaptureException()
 
-		logger.WarnWF("execute http request", zap.Uint64("userId", uid),
-			zap.String("uri", request.RequestURI), zap.Any("header", request.Header),
-			zap.Any("host", request.Host), zap.Any("remoteAddr", request.RemoteAddr))
-		handler(writer, request)
-	})
+				uid := fkutil.ToUint64(request.Form.Get(USER_ID_FIELD))
+
+				logidInt := logidutil.GenerateLogID()
+				logID := strconv.Itoa(int(logidInt))
+				shardingID := fmt.Sprintf("%d", appConfig.Global.ShardingID)
+				writer.Header().Set("X-App-Namespace", appConfig.Global.Namespace)
+				writer.Header().Set("X-App-Section", appConfig.Global.SectionID)
+				writer.Header().Set("X-App-Name", appConfig.Server.Server)
+				writer.Header().Set("X-App-Sharding", shardingID)
+				writer.Header().Set("X-Log-ID", logID)
+
+				callLogger := fklog.AppLogger().Clone("")
+				callLogger.SetLogId(logidInt)
+				callLogger.SetUid(uid)
+
+				ctx, span := otel.Tracer("gm-handler").Start(request.Context(), tracerPattern)
+				defer span.End()
+
+				rid := request.Header.Get(headerKey)
+				if rid == "" {
+					if span.SpanContext().TraceID().IsValid() {
+						rid = span.SpanContext().TraceID().String()
+					}
+					if rid == "" {
+						rid = uuid.New().String()
+					}
+				}
+				writer.Header().Set(headerKey, rid)
+				// 将callLogger添加添加到ctx中
+				ctx = fklog.ContextWithLogger(ctx, callLogger)
+				ctx = context.WithValue(ctx, HeaderStrKey(headerKey), rid)
+
+				request.ParseForm()
+
+				span.SetAttributes(attribute.Int64("enduser.id", int64(uid)))
+				//if !CheckGM.CheckGMOnline(context.TODO(), logger, uid, pattern, request.RemoteAddr) {
+				//	return
+				//}
+
+				callLogger.CtxWarn(ctx, "execute gm", zap.Uint64("userId", uid),
+					zap.String("pattern", pattern), zap.Any("header", request.Header),
+					zap.Any("host", request.Host), zap.Any("remoteAddr", request.RemoteAddr))
+				handler(writer, request.WithContext(ctx))
+			}), tracerPattern)
+	}
+	http.Handle(pattern, handlerFactor())
 }
 
-func RegPayDelivery(logger fklog.FKLogI) {
-	safeHttpRegister(logger, "/v1/pay/delivery", func(writer http.ResponseWriter, request *http.Request) {
-		logger.SetLogId(time.Now().UnixNano())
+// func safeHttpRegister(logger fklog.FKLogI, pattern string, handler func(http.ResponseWriter, *http.Request)) {
+// 	http.HandleFunc(pattern, func(writer http.ResponseWriter, request *http.Request) {
+// 		defer fkutil.CaptureException()
+
+// 		request.ParseForm()
+// 		uid := fkutil.ToUint64(request.Form.Get("userId"))
+
+// 		logger.WarnWF("execute http request", zap.Uint64("userId", uid),
+// 			zap.String("uri", request.RequestURI), zap.Any("header", request.Header),
+// 			zap.Any("host", request.Host), zap.Any("remoteAddr", request.RemoteAddr))
+// 		handler(writer, request)
+// 	})
+// }
+
+func RegPayDelivery(loggerx fklog.FKLogI) {
+	SafeGETRegister(loggerx, "/v1/pay/delivery", func(writer http.ResponseWriter, request *http.Request) {
+		ctx := request.Context()
+		logger := fklog.ContextAppLogger(ctx)
 		httpCode := http.StatusInternalServerError
 		res := &payDeliveryResponse{
 			Code:    http.StatusInternalServerError,
@@ -86,7 +159,7 @@ func RegPayDelivery(logger fklog.FKLogI) {
 				ItemId: constdef.MazeCommonItemDiamond,
 				Count:  int64(chargeCfg.Currency_num),
 			}
-			errInfo := itemservice.GlobalItemService.AddItem(context.TODO(), deliveryClaim.UserId, itemservice.ItemOpTypePay, tradeNo, item)
+			errInfo := itemservice.GlobalItemService.AddItem(ctx, deliveryClaim.UserId, itemservice.ItemOpTypePay, tradeNo, item)
 			if errInfo != nil {
 				res.Code = http.StatusInternalServerError
 				res.Message = err.Error()
@@ -98,12 +171,12 @@ func RegPayDelivery(logger fklog.FKLogI) {
 		httpCode = http.StatusOK
 		res.Code = httpCode
 		logger.InfoWF("pay delivery success", zap.Any("deliveryClaim", deliveryClaim), zap.Any("res", res))
-		PushPaySuccess(logger, int64(deliveryClaim.UserId), strconv.FormatInt(deliveryClaim.TradeNo, 10))
+		PushPaySuccess(ctx, logger, int64(deliveryClaim.UserId), strconv.FormatInt(deliveryClaim.TradeNo, 10))
 	})
 }
 
 // 推送发货成功， 推送失败也不处理，因为已经先发货成功了
-func PushPaySuccess(logger fklog.FKLogI, userId int64, tradeNo string) {
+func PushPaySuccess(ctx context.Context, logger fklog.FKLogI, userId int64, tradeNo string) {
 	go func() {
 		defer func() {
 			if err := recover(); err != nil {
@@ -114,7 +187,7 @@ func PushPaySuccess(logger fklog.FKLogI, userId int64, tradeNo string) {
 			TradeNo: proto.String(tradeNo),
 		}
 		// 通知用户发货成功
-		err := online.ClusterPush(context.TODO(), uint64(userId), 10509, push)
+		err := online.ClusterPush(ctx, uint64(userId), 10509, push)
 		if err != nil {
 			logger.ErrorWF("PushPay error", zap.Error(err), zap.Int64("userId", userId), zap.String("tradeNo", tradeNo))
 		} else {

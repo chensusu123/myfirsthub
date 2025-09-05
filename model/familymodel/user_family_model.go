@@ -2,8 +2,9 @@ package familymodel
 
 import (
 	"context"
-	"maze_game_server/io/redis/familyredis"
 	"time"
+
+	"maze_game_server/io/redis/familyredis"
 
 	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fklog"
 	"go.uber.org/zap"
@@ -22,7 +23,7 @@ func NewUserFamilyModel(ctx context.Context, userID uint64) *UserFamilyModel {
 // 获取用户所在家族
 func (r *UserFamilyModel) GetUserFamily(ctx context.Context) (int32, error) {
 	logger := fklog.ContextAppLogger(ctx)
-	familyID, err := familyredis.GetUserFamilyID(r.UserID)
+	familyID, err := familyredis.GetUserFamilyID(ctx, r.UserID)
 	if err != nil {
 		logger.CtxError(ctx, "GetUserFamily GetUserFamilyID err",
 			zap.Uint64("userID", r.UserID), zap.Error(err))
@@ -35,9 +36,9 @@ func (r *UserFamilyModel) GetUserFamily(ctx context.Context) (int32, error) {
 func (r *UserFamilyModel) SetUserLastLeaveFamilyTime(ctx context.Context) error {
 	logger := fklog.ContextAppLogger(ctx)
 	lastLeaveFamilyTime := time.Now().Unix()
-	err := familyredis.SetUserLastLeaveFamilyTime(r.UserID, lastLeaveFamilyTime)
+	err := familyredis.SetUserLastLeaveFamilyTime(ctx, r.UserID, lastLeaveFamilyTime)
 	if err != nil {
-		logger.ErrorWF("SetUserLastLeaveFamilyTime SetUserLastLeaveFamilyTime err",
+		logger.CtxError(ctx, "SetUserLastLeaveFamilyTime SetUserLastLeaveFamilyTime err",
 			zap.Uint64("userID", r.UserID), zap.Int64("lastLeaveFamilyTime", lastLeaveFamilyTime), zap.Error(err))
 		return err
 	}
@@ -47,9 +48,9 @@ func (r *UserFamilyModel) SetUserLastLeaveFamilyTime(ctx context.Context) error 
 // 获取用户上次退出家族时间
 func (r *UserFamilyModel) GetUserLastLeaveFamilyTime(ctx context.Context) (int64, error) {
 	logger := fklog.ContextAppLogger(ctx)
-	lastLeaveFamilyTime, err := familyredis.GetUserLastLeaveFamilyTime(r.UserID)
+	lastLeaveFamilyTime, err := familyredis.GetUserLastLeaveFamilyTime(ctx, r.UserID)
 	if err != nil {
-		logger.ErrorWF("GetUserLastLeaveFamilyTime GetUserLastLeaveFamilyTime err",
+		logger.CtxError(ctx, "GetUserLastLeaveFamilyTime GetUserLastLeaveFamilyTime err",
 			zap.Uint64("userID", r.UserID), zap.Error(err))
 		return 0, err
 	}
@@ -59,9 +60,9 @@ func (r *UserFamilyModel) GetUserLastLeaveFamilyTime(ctx context.Context) (int64
 // 设置玩家对应的家族
 func (r *UserFamilyModel) SetUserFamily(ctx context.Context, familyID int32) error {
 	logger := fklog.ContextAppLogger(ctx)
-	err := familyredis.SetUserFamilyID(r.UserID, familyID)
+	err := familyredis.SetUserFamilyID(ctx, r.UserID, familyID)
 	if err != nil {
-		logger.ErrorWF("SetUserFamilyID SetUserFamilyID err",
+		logger.CtxError(ctx, "SetUserFamilyID SetUserFamilyID err",
 			zap.Uint64("userID", r.UserID), zap.Int32("familyID", familyID), zap.Error(err))
 		return err
 	}
@@ -71,9 +72,9 @@ func (r *UserFamilyModel) SetUserFamily(ctx context.Context, familyID int32) err
 // 删除玩家对应的家族
 func (r *UserFamilyModel) DelUserFamily(ctx context.Context) error {
 	logger := fklog.ContextAppLogger(ctx)
-	err := familyredis.DelUserFamilyID(r.UserID)
+	err := familyredis.DelUserFamilyID(ctx, r.UserID)
 	if err != nil {
-		logger.ErrorWF("DelUserFamilyID DelUserFamilyID err",
+		logger.CtxError(ctx, "DelUserFamilyID DelUserFamilyID err",
 			zap.Uint64("userID", r.UserID), zap.Error(err))
 		return err
 	}

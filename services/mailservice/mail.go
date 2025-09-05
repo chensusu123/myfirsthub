@@ -2,9 +2,10 @@ package mailservice
 
 import (
 	"context"
-	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fklog"
 	"sort"
 	"time"
+
+	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fklog"
 
 	"maze_game_server/common/errors"
 	"maze_game_server/common/tradeno"
@@ -295,7 +296,7 @@ func (s service) PushMailToReciver(ctx context.Context, userId uint64, packetTyp
 		return
 	}
 
-	err := online.ClusterPush(context.TODO(), userId, packetType, v)
+	err := online.ClusterPush(ctx, userId, packetType, v)
 	if err != nil {
 		logger.CtxError(ctx, "PushMailToReciver fail", zap.Error(err))
 	}

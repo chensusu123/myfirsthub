@@ -15,20 +15,20 @@ import (
 // GuardDeath implements BarrierService.
 func (b *barrier) GuardDeath(ctx context.Context, userID uint64, barrierID int32, monsterID int32, monsterGuid int32) (kongfu int32, equips map[int32]int32, items map[int32]int64, errinfo *MessageType.ErrorInfo) {
 	logger := fklog.ContextAppLogger(ctx)
-	foeCfg := GMazeFoeV8Cfg.Get(monsterID)
+	foeCfg := GMazeFoeV8Cfg.GetWithCtx(ctx,monsterID)
 	if foeCfg == nil {
-		logger.ErrorWF("GuardDeath get foe cfg fail", zap.Any("monsterID", monsterID))
+		logger.CtxError(ctx, "GuardDeath get foe cfg fail", zap.Any("monsterID", monsterID))
 		return 0, nil, nil, errors.CONFIG_NOT_FOUND.ToInfo()
 	}
 
 	// 防重复操作校验
-	triggered, triggerFn, err := mazebarrieropstatusredis.IsTriggered(logger, userID, barrierID, fmt.Sprintf("monsterid:%d", monsterGuid))
+	triggered, triggerFn, err := mazebarrieropstatusredis.IsTriggered(ctx, userID, barrierID, fmt.Sprintf("monsterid:%d", monsterGuid))
 	if err != nil {
-		logger.ErrorWF("GuardDeath IsTriggered fail", zap.Error(err), zap.Any("MonsterId", monsterID), zap.Any("barrierId", barrierID))
+		logger.CtxError(ctx, "GuardDeath IsTriggered fail", zap.Error(err), zap.Any("MonsterId", monsterID), zap.Any("barrierId", barrierID))
 		return 0, nil, nil, errors.COMMON_ERROR_TIPS.Wrap("数据校验失败")
 	}
 	if triggered {
-		logger.WarnWF("GuardDeath already killed", zap.Any("MonsterId", monsterID), zap.Any("barrierId", barrierID))
+		logger.CtxWarn(ctx, "GuardDeath already killed", zap.Any("MonsterId", monsterID), zap.Any("barrierId", barrierID))
 		return 0, nil, nil, errors.COMMON_ERROR_TIPS.Wrap("怪物已击杀")
 	} else {
 		defer triggerFn()

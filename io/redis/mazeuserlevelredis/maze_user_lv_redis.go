@@ -12,15 +12,17 @@ import (
 	"go.uber.org/zap"
 )
 
-var USER_LEVEL = "level"
-var USER_EXP = "exp"
-var USER_TOTAL_EXP = "total_exp"
-var USER_TYPE = "user_type"
-var USER_BARRIER = "barrier"
-var USER_PASS_BARRIER = "pass_barrier"
-var USER_EQUIP_POINT = "equip_point"
-var USER_ENERGY = "energy"
-var USER_ENERGY_LAST_TIME = "energy_last_time"
+var (
+	USER_LEVEL            = "level"
+	USER_EXP              = "exp"
+	USER_TOTAL_EXP        = "total_exp"
+	USER_TYPE             = "user_type"
+	USER_BARRIER          = "barrier"
+	USER_PASS_BARRIER     = "pass_barrier"
+	USER_EQUIP_POINT      = "equip_point"
+	USER_ENERGY           = "energy"
+	USER_ENERGY_LAST_TIME = "energy_last_time"
+)
 
 var gRedis = &fkredis.FkRedis{}
 
@@ -31,7 +33,7 @@ func init() {
 func GetUserLevel(ctx context.Context, userId uint64) (level int64, err error) {
 	logger := fklog.ContextAppLogger(ctx)
 	key := fmt.Sprintf("maze:u:%d:level:exp", userId)
-	level, err = redis.Int64(gRedis.Do(context.TODO(), "hget", key, USER_LEVEL))
+	level, err = redis.Int64(gRedis.Do(ctx, "hget", key, USER_LEVEL))
 	if err == redis.ErrNil {
 		err = nil
 		logger.CtxError(ctx, "GetUserLevel nil", zap.String("key", key))
@@ -48,7 +50,7 @@ func GetUserLevel(ctx context.Context, userId uint64) (level int64, err error) {
 func GetUserInfo(ctx context.Context, userId uint64) (userInfo map[string]int64, err error) {
 	logger := fklog.ContextAppLogger(ctx)
 	key := fmt.Sprintf("maze:u:%d:level:exp", userId)
-	res, err := redis.StringMap(gRedis.Do(context.TODO(), "hgetall", key))
+	res, err := redis.StringMap(gRedis.Do(ctx, "hgetall", key))
 	if err == redis.ErrNil {
 		err = nil
 		logger.CtxInfo(ctx, "GetUserInfo nil", zap.String("key", key))
@@ -82,7 +84,7 @@ func SetUserInfo(ctx context.Context, userId uint64, userInfo map[string]int64) 
 		logger.CtxError(ctx, "SetUserInfo params empty", zap.Any("userInfo", userInfo))
 		return
 	}
-	_, err = gRedis.Do(context.TODO(), "hmset", args...)
+	_, err = gRedis.Do(ctx, "hmset", args...)
 	if err != nil {
 		logger.CtxError(ctx, "SetUserInfo hmset fail", zap.String("key", key), zap.Any("args", args), zap.Error(err))
 		return
@@ -94,7 +96,7 @@ func SetUserInfo(ctx context.Context, userId uint64, userInfo map[string]int64) 
 func GMDel(ctx context.Context, userId uint64) (err error) {
 	logger := fklog.ContextAppLogger(ctx)
 	key := fmt.Sprintf("maze:u:%d:level:exp", userId)
-	_, err = redis.Int64(gRedis.Do(context.TODO(), "del", key))
+	_, err = redis.Int64(gRedis.Do(ctx, "del", key))
 	if err != nil {
 		logger.CtxError(ctx, "GMDel fail", zap.String("key", key), zap.Error(err))
 		return

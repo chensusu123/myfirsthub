@@ -26,7 +26,7 @@ func (s *service) CheckTempBuff(ctx context.Context, userId uint64, barrierId in
 	// 已选择的buff不是0，就需要检查了
 	//passArea, err := passareamodel.NewPassAreaModel(logger, userId, barrierId)
 	//if err != nil {
-	//	logger.ErrorWF("checkTempBuff GetBarrierPassArea fail", zap.Error(err))
+	//	logger.CtxError(ctx,"checkTempBuff GetBarrierPassArea fail", zap.Error(err))
 	//	return nil, err
 	//}
 	passArea := dollmappuzzlenewcfgex.GetPassAreaInfos(barrierId, stage)

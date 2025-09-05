@@ -23,28 +23,28 @@ func (b *barrier) GetBarrierInfos(ctx context.Context, userID uint64) (barrierIn
 	logger := fklog.ContextAppLogger(ctx)
 	var err error
 	var maxNum, curNumToday int32
-	maxNumCfg := GMazeActionCountV8Cfg.Get(101)
+	maxNumCfg := GMazeActionCountV8Cfg.GetWithCtx(ctx, 101)
 	if maxNumCfg == nil {
-		logger.ErrorWF("GetBarrierInfos GMazeActionCountV8Cfg fail, config not found", zap.Int32("configID", 101))
+		logger.CtxError(ctx, "GetBarrierInfos GMazeActionCountV8Cfg fail, config not found", zap.Int32("configID", 101))
 		return nil, errors.CONFIG_NOT_FOUND.ToInfo()
 	}
 	maxNum = maxNumCfg.Day_count_v8
 
 	userInfo, err := userinfomodel.NewUserInfoModel(ctx, userID)
 	if err != nil {
-		logger.ErrorWF("GetBarrierInfos NewUserInfoModel fail", zap.Error(err))
+		logger.CtxError(ctx, "GetBarrierInfos NewUserInfoModel fail", zap.Error(err))
 		return nil, errors.MODULE_ERROR.ToInfo()
 	}
 
-	userBarrier, err := userbarriermodel.NewUserBarrierModel(logger, userID)
+	userBarrier, err := userbarriermodel.NewUserBarrierModel(ctx, userID)
 	if err != nil {
-		logger.ErrorWF("GetBarrierInfos GetBarrierReport fail", zap.Error(err))
+		logger.CtxError(ctx, "GetBarrierInfos GetBarrierReport fail", zap.Error(err))
 		return nil, errors.MODULE_ERROR.ToInfo()
 	}
 
 	// challengeNum, err := challengenummodel.NewChallengeNumModel(logger, userID)
 	// if err != nil {
-	// 	logger.ErrorWF("GetBarrierInfos GetBarrierReport fail", zap.Error(err))
+	// 	logger.CtxError(ctx,"GetBarrierInfos GetBarrierReport fail", zap.Error(err))
 	// 	return nil, errors.MODULE_ERROR.ToInfo()
 	// }
 	// curNumToday = maxNum - int32(challengeNum.Num)
@@ -56,7 +56,7 @@ func (b *barrier) GetBarrierInfos(ctx context.Context, userID uint64) (barrierIn
 	// challengeRefresh = timeutil.GetTodayZeroTimestamp() + 86400
 
 	var passBarrierOffset, newBarrierOffset int32 = 1, 3
-	barrierListCfg := GMazeConfigV8Cfg.Get(501)
+	barrierListCfg := GMazeConfigV8Cfg.GetWithCtx(ctx, 501)
 	if barrierListCfg != nil {
 		for k, v := range barrierListCfg.Value_map {
 			//由于配置的是以当前尚未通关的最小关卡id为基准，但是用户未进入新关卡id时 存储的新关卡id不更新 所以这里以最大通关id为基准查找
@@ -71,19 +71,19 @@ func (b *barrier) GetBarrierInfos(ctx context.Context, userID uint64) (barrierIn
 		currBarrier = 1
 	}
 	if userInfo.Barrier == userInfo.PassBarrier && userInfo.Barrier > 0 {
-		cfg := GMazeBarriesV8Cfg.Get(userInfo.Barrier)
+		cfg := GMazeBarriesV8Cfg.GetWithCtx(ctx, userInfo.Barrier)
 		if cfg != nil {
 			currBarrier = cfg.Next_id
 		}
 	}
 
 	// 检查固定关卡
-	fixedBarrierId, err := mazefixedbarrierredis.GetUserFixedBarrierID(logger, userID)
+	fixedBarrierId, err := mazefixedbarrierredis.GetUserFixedBarrierID(ctx, userID)
 	if err != nil {
-		logger.ErrorWF("GetBarrierInfos GetUserFixedBarrierID failed", zap.Error(err), zap.Uint64("userId", userID))
+		logger.CtxError(ctx, "GetBarrierInfos GetUserFixedBarrierID failed", zap.Error(err), zap.Uint64("userId", userID))
 	} else if fixedBarrierId > 0 && currBarrier == 1 {
 		currBarrier = fixedBarrierId
-		logger.WarnWF("Fix current barrier", zap.Uint64("userId", userID), zap.Int32("currBarrier", currBarrier))
+		logger.CtxWarn(ctx, "Fix current barrier", zap.Uint64("userId", userID), zap.Int32("currBarrier", currBarrier))
 	}
 
 	passBarrier := userInfo.PassBarrier
@@ -99,9 +99,9 @@ func (b *barrier) GetBarrierInfos(ctx context.Context, userID uint64) (barrierIn
 			if i <= 0 || len(barrierInfos) == int(passBarrierOffset) {
 				break
 			}
-			sweepCfg := GMazeBarriesV8Cfg.Get(i)
+			sweepCfg := GMazeBarriesV8Cfg.GetWithCtx(ctx, i)
 			if sweepCfg == nil {
-				logger.ErrorWF("GetBarrierInfos get pass barrier cfg fail", zap.Any("barrierId", i))
+				logger.CtxError(ctx, "GetBarrierInfos get pass barrier cfg fail", zap.Any("barrierId", i))
 				return nil, errors.CONFIG_NOT_FOUND.Wrap("获取扫荡关卡数值失败")
 			}
 			sweepBarrier := &MazeGame.MazeBarrierInfo{
@@ -126,9 +126,9 @@ func (b *barrier) GetBarrierInfos(ctx context.Context, userID uint64) (barrierIn
 		if len(barrierInfos) >= int(totalBarrierNum) {
 			break
 		}
-		barrierCfg := GMazeBarriesV8Cfg.Get(index)
+		barrierCfg := GMazeBarriesV8Cfg.GetWithCtx(ctx, index)
 		if barrierCfg == nil {
-			logger.ErrorWF("GetBarrierInfos get barrier cfg fail", zap.Any("barrier", index))
+			logger.CtxError(ctx, "GetBarrierInfos get barrier cfg fail", zap.Any("barrier", index))
 			return nil, errors.CONFIG_NOT_FOUND.Wrap("获取新关卡数值失败")
 		}
 

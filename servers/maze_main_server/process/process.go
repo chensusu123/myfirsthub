@@ -1,6 +1,7 @@
 package process
 
 import (
+	"context"
 	"maze_game_server/servers/maze_main_server/process/collect"
 	"maze_game_server/servers/maze_main_server/process/equip"
 	"maze_game_server/servers/maze_main_server/process/game"
@@ -73,7 +74,8 @@ func RegisterHandler() {
 
 	// 注册Web接口
 	web_service.PlugWebService(func(logger fklog.FKLogI) {
-		gmservice.GmService.RegHttp(logger)
+		ctx := context.Background()
+		gmservice.GmService.RegHttp(ctx)
 		// 充值发货
 		pay.RegPayDelivery(logger)
 	})

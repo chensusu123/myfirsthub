@@ -1,6 +1,7 @@
 package collect
 
 import (
+	"context"
 	"maze_game_server/common/errors"
 	"maze_game_server/pb/server/SeaTaskSvr"
 	"time"
@@ -48,23 +49,23 @@ func OnTimeOut(ctx fknet.TCPContext, shardingID uint64, request proto.Message, r
 	return ItemCollectCallback(ctx, agent.UserID, taskInfo.GetContext())
 }
 
-func ProcessTimeOut(logger fklog.FKLogI, shardingID uint64, req SeaTaskSvr.TaskExpireNotifyRQ) (res SeaTaskSvr.TaskExpireNotifyRS, err error) {
+func ProcessTimeOut(ctx context.Context, shardingID uint64, req SeaTaskSvr.TaskExpireNotifyRQ) (res SeaTaskSvr.TaskExpireNotifyRS, err error) {
 	res.TaskInfo = &SeaTaskSvr.TaskInfo{UserId: req.TaskInfo.UserId}
 	res.ErrInfo = errors.NO_ERROR
-
+	logger := fklog.ContextAppLogger(ctx)
 	defer func() {
-		logger.InfoWF("ProcessTimeOut end", zap.Any("res", res))
+		logger.CtxInfo(ctx, "ProcessTimeOut end", zap.Any("res", res))
 	}()
-	logger.InfoWF("ProcessTimeOut with ", zap.Any("Msg", req))
+	logger.CtxInfo(ctx, "ProcessTimeOut with ", zap.Any("Msg", req))
 
 	taskInfo := req.GetTaskInfo()
 	if req.GetTaskInfo() == nil {
-		logger.ErrorWF("ProcessTimeOut taskinfo nil", zap.Any("req", req))
+		logger.CtxError(ctx, "ProcessTimeOut taskinfo nil", zap.Any("req", req))
 		res.ErrInfo = errors.COMMON_ERROR_TIPS.Wrap("task info nil")
 		return
 	}
 	if uint32(time.Now().Unix()) < taskInfo.GetTime() {
-		logger.ErrorWF("ProcessTimeOut check time failed. time not touch,call later.",
+		logger.CtxError(ctx, "ProcessTimeOut check time failed. time not touch,call later.",
 			zap.Uint64("uid", taskInfo.GetUserId()),
 			zap.Stringer("task", taskInfo), zap.Uint64("shardingId", shardingID),
 		)
@@ -72,10 +73,10 @@ func ProcessTimeOut(logger fklog.FKLogI, shardingID uint64, req SeaTaskSvr.TaskE
 		return
 	}
 	if taskInfo.GetType() != uint32(234) {
-		logger.ErrorWF("ProcessTimeOut task typ not match", zap.Any("req", req), zap.Uint32("myType", 234))
+		logger.CtxError(ctx, "ProcessTimeOut task typ not match", zap.Any("req", req), zap.Uint32("myType", 234))
 		res.ErrInfo = errors.COMMON_ERROR_TIPS.Wrap("task typ not match")
 		return
 	}
-	err = ItemCollectCallback(logger, shardingID, taskInfo.GetContext())
+	err = ItemCollectCallback(ctx, shardingID, taskInfo.GetContext())
 	return
 }

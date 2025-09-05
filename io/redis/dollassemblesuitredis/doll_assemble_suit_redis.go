@@ -33,9 +33,9 @@ func init() {
 }
 
 // 查询指定装备套
-func GetDollAssembleSuit(logger fklog.FKLogI, userId uint64, index int32, posCnt int) (equipSuit []*MazeEquipCache.MazeEquipPosDb, err error) {
+func GetDollAssembleSuit(ctx context.Context, userId uint64, index int32, posCnt int) (equipSuit []*MazeEquipCache.MazeEquipPosDb, err error) {
 	key := fmt.Sprintf("maze:dressed:equip:u:%d", userId)
-
+	logger := fklog.ContextAppLogger(ctx)
 	args := make([]interface{}, 0, 1+posCnt)
 	args = append(args, key)
 	for i := 1; i <= posCnt; i++ {
@@ -43,14 +43,14 @@ func GetDollAssembleSuit(logger fklog.FKLogI, userId uint64, index int32, posCnt
 		args = append(args, field)
 	}
 
-	res, err := redis.ByteSlices(gRedis.Do(context.TODO(), "hmget", args...))
+	res, err := redis.ByteSlices(gRedis.Do(ctx, "hmget", args...))
 	if err == redis.ErrNil {
 		err = nil
-		logger.InfoWF("GetDollAssembleSuit hmget nil", zap.String("key", key), zap.Int32("index", index))
+		logger.CtxInfo(ctx, "GetDollAssembleSuit hmget nil", zap.String("key", key), zap.Int32("index", index))
 		return
 	}
 	if err != nil {
-		logger.ErrorWF("GetDollAssembleSuit hmget fail", zap.Error(err), zap.String("key", key), zap.Int32("index", index))
+		logger.CtxError(ctx, "GetDollAssembleSuit hmget fail", zap.Error(err), zap.String("key", key), zap.Int32("index", index))
 		return
 	}
 
@@ -59,57 +59,58 @@ func GetDollAssembleSuit(logger fklog.FKLogI, userId uint64, index int32, posCnt
 		assembleDb := &MazeEquipCache.MazeEquipPosDb{}
 		e := proto.Unmarshal(res[i], assembleDb)
 		if e != nil {
-			logger.ErrorWF("GetDollAssembleSuit Unmarshal fail", zap.Error(e),
+			logger.CtxError(ctx, "GetDollAssembleSuit Unmarshal fail", zap.Error(e),
 				zap.String("key", key), zap.Int("i", i), zap.Int32("index", index))
 			return nil, e
 		}
 		equipSuit = append(equipSuit, assembleDb)
 	}
-	logger.InfoWF("GetDollAssembleSuit hgetall succ", zap.Any("res", equipSuit),
+	logger.CtxInfo(ctx, "GetDollAssembleSuit hgetall succ", zap.Any("res", equipSuit),
 		zap.String("key", key), zap.Int32("index", index))
 	return equipSuit, err
 }
 
 // 查询指定装备套的指定位置的装备信息
-func GetDollAssembleByPos(logger fklog.FKLogI, userId uint64, index int32, pos int32) (assembleDb *MazeEquipCache.MazeEquipPosDb, err error) {
+func GetDollAssembleByPos(ctx context.Context, userId uint64, index int32, pos int32) (assembleDb *MazeEquipCache.MazeEquipPosDb, err error) {
 	key := fmt.Sprintf("maze:dressed:equip:u:%d", userId)
-
+	logger := fklog.ContextAppLogger(ctx)
 	field := assemble.EnCodeAssembleEquipField(index, pos)
 
-	res, err := redis.Bytes(gRedis.Do(context.TODO(), "hget", key, field))
+	res, err := redis.Bytes(gRedis.Do(ctx, "hget", key, field))
 	if err == redis.ErrNil {
 		err = nil
-		logger.InfoWF("GetDollAssembleByPos hmget nil", zap.String("key", key), zap.Int32("index", index))
+		logger.CtxInfo(ctx, "GetDollAssembleByPos hmget nil", zap.String("key", key), zap.Int32("index", index))
 		return
 	}
 	if err != nil {
-		logger.ErrorWF("GetDollAssembleByPos hmget fail", zap.Error(err), zap.String("key", key), zap.Int32("index", index))
+		logger.CtxError(ctx, "GetDollAssembleByPos hmget fail", zap.Error(err), zap.String("key", key), zap.Int32("index", index))
 		return
 	}
 
 	assembleDb = &MazeEquipCache.MazeEquipPosDb{}
 	e := proto.Unmarshal(res, assembleDb)
 	if e != nil {
-		logger.ErrorWF("GetDollAssembleByPos Unmarshal fail", zap.Error(e),
+		logger.CtxError(ctx, "GetDollAssembleByPos Unmarshal fail", zap.Error(e),
 			zap.String("key", key), zap.Int32("pos", pos), zap.Int32("index", index))
 		return nil, e
 	}
-	logger.InfoWF("GetDollAssembleByPos hget succ", zap.Any("assembleDb", assembleDb),
+	logger.CtxInfo(ctx, "GetDollAssembleByPos hget succ", zap.Any("assembleDb", assembleDb),
 		zap.String("key", key), zap.Int32("index", index))
 	return assembleDb, err
 }
 
 // 查询所有装备套
-func GetAllDollAssembleSuit(logger fklog.FKLogI, userId uint64) (allEquipSuit map[int32][]*MazeEquipCache.MazeEquipPosDb, err error) {
+func GetAllDollAssembleSuit(ctx context.Context, userId uint64) (allEquipSuit map[int32][]*MazeEquipCache.MazeEquipPosDb, err error) {
 	key := fmt.Sprintf("maze:dressed:equip:u:%d", userId)
-	res, err := redis.ByteSlices(gRedis.Do(context.TODO(), "hgetall", key))
+	logger := fklog.ContextAppLogger(ctx)
+	res, err := redis.ByteSlices(gRedis.Do(ctx, "hgetall", key))
 	if err == redis.ErrNil {
 		err = nil
-		logger.InfoWF("GetAllDollAssembleSuit hgetall nil", zap.String("key", key))
+		logger.CtxInfo(ctx, "GetAllDollAssembleSuit hgetall nil", zap.String("key", key))
 		return
 	}
 	if err != nil {
-		logger.ErrorWF("GetAllDollAssembleSuit hgetall fail", zap.Error(err), zap.String("key", key))
+		logger.CtxError(ctx, "GetAllDollAssembleSuit hgetall fail", zap.Error(err), zap.String("key", key))
 		return
 	}
 	allEquipSuit = make(map[int32][]*MazeEquipCache.MazeEquipPosDb)
@@ -131,12 +132,13 @@ func GetAllDollAssembleSuit(logger fklog.FKLogI, userId uint64) (allEquipSuit ma
 		allEquipSuit[suitIndex] = append(allEquipSuit[suitIndex], assembleDb)
 		continue
 	}
-	logger.InfoWF("GetAllDollAssembleSuit hgetall succ", zap.Any("res", allEquipSuit), zap.String("key", key))
+	logger.CtxInfo(ctx, "GetAllDollAssembleSuit hgetall succ", zap.Any("res", allEquipSuit), zap.String("key", key))
 	return allEquipSuit, err
 }
 
 // 保存人偶装备数据
-func SetDollAssembleSuit(logger fklog.FKLogI, userId uint64, index int32, equips []*MazeEquipCache.MazeEquipPosDb) (err error) {
+func SetDollAssembleSuit(ctx context.Context, userId uint64, index int32, equips []*MazeEquipCache.MazeEquipPosDb) (err error) {
+	logger := fklog.ContextAppLogger(ctx)
 	args := make([]interface{}, 0, 1+2*len(equips))
 	if len(equips) == 0 {
 		return
@@ -152,35 +154,36 @@ func SetDollAssembleSuit(logger fklog.FKLogI, userId uint64, index int32, equips
 		args = append(args, equipPosPb)
 	}
 	if len(args) == 1 {
-		logger.WarnWF("equip pos nil")
+		logger.CtxWarn(ctx, "equip pos nil")
 		return nil
 	}
 	// redis操作
-	_, err = gRedis.Do(context.TODO(), "HMSET", args...)
+	_, err = gRedis.Do(ctx, "HMSET", args...)
 	if err != nil {
-		logger.ErrorWF("SetDollAssembleSuit redis with fail",
+		logger.CtxError(ctx, "SetDollAssembleSuit redis with fail",
 			zap.Error(err),
 			zap.Any("equips", equips),
 			zap.String("key", key))
 		return err
 	}
-	logger.InfoWF("SetDollAssembleSuit succ",
+	logger.CtxInfo(ctx, "SetDollAssembleSuit succ",
 		zap.Any("equips", equips),
 		zap.String("key", key))
 	return nil
 }
 
-func SaveEquipAssembleInfo(logger fklog.FKLogI, userId uint64, index int32, equips []*MazeEquipCache.MazeEquipPosInfo) error {
+func SaveEquipAssembleInfo(ctx context.Context, userId uint64, index int32, equips []*MazeEquipCache.MazeEquipPosInfo) error {
 	var equipDbs []*MazeEquipCache.MazeEquipPosDb
 	for _, equip := range equips {
 		if equip.GetEquipLoadInfo() != nil {
 			equipDbs = append(equipDbs, equip.GetEquipLoadInfo())
 		}
 	}
-	return SetDollAssembleSuit(logger, userId, index, equipDbs)
+	return SetDollAssembleSuit(ctx, userId, index, equipDbs)
 }
 
-func SaveEquipAssembleInfoV2(logger fklog.FKLogI, userId uint64, index int32, equips []*MazeEquipCache.MazeEquipPosInfo) error {
+func SaveEquipAssembleInfoV2(ctx context.Context, userId uint64, index int32, equips []*MazeEquipCache.MazeEquipPosInfo) error {
+	logger := fklog.ContextAppLogger(ctx)
 	var equipDbs []*MazeEquipCache.MazeEquipPosDb
 	for _, equip := range equips {
 		if equip.GetEquipLoadInfo() != nil {
@@ -188,7 +191,7 @@ func SaveEquipAssembleInfoV2(logger fklog.FKLogI, userId uint64, index int32, eq
 			if equip.GetEquipLoadInfo().GetActivateMask() > 0 {
 				savePb = proto.Clone(equip.GetEquipLoadInfo()).(*MazeEquipCache.MazeEquipPosDb)
 				if savePb == nil {
-					logger.ErrorWF("SaveEquipAssembleInfoV2 clone fail", zap.Any("equip", equip))
+					logger.CtxError(ctx, "SaveEquipAssembleInfoV2 clone fail", zap.Any("equip", equip))
 					return errors.New("clone equip fail")
 				}
 				savePb.ActivateMask = proto.Int32(0)
@@ -196,27 +199,28 @@ func SaveEquipAssembleInfoV2(logger fklog.FKLogI, userId uint64, index int32, eq
 			equipDbs = append(equipDbs, savePb)
 		}
 	}
-	return SetDollAssembleSuit(logger, userId, index, equipDbs)
+	return SetDollAssembleSuit(ctx, userId, index, equipDbs)
 }
 
 // 删除套装信息
-func DelEquipSuitInfo(logger fklog.FKLogI, userId uint64) error {
+func DelEquipSuitInfo(ctx context.Context, userId uint64) error {
 	key := fmt.Sprintf("maze:dressed:equip:u:%d", userId)
-
-	_, err := gRedis.Do(context.TODO(), "DEL", key)
+	logger := fklog.ContextAppLogger(ctx)
+	_, err := gRedis.Do(ctx, "DEL", key)
 	if err != nil {
-		logger.ErrorWF("DelEquipSuitInfo fail",
+		logger.CtxError(ctx, "DelEquipSuitInfo fail",
 			zap.Error(err),
 			zap.String("key", key))
 		return err
 	}
-	logger.InfoWF("DelEquipSuitInfo succ",
+	logger.CtxInfo(ctx, "DelEquipSuitInfo succ",
 		zap.String("key", key))
 	return err
 }
 
 // 批量保存装配数据
-func BatchSaveDollAssembleSuit(logger fklog.FKLogI, userId uint64, equipsMap map[string]*MazeEquipCache.MazeEquipPosDb) (err error) {
+func BatchSaveDollAssembleSuit(ctx context.Context, userId uint64, equipsMap map[string]*MazeEquipCache.MazeEquipPosDb) (err error) {
+	logger := fklog.ContextAppLogger(ctx)
 	args := make([]interface{}, 0, 1+2*len(equipsMap))
 	if len(equipsMap) == 0 {
 		return
@@ -232,15 +236,15 @@ func BatchSaveDollAssembleSuit(logger fklog.FKLogI, userId uint64, equipsMap map
 	}
 
 	// redis操作
-	_, err = gRedis.Do(context.TODO(), "HMSET", args...)
+	_, err = gRedis.Do(ctx, "HMSET", args...)
 	if err != nil {
-		logger.ErrorWF("BatchSaveDollAssembleSuit redis with fail",
+		logger.CtxError(ctx, "BatchSaveDollAssembleSuit redis with fail",
 			zap.Error(err),
 			zap.Any("equips", equipsMap),
 			zap.String("key", key))
 		return err
 	}
-	logger.InfoWF("BatchSaveDollAssembleSuit succ",
+	logger.CtxInfo(ctx, "BatchSaveDollAssembleSuit succ",
 		zap.Any("equips", equipsMap),
 		zap.String("key", key))
 	return nil

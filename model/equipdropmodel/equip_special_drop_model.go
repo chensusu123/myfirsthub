@@ -3,9 +3,10 @@ package equipdropmodel
 import (
 	"context"
 	"fmt"
+	"maze_game_server/io"
+
 	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fklog"
 	"go.uber.org/zap"
-	"maze_game_server/io"
 )
 
 func getRedisKey(userId uint64) string {
@@ -37,7 +38,7 @@ func (info *EquipSpecialDropModel) load(ctx context.Context, userID uint64) (err
 	//}
 	//err = serialize.Unmarshal(bytes, info)
 	//if err != nil {
-	//	logger.ErrorWF("EquipSpecialDropModel load Unmarshal failed", zap.Error(err), zap.Uint64("userID", userID))
+	//	logger.CtxError(ctx,"EquipSpecialDropModel load Unmarshal failed", zap.Error(err), zap.Uint64("userID", userID))
 	//	return err
 	//}
 
@@ -53,7 +54,7 @@ func (info *EquipSpecialDropModel) load(ctx context.Context, userID uint64) (err
 func (info *EquipSpecialDropModel) Save(ctx context.Context, userID uint64) (err error) {
 	//bytes, err := serialize.Marshal(info)
 	//if err != nil {
-	//	logger.ErrorWF("EquipSpecialDropModel save Marshal failed", zap.Error(err), zap.Uint64("userID", userID))
+	//	logger.CtxError(ctx,"EquipSpecialDropModel save Marshal failed", zap.Error(err), zap.Uint64("userID", userID))
 	//	return err
 	//}
 	//return mazeequipspecialdropredis.SetMazeEquipSpecialDropInfo(logger, userID, bytes)
