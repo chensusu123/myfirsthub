@@ -141,7 +141,16 @@ func (g *Game) OnMazeBarrierEnterRQ_10447_10448(s *session.Session, req *MazeGam
 			res.ErrInfo = errors.MODULE_ERROR.ToInfo()
 			return err
 		}
+
+		// 存档的情况需要buff能力点存储删除
+		err = tempbuffservice.GlobalTempBuffService.ClearBuffCountingPoints(ctx, userId, req.GetBarrierId(), saveData.StageId)
+		if err != nil {
+			logger.CtxError(ctx, "OnMazeBarrierEnterRQ ClearBuffCountingPoints fail", zap.Error(err))
+			res.ErrInfo = errors.MODULE_ERROR.ToInfo()
+			return err
+		}
 	}
+
 	rescueItems := make([]*MazeGame.RescueItemInfo, 0, len(saveData.RescueItems))
 	for _, i := range saveData.RescueItems {
 		rescueItems = append(rescueItems, &MazeGame.RescueItemInfo{

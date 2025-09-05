@@ -92,3 +92,16 @@ func GetPassAreaInfos(barrierId, stageId int32) []*AreaInfo {
 	}
 	return passArea
 }
+
+// 获取当前未通过的区域
+func GetUnPassAreaInfos(barrierID, stageID int32) []*AreaInfo {
+	areaInfos := GetBarrierAreaInfos(barrierID)
+	unPassArea := make([]*AreaInfo, 0)
+	for _, areaInfo := range areaInfos {
+		if areaInfo.StageId == 0 || areaInfo.StageId > stageID {
+			unPassArea = append(unPassArea, areaInfo)
+		}
+	}
+
+	return unPassArea
+}

@@ -43,6 +43,11 @@ type TempBuffService interface {
 
 	// 获取已选择的词条组列表
 	GetTempBuffGroupList(ctx context.Context, userId uint64, barrierId int32) ([]*GroupInfo, error)
+
+	// 增加能量点数 能量点数满了则推buff列表给客户端
+	AddTmpBuffEnergy(ctx context.Context, userID uint64, barrierID, areaID, areaIndex int32, energyCount int32) error
+	// 清理未通过的区域技能点数累计
+	ClearBuffCountingPoints(ctx context.Context, userID uint64, barrierID int32, stageID int32) error
 }
 
 // GlobalTempBuffService 临时buff可用全局唯一对象
