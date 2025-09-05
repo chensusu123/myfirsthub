@@ -631,7 +631,7 @@ func processPendingMessage(a *agent, data pendingMessage, chWrite chan WriteItem
 	}
 	ok := safeSend(chWrite, WriteItem{ctx: ctx, data: p})
 	if !ok {
-		span.RecordError(err)
+		span.RecordError(errors.New("chWrite failed"))
 		span.SetStatus(codes.Error, "safeSend chWrite failed.")
 	}
 	return nil

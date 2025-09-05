@@ -5,6 +5,7 @@ import (
 )
 
 func safeSend[T any](ch chan T, data T) (ok bool) {
+	ok = true
 	defer func() {
 		if err := recover(); err != nil {
 			ok = false
