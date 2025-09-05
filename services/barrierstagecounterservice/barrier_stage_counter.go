@@ -13,7 +13,6 @@ import (
 	"maze_game_server/model/flowmodel/mazemonstermodel"
 	"maze_game_server/services/barrieritemservice"
 	"maze_game_server/services/flowservice"
-	"maze_game_server/services/tempbuffservice"
 
 	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fklog"
 	"go.uber.org/zap"
@@ -113,7 +112,7 @@ func (s service) AddKillMonsterNum(ctx context.Context, userId uint64, barrierId
 
 	// 计算装备分数值 物品分数值
 	foeCfg := mazefoev8.GetMazeFoeConfig(ctx, monsterId)
-	nowEquipScore, dropEquips, err := barrieritemservice.GbarrierItemsService.AddEquipScore(ctx, userId, barrierId, killMonsterNum, foeCfg.Drop_equip_score_num, monsterGuid, monsterPos)
+	nowEquipScore, dropEquips, err := barrieritemservice.GbarrierItemsService.AddEquipScore(ctx, userId, barrierId, foeCfg.Drop_equip_score_num, killMonsterNum, monsterGuid, monsterPos)
 	if err != nil {
 		logger.CtxError(ctx, "AddKillMonsterNum AddEquipScore Fail",
 			zap.Uint64("userID", userId),
@@ -154,15 +153,16 @@ func (s service) AddKillMonsterNum(ctx context.Context, userId uint64, barrierId
 		return 0, nil, err
 	}
 
-	err = tempbuffservice.GlobalTempBuffService.AddTmpBuffEnergy(ctx, userId, barrierId, areaID, areaIndex, foeCfg.Drop_energy_num)
-	if err != nil {
-		logger.CtxError(ctx, "AddKillMonsterNum AddTmpBuffEnergy Fail",
-			zap.Uint64("userID", userId),
-			zap.Int32("barrierId", barrierId),
-			zap.Int32("monsterId", monsterId),
-		)
-		return 0, nil, err
-	}
+	// 能量点数增加
+	// err = tempbuffservice.GlobalTempBuffService.AddTmpBuffEnergy(ctx, userId, barrierId, areaID, areaIndex, foeCfg.Drop_energy_num)
+	// if err != nil {
+	// 	logger.CtxError(ctx, "AddKillMonsterNum AddTmpBuffEnergy Fail",
+	// 		zap.Uint64("userID", userId),
+	// 		zap.Int32("barrierId", barrierId),
+	// 		zap.Int32("monsterId", monsterId),
+	// 	)
+	// 	return 0, nil, err
+	// }
 
 	err = recordModel.Save(ctx, userId, barrierId)
 	if err != nil {
