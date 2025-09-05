@@ -114,7 +114,7 @@ func CreateGroup(ctx context.Context, appID int32, creator uint64, groupID int64
 	} else {
 		values = append(values, "info", info)
 	}
-	var memberIDs = invitees
+	memberIDs := invitees
 	if creator != 0 {
 		memberIDs = append(memberIDs, creator)
 	}
@@ -154,9 +154,7 @@ func CreateGroup(ctx context.Context, appID int32, creator uint64, groupID int64
 
 // InviteMember
 func InviteMember(ctx context.Context, appID int32, groupID int64, memberID uint64) (err error) {
-	var (
-		logger = fklog.ContextAppLogger(ctx)
-	)
+	logger := fklog.ContextAppLogger(ctx)
 	cli, err := globalredis.GCli.GetDB()
 	if err != nil {
 		logger.CtxError(ctx, "InviteMember Client fail",
@@ -203,9 +201,7 @@ func InviteMember(ctx context.Context, appID int32, groupID int64, memberID uint
 
 // 是否为群成员
 func IsMember(ctx context.Context, appID int32, groupID int64, memberID uint64) (is bool, err error) {
-	var (
-		logger = fklog.ContextAppLogger(ctx)
-	)
+	logger := fklog.ContextAppLogger(ctx)
 	cli, err := globalredis.GCli.GetDB()
 	if err != nil {
 		logger.CtxError(ctx, "IsMember Client fail",

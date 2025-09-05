@@ -5,6 +5,7 @@ import (
 	"strconv"
 
 	"maze_game_server/io/broadcastcli"
+	"maze_game_server/services/subjectchangeservice"
 	"maze_game_server/usecase/online"
 
 	"github.com/cloudwego/hertz/pkg/app"
@@ -17,7 +18,8 @@ func init() {
 	admin.HandleFunc(admin.MethodGet, "/cmds/users/show", showusers)
 	admin.HandleFunc(admin.MethodGet, "/cmds/users/isonline", isonline)
 	admin.HandleFunc(admin.MethodGet, "/cmds/users/pushmsg", pushMsg)
-	admin.HandleFunc(admin.MethodGet, "/cmds/users/broadcast", broadcast)
+	admin.HandleFunc(admin.MethodGet, "/cmds/users/broadcast/add", broadcastAdd)
+	admin.HandleFunc(admin.MethodGet, "/cmds/users/broadcast/del", broadcastDel)
 }
 
 type ReturnMsg struct {
@@ -86,5 +88,45 @@ func broadcast(ctx context.Context, c *app.RequestContext) {
 
 	msg := c.Query("msg")
 	err := broadcastcli.BroadcastTest(ctx, userID, 222, []byte(msg))
+	c.JSON(consts.StatusOK, MakeSuccessReturnMsg(err))
+}
+
+func broadcastAdd(ctx context.Context, c *app.RequestContext) {
+	userID := c.Query("userID")
+	if userID == "" {
+		c.JSON(consts.StatusOK, MakeErrReturnMsg(400, "userID is empty"))
+		return
+	}
+	userIDUint64, err := strconv.ParseUint(userID, 10, 64)
+	if err != nil {
+		c.JSON(consts.StatusOK, MakeErrReturnMsg(400, "userID is invalid"))
+		return
+	}
+	broadcastID := c.Query("broadcastID")
+	if broadcastID == "" {
+		c.JSON(consts.StatusOK, MakeErrReturnMsg(400, "broadcastID is empty"))
+		return
+	}
+	err = subjectchangeservice.Add(ctx, broadcastID, int64(userIDUint64))
+	c.JSON(consts.StatusOK, MakeSuccessReturnMsg(err))
+}
+
+func broadcastDel(ctx context.Context, c *app.RequestContext) {
+	userID := c.Query("userID")
+	if userID == "" {
+		c.JSON(consts.StatusOK, MakeErrReturnMsg(400, "userID is empty"))
+		return
+	}
+	userIDUint64, err := strconv.ParseUint(userID, 10, 64)
+	if err != nil {
+		c.JSON(consts.StatusOK, MakeErrReturnMsg(400, "userID is invalid"))
+		return
+	}
+	broadcastID := c.Query("broadcastID")
+	if broadcastID == "" {
+		c.JSON(consts.StatusOK, MakeErrReturnMsg(400, "broadcastID is empty"))
+		return
+	}
+	err = subjectchangeservice.Add(ctx, broadcastID, int64(userIDUint64))
 	c.JSON(consts.StatusOK, MakeSuccessReturnMsg(err))
 }

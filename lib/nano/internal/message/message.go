@@ -78,6 +78,7 @@ type Message struct {
 	Route      string // route for locating service
 	Data       []byte // payload
 	compressed bool   // is message compressed
+	RqID       uint16
 }
 
 // New returns a new message instance
@@ -101,7 +102,6 @@ func routable(t Type) bool {
 
 func invalidType(t Type) bool {
 	return t < Request || t > Push
-
 }
 
 // Encode marshals message to binary format. Different message types is corresponding to
