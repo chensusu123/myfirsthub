@@ -45,7 +45,7 @@ func (s *service) FallOffSkillItems(ctx context.Context, userID uint64, barrierI
 
 	data, err := barrieritemsmodel.NewBarrierItems(ctx, userID, barrierID)
 	if err != nil {
-		logger.CtxError(ctx, "ClearBarrierItems NewBarrierItems Fail",
+		logger.CtxError(ctx, "FallOffSkillItems NewBarrierItems Fail",
 			zap.Uint64("userID", userID),
 			zap.Int32("barrierID", barrierID),
 			zap.Int32("killMonsterNum", killMonsterNum),
@@ -57,10 +57,16 @@ func (s *service) FallOffSkillItems(ctx context.Context, userID uint64, barrierI
 		return
 	}
 
+	logger.CtxInfo(ctx, "FallOffSkillItems GetData Successful",
+		zap.Uint64("userID", userID),
+		zap.Int32("barrierID", barrierID),
+		zap.Any("nowdata", data),
+	)
+
 	// var reason string
 	attrDbs, err := mazecalcattrredis.BatchGetMazeCalcAttr(ctx, userID, []int32{constdef.BloodBottleProbability, constdef.BloodBottlesNumber})
 	if err != nil {
-		logger.CtxError(ctx, "checkCondition GetAllMazeCalcAttr nil", zap.Uint64("userID", userID))
+		logger.CtxError(ctx, "FallOffSkillItems BatchGetMazeCalcAttr nil", zap.Uint64("userID", userID))
 		return
 	}
 
@@ -150,11 +156,18 @@ func (s *service) FallOffSkillItems(ctx context.Context, userID uint64, barrierI
 		return
 	}
 
+	logger.CtxInfo(ctx, "FallOffSkillItems GetData Successful",
+		zap.Uint64("userID", userID),
+		zap.Int32("barrierID", barrierID),
+		zap.Any("nowdata", data),
+		zap.Any("dropItems", dropItems),
+	)
+
 	// 推送物品
 	if len(dropItems) > 0 {
 		err = item.OnSendItemsPack(ctx, userID, dropItems, nil, guid, pos)
 		if err != nil {
-			logger.CtxWarn(ctx, "AddEquipScore OnSendItemsPack Fail",
+			logger.CtxWarn(ctx, "FallOffSkillItems OnSendItemsPack Fail",
 				zap.Uint64("userID", userID),
 				zap.Int32("barrierID", barrierID),
 				zap.Int64("guid", guid),

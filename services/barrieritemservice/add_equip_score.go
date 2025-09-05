@@ -45,6 +45,12 @@ func (s *service) AddEquipScore(ctx context.Context, userID uint64, barrierID, s
 		return
 	}
 
+	logger.CtxInfo(ctx, "AddEquipScore GetData Successful",
+		zap.Uint64("userID", userID),
+		zap.Int32("barrierID", barrierID),
+		zap.Any("nowdata", data),
+	)
+
 	barrierCfg := mazebarriesv8config.GetStageConfig(ctx, barrierID)
 	if barrierCfg.Need_equip_score == 0 {
 		logger.CtxError(ctx, "AddEquipScore barrierCfg.Need_equip_score Equal zero",
@@ -102,6 +108,13 @@ func (s *service) AddEquipScore(ctx context.Context, userID uint64, barrierID, s
 		)
 		return
 	}
+
+	logger.CtxInfo(ctx, "AddEquipScore Add Equip Successful",
+		zap.Uint64("userID", userID),
+		zap.Int32("barrierID", barrierID),
+		zap.Any("nowdata", data),
+		zap.Any("addequips", equips),
+	)
 
 	// 推包
 	if len(equips) > 0 {
