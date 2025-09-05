@@ -22,7 +22,7 @@ const (
 	_ = protoimpl.EnforceVersion(protoimpl.MaxVersion - 20)
 )
 
-// ## 10643
+//## 10643 UN_TCP_PACK_CLI_BROADCAST_BATCH_RQ
 // 订阅主题请求
 type SubscribeRQ struct {
 	state         protoimpl.MessageState
@@ -84,7 +84,7 @@ type SubscribeItem struct {
 	sizeCache     protoimpl.SizeCache
 	unknownFields protoimpl.UnknownFields
 
-	Subject *string `protobuf:"bytes,1,opt,name=subject" json:"subject,omitempty"` // 主题
+	Subject *string `protobuf:"bytes,1,opt,name=subject" json:"subject,omitempty"` // 主题(比如联盟：league.broadcast.chat.聊天组id)
 }
 
 func (x *SubscribeItem) Reset() {
@@ -126,7 +126,7 @@ func (x *SubscribeItem) GetSubject() string {
 	return ""
 }
 
-// ## 10644
+//## 10644 UN_TCP_PACK_CLI_BROADCAST_BATCH_RS
 // 订阅主题应答
 type SubscribeRS struct {
 	state         protoimpl.MessageState
