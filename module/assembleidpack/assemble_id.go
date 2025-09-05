@@ -78,7 +78,7 @@ func SendAssembleChgID(ctx context.Context, userId uint64, assembleInfo *MazeEqu
 	}
 	idp.Mask = proto.Int32(mask)
 	idp.Token = proto.Int64(GetAssembleToken())
-	err := online.ClusterPush(context.TODO(), uint64(userId), 10422, idp)
+	err := online.ClusterPush(ctx, uint64(userId), 10422, idp)
 	if err != nil {
 		logger.CtxError(ctx, "SendAssembleChgID SendArrivePacket err", zap.Error(err))
 		return err
