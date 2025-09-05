@@ -85,6 +85,10 @@ func (s *service) FallOffSkillItems(ctx context.Context, userID uint64, barrierI
 			for dropItemID, dropCount := range barrierDrop.Drop_items {
 				if dropItemID == constdef.BloodBottleID && data.Items[int64(dropItemID)] == row.Value_int {
 					// reason += fmt.Sprintf("血瓶到上限了 当前:%d 上限:%d\n", data.Items[int64(dropItemID)], row.Value_int)
+					logger.CtxInfo(ctx, "FallOffSkillItems BloodBottle Full",
+						zap.Uint64("userID", userID),
+						zap.Int64("data.Items[int64(dropItemID)]", data.Items[int64(dropItemID)]),
+					)
 					break
 				}
 
@@ -121,7 +125,7 @@ func (s *service) FallOffSkillItems(ctx context.Context, userID uint64, barrierI
 					break
 				}
 
-				// 判断百分比
+				// 判断百分比 10000
 				nowRandNum := fkutil.RandInt(1, 10000)
 				if nowRandNum > int(barrierDrop.Drop_ratio_max) || nowRandNum < int(barrierDrop.Drop_ratio_min) {
 					// reason += fmt.Sprintf("随机概率不满足条件 当前概率:%d 允许概率[%d~%d]\n", nowRandNum, barrierDrop.Drop_ratio_min, barrierDrop.Drop_ratio_max)
@@ -156,7 +160,7 @@ func (s *service) FallOffSkillItems(ctx context.Context, userID uint64, barrierI
 		return
 	}
 
-	logger.CtxInfo(ctx, "FallOffSkillItems GetData Successful",
+	logger.CtxInfo(ctx, "FallOffSkillItems Add Successful",
 		zap.Uint64("userID", userID),
 		zap.Int32("barrierID", barrierID),
 		zap.Any("nowdata", data),
@@ -190,13 +194,13 @@ func checkCondition(ctx context.Context, attrDbs map[int32]int64, conditionID in
 			fmt.Sprintf("当前血量不满足条件 当前血量:%d 总血量:%d 低于百分比:%d\n", nowBloodVolume, allBloodVolume, barrierDropCondition.Value)
 	case 2:
 		numerator := float64(10000+attrDbs[constdef.BloodBottlesNumber]) / 10000.0
-		fmt.Printf("numerator:%v\n", numerator)
+		// fmt.Printf("numerator:%v\n", numerator)
 		count := math.Ceil(float64(barrierDropCondition.Value) * numerator)
-		fmt.Printf("count:%v\n", count)
+		// fmt.Printf("count:%v\n", count)
 		intCount := int32(count)
-		if intCount == 0 {
-			fmt.Printf("conditionID:%d", conditionID)
-		}
+		// if intCount == 0 {
+		// 	fmt.Printf("conditionID:%d", conditionID)
+		// }
 		return skillCount <= intCount, nil, fmt.Sprintf("当前使用血瓶上限不满足条件 当前使用血瓶:%d 允许使用上限:%d\n", skillCount, intCount)
 	case 3:
 		return nowSkillCount <= int64(barrierDropCondition.Value), nil, fmt.Sprintf("当前场上同时存在血瓶不满足条件 当前血瓶数:%d 允许存在血瓶数:%d", nowSkillCount, barrierDropCondition.Value)

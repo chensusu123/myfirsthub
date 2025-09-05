@@ -12,6 +12,7 @@ import (
 
 	"maze_game_server/common/constdef"
 	"maze_game_server/common/function/addequip"
+	"maze_game_server/common/function/flowutil"
 	"maze_game_server/common/function/itemutil"
 	"maze_game_server/common/function/packtopb/equiptoitem"
 	"maze_game_server/config/GMazeBarriesV8Cfg"
@@ -21,6 +22,7 @@ import (
 	"maze_game_server/config/GMazeShopV8Cfg"
 	"maze_game_server/io/kafka/mazebarrieruserkafka"
 	"maze_game_server/io/kafka/mazeuserlevelkafka"
+	"maze_game_server/io/redis/mazecalcattrredis"
 	"maze_game_server/module/mazebarrier"
 	"maze_game_server/module/mazecommonvalue"
 	"maze_game_server/module/mazeuserinfo"
@@ -295,12 +297,17 @@ func CalUserSweepBarrierAward(ctx context.Context, uid uint64, barrierId int32, 
 		}
 	}
 
+	attrMap, err := mazecalcattrredis.BatchGetMazeCalcAttr(ctx, uid, []int32{constdef.DollFormulaAttack, constdef.DollFormulaDefend, constdef.DollFormulaBlood})
 	sweepRecord := &mazebarrieruserkafka.MazeBarrierUserGameRecord{
 		UserId:         uid,
 		Barrier:        barrierId,
 		GameRet:        mazebarrieruserkafka.GameRetSweep,
 		Awards:         getAwards(ctx, rareItem, awardItem),
 		KillMonsterNum: GetBarrirerMonsterNum(ctx, barrierId),
+		UserData: flowutil.UserType2Flow(constdef.DollFormulaAttack, attrMap[constdef.DollFormulaAttack],
+			constdef.DollFormulaDefend, attrMap[constdef.DollFormulaDefend],
+			constdef.DollFormulaBlood, attrMap[constdef.DollFormulaBlood],
+		),
 	}
 
 	mazebarrieruserkafka.PushMazeBarrierUserRecord(ctx, sweepRecord)

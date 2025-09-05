@@ -109,7 +109,7 @@ func (s *service) AddEquipScore(ctx context.Context, userID uint64, barrierID, s
 		return
 	}
 
-	logger.CtxInfo(ctx, "AddEquipScore Add Equip Successful",
+	logger.CtxInfo(ctx, "AddEquipScore Add Successful",
 		zap.Uint64("userID", userID),
 		zap.Int32("barrierID", barrierID),
 		zap.Any("nowdata", data),

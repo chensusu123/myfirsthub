@@ -125,7 +125,7 @@ func (s *service) AddScoreItem(ctx context.Context, userID uint64, barrierID int
 		return
 	}
 
-	logger.CtxInfo(ctx, "AddScoreItem AddItems Successful",
+	logger.CtxInfo(ctx, "AddScoreItem Add Successful",
 		zap.Uint64("userID", userID),
 		zap.Int32("barrierID", barrierID),
 		zap.Any("nowdata", data),
@@ -213,7 +213,7 @@ func (s *service) AddItems(ctx context.Context, userID uint64, barrierID int32, 
 		)
 	}
 
-	logger.CtxInfo(ctx, "AddItems GetData Successful",
+	logger.CtxInfo(ctx, "AddItems Add Successful",
 		zap.Uint64("userID", userID),
 		zap.Int32("barrierID", barrierID),
 		zap.Any("nowdata", data),
