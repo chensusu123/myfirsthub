@@ -2,7 +2,6 @@ package barrieritemservice
 
 import (
 	"context"
-	"maze_game_server/config/GMazeItemsV8Cfg"
 	"maze_game_server/model/barrieritemsmodel"
 	"maze_game_server/services/itemservice"
 
@@ -54,10 +53,6 @@ func (s *service) TrySubBarrierItems(ctx context.Context, userID uint64, barrier
 	// 实际添加物品
 	for _, item := range items {
 		// 技能道具使用
-		itemCfg := GMazeItemsV8Cfg.GetWithCtx(ctx, item.ItemId)
-		if itemCfg.Type == int32(barrieritemsmodel.SpecialType) {
-			data.SkillsCount[item.ItemId] += int32(item.Count)
-		}
 		data.Items[int64(item.ItemId)] -= item.Count
 		subItems = append(subItems, &itemservice.ItemInfo{
 			ItemId: item.ItemId,
