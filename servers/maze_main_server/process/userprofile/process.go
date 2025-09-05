@@ -4,13 +4,11 @@ package userprofile
 
 import (
 	"maze_game_server/common/errors"
-	"maze_game_server/io/mysql/flowrecord"
 	"maze_game_server/lib/nano/component"
 	"maze_game_server/lib/nano/session"
 	"maze_game_server/model/userprofilemodel"
 	"maze_game_server/pb/common/UserProfile"
 	"maze_game_server/services/userprofileservice"
-	"time"
 
 	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fklog"
 	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fkprometheus"
@@ -112,19 +110,19 @@ func (p *Profile) OnAlterUserProfile_10483_10484(s *session.Session, req *UserPr
 		return
 	}
 
-	// 修改资料流水
-	err = flowrecord.GlobalAlterProfileRecordMysql.SaveAlterProfileRecord(flowrecord.AlterProfileRecord{
-		UserId:     userID,
-		NewVal:     newVal,
-		OldVal:     oldVal,
-		ChgDesc:    chgDesc,
-		CreateTime: time.Now().UnixMilli(), // ms
-	})
-	if err != nil {
-		logger.ErrorWF("OnAlterUserProfile save alter profile record fail", zap.Error(err))
-		res.ErrInfo = errors.DB_SAVE_ERROR.ToInfo()
-		return
-	}
+	// // 修改资料流水
+	// err = flowrecord.GlobalAlterProfileRecordMysql.SaveAlterProfileRecord(flowrecord.AlterProfileRecord{
+	// 	UserId:     userID,
+	// 	NewVal:     newVal,
+	// 	OldVal:     oldVal,
+	// 	ChgDesc:    chgDesc,
+	// 	CreateTime: time.Now().UnixMilli(), // ms
+	// })
+	// if err != nil {
+	// 	logger.ErrorWF("OnAlterUserProfile save alter profile record fail", zap.Error(err))
+	// 	res.ErrInfo = errors.DB_SAVE_ERROR.ToInfo()
+	// 	return
+	// }
 
 	res.UserProfile = alterProfile.ModelDataToPb()
 
