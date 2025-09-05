@@ -32,7 +32,7 @@ func (im *IM) OnQueryGroupMessages_10647_10648(s *session.Session, req *MazeIM.Q
 		groupId   = req.GetGroupId()
 		lastMsgID = req.GetLastMsgId()
 	)
-
+	res.GroupId = proto.Int64(groupId)
 	messages, err := groupservice.Default.QueryMessages(ctx, app.Maze, groupId, lastMsgID, 20)
 	if err != nil {
 		res.ErrInfo = errors.MODULE_ERROR.Wrap("获取消息失败")
