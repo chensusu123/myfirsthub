@@ -368,6 +368,8 @@ func (g *Game) OnBarrierUseItemRQ_10550_10551(s *session.Session, req *MazeGame.
 			return
 		}
 	}
+	// 返回装备列表
+	res.EquipList = req.GetEquipList()
 
 	return
 }
