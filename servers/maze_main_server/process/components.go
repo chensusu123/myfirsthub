@@ -22,6 +22,7 @@ import (
 	"maze_game_server/servers/maze_main_server/process/mail"
 	"maze_game_server/servers/maze_main_server/process/pay"
 	"maze_game_server/servers/maze_main_server/process/rob"
+	"maze_game_server/servers/maze_main_server/process/userprofile"
 )
 
 func Components() (comps *component.Components, routes *codec.Routes) {
@@ -53,6 +54,7 @@ func Components() (comps *component.Components, routes *codec.Routes) {
 		reg(frame.NewFrame())              // 帧同步组件
 		reg(mail.NewMail())                // 邮箱组件
 		reg(im.NewIM())                    // IM聊天组件
+		reg(userprofile.NewUserProfile()) // 个人资料
 	}
 
 	return
