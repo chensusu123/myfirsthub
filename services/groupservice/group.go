@@ -166,7 +166,7 @@ func (g *group) notifyGroupMessage(ctx context.Context, a app.App, userId uint64
 	}
 	logger.CtxInfo(ctx, "notifyMessage group", zap.Uint64("userId", userId), zap.Any("notifyMessage group", notifyMessage))
 
-	broadcastID := fmt.Sprintf("league.broadcast.chat.{%d}", groupID)
+	broadcastID := fmt.Sprintf("league.broadcast.chat.%d", groupID)
 	err = broadcastcli.Broadcast(ctx, broadcastID, packId, notifyMessage)
 	if err != nil {
 		logger.CtxError(ctx, "league.broadcast.chat notifyMessage error", zap.Error(err), zap.Any("broadcastID", broadcastID), zap.Any("packId", packId), zap.Any("notifyMessage", notifyMessage))
