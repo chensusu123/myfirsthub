@@ -2,6 +2,7 @@ package barrieritemservice
 
 import (
 	"context"
+	"fmt"
 	"math"
 	"maze_game_server/common/constdef"
 	"maze_game_server/config/GMazeBariresDropConditionV8Cfg"
@@ -56,6 +57,7 @@ func (s *service) FallOffSkillItems(ctx context.Context, userID uint64, barrierI
 		return
 	}
 
+	// var reason string
 	attrDbs, err := mazecalcattrredis.BatchGetMazeCalcAttr(ctx, userID, []int32{constdef.BloodBottleProbability, constdef.BloodBottlesNumber})
 	if err != nil {
 		logger.CtxError(ctx, "checkCondition GetAllMazeCalcAttr nil", zap.Uint64("userID", userID))
@@ -76,19 +78,36 @@ func (s *service) FallOffSkillItems(ctx context.Context, userID uint64, barrierI
 
 			for dropItemID, dropCount := range barrierDrop.Drop_items {
 				if dropItemID == constdef.BloodBottleID && data.Items[int64(dropItemID)] == row.Value_int {
+					// reason += fmt.Sprintf("血瓶到上限了 当前:%d 上限:%d\n", data.Items[int64(dropItemID)], row.Value_int)
+					break
+				}
+
+				// 判断杀怪
+				if killMonsterNum > barrierDrop.In_barries_kill_max || killMonsterNum < barrierDrop.In_barries_kill_min {
+					// reason += fmt.Sprintf("杀怪不满足条件 当前杀怪数:%d 杀怪范围[%d~%d]\n", killMonsterNum, barrierDrop.In_barries_kill_min, barrierDrop.In_barries_kill_max)
 					continue
+				}
+
+				// 判断掉落cd
+				nowTime := time.Now().UnixMilli()
+				if _, ok := data.SkillDropTime[itemID]; ok {
+					if nowTime-data.SkillDropTime[itemID] < int64(barrierDrop.Drop_cd) {
+						// reason += fmt.Sprintf("CD不满足条件 上次掉落时间:%d 当前时间:%d 时间间隔:%d 当前间隔:%d\n", data.SkillDropTime[itemID], nowTime, barrierDrop.Drop_cd, nowTime-data.SkillDropTime[itemID])
+						continue
+					}
 				}
 
 				isCondition := true
 				// 判断掉落条件id
 				for _, condionID := range barrierDrop.Drop_condition {
-					ok, err := checkCondition(ctx, attrDbs, condionID, nowBloodVolume, allBloodVolume, data.SkillsCount[dropItemID], data.Items[int64(dropItemID)])
+					ok, err, _ := checkCondition(ctx, attrDbs, condionID, nowBloodVolume, allBloodVolume, data.SkillsCount[dropItemID], data.Items[int64(dropItemID)])
 					if err != nil {
 						return nil, err
 					}
 
 					if !ok {
 						isCondition = false
+						// reason += rs
 					}
 				}
 
@@ -96,24 +115,11 @@ func (s *service) FallOffSkillItems(ctx context.Context, userID uint64, barrierI
 					break
 				}
 
-				// 判断杀怪
-				if killMonsterNum > barrierDrop.In_barries_kill_max || killMonsterNum < barrierDrop.In_barries_kill_min {
-					continue
-				}
-
 				// 判断百分比
 				nowRandNum := fkutil.RandInt(1, 10000)
-
 				if nowRandNum > int(barrierDrop.Drop_ratio_max) || nowRandNum < int(barrierDrop.Drop_ratio_min) {
+					// reason += fmt.Sprintf("随机概率不满足条件 当前概率:%d 允许概率[%d~%d]\n", nowRandNum, barrierDrop.Drop_ratio_min, barrierDrop.Drop_ratio_max)
 					continue
-				}
-
-				// 判断掉落cd
-				nowTime := time.Now().UnixMilli()
-				if _, ok := data.SkillDropTime[itemID]; ok {
-					if data.SkillDropTime[itemID]-nowTime < int64(barrierDrop.Drop_cd) {
-						continue
-					}
 				}
 
 				// 实际添加物品 并设置此类物品掉落cd
@@ -128,7 +134,8 @@ func (s *service) FallOffSkillItems(ctx context.Context, userID uint64, barrierI
 		}
 
 	}
-
+	// fmt.Println(reason)
+	// fmt.Println("------------------------------------------------")
 	err = data.Save(ctx, userID, barrierID)
 	if err != nil {
 		logger.CtxError(ctx, "FallOffSkillItems data Save Fail",
@@ -162,20 +169,27 @@ func (s *service) FallOffSkillItems(ctx context.Context, userID uint64, barrierI
 	return
 }
 
-func checkCondition(ctx context.Context, attrDbs map[int32]int64, conditionID int32, nowBloodVolume int64, allBloodVolume int64, skillCount int32, nowSkillCount int64) (bool, error) {
+func checkCondition(ctx context.Context, attrDbs map[int32]int64, conditionID int32, nowBloodVolume int64, allBloodVolume int64, skillCount int32, nowSkillCount int64) (bool, error, string) {
 	barrierDropCondition := GMazeBariresDropConditionV8Cfg.GetWithCtx(ctx, conditionID)
 	switch barrierDropCondition.Condition_type {
 	case 1:
-		return nowBloodVolume*int64(1000000) <= allBloodVolume*(int64(barrierDropCondition.Value)+attrDbs[constdef.BloodBottleProbability]), nil
+		return nowBloodVolume*int64(1000000) <= allBloodVolume*(int64(barrierDropCondition.Value)+attrDbs[constdef.BloodBottleProbability]), nil,
+			fmt.Sprintf("当前血量不满足条件 当前血量:%d 总血量:%d 低于百分比:%d\n", nowBloodVolume, allBloodVolume, barrierDropCondition.Value)
 	case 2:
 		numerator := float64(10000+attrDbs[constdef.BloodBottlesNumber]) / 10000.0
+		fmt.Printf("numerator:%v\n", numerator)
 		count := math.Ceil(float64(barrierDropCondition.Value) * numerator)
+		fmt.Printf("count:%v\n", count)
 		intCount := int32(count)
-		return skillCount <= intCount, nil
+		if intCount == 0 {
+			fmt.Printf("conditionID:%d", conditionID)
+		}
+		return skillCount <= intCount, nil, fmt.Sprintf("当前使用血瓶上限不满足条件 当前使用血瓶:%d 允许使用上限:%d\n", skillCount, intCount)
 	case 3:
-		return nowSkillCount <= int64(barrierDropCondition.Value), nil
+		return nowSkillCount <= int64(barrierDropCondition.Value), nil, fmt.Sprintf("当前场上同时存在血瓶不满足条件 当前血瓶数:%d 允许存在血瓶数:%d", nowSkillCount, barrierDropCondition.Value)
 	case 4:
-		return nowBloodVolume*int64(1000000) >= allBloodVolume*(int64(barrierDropCondition.Value)+attrDbs[constdef.BloodBottleProbability]), nil
+		return nowBloodVolume*int64(1000000) >= allBloodVolume*(int64(barrierDropCondition.Value)+attrDbs[constdef.BloodBottleProbability]), nil,
+			fmt.Sprintf("当前血量不满足条件 当前血量:%d 总血量:%d 高于百分比:%d\n", nowBloodVolume, allBloodVolume, barrierDropCondition.Value)
 	}
-	return false, nil
+	return false, nil, ""
 }
