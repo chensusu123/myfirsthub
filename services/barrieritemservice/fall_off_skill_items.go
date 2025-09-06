@@ -65,7 +65,7 @@ func (s *service) FallOffSkillItems(ctx context.Context, userID uint64, barrierI
 	)
 
 	// var reason string
-	attrDbs, err := mazecalcattrredis.BatchGetMazeCalcAttr(ctx, userID, []int32{constdef.BloodBottleProbability, constdef.BloodBottlesNumber})
+	attrDbs, err := mazecalcattrredis.GetAllMazeCalcAttr(ctx, userID)
 	if err != nil {
 		logger.CtxError(ctx, "FallOffSkillItems BatchGetMazeCalcAttr nil", zap.Uint64("userID", userID))
 		return
