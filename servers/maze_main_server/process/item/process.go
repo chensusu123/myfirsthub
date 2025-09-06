@@ -84,7 +84,7 @@ func (i *Item) OnResetMazeBagRQ_10402_10403(s *session.Session, req *MazeBag.Res
 	return
 }
 
-func OnSendItemsPack(ctx context.Context, userID uint64, items []*itemservice.ItemInfo, equips []*itemservice.ItemInfo, monsterGuid int64, monsterPos string) (err error) {
+func OnSendItemsPack(ctx context.Context, userID uint64, items []*itemservice.ItemInfo, equips []*itemservice.ItemInfo, monsterGuid int64, monsterPos string, reaSon int32) (err error) {
 	logger := fklog.ContextAppLogger(ctx)
 	rs := &MazeGame.MazeDropItemID{}
 
@@ -110,6 +110,8 @@ func OnSendItemsPack(ctx context.Context, userID uint64, items []*itemservice.It
 
 	rs.MonsterGuid = proto.Int64(monsterGuid)
 	rs.MonsterPos = proto.String(monsterPos)
+
+	rs.Reason = proto.Int32(reaSon)
 
 	err = online.ClusterPush(ctx, uint64(userID), 10665, rs)
 	if err != nil {

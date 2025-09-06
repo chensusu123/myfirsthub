@@ -27,7 +27,7 @@ type barrierItemsService interface {
 	SpecialAddBloodBottles(ctx context.Context, userID uint64, barrierID int32) error
 	// 检测血瓶属性
 	// -- 血瓶当前数量 同时拥有血瓶上限 血瓶使用cd
-	CheckBloodAttr(ctx context.Context, userID uint64, barrierID int32) (bloodBottleCount, bloodBottleLimit, bloodBottleCd int64, err error)
+	CheckBloodAttr(ctx context.Context, userID uint64, barrierID int32) (bloodBottleLimit, bloodBottleCd int64, err error)
 }
 
 var GbarrierItemsService barrierItemsService

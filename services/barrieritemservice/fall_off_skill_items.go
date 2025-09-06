@@ -187,7 +187,7 @@ func (s *service) FallOffSkillItems(ctx context.Context, userID uint64, barrierI
 
 	// 推送物品
 	if len(dropItems) > 0 {
-		err = item.OnSendItemsPack(ctx, userID, dropItems, nil, guid, pos)
+		err = item.OnSendItemsPack(ctx, userID, dropItems, nil, guid, pos, 1)
 		if err != nil {
 			logger.CtxWarn(ctx, "FallOffSkillItems OnSendItemsPack Fail",
 				zap.Uint64("userID", userID),

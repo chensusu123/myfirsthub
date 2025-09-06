@@ -134,7 +134,7 @@ func (s *service) AddScoreItem(ctx context.Context, userID uint64, barrierID int
 
 	// 推包
 	if len(dropItems) > 0 {
-		err = item.OnSendItemsPack(ctx, userID, dropItems, nil, guid, pos)
+		err = item.OnSendItemsPack(ctx, userID, dropItems, nil, guid, pos, 1)
 		if err != nil {
 			logger.CtxWarn(ctx, "AddScoreItem OnSendItemsPack Fail",
 				zap.Uint64("userID", userID),
@@ -222,7 +222,7 @@ func (s *service) AddItems(ctx context.Context, userID uint64, barrierID int32, 
 
 	// 推包
 	if len(dropItems) > 0 {
-		err = item.OnSendItemsPack(ctx, userID, dropItems, nil, guid, pos)
+		err = item.OnSendItemsPack(ctx, userID, dropItems, nil, guid, pos, 1)
 		if err != nil {
 			logger.CtxWarn(ctx, "AddScoreItem OnSendItemsPack Fail",
 				zap.Uint64("userID", userID),

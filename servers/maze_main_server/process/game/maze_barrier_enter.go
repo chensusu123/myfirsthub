@@ -111,13 +111,12 @@ func (g *Game) OnMazeBarrierEnterRQ_10447_10448(s *session.Session, req *MazeGam
 		return
 	}
 	// 获取关卡血瓶使用信息
-	cur, max, cd, err := barrieritemservice.GbarrierItemsService.CheckBloodAttr(ctx, userId, req.GetBarrierId())
+	max, cd, err := barrieritemservice.GbarrierItemsService.CheckBloodAttr(ctx, userId, req.GetBarrierId())
 	if err != nil {
 		logger.CtxError(ctx, "OnMazeBarrierEnterRQ CheckBloodAttr fail", zap.Error(err), zap.Int32("Barrier", req.GetBarrierId()))
 		return
 	}
 	res.BloodDrugUseInfo = &MazeGame.BloodDrugUseInfo{
-		CurCount: proto.Int32(int32(cur)),
 		MaxCount: proto.Int32(int32(max)),
 		Cooldown: proto.Int32(int32(cd)),
 	}

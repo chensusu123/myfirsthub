@@ -56,13 +56,12 @@ func HandleTempBuffMsg(ctx context.Context, msg *MazeTempBuffChangeMsg) {
 	SendMazeBarrierChgPack(ctx, userId, mazeBattleInfo)
 
 	// TODO 处理战斗数据变化(武力 血量 技能属性等)
-	cur, max, cd, err := barrieritemservice.GbarrierItemsService.CheckBloodAttr(ctx, userId, userInfo.Barrier)
+	max, cd, err := barrieritemservice.GbarrierItemsService.CheckBloodAttr(ctx, userId, userInfo.Barrier)
 	if err != nil {
 		logger.CtxError(ctx, "HandleTempBuffMsg CheckBloodAttr fail", zap.Error(err), zap.Int32("Barrier", userInfo.Barrier))
 		return
 	}
 	bloodDrugUseInfo := &MazeGame.BloodDrugUseInfo{
-		CurCount: proto.Int32(int32(cur)),
 		MaxCount: proto.Int32(int32(max)),
 		Cooldown: proto.Int32(int32(cd)),
 	}

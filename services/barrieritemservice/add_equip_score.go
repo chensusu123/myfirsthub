@@ -118,7 +118,7 @@ func (s *service) AddEquipScore(ctx context.Context, userID uint64, barrierID, s
 
 	// 推包
 	if len(equips) > 0 {
-		err = item.OnSendItemsPack(ctx, userID, nil, equips, guid, pos)
+		err = item.OnSendItemsPack(ctx, userID, nil, equips, guid, pos, 1)
 		if err != nil {
 			logger.CtxWarn(ctx, "AddEquipScore OnSendItemsPack Fail",
 				zap.Uint64("userID", userID),

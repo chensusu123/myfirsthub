@@ -6,13 +6,15 @@ import (
 	"maze_game_server/excel/mazeconfigv8config"
 	"maze_game_server/io/redis/mazecalcattrredis"
 	"maze_game_server/model/barrieritemsmodel"
+	"maze_game_server/servers/maze_main_server/process/item"
+	"maze_game_server/services/itemservice"
 	"maze_game_server/services/tempbuffservice"
 
 	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fklog"
 	"go.uber.org/zap"
 )
 
-func (s *service) CheckBloodAttr(ctx context.Context, userID uint64, barrierID int32) (bloodBottleCount, bloodBottleLimit, bloodBottleCd int64, err error) {
+func (s *service) CheckBloodAttr(ctx context.Context, userID uint64, barrierID int32) (bloodBottleLimit, bloodBottleCd int64, err error) {
 	logger := fklog.ContextAppLogger(ctx)
 	logger.CtxInfo(ctx, "CheckBloodAttr Start",
 		zap.Uint64("userID", userID),
@@ -33,7 +35,7 @@ func (s *service) CheckBloodAttr(ctx context.Context, userID uint64, barrierID i
 			zap.Int32("barrierID", barrierID),
 			zap.Error(err),
 		)
-		return 0, 0, 0, err
+		return 0, 0, err
 	}
 
 	var bloodlimitAttr int32
@@ -50,13 +52,13 @@ func (s *service) CheckBloodAttr(ctx context.Context, userID uint64, barrierID i
 	attrDbs, err := mazecalcattrredis.BatchGetMazeCalcAttr(ctx, userID, []int32{bloodlimitAttr, int32(bloodBottleCdAttr)})
 	if err != nil {
 		logger.CtxError(ctx, "CheckBloodAttr BatchGetMazeCalcAttr nil", zap.Uint64("userID", userID))
-		return 0, 0, 0, err
+		return 0, 0, err
 	}
 
 	tempBuffInfo, err := tempbuffservice.GlobalTempBuffService.GetTempBuffInfo(ctx, userID, barrierID)
 	if err != nil {
 		logger.CtxError(ctx, "CheckBloodAttr GetBarrierTempBuff err", zap.Error(err))
-		return 0, 0, 0, err
+		return 0, 0, err
 	}
 
 	for _, buffInfo := range tempBuffInfo.TotalBuff {
@@ -98,10 +100,10 @@ func (s *service) CheckBloodAttr(ctx context.Context, userID uint64, barrierID i
 				zap.Any("nowBloodBottleLimit", attrDbs[bloodlimitAttr]),
 				zap.Any("nowBloodBottleCd", attrDbs[int32(bloodBottleCdAttr)]),
 			)
-			return data.Items[bloodID], data.BloodBottleAttr[bloodlimitAttr], data.BloodBottleAttr[int32(bloodBottleCdAttr)], err
+			return data.BloodBottleAttr[bloodlimitAttr], data.BloodBottleAttr[int32(bloodBottleCdAttr)], err
 		}
 
-		return data.Items[bloodID], data.BloodBottleAttr[bloodlimitAttr], data.BloodBottleAttr[int32(bloodBottleCdAttr)], nil
+		return data.BloodBottleAttr[bloodlimitAttr], data.BloodBottleAttr[int32(bloodBottleCdAttr)], nil
 	}
 
 	// 初始化过了
@@ -110,6 +112,24 @@ func (s *service) CheckBloodAttr(ctx context.Context, userID uint64, barrierID i
 	if data.BloodBottleAttr[bloodlimitAttr] != attrDbs[bloodlimitAttr] {
 		bloodBottleLimit = attrDbs[bloodlimitAttr]
 		data.Items[bloodID] += (attrDbs[bloodlimitAttr] - data.BloodBottleAttr[bloodlimitAttr])
+		// 推包
+		dropItems := []*itemservice.ItemInfo{
+			&itemservice.ItemInfo{
+				ItemId: int32(bloodID),
+				Count:  1,
+			},
+		}
+		err = item.OnSendItemsPack(ctx, userID, dropItems, nil, 0, "", 1)
+		if err != nil {
+			logger.CtxWarn(ctx, "AddScoreItem OnSendItemsPack Fail",
+				zap.Uint64("userID", userID),
+				zap.Int32("barrierID", barrierID),
+				zap.Any("dropItems", dropItems),
+				zap.Error(err),
+			)
+			return
+		}
+
 		data.BloodBottleAttr[bloodlimitAttr] = attrDbs[bloodlimitAttr]
 	}
 
@@ -125,7 +145,7 @@ func (s *service) CheckBloodAttr(ctx context.Context, userID uint64, barrierID i
 			zap.Int32("barrierID", barrierID),
 			zap.Any("newdata", data),
 		)
-		return data.Items[bloodID], bloodBottleLimit, bloodBottleCd, err
+		return bloodBottleLimit, bloodBottleCd, err
 	}
 
 	logger.CtxInfo(ctx, "CheckBloodAttr Save Succesful",
@@ -137,5 +157,5 @@ func (s *service) CheckBloodAttr(ctx context.Context, userID uint64, barrierID i
 		zap.Any("nowBloodBottleCd", data.BloodBottleAttr[int32(bloodBottleCdAttr)]),
 	)
 
-	return data.Items[bloodID], bloodBottleLimit, bloodBottleCd, nil
+	return bloodBottleLimit, bloodBottleCd, nil
 }
