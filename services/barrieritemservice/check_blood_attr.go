@@ -12,7 +12,7 @@ import (
 	"go.uber.org/zap"
 )
 
-func (s *service) CheckBloodAttr(ctx context.Context, userID uint64, barrierID int32) (bloodBottleCount int64, nowAttr map[int32]int64, err error) {
+func (s *service) CheckBloodAttr(ctx context.Context, userID uint64, barrierID int32) (bloodBottleCount, bloodBottleLimit, bloodBottleCd int64, err error) {
 	logger := fklog.ContextAppLogger(ctx)
 	logger.CtxInfo(ctx, "CheckBloodAttr Start",
 		zap.Uint64("userID", userID),
@@ -33,64 +33,89 @@ func (s *service) CheckBloodAttr(ctx context.Context, userID uint64, barrierID i
 			zap.Int32("barrierID", barrierID),
 			zap.Error(err),
 		)
-		return 0, nil, err
+		return 0, 0, 0, err
 	}
-
-	logger.CtxInfo(ctx, "CheckBloodAttr GetData Successful",
-		zap.Uint64("userID", userID),
-		zap.Int32("barrierID", barrierID),
-		zap.Any("nowdata", data),
-	)
 
 	var bloodlimitAttr int32
 	var bloodID int64
 	bloodBottleMap := mazeconfigv8config.GetMazeConfig(ctx, constdef.MazeCfgId951)
-	bloodBottleCd := mazeconfigv8config.GetMazeValueInt(ctx, constdef.MazeCfgId952)
+	bloodBottleCdAttr := mazeconfigv8config.GetMazeValueInt(ctx, constdef.MazeCfgId952)
 
 	for k, v := range bloodBottleMap {
 		bloodlimitAttr = k
 		bloodID = v
 	}
 
-	attrDbs, err := mazecalcattrredis.BatchGetMazeCalcAttr(ctx, userID, []int32{bloodlimitAttr, int32(bloodBottleCd)})
+	// 获取当前血瓶相关属性存储
+	attrDbs, err := mazecalcattrredis.BatchGetMazeCalcAttr(ctx, userID, []int32{bloodlimitAttr, int32(bloodBottleCdAttr)})
 	if err != nil {
 		logger.CtxError(ctx, "CheckBloodAttr BatchGetMazeCalcAttr nil", zap.Uint64("userID", userID))
-		return data.Items[bloodID], nil, err
+		return 0, 0, 0, err
 	}
 
 	tempBuffInfo, err := tempbuffservice.GlobalTempBuffService.GetTempBuffInfo(ctx, userID, barrierID)
 	if err != nil {
 		logger.CtxError(ctx, "CheckBloodAttr GetBarrierTempBuff err", zap.Error(err))
-		return data.Items[bloodID], nil, err
+		return 0, 0, 0, err
 	}
+
 	for _, buffInfo := range tempBuffInfo.TotalBuff {
+		if buffInfo.BuffId != bloodlimitAttr || buffInfo.BuffId != int32(bloodBottleCdAttr) {
+			continue
+		}
 		attrDbs[buffInfo.BuffId] += buffInfo.BuffValue
 	}
+
+	logger.CtxInfo(ctx, "CheckBloodAttr GetData Successful",
+		zap.Uint64("userID", userID),
+		zap.Int32("barrierID", barrierID),
+		zap.Any("nowdata", data),
+		zap.Any("nowBloodBottleCount", data.Items[bloodID]),
+		zap.Any("lastBloodBottleLimit", data.BloodBottleAttr[bloodlimitAttr]),
+		zap.Any("lastBloodBottleCd", data.BloodBottleAttr[int32(bloodBottleCdAttr)]),
+		zap.Any("nowBloodBottleLimit", attrDbs[bloodlimitAttr]),
+		zap.Any("nowBloodBottleCd", attrDbs[int32(bloodBottleCdAttr)]),
+	)
 
 	if _, ok := data.BloodBottleAttr[bloodlimitAttr]; !ok {
 		// 第一次初始化
 		data.BloodBottleAttr[bloodlimitAttr] = attrDbs[bloodlimitAttr]
-		data.BloodBottleAttr[int32(bloodBottleCd)] = attrDbs[int32(bloodBottleCd)]
+		data.BloodBottleAttr[int32(bloodBottleCdAttr)] = attrDbs[int32(bloodBottleCdAttr)]
 
 		logger.CtxInfo(ctx, "CheckBloodAttr BloodBottleAttr init",
 			zap.Any("nowAttr", data.BloodBottleAttr),
 		)
 
-		return data.Items[bloodID], nil, nil
+		err = data.Save(ctx, userID, barrierID)
+		if err != nil {
+			logger.CtxError(ctx, "CheckBloodAttr data Init Fail",
+				zap.Uint64("userID", userID),
+				zap.Int32("barrierID", barrierID),
+				zap.Any("nowdata", data),
+				zap.Any("nowBloodBottleCount", data.Items[bloodID]),
+				zap.Any("lastBloodBottleLimit", data.BloodBottleAttr[bloodlimitAttr]),
+				zap.Any("lastBloodBottleCd", data.BloodBottleAttr[int32(bloodBottleCdAttr)]),
+				zap.Any("nowBloodBottleLimit", attrDbs[bloodlimitAttr]),
+				zap.Any("nowBloodBottleCd", attrDbs[int32(bloodBottleCdAttr)]),
+			)
+			return data.Items[bloodID], data.BloodBottleAttr[bloodlimitAttr], data.BloodBottleAttr[int32(bloodBottleCdAttr)], err
+		}
+
+		return data.Items[bloodID], data.BloodBottleAttr[bloodlimitAttr], data.BloodBottleAttr[int32(bloodBottleCdAttr)], nil
 	}
 
 	// 初始化过了
 	// 判断属性是否有变化
 	// 血瓶上限 变化则增加对应血瓶
 	if data.BloodBottleAttr[bloodlimitAttr] != attrDbs[bloodlimitAttr] {
-		nowAttr[bloodlimitAttr] = attrDbs[bloodlimitAttr]
+		bloodBottleLimit = attrDbs[bloodlimitAttr]
 		data.Items[bloodID] += (attrDbs[bloodlimitAttr] - data.BloodBottleAttr[bloodlimitAttr])
 		data.BloodBottleAttr[bloodlimitAttr] = attrDbs[bloodlimitAttr]
 	}
 
-	if data.BloodBottleAttr[int32(bloodBottleCd)] != attrDbs[int32(bloodBottleCd)] {
-		nowAttr[int32(bloodBottleCd)] = attrDbs[int32(bloodBottleCd)]
-		data.BloodBottleAttr[int32(bloodBottleCd)] = attrDbs[int32(bloodBottleCd)]
+	if data.BloodBottleAttr[int32(bloodBottleCdAttr)] != attrDbs[int32(bloodBottleCdAttr)] {
+		bloodBottleCd = attrDbs[int32(bloodBottleCdAttr)]
+		data.BloodBottleAttr[int32(bloodBottleCdAttr)] = attrDbs[int32(bloodBottleCdAttr)]
 	}
 
 	err = data.Save(ctx, userID, barrierID)
@@ -100,15 +125,17 @@ func (s *service) CheckBloodAttr(ctx context.Context, userID uint64, barrierID i
 			zap.Int32("barrierID", barrierID),
 			zap.Any("newdata", data),
 		)
-		return data.Items[bloodID], nil, err
+		return data.Items[bloodID], bloodBottleLimit, bloodBottleCd, err
 	}
 
 	logger.CtxInfo(ctx, "CheckBloodAttr Save Succesful",
 		zap.Uint64("userID", userID),
 		zap.Int32("barrierID", barrierID),
 		zap.Any("nowdata", data),
-		zap.Any("nowAttr", nowAttr),
+		zap.Any("nowBloodBottleCount", data.Items[bloodID]),
+		zap.Any("nowBloodBottleLimit", data.BloodBottleAttr[bloodlimitAttr]),
+		zap.Any("nowBloodBottleCd", data.BloodBottleAttr[int32(bloodBottleCdAttr)]),
 	)
 
-	return data.Items[bloodID], nowAttr, nil
+	return data.Items[bloodID], bloodBottleLimit, bloodBottleCd, nil
 }
