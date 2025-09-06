@@ -467,6 +467,6 @@ order,affix_group_id,affix_group_order,affix_lv,font_affix_condition,use_num_max
 600800303,6008,10,4,600800303,2,400,5101724:1500,癫狂,敌人自相残杀的概率增加15%,,SkillBuffIcon_atlas0,shiguduren
 600800401,6008,11,5,600800401,2,500,7920111:5000_9920111:5000_13920111:1,毒液增伤,毒液区域的伤害增加100%,,SkillBuffIcon_atlas0,shiguduren
 600800501,6008,12,6,600800501,1,800,920112:1_920117:1,尸爆,中毒的敌人死亡时，会产生一次攻击力200%的范围伤害，并对范围内敌人造成中毒效果,,SkillBuffIcon_atlas0,shiguduren
-600900001,6009,1,1,0,1,200,890021:80000_890022:3000,血瓶掉率,血瓶掉落概率提高30%,,SkillBuffIcon_atlas0,xuepingdiaolvtigao
-600900101,6009,2,2,600900101,1,200,890021:80000_890022:3000,血瓶掉率,血瓶掉落概率提高30%,,SkillBuffIcon_atlas0,xuepingdiaolvtigao
-600900102,6009,3,2,600900102,1,200,890011:90000,血瓶效果,血瓶回复效果提高30%,,SkillBuffIcon_atlas0,huifutigao
+600900001,6009,1,1,0,1,200,890021:100000_890022:3000,血瓶掉率,血瓶掉落概率提高30%,,SkillBuffIcon_atlas0,xuepingdiaolvtigao
+600900101,6009,2,2,600900101,1,200,890021:100000_890022:3000,血瓶掉率,血瓶掉落概率提高30%,,SkillBuffIcon_atlas0,xuepingdiaolvtigao
+600900102,6009,3,2,600900102,1,200,890011:114000,血瓶效果,血瓶回复效果提高30%,,SkillBuffIcon_atlas0,huifutigao
