@@ -7,12 +7,13 @@ import (
 	"maze_game_server/common/constdef"
 	"maze_game_server/config/GMazeBariresDropConditionV8Cfg"
 	"maze_game_server/config/GMazeBariresDropV8Cfg"
-	"maze_game_server/config/GMazeConfigV8Cfg"
 	"maze_game_server/excel/mazebarriesv8config"
+	"maze_game_server/excel/mazeconfigv8config"
 	"maze_game_server/io/redis/mazecalcattrredis"
 	"maze_game_server/model/barrieritemsmodel"
 	"maze_game_server/servers/maze_main_server/process/item"
 	"maze_game_server/services/itemservice"
+	"maze_game_server/services/tempbuffservice"
 	"time"
 
 	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fklog"
@@ -70,8 +71,24 @@ func (s *service) FallOffSkillItems(ctx context.Context, userID uint64, barrierI
 		return
 	}
 
-	row := GMazeConfigV8Cfg.GetWithCtx(ctx, constdef.MazeCfgId951)
+	tempBuffInfo, err := tempbuffservice.GlobalTempBuffService.GetTempBuffInfo(ctx, userID, barrierID)
+	if err != nil {
+		logger.CtxError(ctx, "GetMazeBattleData GetBarrierTempBuff err", zap.Error(err))
+		return nil, err
+	}
+	for _, buffInfo := range tempBuffInfo.TotalBuff {
+		attrDbs[buffInfo.BuffId] += buffInfo.BuffValue
+	}
 
+	bloodMap := mazeconfigv8config.GetMazeConfig(ctx, constdef.MazeCfgId951)
+	var bloodLimitAttr int32
+	var bloodItemID int64
+	for k, v := range bloodMap {
+		bloodLimitAttr = k
+		bloodItemID = v
+	}
+
+	_ = bloodItemID
 	// 先获取当前关卡掉落物品
 	barrierCfg := mazebarriesv8config.GetStageConfig(ctx, barrierID)
 	for _, itemID := range barrierCfg.Drop_id {
@@ -83,7 +100,7 @@ func (s *service) FallOffSkillItems(ctx context.Context, userID uint64, barrierI
 			}
 
 			for dropItemID, dropCount := range barrierDrop.Drop_items {
-				if dropItemID == constdef.BloodBottleID && data.Items[int64(dropItemID)] == row.Value_int {
+				if dropItemID == constdef.BloodBottleID && data.Items[int64(dropItemID)] == attrDbs[bloodLimitAttr] {
 					// reason += fmt.Sprintf("血瓶到上限了 当前:%d 上限:%d\n", data.Items[int64(dropItemID)], row.Value_int)
 					logger.CtxInfo(ctx, "FallOffSkillItems BloodBottle Full",
 						zap.Uint64("userID", userID),
