@@ -40,3 +40,12 @@ func GetBuffSelectTime(ctx context.Context) int32 {
 
 	return int32(config.Value_int)
 }
+
+func GetMazeValueInt(ctx context.Context, configID int32) int64 {
+	row := GMazeConfigV8Cfg.GetWithCtx(ctx, configID)
+	if row == nil {
+		return 0
+	}
+
+	return row.Value_int
+}

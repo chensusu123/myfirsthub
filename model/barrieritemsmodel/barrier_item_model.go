@@ -15,12 +15,13 @@ func getKey(userID uint64, barrierID int32) string {
 }
 
 type barrierItems struct {
-	Items         map[int64]int64   `json:"items,omitempty"`              // 物品
-	Equips        map[uint64]uint64 `json:"equips,omitempty"`             // 装备
-	EquipScore    int32             `json:"equip_score,omitempty"`        // 杀怪获得的装备分数
-	ItemsScore    map[int32]int32   `json:"items_score,omitempty"`        // 杀怪获得的物品分数
-	SkillsCount   map[int32]int32   `json:"blood_bottle_count,omitempty"` // 技能道具使用次数存储
-	SkillDropTime map[int32]int64   `json:"skill_drop_time,omitempty"`    // 技能道具掉落间隔
+	Items           map[int64]int64   `json:"items,omitempty"`              // 物品
+	Equips          map[uint64]uint64 `json:"equips,omitempty"`             // 装备
+	EquipScore      int32             `json:"equip_score,omitempty"`        // 杀怪获得的装备分数
+	ItemsScore      map[int32]int32   `json:"items_score,omitempty"`        // 杀怪获得的物品分数
+	SkillsCount     map[int32]int32   `json:"blood_bottle_count,omitempty"` // 技能道具使用次数存储
+	SkillDropTime   map[int32]int64   `json:"skill_drop_time,omitempty"`    // 技能道具掉落间隔
+	BloodBottleAttr map[int32]int64   `json:"blood_bottle_attr,omitempty"`  // 血瓶属性存储 感知变化时使用 跟着关卡走
 }
 
 func NewBarrierItems(ctx context.Context, userID uint64, barrierID int32) (*barrierItems, error) {

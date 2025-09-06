@@ -22,4 +22,5 @@ const (
 	MazeCfgId941 int32 = 941 // 941	宋振扬	可选择词条组数量上限	4
 	MazeCfgId942 int32 = 942 // 942	宋振扬	不限制词条组数量的特殊词条组id	6009
 	MazeCfgId951 int32 = 951 // 951 曹峻 	血瓶同时拥有血瓶上限属性id:血瓶id
+	MazeCfgId952 int32 = 952 // 952 产艳兵 	血瓶使用CD
 )
