@@ -106,6 +106,7 @@ func (s *service) CheckBloodAttr(ctx context.Context, userID uint64, barrierID i
 		return data.BloodBottleAttr[bloodlimitAttr], data.BloodBottleAttr[int32(bloodBottleCdAttr)], nil
 	}
 
+	dropItems := make([]*itemservice.ItemInfo, 0)
 	// 初始化过了
 	// 判断属性是否有变化
 	// 血瓶上限 变化则增加对应血瓶
@@ -113,22 +114,10 @@ func (s *service) CheckBloodAttr(ctx context.Context, userID uint64, barrierID i
 		bloodBottleLimit = attrDbs[bloodlimitAttr]
 		data.Items[bloodID] += (attrDbs[bloodlimitAttr] - data.BloodBottleAttr[bloodlimitAttr])
 		// 推包
-		dropItems := []*itemservice.ItemInfo{
-			&itemservice.ItemInfo{
-				ItemId: int32(bloodID),
-				Count:  1,
-			},
-		}
-		err = item.OnSendItemsPack(ctx, userID, dropItems, nil, 0, "", 1)
-		if err != nil {
-			logger.CtxWarn(ctx, "AddScoreItem OnSendItemsPack Fail",
-				zap.Uint64("userID", userID),
-				zap.Int32("barrierID", barrierID),
-				zap.Any("dropItems", dropItems),
-				zap.Error(err),
-			)
-			return
-		}
+		dropItems = append(dropItems, &itemservice.ItemInfo{
+			ItemId: int32(bloodID),
+			Count:  1,
+		})
 
 		data.BloodBottleAttr[bloodlimitAttr] = attrDbs[bloodlimitAttr]
 	}
@@ -146,6 +135,17 @@ func (s *service) CheckBloodAttr(ctx context.Context, userID uint64, barrierID i
 			zap.Any("newdata", data),
 		)
 		return bloodBottleLimit, bloodBottleCd, err
+	}
+
+	err = item.OnSendItemsPack(ctx, userID, dropItems, nil, 0, "", 2)
+	if err != nil {
+		logger.CtxWarn(ctx, "AddScoreItem OnSendItemsPack Fail",
+			zap.Uint64("userID", userID),
+			zap.Int32("barrierID", barrierID),
+			zap.Any("dropItems", dropItems),
+			zap.Error(err),
+		)
+		return
 	}
 
 	logger.CtxInfo(ctx, "CheckBloodAttr Save Succesful",
