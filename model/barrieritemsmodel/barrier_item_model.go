@@ -26,12 +26,13 @@ type barrierItems struct {
 
 func NewBarrierItems(ctx context.Context, userID uint64, barrierID int32) (*barrierItems, error) {
 	res := &barrierItems{
-		Items:         make(map[int64]int64),
-		Equips:        make(map[uint64]uint64),
-		EquipScore:    0,
-		ItemsScore:    make(map[int32]int32),
-		SkillsCount:   make(map[int32]int32),
-		SkillDropTime: make(map[int32]int64),
+		Items:           make(map[int64]int64),
+		Equips:          make(map[uint64]uint64),
+		EquipScore:      0,
+		ItemsScore:      make(map[int32]int32),
+		SkillsCount:     make(map[int32]int32),
+		SkillDropTime:   make(map[int32]int64),
+		BloodBottleAttr: make(map[int32]int64),
 	}
 	if err := res.load(ctx, userID, barrierID); err != nil {
 		return nil, err
