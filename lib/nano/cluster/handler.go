@@ -677,9 +677,10 @@ func (h *LocalHandler) localProcess(ctx context.Context, handler *component.Hand
 		begin := time.Now()
 		var callErr error
 		defer func() {
-			if err := recover(); err != nil {
-				fklog.ContextAppLogger(ctxCall).ErrorWF("local process panic", zap.Any("err", err))
-			}
+			// if err := recover(); err != nil {
+			// 	fklog.ContextAppLogger(ctxCall).ErrorWF("local process panic", zap.Any("err", err))
+			// }
+			fkalert.RecoverAlertException()
 			span.AddEvent("nano.local.process.end")
 			session.SetContext(context.TODO())
 			spanCall.AddEvent("nano.local.process.end")
