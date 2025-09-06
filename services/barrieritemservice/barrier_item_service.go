@@ -23,6 +23,12 @@ type barrierItemsService interface {
 	AddItems(ctx context.Context, userID uint64, barrierID int32, items []*itemservice.ItemInfo, guid int64, pos string) error
 	// 技能道具掉落
 	FallOffSkillItems(ctx context.Context, userID uint64, barrierID int32, killMonsterNum int32, nowBloodVolume int64, allBloodVolume int64, guid int64, pos string) (dropItems []*itemservice.ItemInfo, err error)
+	// 增加血瓶
+	SpecialAddBloodBottles(ctx context.Context, userID uint64, barrierID int32) error
+	// 检测血瓶属性
+	//	-- nowAttr nil 属性未变化
+	//  -- nowAttr !nil 当前变化之后的属性值
+	CheckBloodAttr(ctx context.Context, userID uint64, barrierID int32) (bloodBottleCount int64, nowAttr map[int32]int64, err error)
 }
 
 var GbarrierItemsService barrierItemsService
