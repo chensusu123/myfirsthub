@@ -21,6 +21,7 @@ func (im *IM) OnQueryGroupMessages_10647_10648(s *session.Session, req *MazeIM.Q
 	res := &MazeIM.QueryGroupMessagesRS{}
 	res.Header = req.Header
 	res.ErrInfo = errors.NO_ERROR
+	res.LastMsgId = req.LastMsgId
 
 	logger.CtxInfo(ctx, "OnQueryGroupMessages start", zap.Any("req", req))
 	defer func() {
