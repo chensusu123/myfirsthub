@@ -157,5 +157,5 @@ func (s *service) CheckBloodAttr(ctx context.Context, userID uint64, barrierID i
 		zap.Any("nowBloodBottleCd", data.BloodBottleAttr[int32(bloodBottleCdAttr)]),
 	)
 
-	return bloodBottleLimit, bloodBottleCd, nil
+	return data.BloodBottleAttr[bloodlimitAttr], data.BloodBottleAttr[int32(bloodBottleCdAttr)], nil
 }
