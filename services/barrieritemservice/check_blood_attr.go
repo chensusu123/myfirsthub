@@ -119,6 +119,11 @@ func (s *service) CheckBloodAttr(ctx context.Context, userID uint64, barrierID i
 			Count:  1,
 		})
 
+		logger.CtxInfo(ctx, "CheckBloodAttr Drop BloodBottle",
+			zap.Uint64("userID", userID),
+			zap.Int32("barrierID", barrierID),
+		)
+
 		data.BloodBottleAttr[bloodlimitAttr] = attrDbs[bloodlimitAttr]
 	}
 

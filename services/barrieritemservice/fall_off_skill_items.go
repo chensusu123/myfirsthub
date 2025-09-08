@@ -100,7 +100,7 @@ func (s *service) FallOffSkillItems(ctx context.Context, userID uint64, barrierI
 			}
 
 			for dropItemID, dropCount := range barrierDrop.Drop_items {
-				if dropItemID == constdef.BloodBottleID && data.Items[int64(dropItemID)] == attrDbs[bloodLimitAttr] {
+				if dropItemID == constdef.BloodBottleID && data.Items[int64(dropItemID)] >= attrDbs[bloodLimitAttr] {
 					// reason += fmt.Sprintf("血瓶到上限了 当前:%d 上限:%d\n", data.Items[int64(dropItemID)], row.Value_int)
 					logger.CtxInfo(ctx, "FallOffSkillItems BloodBottle Full",
 						zap.Uint64("userID", userID),
