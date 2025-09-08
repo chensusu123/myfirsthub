@@ -167,7 +167,7 @@ func (e *Equip) OnDollEquipDismantleRQ_10410_10411(s *session.Session, req *Maze
 		TradeNum:   proto.Uint64(tradeNo),
 	}
 	rsSale := &MazeEquipSvr.SvrMazeEquipSaleRS{}
-	logger.CtxError(ctx, "OnDollEquipDismantleRQ SvrDollEquipSaleRS dump", zap.Any("rqSale", rqSale), zap.Any("rsSale", rsSale))
+	logger.CtxInfo(ctx, "OnDollEquipDismantleRQ SvrDollEquipSaleRS dump", zap.Any("rqSale", rqSale), zap.Any("rsSale", rsSale))
 	// err = dollequipbagrpc.MazeEquipSaleRQ(logger, rqSale, rsSale)
 	err = OnSvrDollEquipSaleRQ(ctx, int64(userId), rqSale, rsSale)
 	if err != nil {

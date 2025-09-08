@@ -399,7 +399,7 @@ func (ep *Equip) OnDressMazeEquipRQ_10418_10419(s *session.Session, req *MazeGam
 			TradeNum:   proto.Uint64(tradeNo),
 		}
 		rsSale := &MazeEquipSvr.SvrMazeEquipSaleRS{}
-		logger.CtxError(ctx, "OnDollEquipDismantleRQ SvrDollEquipSaleRS dump", zap.Any("rqSale", rqSale), zap.Any("rsSale", rsSale))
+		logger.CtxInfo(ctx, "OnDollEquipDismantleRQ SvrDollEquipSaleRS dump", zap.Any("rqSale", rqSale), zap.Any("rsSale", rsSale))
 		err = OnSvrDollEquipSaleRQ(ctx, int64(userId), rqSale, rsSale)
 		if err != nil {
 			logger.CtxError(ctx, "OnDollEquipDismantleRQ SvrDollEquipSaleRS fail", zap.Error(err), zap.Any("rq", rqSale))
@@ -410,7 +410,7 @@ func (ep *Equip) OnDressMazeEquipRQ_10418_10419(s *session.Session, req *MazeGam
 		award := make(map[int32]int64)
 		var equipAward map[int32]int64
 		equipId := dressedEquip.GetEquipInfo().GetEquipId()
-		equipCfg := GMazeEquipInfoV8Cfg.Get(equipId)
+		equipCfg := GMazeEquipInfoV8Cfg.GetWithCtx(ctx, equipId)
 		if equipCfg == nil {
 			logger.CtxError(ctx, "OnDressMazeEquipRQ get equip cfg fail", zap.Any("equipId", equipId))
 			res.ErrInfo = errors.CONFIG_NOT_FOUND.ToInfo()
