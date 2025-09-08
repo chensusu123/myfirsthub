@@ -10,6 +10,7 @@ func getProcessLabels(handleName string, err error) []*metrics.Dimension {
 		code = "failed"
 	}
 	return []*metrics.Dimension{
+		{Name: "commonTag", Value: handleName},
 		{Name: "handleName", Value: handleName},
 		//{Name: "processType", Value: processType},
 		{Name: "Code", Value: code},
