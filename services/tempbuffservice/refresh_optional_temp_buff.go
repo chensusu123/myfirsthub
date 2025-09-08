@@ -8,6 +8,7 @@ import (
 	"maze_game_server/common/tradeno"
 	"maze_game_server/excel/mazebarriesv8config"
 	"maze_game_server/excel/mazeenergyresetcostv8config"
+	"maze_game_server/io/kafka/mazetempbuffchgmsg"
 	"maze_game_server/model/tempbuffmodel"
 	"maze_game_server/pb/common/MazeCommon"
 	"maze_game_server/services/itemservice"
@@ -103,6 +104,9 @@ func (s *service) refreshOptionalBuff(ctx context.Context, userId uint64, stageI
 		return errors.New("关卡配置异常")
 	}
 
+	nowOptionalBuffList := make([]int32, 0)
+	nowOptionalBuffList = append(nowOptionalBuffList, buffInfo.BuffSequence.OptionalBuffList...)
+
 	buffInfo.BuffSequence.RefreshCount = buffInfo.BuffSequence.RefreshCount + 1
 	buffInfo.BuffSequence.OptionalBuffList, err = s.createOptionalBuffList(ctx, buffInfo, level, areaId, attrMask, stageConfig)
 	if err != nil {
@@ -116,6 +120,16 @@ func (s *service) refreshOptionalBuff(ctx context.Context, userId uint64, stageI
 			zap.Int32("stageId", stageId), zap.Any("info", buffInfo), zap.Error(err))
 		return err
 	}
+
+	msg := &mazetempbuffchgmsg.MazeTempBuffChangeMsg{
+		UserId:         userId,
+		StageId:        stageId,
+		ChgType:        3,
+		ChgDesc:        "刷新buff列表",
+		NowSelectAttrs: nowOptionalBuffList,
+	}
+
+	_ = mazetempbuffchgmsg.PushTempBuffChangeMsg(ctx, msg)
 
 	return nil
 }

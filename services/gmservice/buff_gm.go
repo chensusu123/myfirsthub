@@ -141,12 +141,17 @@ func (s *service) SetMazeTempBuff(writer http.ResponseWriter, request *http.Requ
 		return
 	}
 
+	selectBuffID := make([]uint32, 0)
+	for _, buffID := range buffList {
+		selectBuffID = append(selectBuffID, uint32(buffID))
+	}
 	// 推送buff变化信息
 	msg := &mazetempbuffchgmsg.MazeTempBuffChangeMsg{
-		UserId:  userId,
-		StageId: barrierId,
-		ChgType: 1,
-		ChgDesc: "gm添加buff",
+		UserId:       userId,
+		StageId:      barrierId,
+		ChgType:      1,
+		ChgDesc:      "gm添加buff",
+		SelectBuffID: selectBuffID,
 	}
 
 	// 计算buff变化

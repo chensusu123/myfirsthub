@@ -3,6 +3,7 @@ package flowutil
 import (
 	"fmt"
 	"maze_game_server/services/itemservice"
+	"reflect"
 	"strings"
 )
 
@@ -26,6 +27,23 @@ func UserType2Flow(opts ...any) (res string) {
 		parts = append(parts, fmt.Sprintf("%v", opt))
 	}
 	// 用下划线拼接所有部分
+	res = strings.Join(parts, "_")
+	return res
+}
+
+func AnyArray2String(opts any) (res string) {
+	val := reflect.ValueOf(opts)
+
+	if val.Kind() != reflect.Slice {
+		return ""
+	}
+
+	var parts []string
+	for i := 0; i < val.Len(); i++ {
+		elem := val.Index(i).Interface()
+		parts = append(parts, fmt.Sprintf("%v", elem))
+	}
+
 	res = strings.Join(parts, "_")
 	return res
 }

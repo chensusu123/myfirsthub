@@ -77,6 +77,8 @@ func (s *service) updateBuffInfo(ctx context.Context, userId uint64, barrierId, 
 	logger := fklog.ContextAppLogger(ctx)
 	areaId := buffInfo.BuffSequence.AreaId
 	areaIndex := buffInfo.BuffSequence.AreaIndex
+	nowOptionalBufflist := make([]int32, 0)
+	nowOptionalBufflist = append(nowOptionalBufflist, buffInfo.BuffSequence.OptionalBuffList...)
 	buffInfo.BuffSequence = &tempbuffmodel.BuffSequence{
 		Level: level,
 	}
@@ -100,10 +102,12 @@ func (s *service) updateBuffInfo(ctx context.Context, userId uint64, barrierId, 
 
 	// 推送buff变化信息
 	msg := &mazetempbuffchgmsg.MazeTempBuffChangeMsg{
-		UserId:  userId,
-		StageId: barrierId,
-		ChgType: 1,
-		ChgDesc: "选择buff",
+		UserId:         userId,
+		StageId:        barrierId,
+		ChgType:        1,
+		ChgDesc:        "选择buff",
+		NowSelectAttrs: nowOptionalBufflist,
+		SelectBuffID:   []uint32{uint32(buffId)},
 	}
 
 	// 计算buff变化
