@@ -281,9 +281,11 @@ func OnGmEquipPosLvUp(ctx context.Context, userId uint64, targetLv int32) (err e
 		return
 	}
 	logger.CtxInfo(ctx, "OnEquipPosLvUpRQ SetAssembleInfoByFields succ", zap.Any("chgAssemDb", chgAssemDb))
-	// 计算属性加成
-	retMask |= UpdateEquipPosBuff(ctx, userId, curSuitId, newSuitId,
-		assembleDb.GetMazeEquips(), posCurAttrs, "")
+	if newSuitId > 0 {
+		// 计算属性加成
+		retMask |= UpdateEquipPosBuff(ctx, userId, curSuitId, newSuitId,
+			assembleDb.GetMazeEquips(), posCurAttrs, "")
+	}
 
 	// 推装配信息变化包
 	assembleidpack.SendAssembleChgID(ctx, userId, chgAssemDb,

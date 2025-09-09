@@ -285,9 +285,11 @@ func (e *Equip) OnEquipPosLvUpRQ_10425_10426(s *session.Session, rq *MazeEquipPo
 		return
 	}
 	logger.CtxInfo(ctx, "OnEquipPosLvUpRQ SetAssembleInfoByFields succ", zap.Any("chgAssemDb", chgAssemDb))
-	// 计算属性加成
-	retMask |= UpdateEquipPosBuff(ctx, userId, curSuitId, newSuitId,
-		assembleDb.GetMazeEquips(), posCurAttrs, rq.GetHeader().GetSession())
+	if newSuitId > 0 {
+		// 计算属性加成
+		retMask |= UpdateEquipPosBuff(ctx, userId, curSuitId, newSuitId,
+			assembleDb.GetMazeEquips(), posCurAttrs, rq.GetHeader().GetSession())
+	}
 
 	// 推装配信息变化包
 	assembleidpack.SendAssembleChgID(ctx, userId, chgAssemDb,
