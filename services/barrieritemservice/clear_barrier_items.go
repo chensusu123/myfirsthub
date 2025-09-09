@@ -2,13 +2,16 @@ package barrieritemservice
 
 import (
 	"context"
+	"maze_game_server/common/constdef"
+	"maze_game_server/excel/mazeconfigv8config"
+	"maze_game_server/io/redis/mazecalcattrredis"
 	"maze_game_server/model/barrieritemsmodel"
 
 	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fklog"
 	"go.uber.org/zap"
 )
 
-func (s *service) ClearBarrierItems(ctx context.Context, userID uint64, barrierID int32) error {
+func (s *service) ClearBarrierItems(ctx context.Context, userID uint64, barrierID int32) (int64, int64, error) {
 	logger := fklog.ContextAppLogger(ctx)
 	defer func() {
 		logger.CtxInfo(ctx, "ClearBarrierItems End",
@@ -28,7 +31,7 @@ func (s *service) ClearBarrierItems(ctx context.Context, userID uint64, barrierI
 			zap.Int32("barrierID", barrierID),
 			zap.Error(err),
 		)
-		return err
+		return 0, 0, err
 	}
 	logger.CtxInfo(ctx, "ClearBarrierItems ",
 		zap.Any("data", data))
@@ -47,7 +50,40 @@ func (s *service) ClearBarrierItems(ctx context.Context, userID uint64, barrierI
 	// 	fmt.Printf("k : %d, v : %v\n", k, v)
 	// }
 
-	return data.Del(ctx, userID, barrierID)
+	data.Items = make(map[int64]int64)
+	data.Equips = make(map[uint64]uint64)
+	data.EquipScore = 0
+	data.ItemsScore = make(map[int32]int32)
+	data.SkillsCount = make(map[int32]int32)
+	data.SkillDropTime = make(map[int32]int64)
+	data.BloodBottleAttr = make(map[int32]int64)
+
+	var bloodlimitAttr int32
+	bloodBottleMap := mazeconfigv8config.GetMazeConfig(ctx, constdef.MazeCfgId951)
+	bloodBottleCdAttr := mazeconfigv8config.GetMazeValueInt(ctx, constdef.MazeCfgId952)
+
+	for k, v := range bloodBottleMap {
+		bloodlimitAttr = k
+		_ = v
+	}
+
+	// 获取当前血瓶相关属性存储
+	attrDbs, err := mazecalcattrredis.BatchGetMazeCalcAttr(ctx, userID, []int32{bloodlimitAttr, int32(bloodBottleCdAttr)})
+	if err != nil {
+		logger.CtxError(ctx, "CheckBloodAttr BatchGetMazeCalcAttr nil", zap.Uint64("userID", userID))
+		return 0, 0, err
+	}
+
+	data.BloodBottleAttr[bloodlimitAttr] = attrDbs[bloodlimitAttr]
+	data.BloodBottleAttr[int32(bloodBottleCdAttr)] = attrDbs[int32(bloodBottleCdAttr)]
+
+	logger.CtxInfo(ctx, "ClearBarrierItems Init Successful",
+		zap.Uint64("userID", userID),
+		zap.Int32("barrierID", barrierID),
+		zap.Any("data", data),
+	)
+
+	return data.BloodBottleAttr[bloodlimitAttr], data.BloodBottleAttr[int32(bloodBottleCdAttr)], data.Save(ctx, userID, barrierID)
 }
 
 func (s *service) DelInAdditionToEquips(ctx context.Context, userID uint64, barrierID int32) error {
