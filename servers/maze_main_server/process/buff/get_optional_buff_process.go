@@ -1,14 +1,18 @@
 package buff
 
 import (
-	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fklog"
-	"go.uber.org/zap"
-	"google.golang.org/protobuf/proto"
+	"context"
+	"fmt"
 	"maze_game_server/common/errors"
+	"maze_game_server/config/GMazeEnergyAffixV8Cfg"
 	"maze_game_server/lib/nano/session"
 	"maze_game_server/pb/common/MazeCommon"
 	"maze_game_server/pb/common/MazeTempBuff"
 	"maze_game_server/services/tempbuffservice"
+
+	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fklog"
+	"go.uber.org/zap"
+	"google.golang.org/protobuf/proto"
 )
 
 func (b *Buff) GetOptionalMazeTempBuffListRQ_10435_10436(s *session.Session, req *MazeTempBuff.GetOptionalMazeTempBuffListRQ) (err error) {
@@ -50,22 +54,43 @@ func (b *Buff) GetOptionalMazeTempBuffListRQ_10435_10436(s *session.Session, req
 		res.ErrInfo = errors.COMMON_ERROR_TIPS.Wrap(err.Error())
 		return nil
 	}
-	res.OptionalBuffInfo = OptionalBuffInfo2PbOptionalBuffInfo(optionalBuffInfo)
+	res.OptionalBuffInfo, err = OptionalBuffInfo2PbOptionalBuffInfo(ctx, userId, barrierId, optionalBuffInfo)
+	if err != nil {
+		res.ErrInfo = errors.COMMON_ERROR_TIPS.Wrap(err.Error())
+		return nil
+	}
 	return
 }
 
-func OptionalBuffInfo2PbOptionalBuffInfo(optionalBuffInfo *tempbuffservice.OptionalBuffInfo) *MazeTempBuff.OptionalBuffInfo {
+func OptionalBuffInfo2PbOptionalBuffInfo(ctx context.Context, userId uint64, barrierId int32, optionalBuffInfo *tempbuffservice.OptionalBuffInfo) (*MazeTempBuff.OptionalBuffInfo, error) {
 	pb := &MazeTempBuff.OptionalBuffInfo{}
 	pb.IsRefresh = proto.Int32(optionalBuffInfo.IsRefresh)
 	pb.SelectBuffTime = proto.Int32(optionalBuffInfo.SelectBuffTime)
 	pb.SelectBuffList = make([]*MazeTempBuff.MazeBuffInfo, 0, len(optionalBuffInfo.SelectBuffList))
+	nowBuffGroupInfo, err := tempbuffservice.GlobalTempBuffService.GetTempBuffGroupList(ctx, userId, barrierId)
+	if err != nil {
+		return nil, err
+	}
 	for _, buffInfo := range optionalBuffInfo.SelectBuffList {
+		energyAffixCfg := GMazeEnergyAffixV8Cfg.GetWithCtx(ctx, buffInfo.BuffId)
+		if energyAffixCfg == nil {
+			return nil, fmt.Errorf("词条id%d缺少", buffInfo.BuffId)
+		}
+
+		var nowCount int32
+		for _, buffGroupInfo := range nowBuffGroupInfo {
+			if buffGroupInfo.GroupId == energyAffixCfg.Affix_group_id {
+				nowCount = buffGroupInfo.Count
+			}
+		}
+
 		pb.SelectBuffList = append(pb.SelectBuffList, &MazeTempBuff.MazeBuffInfo{
-			BuffId:      proto.Int32(buffInfo.BuffId),
-			Value:       proto.Int64(buffInfo.Value),
-			Name:        proto.String(buffInfo.Name),
-			Decs:        proto.String(buffInfo.Decs),
-			IsRecommend: proto.Int32(buffInfo.IsRecommend),
+			BuffId:         proto.Int32(buffInfo.BuffId),
+			Value:          proto.Int64(buffInfo.Value),
+			Name:           proto.String(buffInfo.Name),
+			Decs:           proto.String(buffInfo.Decs),
+			IsRecommend:    proto.Int32(buffInfo.IsRecommend),
+			BuffGroupCount: proto.Int32(nowCount),
 		})
 	}
 	pb.Cost = make([]*MazeCommon.MazeItem, 0, len(optionalBuffInfo.Cost))
@@ -75,5 +100,5 @@ func OptionalBuffInfo2PbOptionalBuffInfo(optionalBuffInfo *tempbuffservice.Optio
 			Count:  proto.Int64(cost.Count),
 		})
 	}
-	return pb
+	return pb, nil
 }

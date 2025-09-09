@@ -1,12 +1,13 @@
 package buff
 
 import (
-	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fklog"
-	"go.uber.org/zap"
 	"maze_game_server/common/errors"
 	"maze_game_server/lib/nano/session"
 	"maze_game_server/pb/common/MazeTempBuff"
 	"maze_game_server/services/tempbuffservice"
+
+	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fklog"
+	"go.uber.org/zap"
 )
 
 func (b *Buff) RefreshOptionalMazeTempBuffListRQ_10439_10440(s *session.Session, req *MazeTempBuff.RefreshOptionalMazeTempBuffListRQ) (err error) {
@@ -46,6 +47,10 @@ func (b *Buff) RefreshOptionalMazeTempBuffListRQ_10439_10440(s *session.Session,
 		res.ErrInfo = errors.COMMON_ERROR_TIPS.Wrap(err.Error())
 		return nil
 	}
-	res.OptionalBuffInfo = OptionalBuffInfo2PbOptionalBuffInfo(optionalBuffInfo)
+	res.OptionalBuffInfo, err = OptionalBuffInfo2PbOptionalBuffInfo(ctx, userId, barrierId, optionalBuffInfo)
+	if err != nil {
+		res.ErrInfo = errors.COMMON_ERROR_TIPS.Wrap(err.Error())
+		return nil
+	}
 	return
 }

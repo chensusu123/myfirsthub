@@ -97,11 +97,25 @@ func TriggerTempBuff(ctx context.Context, userID uint64, barrierId int32, areaId
 		)
 		return err
 	}
+
+	optionalBuffInfoPb, err := buff.OptionalBuffInfo2PbOptionalBuffInfo(ctx, userID, barrierId, optionalBuffInfo)
+	if err != nil {
+		logger.CtxError(ctx, "TriggerTempBuff OptionalBuffInfo2PbOptionalBuffInfo Fail",
+			zap.Error(err),
+			zap.Int32("barrierId", barrierId),
+			zap.Int32("areaId", areaId),
+			zap.Int32("areaIndex", areaIndex),
+			zap.Int32("itemId", itemId),
+			zap.Int64("count", count),
+		)
+		return err
+	}
+
 	optionalTempBuffListID := &MazeTempBuff.OptionalMazeTempBuffListID{
 		StageId:          proto.Int32(barrierId),
 		AreaId:           proto.Int32(areaId),
 		AreaIndex:        proto.Int32(areaIndex),
-		OptionalBuffInfo: buff.OptionalBuffInfo2PbOptionalBuffInfo(optionalBuffInfo),
+		OptionalBuffInfo: optionalBuffInfoPb,
 		Type:             MazeTempBuff.Type_USE_ITEM.Enum(),
 		Level:            proto.Int32(optionalBuffInfo.Level),
 	}
