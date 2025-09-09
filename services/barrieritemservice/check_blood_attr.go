@@ -62,10 +62,9 @@ func (s *service) CheckBloodAttr(ctx context.Context, userID uint64, barrierID i
 	}
 
 	for _, buffInfo := range tempBuffInfo.TotalBuff {
-		if buffInfo.BuffId != bloodlimitAttr || buffInfo.BuffId != int32(bloodBottleCdAttr) {
-			continue
+		if buffInfo.BuffId == bloodlimitAttr || buffInfo.BuffId == int32(bloodBottleCdAttr) {
+			attrDbs[buffInfo.BuffId] += buffInfo.BuffValue
 		}
-		attrDbs[buffInfo.BuffId] += buffInfo.BuffValue
 	}
 
 	logger.CtxInfo(ctx, "CheckBloodAttr GetData Successful",
