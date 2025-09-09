@@ -28,8 +28,8 @@ type MazeFoeV8ConfigRow struct {
 	Attack_max                   int32           `json:"attack_max"`                   // 怪物攻击
 	Def_max                      int32           `json:"def_max"`                      // 怪物防御
 	Hp_max                       int32           `json:"hp_max"`                       // 怪物血量
-	Fire_res                     int32           `json:"fire_res"`                     // 冰元素抗性
-	Ice_res                      int32           `json:"ice_res"`                      // 火元素抗性
+	Fire_res                     int32           `json:"fire_res"`                     // 火元素抗性
+	Ice_res                      int32           `json:"ice_res"`                      // 冰元素抗性
 	Poi_res                      int32           `json:"poi_res"`                      // 毒元素抗性
 	Ele_res                      int32           `json:"ele_res"`                      // 电元素抗性
 	Speed                        int32           `json:"speed"`                        // 移动速度(万分比）
@@ -516,12 +516,12 @@ func (*gMazeFoeV8Parser) Parse(logger fklog.FKLogI, data []string, row interface
 		config.Hp_max = int32(tmp)
 	}
 
-	// parse column 13 fire_res : 冰元素抗性
+	// parse column 13 fire_res : 火元素抗性
 	if data[13] != "" {
 		tmp, err = strconv.ParseInt(data[13], 10, 64)
 		if err != nil {
-			err = errors.New("parse field fire_res 冰元素抗性 to int32 failed")
-			logger.ErrorWF("parse field fire_res 冰元素抗性 to int32 failed.",
+			err = errors.New("parse field fire_res 火元素抗性 to int32 failed")
+			logger.ErrorWF("parse field fire_res 火元素抗性 to int32 failed.",
 				zap.String("xlsx", "maze_foe_v8【迷宫-敌人信息】.xlsx"), zap.String("sheet", "maze_foe_v8"),
 				zap.String("parse_data", data[13]),
 				zap.Error(err))
@@ -530,12 +530,12 @@ func (*gMazeFoeV8Parser) Parse(logger fklog.FKLogI, data []string, row interface
 		config.Fire_res = int32(tmp)
 	}
 
-	// parse column 14 ice_res : 火元素抗性
+	// parse column 14 ice_res : 冰元素抗性
 	if data[14] != "" {
 		tmp, err = strconv.ParseInt(data[14], 10, 64)
 		if err != nil {
-			err = errors.New("parse field ice_res 火元素抗性 to int32 failed")
-			logger.ErrorWF("parse field ice_res 火元素抗性 to int32 failed.",
+			err = errors.New("parse field ice_res 冰元素抗性 to int32 failed")
+			logger.ErrorWF("parse field ice_res 冰元素抗性 to int32 failed.",
 				zap.String("xlsx", "maze_foe_v8【迷宫-敌人信息】.xlsx"), zap.String("sheet", "maze_foe_v8"),
 				zap.String("parse_data", data[14]),
 				zap.Error(err))
