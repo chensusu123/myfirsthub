@@ -101,7 +101,7 @@ func (g *Game) OnMazeBarrierEnterRQ_10447_10448(s *session.Session, req *MazeGam
 	}
 
 	// 删除关卡内物品和装备存储
-	err = barrieritemservice.GbarrierItemsService.ClearBarrierItems(ctx, userId, req.GetBarrierId())
+	max, cd, err := barrieritemservice.GbarrierItemsService.ClearBarrierItems(ctx, userId, req.GetBarrierId())
 	if err != nil {
 		logger.CtxError(ctx, "OnMazeBarrierEnterRQ ClearBarrierItems",
 			zap.Uint64("userID", userId),
@@ -110,12 +110,7 @@ func (g *Game) OnMazeBarrierEnterRQ_10447_10448(s *session.Session, req *MazeGam
 		res.ErrInfo = errors.MODULE_ERROR.ToInfo()
 		return
 	}
-	// 获取关卡血瓶使用信息
-	max, cd, err := barrieritemservice.GbarrierItemsService.CheckBloodAttr(ctx, userId, req.GetBarrierId())
-	if err != nil {
-		logger.CtxError(ctx, "OnMazeBarrierEnterRQ CheckBloodAttr fail", zap.Error(err), zap.Int32("Barrier", req.GetBarrierId()))
-		return
-	}
+
 	res.BloodDrugUseInfo = &MazeGame.BloodDrugUseInfo{
 		MaxCount: proto.Int32(int32(max)),
 		Cooldown: proto.Int32(int32(cd)),
