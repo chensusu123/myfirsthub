@@ -125,7 +125,7 @@ func ItemCollect(ctx context.Context, userId uint64, collectInfo *MazeCollectCac
 	cfg := GMazeBarriesOnHookV8Cfg.GetWithCtx(ctx, collectInfo.GetBarrierId())
 	if cfg == nil {
 		logger.CtxError(ctx, "ItemCollect error",
-			zap.Any("barrierId", collectInfo.GetBarrierId()))
+			zap.Any("barrierId", collectInfo.GetBarrierId()), zap.Any("collectInfo", collectInfo))
 		return errors.New("配置不存在")
 	}
 

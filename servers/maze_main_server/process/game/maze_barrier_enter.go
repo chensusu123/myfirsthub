@@ -331,6 +331,8 @@ func (g *Game) OnMazeBarrierEnterRQ_10447_10448(s *session.Session, req *MazeGam
 	levelCfg := GMazeLevelV8Cfg.GetWithCtx(ctx, int32(userInfo.Level))
 	if levelCfg != nil {
 		expMax = levelCfg.Next_level_need_exp
+	} else {
+		logger.CtxError(ctx, "OnMazeBarrierEnterRQ GMazeLevelV8Cfg fail", zap.Error(err), zap.Any("userInfo", userInfo))
 	}
 
 	items := []*itemservice.ItemInfo{
