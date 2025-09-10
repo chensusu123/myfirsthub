@@ -4,10 +4,20 @@ import (
 	"context"
 	"fmt"
 	"maze_game_server/io"
+	globalredis "maze_game_server/io/redis"
 )
 
 func getRedisKey(userId uint64, barrier int32) string {
 	return fmt.Sprintf("maze:u:%d:barrier:%d:stage:count:record", userId, barrier)
+}
+
+func getSectionKey(s string) (string, error) {
+	db, err := globalredis.GCli.GetDB()
+	if err != nil {
+		return "", err
+	}
+	key := db.MakeSectionKey(s)
+	return key, err
 }
 
 // 关卡计数器
@@ -42,4 +52,8 @@ func (p *BarrierStageCounterModel) Save(ctx context.Context, userID uint64, barr
 
 func (p *BarrierStageCounterModel) Del(ctx context.Context, userID uint64, barrierId int32) (err error) {
 	return io.DeleteSvrData(ctx, getRedisKey(userID, barrierId))
+}
+
+func GMDel(ctx context.Context, userID uint64, barrierID int32) (err error) {
+	return io.DeleteSvrData(ctx, getRedisKey(userID, barrierID))
 }
