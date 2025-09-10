@@ -12,7 +12,6 @@ import (
 	"maze_game_server/io/redis/mazechallengenumredis"
 	"maze_game_server/io/redis/mazecollectredis"
 	"maze_game_server/io/redis/mazeequipgetnumredis"
-	"maze_game_server/model/barrieritemsmodel"
 	"maze_game_server/model/barrierstagecountermodel"
 
 	"maze_game_server/io/redis/mazeuserbarrierredis"
