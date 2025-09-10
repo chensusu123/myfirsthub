@@ -137,7 +137,11 @@ func ClearBarriersTempData(ctx context.Context, userId uint64, barrierId int32) 
 	barrierstagecounterservice.GlobalBarrierStageCounterService.DelBarrierStageCounterOnPass(ctx, userId, barrierId)
 
 	// 删除关卡内掉落物品
-	barrieritemsmodel.GMDel(ctx, userId, barrierId)
+
+	err := barrieritemsmodel.GMDel(ctx, userId, barrierId)
+	if err != nil {
+		logger.CtxError(ctx, "ClearBarriersTempData Fail", zap.Error(err))
+	}
 
 	mazebuffinforedis.DelMazeBuffBySrc(ctx, userId, constdef.MazeBuffSrcSelectBuffForce)
 	// 推送属性计算消息
