@@ -376,7 +376,7 @@ func (g *Game) OnBarrierUseItemRQ_10550_10551(s *session.Session, req *MazeGame.
 		}
 	}
 	// 返回新增道具列表
-	res.ItemList = items
+	res.ItemList = req.ItemList
 
 	if len(addEquipMap) > 0 {
 		rs, err2 := addequip.AddEquipToBag(s.Context(), userId, int32(MazeEquipSvr.ENUM_EQUIP_BAG_OP_TYPE_MAZE_EQUIP_FOE), tradeNo, addEquipMap)
@@ -391,7 +391,7 @@ func (g *Game) OnBarrierUseItemRQ_10550_10551(s *session.Session, req *MazeGame.
 		}
 	}
 	// 返回装备列表
-	res.EquipList = req.GetEquipList()
+	res.EquipList = req.EquipList
 
 	return
 }
