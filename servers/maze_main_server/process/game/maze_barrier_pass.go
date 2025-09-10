@@ -17,6 +17,7 @@ import (
 	"maze_game_server/io/redis/mazebuffinforedis"
 	"maze_game_server/io/redis/syncmazestorageinforedis"
 	"maze_game_server/lib/nano/session"
+	"maze_game_server/model/barrieritemsmodel"
 	"maze_game_server/pb/common/MazeCommon"
 	"maze_game_server/pb/common/MazeGame"
 	"maze_game_server/servers/maze_main_server/process/game/events"
@@ -134,6 +135,9 @@ func ClearBarriersTempData(ctx context.Context, userId uint64, barrierId int32) 
 	tempbuffservice.GlobalTempBuffService.DelPassArea(ctx, userId, barrierId)
 	// 删除关卡计数
 	barrierstagecounterservice.GlobalBarrierStageCounterService.DelBarrierStageCounterOnPass(ctx, userId, barrierId)
+
+	// 删除关卡内掉落物品
+	barrieritemsmodel.GMDel(ctx, userId, barrierId)
 
 	mazebuffinforedis.DelMazeBuffBySrc(ctx, userId, constdef.MazeBuffSrcSelectBuffForce)
 	// 推送属性计算消息

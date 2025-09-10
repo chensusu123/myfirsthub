@@ -52,3 +52,7 @@ func (s *barrierItems) Save(ctx context.Context, userID uint64, barrierID int32)
 func (s *barrierItems) Del(ctx context.Context, userID uint64, barrierID int32) (err error) {
 	return io.DeleteSvrData(ctx, getKey(userID, barrierID))
 }
+
+func GMDel(ctx context.Context, userID uint64, barrierID int32) (err error) {
+	return io.DeleteSvrData(ctx, getKey(userID, barrierID))
+}

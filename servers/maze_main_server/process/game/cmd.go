@@ -12,6 +12,7 @@ import (
 	"maze_game_server/io/redis/mazechallengenumredis"
 	"maze_game_server/io/redis/mazecollectredis"
 	"maze_game_server/io/redis/mazeequipgetnumredis"
+	"maze_game_server/model/barrieritemsmodel"
 	"maze_game_server/model/barrierstagecountermodel"
 
 	"maze_game_server/io/redis/mazeuserbarrierredis"
@@ -246,7 +247,6 @@ func ClearBarrier(ctx context.Context, userId uint64) (err error) {
 	if err != nil {
 		return err
 	}
-
 	// 清除关卡杀怪进度
 	err = barrierstagecountermodel.GMDel(ctx, userId, userInfo.Barrier)
 	if err != nil {
