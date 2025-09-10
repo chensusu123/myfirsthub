@@ -4,6 +4,7 @@ import (
 	"context"
 	"maze_game_server/common/constdef"
 	"maze_game_server/excel/mazeconfigv8config"
+	"maze_game_server/io/redis/barrierguiditemredis"
 	"maze_game_server/io/redis/mazecalcattrredis"
 	"maze_game_server/model/barrieritemsmodel"
 	"maze_game_server/servers/maze_main_server/process/item"
@@ -111,16 +112,34 @@ func (s *service) CheckBloodAttr(ctx context.Context, userID uint64, barrierID i
 	// 血瓶上限 变化则增加对应血瓶
 	if data.BloodBottleAttr[bloodlimitAttr] != attrDbs[bloodlimitAttr] {
 		bloodBottleLimit = attrDbs[bloodlimitAttr]
-		data.Items[bloodID] += (attrDbs[bloodlimitAttr] - data.BloodBottleAttr[bloodlimitAttr])
-		// 推包
-		dropItems = append(dropItems, &itemservice.ItemInfo{
-			ItemId: int32(bloodID),
-			Count:  1,
-		})
+		num := (attrDbs[bloodlimitAttr] - data.BloodBottleAttr[bloodlimitAttr])
+		for i := 1; i <= int(num); i++ {
+			itemGuid, err := barrierguiditemredis.IncrNowGuid(ctx, userID, barrierID)
+			if err != nil {
+				logger.CtxError(ctx, "CheckBloodAttr IncrNowGuid Fail",
+					zap.Uint64("userID", userID),
+					zap.Int32("barrierID", barrierID),
+					zap.Any("data", data),
+					zap.Error(err),
+				)
+			}
+			data.Items[itemGuid] = &itemservice.ItemInfo{
+				ItemId: int32(bloodID),
+				Count:  1,
+				Guid:   itemGuid,
+			}
+
+			dropItems = append(dropItems, &itemservice.ItemInfo{
+				ItemId: int32(bloodID),
+				Count:  1,
+				Guid:   itemGuid,
+			})
+		}
 
 		logger.CtxInfo(ctx, "CheckBloodAttr Drop BloodBottle",
 			zap.Uint64("userID", userID),
 			zap.Int32("barrierID", barrierID),
+			zap.Any("dropItems", dropItems),
 		)
 
 		data.BloodBottleAttr[bloodlimitAttr] = attrDbs[bloodlimitAttr]

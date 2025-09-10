@@ -3,8 +3,11 @@ package itemutil
 import (
 	"context"
 	"fmt"
+	"maze_game_server/common/function/packtopb/equiptoitem"
 	"maze_game_server/config/GMazeBagOrderV8Cfg"
+	"maze_game_server/excel/mazeequiptyperesv8"
 	"maze_game_server/pb/common/MazeBag"
+	"maze_game_server/pb/server/MazeEquipSvr"
 	"maze_game_server/services/itemservice"
 	"sort"
 
@@ -167,7 +170,33 @@ func ItemInfo2ItemPb(items []*itemservice.ItemInfo) []*MazeCommon.MazeItem {
 		res = append(res, &MazeCommon.MazeItem{
 			ItemId: proto.Int32(item.ItemId),
 			Count:  proto.Int64(item.Count),
+			Guid:   proto.Int64(item.Guid),
 		})
 	}
 	return res
+}
+
+func ItemInfo2EquipPb(ctx context.Context, equips []*itemservice.ItemInfo) ([]*MazeCommon.MazeItem, error) {
+	res := make([]*MazeCommon.MazeItem, 0)
+	for _, equip := range equips {
+		equipTypeResCfg := mazeequiptyperesv8.GetEquipTypeResCfg(equip.ItemId, 0, 0)
+		if equipTypeResCfg == nil {
+			err := fmt.Errorf("mazeequiptyperesv8 get cfg fail, equipId:%d", equip.ItemId)
+			return nil, err
+		}
+		equip := &MazeEquipSvr.MazeEquipInfoSvr{
+			EquipId:    proto.Int32(equip.ItemId),
+			EquipResId: proto.Int32(equipTypeResCfg.Order),
+			EquipName:  proto.String(equipTypeResCfg.Name),
+			EquipGuid:  proto.Int64(equip.Guid),
+		}
+
+		itemEquip, err := equiptoitem.PackEquipToItem(ctx, equip)
+		if err != nil {
+			return nil, err
+		}
+		res = append(res, itemEquip)
+	}
+
+	return res, nil
 }

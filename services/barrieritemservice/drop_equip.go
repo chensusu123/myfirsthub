@@ -3,6 +3,7 @@ package barrieritemservice
 import (
 	"context"
 	"maze_game_server/common/errors"
+	"maze_game_server/io/redis/barrierguiditemredis"
 	"maze_game_server/module/mazeuserinfo"
 	"maze_game_server/services/equipdropservice"
 	"maze_game_server/services/itemservice"
@@ -52,10 +53,21 @@ func (s *service) FallOffEquip(ctx context.Context, userID uint64, barrierID int
 	}
 
 	for equipID, equipCount := range addEquipMap {
-		res = append(res, &itemservice.ItemInfo{
-			ItemId: equipID,
-			Count:  int64(equipCount),
-		})
+		for i := 1; i <= int(equipCount); i++ {
+			equipGuid, err := barrierguiditemredis.IncrNowGuid(ctx, userID, barrierID)
+			if err != nil {
+				logger.CtxError(ctx, "DropEquip IncrNowGuid Fail",
+					zap.Uint64("userID", userID),
+					zap.Int32("barrierID", barrierID),
+					zap.Error(err),
+				)
+			}
+			res = append(res, &itemservice.ItemInfo{
+				ItemId: equipID,
+				Count:  1,
+				Guid:   equipGuid,
+			})
+		}
 	}
 
 	return

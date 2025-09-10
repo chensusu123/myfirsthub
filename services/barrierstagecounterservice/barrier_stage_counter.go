@@ -183,7 +183,7 @@ func (s service) AddKillMonsterNum(ctx context.Context, userId uint64, barrierId
 
 	// 发送流水
 	monsterRecord := mazemonstermodel.NewMazeMonsterRecordModel(userId, uint32(barrierId), areaID, areaIndex, uint32(nowEquipScore), uint32(nowItem1Score), uint32(nowItem2Score),
-		uint32(killMonsterNum), monsterGuid, monsterPos, flowutil.ItemInfo2String(dropEquips, dropItem1s, dropItem2s, bloodBottle))
+		uint32(killMonsterNum), uint32(monsterId), monsterGuid, monsterPos, flowutil.ItemInfo2String(dropEquips, dropItem1s, dropItem2s, bloodBottle))
 	flowservice.GflowService.SendFlowData(ctx, monsterRecord)
 
 	return
