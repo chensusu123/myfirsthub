@@ -40,8 +40,10 @@ func (s service) GetBarrierStageCounter(ctx context.Context, userId uint64, barr
 	for _, num := range model.ExpMap {
 		totalExp += num
 	}
-	for _, guid := range model.KillMonsterGuidMap {
-		guidList = append(guidList, guid...)
+	for _, areaGuids := range model.KillMonsterGuidMap {
+		for guid := range areaGuids {
+			guidList = append(guidList, guid)
+		}
 	}
 
 	barrierNum, barrierExp := getBarrierMonsterNum(ctx, barrierId)
@@ -58,38 +60,47 @@ func (s service) GetBarrierStageCounter(ctx context.Context, userId uint64, barr
 	return
 }
 
-func (s service) AddKillMonsterNum(ctx context.Context, userId uint64, barrierId, stageId, areaID, areaIndex, monsterId, addVal int32, monsterGuid int64, curHp int64, maxHp int64, monsterPos string) (killMonsterNum int32, guidList []int64, err error) {
+func (s service) AddKillMonsterNum(ctx context.Context, userId uint64, barrierId, stageId, areaID, areaIndex, monsterId int32, monsterGuid int64, curHp int64, maxHp int64, monsterPos string) (killMonsterNum int32, guidList []int64, err error) {
 	logger := fklog.ContextAppLogger(ctx)
 	recordModel, err := barrierstagecountermodel.NewBarrierStageCounterModel(ctx, userId, barrierId)
 	if err != nil {
 		logger.CtxError(ctx, "AddKillMonsterNum NewBarrierStageCounterModel fail", zap.Error(err))
-		return 0, nil, err
+		return
 	}
 
-	barrierNum, barrierExp := getBarrierMonsterNum(ctx, barrierId)
-
-	killMonsterNum, ok := recordModel.KillMonsterRecordMap[stageId]
-	logger.CtxInfo(ctx, "AddKillMonsterNum before kill num", zap.Int32("number", killMonsterNum), zap.Int32("stageId", stageId))
+	// 初始化
+	var addVal int32
+	guidList = make([]int64, 0)
+	_, ok := recordModel.KillMonsterGuidMap[stageId]
 	if !ok {
-		recordModel.KillMonsterRecordMap[stageId] = addVal
-	} else {
-		recordModel.KillMonsterRecordMap[stageId] += addVal
+		recordModel.KillMonsterGuidMap[stageId] = make(map[int64]struct{})
 	}
-	killMonsterNum += addVal
+
+	// 去重
+	if _, ok := recordModel.KillMonsterGuidMap[stageId][monsterGuid]; !ok {
+		addVal = 1
+		logger.CtxInfo(ctx, "AddKillMonsterNum add monsterGuid after", zap.Int64("monsterGuid", monsterGuid), zap.Int32("stageId", stageId))
+	}
+	recordModel.KillMonsterGuidMap[stageId][monsterGuid] = struct{}{}
+
+	// 获取当前杀怪列表
+	for nowGuid := range recordModel.KillMonsterGuidMap[stageId] {
+		guidList = append(guidList, nowGuid)
+	}
+	logger.CtxInfo(ctx, "AddKillMonsterNum add monsterGuid after", zap.Int64("monsterGuid", monsterGuid), zap.Int32("stageId", stageId), zap.Any("guidList", guidList))
+
+	logger.CtxInfo(ctx, "AddKillMonsterNum before kill num", zap.Int32("number", killMonsterNum), zap.Int32("stageId", stageId))
+	recordModel.KillMonsterRecordMap[stageId] += addVal
+	killMonsterNum = recordModel.KillMonsterRecordMap[stageId]
+
+	// 校验杀怪最大上限和经验收益
+	barrierNum, barrierExp := getBarrierMonsterNum(ctx, barrierId)
 	if killMonsterNum > barrierNum {
 		logger.CtxInfo(ctx, "AddKillMonsterNum killMonsterNum > barrierNum", zap.Int32("barrierId", barrierId), zap.Int32("barrierNum", barrierNum), zap.Int32("killMonsterNum", killMonsterNum))
 		killMonsterNum = barrierNum
 		recordModel.KillMonsterRecordMap[stageId] = barrierNum
 	}
 	logger.CtxInfo(ctx, "AddKillMonsterNum after kill num", zap.Int32("number", killMonsterNum), zap.Int32("stageId", stageId))
-
-	guidList, ok = recordModel.KillMonsterGuidMap[stageId]
-	if !ok {
-		guidList = make([]int64, 0)
-	}
-	guidList = append(guidList, monsterGuid)
-	recordModel.KillMonsterGuidMap[stageId] = guidList
-	logger.CtxInfo(ctx, "AddKillMonsterNum add monsterGuid", zap.Int64("monsterGuid", monsterGuid), zap.Int32("stageId", stageId))
 
 	addExp := getMonsterExp(ctx, monsterId)
 	if addExp > 0 {
@@ -119,7 +130,7 @@ func (s service) AddKillMonsterNum(ctx context.Context, userId uint64, barrierId
 			zap.Int32("barrierId", barrierId),
 			zap.Int32("monsterId", monsterId),
 		)
-		return 0, nil, err
+		return
 	}
 
 	// 掉落物品
@@ -130,7 +141,7 @@ func (s service) AddKillMonsterNum(ctx context.Context, userId uint64, barrierId
 			zap.Int32("barrierId", barrierId),
 			zap.Int32("monsterId", monsterId),
 		)
-		return 0, nil, err
+		return
 	}
 	nowItem2Score, dropItem2s, err := barrieritemservice.GbarrierItemsService.AddScoreItem(ctx, userId, barrierId, constdef.MazeCfgId902, foeCfg.Drop_item2_score_num, monsterGuid, monsterPos)
 	if err != nil {
@@ -139,7 +150,7 @@ func (s service) AddKillMonsterNum(ctx context.Context, userId uint64, barrierId
 			zap.Int32("barrierId", barrierId),
 			zap.Int32("monsterId", monsterId),
 		)
-		return 0, nil, err
+		return
 	}
 
 	// 技能物品掉落
@@ -150,7 +161,7 @@ func (s service) AddKillMonsterNum(ctx context.Context, userId uint64, barrierId
 			zap.Int32("barrierId", barrierId),
 			zap.Int32("monsterId", monsterId),
 		)
-		return 0, nil, err
+		return
 	}
 
 	// 能量点数增加
@@ -167,7 +178,7 @@ func (s service) AddKillMonsterNum(ctx context.Context, userId uint64, barrierId
 	err = recordModel.Save(ctx, userId, barrierId)
 	if err != nil {
 		logger.CtxError(ctx, "AddKillMonsterNum Save fail", zap.Error(err))
-		return killMonsterNum, nil, err
+		return
 	}
 
 	// 发送流水
@@ -175,7 +186,7 @@ func (s service) AddKillMonsterNum(ctx context.Context, userId uint64, barrierId
 		uint32(killMonsterNum), monsterGuid, monsterPos, flowutil.ItemInfo2String(dropEquips, dropItem1s, dropItem2s, bloodBottle))
 	flowservice.GflowService.SendFlowData(ctx, monsterRecord)
 
-	return killMonsterNum, guidList, nil
+	return
 }
 
 func (s service) AddDamage(ctx context.Context, userId uint64, barrierId, stageId int32, addVal int64) (damage int64, err error) {

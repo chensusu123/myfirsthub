@@ -88,7 +88,7 @@ func (g *Game) OnMazeBarrierPassRQ_10459_10460(s *session.Session, req *MazeGame
 	logger.CtxInfo(ctx, "OnMazeBarrierPassRQ award dump", zap.Any("exp", req.GetFoeExp()), zap.Any("awards", awards), zap.Any("rareAwards", rareAwards))
 
 	attrMap, err := GetUserAttrMap(ctx, userId)
-	fmt.Println(attrMap)
+	// fmt.Println(attrMap)
 	passRecord := &mazebarrieruserkafka.MazeBarrierUserGameRecord{
 		UserId:         userId,
 		Barrier:        req.GetBarrierId(),

@@ -1,16 +1,17 @@
 package game
 
 import (
-	"github.com/gogo/protobuf/proto"
-	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fklog"
-	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fkprometheus"
-	"go.uber.org/zap"
 	"maze_game_server/common/errors"
 	"maze_game_server/config/GMazeBarriesV8Cfg"
 	"maze_game_server/lib/nano/session"
 	"maze_game_server/module/mazeuserinfo"
 	"maze_game_server/pb/common/MazeGame"
 	"maze_game_server/services/barrierstagecounterservice"
+
+	"github.com/gogo/protobuf/proto"
+	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fklog"
+	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fkprometheus"
+	"go.uber.org/zap"
 )
 
 func (g *Game) OnBarrierKillMonsterRQ_10620_10621(s *session.Session, req *MazeGame.BarrierKillMonsterRQ) (err error) {
@@ -57,16 +58,10 @@ func (g *Game) OnBarrierKillMonsterRQ_10620_10621(s *session.Session, req *MazeG
 		return
 	}
 
-	_, _, err = barrierstagecounterservice.GlobalBarrierStageCounterService.AddKillMonsterNum(ctx, userId, req.GetBarrierId(), req.GetStageId(), req.GetAreaId(), req.GetAreaIndex(),
-		req.GetMonsterId(), 1, req.GetMonsterGuid(), req.GetCurHp(), req.GetMaxHp(), req.GetMonsterPos())
+	killMonsterNum, _, err := barrierstagecounterservice.GlobalBarrierStageCounterService.AddKillMonsterNum(ctx, userId, req.GetBarrierId(), req.GetStageId(), req.GetAreaId(), req.GetAreaIndex(),
+		req.GetMonsterId(), req.GetMonsterGuid(), req.GetCurHp(), req.GetMaxHp(), req.GetMonsterPos())
 	if err != nil {
 		logger.CtxError(ctx, "OnBarrierKillMonsterRQ AddKillMonsterNum fail", zap.Any("req", req), zap.Error(err))
-		return err
-	}
-
-	killMonsterNum, _, _, _, err := barrierstagecounterservice.GlobalBarrierStageCounterService.GetBarrierStageCounter(ctx, userId, req.GetBarrierId())
-	if err != nil {
-		logger.CtxError(ctx, "OnMazeBarrierPassRQ GetBarrierAreaRecord fail", zap.Error(err))
 		return err
 	}
 

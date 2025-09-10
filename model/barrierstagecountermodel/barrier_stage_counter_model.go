@@ -12,10 +12,10 @@ func getRedisKey(userId uint64, barrier int32) string {
 
 // 关卡计数器
 type BarrierStageCounterModel struct {
-	ExpMap               map[int32]int64   `json:"exp_map,omitempty"`                 //杀怪获得的经验
-	DamageRecordMap      map[int32]int64   `json:"damage_record_map,omitempty"`       //伤害值
-	KillMonsterRecordMap map[int32]int32   `json:"kill_monster_record_map,omitempty"` //杀怪数
-	KillMonsterGuidMap   map[int32][]int64 `json:"kill_monster_guid_map,omitempty"`   //杀怪的guid列表
+	ExpMap               map[int32]int64              `json:"exp_map,omitempty"`                 //杀怪获得的经验
+	DamageRecordMap      map[int32]int64              `json:"damage_record_map,omitempty"`       //伤害值
+	KillMonsterRecordMap map[int32]int32              `json:"kill_monster_record_map,omitempty"` //杀怪数
+	KillMonsterGuidMap   map[int32]map[int64]struct{} `json:"kill_monster_guid_map,omitempty"`   //杀怪的guid列表
 }
 
 func NewBarrierStageCounterModel(ctx context.Context, userID uint64, barrierId int32) (*BarrierStageCounterModel, error) {
@@ -23,7 +23,7 @@ func NewBarrierStageCounterModel(ctx context.Context, userID uint64, barrierId i
 		ExpMap:               make(map[int32]int64),
 		DamageRecordMap:      make(map[int32]int64),
 		KillMonsterRecordMap: make(map[int32]int32),
-		KillMonsterGuidMap:   make(map[int32][]int64),
+		KillMonsterGuidMap:   make(map[int32]map[int64]struct{}),
 	}
 
 	if err := passArea.load(ctx, userID, barrierId); err != nil {
