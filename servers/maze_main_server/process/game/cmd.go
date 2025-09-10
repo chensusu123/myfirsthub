@@ -247,6 +247,13 @@ func ClearBarrier(ctx context.Context, userId uint64) (err error) {
 		return err
 	}
 
+	// 清除关卡杀怪进度
+	err = barrierstagecountermodel.GMDel(ctx, userId, userInfo.Barrier)
+	if err != nil {
+		logger.CtxError(ctx, "NewBarrierStageCounterModel Fail", zap.Error(err))
+		return
+	}
+
 	// 清除等级经验通用数值
 	err = mazeuserlevelredis.GMDel(ctx, userId)
 	if err != nil {
@@ -297,13 +304,6 @@ func ClearBarrier(ctx context.Context, userId uint64) (err error) {
 	if err != nil {
 		return
 	}
-
-	// 清除关卡杀怪进度
-	userKillMonsterCount, err := barrierstagecountermodel.NewBarrierStageCounterModel(ctx, userId, userInfo.Barrier)
-	if err != nil {
-		return
-	}
-	userKillMonsterCount.Del(ctx, userId, userInfo.Barrier)
 
 	// 重置体力
 	err = barrierenergyservice.GlobalBarrierEnergyService.ResetEnergy(ctx, userId)
