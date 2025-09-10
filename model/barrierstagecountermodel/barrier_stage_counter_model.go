@@ -55,15 +55,5 @@ func (p *BarrierStageCounterModel) Del(ctx context.Context, userID uint64, barri
 }
 
 func GMDel(ctx context.Context, userID uint64, barrierID int32) (err error) {
-	db, err := globalredis.GCli.GetDB()
-	if err != nil {
-		return err
-	}
-
-	key, err := getSectionKey(getRedisKey(userID, barrierID))
-	if err != nil {
-		return err
-	}
-
-	return db.Del(ctx, key).Err()
+	return io.DeleteSvrData(ctx, getRedisKey(userID, barrierID))
 }
