@@ -67,6 +67,9 @@ type P2PService interface {
 	//	- user: 用户
 	//	- errInfo: 错误信息(string)
 	CheckUserAndPeer(ctx context.Context, userId uint64, peerId uint64) (user app.User, errInfo string)
+
+	// MessageReadNotify 消息已读通知
+	MessageReadNotify(ctx context.Context, userId uint64, peerId uint64, messageID uint64) error
 }
 
 var (
@@ -146,9 +149,9 @@ func (p *p2p) ReadMessage(ctx context.Context, a app.App, user app.User, peerID 
 		return err
 	}
 	//通知接收者
-	err = p.notifyMessage(ctx, user.UserID(), peerID, messageID, 1, 10656, []byte(""))
+	err = p.MessageReadNotify(ctx, user.UserID(), peerID, messageID)
 	if err != nil {
-		fmt.Println("notifyMessage error:", err)
+		fmt.Println("notifyReadMessage error:", err)
 		return err
 	}
 	return nil
@@ -180,6 +183,23 @@ func (p *p2p) notifyMessage(ctx context.Context, userId uint64, peerID uint64, m
 		logger.CtxError(ctx, "notifyMessage error", zap.Error(err), zap.Any("notifyMessage", notifyMessage))
 	}
 	return err
+}
+
+// MessageReadNotify 消息已读通知
+func (p *p2p) MessageReadNotify(ctx context.Context, userId uint64, peerId uint64, messageID uint64) error {
+	logger := fklog.ContextAppLogger(ctx)
+	// 推送消息给消息发送者
+	notifyReadMessage := &MazeIM.MessageReadNotificationID{
+		PeerId: proto.Uint64(userId),
+		MsgId:  proto.Uint64(messageID),
+	}
+	logger.CtxInfo(ctx, "MessageReadNotify start", zap.Uint64("userId", userId), zap.Any("notifyMessage", notifyReadMessage))
+	err := online.ClusterPush(ctx, peerId, 10688, notifyReadMessage)
+	if err != nil {
+		logger.CtxError(ctx, "MessageReadNotify error", zap.Error(err), zap.Any("notifyMessage", notifyReadMessage))
+		return err
+	}
+	return nil
 }
 
 // CheckUserAndPeer 检查用户和接收者是否合法
