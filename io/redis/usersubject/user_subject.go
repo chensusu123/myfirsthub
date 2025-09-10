@@ -18,34 +18,39 @@ func getKey(db nanoredis.NanoRedisClient, userID int64) string {
 }
 
 // Add
-func Add(ctx context.Context, userID int64, subject string) error {
+func Add(ctx context.Context, userID int64, subject ...string) error {
 	logger := fklog.ContextAppLogger(ctx)
 	cli, err := globalredis.GCli.GetDB()
 	if err != nil {
 		logger.CtxError(ctx, "Subject Add Client fail",
 			zap.Int64("userID", userID),
-			zap.String("subject", subject),
+			zap.Strings("subject", subject),
 			zap.Error(err),
 		)
 		return err
 	}
 	key := getKey(cli, userID)
-	_, err = cli.HSet(ctx, key, subject, time.Now().Unix()).Result()
+	args := make([]interface{}, len(subject)*2)
+	for _, s := range subject {
+		args = append(args, s)
+		args = append(args, time.Now().Unix())
+	}
+	_, err = cli.HMSet(ctx, key, args...).Result()
 	return err
 }
 
-func Del(ctx context.Context, userID int64, subject string) error {
+func Del(ctx context.Context, userID int64, subject ...string) error {
 	logger := fklog.ContextAppLogger(ctx)
 	cli, err := globalredis.GCli.GetDB()
 	if err != nil {
 		logger.CtxError(ctx, "Subject Del Client fail",
 			zap.Int64("userID", userID),
-			zap.String("subject", subject),
+			zap.Strings("subject", subject),
 			zap.Error(err),
 		)
 		return err
 	}
 	key := getKey(cli, userID)
-	_, err = cli.HDel(ctx, key, subject).Result()
+	_, err = cli.HDel(ctx, key, subject...).Result()
 	return err
 }
