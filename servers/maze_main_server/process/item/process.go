@@ -4,7 +4,6 @@ import (
 	"context"
 	"maze_game_server/common/errors"
 	"maze_game_server/common/function/itemutil"
-	"maze_game_server/common/function/packtopb/equiptoitem"
 	"maze_game_server/lib/nano/component"
 	"maze_game_server/lib/nano/session"
 	"maze_game_server/pb/common/MazeBag"
@@ -94,18 +93,17 @@ func OnSendItemsPack(ctx context.Context, userID uint64, items []*itemservice.It
 		logger.CtxInfo(ctx, "OnSendItemsPack end", zap.Any("rs", rs))
 	}()
 
-	for _, equip := range equips {
-		equip, err := equiptoitem.PackMazeEquipInfoSvrToItem(ctx, equip.ItemId)
-		if err != nil {
-			logger.CtxError(ctx, "OnSendItemsPack PackMazeEquipInfoSvrToItem fail",
-				zap.Any("equip", equip),
-				zap.Uint64("userID", userID),
-			)
-			return err
-		}
-		rs.EquipList = append(rs.EquipList, equip)
+	equipList, err := itemutil.ItemInfo2EquipPb(ctx, equips)
+	if err != nil {
+		logger.CtxError(ctx, "OnSendItemsPack ItemInfo2EquipPb",
+			zap.Any("userID", userID),
+			zap.Any("items", items),
+			zap.Any("equips", equips),
+		)
+		return err
 	}
 
+	rs.EquipList = equipList
 	rs.ItemList = itemutil.ItemInfo2ItemPb(items)
 
 	rs.MonsterGuid = proto.Int64(monsterGuid)

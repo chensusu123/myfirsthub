@@ -38,35 +38,25 @@ func (s *service) TrySubBarrierItems(ctx context.Context, userID uint64, barrier
 		zap.Any("nowdata", data),
 	)
 
-	var subItems []*itemservice.ItemInfo
 	for _, item := range items {
-		if data.Items[int64(item.ItemId)] < item.Count {
+		if _, ok := data.Items[item.Guid]; !ok {
 			return false, nil
 		}
 	}
 	for _, equip := range equips {
-		if data.Equips[uint64(equip.ItemId)] < uint64(equip.Count) {
+		if _, ok := data.Equips[equip.Guid]; !ok {
 			return false, nil
 		}
 	}
 
 	// 实际添加物品
 	for _, item := range items {
-		// 技能道具使用
-		data.Items[int64(item.ItemId)] -= item.Count
-		subItems = append(subItems, &itemservice.ItemInfo{
-			ItemId: item.ItemId,
-			Count:  item.Count,
-		})
+		delete(data.Items, item.Guid)
 	}
 
 	// 实际添加装备
 	for _, equip := range equips {
-		data.Equips[uint64(equip.ItemId)] -= uint64(equip.Count)
-		subItems = append(subItems, &itemservice.ItemInfo{
-			ItemId: equip.ItemId,
-			Count:  equip.Count,
-		})
+		delete(data.Equips, equip.Guid)
 	}
 
 	err = data.Save(ctx, userID, barrierID)
@@ -82,7 +72,8 @@ func (s *service) TrySubBarrierItems(ctx context.Context, userID uint64, barrier
 		zap.Uint64("userID", userID),
 		zap.Int32("barrierID", barrierID),
 		zap.Any("nowdata", data),
-		zap.Any("subItems", subItems),
+		zap.Any("subItems", items),
+		zap.Any("subequips", equips),
 	)
 
 	return true, nil

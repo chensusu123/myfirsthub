@@ -2,14 +2,16 @@ package itemservice
 
 import (
 	"context"
+	"maze_game_server/pb/common/MessageType"
+
 	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fklog"
 	"go.uber.org/zap"
-	"maze_game_server/pb/common/MessageType"
 )
 
 type ItemInfo struct {
 	ItemId int32 `json:"item_id,omitempty"` //物品Id
 	Count  int64 `json:"count,omitempty"`   //物品数量
+	Guid   int64 `json:"guid,omitempty"`    // 物品唯一id
 }
 
 func (s *service) AddItem(ctx context.Context, userId uint64, opType ItemOpType, tradeNo uint64, items ...*ItemInfo) (errInfo *MessageType.ErrorInfo) {

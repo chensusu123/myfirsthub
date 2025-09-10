@@ -6,6 +6,7 @@ import (
 	"maze_game_server/excel/mazeconfigv8config"
 	"maze_game_server/io/redis/mazecalcattrredis"
 	"maze_game_server/model/barrieritemsmodel"
+	"maze_game_server/services/itemservice"
 
 	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fklog"
 	"go.uber.org/zap"
@@ -50,8 +51,8 @@ func (s *service) ClearBarrierItems(ctx context.Context, userID uint64, barrierI
 	// 	fmt.Printf("k : %d, v : %v\n", k, v)
 	// }
 
-	data.Items = make(map[int64]int64)
-	data.Equips = make(map[uint64]uint64)
+	data.Items = make(map[int64]*itemservice.ItemInfo)
+	data.Equips = make(map[int64]*itemservice.ItemInfo)
 	data.EquipScore = 0
 	data.ItemsScore = make(map[int32]int32)
 	data.SkillsCount = make(map[int32]int32)
@@ -109,7 +110,7 @@ func (s *service) DelInAdditionToEquips(ctx context.Context, userID uint64, barr
 		return err
 	}
 
-	data.Items = make(map[int64]int64)
+	data.Items = make(map[int64]*itemservice.ItemInfo)
 	data.ItemsScore = make(map[int32]int32)
 	data.SkillDropTime = make(map[int32]int64)
 	data.SkillsCount = make(map[int32]int32)

@@ -21,12 +21,15 @@ type MazeMonsterRecordModel struct {
 	NowItem1Score  uint32 `json:"now_coin_score"`   // 金币堆分数
 	NowItem2Score  uint32 `json:"now_stone_score"`  // 强化石堆分数
 	KillMonsterNum uint32 `json:"kill_monster_num"` // 当前杀怪数
-	MonsterGuid    int64  `json:"monster_guid"`     // 怪物配置id
+	MonsterID      uint32 `json:"monster_id"`       // 怪物配置id
+	Wave           uint32 `json:"wave"`             // 波次
+	MonsterGuid    int64  `json:"monster_guid"`     // 怪物唯一id
 	MonsterPos     string `json:"monster_pos"`      // 怪物位置
 	DropItems      string `json:"drop_items"`       // 掉落物品
 }
 
-func NewMazeMonsterRecordModel(userID uint64, barrierID uint32, areaID, areaIndex int32, nowEquipScore, nowItem1Score, nowItem2Score, killMonsterNum uint32, monsterGuid int64, monsterPos, dropItems string) *MazeMonsterRecordModel {
+func NewMazeMonsterRecordModel(userID uint64, barrierID uint32, areaID, areaIndex int32, nowEquipScore, nowItem1Score, nowItem2Score,
+	killMonsterNum, monsterID uint32, monsterGuid int64, monsterPos, dropItems string) *MazeMonsterRecordModel {
 	res := &MazeMonsterRecordModel{
 		UserId:         userID,
 		BarrierID:      barrierID,
@@ -39,6 +42,7 @@ func NewMazeMonsterRecordModel(userID uint64, barrierID uint32, areaID, areaInde
 		MonsterGuid:    monsterGuid,
 		MonsterPos:     monsterPos,
 		DropItems:      dropItems,
+		MonsterID:      monsterID,
 	}
 	nowDbTable := strings.Split(mysql.GetFullyQualifiedTableName(MazeMonsterRecordTableName), ".")
 

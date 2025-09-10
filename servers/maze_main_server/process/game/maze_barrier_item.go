@@ -217,7 +217,11 @@ func (g *Game) OnBarrierUseItemRQ_10550_10551(s *session.Session, req *MazeGame.
 			res.ErrInfo = errors.COMMON_ERROR_TIPS.Wrap("道具参数错误")
 			return
 		}
-		subItems = append(subItems, &itemservice.ItemInfo{ItemId: item.GetItemId(), Count: item.GetCount()})
+		subItems = append(subItems, &itemservice.ItemInfo{
+			ItemId: item.GetItemId(),
+			Count:  item.GetCount(),
+			Guid:   item.GetGuid(),
+		})
 	}
 	for _, equip := range req.GetEquipList() {
 		if equip.GetItemId() <= 0 || equip.GetCount() < 0 {
@@ -228,7 +232,11 @@ func (g *Game) OnBarrierUseItemRQ_10550_10551(s *session.Session, req *MazeGame.
 			res.ErrInfo = errors.COMMON_ERROR_TIPS.Wrap("道具参数错误")
 			return
 		}
-		subEquips = append(subEquips, &itemservice.ItemInfo{ItemId: equip.GetItemId(), Count: equip.GetCount()})
+		subEquips = append(subEquips, &itemservice.ItemInfo{
+			ItemId: equip.GetItemId(),
+			Count:  equip.GetCount(),
+			Guid:   equip.GetGuid(),
+		})
 	}
 
 	tradeNo := tradeno.GetTradeNum()
@@ -368,7 +376,7 @@ func (g *Game) OnBarrierUseItemRQ_10550_10551(s *session.Session, req *MazeGame.
 		}
 	}
 	// 返回新增道具列表
-	res.ItemList = items
+	res.ItemList = req.ItemList
 
 	if len(addEquipMap) > 0 {
 		rs, err2 := addequip.AddEquipToBag(s.Context(), userId, int32(MazeEquipSvr.ENUM_EQUIP_BAG_OP_TYPE_MAZE_EQUIP_FOE), tradeNo, addEquipMap)
@@ -383,7 +391,7 @@ func (g *Game) OnBarrierUseItemRQ_10550_10551(s *session.Session, req *MazeGame.
 		}
 	}
 	// 返回装备列表
-	res.EquipList = req.GetEquipList()
+	res.EquipList = req.EquipList
 
 	return
 }

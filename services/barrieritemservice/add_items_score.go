@@ -6,6 +6,7 @@ import (
 	"maze_game_server/common/errors"
 	"maze_game_server/excel/mazebarriesv8config"
 	"maze_game_server/excel/mazeconfigv8"
+	"maze_game_server/io/redis/barrierguiditemredis"
 	"maze_game_server/model/barrieritemsmodel"
 	"maze_game_server/servers/maze_main_server/process/item"
 	"maze_game_server/services/itemservice"
@@ -68,47 +69,51 @@ func (s *service) AddScoreItem(ctx context.Context, userID uint64, barrierID int
 	}
 
 	var realyItemID int32
+	var realyNum int32
 	if itemType == constdef.MazeCfgId901 {
 		itemMap := mazeconfigv8.GetReallyItemMap(ctx, itemType)
 		for k := range itemMap {
 			realyItemID = k
 		}
 
-		nowScore := data.ItemsScore[realyItemID] + score
-		data.ItemsScore[realyItemID] = nowScore % barrierCfg.Need_item1_score
+		data.ItemsScore[realyItemID] += score
+		realyNum = data.ItemsScore[realyItemID] / barrierCfg.Need_item1_score
+		data.ItemsScore[realyItemID] %= barrierCfg.Need_item1_score
 		res = data.ItemsScore[realyItemID]
-
-		itemNum := nowScore / barrierCfg.Need_item1_score
-		if itemNum > 0 {
-			data.Items[int64(realyItemID)] += int64(itemNum)
-			dropItems = append(dropItems, &itemservice.ItemInfo{
-				ItemId: realyItemID,
-				Count:  int64(itemNum),
-			})
-		}
 	} else if itemType == constdef.MazeCfgId902 {
 		itemMap := mazeconfigv8.GetReallyItemMap(ctx, itemType)
 		for k := range itemMap {
 			realyItemID = k
 		}
 
-		nowScore := data.ItemsScore[realyItemID] + score
-		data.ItemsScore[realyItemID] = nowScore % barrierCfg.Need_item2_score
+		data.ItemsScore[realyItemID] += score
+		realyNum = data.ItemsScore[realyItemID] / barrierCfg.Need_item2_score
+		data.ItemsScore[realyItemID] %= barrierCfg.Need_item2_score
 		res = data.ItemsScore[realyItemID]
+	}
 
-		itemNum := nowScore / barrierCfg.Need_item2_score
-		if itemNum > 0 {
-			data.Items[int64(realyItemID)] += int64(itemNum)
-			dropItems = append(dropItems, &itemservice.ItemInfo{
-				ItemId: realyItemID,
-				Count:  int64(itemNum),
-			})
+	for i := 1; i <= int(realyNum); i++ {
+		itemGuid, err := barrierguiditemredis.IncrNowGuid(ctx, userID, barrierID)
+		if err != nil {
+			logger.CtxError(ctx, "AddScoreItem IncrNowGuid Fail",
+				zap.Uint64("userID", userID),
+				zap.Int32("barrierID", barrierID),
+				zap.Int32("score", score),
+				zap.Int64("guid", guid),
+				zap.String("pos", pos),
+				zap.Any("data", data),
+				zap.Error(err),
+			)
 		}
-	} else {
-		data.Items[int64(itemType)] += int64(score)
+		data.Items[itemGuid] = &itemservice.ItemInfo{
+			ItemId: realyItemID,
+			Count:  1,
+			Guid:   itemGuid,
+		}
 		dropItems = append(dropItems, &itemservice.ItemInfo{
 			ItemId: realyItemID,
-			Count:  int64(score),
+			Count:  1,
+			Guid:   itemGuid,
 		})
 	}
 
@@ -193,11 +198,27 @@ func (s *service) AddItems(ctx context.Context, userID uint64, barrierID int32, 
 
 	var dropItems []*itemservice.ItemInfo
 	for _, item := range items {
-		if item.Count > 0 {
-			data.Items[int64(item.ItemId)] += item.Count
+		for i := 1; i <= int(item.Count); i++ {
+			itemGuid, err := barrierguiditemredis.IncrNowGuid(ctx, userID, barrierID)
+			if err != nil {
+				logger.CtxError(ctx, "AddItems IncrNowGuid Fail",
+					zap.Uint64("userID", userID),
+					zap.Int32("barrierID", barrierID),
+					zap.Int64("guid", guid),
+					zap.String("pos", pos),
+					zap.Any("data", data),
+					zap.Error(err),
+				)
+			}
+			data.Items[itemGuid] = &itemservice.ItemInfo{
+				ItemId: item.ItemId,
+				Count:  1,
+				Guid:   itemGuid,
+			}
 			dropItems = append(dropItems, &itemservice.ItemInfo{
 				ItemId: item.ItemId,
-				Count:  item.Count,
+				Count:  1,
+				Guid:   itemGuid,
 			})
 		}
 	}

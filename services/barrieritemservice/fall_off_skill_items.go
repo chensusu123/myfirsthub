@@ -9,6 +9,7 @@ import (
 	"maze_game_server/config/GMazeBariresDropV8Cfg"
 	"maze_game_server/excel/mazebarriesv8config"
 	"maze_game_server/excel/mazeconfigv8config"
+	"maze_game_server/io/redis/barrierguiditemredis"
 	"maze_game_server/io/redis/mazecalcattrredis"
 	"maze_game_server/model/barrieritemsmodel"
 	"maze_game_server/servers/maze_main_server/process/item"
@@ -73,7 +74,7 @@ func (s *service) FallOffSkillItems(ctx context.Context, userID uint64, barrierI
 
 	tempBuffInfo, err := tempbuffservice.GlobalTempBuffService.GetTempBuffInfo(ctx, userID, barrierID)
 	if err != nil {
-		logger.CtxError(ctx, "GetMazeBattleData GetBarrierTempBuff err", zap.Error(err))
+		logger.CtxError(ctx, "FallOffSkillItems GetBarrierTempBuff err", zap.Error(err))
 		return nil, err
 	}
 	for _, buffInfo := range tempBuffInfo.TotalBuff {
@@ -88,7 +89,13 @@ func (s *service) FallOffSkillItems(ctx context.Context, userID uint64, barrierI
 		bloodItemID = v
 	}
 
-	_ = bloodItemID
+	bloodCount := 0
+	for _, item := range data.Items {
+		if item.ItemId == int32(bloodItemID) {
+			bloodCount++
+		}
+	}
+
 	// 先获取当前关卡掉落物品
 	barrierCfg := mazebarriesv8config.GetStageConfig(ctx, barrierID)
 	for _, itemID := range barrierCfg.Drop_id {
@@ -100,11 +107,12 @@ func (s *service) FallOffSkillItems(ctx context.Context, userID uint64, barrierI
 			}
 
 			for dropItemID, dropCount := range barrierDrop.Drop_items {
-				if dropItemID == constdef.BloodBottleID && data.Items[int64(dropItemID)] >= attrDbs[bloodLimitAttr] {
+				// 当前拥有上限
+				if dropItemID == int32(bloodItemID) && int64(bloodCount) >= attrDbs[bloodLimitAttr] {
 					// reason += fmt.Sprintf("血瓶到上限了 当前:%d 上限:%d\n", data.Items[int64(dropItemID)], row.Value_int)
 					logger.CtxInfo(ctx, "FallOffSkillItems BloodBottle Full",
 						zap.Uint64("userID", userID),
-						zap.Int64("data.Items[int64(dropItemID)]", data.Items[int64(dropItemID)]),
+						zap.Int("bloodCount", bloodCount),
 					)
 					break
 				}
@@ -150,13 +158,33 @@ func (s *service) FallOffSkillItems(ctx context.Context, userID uint64, barrierI
 				}
 
 				// 实际添加物品 并设置此类物品掉落cd
-				data.Items[int64(dropItemID)] += dropCount
-				data.SkillsCount[dropItemID] += int32(dropCount)
-				data.SkillDropTime[itemID] = nowTime
-				dropItems = append(dropItems, &itemservice.ItemInfo{
-					ItemId: dropItemID,
-					Count:  dropCount,
-				})
+				for i := 1; i <= int(dropCount); i++ {
+					itemGuid, err := barrierguiditemredis.IncrNowGuid(ctx, userID, barrierID)
+					if err != nil {
+						logger.CtxError(ctx, "FallOffSkillItems IncrNowGuid Fail",
+							zap.Uint64("userID", userID),
+							zap.Int32("barrierID", barrierID),
+							zap.Any("data", data),
+							zap.Error(err),
+						)
+					}
+
+					data.Items[itemGuid] = &itemservice.ItemInfo{
+						ItemId: int32(dropItemID),
+						Count:  1,
+						Guid:   itemGuid,
+					}
+
+					// 统计战区掉落次数 掉落cd
+					data.SkillsCount[dropItemID] += 1
+					data.SkillDropTime[itemID] = nowTime
+
+					dropItems = append(dropItems, &itemservice.ItemInfo{
+						ItemId: dropItemID,
+						Count:  1,
+						Guid:   itemGuid,
+					})
+				}
 			}
 
 		}
@@ -211,6 +239,7 @@ func checkCondition(ctx context.Context, attrDbs map[int32]int64, conditionID in
 		return nowBloodVolume*int64(1000000) <= allBloodVolume*(int64(barrierDropCondition.Value)+attrDbs[constdef.BloodBottleProbability]), nil,
 			fmt.Sprintf("当前血量不满足条件 当前血量:%d 总血量:%d 低于百分比:%d\n", nowBloodVolume, allBloodVolume, barrierDropCondition.Value)
 	case 2:
+		// 当前刷怪区掉落上限
 		numerator := float64(10000+attrDbs[constdef.BloodBottlesNumber]) / 10000.0
 		// fmt.Printf("numerator:%v\n", numerator)
 		count := math.Ceil(float64(barrierDropCondition.Value) * numerator)
