@@ -299,12 +299,12 @@ func (s service) DelBarrierStageCounter(ctx context.Context, userId uint64, barr
 func (s service) DelBarrierStageCounterOnPass(ctx context.Context, userId uint64, barrierId int32) error {
 	logger := fklog.ContextAppLogger(ctx)
 	for i := int32(0); i <= barrierId; i++ {
-		recordModel, err := barrierstagecountermodel.NewBarrierStageCounterModel(ctx, userId, barrierId)
-		if err != nil {
-			logger.CtxError(ctx, "DelBarrierStageCounter NewBarrierStageCounterModel fail", zap.Error(err))
-			continue
-		}
-		err = recordModel.Del(ctx, userId, barrierId)
+		// recordModel, err := barrierstagecountermodel.NewBarrierStageCounterModel(ctx, userId, barrierId)
+		// if err != nil {
+		// 	logger.CtxError(ctx, "DelBarrierStageCounter NewBarrierStageCounterModel fail", zap.Error(err))
+		// 	continue
+		// }
+		err := barrierstagecountermodel.GMDel(ctx, userId, barrierId)
 		if err != nil {
 			logger.CtxError(ctx, "DelBarrierStageCounter DEL fail", zap.Error(err))
 			continue
