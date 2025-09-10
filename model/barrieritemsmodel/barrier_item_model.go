@@ -54,5 +54,8 @@ func (s *barrierItems) Del(ctx context.Context, userID uint64, barrierID int32) 
 }
 
 func GMDel(ctx context.Context, userID uint64, barrierID int32) (err error) {
-	return io.DeleteSvrData(ctx, getKey(userID, barrierID))
+	for i := 1; i <= 10; i++ {
+		io.DeleteSvrData(ctx, getKey(userID, int32(i)))
+	}
+	return nil
 }
