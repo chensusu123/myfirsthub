@@ -165,11 +165,16 @@ func (g *group) notifyGroupMessage(ctx context.Context, a app.App, userId uint64
 		},
 	}
 	logger.CtxInfo(ctx, "notifyMessage group", zap.Uint64("userId", userId), zap.Any("notifyMessage group", notifyMessage))
+	groupType, err := GetGroupType(ctx, a, groupID)
+	if err != nil {
+		logger.CtxError(ctx, "GetGroupType error", zap.Error(err), zap.Int64("groupID", groupID))
+		return err
+	}
 
-	broadcastID := fmt.Sprintf("league.broadcast.chat.%d", groupID)
+	broadcastID := fmt.Sprintf("%s.broadcast.chat.%d", groupType, groupID)
 	err = broadcastcli.Broadcast(ctx, broadcastID, packId, notifyMessage)
 	if err != nil {
-		logger.CtxError(ctx, "league.broadcast.chat notifyMessage error", zap.Error(err), zap.Any("broadcastID", broadcastID), zap.Any("packId", packId), zap.Any("notifyMessage", notifyMessage))
+		logger.CtxError(ctx, "broadcast.chat notifyMessage error", zap.Error(err), zap.Any("broadcastID", broadcastID), zap.Any("packId", packId), zap.Any("notifyMessage", notifyMessage))
 	}
 	//TODO 先不创建session
 	// //创建群组成员会话
@@ -186,4 +191,8 @@ func (g *group) SubscribeMessages(ctx context.Context, a app.App, user app.User,
 	// logger := fklog.ContextAppLogger(ctx)
 
 	return
+}
+
+func GetGroupType(ctx context.Context, a app.App, groupID int64) (groupType string, err error) {
+	return grouppkg.GetGroupType(ctx, a.ID(), groupID)
 }

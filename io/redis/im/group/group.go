@@ -231,6 +231,45 @@ func IsMember(ctx context.Context, appID int32, groupID int64, memberID uint64) 
 	return ret, nil
 }
 
+func GetGroupType(ctx context.Context, appID int32, groupID int64) (grouptype string, err error) {
+	logger := fklog.ContextAppLogger(ctx)
+	cli, err := globalredis.GCli.GetDB()
+	if err != nil {
+		logger.CtxError(ctx, "GetGroupType Client fail",
+			zap.Error(err),
+			zap.Int64("groupID", groupID),
+		)
+		return "", err
+	}
+	key := getKey(cli, appID, groupID)
+	ret, err := cli.HGet(ctx, key, "info").Result()
+	if err != nil {
+		if errors.Is(err, redis.Nil) {
+			err = nil
+		} else {
+			logger.CtxError(ctx, "GetGroupType HGet fail",
+				zap.Error(err),
+				zap.Any("key", key),
+				zap.Int64("groupID", groupID),
+			)
+			return "", err
+		}
+	}
+	var group Group
+	err = json.Unmarshal([]byte(ret), &group)
+	if err != nil {
+		logger.CtxError(ctx, "GetGroupType Unmarshal fail",
+			zap.Error(err),
+			zap.Any("key", key),
+			zap.Int64("groupID", groupID),
+			zap.String("ret", ret),
+		)
+		return "", err
+	}
+	logger.CtxInfo(ctx, "GetGroupType success", zap.Any("key", key), zap.Int64("groupID", groupID), zap.String("grouptype", group.GroupType))
+	return group.GroupType, nil
+}
+
 // // RemoveGroup
 // func RemoveGroup(logger fklog.FKLogI, appID int32, groupID int32) (err error) {
 
