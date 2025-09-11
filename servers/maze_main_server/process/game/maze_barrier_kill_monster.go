@@ -60,8 +60,22 @@ func (g *Game) OnBarrierKillMonsterRQ_10620_10621(s *session.Session, req *MazeG
 		return
 	}
 
-	killMonsterNum, _, err := barrierstagecounterservice.GlobalBarrierStageCounterService.AddKillMonsterNum(ctx, userId, req.GetBarrierId(), req.GetStageId(), req.GetAreaId(), req.GetAreaIndex(),
-		req.GetMonsterId(), req.GetMonsterGuid(), req.GetCurHp(), req.GetMaxHp(), req.GetMonsterPos())
+	ok, err := barrierstagecounterservice.GlobalBarrierStageCounterService.CheckMonsterInvalid(ctx, userId, req.GetBarrierId(), req.GetStageId(),
+		req.GetAreaId(), req.GetAreaIndex(), req.GetMonsterGuid())
+
+	if err != nil {
+		logger.CtxError(ctx, "OnBarrierKillMonsterRQ CheckMonsterInvalid err", zap.Any("req", req), zap.Any("barrier", userInfo.Barrier), zap.Error(err))
+		res.ErrInfo = errors.COMMON_ERROR_TIPS.Wrap("数据检测错误")
+		return
+	}
+	if !ok {
+		logger.CtxInfo(ctx, "OnBarrierKillMonsterRQ CheckMonsterInvalid ")
+		res.ErrInfo = errors.COMMON_ERROR_TIPS.Wrap("重复提交")
+		return
+	}
+
+	killMonsterNum, _, err := barrierstagecounterservice.GlobalBarrierStageCounterService.AddKillMonsterNum(ctx, userId, req.GetBarrierId(), req.GetStageId(), req.GetAreaId(),
+		req.GetAreaIndex(), 1, req.GetMonsterId(), req.GetMonsterGuid(), req.GetCurHp(), req.GetMaxHp(), req.GetMonsterPos())
 	if err != nil {
 		logger.CtxError(ctx, "OnBarrierKillMonsterRQ AddKillMonsterNum fail", zap.Any("req", req), zap.Error(err))
 		return err
