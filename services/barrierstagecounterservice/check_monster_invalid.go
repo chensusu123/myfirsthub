@@ -49,8 +49,11 @@ func (s *service) CheckMonsterInvalid(ctx context.Context, userID uint64, barrie
 	}
 
 	isCheck := false
-	if _, ok := recordModel.KillMonsterGuidMap[stageID][monsterGuid]; ok {
-		isCheck = true
+	_, ok := recordModel.KillMonsterGuidMap[stageID]
+	if ok {
+		if _, monsterOk := recordModel.KillMonsterGuidMap[stageID][monsterGuid]; monsterOk {
+			isCheck = true
+		}
 	}
 
 	res = !isPassArea && !isCheck
