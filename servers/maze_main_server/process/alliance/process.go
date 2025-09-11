@@ -97,3 +97,43 @@ func (a *Alliance) OnCreateAllianceRQ_10610_10611(s *session.Session, allianceNa
 
 	return nil
 }
+
+// 订阅联盟群聊
+func (a *Alliance) OnSubscribeAllianceChatRQ_10691_10692(s *session.Session, req *MazeFamily.SubscribeAllianceChatRQ) (err error) {
+	ctx := s.Context()
+	logger := fklog.ContextAppLogger(ctx)
+	res := &MazeFamily.SubscribeAllianceChatRS{}
+
+	res.ErrInfo = errors.NO_ERROR
+	uid := uint64(s.UID())
+	group_ids := req.GetGroupIds()
+	defer func() {
+		err = s.Response(res)
+		logger.CtxInfo(ctx, "OnSubscribeAllianceChatRQ end", zap.Any("req", req), zap.Any("res", res))
+	}()
+	// 检查参数
+	if uid <= 0 {
+		res.ErrInfo = errors.COMMON_ERROR_TIPS.Wrap("联盟uid参数错误")
+		return
+	}
+	allianceID, err := allianceservice.GlobalAllianceService.QueryUserAlliance(ctx, uid)
+	if err != nil {
+		logger.CtxError(ctx, "OnSubscribeAllianceChatRQ allianceService.GetAllianceInfo err", zap.Error(err))
+		res.ErrInfo = errors.COMMON_ERROR_TIPS.Wrap("查询用户所属联盟失败")
+		return
+	}
+	if allianceID <= 0 {
+		logger.CtxError(ctx, "OnSubscribeAllianceChatRQ allianceService.GetAllianceInfo err", zap.Error(err))
+		res.ErrInfo = errors.COMMON_ERROR_TIPS.Wrap("用户不属于任何联盟")
+		return
+	}
+
+	// 订阅家族群聊
+	err = allianceservice.GlobalAllianceService.SubscribeAllianceChat(ctx, uid, allianceID, group_ids)
+	if err != nil {
+		logger.CtxError(ctx, "OnSubscribeAllianceChatRQ allianceService.SubscribeAllianceChat err", zap.Error(err))
+		res.ErrInfo = errors.MODULE_ERROR.Wrap("订阅联盟群聊失败")
+		return
+	}
+	return
+}

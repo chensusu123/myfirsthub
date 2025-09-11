@@ -63,3 +63,12 @@ func TestCreateFamily(t *testing.T) {
 	}
 	fmt.Println("family----------:", family)
 }
+
+func TestSubscribeFamilyChat(t *testing.T) {
+	ctx := context.Background()
+	err := GlobalFamilyService.SubscribeFamilyChat(ctx, 1, uint64(50000002), []int64{10001})
+	if err != nil {
+		t.Error(err)
+		return
+	}
+}

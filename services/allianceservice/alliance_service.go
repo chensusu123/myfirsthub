@@ -16,6 +16,8 @@ type AllianceService interface {
 	ApplyChangeAlliance(ctx context.Context, userID uint64, allianceID int32) error
 	// 增加联盟
 	CreateAlliance(ctx context.Context, allianceName string) error
+	//订阅联盟
+	SubscribeAllianceChat(ctx context.Context, userID uint64, allianceID int32, group_ids []int64) error
 }
 
 var GlobalAllianceService AllianceService

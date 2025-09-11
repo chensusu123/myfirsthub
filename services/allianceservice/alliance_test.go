@@ -57,3 +57,12 @@ func TestCreateAlliance(t *testing.T) {
 	}
 	fmt.Println("TestCreateAlliance success")
 }
+
+func TestSubscribeAllianceChat(t *testing.T) {
+	err := GlobalAllianceService.SubscribeAllianceChat(context.Background(), 50000002, 1, []int64{10000003, 10000005})
+
+	if err != nil {
+		logger.ErrorWF("TestSubscribeAllianceChat error", zap.Error(err))
+	}
+	fmt.Println("TestSubscribeAllianceChat success")
+}

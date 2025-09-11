@@ -676,3 +676,43 @@ func (f *Family) OnDissolutionFamilyRQ_10602_10603(s *session.Session, req *Maze
 	}
 	return
 }
+
+// 订阅家族群聊
+func (f *Family) OnSubscribeFamilyChatRQ_10689_10690(s *session.Session, req *MazeFamily.SubscribeFamilyChatRQ) (err error) {
+	ctx := s.Context()
+	logger := fklog.ContextAppLogger(ctx)
+	res := &MazeFamily.SubscribeFamilyChatRS{}
+
+	res.ErrInfo = errors.NO_ERROR
+	uid := uint64(s.UID())
+	group_ids := req.GetGroupIds()
+	defer func() {
+		err = s.Response(res)
+		logger.CtxInfo(ctx, "OnSubscribeFamilyChatRQ end", zap.Any("req", req), zap.Any("res", res))
+	}()
+	// 检查参数
+	if uid <= 0 {
+		logger.CtxError(ctx, "OnSubscribeFamilyChatRQ uid参数错误", zap.Any("uid", uid))
+		res.ErrInfo = errors.COMMON_ERROR_TIPS.Wrap("家族uid参数错误")
+		return
+	}
+	familyID, err := familyservice.GlobalFamilyService.GetUserFamily(ctx, uid)
+	if err != nil {
+		logger.CtxError(ctx, "OnSubscribeFamilyChatRQ 获取用户家族失败", zap.Error(err))
+		res.ErrInfo = errors.MODULE_ERROR.Wrap("获取用户家族失败")
+		return
+	}
+	if familyID <= 0 {
+		logger.CtxError(ctx, "OnSubscribeFamilyChatRQ 用户不在家族中", zap.Any("uid", uid))
+		res.ErrInfo = errors.COMMON_ERROR_TIPS.Wrap("用户不在家族中")
+		return
+	}
+	// 订阅家族群聊
+	err = familyservice.GlobalFamilyService.SubscribeFamilyChat(ctx, familyID, uid, group_ids)
+	if err != nil {
+		logger.CtxError(ctx, "OnSubscribeFamilyChatRQ 订阅家族群聊失败", zap.Error(err))
+		res.ErrInfo = errors.MODULE_ERROR.Wrap("订阅家族群聊失败")
+		return
+	}
+	return
+}
