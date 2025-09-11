@@ -258,7 +258,7 @@ func (x *User) GetAvaterUrl() string {
 	return ""
 }
 
-//##
+//## 10694 UN_TCP_PACK_CLI_FRIEND_APPLY_RQ
 //添加好友请求包
 type FriendApplyRQ struct {
 	state         protoimpl.MessageState
@@ -323,7 +323,7 @@ func (x *FriendApplyRQ) GetFrom() int32 {
 	return 0
 }
 
-//##
+//## 10695 UN_TCP_PACK_CLI_FRIEND_APPLY_RS
 //添加好友响应包
 type FriendApplyRS struct {
 	state         protoimpl.MessageState
@@ -396,8 +396,8 @@ func (x *FriendApplyRS) GetFrom() int32 {
 	return 0
 }
 
-//##
-//好友请求ID包
+//## 10696 UN_TCP_PACK_CLI_FRIEND_APPLY_ID
+// 好友请求ID包
 type FriendApplyID struct {
 	state         protoimpl.MessageState
 	sizeCache     protoimpl.SizeCache
@@ -461,7 +461,7 @@ func (x *FriendApplyID) GetExpireTime() int64 {
 	return 0
 }
 
-//##
+//## 10697 UN_TCP_PACK_CLI_REPLY_FRIEND_APPLY_RQ
 // 同意或拒绝好友申请请求包
 type ReplyFriendApplyRQ struct {
 	state         protoimpl.MessageState
@@ -526,8 +526,8 @@ func (x *ReplyFriendApplyRQ) GetReplyResult() int32 {
 	return 0
 }
 
-//##
-//同意好友申请响应包
+//## 10698 UN_TCP_PACK_CLI_REPLY_FRIEND_APPLY_RS
+// 同意或拒绝好友申请响应包
 type ReplyFriendApplyRS struct {
 	state         protoimpl.MessageState
 	sizeCache     protoimpl.SizeCache
@@ -599,7 +599,7 @@ func (x *ReplyFriendApplyRS) GetReplyResult() int32 {
 	return 0
 }
 
-//##
+//## 10699 UN_TCP_PACK_CLI_FRIEND_APPLY_RESULT_ID
 //同意好友请求ID包
 type FriendApplyResultID struct {
 	state         protoimpl.MessageState
@@ -672,8 +672,8 @@ func (x *FriendApplyResultID) GetFrom() int32 {
 	return 0
 }
 
-//##
-//收到好友请求列表请求包
+//## 10700 UN_TCP_PACK_CLI_FRIEND_APPLY_RECEIVE_LIST_RQ
+// 收到好友请求列表请求包
 type FriendApplyReceiveListRQ struct {
 	state         protoimpl.MessageState
 	sizeCache     protoimpl.SizeCache
@@ -793,8 +793,8 @@ func (x *ReceiveInfo) GetStatus() int32 {
 	return 0
 }
 
-//##
-//收到好友请求列表响应包
+//## 10701 UN_TCP_PACK_CLI_FRIEND_APPLY_RECEIVE_LIST_RS
+// 收到好友请求列表响应包
 type FriendApplyReceiveListRS struct {
 	state         protoimpl.MessageState
 	sizeCache     protoimpl.SizeCache
@@ -874,8 +874,8 @@ func (x *FriendApplyReceiveListRS) GetIsFinish() bool {
 	return false
 }
 
-//##
-//已发送好友请求列表请求包
+//## 10702 UN_TCP_PACK_CLI_FRIEND_APPLY_SEND_LIST_RQ
+// 已发送好友请求列表请求包
 type FriendApplySendListRQ struct {
 	state         protoimpl.MessageState
 	sizeCache     protoimpl.SizeCache
@@ -995,8 +995,8 @@ func (x *SendInfo) GetStatus() int32 {
 	return 0
 }
 
-//##
-//已发送好友请求列表响应包
+//## 10703 UN_TCP_PACK_CLI_FRIEND_APPLY_SEND_LIST_RS
+// 已发送好友请求列表响应包
 type FriendApplySendListRS struct {
 	state         protoimpl.MessageState
 	sizeCache     protoimpl.SizeCache
@@ -1076,8 +1076,8 @@ func (x *FriendApplySendListRS) GetIsFinish() bool {
 	return false
 }
 
-//##
-//好友列表请求包
+//## 10704 UN_TCP_PACK_CLI_FRIEND_LIST_RQ
+// 好友列表请求包
 type FriendListRQ struct {
 	state         protoimpl.MessageState
 	sizeCache     protoimpl.SizeCache
@@ -1196,8 +1196,8 @@ func (x *FriendInfo) GetAddTime() int64 {
 	return 0
 }
 
-//##
-//好友列表响应包
+//## 10705 UN_TCP_PACK_CLI_FRIEND_LIST_RS
+// 好友列表响应包
 type FriendListRS struct {
 	state         protoimpl.MessageState
 	sizeCache     protoimpl.SizeCache
@@ -1277,8 +1277,8 @@ func (x *FriendListRS) GetIsFinish() bool {
 	return false
 }
 
-//##
-//删除好友请求包
+//## 10706 UN_TCP_PACK_CLI_DELETE_FRIEND_RQ
+// 删除好友请求包
 type DeleteFriendRQ struct {
 	state         protoimpl.MessageState
 	sizeCache     protoimpl.SizeCache
@@ -1334,8 +1334,8 @@ func (x *DeleteFriendRQ) GetUserId() uint64 {
 	return 0
 }
 
-//##
-//删除好友响应包
+//## 10707 UN_TCP_PACK_CLI_DELETE_FRIEND_RS
+// 删除好友响应包
 type DeleteFriendRS struct {
 	state         protoimpl.MessageState
 	sizeCache     protoimpl.SizeCache
@@ -1399,6 +1399,8 @@ func (x *DeleteFriendRS) GetUserId() uint64 {
 	return 0
 }
 
+//## 10708 UN_TCP_PACK_CLI_FRIEND_LIST_CHANGE_ID
+// 好友列表变更通知包
 type FriendListChangeID struct {
 	state         protoimpl.MessageState
 	sizeCache     protoimpl.SizeCache
@@ -1454,8 +1456,8 @@ func (x *FriendListChangeID) GetDelFriendList() []*FriendInfo {
 	return nil
 }
 
-//## 10564
-//添加黑名单请求包
+//## 10713 UN_TCP_PACK_CLI_ADD_BLACK_RQ
+// 添加黑名单请求包
 type AddBlackRQ struct {
 	state         protoimpl.MessageState
 	sizeCache     protoimpl.SizeCache
@@ -1511,7 +1513,7 @@ func (x *AddBlackRQ) GetUserId() uint64 {
 	return 0
 }
 
-//##
+//## 10714 UN_TCP_PACK_CLI_ADD_BLACK_RS
 //添加黑名单响应包
 type AddBlackRS struct {
 	state         protoimpl.MessageState
@@ -1576,7 +1578,7 @@ func (x *AddBlackRS) GetUserId() uint64 {
 	return 0
 }
 
-//## 10566
+//## 10715 UN_TCP_PACK_CLI_REMOVE_BLACK_RQ
 //删除黑名单请求包
 type RemoveBlackRQ struct {
 	state         protoimpl.MessageState
@@ -1633,7 +1635,7 @@ func (x *RemoveBlackRQ) GetUserId() uint64 {
 	return 0
 }
 
-//##
+//## 10716 UN_TCP_PACK_CLI_REMOVE_BLACK_RS
 //删除黑名单响应包
 type RemoveBlackRS struct {
 	state         protoimpl.MessageState
@@ -1698,8 +1700,8 @@ func (x *RemoveBlackRS) GetUserId() uint64 {
 	return 0
 }
 
-//##
-// 黑名单请求包
+//## 10717 UN_TCP_PACK_CLI_BLACK_LIST_RQ
+// 黑名单列表请求包
 type BlacklistRQ struct {
 	state         protoimpl.MessageState
 	sizeCache     protoimpl.SizeCache
@@ -1811,8 +1813,8 @@ func (x *BlackUserInfo) GetAddTime() int64 {
 	return 0
 }
 
-//##
-// 黑名单响应包
+//## 10718 UN_TCP_PACK_CLI_BLACK_LIST_RS
+// 黑名单列表响应包
 type BlacklistRS struct {
 	state         protoimpl.MessageState
 	sizeCache     protoimpl.SizeCache
@@ -1892,7 +1894,7 @@ func (x *BlacklistRS) GetIsFinish() bool {
 	return false
 }
 
-//##
+//## 10709 UN_TCP_PACK_CLI_SEARCH_USER_RQ
 // 搜索好友请求包
 type SearchUserRQ struct {
 	state         protoimpl.MessageState
@@ -1949,7 +1951,7 @@ func (x *SearchUserRQ) GetUserId() int64 {
 	return 0
 }
 
-//##
+//## 10710 UN_TCP_PACK_CLI_SEARCH_USER_RS
 // 搜索好友响应包
 type SearchUserRS struct {
 	state         protoimpl.MessageState
@@ -2022,9 +2024,9 @@ func (x *SearchUserRS) GetIsFriend() bool {
 	return false
 }
 
-//##
-// 好友推荐请求包
-type FriendListRecommandRQ struct {
+//## 10711 UN_TCP_PACK_CLI_FRIEND_LIST_RECOMMEND_RQ
+// 好友推荐列表请求包
+type FriendListRecommendRQ struct {
 	state         protoimpl.MessageState
 	sizeCache     protoimpl.SizeCache
 	unknownFields protoimpl.UnknownFields
@@ -2032,8 +2034,8 @@ type FriendListRecommandRQ struct {
 	Header *Common.PacketHeader `protobuf:"bytes,1,opt,name=header" json:"header,omitempty"`
 }
 
-func (x *FriendListRecommandRQ) Reset() {
-	*x = FriendListRecommandRQ{}
+func (x *FriendListRecommendRQ) Reset() {
+	*x = FriendListRecommendRQ{}
 	if protoimpl.UnsafeEnabled {
 		mi := &file_common_Friend_proto_msgTypes[28]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
@@ -2041,13 +2043,13 @@ func (x *FriendListRecommandRQ) Reset() {
 	}
 }
 
-func (x *FriendListRecommandRQ) String() string {
+func (x *FriendListRecommendRQ) String() string {
 	return protoimpl.X.MessageStringOf(x)
 }
 
-func (*FriendListRecommandRQ) ProtoMessage() {}
+func (*FriendListRecommendRQ) ProtoMessage() {}
 
-func (x *FriendListRecommandRQ) ProtoReflect() protoreflect.Message {
+func (x *FriendListRecommendRQ) ProtoReflect() protoreflect.Message {
 	mi := &file_common_Friend_proto_msgTypes[28]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
@@ -2059,21 +2061,21 @@ func (x *FriendListRecommandRQ) ProtoReflect() protoreflect.Message {
 	return mi.MessageOf(x)
 }
 
-// Deprecated: Use FriendListRecommandRQ.ProtoReflect.Descriptor instead.
-func (*FriendListRecommandRQ) Descriptor() ([]byte, []int) {
+// Deprecated: Use FriendListRecommendRQ.ProtoReflect.Descriptor instead.
+func (*FriendListRecommendRQ) Descriptor() ([]byte, []int) {
 	return file_common_Friend_proto_rawDescGZIP(), []int{28}
 }
 
-func (x *FriendListRecommandRQ) GetHeader() *Common.PacketHeader {
+func (x *FriendListRecommendRQ) GetHeader() *Common.PacketHeader {
 	if x != nil {
 		return x.Header
 	}
 	return nil
 }
 
-//##
-// 好友推荐响应包
-type FriendListRecommandRS struct {
+//## 10712 UN_TCP_PACK_CLI_FRIEND_LIST_RECOMMEND_RS
+// 好友推荐列表响应包
+type FriendListRecommendRS struct {
 	state         protoimpl.MessageState
 	sizeCache     protoimpl.SizeCache
 	unknownFields protoimpl.UnknownFields
@@ -2083,8 +2085,8 @@ type FriendListRecommandRS struct {
 	UserInfo []*User                `protobuf:"bytes,3,rep,name=user_info,json=userInfo" json:"user_info,omitempty"` // 推荐用户列表(用于添加好友)
 }
 
-func (x *FriendListRecommandRS) Reset() {
-	*x = FriendListRecommandRS{}
+func (x *FriendListRecommendRS) Reset() {
+	*x = FriendListRecommendRS{}
 	if protoimpl.UnsafeEnabled {
 		mi := &file_common_Friend_proto_msgTypes[29]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
@@ -2092,13 +2094,13 @@ func (x *FriendListRecommandRS) Reset() {
 	}
 }
 
-func (x *FriendListRecommandRS) String() string {
+func (x *FriendListRecommendRS) String() string {
 	return protoimpl.X.MessageStringOf(x)
 }
 
-func (*FriendListRecommandRS) ProtoMessage() {}
+func (*FriendListRecommendRS) ProtoMessage() {}
 
-func (x *FriendListRecommandRS) ProtoReflect() protoreflect.Message {
+func (x *FriendListRecommendRS) ProtoReflect() protoreflect.Message {
 	mi := &file_common_Friend_proto_msgTypes[29]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
@@ -2110,26 +2112,26 @@ func (x *FriendListRecommandRS) ProtoReflect() protoreflect.Message {
 	return mi.MessageOf(x)
 }
 
-// Deprecated: Use FriendListRecommandRS.ProtoReflect.Descriptor instead.
-func (*FriendListRecommandRS) Descriptor() ([]byte, []int) {
+// Deprecated: Use FriendListRecommendRS.ProtoReflect.Descriptor instead.
+func (*FriendListRecommendRS) Descriptor() ([]byte, []int) {
 	return file_common_Friend_proto_rawDescGZIP(), []int{29}
 }
 
-func (x *FriendListRecommandRS) GetErrInfo() *MessageType.ErrorInfo {
+func (x *FriendListRecommendRS) GetErrInfo() *MessageType.ErrorInfo {
 	if x != nil {
 		return x.ErrInfo
 	}
 	return nil
 }
 
-func (x *FriendListRecommandRS) GetHeader() *Common.PacketHeader {
+func (x *FriendListRecommendRS) GetHeader() *Common.PacketHeader {
 	if x != nil {
 		return x.Header
 	}
 	return nil
 }
 
-func (x *FriendListRecommandRS) GetUserInfo() []*User {
+func (x *FriendListRecommendRS) GetUserInfo() []*User {
 	if x != nil {
 		return x.UserInfo
 	}
@@ -2380,11 +2382,11 @@ var file_common_Friend_proto_rawDesc = []byte{
 	0x12, 0x1b, 0x0a, 0x09, 0x69, 0x73, 0x5f, 0x66, 0x72, 0x69, 0x65, 0x6e, 0x64, 0x18, 0x04, 0x20,
 	0x01, 0x28, 0x08, 0x52, 0x08, 0x69, 0x73, 0x46, 0x72, 0x69, 0x65, 0x6e, 0x64, 0x22, 0x45, 0x0a,
 	0x15, 0x46, 0x72, 0x69, 0x65, 0x6e, 0x64, 0x4c, 0x69, 0x73, 0x74, 0x52, 0x65, 0x63, 0x6f, 0x6d,
-	0x6d, 0x61, 0x6e, 0x64, 0x52, 0x51, 0x12, 0x2c, 0x0a, 0x06, 0x68, 0x65, 0x61, 0x64, 0x65, 0x72,
+	0x6d, 0x65, 0x6e, 0x64, 0x52, 0x51, 0x12, 0x2c, 0x0a, 0x06, 0x68, 0x65, 0x61, 0x64, 0x65, 0x72,
 	0x18, 0x01, 0x20, 0x01, 0x28, 0x0b, 0x32, 0x14, 0x2e, 0x43, 0x6f, 0x6d, 0x6d, 0x6f, 0x6e, 0x2e,
 	0x50, 0x61, 0x63, 0x6b, 0x65, 0x74, 0x48, 0x65, 0x61, 0x64, 0x65, 0x72, 0x52, 0x06, 0x68, 0x65,
 	0x61, 0x64, 0x65, 0x72, 0x22, 0xa4, 0x01, 0x0a, 0x15, 0x46, 0x72, 0x69, 0x65, 0x6e, 0x64, 0x4c,
-	0x69, 0x73, 0x74, 0x52, 0x65, 0x63, 0x6f, 0x6d, 0x6d, 0x61, 0x6e, 0x64, 0x52, 0x53, 0x12, 0x31,
+	0x69, 0x73, 0x74, 0x52, 0x65, 0x63, 0x6f, 0x6d, 0x6d, 0x65, 0x6e, 0x64, 0x52, 0x53, 0x12, 0x31,
 	0x0a, 0x08, 0x65, 0x72, 0x72, 0x5f, 0x69, 0x6e, 0x66, 0x6f, 0x18, 0x01, 0x20, 0x01, 0x28, 0x0b,
 	0x32, 0x16, 0x2e, 0x4d, 0x65, 0x73, 0x73, 0x61, 0x67, 0x65, 0x54, 0x79, 0x70, 0x65, 0x2e, 0x45,
 	0x72, 0x72, 0x6f, 0x72, 0x49, 0x6e, 0x66, 0x6f, 0x52, 0x07, 0x65, 0x72, 0x72, 0x49, 0x6e, 0x66,
@@ -2453,8 +2455,8 @@ var file_common_Friend_proto_goTypes = []interface{}{
 	(*BlacklistRS)(nil),              // 28: MazePay.BlacklistRS
 	(*SearchUserRQ)(nil),             // 29: MazePay.SearchUserRQ
 	(*SearchUserRS)(nil),             // 30: MazePay.SearchUserRS
-	(*FriendListRecommandRQ)(nil),    // 31: MazePay.FriendListRecommandRQ
-	(*FriendListRecommandRS)(nil),    // 32: MazePay.FriendListRecommandRS
+	(*FriendListRecommendRQ)(nil),    // 31: MazePay.FriendListRecommendRQ
+	(*FriendListRecommendRS)(nil),    // 32: MazePay.FriendListRecommendRS
 	(*Common.PacketHeader)(nil),      // 33: Common.PacketHeader
 	(*MessageType.ErrorInfo)(nil),    // 34: MessageType.ErrorInfo
 }
@@ -2502,10 +2504,10 @@ var file_common_Friend_proto_depIdxs = []int32{
 	34, // 40: MazePay.SearchUserRS.err_info:type_name -> MessageType.ErrorInfo
 	33, // 41: MazePay.SearchUserRS.header:type_name -> Common.PacketHeader
 	3,  // 42: MazePay.SearchUserRS.user_info:type_name -> MazePay.User
-	33, // 43: MazePay.FriendListRecommandRQ.header:type_name -> Common.PacketHeader
-	34, // 44: MazePay.FriendListRecommandRS.err_info:type_name -> MessageType.ErrorInfo
-	33, // 45: MazePay.FriendListRecommandRS.header:type_name -> Common.PacketHeader
-	3,  // 46: MazePay.FriendListRecommandRS.user_info:type_name -> MazePay.User
+	33, // 43: MazePay.FriendListRecommendRQ.header:type_name -> Common.PacketHeader
+	34, // 44: MazePay.FriendListRecommendRS.err_info:type_name -> MessageType.ErrorInfo
+	33, // 45: MazePay.FriendListRecommendRS.header:type_name -> Common.PacketHeader
+	3,  // 46: MazePay.FriendListRecommendRS.user_info:type_name -> MazePay.User
 	47, // [47:47] is the sub-list for method output_type
 	47, // [47:47] is the sub-list for method input_type
 	47, // [47:47] is the sub-list for extension type_name
@@ -2856,7 +2858,7 @@ func file_common_Friend_proto_init() {
 			}
 		}
 		file_common_Friend_proto_msgTypes[28].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*FriendListRecommandRQ); i {
+			switch v := v.(*FriendListRecommendRQ); i {
 			case 0:
 				return &v.state
 			case 1:
@@ -2868,7 +2870,7 @@ func file_common_Friend_proto_init() {
 			}
 		}
 		file_common_Friend_proto_msgTypes[29].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*FriendListRecommandRS); i {
+			switch v := v.(*FriendListRecommendRS); i {
 			case 0:
 				return &v.state
 			case 1:

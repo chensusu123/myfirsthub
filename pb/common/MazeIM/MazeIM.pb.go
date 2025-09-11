@@ -1653,6 +1653,8 @@ func (x *Session) GetUnreadCount() int64 {
 	return 0
 }
 
+//## 10693 UN_TCP_PACK_CLI_SESSION_LIST_CHANGE_ID
+// 会话列表变更通知包
 type SessionChangeID struct {
 	state         protoimpl.MessageState
 	sizeCache     protoimpl.SizeCache
