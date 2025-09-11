@@ -13,19 +13,19 @@ import (
 	"google.golang.org/protobuf/proto"
 )
 
-func (im *IM) OnQueryMessages_10663_10664(s *session.Session, req *MazeIM.QueryMessagesRQ) (err error) {
-	defer fkprometheus.InfoPMT("OnQueryMessages")()
+func (im *IM) OnMessageList_10663_10664(s *session.Session, req *MazeIM.MessageListRQ) (err error) {
+	defer fkprometheus.InfoPMT("OnMessageList")()
 	ctx := s.Context()
 	logger := fklog.ContextAppLogger(ctx)
 
-	res := &MazeIM.QueryMessagesRS{}
+	res := &MazeIM.MessageListRS{}
 	res.Header = req.Header
 	res.ErrInfo = errors.NO_ERROR
 
-	logger.CtxInfo(ctx, "OnQueryMessages start", zap.Any("req", req))
+	logger.CtxInfo(ctx, "OnMessageList start", zap.Any("req", req))
 	defer func() {
 		err = s.Response(res)
-		logger.CtxInfo(ctx, "OnQueryMessages end", zap.Any("res", res))
+		logger.CtxInfo(ctx, "OnMessageList end", zap.Any("res", res))
 	}()
 
 	var (
@@ -38,14 +38,14 @@ func (im *IM) OnQueryMessages_10663_10664(s *session.Session, req *MazeIM.QueryM
 	user, errInfo := p2pservice.Default.CheckUserAndPeer(ctx, userId, peerId)
 	if errInfo != "" {
 		res.ErrInfo = errors.COMMON_ERROR_TIPS.Wrap(errInfo)
-		logger.CtxError(ctx, "OnQueryMessages CheckUserAndPeer error", zap.Error(err), zap.Any("req", req))
+		logger.CtxError(ctx, "OnMessageList CheckUserAndPeer error", zap.Error(err), zap.Any("req", req))
 		return err
 	}
 
 	messages, err := p2pservice.Default.QueryMessages(ctx, app.Maze, user, peerId, lastMsgID, 20)
 	if err != nil {
 		res.ErrInfo = errors.COMMON_ERROR_TIPS.Wrap("获取消息失败")
-		logger.CtxError(ctx, "OnQueryMessages QueryMessages error", zap.Error(err), zap.Any("req", req))
+		logger.CtxError(ctx, "OnMessageList QueryMessages error", zap.Error(err), zap.Any("req", req))
 		return err
 	}
 	res.PeerId = proto.Uint64(peerId)

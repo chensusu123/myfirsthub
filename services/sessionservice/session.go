@@ -111,8 +111,6 @@ func (s *session) GetMessageInfo(ctx context.Context, a app.App, user app.User, 
 			if len(p2pmsg) > 0 {
 				messageInfo = append(messageInfo, &MazeIM.Session{
 					SessionId:  proto.String(session.ID),
-					Type:       proto.Int32(1),
-					GroupId:    proto.Int64(0),
 					CreateTime: proto.Int64(session.CreateTime),
 					Recent:     PbSessionMessage(p2pmsg),
 				})
@@ -127,8 +125,6 @@ func (s *session) GetMessageInfo(ctx context.Context, a app.App, user app.User, 
 				if len(groupmsg) > 0 {
 					messageInfo = append(messageInfo, &MazeIM.Session{
 						SessionId:  proto.String(session.ID),
-						Type:       proto.Int32(2),
-						GroupId:    proto.Int64(groupID),
 						CreateTime: proto.Int64(session.CreateTime),
 						Recent:     PbSessionMessage(groupmsg),
 					})

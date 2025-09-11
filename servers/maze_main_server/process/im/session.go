@@ -12,19 +12,19 @@ import (
 	"go.uber.org/zap"
 )
 
-func (im *IM) OnQueryRecentSessions_10652_10653(s *session.Session, req *MazeIM.QueryRecentSessionsRQ) (err error) {
-	defer fkprometheus.InfoPMT("OnQueryMessages")()
+func (im *IM) OnSessionList_10652_10653(s *session.Session, req *MazeIM.SessionListRQ) (err error) {
+	defer fkprometheus.InfoPMT("OnSessionList")()
 	ctx := s.Context()
 	logger := fklog.ContextAppLogger(ctx)
 
-	res := &MazeIM.QueryRecentSessionsRS{}
+	res := &MazeIM.SessionListRS{}
 	res.Header = req.Header
 	res.ErrInfo = errors.NO_ERROR
 
-	logger.CtxInfo(ctx, "OnQueryMessages start", zap.Any("req", req))
+	logger.CtxInfo(ctx, "OnSessionList start", zap.Any("req", req))
 	defer func() {
 		err = s.Response(res)
-		logger.CtxInfo(ctx, "OnQueryMessages end", zap.Any("res", res))
+		logger.CtxInfo(ctx, "OnSessionList end", zap.Any("res", res))
 	}()
 
 	var (
@@ -34,21 +34,21 @@ func (im *IM) OnQueryRecentSessions_10652_10653(s *session.Session, req *MazeIM.
 	user, err := app.WrapUser(userId, "")
 	if err != nil {
 		res.ErrInfo = errors.MODULE_ERROR.Wrap("获取用户信息失败")
-		logger.CtxError(ctx, "OnQueryMessages WrapUser error", zap.Error(err))
+		logger.CtxError(ctx, "OnSessionList WrapUser error", zap.Error(err))
 		return err
 	}
 
 	messages, err := sessionservice.Default.QueryRecentSessions(ctx, app.Maze, user)
 	if err != nil {
 		res.ErrInfo = errors.MODULE_ERROR.Wrap("获取最近会话失败")
-		logger.CtxError(ctx, "OnQueryMessages QueryRecentSessions error", zap.Error(err))
+		logger.CtxError(ctx, "OnSessionList QueryRecentSessions error", zap.Error(err))
 		return err
 	}
 
 	messagesList, err := sessionservice.Default.GetMessageInfo(ctx, app.Maze, user, messages)
 	if err != nil {
 		res.ErrInfo = errors.MODULE_ERROR.Wrap("获取消息信息失败")
-		logger.CtxError(ctx, "OnQueryMessages GetMessageInfo error", zap.Error(err))
+		logger.CtxError(ctx, "OnSessionList GetMessageInfo error", zap.Error(err))
 		return err
 	}
 	res.SessionList = messagesList
