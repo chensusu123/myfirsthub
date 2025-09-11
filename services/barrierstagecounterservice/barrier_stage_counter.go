@@ -11,10 +11,8 @@ import (
 	"maze_game_server/excel/mazefoev8"
 	"maze_game_server/model/barrierstagecountermodel"
 	"maze_game_server/model/flowmodel/mazemonstermodel"
-	"maze_game_server/model/passareamodel"
 	"maze_game_server/services/barrieritemservice"
 	"maze_game_server/services/flowservice"
-	"maze_game_server/services/itemservice"
 
 	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fklog"
 	"go.uber.org/zap"
@@ -62,7 +60,8 @@ func (s service) GetBarrierStageCounter(ctx context.Context, userId uint64, barr
 	return
 }
 
-func (s service) AddKillMonsterNum(ctx context.Context, userId uint64, barrierId, stageId, areaID, areaIndex, monsterId int32, monsterGuid int64, curHp int64, maxHp int64, monsterPos string) (killMonsterNum int32, guidList []int64, err error) {
+func (s service) AddKillMonsterNum(ctx context.Context, userId uint64, barrierId, stageId, areaId, areaIndex, addVal, monsterId int32, monsterGuid int64, curHp int64,
+	maxHp int64, monsterPos string) (killMonsterNum int32, guidList []int64, err error) {
 	logger := fklog.ContextAppLogger(ctx)
 	recordModel, err := barrierstagecountermodel.NewBarrierStageCounterModel(ctx, userId, barrierId)
 	if err != nil {
@@ -71,17 +70,10 @@ func (s service) AddKillMonsterNum(ctx context.Context, userId uint64, barrierId
 	}
 
 	// 初始化
-	var addVal int32
 	guidList = make([]int64, 0)
 	_, ok := recordModel.KillMonsterGuidMap[stageId]
 	if !ok {
 		recordModel.KillMonsterGuidMap[stageId] = make(map[int64]struct{})
-	}
-
-	// 去重
-	if _, ok := recordModel.KillMonsterGuidMap[stageId][monsterGuid]; !ok {
-		addVal = 1
-		logger.CtxInfo(ctx, "AddKillMonsterNum add monsterGuid after", zap.Int64("monsterGuid", monsterGuid), zap.Int32("stageId", stageId))
 	}
 	recordModel.KillMonsterGuidMap[stageId][monsterGuid] = struct{}{}
 
@@ -123,81 +115,59 @@ func (s service) AddKillMonsterNum(ctx context.Context, userId uint64, barrierId
 		logger.CtxInfo(ctx, "AddKillMonsterNum after exp num", zap.Int64("expNum", expNum), zap.Int32("stageId", stageId))
 	}
 
-	passInfo, err := passareamodel.NewPassAreaModel(ctx, userId, stageId)
+	// 计算装备分数值 物品分数值
+	foeCfg := mazefoev8.GetMazeFoeConfig(ctx, monsterId)
+	nowEquipScore, dropEquips, err := barrieritemservice.GbarrierItemsService.AddEquipScore(ctx, userId, barrierId, foeCfg.Drop_equip_score_num, killMonsterNum, monsterGuid, monsterPos)
 	if err != nil {
-		logger.CtxError(ctx, "AddKillMonsterNum NewPassAreaModel Fail",
-			zap.Any("userID", userId),
-			zap.Any("monsterGuid", monsterGuid),
-			zap.Any("monsterId", monsterId),
+		logger.CtxError(ctx, "AddKillMonsterNum AddEquipScore Fail",
+			zap.Uint64("userID", userId),
+			zap.Int32("barrierId", barrierId),
+			zap.Int32("monsterId", monsterId),
 		)
 		return
 	}
 
-	isPassArea := false
-	for _, passArea := range passInfo.PassAreaList {
-		if passArea.AreaId == areaID && passArea.AreaIndex == areaIndex {
-			isPassArea = true
-		}
+	// 掉落物品
+	nowItem1Score, dropItem1s, err := barrieritemservice.GbarrierItemsService.AddScoreItem(ctx, userId, barrierId, constdef.MazeCfgId901, foeCfg.Drop_item1_score_num, monsterGuid, monsterPos)
+	if err != nil {
+		logger.CtxError(ctx, "AddKillMonsterNum AddItemScore Fail",
+			zap.Uint64("userID", userId),
+			zap.Int32("barrierId", barrierId),
+			zap.Int32("monsterId", monsterId),
+		)
+		return
+	}
+	nowItem2Score, dropItem2s, err := barrieritemservice.GbarrierItemsService.AddScoreItem(ctx, userId, barrierId, constdef.MazeCfgId902, foeCfg.Drop_item2_score_num, monsterGuid, monsterPos)
+	if err != nil {
+		logger.CtxError(ctx, "AddKillMonsterNum AddItemScore Fail",
+			zap.Uint64("userID", userId),
+			zap.Int32("barrierId", barrierId),
+			zap.Int32("monsterId", monsterId),
+		)
+		return
 	}
 
-	var nowEquipScore, nowItem1Score, nowItem2Score int32
-	var dropEquips, dropItem1s, dropItem2s, bloodBottle []*itemservice.ItemInfo
-	if !isPassArea && addVal != 0 {
-		// 计算装备分数值 物品分数值
-		foeCfg := mazefoev8.GetMazeFoeConfig(ctx, monsterId)
-		nowEquipScore, dropEquips, err = barrieritemservice.GbarrierItemsService.AddEquipScore(ctx, userId, barrierId, foeCfg.Drop_equip_score_num, killMonsterNum, monsterGuid, monsterPos)
-		if err != nil {
-			logger.CtxError(ctx, "AddKillMonsterNum AddEquipScore Fail",
-				zap.Uint64("userID", userId),
-				zap.Int32("barrierId", barrierId),
-				zap.Int32("monsterId", monsterId),
-			)
-			return
-		}
-
-		// 掉落物品
-		nowItem1Score, dropItem1s, err = barrieritemservice.GbarrierItemsService.AddScoreItem(ctx, userId, barrierId, constdef.MazeCfgId901, foeCfg.Drop_item1_score_num, monsterGuid, monsterPos)
-		if err != nil {
-			logger.CtxError(ctx, "AddKillMonsterNum AddItemScore Fail",
-				zap.Uint64("userID", userId),
-				zap.Int32("barrierId", barrierId),
-				zap.Int32("monsterId", monsterId),
-			)
-			return
-		}
-		nowItem2Score, dropItem2s, err = barrieritemservice.GbarrierItemsService.AddScoreItem(ctx, userId, barrierId, constdef.MazeCfgId902, foeCfg.Drop_item2_score_num, monsterGuid, monsterPos)
-		if err != nil {
-			logger.CtxError(ctx, "AddKillMonsterNum AddItemScore Fail",
-				zap.Uint64("userID", userId),
-				zap.Int32("barrierId", barrierId),
-				zap.Int32("monsterId", monsterId),
-			)
-			return
-		}
-
-		// 技能物品掉落
-		bloodBottle, err = barrieritemservice.GbarrierItemsService.FallOffSkillItems(ctx, userId, barrierId, killMonsterNum, curHp, maxHp, monsterGuid, monsterPos)
-		if err != nil {
-			logger.CtxError(ctx, "AddKillMonsterNum FallOffSkillItems Fail",
-				zap.Uint64("userID", userId),
-				zap.Int32("barrierId", barrierId),
-				zap.Int32("monsterId", monsterId),
-			)
-			return
-		}
-
-		// 能量点数增加
-		// err = tempbuffservice.GlobalTempBuffService.AddTmpBuffEnergy(ctx, userId, barrierId, areaID, areaIndex, foeCfg.Drop_energy_num)
-		// if err != nil {
-		// 	logger.CtxError(ctx, "AddKillMonsterNum AddTmpBuffEnergy Fail",
-		// 		zap.Uint64("userID", userId),
-		// 		zap.Int32("barrierId", barrierId),
-		// 		zap.Int32("monsterId", monsterId),
-		// 	)
-		// 	return 0, nil, err
-		// }
-
+	// 技能物品掉落
+	bloodBottle, err := barrieritemservice.GbarrierItemsService.FallOffSkillItems(ctx, userId, barrierId, killMonsterNum, curHp, maxHp, monsterGuid, monsterPos)
+	if err != nil {
+		logger.CtxError(ctx, "AddKillMonsterNum FallOffSkillItems Fail",
+			zap.Uint64("userID", userId),
+			zap.Int32("barrierId", barrierId),
+			zap.Int32("monsterId", monsterId),
+		)
+		return
 	}
+
+	// 能量点数增加
+	// err = tempbuffservice.GlobalTempBuffService.AddTmpBuffEnergy(ctx, userId, barrierId, areaID, areaIndex, foeCfg.Drop_energy_num)
+	// if err != nil {
+	// 	logger.CtxError(ctx, "AddKillMonsterNum AddTmpBuffEnergy Fail",
+	// 		zap.Uint64("userID", userId),
+	// 		zap.Int32("barrierId", barrierId),
+	// 		zap.Int32("monsterId", monsterId),
+	// 	)
+	// 	return 0, nil, err
+	// }
 
 	err = recordModel.Save(ctx, userId, barrierId)
 	if err != nil {
@@ -206,7 +176,7 @@ func (s service) AddKillMonsterNum(ctx context.Context, userId uint64, barrierId
 	}
 
 	// 发送流水
-	monsterRecord := mazemonstermodel.NewMazeMonsterRecordModel(userId, uint32(barrierId), areaID, areaIndex, uint32(nowEquipScore), uint32(nowItem1Score), uint32(nowItem2Score),
+	monsterRecord := mazemonstermodel.NewMazeMonsterRecordModel(userId, uint32(barrierId), areaId, areaIndex, uint32(nowEquipScore), uint32(nowItem1Score), uint32(nowItem2Score),
 		uint32(killMonsterNum), uint32(monsterId), monsterGuid, monsterPos, flowutil.ItemInfo2String(dropEquips, dropItem1s, dropItem2s, bloodBottle))
 	flowservice.GflowService.SendFlowData(ctx, monsterRecord)
 
