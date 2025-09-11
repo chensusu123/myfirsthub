@@ -154,6 +154,7 @@ func (g *Game) OnMazeBarrierEnterRQ_10447_10448(s *session.Session, req *MazeGam
 			res.ErrInfo = errors.MODULE_ERROR.ToInfo()
 			return err
 		}
+
 	}
 
 	rescueItems := make([]*MazeGame.RescueItemInfo, 0, len(saveData.RescueItems))
@@ -180,6 +181,15 @@ func (g *Game) OnMazeBarrierEnterRQ_10447_10448(s *session.Session, req *MazeGam
 	mazecommonvalue.SendPassValueIdPack(ctx, userId, req.GetBarrierId(), saveData.StageId)
 	// 清理关卡操作状态
 	mazebarrieropstatusredis.ClearOpStatus(ctx, userId, req.GetBarrierId())
+
+	// 清理通过区域
+	err = tempbuffservice.GlobalTempBuffService.DelPassArea(ctx, userId, req.GetBarrierId())
+	if err != nil {
+		logger.CtxError(ctx, "OnMazeBarrierEnterRQ DelPassArea fail",
+			zap.Error(err),
+		)
+		return err
+	}
 
 	mazeBattleInfo, err3 := GetMazeBattleData(ctx, userId, req.GetBarrierId())
 	if err3 != nil {
