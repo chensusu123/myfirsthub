@@ -27,6 +27,7 @@ import (
 	"google.golang.org/protobuf/proto"
 )
 
+// DAC是doll attribute calculator 的缩写，主要用于计算人偶属性变化（dollAttrCalc）
 type DAC struct {
 	fklog.FKLogI
 	UserId  uint64

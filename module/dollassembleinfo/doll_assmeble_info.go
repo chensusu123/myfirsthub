@@ -48,6 +48,7 @@ type AssParam struct {
 	ReplaeEquipDb *MazeEquipCache.MazeEquipInfoDb
 }
 
+// 装备信息加上每个pos的装备信息和装备效果
 func GetDollAssembleInfoV2(ctx context.Context, userId uint64, p *AssParam) (assembleInfo *MazeEquipCache.MazeAssembleDb, effectInfo *calcassembleattr.EquipmentEffectInfo, err error) {
 	logger := fklog.ContextAppLogger(ctx)
 	// 查询装配信息
@@ -65,6 +66,7 @@ func GetDollAssembleInfoV2(ctx context.Context, userId uint64, p *AssParam) (ass
 	if assembleInfo.GetCurSuitIndex() > 0 {
 		suitIndex = assembleInfo.GetCurSuitIndex()
 	}
+	//获取每个位置的装备信息
 	if suitIndex > 0 {
 		equips, err = dollassemblesuitredis.GetDollAssembleSuit(ctx, userId,
 			assembleInfo.GetCurSuitIndex(), posNum)
