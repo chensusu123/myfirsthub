@@ -86,13 +86,17 @@ func (s *service) AddEquipScore(ctx context.Context, userID uint64, barrierID, s
 	}
 
 	for _, equip := range equips {
-		if equip.Count > 0 {
-			data.Equips[uint64(equip.ItemId)] += uint64(equip.Count)
-			dropItems = append(dropItems, &itemservice.ItemInfo{
-				ItemId: equip.ItemId,
-				Count:  equip.Count,
-			})
+		data.Equips[equip.Guid] = &itemservice.ItemInfo{
+			ItemId: equip.ItemId,
+			Count:  equip.Count,
+			Guid:   equip.Guid,
 		}
+
+		dropItems = append(dropItems, &itemservice.ItemInfo{
+			ItemId: equip.ItemId,
+			Count:  equip.Count,
+			Guid:   equip.Guid,
+		})
 	}
 
 	err = data.Save(ctx, userID, barrierID)

@@ -24,6 +24,8 @@ func (g *Game) OnBarrierKillMonsterRQ_10620_10621(s *session.Session, req *MazeG
 	res.ErrInfo = errors.NO_ERROR
 	res.StageId = req.StageId
 	res.BarrierId = req.BarrierId
+	res.MonsterGuid = req.MonsterGuid
+	res.MonsterId = req.MonsterId
 
 	logger.CtxInfo(ctx, "OnBarrierKillMonsterRQ start", zap.Any("req", req))
 	defer func() {

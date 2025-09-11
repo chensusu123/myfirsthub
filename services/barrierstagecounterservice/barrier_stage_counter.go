@@ -183,7 +183,7 @@ func (s service) AddKillMonsterNum(ctx context.Context, userId uint64, barrierId
 
 	// 发送流水
 	monsterRecord := mazemonstermodel.NewMazeMonsterRecordModel(userId, uint32(barrierId), areaID, areaIndex, uint32(nowEquipScore), uint32(nowItem1Score), uint32(nowItem2Score),
-		uint32(killMonsterNum), monsterGuid, monsterPos, flowutil.ItemInfo2String(dropEquips, dropItem1s, dropItem2s, bloodBottle))
+		uint32(killMonsterNum), uint32(monsterId), monsterGuid, monsterPos, flowutil.ItemInfo2String(dropEquips, dropItem1s, dropItem2s, bloodBottle))
 	flowservice.GflowService.SendFlowData(ctx, monsterRecord)
 
 	return
@@ -299,12 +299,12 @@ func (s service) DelBarrierStageCounter(ctx context.Context, userId uint64, barr
 func (s service) DelBarrierStageCounterOnPass(ctx context.Context, userId uint64, barrierId int32) error {
 	logger := fklog.ContextAppLogger(ctx)
 	for i := int32(0); i <= barrierId; i++ {
-		recordModel, err := barrierstagecountermodel.NewBarrierStageCounterModel(ctx, userId, barrierId)
-		if err != nil {
-			logger.CtxError(ctx, "DelBarrierStageCounter NewBarrierStageCounterModel fail", zap.Error(err))
-			continue
-		}
-		err = recordModel.Del(ctx, userId, barrierId)
+		// recordModel, err := barrierstagecountermodel.NewBarrierStageCounterModel(ctx, userId, barrierId)
+		// if err != nil {
+		// 	logger.CtxError(ctx, "DelBarrierStageCounter NewBarrierStageCounterModel fail", zap.Error(err))
+		// 	continue
+		// }
+		err := barrierstagecountermodel.GMDel(ctx, userId, barrierId)
 		if err != nil {
 			logger.CtxError(ctx, "DelBarrierStageCounter DEL fail", zap.Error(err))
 			continue

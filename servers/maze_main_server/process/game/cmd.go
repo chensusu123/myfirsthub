@@ -246,7 +246,6 @@ func ClearBarrier(ctx context.Context, userId uint64) (err error) {
 	if err != nil {
 		return err
 	}
-
 	// 清除关卡杀怪进度
 	err = barrierstagecountermodel.GMDel(ctx, userId, userInfo.Barrier)
 	if err != nil {
