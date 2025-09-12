@@ -1,10 +1,12 @@
 package friendmodel
 
 import (
-	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fklog"
-	"go.uber.org/zap"
+	"context"
 	"maze_game_server/io/redis/friendredis"
 	"maze_game_server/lib/serialize"
+
+	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fklog"
+	"go.uber.org/zap"
 )
 
 // 待处理的好友申请
@@ -24,18 +26,19 @@ const (
 	FriendRequestStatusRejected int32 = 2 // 已经拒绝
 )
 
-func NewReceiveFriendRequestModel(logger fklog.FKLogI, userID uint64) (*ReceiveFriendRequestModel, error) {
+func NewReceiveFriendRequestModel(ctx context.Context, userID uint64) (*ReceiveFriendRequestModel, error) {
 	receiveModel := &ReceiveFriendRequestModel{}
-	if err := receiveModel.load(logger, userID); err != nil {
+	if err := receiveModel.load(ctx, userID); err != nil {
 		return nil, err
 	}
 	return receiveModel, nil
 }
 
-func (f *ReceiveFriendRequestModel) load(logger fklog.FKLogI, userId uint64) (err error) {
-	bytes, err := friendredis.GetReceiveFriendRequest(logger, userId)
+func (f *ReceiveFriendRequestModel) load(ctx context.Context, userId uint64) (err error) {
+	logger := fklog.ContextAppLogger(ctx)
+	bytes, err := friendredis.GetReceiveFriendRequest(ctx, userId)
 	if err != nil {
-		logger.ErrorWF("load receive redis err", zap.Error(err))
+		logger.CtxError(ctx, "load receive redis err", zap.Error(err))
 		return nil
 	}
 	if len(bytes) == 0 {
@@ -44,7 +47,7 @@ func (f *ReceiveFriendRequestModel) load(logger fklog.FKLogI, userId uint64) (er
 	}
 	err = serialize.Unmarshal(bytes, f)
 	if err != nil {
-		logger.ErrorWF("load receive unmarshal err", zap.Error(err), zap.Any("bytes", string(bytes)))
+		logger.CtxError(ctx, "load receive unmarshal err", zap.Error(err), zap.Any("bytes", string(bytes)))
 		return err
 	}
 

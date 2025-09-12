@@ -1,15 +1,18 @@
 package friendservice
 
 import (
-	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fklog"
-	"go.uber.org/zap"
+	"context"
 	"maze_game_server/common/errors"
 	"maze_game_server/model/friendmodel"
+
+	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fklog"
+	"go.uber.org/zap"
 )
 
-func (s *service) SendFriendRequestList(logger fklog.FKLogI, userId uint64, page, pageSize int32) ([]*friendmodel.SendFriendRequestInfo, *errors.CodeError) {
+func (s *service) SendFriendRequestList(ctx context.Context, userId uint64, page, pageSize int32) ([]*friendmodel.SendFriendRequestInfo, error) {
+	logger := fklog.ContextAppLogger(ctx)
 	start, end := (page-1)*pageSize, page*pageSize-1
-	sendModel, err := friendmodel.NewSendFriendRequestModel(logger, userId)
+	sendModel, err := friendmodel.NewSendFriendRequestModel(ctx, userId)
 	if err != nil {
 		logger.ErrorWF("SendFriendRequestList GetSendFriendRequest err", zap.Error(err), zap.Int32("page", page), zap.Int32("pageSize", pageSize))
 		return nil, errors.MODULE_ERROR

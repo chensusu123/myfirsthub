@@ -3,9 +3,10 @@ package friendredis
 import (
 	"context"
 	"fmt"
+	globalredis "maze_game_server/io/redis"
+
 	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fklog"
 	"go.uber.org/zap"
-	globalredis "maze_game_server/io/redis"
 )
 
 const (
@@ -97,16 +98,17 @@ func SetReceiveFriendRequest(logger fklog.FKLogI, userId uint64, receives []byte
 }
 
 // 获取收到的好友请求
-func GetReceiveFriendRequest(logger fklog.FKLogI, userId uint64) ([]byte, error) {
+func GetReceiveFriendRequest(ctx context.Context, userId uint64) ([]byte, error) {
+	logger := fklog.ContextAppLogger(ctx)
 	db, err := globalredis.GCli.GetDB()
 	if err != nil {
-		logger.ErrorWF("GetReceiveFriendRequest get redis err", zap.Error(err))
+		logger.CtxError(ctx, "GetReceiveFriendRequest get redis err", zap.Error(err))
 		return nil, err
 	}
 	key := db.MakeSectionKey(getKeyReceiveFriendRequest(userId))
-	bytes, err := db.Get(context.TODO(), key).Bytes()
+	bytes, err := db.Get(ctx, key).Bytes()
 	if err != nil {
-		logger.ErrorWF("GetReceiveFriendRequest get err", zap.String("key", key), zap.Error(err))
+		logger.CtxError(ctx, "GetReceiveFriendRequest get err", zap.String("key", key), zap.Error(err))
 		return nil, err
 	}
 	return bytes, nil

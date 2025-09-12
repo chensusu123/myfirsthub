@@ -1,61 +1,105 @@
 package friendservice
 
 import (
-	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fklog"
-	"go.uber.org/zap"
+	"context"
 	"maze_game_server/common/errors"
 	"maze_game_server/model/friendmodel"
+
+	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fklog"
+	"go.uber.org/zap"
 )
 
-func (s *service) RejectFriendRequest(logger fklog.FKLogI, userId, toID uint64) *errors.CodeError {
+// func (s *service) RejectFriendRequest(ctx , userId, toID uint64) error {
+// 	// 检查有没有收到过好友请求
+// 	receiveModel, err := friendmodel.NewReceiveFriendRequestModel(logger, userId)
+// 	if err != nil {
+// 		logger.ErrorWF("RejectFriendRequest GetReceiveFriendRequest err", zap.Error(err))
+// 		return errors.MODULE_ERROR
+// 	}
+// 	var receive *friendmodel.ReceiveFriendRequestInfo = nil
+// 	for _, i := range receiveModel.ReceiveList {
+// 		if i.FromUserId == toID {
+// 			receive = i
+// 			break
+// 		}
+// 	}
+// 	if receive == nil || receive.Status != friendmodel.FriendRequestStatusPending {
+// 		return errors.COMMON_ERROR_TIPS.WrapMsg("已经处理过了")
+// 	}
+
+// 	// 通知对方拒绝 todo
+// 	if codeErr := s.RejectFriendRequestEvent(logger, toID, userId); codeErr != nil {
+// 		logger.ErrorWF("RejectFriendRequestEvent err", zap.Error(codeErr))
+// 		return codeErr
+// 	}
+
+// 	receive.Status = friendmodel.FriendRequestStatusRejected
+// 	err = receiveModel.Save(logger, userId)
+// 	if err != nil {
+// 		logger.ErrorWF("RejectFriendRequest SetReceiveFriendRequest err", zap.Error(err))
+// 		return errors.MODULE_ERROR
+// 	}
+
+// 	return nil
+// }
+
+func (s *service) RefuseFriendApply(ctx context.Context, userID uint64, toID []uint64) error {
+	logger := fklog.ContextAppLogger(ctx)
 	// 检查有没有收到过好友请求
-	receiveModel, err := friendmodel.NewReceiveFriendRequestModel(logger, userId)
+	receiveModel, err := friendmodel.NewReceiveFriendRequestModel(ctx, userID)
 	if err != nil {
-		logger.ErrorWF("RejectFriendRequest GetReceiveFriendRequest err", zap.Error(err))
-		return errors.MODULE_ERROR
+		logger.CtxError(ctx, "RefuseFriendApply GetReceiveFriendRequest err", zap.Error(err))
+		return err
 	}
-	var receive *friendmodel.ReceiveFriendRequestInfo = nil
-	for _, i := range receiveModel.ReceiveList {
-		if i.FromUserId == toID {
-			receive = i
-			break
+
+	// toID 可靠性校验
+	for _, realyID := range toID {
+		index := -1
+		for j, i := range receiveModel.ReceiveList {
+			if i.FromUserId == realyID {
+				index = j
+				break
+			}
 		}
-	}
-	if receive == nil || receive.Status != friendmodel.FriendRequestStatusPending {
-		return errors.COMMON_ERROR_TIPS.WrapMsg("已经处理过了")
-	}
 
-	// 通知对方拒绝 todo
-	if codeErr := s.RejectFriendRequestEvent(logger, toID, userId); codeErr != nil {
-		logger.ErrorWF("RejectFriendRequestEvent err", zap.Error(codeErr))
-		return codeErr
-	}
+		if index == -1 {
+			logger.CtxError(ctx, "RefuseFriendApply Find friend fail",
+				zap.Error(err),
+				zap.Any("userID", userID),
+				zap.Any("toID", realyID),
+			)
+			continue
+		}
 
-	receive.Status = friendmodel.FriendRequestStatusRejected
-	err = receiveModel.Save(logger, userId)
-	if err != nil {
-		logger.ErrorWF("RejectFriendRequest SetReceiveFriendRequest err", zap.Error(err))
-		return errors.MODULE_ERROR
-	}
+		// 通知对方拒绝 todo
+		if codeErr := s.RejectFriendRequestEvent(ctx, realyID, userID); codeErr != nil {
+			logger.CtxError(ctx, "RejectFriendRequestEvent err", zap.Error(codeErr))
+			return codeErr
+		}
 
+		receiveModel.ReceiveList = append(receiveModel.ReceiveList[:index], receiveModel.ReceiveList[index+1:]...)
+	}
 	return nil
 }
 
 // 收到拒绝好友请求事件
-func (s *service) RejectFriendRequestEvent(logger fklog.FKLogI, userId, fromId uint64) *errors.CodeError {
-	sendModel, err := friendmodel.NewSendFriendRequestModel(logger, userId)
+func (s *service) RejectFriendRequestEvent(ctx context.Context, userId, fromId uint64) error {
+	sendModel, err := friendmodel.NewSendFriendRequestModel(ctx, userId)
 	if err != nil {
-		return errors.MODULE_ERROR
+		return err
 	}
-	for _, i := range sendModel.SendList {
+
+	index := -1
+	for j, i := range sendModel.SendList {
 		if i.ToUserId == fromId {
-			i.Status = friendmodel.FriendRequestStatusRejected
+			index = j
 			break
 		}
 	}
-	if err = sendModel.Save(logger, userId); err != nil {
-		logger.ErrorWF("RejectFriendRequestEvent Save err", zap.Error(err))
-		return errors.MODULE_ERROR
+
+	if index == -1 {
+		err = errors.New("对方不存在")
+		return err
 	}
 
 	return nil
