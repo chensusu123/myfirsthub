@@ -93,6 +93,7 @@ func (im *IM) OnSendMessage_10645_10646(s *session.Session, req *MazeIM.SendMess
 	}
 	res.MsgId = proto.Uint64(messageID)
 	res.PeerId = proto.Uint64(peerId)
+	res.Type = proto.Int32(_type)
 	return nil
 }
 
