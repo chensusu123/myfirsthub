@@ -6,11 +6,16 @@ import (
 	"errors"
 	"fmt"
 	"math"
+	"time"
+
 	"maze_game_server/lib/codec/raw_pkg"
 	"maze_game_server/lib/nano/component"
 	"maze_game_server/lib/nano/frame"
 	"maze_game_server/lib/nano/serialize"
-	"time"
+
+	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fklog"
+	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/protocol/svrheader"
+	"go.uber.org/zap"
 )
 
 // TODO 需要补全日志
@@ -23,7 +28,9 @@ type EsPacketCodec struct {
 
 func NewEsPacketCodec(routes *Routes, opts ...CodecOption) (c *EsPacketCodec) {
 	c = &EsPacketCodec{
-		rts: make(map[uint16]target),
+		rts:  make(map[uint16]target),
+		buf:  bytes.NewBuffer(nil),
+		size: -1,
 	}
 	// Set options
 	for _, setOpt := range opts {
@@ -103,20 +110,21 @@ func (c *EsPacketCodec) Decode(data []byte) (msgs []*frame.Message, packets []*r
 			break
 		}
 
-		var packet = make([]byte, packetLen)
+		packet := make([]byte, packetLen)
 		copy(packet, twoBytes[:])
 		copy(packet[2:], c.buf.Next(packetLen-2))
 
-		stru := raw_pkg.StruSvrEsRawBaseHead{}
+		// stru := raw_pkg.StruSvrEsRawBaseHead{}
 		// Decode
-		err = stru.UnPack(packet)
-		if err != nil {
+		stru, errX := decode(packet)
+		if errX != nil {
+			err = errX
 			return
 		}
 
 		target, found := c.rts[stru.PackType]
 		if !found {
-			fmt.Printf("packet %d not supported\n", stru.PackType)
+			fklog.AppLogger().WarnWF("packet  not supported", zap.Any("packType", stru.PackType))
 			continue
 		}
 
@@ -127,7 +135,7 @@ func (c *EsPacketCodec) Decode(data []byte) (msgs []*frame.Message, packets []*r
 			Data:  stru.Data,
 		})
 
-		packets = append(packets, &stru)
+		packets = append(packets, stru)
 	}
 
 	return
@@ -161,6 +169,38 @@ func splitSessionAndPackType(messageID uint64) (sessionID uint32, rqTime uint64,
 		sessionID = uint32(messageID & 0xFFFFFFFF00000000 >> 32)
 		rqTime = uint64(time.Now().UnixMilli())&0xFFFFFFFFFFFF0000 | uint64(messageID&0x00000000FFFF0000>>16)
 		rsID = uint16(messageID & 0xFFFF)
+	}
+	return
+}
+
+var SplitSessionAndPackType = splitSessionAndPackType
+
+func decode(data []byte) (pack *raw_pkg.StruSvrEsRawBaseHead, err error) {
+	isSvrHeader := svrheader.IsSvrHeader(data)
+
+	if isSvrHeader {
+		zzz, errParse := svrheader.ParseSvrHeader(data)
+		if errParse != nil {
+			return nil, errParse
+		}
+		pack = &raw_pkg.StruSvrEsRawBaseHead{
+			Header:      zzz.Header,
+			IsSvrHeader: isSvrHeader,
+		}
+		// fklog.AppLogger().InfoWF("svrheader decode", zap.Any("pack", pack))
+		// Decode
+		err = pack.UnPack(zzz.Body)
+		if err != nil {
+			return nil, err
+		}
+		return pack, nil
+	}
+
+	pack = &raw_pkg.StruSvrEsRawBaseHead{}
+	// Decode
+	err = pack.UnPack(data)
+	if err != nil {
+		return
 	}
 	return
 }

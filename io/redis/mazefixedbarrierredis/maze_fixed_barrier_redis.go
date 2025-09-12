@@ -18,45 +18,47 @@ func init() {
 	fkconfig.RegisterNameNode("mazefixedbarrierredis", 21689, gRedis)
 }
 
-func GetUserFixedBarrierID(logger fklog.FKLogI, userId uint64) (barrierId int32, err error) {
-
+func GetUserFixedBarrierID(ctx context.Context, userId uint64) (barrierId int32, err error) {
+	logger := fklog.ContextAppLogger(ctx)
 	key := fmt.Sprintf("maze:u:%d:fixed:barrier", userId)
 
-	res, err := redis.Int(gRedis.Do(context.TODO(), "get", key))
+	res, err := redis.Int(gRedis.Do(ctx, "get", key))
 	if err == redis.ErrNil {
 		err = nil
-		logger.InfoWF("GetUserFixedBarrierID nil", zap.String("key", key))
+		logger.CtxInfo(ctx, "GetUserFixedBarrierID nil", zap.String("key", key))
 		return
 	}
 	if err != nil {
-		logger.ErrorWF("GetUserFixedBarrierID get fail", zap.String("key", key), zap.Error(err))
+		logger.CtxError(ctx, "GetUserFixedBarrierID get fail", zap.String("key", key), zap.Error(err))
 		return
 	}
 
 	barrierId = int32(res)
 
-	logger.InfoWF("GetUserFixedBarrierID succ", zap.String("key", key), zap.Any("barrierId", barrierId))
+	logger.CtxInfo(ctx, "GetUserFixedBarrierID succ", zap.String("key", key), zap.Any("barrierId", barrierId))
 	return
 }
 
-func SetUserFixedBarrierID(logger fklog.FKLogI, userId uint64, barrierId int32) (err error) {
+func SetUserFixedBarrierID(ctx context.Context, userId uint64, barrierId int32) (err error) {
+	logger := fklog.ContextAppLogger(ctx)
 	key := fmt.Sprintf("maze:u:%d:fixed:barrier", userId)
-	_, err = gRedis.Do(context.TODO(), "set", key, barrierId)
+	_, err = gRedis.Do(ctx, "set", key, barrierId)
 	if err != nil {
-		logger.ErrorWF("SetUserFixedBarrierID set fail", zap.String("key", key), zap.Error(err))
+		logger.CtxError(ctx, "SetUserFixedBarrierID set fail", zap.String("key", key), zap.Error(err))
 		return
 	}
-	logger.InfoWF("SetUserFixedBarrierID succ", zap.String("key", key), zap.Any("barrierId", barrierId))
+	logger.CtxInfo(ctx, "SetUserFixedBarrierID succ", zap.String("key", key), zap.Any("barrierId", barrierId))
 	return
 }
 
-func DelUserFixedBarrierID(logger fklog.FKLogI, userId uint64) (err error) {
+func DelUserFixedBarrierID(ctx context.Context, userId uint64) (err error) {
+	logger := fklog.ContextAppLogger(ctx)
 	key := fmt.Sprintf("maze:u:%d:fixed:barrier", userId)
-	_, err = gRedis.Do(context.TODO(), "del", key)
+	_, err = gRedis.Do(ctx, "del", key)
 	if err != nil {
-		logger.ErrorWF("DelUserFixedBarrierID set fail", zap.String("key", key), zap.Error(err))
+		logger.CtxError(ctx, "DelUserFixedBarrierID set fail", zap.String("key", key), zap.Error(err))
 		return
 	}
-	logger.InfoWF("DelUserFixedBarrierID succ", zap.String("key", key))
+	logger.CtxInfo(ctx, "DelUserFixedBarrierID succ", zap.String("key", key))
 	return
 }

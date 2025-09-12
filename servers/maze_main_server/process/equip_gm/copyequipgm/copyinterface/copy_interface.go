@@ -5,6 +5,7 @@
 package copyinterface
 
 import (
+	"context"
 	"fmt"
 	"sort"
 	"time"
@@ -16,7 +17,7 @@ import (
 type CopyParam struct {
 	DelOldData bool // 是否删除旧数据
 }
-type opFunc = func(logger fklog.FKLogI, srcUserId uint64, dstUserId []uint64, param CopyParam) error
+type opFunc = func(ctx context.Context, srcUserId uint64, dstUserId []uint64, param CopyParam) error
 
 type FuncItem struct {
 	CallBackF opFunc
@@ -36,7 +37,8 @@ func RegistHandler(name string, h opFunc, order int32) {
 }
 
 // 模板用户拷贝到目标用户列表
-func RangeAiCopy(logger fklog.FKLogI, srcUserId uint64, dstUserId []uint64, param CopyParam) error {
+func RangeAiCopy(ctx context.Context, srcUserId uint64, dstUserId []uint64, param CopyParam) error {
+	logger := fklog.ContextAppLogger(ctx)
 	var err error
 	var orderFuncList []FuncItem
 	for _, f := range handlers {
@@ -48,23 +50,23 @@ func RangeAiCopy(logger fklog.FKLogI, srcUserId uint64, dstUserId []uint64, para
 	totalNow := time.Now()
 	for _, item := range orderFuncList {
 		moduleStartTime := time.Now()
-		err = item.CallBackF(logger, srcUserId, dstUserId, param)
+		err = item.CallBackF(ctx, srcUserId, dstUserId, param)
 		if err != nil {
-			logger.ErrorWF("RangeAiCopy fail",
+			logger.CtxError(ctx, "RangeAiCopy fail",
 				zap.Error(err),
 				zap.String("name", item.Name),
 				zap.Uint64("src", srcUserId),
 				zap.Duration("cost", time.Since(moduleStartTime)),
 				zap.Int("dstUsersCnt", len(dstUserId)))
 		} else {
-			logger.WarnWF("RangeAiCopy succ",
+			logger.CtxWarn(ctx, "RangeAiCopy succ",
 				zap.String("name", item.Name),
 				zap.Uint64("src", srcUserId),
 				zap.Duration("cost", time.Since(moduleStartTime)),
 				zap.Int("dstUsersCnt", len(dstUserId)))
 		}
 	}
-	logger.WarnWF("RangeAiCopy result",
+	logger.CtxWarn(ctx, "RangeAiCopy result",
 		zap.Uint64("src", srcUserId),
 		zap.Duration("cost", time.Since(totalNow)),
 		zap.Int("dstUsersCnt", len(dstUserId)))

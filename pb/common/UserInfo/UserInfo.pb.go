@@ -29,7 +29,7 @@ type UserInfo struct {
 
 	UserId    *uint64 `protobuf:"varint,1,opt,name=user_id,json=userId" json:"user_id,omitempty"`          // 用户id
 	NickName  *string `protobuf:"bytes,2,opt,name=nick_name,json=nickName" json:"nick_name,omitempty"`     // 用户昵称
-	Sex       *int32  `protobuf:"varint,3,opt,name=sex" json:"sex,omitempty"`                              // 用户性别 0默认,1男 2女
+	Sex       *int32  `protobuf:"varint,3,opt,name=sex" json:"sex,omitempty"`                              // 用户性别 0默认,1男, 2女
 	IconToken *int32  `protobuf:"varint,4,opt,name=icon_token,json=iconToken" json:"icon_token,omitempty"` // 头像Id
 }
 

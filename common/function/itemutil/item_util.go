@@ -1,16 +1,40 @@
 package itemutil
 
 import (
+	"context"
 	"fmt"
+	"maze_game_server/common/function/packtopb/equiptoitem"
+	"maze_game_server/config/GMazeBagOrderV8Cfg"
+	"maze_game_server/excel/mazeequiptyperesv8"
+	"maze_game_server/pb/common/MazeBag"
+	"maze_game_server/pb/server/MazeEquipSvr"
+	"maze_game_server/services/itemservice"
 	"sort"
+
+	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fklog"
+	"go.uber.org/zap"
 
 	"maze_game_server/pb/common/MazeCommon"
 
-	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fkconfig"
-	"gitlab.ifreetalk.com/maze-plate/freetk/fkutil/uniqueid"
 	"google.golang.org/protobuf/proto"
 )
 
+func BuildMazeBagItem(ctx context.Context, id int32, count int64) (bagItem *MazeBag.MazeBagItem) {
+	bagItem = &MazeBag.MazeBagItem{
+		ItemId: proto.Int32(id),
+		Count:  proto.Int64(count),
+	}
+	logger := fklog.ContextAppLogger(ctx)
+	cfg := GMazeBagOrderV8Cfg.GetWithCtx(ctx, id)
+	if cfg == nil {
+		logger.CtxWarn(ctx, "BuildMazeBagItem GMazeBagOrderV8Cfg nil", zap.Int32("id", id))
+		return
+	}
+
+	bagItem.Quality = proto.Int32(cfg.Quality)
+	bagItem.OrderType = proto.Int32(cfg.Order_type_2)
+	return
+}
 func Common2Map(attrs []*MazeCommon.Attr) (m map[int32]int64) {
 	m = make(map[int32]int64)
 	for _, attr := range attrs {
@@ -94,15 +118,6 @@ func CheckItemMatchEx(items []*MazeCommon.MazeItem, cost []*MazeCommon.MazeItem)
 	return true
 }
 
-func GetTradeNum() (tradeNum uint64) {
-	m := uniqueid.NewTradeNoMaker(uint64(fkconfig.GetServerConfig().ServerID))
-	if m == nil {
-		return
-	}
-	tradeNum = m.MakeTradeNo()
-	return
-}
-
 // 道具转为字符串
 func CommonItemsToString(items []*MazeCommon.MazeItem) string {
 	sort.Slice(items, func(i, j int) bool {
@@ -123,4 +138,65 @@ func CommonItemsToString(items []*MazeCommon.MazeItem) string {
 		s += temp
 	}
 	return s
+}
+
+func Map2ItemInfo(m map[int32]int64) (items []*itemservice.ItemInfo) {
+	for id, count := range m {
+		if id <= 0 || count <= 0 {
+			continue
+		}
+		items = append(items, &itemservice.ItemInfo{
+			ItemId: id,
+			Count:  count,
+		})
+	}
+	return
+}
+
+func ItemPb2ItemInfo(items []*MazeCommon.MazeItem) []*itemservice.ItemInfo {
+	res := make([]*itemservice.ItemInfo, 0, len(items))
+	for _, i := range items {
+		res = append(res, &itemservice.ItemInfo{
+			ItemId: i.GetItemId(),
+			Count:  i.GetCount(),
+		})
+	}
+	return res
+}
+
+func ItemInfo2ItemPb(items []*itemservice.ItemInfo) []*MazeCommon.MazeItem {
+	res := make([]*MazeCommon.MazeItem, 0)
+	for _, item := range items {
+		res = append(res, &MazeCommon.MazeItem{
+			ItemId: proto.Int32(item.ItemId),
+			Count:  proto.Int64(item.Count),
+			Guid:   proto.Int64(item.Guid),
+		})
+	}
+	return res
+}
+
+func ItemInfo2EquipPb(ctx context.Context, equips []*itemservice.ItemInfo) ([]*MazeCommon.MazeItem, error) {
+	res := make([]*MazeCommon.MazeItem, 0)
+	for _, equip := range equips {
+		equipTypeResCfg := mazeequiptyperesv8.GetEquipTypeResCfg(equip.ItemId, 0, 0)
+		if equipTypeResCfg == nil {
+			err := fmt.Errorf("mazeequiptyperesv8 get cfg fail, equipId:%d", equip.ItemId)
+			return nil, err
+		}
+		equip := &MazeEquipSvr.MazeEquipInfoSvr{
+			EquipId:    proto.Int32(equip.ItemId),
+			EquipResId: proto.Int32(equipTypeResCfg.Order),
+			EquipName:  proto.String(equipTypeResCfg.Name),
+			EquipGuid:  proto.Int64(equip.Guid),
+		}
+
+		itemEquip, err := equiptoitem.PackEquipToItem(ctx, equip)
+		if err != nil {
+			return nil, err
+		}
+		res = append(res, itemEquip)
+	}
+
+	return res, nil
 }

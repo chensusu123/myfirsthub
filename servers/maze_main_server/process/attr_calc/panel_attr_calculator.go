@@ -8,6 +8,7 @@
 package attr_calc
 
 import (
+	"context"
 	"maze_game_server/common/constdef"
 	"maze_game_server/config/GMazeAttrListOrderV8Cfg"
 	"maze_game_server/config/GMazeAttrListTypeV8Cfg"
@@ -49,18 +50,19 @@ func NewDPAC(userId uint64) *DPAC {
 }
 
 // 初始化
-func (m *DPAC) Init(logger fklog.FKLogI, iParam DPACParam) error {
+func (m *DPAC) Init(ctx context.Context, iParam DPACParam) error {
+	logger := fklog.ContextAppLogger(ctx)
 	m.InParam = iParam
 	var err error
 	var step string
 	defer func() {
 		if err != nil {
-			logger.ErrorWF("DPAC Init fail", zap.Error(err), zap.Any("param", m.InParam),
+			logger.CtxError(ctx, "DPAC Init fail", zap.Error(err), zap.Any("param", m.InParam),
 				zap.Uint64("userId", m.UserId),
 				zap.Int64("dungenonTime", m.DungeonRTime),
 				zap.String("step", step))
 		} else {
-			logger.InfoWF("DPAC Init succ", zap.Uint64("userId", m.UserId),
+			logger.CtxInfo(ctx, "DPAC Init succ", zap.Uint64("userId", m.UserId),
 				zap.Int64("dungenonTime", m.DungeonRTime),
 				zap.Any("param", m.InParam))
 		}
@@ -77,7 +79,7 @@ func (m *DPAC) Init(logger fklog.FKLogI, iParam DPACParam) error {
 	m.panelAttrCfgs = GMazeAttrListOrderV8Cfg.GetAll()
 
 	// 查询汇总的属性
-	m.panelAttrMap, err = mazecalcattrredis.HScanMazeCalcAttr(logger, m.UserId)
+	m.panelAttrMap, err = mazecalcattrredis.HScanMazeCalcAttr(ctx, m.UserId)
 	if err != nil {
 		step = "HScanMazeCalcAttr"
 		return err
@@ -85,22 +87,23 @@ func (m *DPAC) Init(logger fklog.FKLogI, iParam DPACParam) error {
 	return nil
 }
 
-func (m *DPAC) Calc(logger fklog.FKLogI) error {
+func (m *DPAC) Calc(ctx context.Context) error {
+	logger := fklog.ContextAppLogger(ctx)
 	var err error
 	var step int32
 	defer func() {
 		if err != nil {
-			logger.ErrorWF("DPAC Calc fail", zap.Error(err),
+			logger.CtxError(ctx, "DPAC Calc fail", zap.Error(err),
 				zap.Int32("step", step),
 				zap.Uint64("userId", m.UserId),
 				zap.Any("param", m.InParam))
 		} else {
-			logger.InfoWF("DPAC Calc succ", zap.Uint64("userId", m.UserId),
+			logger.CtxInfo(ctx, "DPAC Calc succ", zap.Uint64("userId", m.UserId),
 				zap.Any("param", m.InParam))
 		}
 	}()
 
-	m.AttrTransform(logger)
+	m.AttrTransform(ctx)
 
 	allGroup := GMazeAttrListTypeV8Cfg.GetAllMazeAttrListTypeV8Config()
 	sort.Slice(allGroup, func(i, j int) bool {
@@ -113,7 +116,7 @@ func (m *DPAC) Calc(logger fklog.FKLogI) error {
 		attrGroup.GroupName = proto.String(gRow.Type_name)
 		rows := mazeattrorderv8.GetPanelAttrByGroup(gRow.Type)
 		for _, row := range rows {
-			attrCliPb := AttrDbToPanelAttr(logger, row, m.panelAttrMap[row.Attr_id])
+			attrCliPb := AttrDbToPanelAttr(ctx, row, m.panelAttrMap[row.Attr_id])
 			attrGroup.Attrs = append(attrGroup.Attrs, attrCliPb)
 		}
 		m.Panel.AttrGroup = append(m.Panel.AttrGroup, attrGroup)
@@ -121,7 +124,8 @@ func (m *DPAC) Calc(logger fklog.FKLogI) error {
 	return nil
 }
 
-func AttrDbToPanelAttr(logger fklog.FKLogI, row *GMazeAttrListOrderV8Cfg.MazeAttrListOrderV8ConfigRow, v int64) *MazeGameEquip.EquipAttrInfo {
+func AttrDbToPanelAttr(ctx context.Context, row *GMazeAttrListOrderV8Cfg.MazeAttrListOrderV8ConfigRow, v int64) *MazeGameEquip.EquipAttrInfo {
+	logger := fklog.ContextAppLogger(ctx)
 	attrInfo := &MazeGameEquip.EquipAttrInfo{}
 	attrInfo.AttrId = proto.Int32(row.Attr_id)
 	attrRow := GMazeAttributeV8Cfg.GetMazeAttributeV8Config(row.Attr_id)
@@ -130,7 +134,7 @@ func AttrDbToPanelAttr(logger fklog.FKLogI, row *GMazeAttrListOrderV8Cfg.MazeAtt
 		attrInfo.Figure = proto.Int32(attrRow.Figure)
 		attrInfo.Comment = proto.String(row.Attr_desc)
 	} else {
-		logger.ErrorWF("AttrDbToPanelAttr no cfg", zap.Int32("attrId", row.Attr_id))
+		logger.CtxError(ctx, "AttrDbToPanelAttr no cfg", zap.Int32("attrId", row.Attr_id))
 	}
 	spRow := GMazeAttrSpDescV8Cfg.GetMazeAttrSpDescV8Config(row.Attr_id)
 	if spRow != nil {
@@ -146,22 +150,23 @@ func AttrDbToPanelAttr(logger fklog.FKLogI, row *GMazeAttrListOrderV8Cfg.MazeAtt
 }
 
 // 面板属性转换处理
-func (m *DPAC) AttrTransform(logger fklog.FKLogI) {
+func (m *DPAC) AttrTransform(ctx context.Context) {
 	// 抗性转换
-	ResistanceAttrConvert(logger, m.panelAttrMap)
+	ResistanceAttrConvert(ctx, m.panelAttrMap)
 
 	// 计算特殊属性:攻防血
 	// 计算攻防血
 	// TODO 不再做转换
-	// m.calcGFX(logger, constdef.DollAttrAttack, constdef.DollFormulaAttack)
-	// m.calcGFX(logger, constdef.DollAttrDefend, constdef.DollFormulaDefend)
-	// m.calcGFX(logger, constdef.DollAttrBlood, constdef.DollFormulaBlood)
+	// m.calcGFX(ctx, constdef.DollAttrAttack, constdef.DollFormulaAttack)
+	// m.calcGFX(ctx, constdef.DollAttrDefend, constdef.DollFormulaDefend)
+	// m.calcGFX(ctx, constdef.DollAttrBlood, constdef.DollFormulaBlood)
 
 	// transfer10531 地下城复活时间
-	// m.transfer10531(logger)
+	// m.transfer10531(ctx)
 }
 
-func (m *DPAC) transfer10531(logger fklog.FKLogI) {
+func (m *DPAC) transfer10531(ctx context.Context) {
+	logger := fklog.ContextAppLogger(ctx)
 	var dgt int64
 	var oldVal int64
 	if oldVal, ok := m.panelAttrMap[constdef.AttrId10531]; ok {
@@ -173,15 +178,16 @@ func (m *DPAC) transfer10531(logger fklog.FKLogI) {
 		dgt = m.DungeonRTime
 	}
 	SetMazeAttrKv(m.panelAttrMap, constdef.AttrId10531, dgt)
-	logger.InfoWF("transfer10531",
+	logger.CtxInfo(ctx, "transfer10531",
 		zap.Int64("new", dgt),
 		zap.Int64("old", oldVal),
 		zap.Int64("rt", m.DungeonRTime))
 }
 
-func (m *DPAC) calcGFX(logger fklog.FKLogI, attrId, formulaId int32) {
+func (m *DPAC) calcGFX(ctx context.Context, attrId, formulaId int32) {
+	logger := fklog.ContextAppLogger(ctx)
 	SetMazeAttrKv(m.panelAttrMap, attrId, m.panelAttrMap[formulaId])
-	logger.InfoWF("calcGFX",
+	logger.CtxInfo(ctx, "calcGFX",
 		zap.Uint64("userId", m.UserId),
 		zap.Int32("attrId", attrId),
 		zap.Int32("formulaId", formulaId))

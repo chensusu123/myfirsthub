@@ -4,10 +4,13 @@
 package tradeno
 
 import (
-	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fkconfig"
+	"gitlab.ifreetalk.com/maze-plate/freetk/fkserver/appconfig"
 	"gitlab.ifreetalk.com/maze-plate/freetk/fkutil/uniqueid"
+	"strconv"
 )
 
 func GetTradeNum() (tradeNum uint64) {
-	return uniqueid.NewTradeNoMaker(uint64(fkconfig.GetServerConfig().ServerID)).MakeTradeNo()
+	sectionId := appconfig.GlobalConfig().Global.SectionID
+	serverId, _ := strconv.ParseUint(sectionId, 10, 64)
+	return uniqueid.NewTradeNoMaker(serverId).MakeTradeNo()
 }

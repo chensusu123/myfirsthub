@@ -4,18 +4,17 @@ import (
 	"bytes"
 	"fmt"
 	"io"
+	"time"
+
 	"maze_game_server/lib/codec/raw_pkg"
 	"maze_game_server/lib/nano/component"
 	"maze_game_server/lib/nano/frame"
 	"maze_game_server/lib/nano/serialize"
-	"time"
 
 	jsoniter "github.com/json-iterator/go"
 )
 
-var (
-	json = jsoniter.ConfigCompatibleWithStandardLibrary
-)
+var json = jsoniter.ConfigCompatibleWithStandardLibrary
 
 type Message struct {
 	PackType  uint16 `json:"pack_type,omitempty"`

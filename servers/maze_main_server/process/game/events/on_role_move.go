@@ -1,12 +1,11 @@
 package events
 
 import (
+	"context"
 	"maze_game_server/pb/common/MazeGame"
-
-	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fklog"
 )
 
 // OnRoleMove 角色移动时触发
-func OnRoleMove(logger fklog.FKLogI, userID uint64, frame int64, timeMs int64, event *MazeGame.BattleEventRoleMove) {
+func OnRoleMove(ctx context.Context, userID uint64, frame int64, timeMs int64, event *MazeGame.BattleEventRoleMove) {
 
 }

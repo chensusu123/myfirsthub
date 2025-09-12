@@ -1,10 +1,10 @@
 package dispatcher_test
 
 import (
+	"context"
 	"testing"
 	"time"
 
-	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fklog"
 	"maze_game_server/io/dispatcher"
 )
 
@@ -13,14 +13,14 @@ var (
 )
 
 func TestDispatcher(t *testing.T) {
-	d.Watch(func(logger fklog.FKLogI, msg string) {
+	d.Watch(func(ctx context.Context, msg string) {
 		t.Logf("watcher #1: %s", msg)
 	})
-	d.Watch(func(logger fklog.FKLogI, msg string) {
+	d.Watch(func(ctx context.Context, msg string) {
 		t.Logf("watcher #2: %s", msg)
 	})
-
-	d.Push(gTestLogger, time.Now().String())
+	ctx := context.Background()
+	d.Push(ctx, time.Now().String())
 
 	time.Sleep(time.Second)
 }

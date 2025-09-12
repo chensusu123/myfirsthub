@@ -7,6 +7,8 @@
 package game
 
 import (
+	"context"
+
 	"maze_game_server/common/structsdef"
 	"maze_game_server/excel/mazeconfigv8"
 	"maze_game_server/io/redis/mazeuserlevelredis"
@@ -21,18 +23,19 @@ import (
 )
 
 // 处理迷宫升级属性变化Id包
-func HandleMazeLvUpgradeAttrChgId(logger fklog.FKLogI, userId uint64, msg *structsdef.DollAttrChgNotify) {
+func HandleMazeLvUpgradeAttrChgId(ctx context.Context, userId uint64, msg *structsdef.DollAttrChgNotify) {
+	logger := fklog.ContextAppLogger(ctx)
 	if msg.ChgType != 301 {
 		return
 	}
-	mazeLv, e := mazeuserlevelredis.GetUserLevel(logger, userId)
+	mazeLv, e := mazeuserlevelredis.GetUserLevel(ctx, userId)
 	if e != nil {
-		logger.ErrorWF("HandleMazeLvUpgradeAttrChgId GetUserLevel fail", zap.Error(e),
+		logger.CtxError(ctx, "HandleMazeLvUpgradeAttrChgId GetUserLevel fail", zap.Error(e),
 			zap.Uint64("uid", userId))
 		return
 	}
 	if mazeLv <= 1 {
-		logger.InfoWF("HandleMazeLvUpgradeAttrChgId level1 ignore",
+		logger.CtxInfo(ctx, "HandleMazeLvUpgradeAttrChgId level1 ignore",
 			zap.Uint64("uid", userId))
 		return
 	}
@@ -53,10 +56,9 @@ func HandleMazeLvUpgradeAttrChgId(logger fklog.FKLogI, userId uint64, msg *struc
 		mazeLvChgIDMsg.ChgAttrs = append(mazeLvChgIDMsg.ChgAttrs, chgIdInfo)
 	}
 
-	logger.InfoWF("HandleMazeLvUpgradeAttrChgId send client with",
+	logger.CtxInfo(ctx, "HandleMazeLvUpgradeAttrChgId send client with",
 		zap.Any("mazeLvChgIDMsg", mazeLvChgIDMsg), zap.Uint64("userId", userId))
-	online.Push(logger, uint64(userId), 10479, mazeLvChgIDMsg)
-
+	online.ClusterPush(ctx, uint64(userId), 10479, mazeLvChgIDMsg)
 }
 
 // func IsMazeUpgradeCareAttr(attrId int32) bool {

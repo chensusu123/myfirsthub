@@ -26,12 +26,15 @@ import (
 	"fmt"
 	"math/rand"
 	"net"
+	"net/http"
 	"reflect"
 	"sort"
 	"strings"
 	"sync"
+	"sync/atomic"
 	"time"
 
+	packCodec "maze_game_server/lib/codec"
 	"maze_game_server/lib/nano/cluster/clusterpb"
 	"maze_game_server/lib/nano/component"
 	"maze_game_server/lib/nano/frame"
@@ -40,13 +43,22 @@ import (
 	"maze_game_server/lib/nano/internal/log"
 	"maze_game_server/lib/nano/internal/message"
 	"maze_game_server/lib/nano/internal/packet"
+	"maze_game_server/lib/nano/nanometrics"
 	"maze_game_server/lib/nano/pipeline"
 	"maze_game_server/lib/nano/scheduler"
 	"maze_game_server/lib/nano/serialize"
 	"maze_game_server/lib/nano/session"
 
 	"github.com/gorilla/websocket"
+	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fkalert"
 	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fklog"
+	"gitlab.ifreetalk.com/maze-plate/freetk/pkg/logidutil"
+	"gitlab.ifreetalk.com/maze-plate/freetk/pkg/metrics"
+	"gitlab.ifreetalk.com/maze-plate/freetk/pkg/metricsreport"
+	"go.opentelemetry.io/otel"
+	"go.opentelemetry.io/otel/attribute"
+	"go.opentelemetry.io/otel/codes"
+	"go.opentelemetry.io/otel/trace"
 	"go.uber.org/zap"
 )
 
@@ -56,7 +68,7 @@ var (
 	hbd []byte // heartbeat packet data
 )
 
-type rpcHandler func(session *session.Session, msg *message.Message, noCopy bool)
+type rpcHandler func(ctx context.Context, session *session.Session, msg *message.Message, noCopy bool)
 
 // CustomerRemoteServiceRoute customer remote service route
 type CustomerRemoteServiceRoute func(service string, session *session.Session, members []*clusterpb.MemberInfo) *clusterpb.MemberInfo
@@ -111,7 +123,9 @@ type LocalHandler struct {
 	pipeline    pipeline.Pipeline
 	currentNode *Node
 	// Custom packet encoder/decoder
-	pcodec frame.PacketCodec
+	pcodec    frame.PacketCodec
+	taskCount atomic.Int64
+	userCount atomic.Int64
 }
 
 func NewHandler(currentNode *Node, pipeline pipeline.Pipeline, pcodec frame.PacketCodec) *LocalHandler {
@@ -207,13 +221,47 @@ func (h *LocalHandler) RemoteService() []string {
 	return result
 }
 
-func (h *LocalHandler) handle(conn net.Conn, pcodec frame.PacketCodec) {
+func (h *LocalHandler) handle(conn net.Conn, r *http.Request, pcodec frame.PacketCodec) {
+	uerCount := h.userCount.Add(1)
+	nanometrics.UserCountGauge.Set(float64(uerCount))
+	var agentSessionID int64
+	var closeNoraml bool
+
 	// Select a packet codec
 	if pcodec == nil {
 		pcodec = h.pcodec
 	}
+	handleLogger := fklog.AppLogger().Clone("nano_handle")
+
 	// create a client agent and startup write gorontine
 	agent := newAgent(conn, h.pipeline, pcodec, h.remoteProcess)
+	agentSessionID = agent.session.ID()
+
+	handleLogger.InfoWF("agent handle entry",
+		zap.Int64("agentSessionID", agentSessionID),
+		zap.String("remote_addr", agent.conn.RemoteAddr().String()),
+	)
+
+	defer func() {
+		fkalert.RecoverAlertException()
+		uerCount = h.userCount.Add(-1)
+		nanometrics.UserCountGauge.Set(float64(uerCount))
+		agent.session.SetClose()
+		fklog.AppLogger().InfoWF("agent handle end",
+			zap.Int64("agentSessionID", agentSessionID),
+			zap.Bool("closeNoraml", closeNoraml),
+			zap.String("remote_addr", agent.conn.RemoteAddr().String()),
+			zap.Int64("enduser.id", agent.session.UID()))
+	}()
+	// Init session
+	// 将Websocket连接请求Header中的数据转存至Session
+	if r != nil {
+		// Header: X-Forwarded-For
+		addr := r.Header.Get("X-Forwarded-For")
+		if len(addr) > 0 {
+			agent.session.Set("ClientAddr", addr)
+		}
+	}
 
 	// Logger
 	logger := fklog.AppLogger().Clone("nano")
@@ -221,7 +269,7 @@ func (h *LocalHandler) handle(conn net.Conn, pcodec frame.PacketCodec) {
 	h.currentNode.storeSession(agent.session)
 
 	if env.SessionMonitor != nil {
-		env.SessionMonitor.OnCreate(agent.session)
+		env.SessionMonitor.OnCreate(context.Background(), agent.session)
 	}
 
 	var lastErr error
@@ -229,47 +277,54 @@ func (h *LocalHandler) handle(conn net.Conn, pcodec frame.PacketCodec) {
 	// startup write goroutine
 	go agent.write()
 
-	if env.Debug {
-		log.Println(fmt.Sprintf("New session established: %s", agent.String()))
-	}
-
 	// guarantee agent related resource be destroyed
 	defer func() {
+		closelogger := logger.Clone("nano")
+		closelogger.SetLogId(logidutil.GenerateLogID())
+		closelogger.SetUid(uint64(agent.session.UID()))
+		ctx := fklog.ContextWithLogger(context.Background(), closelogger)
+
+		ctx, span := closeHandleSpan(ctx, agent, "read.close")
+		defer span.End()
 		request := &clusterpb.SessionClosedRequest{
 			SessionId: agent.session.ID(),
 		}
-
+		span.AddEvent("cluster.remoteAddrs")
 		members := h.currentNode.cluster.remoteAddrs()
 		for _, remote := range members {
-			log.Println("Notify remote server", remote)
 			pool, err := h.currentNode.rpcClient.getConnPool(remote)
 			if err != nil {
-				log.Println("Cannot retrieve connection pool for address", remote, err)
+				closelogger.CtxWarn(ctx, "Cannot retrieve connection pool for address", zap.Error(err), zap.String("remote", remote))
 				continue
 			}
 			client := clusterpb.NewMemberClient(pool.Get())
-			_, err = client.SessionClosed(context.Background(), request)
+			_, err = client.SessionClosed(ctx, request)
 			if err != nil {
-				log.Println("Cannot closed session in remote address", remote, err)
+				closelogger.CtxWarn(ctx, "Cannot closed session in remote address", zap.Error(err), zap.String("remote", remote))
 				continue
 			}
-			if env.Debug {
-				log.Println("Notify remote server success", remote)
-			}
 		}
-
+		span.AddEvent("SessionMonitor.OnClose")
 		if env.SessionMonitor != nil {
-			env.SessionMonitor.OnClose(agent.session, lastErr)
+			env.SessionMonitor.OnClose(ctx, agent.session, lastErr)
 		}
 
+		span.AddEvent("agent.Close")
 		agent.Close()
-		if env.Debug {
-			log.Println(fmt.Sprintf("Session read goroutine exit, SessionID=%d, UID=%d", agent.session.ID(), agent.session.UID()))
-		}
+		closelogger.CtxDebug(ctx, "Session read goroutine exit",
+			zap.Int64("agent.session", agent.session.ID()),
+			zap.Int64("enduser.id", agent.session.UID()),
+			zap.Any("lastErr", lastErr),
+		)
+		span.AddEvent("agent.Close.end")
+		closeNoraml = true
 	}()
 
 	// read loop
 	buf := make([]byte, 2048)
+	remoteAddr := agent.conn.RemoteAddr().String()
+	sessionID := agent.session.ID()
+	var isSvrHeader bool
 	for {
 		n, err := conn.Read(buf)
 		if err != nil {
@@ -279,17 +334,31 @@ func (h *LocalHandler) handle(conn net.Conn, pcodec frame.PacketCodec) {
 		}
 
 		if agent.pcodec != nil {
+			loggerLoop := logger.Clone("nano")
+			loggerLoop.SetLogId(logidutil.GenerateLogID())
+			loggerLoop.SetUid(uint64(agent.session.UID()))
+			ctx := fklog.ContextWithLogger(context.Background(), loggerLoop)
+
+			ctx, span := receiveSpan(ctx, n)
+
 			// Must working
 			agent.setStatus(statusWorking)
-
+			span.SetAttributes(attribute.String("remote_addr", remoteAddr),
+				attribute.Int("recv_data_len", n),
+				attribute.Int64("agent.session", sessionID),
+				attribute.Int64("enduser.id", agent.session.UID()),
+			)
+			span.AddEvent("agent.pcodec.decode")
 			msgs, packets, err := agent.pcodec.Decode(buf[:n])
 			if err != nil {
 				lastErr = err
 				log.Println(err.Error())
-
+				span.RecordError(err)
+				span.SetStatus(codes.Error, "agent.pcodec.Decode failed.")
 				// process message decoded
 				for index, m := range msgs {
-					logger.InfoWF("nano process packet start", zap.Uint64("ID", m.ID),
+					loggerLoop.CtxInfo(ctx, "nano process packet start", zap.Uint64("ID", m.ID),
+						zap.Int64("agentSessionID", agentSessionID),
 						zap.String("remote_addr", agent.conn.RemoteAddr().String()),
 						zap.String("route", m.Route),
 						zap.Uint16("PackLen", packets[index].PackLen),
@@ -299,14 +368,26 @@ func (h *LocalHandler) handle(conn net.Conn, pcodec frame.PacketCodec) {
 						zap.Uint8("CompressType", packets[index].CompressType),
 						zap.Int("rq_data_len", len(m.Data)),
 					)
-					h.processMessage(agent, m)
+					if !isSvrHeader && packets[index].IsSvrHeader {
+						isSvrHeader = true
+						agent.isSvrHeader.Store(true)
+					}
+					packCtx, packSpan := packSpan(context.Background(),
+						sessionID, agent.session.UID(), packets[index])
+					packCtx = fklog.ContextWithLogger(packCtx, loggerLoop)
+					packSpan.AddEvent("processMessage")
+					h.processMessage(packCtx, agent, m)
+					packSpan.End()
 				}
+				fklog.ContextAppLogger(ctx).CtxError(ctx, "nano message processed", zap.Error(err))
+				span.End()
 				return
 			}
 
+			span.AddEvent("process.message", trace.EventOption(trace.WithAttributes(attribute.Int("msg_count", len(msgs)))))
 			// process all message
 			for index, m := range msgs {
-				logger.InfoWF("nano process packet start", zap.Uint64("ID", m.ID),
+				loggerLoop.CtxInfo(ctx, "nano process packet start", zap.Uint64("ID", m.ID),
 					zap.String("route", m.Route),
 					zap.String("remote_addr", agent.conn.RemoteAddr().String()),
 					zap.Uint16("PackLen", packets[index].PackLen),
@@ -316,8 +397,19 @@ func (h *LocalHandler) handle(conn net.Conn, pcodec frame.PacketCodec) {
 					zap.Uint8("CompressType", packets[index].CompressType),
 					zap.Int("rq_data_len", len(m.Data)),
 				)
-				h.processMessage(agent, m)
+				if !isSvrHeader && packets[index].IsSvrHeader {
+					isSvrHeader = true
+					agent.isSvrHeader.Store(true)
+				}
+				packCtx, packSpan := packSpan(context.Background(),
+					sessionID, agent.session.UID(), packets[index])
+				packCtx = fklog.ContextWithLogger(packCtx, loggerLoop)
+				packSpan.AddEvent("processMessage")
+				h.processMessage(packCtx, agent, m)
+				packSpan.End()
 			}
+
+			span.End()
 		} else {
 			// TODO(warning): decoder use slice for performance, packet data should be copy before next Decode
 			packets, err := agent.decoder.Decode(buf[:n])
@@ -380,7 +472,7 @@ func (h *LocalHandler) processPacket(agent *agent, p *packet.Packet) error {
 		if err != nil {
 			return err
 		}
-		h.processMessage(agent, msg)
+		h.processMessage(context.TODO(), agent, msg)
 
 	case packet.Heartbeat:
 		// expected
@@ -396,7 +488,7 @@ func (h *LocalHandler) findMembers(service string) []*clusterpb.MemberInfo {
 	return h.remoteServices[service]
 }
 
-func (h *LocalHandler) remoteProcess(session *session.Session, msg *message.Message, noCopy bool) {
+func (h *LocalHandler) remoteProcess(ctx context.Context, session *session.Session, msg *message.Message, noCopy bool) {
 	index := strings.LastIndex(msg.Route, ".")
 	if index < 0 {
 		log.Println(fmt.Sprintf("nano/handler: invalid route %s", msg.Route))
@@ -465,7 +557,7 @@ func (h *LocalHandler) remoteProcess(session *session.Session, msg *message.Mess
 			Route:     msg.Route,
 			Data:      data,
 		}
-		_, err = client.HandleRequest(context.Background(), request)
+		_, err = client.HandleRequest(ctx, request)
 	case message.Notify:
 		request := &clusterpb.NotifyMessage{
 			GateAddr:  gateAddr,
@@ -473,14 +565,23 @@ func (h *LocalHandler) remoteProcess(session *session.Session, msg *message.Mess
 			Route:     msg.Route,
 			Data:      data,
 		}
-		_, err = client.HandleNotify(context.Background(), request)
+		_, err = client.HandleNotify(ctx, request)
 	}
 	if err != nil {
 		log.Println(fmt.Sprintf("Process remote message (%d:%s) error: %+v", msg.ID, msg.Route, err))
 	}
 }
 
-func (h *LocalHandler) processMessage(agent *agent, msg *message.Message) {
+func (h *LocalHandler) processMessage(ctx context.Context, agent *agent, msg *message.Message) {
+	// ctx, cancel := context.WithTimeout(ctx, 5*time.Second)
+	defer func() {
+		fkalert.RecoverAlertException()
+		// cancel()
+		// if ctx.Err() != nil {
+		// 	fklog.ContextAppLogger(ctx).ErrorWF("process message timeout", zap.Error(ctx.Err()))
+		// }
+	}()
+
 	var lastMid uint64
 	switch msg.Type {
 	case message.Request:
@@ -492,28 +593,47 @@ func (h *LocalHandler) processMessage(agent *agent, msg *message.Message) {
 		return
 	}
 
+	sessionID, _, rsID := packCodec.SplitSessionAndPackType(msg.ID)
+	tracer := otel.Tracer("nano.process.message")
+	ctx, span := tracer.Start(ctx, msg.Route)
+
+	span.SetAttributes(
+		attribute.Int64("agent.session", agent.session.ID()),
+		attribute.Int64("enduser.id", agent.session.UID()),
+		attribute.Int64("packet.session", int64(sessionID)),
+		attribute.Int64("packet.id", int64(rsID)),
+	)
+	// agent.session.SetContext(ctx)
 	handler, found := h.localHandlers[msg.Route]
 	if !found {
-		h.remoteProcess(agent.session, msg, false)
+		span.AddEvent("nano.remote.process")
+		h.remoteProcess(ctx, agent.session, msg, false)
+		span.End()
 	} else {
-		h.localProcess(handler, lastMid, agent.session, agent.serializer, msg)
+		span.AddEvent("nano.local.process")
+		h.localProcess(ctx, handler, lastMid, agent.session, agent.serializer, msg)
 	}
 }
 
-func (h *LocalHandler) handleWS(conn *websocket.Conn, pcodec frame.PacketCodec) {
+func (h *LocalHandler) handleWS(conn *websocket.Conn, r *http.Request, pcodec frame.PacketCodec) {
 	c, err := newWSConn(conn)
 	if err != nil {
 		log.Println(err)
 		return
 	}
-	go h.handle(c, pcodec)
+	go h.handle(c, r, pcodec)
 }
 
-func (h *LocalHandler) localProcess(handler *component.Handler, lastMid uint64, session *session.Session, serializer serialize.Serializer, msg *message.Message) {
+func (h *LocalHandler) localProcess(ctx context.Context, handler *component.Handler, lastMid uint64, session *session.Session, serializer serialize.Serializer, msg *message.Message) {
+	span := trace.SpanFromContext(ctx)
+	span.AddEvent("nano.local.process.begin")
 	if pipe := h.pipeline; pipe != nil {
 		err := pipe.Inbound().Process(session, msg)
 		if err != nil {
 			log.Println("Pipeline process failed: " + err.Error())
+			span.RecordError(err)
+			span.SetStatus(codes.Error, "Inbound().Process")
+			span.End()
 			return
 		}
 	}
@@ -527,9 +647,13 @@ func (h *LocalHandler) localProcess(handler *component.Handler, lastMid uint64, 
 		if serializer == nil {
 			serializer = env.Serializer
 		}
+		span.AddEvent("nano.unmarshal")
 		err := serializer.Unmarshal(payload, data)
 		if err != nil {
+			span.RecordError(err)
+			span.SetStatus(codes.Error, "Unmarshal failed.")
 			log.Println(fmt.Sprintf("Deserialize to %T failed: %+v (%v)", data, err, payload))
+			span.End()
 			return
 		}
 	}
@@ -546,18 +670,62 @@ func (h *LocalHandler) localProcess(handler *component.Handler, lastMid uint64, 
 		case *acceptor:
 			v.lastMid = lastMid
 		}
+		// span := trace.SpanFromContext(ctx)
+		span.AddEvent("nano.func.call.begin")
+		ctxCall, spanCall := callSpan(ctx, session, msg.Route)
+		session.SetContext(ctxCall)
+		begin := time.Now()
+		var callErr error
+		defer func() {
+			// if err := recover(); err != nil {
+			// 	fklog.ContextAppLogger(ctxCall).ErrorWF("local process panic", zap.Any("err", err))
+			// }
+			fkalert.RecoverAlertException()
+			span.AddEvent("nano.local.process.end")
+			session.SetContext(context.TODO())
+			spanCall.AddEvent("nano.local.process.end")
+			spanCall.End()
+			span.End()
 
+			h.taskCount.Add(-1)
+			session.TaskCountDec()
+
+			var labels []*metrics.Dimension
+			labels = getProcessLabels(msg.Route, callErr)
+
+			ms := make([]*metrics.Metrics, 0)
+			t := float64(time.Since(begin)) / float64(time.Millisecond)
+			ms = append(ms,
+				metrics.NewMetrics("time", t, metrics.PolicyHistogram),
+				metrics.NewMetrics("requests", 1.0, metrics.PolicySUM))
+			metrics.Histogram("nanohandle_time", clientBounds)
+			recored := metrics.NewMultiDimensionMetricsX("nanohandle", labels, ms)
+			_ = metricsreport.Report(recored)
+		}()
+
+		if session.IsClose() {
+			spanCall.AddEvent("session.isclose")
+			span.AddEvent("session.isclose")
+			return
+		}
+		spanCall.AddEvent("nano.func.call.begin")
 		result := handler.Method.Func.Call(args)
+		spanCall.AddEvent("nano.func.call.end")
+		span.AddEvent("nano.func.call.end")
+
 		if len(result) > 0 {
 			if err := result[0].Interface(); err != nil {
-				log.Println(fmt.Sprintf("Service %s error: %+v", msg.Route, err))
+				spanCall.RecordError(err.(error))
+				spanCall.SetStatus(codes.Error, "handler.Method.Func.Call failed.")
+				callErr = err.(error)
 			}
 		}
 	}
 
 	index := strings.LastIndex(msg.Route, ".")
 	if index < 0 {
-		log.Println(fmt.Sprintf("nano/handler: invalid route %s", msg.Route))
+		span.SetStatus(codes.Error, "nano/handler: invalid route")
+		span.End()
 		return
 	}
 
@@ -566,18 +734,47 @@ func (h *LocalHandler) localProcess(handler *component.Handler, lastMid uint64, 
 	if s, found := h.localServices[service]; found && s.SchedName != "" {
 		sched := session.Value(s.SchedName)
 		if sched == nil {
-			log.Println(fmt.Sprintf("nanl/handler: cannot found `schedular.LocalScheduler` by %s", s.SchedName))
+			span.SetStatus(codes.Error, "nanl/handler: cannot found schedular.LocalScheduler")
+			span.End()
 			return
 		}
 
 		local, ok := sched.(scheduler.LocalScheduler)
+		_ = local
 		if !ok {
-			log.Println(fmt.Sprintf("nanl/handler: Type %T does not implement the `schedular.LocalScheduler` interface",
-				sched))
+			span.SetStatus(codes.Error, "nanl/handler: cannot found schedular.LocalScheduler")
+			span.End()
 			return
 		}
-		local.Schedule(task)
+		span.AddEvent("nano.schedule.task")
+		taskCount := h.taskCount.Add(1)
+		// sesstionTaskCount := session.TaskCountInc()
+		sesstionTaskCount, pushTaskOK := session.PushTask(task)
+		span.SetAttributes(attribute.Int64("nano.current.task.count", taskCount))
+		span.SetAttributes(attribute.Int64("nano.session.task.count", sesstionTaskCount))
+		span.SetAttributes(attribute.String("nano.task.scheduler.name", service))
+		span.SetAttributes(attribute.Bool("nano.task.push.ok", pushTaskOK))
+		if !pushTaskOK {
+			span.AddEvent("nano.push.task.fail")
+			span.SetStatus(codes.Error, "nano.push.task.fail")
+			span.End()
+		}
+		// local.Schedule(task)
 	} else {
-		scheduler.PushTask(task)
+		span.AddEvent("nano.schedule.task")
+		taskCount := h.taskCount.Add(1)
+		sesstionTaskCount, pushTaskOK := session.PushTask(task)
+		span.SetAttributes(attribute.Int64("nano.current.task.count", taskCount))
+		span.SetAttributes(attribute.Int64("nano.session.task.count", sesstionTaskCount))
+		span.SetAttributes(attribute.String("nano.task.scheduler.name", "global"))
+		span.SetAttributes(attribute.Bool("nano.task.push.ok", pushTaskOK))
+		// scheduler.PushTask(task)
+		// session.PushTask(task)
+		// session.session.scheduler.PushTask(task)
+		if !pushTaskOK {
+			span.AddEvent("nano.push.task.fail")
+			span.SetStatus(codes.Error, "nano.push.task.fail")
+			span.End()
+		}
 	}
 }

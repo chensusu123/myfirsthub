@@ -8,21 +8,22 @@
 package game
 
 import (
+	"sort"
+	"time"
+
 	"maze_game_server/common/errors"
-	"maze_game_server/common/function/gentradeno"
 	"maze_game_server/common/function/itemutil"
-	"maze_game_server/common/function/uniqueid"
+	"maze_game_server/common/tradeno"
 	"maze_game_server/config/GMazeRebornCostV8Cfg"
 	"maze_game_server/excel/mazeconfigv8"
 	"maze_game_server/io/kafka/mazerebornkafka"
 	"maze_game_server/io/redis/mazeuserbarrierredis"
-	"maze_game_server/lib/log"
 	"maze_game_server/lib/nano/session"
 	"maze_game_server/pb/common/MazeCommon"
 	"maze_game_server/pb/common/MazeGame"
-	"sort"
-	"time"
+	"maze_game_server/services/itemservice"
 
+	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fklog"
 	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fkprometheus"
 	"go.uber.org/zap"
 	"google.golang.org/protobuf/proto"
@@ -31,13 +32,14 @@ import (
 func (g *Game) OnMazeBarrierRebornRQ_10461_10462(s *session.Session, req *MazeGame.MazeBarrierRebornRQ) (err error) {
 	defer fkprometheus.InfoPMT("OnMazeBarrierRebornRQ")()
 
-	logger := log.Clone("Game", uint64(s.UID()), 0)
+	ctx := s.Context()
+	logger := fklog.ContextAppLogger(ctx)
 	res := &MazeGame.MazeBarrierRebornRS{}
 
-	logger.InfoWF("OnMazeBarrierRebornRQ start", zap.Any("req", req))
+	logger.CtxInfo(ctx, "OnMazeBarrierRebornRQ start", zap.Any("req", req))
 	defer func() {
 		err = s.Response(res)
-		logger.InfoWF("OnMazeBarrierRebornRQ end", zap.Any("res", res))
+		logger.CtxInfo(ctx, "OnMazeBarrierRebornRQ end", zap.Any("res", res))
 	}()
 
 	res.Header = req.Header
@@ -47,47 +49,47 @@ func (g *Game) OnMazeBarrierRebornRQ_10461_10462(s *session.Session, req *MazeGa
 	userId := uint64(s.UID())
 
 	if req.GetRebornAck() != 1 && req.GetRebornAck() != 2 {
-		logger.ErrorWF("OnMazeBarrierRebornRQ req type invalid", zap.Any("req", req))
+		logger.CtxError(ctx, "OnMazeBarrierRebornRQ req type invalid", zap.Any("req", req))
 		res.ErrInfo = errors.COMMON_ERROR_TIPS.Wrap("请求类型无效")
 		return
 	}
 
 	barrierId := req.GetBarrierId()
 	if barrierId <= 0 {
-		logger.ErrorWF("OnMazeBarrierRebornRQ req barrier invalid", zap.Any("req", req))
+		logger.CtxError(ctx, "OnMazeBarrierRebornRQ req barrier invalid", zap.Any("req", req))
 		res.ErrInfo = errors.COMMON_ERROR_TIPS.Wrap("关卡id未设置")
 		return
 	}
 
-	barrierInfo, err := mazeuserbarrierredis.GetUserBarrierInfo(logger, userId, barrierId)
+	barrierInfo, err := mazeuserbarrierredis.GetUserBarrierInfo(ctx, userId, barrierId)
 	if err != nil {
-		logger.ErrorWF("OnMazeBarrierRebornRQ GetUserBarrierInfo fail",
+		logger.CtxError(ctx, "OnMazeBarrierRebornRQ GetUserBarrierInfo fail",
 			zap.Any("req", req), zap.Error(err))
 		res.ErrInfo = errors.MODULE_ERROR.ToInfo()
 		return
 	}
 	if barrierInfo == nil || barrierInfo.GetBarrierId() == 0 {
-		logger.ErrorWF("OnMazeBarrierRebornRQ no barrier data", zap.Any("req", req))
+		logger.CtxError(ctx, "OnMazeBarrierRebornRQ no barrier data", zap.Any("req", req))
 		res.ErrInfo = errors.COMMON_ERROR_TIPS.Wrap("未找到关卡数据")
 		return
 	}
 
 	if barrierInfo.GetBarrierId() != barrierId {
-		logger.ErrorWF("OnMazeBarrierRebornRQ barrier data not match",
+		logger.CtxError(ctx, "OnMazeBarrierRebornRQ barrier data not match",
 			zap.Int32("cliBarrierId", barrierId),
 			zap.Int32("svrBarrireId", barrierInfo.GetBarrierId()))
 		res.ErrInfo = errors.COMMON_ERROR_TIPS.Wrap("关卡数据不匹配")
 		return
 	}
 	if barrierInfo.GetEndTime() > 0 {
-		logger.ErrorWF("OnMazeBarrierRebornRQ barrier challenge already end",
+		logger.CtxError(ctx, "OnMazeBarrierRebornRQ barrier challenge already end",
 			zap.Int32("barrierId", barrierId), zap.Int64("endTime", barrierInfo.GetEndTime()))
 		res.ErrInfo = errors.COMMON_ERROR_TIPS.Wrap("本次挑战已结束")
 		return
 	}
 
 	if barrierInfo.GetStartTime() == 0 {
-		logger.ErrorWF("OnMazeBarrierRebornRQ barrier challenge no start",
+		logger.CtxError(ctx, "OnMazeBarrierRebornRQ barrier challenge no start",
 			zap.Int32("barrierId", barrierId))
 		res.ErrInfo = errors.COMMON_ERROR_TIPS.Wrap("挑战未开始")
 		return
@@ -105,7 +107,7 @@ func (g *Game) OnMazeBarrierRebornRQ_10461_10462(s *session.Session, req *MazeGa
 		res.RebornCost = svrCost
 	} else {
 		if req.GetRebornAck() == 2 && len(svrCost) > 0 && len(req.GetRebornCost()) == 0 {
-			logger.ErrorWF("OnMazeBarrierRebornRQ no cost param",
+			logger.CtxError(ctx, "OnMazeBarrierRebornRQ no cost param",
 				zap.Any("rqCost", req.GetRebornCost()),
 				zap.Any("svrCost", svrCost))
 			res.ErrInfo = errors.ARGS_NOT_MATCH.ToInfo()
@@ -119,7 +121,7 @@ func (g *Game) OnMazeBarrierRebornRQ_10461_10462(s *session.Session, req *MazeGa
 		}
 
 		if !itemutil.CheckItemMatch(req.GetRebornCost(), svrCost) {
-			logger.ErrorWF("OnMazeBarrierRebornRQ cost check fail",
+			logger.CtxError(ctx, "OnMazeBarrierRebornRQ cost check fail",
 				zap.Any("rqCost", req.GetRebornCost()),
 				zap.Any("svrCost", svrCost))
 			res.ErrInfo = errors.NewErrorInfo(ERROR_CODE_REBORN_COST_NOT_MATCH, "消耗不匹配")
@@ -129,12 +131,13 @@ func (g *Game) OnMazeBarrierRebornRQ_10461_10462(s *session.Session, req *MazeGa
 		}
 
 		// 扣除消耗
-		tid := uniqueid.GenUniqueIdUInt64()
+		tid := tradeno.GetTradeNum()
 		if len(svrCost) > 0 {
 			// 通用	698	UN_CGK_COMMON_BILL_TYPE_698	迷宫挑战复活		否	马健	2025-03-25 13:48:10
-			errInfo := gentradeno.DeductItemsEx(logger, userId, 698, tid, svrCost...)
+			items := itemutil.ItemPb2ItemInfo(svrCost)
+			errInfo := itemservice.GlobalItemService.SubItem(ctx, userId, itemservice.ItemOpTypeReborn, tid, items...)
 			if errInfo != nil {
-				logger.ErrorWF("OnMazeBarrierRebornRQ DeductItemsEx",
+				logger.CtxError(ctx, "OnMazeBarrierRebornRQ DeductItemsEx",
 					zap.Any("svrCost", svrCost),
 					zap.Uint64("tid", tid),
 					zap.Any("errInfo", errInfo))
@@ -149,9 +152,9 @@ func (g *Game) OnMazeBarrierRebornRQ_10461_10462(s *session.Session, req *MazeGa
 
 		// 更新复活次数
 		barrierInfo.RebornCount = proto.Int32(barrierInfo.GetRebornCount() + 1)
-		err = mazeuserbarrierredis.SetUserBarrierInfo(logger, userId, barrierInfo.GetBarrierId(), barrierInfo)
+		err = mazeuserbarrierredis.SetUserBarrierInfo(ctx, userId, barrierInfo.GetBarrierId(), barrierInfo)
 		if err != nil {
-			logger.ErrorWF("OnMazeBarrierRebornRQ SetUserBarrierInfo fail", zap.Error(err),
+			logger.CtxError(ctx, "OnMazeBarrierRebornRQ SetUserBarrierInfo fail", zap.Error(err),
 				zap.Any("barrierInfo", barrierInfo))
 			res.ErrInfo = errors.DB_SAVE_ERROR.ToInfo()
 			return
@@ -165,7 +168,7 @@ func (g *Game) OnMazeBarrierRebornRQ_10461_10462(s *session.Session, req *MazeGa
 			RebornCount: int64(barrierInfo.GetRebornCount()),
 			RebornCost:  itemutil.CommonItemsToString(svrCost),
 		}
-		mazerebornkafka.PushMazeRebornRecord(logger, record)
+		mazerebornkafka.PushMazeRebornRecord(ctx, record)
 	}
 	return nil
 }
@@ -192,7 +195,8 @@ func GetReviveCost(reviveCnt int32) ([]*MazeCommon.MazeItem, int32, bool) {
 				}
 				ret = append(ret, &MazeCommon.MazeItem{
 					ItemId: proto.Int32(k),
-					Count:  proto.Int64(v)})
+					Count:  proto.Int64(v),
+				})
 			}
 			// break
 		}

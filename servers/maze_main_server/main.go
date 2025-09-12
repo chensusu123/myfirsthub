@@ -4,8 +4,13 @@ import (
 	"fmt"
 	"os"
 
+	"maze_game_server/io"
+	globalredis "maze_game_server/io/redis"
+
 	"maze_game_server/io/mysql"
 	"maze_game_server/servers/maze_main_server/process"
+	"maze_game_server/servers/maze_main_server/process/clusterusermsg"
+	_ "maze_game_server/servers/maze_main_server/process/mazeadmin"
 	"maze_game_server/usecase/business"
 	"maze_game_server/usecase/tasktimer"
 
@@ -27,7 +32,7 @@ func main() {
 	fkserver.SetMonitorName(fkserver.GroupNameGO, fkserver.ProjectNamePPWD, "maze_main_server")
 
 	process.RegisterHandler()
-
+	io.InitBackendCoder(globalredis.GCli, nil)
 	fkserver.AddBusiness(&business.GCustomBusiness)
 	loadconfigapi.SetLoadConfigFunc(business.GCustomBusiness.LoadCacheConfig)
 	loadconfigapi.SetInitConfigCacheFunc(business.GCustomBusiness.Init)
@@ -39,5 +44,8 @@ func main() {
 	fkserver.AppServer.AddBasicService(&process.NanoInitService{})
 	// fkserver.AddBusiness(&business.GCustomBusiness)
 	fkserver.AddBusiness(tasktimer.GTaskTimerBusiness)
+
+	clusterusermsg.Register()
+
 	fkserver.Run()
 }

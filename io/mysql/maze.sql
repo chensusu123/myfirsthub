@@ -225,3 +225,18 @@ CREATE TABLE `t_maze_user_reborn_record`  (
   INDEX `idx_dt`(`create_time`) USING BTREE
 ) ENGINE = InnoDB AUTO_INCREMENT = 1 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_general_ci COMMENT = '用户复活流水' ROW_FORMAT = Dynamic;
 
+CREATE TABLE `t_maze_user_energy_record`  (
+ `id` bigint(0) UNSIGNED NOT NULL AUTO_INCREMENT COMMENT '自增主键',
+ `server_id` int(0) UNSIGNED NOT NULL DEFAULT 0 COMMENT '服ID',
+ `group_id` int(0) UNSIGNED NOT NULL DEFAULT 0 COMMENT '组id',
+ `user_id` int(0) UNSIGNED NOT NULL DEFAULT 0 COMMENT '用户id',
+ `old_val` int(0) UNSIGNED NOT NULL DEFAULT 0 COMMENT '旧值',
+ `new_val` int(0) UNSIGNED NOT NULL DEFAULT 0 COMMENT '新值',
+ `op_type` int(0) UNSIGNED NOT NULL DEFAULT 0 COMMENT '操作类型\r\n100=时间恢复\r\n101=初始化体力\r\n102=体力瓶\r\n103=进入关卡\r\n104=扫荡关卡\r\n105=GM添加\r\n106=重置',
+ `last_time` bigint(0) UNSIGNED NOT NULL DEFAULT 0 COMMENT '上次恢复时间',
+ `create_time` bigint(0) UNSIGNED NOT NULL DEFAULT 0 COMMENT '操作时间',
+ PRIMARY KEY (`id`) USING BTREE,
+ INDEX `idx_user`(`user_id`, `create_time`) USING BTREE,
+ INDEX `idx_dt`(`create_time`) USING BTREE
+) ENGINE = InnoDB AUTO_INCREMENT = 1 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_general_ci COMMENT = '用户体力变化流水' ROW_FORMAT = Dynamic;
+

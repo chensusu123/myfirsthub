@@ -1,6 +1,7 @@
 package collect
 
 import (
+	"context"
 	"maze_game_server/common/constdef"
 	"maze_game_server/pb/common/MazeCommon"
 	"maze_game_server/pb/server/MazeCollectCache"
@@ -66,8 +67,9 @@ func Map2Common(m map[int32]int64) (items []*MazeCommon.MazeItem) {
 }
 
 // 获取用户可领取道具和留存道具
-func GetUserItemsAndRemains(logger fklog.FKLogI, items []*MazeCollectCache.ItemInfo) (
+func GetUserItemsAndRemains(ctx context.Context, items []*MazeCollectCache.ItemInfo) (
 	userItems []*MazeCommon.MazeItem, remainItems []*MazeCollectCache.ItemInfo) {
+	logger := fklog.ContextAppLogger(ctx)
 	mergeItems := make(map[int32]int64) // 合并相同道具
 	for _, item := range items {
 		id := item.GetId()
@@ -97,7 +99,7 @@ func GetUserItemsAndRemains(logger fklog.FKLogI, items []*MazeCollectCache.ItemI
 		return userItems[i].GetItemId() < userItems[j].GetItemId()
 	})
 
-	logger.InfoWF("GetUserItems end",
+	logger.CtxInfo(ctx, "GetUserItems end",
 		zap.Any("inItems", items), zap.Any("userItems", userItems), zap.Any("remainItems", remainItems))
 	return
 }

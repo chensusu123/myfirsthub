@@ -8,10 +8,10 @@ package equipaassemblegm
 
 import (
 	"bytes"
+	"context"
 	"fmt"
 	"time"
 
-	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fklog"
 	"maze_game_server/common/constdef"
 	"maze_game_server/io/redis/dollassembleredis"
 	"maze_game_server/io/redis/mazecalcattrredis"
@@ -19,15 +19,18 @@ import (
 	"maze_game_server/pb/server/MazeEquipCache"
 )
 
-func PackAssembleHeader(logger fklog.FKLogI, userId uint64, as *MazeEquipCache.MazeAssembleDb) (header string, err error) {
+var EndLine = "-----------------------------------------------------------\n"
+
+func PackAssembleHeader(ctx context.Context, userId uint64, as *MazeEquipCache.MazeAssembleDb) (header string, err error) {
+	// logger := fklog.ContextAppLogger(ctx)
 	var headerBs bytes.Buffer
 	headerBs.WriteString("基本信息:\n")
-	dollLv, err := mazeuserlevelredis.GetUserLevel(logger, userId)
+	dollLv, err := mazeuserlevelredis.GetUserLevel(ctx, userId)
 	if err != nil {
 		return
 	}
 	headerBs.WriteString(fmt.Sprintf("迷宫等级:%d\n", dollLv))
-	force, err := mazecalcattrredis.GetMazeForce(logger, userId)
+	force, err := mazecalcattrredis.GetMazeForce(ctx, userId)
 	if err != nil {
 		return
 	}
@@ -38,7 +41,7 @@ func PackAssembleHeader(logger fklog.FKLogI, userId uint64, as *MazeEquipCache.M
 	var fields []string
 	fields = append(fields, constdef.AssemblePrefixCurAssembleSuitIndex,
 		constdef.AssemblePrefixSwitchSuitTime, constdef.AssemblePrefixInitEquip)
-	s, e := dollassembleredis.GetDollAssembleMetaInfo(logger, userId, fields...)
+	s, e := dollassembleredis.GetDollAssembleMetaInfo(ctx, userId, fields...)
 	if e == nil {
 		initTime := time.Unix(s.GetSwitchTime(), 0).Format("2006-01-02 15:04:05")
 		var stateName string = "未初始化"

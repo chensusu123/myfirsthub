@@ -1,9 +1,11 @@
 package mazecommonvalue
 
 import (
+	"context"
+	"time"
+
 	"maze_game_server/pb/common/MazeGame"
 	"maze_game_server/usecase/online"
-	"time"
 
 	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fklog"
 	"go.uber.org/zap"
@@ -20,6 +22,7 @@ var commonMap = map[int32]struct{}{
 	int32(MazeGame.MAZE_DATA_TYPE_ENUM_MAZE_DATA_TYPE_EXP_INCOME):  {},
 	int32(MazeGame.MAZE_DATA_TYPE_ENUM_MAZE_DATA_TYPE_EQUIP_POINT): {},
 	int32(MazeGame.MAZE_DATA_TYPE_ENUM_MAZE_DATA_TYPE_DIAMOND):     {},
+	int32(MazeGame.MAZE_DATA_TYPE_ENUM_MAZE_DATA_TYPE_PASS_VALUE):  {},
 }
 
 type CommonValueStruct struct {
@@ -29,7 +32,8 @@ type CommonValueStruct struct {
 	Session      string
 }
 
-func SendCommonValueIdPack(logger fklog.FKLogI, userId uint64, commonList []*CommonValueStruct) (err error) {
+func SendCommonValueIdPack(ctx context.Context, userId uint64, commonList []*CommonValueStruct) (err error) {
+	logger := fklog.ContextAppLogger(ctx)
 	commonValuePack := &MazeGame.MazeCommonValueChgID{
 		CommonValueList: make([]*MazeGame.MazeCommonValueChg, 0),
 	}
@@ -54,11 +58,11 @@ func SendCommonValueIdPack(logger fklog.FKLogI, userId uint64, commonList []*Com
 		commonValuePack.CommonValueList = append(commonValuePack.CommonValueList, cv)
 	}
 
-	logger.InfoWF("sendCommonValueIdPack send client with", zap.Any("commonList", commonList), zap.Any("commonValuePack", commonValuePack))
-	return online.Push(logger, uint64(userId), 10478, commonValuePack)
+	logger.CtxInfo(ctx, "sendCommonValueIdPack send client with", zap.Any("commonList", commonList), zap.Any("commonValuePack", commonValuePack))
+	return online.ClusterPush(ctx, uint64(userId), 10478, commonValuePack)
 }
 
-func MakeCommonValueList(logger fklog.FKLogI, commonValue map[int32]int64, commonReason map[int32]int32, commonSession map[int32]string) (commonList []*CommonValueStruct) {
+func MakeCommonValueList(ctx context.Context, commonValue map[int32]int64, commonReason map[int32]int32, commonSession map[int32]string) (commonList []*CommonValueStruct) {
 	commonList = make([]*CommonValueStruct, 0)
 	for k, v := range commonValue {
 		commonList = append(commonList, &CommonValueStruct{
@@ -71,16 +75,17 @@ func MakeCommonValueList(logger fklog.FKLogI, commonValue map[int32]int64, commo
 	return
 }
 
-func MakeCommonValueExtra(logger fklog.FKLogI, userId uint64, level int64, force int64) (extra int64, err error) {
-	moneyAddEquip, err := GetMoneyExtraAdditionEquip(logger, userId)
+func MakeCommonValueExtra(ctx context.Context, userId uint64, level int64, force int64) (extra int64, err error) {
+	logger := fklog.ContextAppLogger(ctx)
+	moneyAddEquip, err := GetMoneyExtraAdditionEquip(ctx, userId)
 	if err != nil {
-		logger.ErrorWF("MakeCommonValueExtra GetExtraAdditionEquip fail", zap.Error(err))
+		logger.CtxError(ctx, "MakeCommonValueExtra GetExtraAdditionEquip fail", zap.Error(err))
 		return
 	}
 
 	// moneyAddForce, _, _, err := GetExtraAdditionForce(logger, userId, level, force)
 	// if err != nil {
-	// 	logger.ErrorWF("MakeCommonValueExtra GetExtraAdditionForce fail", zap.Error(err))
+	// 	logger.CtxError(ctx,"MakeCommonValueExtra GetExtraAdditionForce fail", zap.Error(err))
 	// 	return
 	// }
 
@@ -89,16 +94,17 @@ func MakeCommonValueExtra(logger fklog.FKLogI, userId uint64, level int64, force
 	return
 }
 
-func MakeCommonValueExtraExp(logger fklog.FKLogI, userId uint64, level int64, force int64) (extra int64, err error) {
-	expAddEquip, err := GetExpExtraAdditionEquip(logger, userId)
+func MakeCommonValueExtraExp(ctx context.Context, userId uint64, level int64, force int64) (extra int64, err error) {
+	logger := fklog.ContextAppLogger(ctx)
+	expAddEquip, err := GetExpExtraAdditionEquip(ctx, userId)
 	if err != nil {
-		logger.ErrorWF("MakeCommonValueExtraExp GetExpExtraAdditionEquip fail", zap.Error(err))
+		logger.CtxError(ctx, "MakeCommonValueExtraExp GetExpExtraAdditionEquip fail", zap.Error(err))
 		return
 	}
 
 	// expAddForce, _, _, err := GetExtraAdditionForce(logger, userId, level, force)
 	// if err != nil {
-	// 	logger.ErrorWF("MakeCommonValueExtra GetExtraAdditionForce fail", zap.Error(err))
+	// 	logger.CtxError(ctx,"MakeCommonValueExtra GetExtraAdditionForce fail", zap.Error(err))
 	// 	return
 	// }
 
@@ -107,7 +113,7 @@ func MakeCommonValueExtraExp(logger fklog.FKLogI, userId uint64, level int64, fo
 	return
 }
 
-func MakeAllCommonValue(logger fklog.FKLogI, userId uint64, level, exp, expMax, force, money, extra, extraExp, diamond int64, session string) (commonList []*CommonValueStruct) {
+func MakeAllCommonValue(ctx context.Context, userId uint64, level, exp, expMax, force, money, extra, extraExp, diamond, passValue int64, session string) (commonList []*CommonValueStruct) {
 	commonList = make([]*CommonValueStruct, 0)
 
 	lvStruct := &CommonValueStruct{
@@ -166,7 +172,14 @@ func MakeAllCommonValue(logger fklog.FKLogI, userId uint64, level, exp, expMax, 
 		Session: session,
 	}
 
+	passValueStruct := &CommonValueStruct{
+		DataType:     int32(MazeGame.MAZE_DATA_TYPE_ENUM_MAZE_DATA_TYPE_PASS_VALUE),
+		DataValueInt: passValue,
+		// ChgReason:    int32(1),
+		Session: session,
+	}
+
 	// commonList = append(commonList, lvStruct, expStruct, expMaxStruct, forceStruct, moneyStruct, extraStruct)
-	commonList = append(commonList, lvStruct, expStruct, extraStruct, expMaxStruct, moneyStruct, diamondStruct, forceStruct)
+	commonList = append(commonList, lvStruct, expStruct, extraStruct, expMaxStruct, moneyStruct, diamondStruct, forceStruct, passValueStruct)
 	return
 }

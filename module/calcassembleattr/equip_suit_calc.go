@@ -7,16 +7,19 @@
 package calcassembleattr
 
 import (
+	"context"
 	"errors"
 
-	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fklog"
-	"go.uber.org/zap"
 	"maze_game_server/common/function/assemble"
 	"maze_game_server/config/GMazeEquipSuiteInfoV8Cfg"
 	"maze_game_server/pb/server/MazeEquipCache"
+
+	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fklog"
+	"go.uber.org/zap"
 )
 
-func CalcEquipSuit(logger fklog.FKLogI, equips []*MazeEquipCache.MazeEquipPosInfo) (suitMgr *EquipSuitMgr, err error) {
+func CalcEquipSuit(ctx context.Context, equips []*MazeEquipCache.MazeEquipPosInfo) (suitMgr *EquipSuitMgr, err error) {
+	logger := fklog.ContextAppLogger(ctx)
 	suitMgr = NewEquipSuitMgr()
 	for _, equipPos := range equips {
 		if !assemble.IsAssembleEquip(equipPos) {
@@ -28,7 +31,7 @@ func CalcEquipSuit(logger fklog.FKLogI, equips []*MazeEquipCache.MazeEquipPosInf
 			if suitInfo == nil {
 				desV8Row := GMazeEquipSuiteInfoV8Cfg.GetMazeEquipSuiteInfoV8Config(suitId)
 				if desV8Row == nil {
-					logger.ErrorWF("CalcEquipSuit cannot find cfg", zap.String("sheet", GMazeEquipSuiteInfoV8Cfg.GetConfigDesc()))
+					logger.CtxError(ctx, "CalcEquipSuit cannot find cfg", zap.String("sheet", GMazeEquipSuiteInfoV8Cfg.GetConfigDesc()))
 					return nil, errors.New("cannot find suit cfg")
 				}
 				suitInfo = suitMgr.InitSuit(suitId, desV8Row.Max_num)

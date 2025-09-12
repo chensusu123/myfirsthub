@@ -1,7 +1,7 @@
 package tempbuffservice
 
 import (
-	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fklog"
+	"context"
 	"maze_game_server/model/tempbuffmodel"
 	"maze_game_server/pb/common/MazeCommon"
 )
@@ -9,37 +9,45 @@ import (
 // TempBuffService 临时buff服务可用接口
 type TempBuffService interface {
 	// GetMazeTempBuffList 获取临时buff列表
-	GetMazeTempBuffList(logger fklog.FKLogI, userId uint64, stageId int32) ([]*BuffInfo, error)
+	GetMazeTempBuffList(ctx context.Context, userId uint64, barrierId int32) ([]*BuffInfo, error)
 
 	// GetOptionalTempBuffList 获取可选临时buff列表
-	GetOptionalTempBuffList(logger fklog.FKLogI, userId uint64, stageId, level, buffType, areaId, areaIndex int32) (*OptionalBuffInfo, error)
+	GetOptionalTempBuffList(ctx context.Context, userId uint64, barrierId, level, buffType, areaId, areaIndex, attrMask int32) (*OptionalBuffInfo, error)
 
 	// RefreshOptionalMazeTempBuffList 刷新可选临时buff列表
-	RefreshOptionalMazeTempBuffList(logger fklog.FKLogI, userId uint64, stageId, level, areaId int32, cost []*MazeCommon.MazeItem) (*OptionalBuffInfo, error)
+	RefreshOptionalMazeTempBuffList(ctx context.Context, userId uint64, barrierId, level, areaId, attrMask int32, cost []*MazeCommon.MazeItem) (*OptionalBuffInfo, error)
 
 	// SelectMazeTempBuffRQ 选择临时buff
-	SelectMazeTempBuff(logger fklog.FKLogI, userId uint64, stageId, level, buffId, buffType int32) ([]*BuffInfo, error)
+	SelectMazeTempBuff(ctx context.Context, userId uint64, barrierId, level, buffId, buffType int32) ([]*BuffInfo, error)
 
 	// DelTempBuff 删除所有临时buff
-	DelTempBuff(logger fklog.FKLogI, userID uint64, stageId int32) error
+	DelTempBuff(ctx context.Context, userID uint64, barrierId int32) error
 
 	// GetTempBuffAttr 获取临时buff的实际属性
-	GetTempBuffAttr(logger fklog.FKLogI, userID uint64, stageId int32) (map[int32]int64, error)
+	GetTempBuffAttr(ctx context.Context, userID uint64, barrierId int32) (map[int32]int64, error)
 
 	// 进入关卡前检查关卡的buff情况，因为可能会有清除部分buff的情况
-	CheckTempBuff(logger fklog.FKLogI, userId uint64, barrierId int32) (*tempbuffmodel.TempBuffInfoModel, error)
+	CheckTempBuff(ctx context.Context, userId uint64, barrierId int32, stage int32) (*tempbuffmodel.TempBuffInfoModel, error)
 
 	// 获取临时buff信息
-	GetTempBuffInfo(logger fklog.FKLogI, userID uint64, stageId int32) (*tempbuffmodel.TempBuffInfoModel, error)
+	GetTempBuffInfo(ctx context.Context, userID uint64, barrierId int32) (*tempbuffmodel.TempBuffInfoModel, error)
 
 	// 获取buff权重
-	GetOptionBuffWeightInfo(logger fklog.FKLogI, buffId int32, selectedBuffMap, selectedBuffGroupMap map[int32]int32) *WeightInfo
+	GetOptionBuffWeightInfo(ctx context.Context, buffId int32, selectedBuffMap, selectedBuffGroupMap map[int32]int32, optionalMap map[int32]struct{}, attrMask int32) *WeightInfo
 
 	// 根据选择的buff获取全部buff属性
-	GetTotalBuff(logger fklog.FKLogI, buffList []*tempbuffmodel.SelectedBuffInfo) (map[int32]int64, []*tempbuffmodel.TotalBuffInfo)
+	GetTotalBuff(ctx context.Context, buffList []*tempbuffmodel.SelectedBuffInfo) (map[int32]int64, []*tempbuffmodel.TotalBuffInfo)
 
 	// 清除通过的区域
-	DelPassArea(logger fklog.FKLogI, userID uint64, stageId int32) error
+	DelPassArea(ctx context.Context, userID uint64, barrierId int32) error
+
+	// 获取已选择的词条组列表
+	GetTempBuffGroupList(ctx context.Context, userId uint64, barrierId int32) ([]*GroupInfo, error)
+
+	// 增加能量点数 能量点数满了则推buff列表给客户端
+	AddTmpBuffEnergy(ctx context.Context, userID uint64, barrierID, areaID, areaIndex int32, energyCount int32) error
+	// 清理未通过的区域技能点数累计
+	ClearBuffCountingPoints(ctx context.Context, userID uint64, barrierID int32, stageID int32) error
 }
 
 // GlobalTempBuffService 临时buff可用全局唯一对象
@@ -68,6 +76,7 @@ type OptionalBuffInfo struct {
 	IsRefresh      int32       // 是否可以刷新 0=不可以 1=可以
 	Cost           []*Item     // 刷新消耗
 	SelectBuffTime int32       // 选择buff时间配置
+	Level          int32
 }
 type Item struct {
 	ItemId    int32  //物品Id

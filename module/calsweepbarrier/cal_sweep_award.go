@@ -1,23 +1,28 @@
 package calsweepbarrier
 
 import (
+	"context"
 	"errors"
 	"fmt"
+	"maze_game_server/common/tradeno"
 	"maze_game_server/model/equipdropmodel"
 	"maze_game_server/services/equipdropservice"
+	"maze_game_server/services/itemservice"
 	"strings"
 
 	"maze_game_server/common/constdef"
 	"maze_game_server/common/function/addequip"
-	"maze_game_server/common/function/gentradeno"
+	"maze_game_server/common/function/flowutil"
 	"maze_game_server/common/function/itemutil"
 	"maze_game_server/common/function/packtopb/equiptoitem"
 	"maze_game_server/config/GMazeBarriesV8Cfg"
 	"maze_game_server/config/GMazeBrushFoeV8Cfg"
+	"maze_game_server/config/GMazeConfigV8Cfg"
 	"maze_game_server/config/GMazeFoeV8Cfg"
 	"maze_game_server/config/GMazeShopV8Cfg"
 	"maze_game_server/io/kafka/mazebarrieruserkafka"
 	"maze_game_server/io/kafka/mazeuserlevelkafka"
+	"maze_game_server/io/redis/mazecalcattrredis"
 	"maze_game_server/module/mazebarrier"
 	"maze_game_server/module/mazecommonvalue"
 	"maze_game_server/module/mazeuserinfo"
@@ -30,30 +35,21 @@ import (
 	"google.golang.org/protobuf/proto"
 )
 
-func CalUserSweepBarrierAward(logger fklog.FKLogI, uid uint64, barrierId int32, header *Common.PacketHeader) (awardItem []*MazeCommon.MazeItem, rareItem []*MazeCommon.MazeItem, err error) {
-
-	userInfo, err := mazeuserinfo.GetUserInfoV2(logger, uid)
-	if err != nil {
-		logger.ErrorWF("CalUserSweepBarrierAward GetUserInfoV2 fail", zap.Error(err))
-		return
-	}
-
-	//稀有材料集合
-	rareMap := make(map[int32]struct{})
-	barrierCfg := GMazeBarriesV8Cfg.Get(barrierId)
+// 获取扫荡关卡的奖励 equipItem 通过装备奖励 ohterItem 物品奖励 expItem 经验奖励 equipNum 打怪掉落装备数量
+func GetSweepBarrierAward(ctx context.Context, uid uint64, barrierId int32) (equipItem map[int32]int32, otherItem map[int32]int64, expItem *MazeCommon.MazeItem, equipNum int32, err error) {
+	logger := fklog.ContextAppLogger(ctx)
+	barrierCfg := GMazeBarriesV8Cfg.GetWithCtx(ctx, barrierId)
 	if barrierCfg == nil {
-		logger.ErrorWF("CalUserSweepBarrierAward get barrier cfg fail", zap.Any("barrierId", barrierId))
+		logger.CtxError(ctx, "GetSweepBarrierAward get barrier cfg fail", zap.Any("barrierId", barrierId))
 		err = errors.New("barrier cfg nil")
 		return
 	}
-	for _, v := range barrierCfg.Rare_items_show {
-		rareMap[v] = struct{}{}
-	}
+
 	//获取关卡所有怪物集合
 	foeCountMap := make(map[int32]int32)
 	allFoe := GMazeBrushFoeV8Cfg.GetAll()
 	if len(allFoe) == 0 {
-		logger.ErrorWF("CalUserSweepBarrierAward barrier foe empty", zap.Any("barrierId", barrierId))
+		logger.CtxError(ctx, "GetSweepBarrierAward barrier foe empty", zap.Any("barrierId", barrierId))
 		err = errors.New("foe empty")
 		return
 	}
@@ -73,14 +69,14 @@ func CalUserSweepBarrierAward(logger fklog.FKLogI, uid uint64, barrierId int32, 
 		}
 	}
 
-	moneyExtra, err := mazecommonvalue.GetMoneyExtraAdditionEquip(logger, uid)
+	moneyExtra, err := mazecommonvalue.GetMoneyExtraAdditionEquip(ctx, uid)
 	if err != nil {
-		logger.ErrorWF("CalUserSweepBarrierAward GetMoneyExtraAdditionEquip fail", zap.Error(err))
+		logger.CtxError(ctx, "GetSweepBarrierAward GetMoneyExtraAdditionEquip fail", zap.Error(err))
 		return
 	}
-	expExtra, err := mazecommonvalue.GetExpExtraAdditionEquip(logger, uid)
+	expExtra, err := mazecommonvalue.GetExpExtraAdditionEquip(ctx, uid)
 	if err != nil {
-		logger.ErrorWF("CalUserSweepBarrierAward GetExpExtraAdditionEquip fail", zap.Error(err))
+		logger.CtxError(ctx, "GetSweepBarrierAward GetExpExtraAdditionEquip fail", zap.Error(err))
 		return
 	}
 
@@ -88,86 +84,133 @@ func CalUserSweepBarrierAward(logger fklog.FKLogI, uid uint64, barrierId int32, 
 	foeExpMap := make(map[int32]int64)
 	foeMoneyMap := make(map[int32]int64)
 	foeEquipPointMap := make(map[int32]int64)
+	var addItem1, addItem2 int32
 	var addExp, addMoney, addEquipPoint int64
 	for foeId, num := range foeCountMap {
-		foeCfg := GMazeFoeV8Cfg.Get(foeId)
+		foeCfg := GMazeFoeV8Cfg.GetWithCtx(ctx, foeId)
 		if foeCfg == nil {
-			logger.ErrorWF("CalUserSweepBarrierAward get foe cfg fail", zap.Any("foeId", foeId))
+			logger.CtxError(ctx, "GetSweepBarrierAward get foe cfg fail", zap.Any("foeId", foeId))
 			err = errors.New("foe cfg nil")
 			return
 		}
-		foeExpMap[foeId] = foeCfg.Drop_exp_num[int32(userInfo.Level)]
-		foeMoneyMap[foeId] = foeCfg.Drop_coin_num[int32(userInfo.Level)]
-		foeEquipPointMap[foeId] = foeCfg.Drop_equip_score_num[int32(userInfo.Level)]
-		addExp += (foeCfg.Drop_exp_num[int32(userInfo.Level)] + expExtra) * int64(num)
-		addMoney += (foeCfg.Drop_coin_num[int32(userInfo.Level)] + moneyExtra) * int64(num)
-		addEquipPoint += foeCfg.Drop_equip_score_num[int32(userInfo.Level)] * int64(num)
+		foeExpMap[foeId] = int64(foeCfg.Drop_exp_num)
+		foeMoneyMap[foeId] = int64(foeCfg.Drop_coin_num)
+		foeEquipPointMap[foeId] = int64(foeCfg.Drop_equip_score_num)
+		addExp += (int64(foeCfg.Drop_exp_num) + expExtra) * int64(num)
+		addMoney += (int64(foeCfg.Drop_coin_num) + moneyExtra) * int64(num)
+		addEquipPoint += int64(foeCfg.Drop_equip_score_num) * int64(num)
+		addItem1 += foeCfg.Drop_item1_score_num * num
+		addItem2 += foeCfg.Drop_item2_score_num * num
 	}
 
 	// 计算加成 由于没有武力值 暂时没有额外加成
-	addItems, equipMap, err := mazebarrier.GetBarrierPassAward(logger, barrierId)
+	// 获取关卡宝箱掉落奖励 包含装备和物品
+	addItems, equipMap, err := mazebarrier.GetBarrierPassAward(ctx, barrierId)
 	if err != nil {
-		logger.ErrorWF("CalUserSweepBarrierAward GetBarrierPassAward fail", zap.Any("barrierId", barrierId))
+		logger.CtxError(ctx, "GetSweepBarrierAward GetBarrierPassAward fail", zap.Any("barrierId", barrierId))
 		return
 	}
 
-	//取存储的装备分 加上扫荡新增的分数 计算掉落的装备
-	calLv := equipdropservice.GlobalEquipDropService.GetMazeBarrierLv(int32(userInfo.Level), barrierId)
-	//shopInfo, err := calequipsequence.GetMazeShopInfo(logger, uid, calLv, barrierId)
-	//if err != nil {
-	//	logger.ErrorWF("CalUserSweepBarrierAward GetMazeShopInfo fail", zap.Any("barrierId", barrierId))
-	//	return
-	//}
-	shopCfg := GMazeShopV8Cfg.Get(calLv)
-	if shopCfg == nil {
-		logger.ErrorWF("CalUserSweepBarrierAward get shop cfg fail", zap.Any("calLv", calLv))
-		err = errors.New("shop cfg nil")
-		return
-	}
-
-	dropInfo, err := equipdropmodel.NewEquipSpecialDropModel(logger, uid)
+	dropInfo, err := equipdropmodel.NewEquipSpecialDropModel(ctx, uid)
 	if err != nil {
-		logger.ErrorWF("CalUserSweepBarrierAward GetEquipSpecialDropModel fail", zap.Uint64("uid", uid))
+		logger.CtxError(ctx, "GetSweepBarrierAward GetEquipSpecialDropModel fail", zap.Uint64("uid", uid))
 		return
 	}
 
 	//根据装备积分额外增加装备
 	newTotal := dropInfo.EquipPoints + int32(addEquipPoint)
 	dropInfo.EquipPoints = newTotal % barrierCfg.Need_equip_score
-	equipNum := newTotal / barrierCfg.Need_equip_score
+	equipNum = newTotal / barrierCfg.Need_equip_score
 
-	//addEquipMap, err := calequipsequence.GetNewEquip(logger, uid, barrierId, calLv, equipNum)
-	//if err != nil {
-	//	logger.ErrorWF("CalUserSweepBarrierAward GetNewEquip fail", zap.Error(err), zap.Any("barrier", barrierId), zap.Any("calLv", calLv))
-	//	return
-	//}
-	addEquipMap, err := equipdropservice.GlobalEquipDropService.GetNewEquip(logger, uid, calLv, barrierId, equipNum)
+	// 掉落道具一
+	item1Num := addItem1 / barrierCfg.Need_item1_score
+	if item1Num > 0 {
+		// id从通用配置获取
+		itemConfig := GMazeConfigV8Cfg.GetWithCtx(ctx, constdef.MazeCfgId901)
+		for _, v := range itemConfig.Value_map {
+			addItems[int32(v)] += int64(item1Num) * int64(barrierCfg.Item1_nums_per_pile)
+		}
+	}
+
+	// 掉落道具二
+	item2Num := addItem2 / barrierCfg.Need_item2_score
+	if item2Num > 0 {
+		// id从通用配置获取
+		itemConfig := GMazeConfigV8Cfg.GetWithCtx(ctx, constdef.MazeCfgId902)
+		for _, v := range itemConfig.Value_map {
+			addItems[int32(v)] += int64(item2Num) * int64(barrierCfg.Item2_nums_per_pile)
+		}
+	}
+
+	equipItem = equipMap
+
+	// 经验奖励
+	if addExp > 0 {
+		expItem = &MazeCommon.MazeItem{ItemId: proto.Int32(constdef.MazeCommonItemExp), Count: proto.Int64(addExp)}
+	}
+	// 金币奖励
+	if addMoney > 0 {
+		addItems[constdef.MazeCommonItemCoin] += addMoney
+	}
+
+	otherItem = addItems
+	return
+}
+
+// 发送扫荡奖励
+func CalUserSweepBarrierAward(ctx context.Context, uid uint64, barrierId int32, header *Common.PacketHeader) (awardItem []*MazeCommon.MazeItem, rareItem []*MazeCommon.MazeItem, err error) {
+	logger := fklog.ContextAppLogger(ctx)
+	// 获取扫荡奖励
+	equipItem, addItems, expItem, equipNum, err := GetSweepBarrierAward(ctx, uid, barrierId)
 	if err != nil {
-		logger.ErrorWF("CalUserSweepBarrierAward GetNewEquip fail", zap.Error(err), zap.Any("barrier", barrierId), zap.Any("calLv", calLv))
+		logger.CtxError(ctx, "CalUserSweepBarrierAward GetSweepBarrierAward fail", zap.Error(err))
 		return
 	}
 
-	for k, v := range addEquipMap {
-		equipMap[k] += v
+	otherItem := make([]*MazeCommon.MazeItem, 0)
+	if len(addItems) > 0 {
+		awardItems := itemutil.Map2Common(addItems)
+		otherItem = append(otherItem, awardItems...)
 	}
 
-	//加经验 加钱 加装备
-	if addExp > 0 {
+	// 获取用户信息
+	userInfo, err := mazeuserinfo.GetUserInfoV2(ctx, uid)
+	if err != nil {
+		logger.CtxError(ctx, "CalUserSweepBarrierAward GetUserInfoV2 fail", zap.Error(err))
+		return
+	}
+
+	barrierCfg := GMazeBarriesV8Cfg.GetWithCtx(ctx, barrierId)
+	if barrierCfg == nil {
+		logger.CtxError(ctx, "GetSweepBarrierAward get barrier cfg fail", zap.Any("barrierId", barrierId))
+		err = errors.New("barrier cfg nil")
+		return
+	}
+
+	//稀有材料集合
+	rareMap := make(map[int32]struct{})
+	for _, v := range barrierCfg.Rare_items_show {
+		rareMap[v] = struct{}{}
+	}
+
+	// 发送经验
+	if expItem != nil {
+		addExp := expItem.GetCount()
 		oldLevel := userInfo.Level
 		oldExp := userInfo.TotalExp
-		err = userInfo.AddExp(int64(addExp))
+		err = userInfo.AddExp(ctx, int64(addExp))
 		if err != nil {
-			logger.ErrorWF("CalUserSweepBarrierAward addExp fail", zap.Any("addExp", addExp))
+			logger.CtxError(ctx, "CalUserSweepBarrierAward addExp fail", zap.Any("addExp", addExp))
 			return
 		}
 		newLevel := userInfo.Level
-		err = mazeuserinfo.SetUserInfoV2(logger, uid, userInfo)
+		err = mazeuserinfo.SetUserInfoV2(ctx, uid, userInfo)
 		if err != nil {
-			logger.ErrorWF("CalUserSweepBarrierAward SetUserInfoV2 fail", zap.Error(err))
+			logger.CtxError(ctx, "CalUserSweepBarrierAward SetUserInfoV2 fail", zap.Error(err))
 			return
 		}
 
-		mazecommonvalue.HandleUserLevelExpChg(logger, uid, userInfo.Level, userInfo.Exp, header.GetSession())
+		mazecommonvalue.HandleUserLevelExpChg(ctx, uid, userInfo.Level, userInfo.Exp, header.GetSession())
 		defer func() {
 			if oldLevel != newLevel {
 				levelRecord := &mazeuserlevelkafka.MazeUserLevelRecord{
@@ -177,7 +220,7 @@ func CalUserSweepBarrierAward(logger fklog.FKLogI, uid uint64, barrierId int32, 
 					NewLevel:    int32(newLevel),
 					NewTotalExp: int32(userInfo.TotalExp),
 				}
-				mazeuserlevelkafka.PushMazeLevelRecord(logger, levelRecord)
+				mazeuserlevelkafka.PushMazeLevelRecord(ctx, levelRecord)
 			}
 		}()
 	}
@@ -185,40 +228,23 @@ func CalUserSweepBarrierAward(logger fklog.FKLogI, uid uint64, barrierId int32, 
 	awardItem = make([]*MazeCommon.MazeItem, 0)
 	rareItem = make([]*MazeCommon.MazeItem, 0)
 
-	if addExp > 0 {
-		awardItem = append(awardItem, &MazeCommon.MazeItem{ItemId: proto.Int32(constdef.MazeCommonItemExp), Count: proto.Int64(addExp)})
+	if expItem != nil {
+		awardItem = append(awardItem, expItem)
 	}
 
-	tradeNo := gentradeno.GetTradeNum()
-	addItems[constdef.MazeCommonItemCoin] += addMoney
-	if len(addItems) > 0 {
-		awardItems := itemutil.Map2Common(addItems)
-		//697	UN_CGK_COMMON_BILL_TYPE_697	迷宫扫荡
-		errInfo := gentradeno.AddItemEx(logger, uid, 697, tradeNo, header, awardItems...)
-		if errInfo != nil {
-			logger.ErrorWF("CalUserSweepBarrierAward AddItemEx fail", zap.Any("errInfo", errInfo), zap.Any("awardItems", awardItems))
-		} else {
+	tradeNo := tradeno.GetTradeNum()
 
-			// queryItems, errInfo2 := gentradeno.QueryItems(logger, uid, &MazeCommon.MazeItem{ItemId: proto.Int32(constdef.MazeCommonItemCoin)}, &MazeCommon.MazeItem{ItemId: proto.Int32(constdef.MazeCommonItemDiamond)})
-			// if errInfo2 == nil {
-			// 	commonList := make([]*mazecommonvalue.CommonValueStruct, 0)
-			// 	for _, v := range queryItems {
-			// 		if v.GetItemId() == constdef.MazeCommonItemCoin {
-			// 			coinCommon := mazecommonvalue.MakeCommonValueList(logger, map[int32]int64{
-			// 				int32(MazeGame.MAZE_DATA_TYPE_ENUM_MAZE_DATA_TYPE_MONEY): v.GetCount()},
-			// 				map[int32]int32{}, map[int32]string{})
-			// 			commonList = append(commonList, coinCommon...)
-			// 		} else if v.GetItemId() == constdef.MazeCommonItemDiamond {
-			// 			diamondCommon := mazecommonvalue.MakeCommonValueList(logger, map[int32]int64{
-			// 				int32(MazeGame.MAZE_DATA_TYPE_ENUM_MAZE_DATA_TYPE_DIAMOND): v.GetCount()},
-			// 				map[int32]int32{}, map[int32]string{})
-			// 			commonList = append(commonList, diamondCommon...)
-			// 		}
-			// 	}
-			// 	mazecommonvalue.SendCommonValueIdPack(logger, uid, commonList)
-			// }
+	// 发送物品
+	if len(otherItem) > 0 {
+		//697	UN_CGK_COMMON_BILL_TYPE_697	迷宫扫荡
+
+		awardItems := itemutil.Map2ItemInfo(addItems)
+		errInfo := itemservice.GlobalItemService.AddItem(ctx, uid, itemservice.ItemOpTypeSweep, tradeNo, awardItems...)
+		if errInfo != nil {
+			logger.CtxError(ctx, "CalUserSweepBarrierAward AddItemEx fail", zap.Any("errInfo", errInfo), zap.Any("otherItem", otherItem))
 		}
-		for _, v := range awardItems {
+
+		for _, v := range otherItem {
 			_, ok := rareMap[v.GetItemId()]
 			if ok {
 				rareItem = append(rareItem, v)
@@ -227,17 +253,39 @@ func CalUserSweepBarrierAward(logger fklog.FKLogI, uid uint64, barrierId int32, 
 			}
 		}
 	}
-	if len(equipMap) > 0 {
-		rs, err := addequip.AddEquipToBag(logger, uid, int32(MazeEquipSvr.ENUM_EQUIP_BAG_OP_TYPE_MAZE_EQUIP_SWEEP_AWARD), tradeNo, equipMap)
+
+	//取存储的装备分 加上扫荡新增的分数 计算掉落的装备
+	calLv := equipdropservice.GlobalEquipDropService.GetMazeBarrierLv(ctx, int32(userInfo.Level), barrierId)
+	shopCfg := GMazeShopV8Cfg.GetWithCtx(ctx, calLv)
+	if shopCfg == nil {
+		logger.CtxError(ctx, "GetSweepBarrierAward get shop cfg fail", zap.Any("calLv", calLv))
+		err = errors.New("shop cfg nil")
+		return
+	}
+
+	addEquipMap, err := equipdropservice.GlobalEquipDropService.GetNewEquip(ctx, uid, calLv, barrierId, equipNum)
+	if err != nil {
+		logger.CtxError(ctx, "GetSweepBarrierAward GetNewEquip fail", zap.Error(err), zap.Any("barrier", barrierId), zap.Any("calLv", calLv))
+		return
+	}
+
+	// logger.CtxInfo(ctx,"equipMap", zap.Any("equipMap", equipMap))
+	for k, v := range addEquipMap {
+		equipItem[k] += v
+	}
+
+	// 发送装备
+	if len(equipItem) > 0 {
+		rs, err := addequip.AddEquipToBag(ctx, uid, int32(MazeEquipSvr.ENUM_EQUIP_BAG_OP_TYPE_MAZE_EQUIP_SWEEP_AWARD), tradeNo, equipItem)
 		if err != nil {
-			logger.ErrorWF("CalUserSweepBarrierAward addEquipToBag fail", zap.Error(err), zap.Any("optype", int32(MazeEquipSvr.ENUM_EQUIP_BAG_OP_TYPE_MAZE_EQUIP_BOX_AWARD)),
-				zap.Any("tradeNo", tradeNo), zap.Any("addEquip", equipMap))
+			logger.CtxError(ctx, "CalUserSweepBarrierAward addEquipToBag fail", zap.Error(err), zap.Any("optype", int32(MazeEquipSvr.ENUM_EQUIP_BAG_OP_TYPE_MAZE_EQUIP_BOX_AWARD)),
+				zap.Any("tradeNo", tradeNo), zap.Any("addEquip", equipItem))
 		}
 
 		for _, equip := range rs.GetEquipList() {
-			itemEquip, err := equiptoitem.PackEquipToItem(equip)
+			itemEquip, err := equiptoitem.PackEquipToItem(ctx, equip)
 			if err != nil {
-				logger.ErrorWF("CalUserSweepBarrierAward PackEquipToItem fail", zap.Error(err), zap.Any("equip", equip))
+				logger.CtxError(ctx, "CalUserSweepBarrierAward PackEquipToItem fail", zap.Error(err), zap.Any("equip", equip))
 				continue
 			}
 			_, ok := rareMap[itemEquip.GetItemId()]
@@ -249,27 +297,72 @@ func CalUserSweepBarrierAward(logger fklog.FKLogI, uid uint64, barrierId int32, 
 		}
 	}
 
+	attrMap, err := mazecalcattrredis.BatchGetMazeCalcAttr(ctx, uid, []int32{constdef.DollFormulaAttack, constdef.DollFormulaDefend, constdef.DollFormulaBlood})
 	sweepRecord := &mazebarrieruserkafka.MazeBarrierUserGameRecord{
-		UserId:  uid,
-		Barrier: barrierId,
-		GameRet: mazebarrieruserkafka.GameRetSweep,
-		Awards:  getAwards(addItems, equipMap),
+		UserId:         uid,
+		Barrier:        barrierId,
+		GameRet:        mazebarrieruserkafka.GameRetSweep,
+		Awards:         getAwards(ctx, rareItem, awardItem),
+		KillMonsterNum: GetBarrirerMonsterNum(ctx, barrierId),
+		UserData: flowutil.UserType2Flow(constdef.DollFormulaAttack, attrMap[constdef.DollFormulaAttack],
+			constdef.DollFormulaDefend, attrMap[constdef.DollFormulaDefend],
+			constdef.DollFormulaBlood, attrMap[constdef.DollFormulaBlood],
+		),
 	}
 
-	mazebarrieruserkafka.PushMazeBarrierUserRecord(logger, sweepRecord)
+	mazebarrieruserkafka.PushMazeBarrierUserRecord(ctx, sweepRecord)
 
 	return
 }
 
-func getAwards(awardMap map[int32]int64, awardEquip map[int32]int32) string {
+func getAwards(ctx context.Context, awardMap []*MazeCommon.MazeItem, awardEquip []*MazeCommon.MazeItem) string {
 	awardStr := make([]string, 0)
 
-	for k, v := range awardMap {
-		awardStr = append(awardStr, fmt.Sprintf("%d:%d", k, v))
+	for _, v := range awardMap {
+		awardStr = append(awardStr, fmt.Sprintf("%d:%d", v.GetItemId(), v.GetCount()))
 	}
 
-	for k, v := range awardEquip {
-		awardStr = append(awardStr, fmt.Sprintf("%d:%d", k, v))
+	for _, v := range awardEquip {
+		awardStr = append(awardStr, fmt.Sprintf("%d:%d", v.GetItemId(), v.GetCount()))
 	}
 	return strings.Join(awardStr, "_")
+}
+
+func GetBarrirerMonsterNum(ctx context.Context, barrierID int32) (monsterNum int64) {
+	logger := fklog.ContextAppLogger(ctx)
+	logger.CtxInfo(ctx, "GetBarrirerMonsterNum Start",
+		zap.Int32("barrierID", barrierID),
+	)
+
+	defer func() {
+		logger.CtxInfo(ctx, "GetBarrirerMonsterNum End",
+			zap.Int32("barrierID", barrierID),
+			zap.Int64("monsterNum", monsterNum),
+		)
+	}()
+
+	//获取关卡所有怪物集合
+	allFoe := GMazeBrushFoeV8Cfg.GetAll()
+	if len(allFoe) == 0 {
+		logger.CtxError(ctx, "GetBarrirerMonsterNum barrier foe empty", zap.Any("barrierID", barrierID))
+		return
+	}
+
+	for _, cfg := range allFoe {
+		if cfg.Barries_id != barrierID {
+			continue
+		}
+		for _, foe := range cfg.Monsters_id {
+			if foe > 0 {
+				monsterNum += 1
+			}
+		}
+		for foe, num := range cfg.Monsterslist_ids_and_nums {
+			if foe > 0 {
+				monsterNum += int64(num)
+			}
+		}
+	}
+
+	return
 }

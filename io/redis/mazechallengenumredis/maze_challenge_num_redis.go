@@ -17,40 +17,43 @@ func init() {
 	fkconfig.RegisterNameNode("mazechallengenumredis", 21737, gRedis)
 }
 
-func GetUserChallengeNum(logger fklog.FKLogI, userId uint64, dateTime int) (num int, err error) {
+func GetUserChallengeNum(ctx context.Context, userId uint64, dateTime int) (num int, err error) {
+	logger := fklog.ContextAppLogger(ctx)
 	key := fmt.Sprintf("maze:u:%d:date:%d", userId, dateTime)
-	num, err = redis.Int(gRedis.Do(context.TODO(), "get", key))
+	num, err = redis.Int(gRedis.Do(ctx, "get", key))
 	if err == redis.ErrNil {
 		err = nil
-		logger.InfoWF("GetUserChallengeNum nil", zap.String("key", key))
+		logger.CtxInfo(ctx, "GetUserChallengeNum nil", zap.String("key", key))
 		return
 	}
 	if err != nil {
-		logger.ErrorWF("GetUserChallengeNum fail", zap.String("key", key), zap.Error(err))
+		logger.CtxError(ctx, "GetUserChallengeNum fail", zap.String("key", key), zap.Error(err))
 		return
 	}
 
 	return
 }
 
-func AddUserChallengeNum(logger fklog.FKLogI, userId uint64, dateTime int, count int32) (err error) {
+func AddUserChallengeNum(ctx context.Context, userId uint64, dateTime int, count int32) (err error) {
+	logger := fklog.ContextAppLogger(ctx)
 	key := fmt.Sprintf("maze:u:%d:date:%d", userId, dateTime)
-	newCount, err := redis.Int(gRedis.Do(context.TODO(), "incrby", key, count))
+	newCount, err := redis.Int(gRedis.Do(ctx, "incrby", key, count))
 	if err != nil {
-		logger.ErrorWF("AddUserChallengeNum incr fail", zap.String("key", key), zap.Error(err))
+		logger.CtxError(ctx, "AddUserChallengeNum incr fail", zap.String("key", key), zap.Error(err))
 		return
 	}
-	logger.InfoWF("AddUserChallengeNum succ", zap.Any("key", key), zap.Any("count", count), zap.Any("newCount", newCount))
+	logger.CtxInfo(ctx, "AddUserChallengeNum succ", zap.Any("key", key), zap.Any("count", count), zap.Any("newCount", newCount))
 	return
 }
 
-func GMDel(logger fklog.FKLogI, userId uint64, dateTime int) (err error) {
+func GMDel(ctx context.Context, userId uint64, dateTime int) (err error) {
+	logger := fklog.ContextAppLogger(ctx)
 	key := fmt.Sprintf("maze:u:%d:date:%d", userId, dateTime)
-	_, err = redis.Int(gRedis.Do(context.TODO(), "del", key))
+	_, err = redis.Int(gRedis.Do(ctx, "del", key))
 	if err != nil {
-		logger.ErrorWF("GMDel del fail", zap.String("key", key), zap.Error(err))
+		logger.CtxError(ctx, "GMDel del fail", zap.String("key", key), zap.Error(err))
 		return
 	}
-	logger.InfoWF("GMDel succ", zap.Any("key", key))
+	logger.CtxInfo(ctx, "GMDel succ", zap.Any("key", key))
 	return
 }

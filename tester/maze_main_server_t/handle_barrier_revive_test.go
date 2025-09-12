@@ -19,7 +19,6 @@ import (
 	"maze_game_server/pb/common/MazeGame"
 	"maze_game_server/servers/maze_main_server/process/game"
 
-	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fklog"
 	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fknet"
 	"google.golang.org/protobuf/proto"
 )
@@ -56,7 +55,7 @@ func TestSetBarrier(t *testing.T) {
 	SetBarrireInfo(gTestLogger, 9003200130206264, 1)
 }
 
-func SetBarrireInfo(logger fklog.FKLogI, userId uint64, barrierId int32) error {
+func SetBarrireInfo(ctx context.Context, userId uint64, barrierId int32) error {
 	info := &MazeBarrierCache.MazeBarrierCache{}
 	info.BarrierId = proto.Int32(barrierId)
 	info.StartTime = proto.Int64(time.Now().Unix())

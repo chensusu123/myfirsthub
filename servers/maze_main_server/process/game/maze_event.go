@@ -1,13 +1,16 @@
 package game
 
 import (
+	"encoding/json"
 	"maze_game_server/common/errors"
 	"maze_game_server/io/redis/mazebarriereventredis"
-	"maze_game_server/lib/log"
 	"maze_game_server/lib/nano/session"
+	"maze_game_server/model/flowmodel/reportdatamodel"
 	"maze_game_server/pb/common/MazeGame"
 	"maze_game_server/servers/maze_main_server/process/game/events"
+	"maze_game_server/services/flowservice"
 
+	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fklog"
 	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fkprometheus"
 	"go.uber.org/zap"
 	"google.golang.org/protobuf/proto"
@@ -17,13 +20,14 @@ import (
 func (g *Game) OnMazeReportBattleEventRQ_10496_10497(s *session.Session, req *MazeGame.ReportBattleEventRQ) (err error) {
 	defer fkprometheus.InfoPMT("OnMazeReportBattleEventRQ")()
 
-	logger := log.Clone("Game", uint64(s.UID()), 0)
-	res := &MazeGame.ReportBattleEventRS{}
+	ctx := s.Context()
+	logger := fklog.ContextAppLogger(ctx)
 
-	logger.InfoWF("OnMazeReportBattleEventRQ start", zap.Any("req", req))
+	res := &MazeGame.ReportBattleEventRS{}
+	logger.CtxInfo(ctx, "OnMazeReportBattleEventRQ start", zap.Any("req", req))
 	defer func() {
 		err = s.Response(res)
-		logger.InfoWF("OnMazeReportBattleEventRQ end", zap.Any("res", res))
+		logger.CtxInfo(ctx, "OnMazeReportBattleEventRQ end", zap.Any("res", res))
 	}()
 
 	res.Header = req.Header
@@ -40,49 +44,78 @@ func (g *Game) OnMazeReportBattleEventRQ_10496_10497(s *session.Session, req *Ma
 		case MazeGame.BattleEventType_ATTACK_MONSTER:
 			eventData = event.GetAttack()
 			triggerFn = func() {
-				events.OnAttackMonster(logger, userID, event.GetEventFrame(), event.GetEventTimeMs(), event.GetAttack())
+				events.OnAttackMonster(s.Context(), userID, event.GetEventFrame(), event.GetEventTimeMs(), event.GetAttack())
 			}
 		// 被怪物攻击
 		case MazeGame.BattleEventType_BE_ATTACKED:
 			eventData = event.GetAttack()
 			triggerFn = func() {
-				events.OnBeAttacked(logger, userID, event.GetEventFrame(), event.GetEventTimeMs(), event.GetAttack())
+				events.OnBeAttacked(s.Context(), userID, event.GetEventFrame(), event.GetEventTimeMs(), event.GetAttack())
 			}
 		// 怪物死亡
 		case MazeGame.BattleEventType_MONSTER_DEAD:
 			eventData = event.GetMonsterDead()
 			triggerFn = func() {
-				events.OnMonsterDead(logger, userID, event.GetEventFrame(), event.GetEventTimeMs(), event.GetMonsterDead())
+				events.OnMonsterDead(s.Context(), userID, event.GetEventFrame(), event.GetEventTimeMs(), event.GetMonsterDead())
 			}
 		// 刷新怪物
 		case MazeGame.BattleEventType_REFRESH_MONSTER:
 			eventData = event.GetRefreshMonster()
 			triggerFn = func() {
-				events.OnRefreshMonster(logger, userID, event.GetEventFrame(), event.GetEventTimeMs(), event.GetRefreshMonster())
+				events.OnRefreshMonster(s.Context(), userID, event.GetEventFrame(), event.GetEventTimeMs(), event.GetRefreshMonster())
 			}
 		// 触发机关
 		case MazeGame.BattleEventType_TRIGGER_TRAP:
 			eventData = event.GetTriggerTrap()
 			triggerFn = func() {
-				events.OnTriggerTrap(logger, userID, event.GetEventFrame(), event.GetEventTimeMs(), event.GetTriggerTrap())
+				events.OnTriggerTrap(s.Context(), userID, event.GetEventFrame(), event.GetEventTimeMs(), event.GetTriggerTrap())
 			}
 		// 人物移动
 		case MazeGame.BattleEventType_ROLE_MOVE:
 			eventData = event.GetRoleMove()
 			triggerFn = func() {
-				events.OnRoleMove(logger, userID, event.GetEventFrame(), event.GetEventTimeMs(), event.GetRoleMove())
+				events.OnRoleMove(s.Context(), userID, event.GetEventFrame(), event.GetEventTimeMs(), event.GetRoleMove())
+			}
+		// 猪妖移动
+		case MazeGame.BattleEventType_BOSS_MOVE:
+			eventData = event.GetBossMove()
+			triggerFn = func() {
+				events.OnBossMove(s.Context(), userID, event.GetEventFrame(), event.GetEventTimeMs(), event.GetBossMove())
+			}
+		// 恢复/暂停游戏
+		case MazeGame.BattleEventType_PAUSE_GAME:
+			eventData = event.GetPauseGame()
+			triggerFn = func() {
+				events.OnPauseGame(s.Context(), userID, event.GetEventFrame(), event.GetEventTimeMs(), event.GetPauseGame())
+			}
+		// 客户端日志
+		case MazeGame.BattleEventType_CLIENT_LOG:
+			eventData = event.GetClientLog()
+			triggerFn = func() {
+				events.OnClientLog(s.Context(), userID, event.GetEventFrame(), event.GetEventTimeMs(), event.GetClientLog())
 			}
 		}
 		if eventData == nil {
-			logger.ErrorWF("OnMazeReportBattleEventRQ event type not supported", zap.Int32("eventType", int32(eventType)))
+			logger.CtxError(ctx, "OnMazeReportBattleEventRQ event type not supported", zap.Int32("eventType", int32(eventType)))
 		} else {
-			err = mazebarriereventredis.TriggerBarrierEvent(logger, userID, event.GetEventFrame(), event.GetEventTimeMs(), eventType, eventData)
+			err = mazebarriereventredis.TriggerBarrierEvent(ctx, userID, event.GetEventFrame(), event.GetEventTimeMs(), eventType, eventData)
 			if err != nil {
-				logger.ErrorWF("OnMazeReportBattleEventRQ TriggerBarrierEvent fail", zap.Error(err), zap.Int32("eventType", int32(eventType)))
+				logger.CtxError(ctx, "OnMazeReportBattleEventRQ TriggerBarrierEvent fail", zap.Error(err), zap.Int32("eventType", int32(eventType)))
 			}
 			// 触发事件
 			triggerFn()
 		}
+
+		// 上报数据打点
+		dataJson, err := json.Marshal(eventData)
+		if err != nil {
+			logger.CtxError(ctx, "OnMazeReportBattleEventRQ Marshal fail",
+				zap.Any("eventDta", eventData),
+				zap.Error(err))
+			continue
+		}
+		data := reportdatamodel.NewReportData(ctx, event.GetType(), userID, uint64(event.GetEventFrame()), uint64(event.GetEventTimeMs()), string(dataJson))
+		flowservice.GflowService.SendFlowData(ctx, data)
 	}
 	return
 }

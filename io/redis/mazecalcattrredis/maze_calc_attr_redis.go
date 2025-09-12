@@ -11,25 +11,25 @@ import (
 	"errors"
 	"fmt"
 
+	"maze_game_server/common/constdef"
+
 	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fkconfig"
 	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fklog"
 	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fkredis"
 	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fkredis/redis"
 	"gitlab.ifreetalk.com/maze-plate/freetk/fkutil"
 	"go.uber.org/zap"
-	"maze_game_server/common/constdef"
 )
 
-var (
-	gRedis = &fkredis.FkRedis{}
-)
+var gRedis = &fkredis.FkRedis{}
 
 func init() {
 	// 21630 maze:calc:attr:u:%llu 迷宫计算属性存储
 	fkconfig.RegisterNameNode("mazecalcattrredis", 21630, gRedis)
 }
 
-func SaveMazeCalcAttr(logger fklog.FKLogI, userId uint64, attrs map[int32]int64) error {
+func SaveMazeCalcAttr(ctx context.Context, userId uint64, attrs map[int32]int64) error {
+	logger := fklog.ContextAppLogger(ctx)
 	key := fmt.Sprintf("maze:calc:attr:u:%d", userId)
 	var args []interface{}
 	args = append(args, key)
@@ -38,31 +38,32 @@ func SaveMazeCalcAttr(logger fklog.FKLogI, userId uint64, attrs map[int32]int64)
 		args = append(args, v)
 	}
 
-	_, err := gRedis.Do(context.TODO(), "HMSET", args...)
+	_, err := gRedis.Do(ctx, "HMSET", args...)
 	if err != nil {
-		logger.ErrorWF("SaveMazeCalcAttr fail",
+		logger.CtxError(ctx, "SaveMazeCalcAttr fail",
 			zap.Error(err),
 			zap.String("key", key),
 			zap.Any("attrs", attrs))
 		return err
 	}
-	logger.InfoWF("SaveMazeCalcAttr succ",
+	logger.CtxInfo(ctx, "SaveMazeCalcAttr succ",
 		zap.String("key", key),
 		zap.Any("attrs", attrs))
 	return err
 }
 
-func GetAllMazeCalcAttr(logger fklog.FKLogI, userId uint64) (attrDbs map[int32]int64, err error) {
+func GetAllMazeCalcAttr(ctx context.Context, userId uint64) (attrDbs map[int32]int64, err error) {
+	logger := fklog.ContextAppLogger(ctx)
 	key := fmt.Sprintf("maze:calc:attr:u:%d", userId)
-	res, err := redis.ByteSlices(gRedis.Do(context.TODO(), "hgetall", key))
+	res, err := redis.ByteSlices(gRedis.Do(ctx, "hgetall", key))
 	if err == redis.ErrNil {
 		err = nil
-		logger.WarnWF("GetAllMazeCalcAttr hvals nil", zap.String("key", key))
+		logger.CtxWarn(ctx, "GetAllMazeCalcAttr hvals nil", zap.String("key", key))
 		return
 	}
 
 	if err != nil {
-		logger.ErrorWF("GetAllMazeCalcAttr hvals fail", zap.Error(err), zap.String("key", key))
+		logger.CtxError(ctx, "GetAllMazeCalcAttr hvals fail", zap.Error(err), zap.String("key", key))
 		return
 	}
 	attrDbs = make(map[int32]int64)
@@ -83,39 +84,40 @@ func GetAllMazeCalcAttr(logger fklog.FKLogI, userId uint64) (attrDbs map[int32]i
 		attrDbs[int32(k)] = v
 	}
 
-	logger.InfoWF("GetAllMazeCalcAttr succ",
+	logger.CtxInfo(ctx, "GetAllMazeCalcAttr succ",
 		zap.Any("attrDbs", attrDbs),
 		zap.String("key", key))
 	return attrDbs, err
 }
 
-func HScanMazeCalcAttr(logger fklog.FKLogI, userId uint64) (attrDbs map[int32]int64, err error) {
+func HScanMazeCalcAttr(ctx context.Context, userId uint64) (attrDbs map[int32]int64, err error) {
+	logger := fklog.ContextAppLogger(ctx)
 	var cursor int64 = 0
 	key := fmt.Sprintf("maze:calc:attr:u:%d", userId)
 	attrDbs = make(map[int32]int64)
 	for {
-		rs1, err1 := redis.Values(gRedis.Do(context.TODO(), "HSCAN", key, cursor, "match", "*", "count", 100))
+		rs1, err1 := redis.Values(gRedis.Do(ctx, "HSCAN", key, cursor, "match", "*", "count", 100))
 		if err1 != nil {
-			logger.ErrorWF("HScanMazeCalcAttr error", zap.Error(err1),
+			logger.CtxError(ctx, "HScanMazeCalcAttr error", zap.Error(err1),
 				zap.String("key", key))
 			return attrDbs, err1
 		}
 		if len(rs1) != 2 {
-			logger.ErrorWF("HScanMazeCalcAttr data rs error",
+			logger.CtxError(ctx, "HScanMazeCalcAttr data rs error",
 				zap.String("key", key))
 			return attrDbs, errors.New("data rs error")
 		}
 
 		cursor, err = redis.Int64(rs1[0], err)
 		if err != nil {
-			logger.ErrorWF("HScanMazeCalcAttr Int64 error",
+			logger.CtxError(ctx, "HScanMazeCalcAttr Int64 error",
 				zap.Error(err),
 				zap.String("key", key))
 			return attrDbs, err
 		}
 		data, err := redis.ByteSlices(rs1[1], err)
 		if err != nil {
-			logger.ErrorWF("HScanMazeCalcAttr ByteSlices error",
+			logger.CtxError(ctx, "HScanMazeCalcAttr ByteSlices error",
 				zap.Error(err),
 				zap.String("key", key))
 			return attrDbs, err
@@ -135,46 +137,48 @@ func HScanMazeCalcAttr(logger fklog.FKLogI, userId uint64) (attrDbs map[int32]in
 			break
 		}
 	}
-	logger.InfoWF("HScanMazeCalcAttr succ", zap.String("key", key), zap.Int("len", len(attrDbs)))
+	logger.CtxInfo(ctx, "HScanMazeCalcAttr succ", zap.String("key", key), zap.Int("len", len(attrDbs)))
 	return
 }
 
-func DelMazeCalcAttr(logger fklog.FKLogI, userId uint64) error {
+func DelMazeCalcAttr(ctx context.Context, userId uint64) error {
+	logger := fklog.ContextAppLogger(ctx)
 	key := fmt.Sprintf("maze:calc:attr:u:%d", userId)
 
-	_, err := gRedis.Do(context.TODO(), "DEL", key)
+	_, err := gRedis.Do(ctx, "DEL", key)
 	if err != nil {
-		logger.ErrorWF("DelMazeCalcAttr fail",
+		logger.CtxError(ctx, "DelMazeCalcAttr fail",
 			zap.Error(err),
 			zap.String("key", key))
 		return err
 	}
-	logger.InfoWF("DelMazeCalcAttr succ",
+	logger.CtxInfo(ctx, "DelMazeCalcAttr succ",
 		zap.String("key", key))
 	return err
 }
 
-func BatchGetMazeCalcAttr(logger fklog.FKLogI, userId uint64, attrIds []int32) (attrDbs map[int32]int64, err error) {
+func BatchGetMazeCalcAttr(ctx context.Context, userId uint64, attrIds []int32) (attrDbs map[int32]int64, err error) {
+	logger := fklog.ContextAppLogger(ctx)
 	key := fmt.Sprintf("maze:calc:attr:u:%d", userId)
 	var args []interface{}
 	args = append(args, key)
 	for _, attrId := range attrIds {
 		args = append(args, attrId)
 	}
-	res, err := redis.ByteSlices(gRedis.Do(context.TODO(), "HMGET", args...))
+	res, err := redis.ByteSlices(gRedis.Do(ctx, "HMGET", args...))
 	if err == redis.ErrNil {
 		err = nil
-		logger.WarnWF("BatchGetMazeCalcAttr HMGET nil", zap.String("key", key), zap.Any("attrIds", attrIds))
+		logger.CtxWarn(ctx, "BatchGetMazeCalcAttr HMGET nil", zap.String("key", key), zap.Any("attrIds", attrIds))
 		return
 	}
 
 	if err != nil {
-		logger.ErrorWF("BatchGetMazeCalcAttr HMGET fail", zap.Error(err),
+		logger.CtxError(ctx, "BatchGetMazeCalcAttr HMGET fail", zap.Error(err),
 			zap.String("key", key), zap.Any("attrIds", attrIds))
 		return
 	}
 	if len(attrIds) != len(res) {
-		logger.ErrorWF("BatchGetMazeCalcAttr len not match",
+		logger.CtxError(ctx, "BatchGetMazeCalcAttr len not match",
 			zap.String("key", key), zap.Any("attrIds", attrIds),
 			zap.Int("len", len(res)))
 		return nil, errors.New("len not match")
@@ -189,44 +193,46 @@ func BatchGetMazeCalcAttr(logger fklog.FKLogI, userId uint64, attrIds []int32) (
 		attrDbs[attrIds[i]] = v
 	}
 
-	logger.InfoWF("BatchGetMazeCalcAttr succ", zap.Any("attrDbs", attrDbs), zap.String("key", key))
+	logger.CtxInfo(ctx, "BatchGetMazeCalcAttr succ", zap.Any("attrDbs", attrDbs), zap.String("key", key))
 	return attrDbs, err
 }
 
 // 删除指定属性
-func HDelMazeCalcAttr(logger fklog.FKLogI, userId uint64, attrIds []int32) error {
+func HDelMazeCalcAttr(ctx context.Context, userId uint64, attrIds []int32) error {
+	logger := fklog.ContextAppLogger(ctx)
 	key := fmt.Sprintf("maze:calc:attr:u:%d", userId)
 	args := make([]interface{}, 0, len(attrIds)+1)
 	args = append(args, key)
 	for _, id := range attrIds {
 		args = append(args, id)
 	}
-	_, err := gRedis.Do(context.TODO(), "HDEL", args...)
+	_, err := gRedis.Do(ctx, "HDEL", args...)
 	if err != nil {
-		logger.ErrorWF("HDelMazeCalcAttr fail",
+		logger.CtxError(ctx, "HDelMazeCalcAttr fail",
 			zap.Error(err),
 			zap.Any("attrIds", attrIds),
 			zap.String("key", key))
 		return err
 	}
-	logger.InfoWF("HDelMazeCalcAttr succ",
+	logger.CtxInfo(ctx, "HDelMazeCalcAttr succ",
 		zap.Any("attrIds", attrIds),
 		zap.String("key", key))
 	return err
 }
 
-func GetMazeForce(logger fklog.FKLogI, userId uint64) (force int64, err error) {
+func GetMazeForce(ctx context.Context, userId uint64) (force int64, err error) {
+	logger := fklog.ContextAppLogger(ctx)
 	key := fmt.Sprintf("maze:calc:attr:u:%d", userId)
-	force, err = redis.Int64(gRedis.Do(context.TODO(), "HGET", key, constdef.MazeForce))
+	force, err = redis.Int64(gRedis.Do(ctx, "HGET", key, constdef.MazeForce))
 	var empty bool
 	if err == redis.ErrNil {
 		err = nil
 		empty = true
 	}
 	if err != nil {
-		logger.ErrorWF("GetMazeForce redis err with", zap.Error(err), zap.String("key", key))
+		logger.CtxError(ctx, "GetMazeForce redis err with", zap.Error(err), zap.String("key", key))
 	} else {
-		logger.InfoWF("GetMazeForce succ", zap.Int64("force", force),
+		logger.CtxInfo(ctx, "GetMazeForce succ", zap.Int64("force", force),
 			zap.Bool("empty", empty),
 			zap.String("key", key))
 	}
@@ -234,16 +240,17 @@ func GetMazeForce(logger fklog.FKLogI, userId uint64) (force int64, err error) {
 }
 
 // 取计算属性长度
-func HlenMazeCalcAttr(logger fklog.FKLogI, userId uint64) (slen int64, err error) {
+func HlenMazeCalcAttr(ctx context.Context, userId uint64) (slen int64, err error) {
+	logger := fklog.ContextAppLogger(ctx)
 	key := fmt.Sprintf("maze:calc:attr:u:%d", userId)
-	slen, err = redis.Int64(gRedis.Do(context.TODO(), "HLEN", key))
+	slen, err = redis.Int64(gRedis.Do(ctx, "HLEN", key))
 	if err != nil {
-		logger.ErrorWF("HlenMazeCalcAttr fail",
+		logger.CtxError(ctx, "HlenMazeCalcAttr fail",
 			zap.Error(err),
 			zap.String("key", key))
 		return slen, err
 	}
-	logger.InfoWF("HlenMazeCalcAttr succ", zap.Int64("len", slen),
+	logger.CtxInfo(ctx, "HlenMazeCalcAttr succ", zap.Int64("len", slen),
 		zap.String("key", key))
 	return slen, err
 }

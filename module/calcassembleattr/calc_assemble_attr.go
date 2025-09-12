@@ -1,17 +1,17 @@
 package calcassembleattr
 
 import (
+	"context"
 	"maze_game_server/common/function/assemble"
 	"maze_game_server/pb/server/MazeBuffData"
 	"maze_game_server/pb/server/MazeEquipCache"
 
-	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fklog"
 	"google.golang.org/protobuf/proto"
 )
 
 // 计算装备属性加成
-func CalcEquipAttrs(logger fklog.FKLogI, equips []*MazeEquipCache.MazeEquipPosInfo) (attrs map[int32]int64, other *MazeBuffData.MazeBuffDb, err error) {
-	effect, e := CalcEquipEffectAll(logger, equips, EffectCalcInParam{IsLog: false, IsForce: true})
+func CalcEquipAttrs(ctx context.Context, equips []*MazeEquipCache.MazeEquipPosInfo) (attrs map[int32]int64, other *MazeBuffData.MazeBuffDb, err error) {
+	effect, e := CalcEquipEffectAll(ctx, equips, EffectCalcInParam{IsLog: false, IsForce: true})
 	if e != nil {
 		return nil, nil, e
 	}
@@ -19,7 +19,7 @@ func CalcEquipAttrs(logger fklog.FKLogI, equips []*MazeEquipCache.MazeEquipPosIn
 }
 
 // 计算不包含某件装备的属性加成
-func CalcEquipAttrsWithoutOne(logger fklog.FKLogI, equips []*MazeEquipCache.MazeEquipPosInfo, pos int32) (attrs map[int32]int64, err error) {
+func CalcEquipAttrsWithoutOne(ctx context.Context, equips []*MazeEquipCache.MazeEquipPosInfo, pos int32) (attrs map[int32]int64, err error) {
 	var tmpEquips []*MazeEquipCache.MazeEquipPosInfo
 	for _, equipPos := range equips {
 		lPos := equipPos.GetEquipPos().GetPos()
@@ -34,12 +34,12 @@ func CalcEquipAttrsWithoutOne(logger fklog.FKLogI, equips []*MazeEquipCache.Maze
 		}
 		tmpEquips = append(tmpEquips, equipPos)
 	}
-	attrs, _, err = CalcEquipAttrs(logger, tmpEquips)
+	attrs, _, err = CalcEquipAttrs(ctx, tmpEquips)
 	return
 }
 
 // 替换某件装备计算属性加成
-func CalcEquipAttrsReplaceOne(logger fklog.FKLogI, equips []*MazeEquipCache.MazeEquipPosInfo, pos int32, replaceEquip *MazeEquipCache.MazeEquipInfoDb) (attrs map[int32]int64, err error) {
+func CalcEquipAttrsReplaceOne(ctx context.Context, equips []*MazeEquipCache.MazeEquipPosInfo, pos int32, replaceEquip *MazeEquipCache.MazeEquipInfoDb) (attrs map[int32]int64, err error) {
 	var tmpEquips []*MazeEquipCache.MazeEquipPosInfo
 	var unLock bool
 	for _, equipPos := range equips {
@@ -75,10 +75,10 @@ func CalcEquipAttrsReplaceOne(logger fklog.FKLogI, equips []*MazeEquipCache.Maze
 		equipTmp.EquipLoadInfo.Pos = proto.Int32(pos)
 		tmpEquips = append(tmpEquips, equipTmp)
 	}
-	attrs, _, err = CalcEquipAttrs(logger, tmpEquips)
+	attrs, _, err = CalcEquipAttrs(ctx, tmpEquips)
 	return
 }
 
-func CalcEquipEffect(logger fklog.FKLogI, equips []*MazeEquipCache.MazeEquipPosInfo) (effect *EquipmentEffectInfo, err error) {
-	return CalcEquipEffectAll(logger, equips, EffectCalcInParam{IsLog: true, IsForce: false})
+func CalcEquipEffect(ctx context.Context, equips []*MazeEquipCache.MazeEquipPosInfo) (effect *EquipmentEffectInfo, err error) {
+	return CalcEquipEffectAll(ctx, equips, EffectCalcInParam{IsLog: true, IsForce: false})
 }

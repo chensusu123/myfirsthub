@@ -1,0 +1,10 @@
+paipaiworld_config,Unnamed: 1,Unnamed: 2,Unnamed: 3,Unnamed: 4,Unnamed: 5
+INT_K,STRING,STRING_C_S,STRING_C_S,INT_C_S,LIST<INT>_C_S
+id,name,iconAtlas,icon,type,argument
+道具id,道具名称,icon图集文件夹,图标,道具类型,效果参数
+1,木桩,items_atlas_0,deadman,1,6000
+2,木箱,items_atlas_0,wooden,1,6000
+3,石头,items_atlas_0,stone,1,6000
+4,减速带,items_atlas_0,speed_bump,2,"3000,3000,100"
+5,武器1,items_atlas_0,fire_ball,3,"10,7,1500"
+6,武器2,items_atlas_0,ice_ball,3,"20,5,2100"

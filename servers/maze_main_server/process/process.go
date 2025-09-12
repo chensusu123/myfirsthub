@@ -1,14 +1,12 @@
 package process
 
 import (
-	"maze_game_server/io/mysql/flowrecord"
-	"maze_game_server/servers/maze_main_server/process/buff"
+	"context"
 	"maze_game_server/servers/maze_main_server/process/collect"
 	"maze_game_server/servers/maze_main_server/process/equip"
-	"maze_game_server/servers/maze_main_server/process/equip_gm"
 	"maze_game_server/servers/maze_main_server/process/game"
-	"maze_game_server/servers/maze_main_server/process/gm"
 	"maze_game_server/servers/maze_main_server/process/pay"
+	"maze_game_server/services/gmservice"
 
 	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fklog"
 	"gitlab.ifreetalk.com/maze-plate/freetk/fkserver/web_service"
@@ -72,20 +70,12 @@ func RegisterHandler() {
 		// attr_calc.RegConsumeHandler()
 		// kafka转发队列 废弃
 		// kafka_dispatch.RegConsumeHandler()
-
-		// 流水队列
-		flowrecord.RegConsumeHandler()
 	}
 
 	// 注册Web接口
 	web_service.PlugWebService(func(logger fklog.FKLogI) {
-		// 主服务gm
-		gm.RegGm(logger)
-		// 装备gm
-		equip_gm.RegGm(logger)
-		// Buff
-		buff.InitGM(logger)
-
+		ctx := context.Background()
+		gmservice.GmService.RegHttp(ctx)
 		// 充值发货
 		pay.RegPayDelivery(logger)
 	})

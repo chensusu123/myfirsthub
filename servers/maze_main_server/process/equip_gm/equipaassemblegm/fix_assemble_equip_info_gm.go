@@ -7,18 +7,21 @@
 package equipaassemblegm
 
 import (
-	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fklog"
-	"go.uber.org/zap"
+	"context"
 	"maze_game_server/common/function/assemble"
 	"maze_game_server/io/redis/dollassemblesuitredis"
 	"maze_game_server/module/effectequip"
 	"maze_game_server/pb/server/MazeEquipCache"
+
+	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fklog"
+	"go.uber.org/zap"
 )
 
 // 修复装配信息里装备信息
-func FixAssembleEquipInfo(logger fklog.FKLogI, userId uint64) (fix int32, err error) {
+func FixAssembleEquipInfo(ctx context.Context, userId uint64) (fix int32, err error) {
+	logger := fklog.ContextAppLogger(ctx)
 	// 获取到所有已装配的装备
-	allEquips, err := dollassemblesuitredis.GetAllDollAssembleSuit(logger, userId)
+	allEquips, err := dollassemblesuitredis.GetAllDollAssembleSuit(ctx, userId)
 	if err != nil {
 		return 0, err
 	}
@@ -30,8 +33,7 @@ func FixAssembleEquipInfo(logger fklog.FKLogI, userId uint64) (fix int32, err er
 			}
 		}
 	}
-	// 获取到所需要的装备详情
-	realEquipMap, err := effectequip.BatchGetEffectEquipInfo(logger, userId, needGuids...)
+	realEquipMap, err := effectequip.BatchGetEffectEquipInfo(ctx, userId, needGuids...)
 	if err != nil {
 		return 0, err
 	}
@@ -69,14 +71,14 @@ func FixAssembleEquipInfo(logger fklog.FKLogI, userId uint64) (fix int32, err er
 		}
 	}
 	if len(needFixEquipMap) > 0 {
-		err = dollassemblesuitredis.BatchSaveDollAssembleSuit(logger, userId, needFixEquipMap)
+		err = dollassemblesuitredis.BatchSaveDollAssembleSuit(ctx, userId, needFixEquipMap)
 		if needFixAttr {
-			ReCalcDollEquipAttr(logger, userId, 3)
+			ReCalcDollEquipAttr(ctx, userId, 3)
 		}
-		logger.InfoWF("FixAssembleEquipInfo fix ok", zap.Uint64("uid", userId),
+		logger.CtxInfo(ctx, "FixAssembleEquipInfo fix ok", zap.Uint64("uid", userId),
 			zap.Bool("needFixAttr", needFixAttr), zap.Any("fixEquips", needFixEquipMap))
 	} else {
-		logger.InfoWF("FixAssembleEquipInfo no need fix", zap.Uint64("uid", userId))
+		logger.CtxInfo(ctx, "FixAssembleEquipInfo no need fix", zap.Uint64("uid", userId))
 	}
 	return int32(len(needFixEquipMap)), err
 }

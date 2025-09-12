@@ -7,6 +7,7 @@
 package copyequipgm
 
 import (
+	"context"
 	"maze_game_server/common/constdef"
 	"maze_game_server/common/function/assemble"
 	"maze_game_server/common/structsdef"
@@ -25,23 +26,24 @@ import (
 	"google.golang.org/protobuf/proto"
 )
 
-func CopyAssembleData(logger fklog.FKLogI, srcUserId uint64, dstUsers []uint64, param copyinterface.CopyParam) error {
+func CopyAssembleData(ctx context.Context, srcUserId uint64, dstUsers []uint64, param copyinterface.CopyParam) error {
 
 	var err error
 	var assembleInfo *MazeEquipCache.MazeAssembleDb
 	var curUser uint64
+	logger := fklog.ContextAppLogger(ctx)
 	defer func() {
 		if err != nil {
-			logger.ErrorWF("CopyAssembleData fail", zap.Error(err),
+			logger.CtxError(ctx, "CopyAssembleData fail", zap.Error(err),
 				zap.Uint64("src", srcUserId),
 				zap.Uint64("dst", curUser))
 		} else {
-			logger.InfoWF("CopyAssembleData succ",
+			logger.CtxInfo(ctx, "CopyAssembleData succ",
 				zap.Uint64("src", srcUserId),
 				zap.Int("dstLen", len(dstUsers)))
 		}
 	}()
-	assembleInfo, ef, err := dollassembleinfo.GetDollAssembleInfoEx(logger, srcUserId)
+	assembleInfo, ef, err := dollassembleinfo.GetDollAssembleInfoEx(ctx, srcUserId)
 	if err != nil {
 		return err
 	}
@@ -49,7 +51,7 @@ func CopyAssembleData(logger fklog.FKLogI, srcUserId uint64, dstUsers []uint64, 
 	for _, dstId := range dstUsers {
 		curUser = dstId
 		// 删除旧的装配数据
-		err = dollassemblesuitredis.DelEquipSuitInfo(logger, dstId)
+		err = dollassemblesuitredis.DelEquipSuitInfo(ctx, dstId)
 		if err != nil {
 			return err
 		}
@@ -61,7 +63,7 @@ func CopyAssembleData(logger fklog.FKLogI, srcUserId uint64, dstUsers []uint64, 
 		}
 
 		// 删除旧装备位数据
-		err = dollassembleredis.BatchDelAssmebleInfo(logger, dstId, srcFields...)
+		err = dollassembleredis.BatchDelAssmebleInfo(ctx, dstId, srcFields...)
 		if err != nil {
 			return err
 		}
@@ -71,7 +73,7 @@ func CopyAssembleData(logger fklog.FKLogI, srcUserId uint64, dstUsers []uint64, 
 		}
 
 		// 写装配数据
-		err = dollassemblesuitredis.SaveEquipAssembleInfo(logger, dstId, assembleInfo.GetCurSuitIndex(), assembleInfo.MazeEquips)
+		err = dollassemblesuitredis.SaveEquipAssembleInfo(ctx, dstId, assembleInfo.GetCurSuitIndex(), assembleInfo.MazeEquips)
 		if err != nil {
 			return err
 		}
@@ -81,22 +83,23 @@ func CopyAssembleData(logger fklog.FKLogI, srcUserId uint64, dstUsers []uint64, 
 		dstAssmebleInfo.SwitchSuitTime = proto.Int64(assembleInfo.GetSwitchSuitTime())
 		dstAssmebleInfo.MazeEquips = assembleInfo.MazeEquips
 		dstFields = append(dstFields, constdef.AssemblePrefixCurAssembleSuitIndex, constdef.AssemblePrefixSwitchSuitTime)
-		err = dollassembleredis.SetAssembleInfoByFields(logger, dstId, dstFields, dstAssmebleInfo)
+		err = dollassembleredis.SetAssembleInfoByFields(ctx, dstId, dstFields, dstAssmebleInfo)
 		if err != nil {
 			return err
 		}
-		CalcDollAttr(logger, dstId, assembleInfo, ef)
-		logger.InfoWF("CopyAssembleData user succ",
+		CalcDollAttr(ctx, dstId, assembleInfo, ef)
+		logger.CtxInfo(ctx, "CopyAssembleData user succ",
 			zap.Uint64("src", srcUserId),
 			zap.Int("dst", int(dstId)))
 	}
 	return nil
 }
 
-func CalcDollAttr(logger fklog.FKLogI, userId uint64, assembleInfo *MazeEquipCache.MazeAssembleDb, effectInfo *calcassembleattr.EquipmentEffectInfo) error {
+func CalcDollAttr(ctx context.Context, userId uint64, assembleInfo *MazeEquipCache.MazeAssembleDb, effectInfo *calcassembleattr.EquipmentEffectInfo) error {
+	// logger := fklog.ContextAppLogger(ctx)
 	_, otherAttrs := effectInfo.ForceAttrs, effectInfo.Other
 	// 更新buff中心
-	e := mazebuffinforedis.SaveMazeEquipBuff(logger, userId, otherAttrs)
+	e := mazebuffinforedis.SaveMazeEquipBuff(ctx, userId, otherAttrs)
 	if e != nil {
 		return e
 	}
@@ -108,9 +111,9 @@ func CalcDollAttr(logger fklog.FKLogI, userId uint64, assembleInfo *MazeEquipCac
 	calcAttrNotify.Session = ""
 	calcAttrNotify.BuffSrc = constdef.MazeBuffSrcEquip
 
-	mazeattrcalcnotifyqueue.SendMazeAttrCalcNotify(logger, calcAttrNotify)
+	mazeattrcalcnotifyqueue.SendMazeAttrCalcNotify(ctx, calcAttrNotify)
 
-	mazebuffchgrrecordapi.SendMazeBuffChgRecord(logger, userId,
+	mazebuffchgrrecordapi.SendMazeBuffChgRecord(ctx, userId,
 		constdef.MazeBuffSrcEquip,
 		constdef.MazeBuffChgTypeGm,
 		nil, effectInfo.Other)

@@ -5,6 +5,7 @@
 package limiter
 
 import (
+	"context"
 	"sync"
 	"time"
 
@@ -57,7 +58,7 @@ func (m *Limiter) IsRateLimit(key string) bool {
 }
 
 // 更新频次
-func (m *Limiter) UpdateTime(logger fklog.FKLogI, key string) {
+func (m *Limiter) UpdateTime(ctx context.Context, key string) {
 	now := time.Now().UnixNano() / 1000000
 	m.Lock()
 	if limitInfo, ok := m.CacheList[key]; ok {
@@ -69,26 +70,26 @@ func (m *Limiter) UpdateTime(logger fklog.FKLogI, key string) {
 	}
 	m.Unlock()
 	//被动触发 等有更新的时候检查
-	checkExpireCache(logger, m)
+	checkExpireCache(ctx, m)
 }
 
 // 清理过期
-func checkExpireCache(logger fklog.FKLogI, limter *Limiter) {
+func checkExpireCache(ctx context.Context, limter *Limiter) {
 	now := time.Now().Unix()
 	span := now - limter.LastClearTime
 	if span > int64(ClearInterval) {
-		go clearCache(limter, logger, now)
+		go clearCache(limter, ctx, now)
 	}
 }
 
-func clearCache(limter *Limiter, logger fklog.FKLogI, now int64) {
+func clearCache(limter *Limiter, ctx context.Context, now int64) {
 	limter.Lock()
 	defer limter.Unlock()
-
+	logger := fklog.ContextAppLogger(ctx)
 	for key, info := range limter.CacheList {
 		if now-info.LastTime/1000 > int64(CacheTimeout) {
 			delete(limter.CacheList, key)
-			logger.InfoWF("clear expire lineId cache",
+			logger.CtxInfo(ctx, "clear expire lineId cache",
 				zap.String("key", key),
 				zap.Int32("cacheTimeout", CacheTimeout))
 		}

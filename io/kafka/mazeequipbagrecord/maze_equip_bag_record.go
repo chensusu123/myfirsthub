@@ -1,9 +1,11 @@
 package mazeequipbagrecord
 
 import (
-	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fklog"
-	"go.uber.org/zap"
+	"context"
 	"maze_game_server/io/dispatcher"
+	"maze_game_server/io/kafka/kafkacommonstruct"
+	"maze_game_server/model/flowmodel/mazeequipbagrecordmodel"
+	"maze_game_server/services/flowservice"
 )
 
 // var json = jsoniter.ConfigCompatibleWithStandardLibrary
@@ -16,8 +18,11 @@ const (
 	MazeDressEquip       int32 = 5 // 装备穿戴
 )
 
+type KafkaCommon = kafkacommonstruct.KafkaCommon
+
 // 装备背包流水
 type MazeGameEquipBagRecord struct {
+	KafkaCommon
 	UserId        uint64 `json:"user_id" gorm:"column:user_id"`                 //用户id
 	ChgType       int32  `json:"chg_type" gorm:"column:chg_type"`               //变化原因 1 添加 2 删除 3 更新 4 锁定 5 解锁 6 实例化装备 7 删除实例化装备
 	TradeNum      uint64 `json:"trade_num" gorm:"column:trade_num"`             //交易单号
@@ -27,7 +32,6 @@ type MazeGameEquipBagRecord struct {
 	IsFail        int32  `json:"is_fail" gorm:"column:is_fail"`                 //操作是否失败 0-成功 1-失败
 	GroupID       uint32 `json:"group_id" gorm:"column:group_id"`               // 组id
 	CreateTime    int64  `json:"create_time" gorm:"column:create_time"`         // 操作时间
-	ServerId      int32  `json:"server_id" gorm:"column:server_id"`
 }
 
 // var equipBagChgQueue = &fkafka.KafkaProducer{}
@@ -39,17 +43,21 @@ func init() {
 
 var d = dispatcher.NewDispatcher[*MazeGameEquipBagRecord]()
 
-func Watch(fn func(logger fklog.FKLogI, msg *MazeGameEquipBagRecord)) {
+func Watch(fn func(ctx context.Context, msg *MazeGameEquipBagRecord)) {
 	d.Watch(fn)
 }
 
-func PushMazeGameEquipBagRecord(agent fklog.FKLogI, data *MazeGameEquipBagRecord) error {
+// 流水打点使用
+func PushMazeGameEquipBagRecord(ctx context.Context, data *MazeGameEquipBagRecord) error {
+	flowData := mazeequipbagrecordmodel.NewMazeGameEquipBagRecord(data.UserId, data.ChgType, data.TradeNum, data.AddEquipGuids, data.DelEquipGuids,
+		data.OpType, data.IsFail)
 	// cnt, err := json.Marshal(data)
 	// if err != nil {
 	// 	return err
 	// }
-	d.Push(agent, data)
-	agent.InfoWF("PushMazeGameEquipBagRecord data", zap.Any("userId", data.UserId), zap.Any("detail", data))
+	flowservice.GflowService.SendFlowData(ctx, flowData)
+	// d.Push(agent, data)
+	// agent.InfoWF("PushMazeGameEquipBagRecord data", zap.Any("userId", data.UserId), zap.Any("detail", data))
 	// return equipBagChgQueue.SendWithUserID(data.UserId, cnt)
 	return nil
 }

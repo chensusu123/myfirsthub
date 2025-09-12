@@ -13,17 +13,17 @@ func init() {
 }
 
 // 获取人偶装配信息
-// func GetDollAssembleInfo(logger fklog.FKLogI, userId uint64) (assembleInfo *MazeEquipCache.MazeAssembleDb, err error) {
+// func GetDollAssembleInfo(ctx context.Context, userId uint64) (assembleInfo *MazeEquipCache.MazeAssembleDb, err error) {
 // 	assembleInfo = new(MazeEquipCache.MazeAssembleDb)
 // 	key := fmt.Sprintf("maze:assemble:info:u:%d",userId)
-// 	res, err := redis.ByteSlices(gRedis.Do(context.TODO(), "hgetall", key))
+// 	res, err := redis.ByteSlices(gRedis.Do(ctx, "hgetall", key))
 // 	if err == redis.ErrNil {
 // 		err = nil
-// 		logger.InfoWF("GetDollAssembleInfo hgetall nil", zap.String("key", key))
+// 		logger.CtxInfo(ctx,"GetDollAssembleInfo hgetall nil", zap.String("key", key))
 // 		return
 // 	}
 // 	if err != nil {
-// 		logger.ErrorWF("GetDollAssembleInfo hgetall fail", zap.Error(err), zap.String("key", key))
+// 		logger.CtxError(ctx,"GetDollAssembleInfo hgetall fail", zap.Error(err), zap.String("key", key))
 // 		return
 // 	}
 
@@ -36,7 +36,7 @@ func init() {
 // 			magicWeaponPb := &DollEquipCache.MagicWeaponDB{}
 // 			e := proto.Unmarshal(res[i+1], magicWeaponPb)
 // 			if e != nil {
-// 				logger.ErrorWF("GetDollAssembleInfo Unmarshal MagicWeaponDB fail", zap.Error(e),
+// 				logger.CtxError(ctx,"GetDollAssembleInfo Unmarshal MagicWeaponDB fail", zap.Error(e),
 // 					zap.String("key", key))
 // 				return nil, e
 // 			}
@@ -48,7 +48,7 @@ func init() {
 // 			v, e := fkutil.Bytes2Int64(res[i+1])
 // 			if e != nil {
 // 				err = e
-// 				logger.ErrorWF("GetDollAssembleInfo Unmarshal suit index fail", zap.Error(err),
+// 				logger.CtxError(ctx,"GetDollAssembleInfo Unmarshal suit index fail", zap.Error(err),
 // 					zap.String("key", key))
 // 				return nil, err
 // 			}
@@ -60,7 +60,7 @@ func init() {
 // 			v, e := fkutil.Bytes2Int64(res[i+1])
 // 			if e != nil {
 // 				err = e
-// 				logger.ErrorWF("GetDollAssembleInfo Unmarshal switch time fail", zap.Error(err),
+// 				logger.CtxError(ctx,"GetDollAssembleInfo Unmarshal switch time fail", zap.Error(err),
 // 					zap.String("key", key))
 // 				return nil, err
 // 			}
@@ -71,7 +71,7 @@ func init() {
 // 			v, e := fkutil.Bytes2Int64(res[i+1])
 // 			if e != nil {
 // 				err = e
-// 				logger.ErrorWF("GetDollAssembleInfo Unmarshal mountId fail", zap.Error(err),
+// 				logger.CtxError(ctx,"GetDollAssembleInfo Unmarshal mountId fail", zap.Error(err),
 // 					zap.String("key", key))
 // 				return nil, err
 // 			}
@@ -83,7 +83,7 @@ func init() {
 // 			e := proto.Unmarshal(res[i+1], posInfo)
 // 			if e != nil {
 // 				err = e
-// 				logger.ErrorWF("GetDollAssembleInfo Unmarshal equip pos fail", zap.Error(err),
+// 				logger.CtxError(ctx,"GetDollAssembleInfo Unmarshal equip pos fail", zap.Error(err),
 // 					zap.String("key", key), zap.Int32("pos", pos))
 // 				return nil, err
 // 			}
@@ -93,6 +93,6 @@ func init() {
 // 			continue
 // 		}
 // 	}
-// 	logger.InfoWF("GetDollAssembleInfo hgetall succ", zap.Any("res", assembleInfo), zap.String("key", key))
+// 	logger.CtxInfo(ctx,"GetDollAssembleInfo hgetall succ", zap.Any("res", assembleInfo), zap.String("key", key))
 // 	return assembleInfo, err
 // }

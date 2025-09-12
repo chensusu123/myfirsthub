@@ -7,6 +7,8 @@
 package assembleidpack
 
 import (
+	"context"
+
 	"maze_game_server/common/function/packtopb/asequipsuittopb"
 	"maze_game_server/common/function/packtopb/packequipostopb"
 	"maze_game_server/module/equippossuit"
@@ -19,7 +21,8 @@ import (
 	"google.golang.org/protobuf/proto"
 )
 
-func SendAssembleChgID(logger fklog.FKLogI, userId uint64, assembleInfo *MazeEquipCache.MazeAssembleDb, wantMask, posMask, reason int32) error {
+func SendAssembleChgID(ctx context.Context, userId uint64, assembleInfo *MazeEquipCache.MazeAssembleDb, wantMask, posMask, reason int32) error {
+	logger := fklog.ContextAppLogger(ctx)
 	var mask int32
 	idp := &MazeGameEquip.MazeAssembleChgID{}
 	idp.Reason = proto.Int32(reason)
@@ -29,10 +32,10 @@ func SendAssembleChgID(logger fklog.FKLogI, userId uint64, assembleInfo *MazeEqu
 		for _, aEquip := range assembleInfo.MazeEquips {
 			var e error
 			posPb := &MazeGameEquip.EquipPosInfo{}
-			posPb, e = packequipostopb.PackEquipPosPb(logger, aEquip, posMask)
+			posPb, e = packequipostopb.PackEquipPosPb(ctx, aEquip, posMask)
 
 			if e != nil {
-				logger.ErrorWF("SendAssembleChgID PackEquipPosPb fail", zap.Error(e), zap.Any("assembleInfo", assembleInfo))
+				logger.CtxError(ctx, "SendAssembleChgID PackEquipPosPb fail", zap.Error(e), zap.Any("assembleInfo", assembleInfo))
 				return e
 			}
 			idp.MazeAssembleInfo.EquipPosList = append(idp.MazeAssembleInfo.EquipPosList, posPb)
@@ -47,7 +50,7 @@ func SendAssembleChgID(logger fklog.FKLogI, userId uint64, assembleInfo *MazeEqu
 			// 打包装备强化套装信息
 			var e error
 			idp.MazeAssembleInfo.EquipPosStSuit,
-				idp.MazeAssembleInfo.EquipPosNextStSuit, e = equippossuit.GetCurAndNextSuit(logger, assembleInfo.GetEpEnSuitId())
+				idp.MazeAssembleInfo.EquipPosNextStSuit, e = equippossuit.GetCurAndNextSuit(ctx, assembleInfo.GetEpEnSuitId())
 			if e != nil {
 				return e
 			}
@@ -70,16 +73,16 @@ func SendAssembleChgID(logger fklog.FKLogI, userId uint64, assembleInfo *MazeEqu
 		}
 	}
 	if mask == 0 {
-		logger.WarnWF("SendAssembleChgID no assemble data", zap.Any("assembleInfo", assembleInfo))
+		logger.CtxWarn(ctx, "SendAssembleChgID no assemble data", zap.Any("assembleInfo", assembleInfo))
 		return nil
 	}
 	idp.Mask = proto.Int32(mask)
 	idp.Token = proto.Int64(GetAssembleToken())
-	err := online.Push(logger, uint64(userId), 10422, idp)
+	err := online.ClusterPush(ctx, uint64(userId), 10422, idp)
 	if err != nil {
-		logger.ErrorWF("SendAssembleChgID SendArrivePacket err", zap.Error(err))
+		logger.CtxError(ctx, "SendAssembleChgID SendArrivePacket err", zap.Error(err))
 		return err
 	}
-	logger.InfoWF("SendAssembleChgID SendArrivePacket succ", zap.Any("pack", idp))
+	logger.CtxInfo(ctx, "SendAssembleChgID SendArrivePacket succ", zap.Any("pack", idp))
 	return nil
 }

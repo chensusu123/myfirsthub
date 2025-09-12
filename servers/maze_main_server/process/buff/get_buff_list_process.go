@@ -1,23 +1,19 @@
 package buff
 
 import (
-	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fkprometheus"
+	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fklog"
 	"go.uber.org/zap"
 	"google.golang.org/protobuf/proto"
 	"maze_game_server/common/errors"
-	"maze_game_server/lib/log"
 	"maze_game_server/lib/nano/session"
 	"maze_game_server/pb/common/MazeTempBuff"
 	"maze_game_server/services/tempbuffservice"
-	"time"
 )
 
 func (b *Buff) GetMazeTempBuffListRQ_10433_10434(s *session.Session, req *MazeTempBuff.GetMazeTempBuffListRQ) (err error) {
-	defer fkprometheus.InfoPMT("GetMazeTempBuffListRQ")()
-
-	start := time.Now()
-
-	logger := log.Clone("Buff", uint64(s.UID()), 0)
+	ctx := s.Context()
+	logger := fklog.ContextAppLogger(ctx)
+	logger.CtxInfo(ctx, "GetMazeTempBuffListRQ start", zap.Any("req", req))
 	res := &MazeTempBuff.GetMazeTempBuffListRS{}
 	res.ErrInfo = errors.NO_ERROR
 	res.Header = req.Header
@@ -25,18 +21,17 @@ func (b *Buff) GetMazeTempBuffListRQ_10433_10434(s *session.Session, req *MazeTe
 
 	defer func() {
 		err = s.Response(res)
-		logger.InfoWF("GetMazeTempBuffListRQ end", zap.Any("req", req), zap.Any("res", res),
-			zap.Duration("costTime", time.Now().Sub(start)))
+		logger.CtxInfo(ctx, "GetMazeTempBuffListRQ end", zap.Any("req", req), zap.Any("res", res))
 	}()
 
-	userId, stageId := uint64(s.UID()), req.GetStageId()
-	if userId == 0 || stageId == 0 {
-		logger.WarnWF("GetMazeTempBuffListRQ args error", zap.Any("req", req))
+	userId, barrierId := uint64(s.UID()), req.GetStageId()
+	if userId == 0 || barrierId == 0 {
+		logger.CtxError(ctx, "GetMazeTempBuffListRQ args error", zap.Any("req", req))
 		res.ErrInfo = errors.COMMON_ERROR_TIPS.Wrap("参数错误")
 		return
 	}
 
-	buffList, err := tempbuffservice.GlobalTempBuffService.GetMazeTempBuffList(logger, userId, stageId)
+	buffList, err := tempbuffservice.GlobalTempBuffService.GetMazeTempBuffList(ctx, userId, barrierId)
 	if err != nil {
 		res.ErrInfo = errors.COMMON_ERROR_TIPS.Wrap(err.Error())
 		return nil

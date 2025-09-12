@@ -12,8 +12,8 @@ import (
 )
 
 // 获取玩家排名 不带分数 不带比较器
-func (s *service) GetUserRank(logger fklog.FKLogI, r *ranklistmodel.RankListModel, userID uint64) (int32, int64, error) {
-	rank, _, err := s.GetUserRankWithScore(logger, r, userID)
+func (s *service) GetUserRank(ctx context.Context, r *ranklistmodel.RankListModel, userID uint64) (int32, int64, error) {
+	rank, _, err := s.GetUserRankWithScore(ctx, r, userID)
 	if err != nil {
 		return 0, 0, err
 	}
@@ -22,15 +22,16 @@ func (s *service) GetUserRank(logger fklog.FKLogI, r *ranklistmodel.RankListMode
 }
 
 // 获取玩家排名 带分数 不带比较器
-func (s *service) GetUserRankWithScore(logger fklog.FKLogI, r *ranklistmodel.RankListModel, userID uint64) (int32, int64, error) {
+func (s *service) GetUserRankWithScore(ctx context.Context, r *ranklistmodel.RankListModel, userID uint64) (int32, int64, error) {
+	logger := fklog.ContextAppLogger(ctx)
 	var rank int32
 	var score int64
 	var err error
 	rankListKey := r.GetRankListKey()
 
-	rank, score, err = mazeranklistredis.GetUserRank(context.TODO(), rankListKey, userID, r.Order, true)
+	rank, score, err = mazeranklistredis.GetUserRank(ctx, rankListKey, userID, r.Order, true)
 	if err != nil {
-		logger.ErrorWF("GetUserRank fail",
+		logger.CtxError(ctx, "GetUserRank fail",
 			zap.String("rankListname", rankListKey),
 			zap.Uint64("userID", userID),
 			zap.Error(err))
@@ -41,10 +42,10 @@ func (s *service) GetUserRankWithScore(logger fklog.FKLogI, r *ranklistmodel.Ran
 }
 
 // 获取玩家排名 不带分数 带比较器
-func (s *service) GetUserRankWithComparator(logger fklog.FKLogI, r *ranklistmodel.RankListModel, userID uint64, comparator func(a, b *ranklistmodel.RankItem) bool) (int32, int64, error) {
+func (s *service) GetUserRankWithComparator(ctx context.Context, r *ranklistmodel.RankListModel, userID uint64, comparator func(a, b *ranklistmodel.RankItem) bool) (int32, int64, error) {
 	var rank int32
 	var err error
-	rank, _, err = s.GetUserRankWithScoreAndComparator(logger, r, userID, comparator)
+	rank, _, err = s.GetUserRankWithScoreAndComparator(ctx, r, userID, comparator)
 	if err != nil {
 		return 0, 0, err
 	}
@@ -53,15 +54,16 @@ func (s *service) GetUserRankWithComparator(logger fklog.FKLogI, r *ranklistmode
 }
 
 // 获取玩家排名 带分数 带比较器
-func (s *service) GetUserRankWithScoreAndComparator(logger fklog.FKLogI, r *ranklistmodel.RankListModel, userID uint64, comparator func(a, b *ranklistmodel.RankItem) bool) (int32, int64, error) {
+func (s *service) GetUserRankWithScoreAndComparator(ctx context.Context, r *ranklistmodel.RankListModel, userID uint64, comparator func(a, b *ranklistmodel.RankItem) bool) (int32, int64, error) {
+	logger := fklog.ContextAppLogger(ctx)
 	var rank int32
 	var score int64
 	var err error
 	rankListKey := r.GetRankListKey()
 
-	rankList, err := mazeranklistredis.GetUserAboveSameScore(context.TODO(), rankListKey, userID, r.Order)
+	rankList, err := mazeranklistredis.GetUserAboveSameScore(ctx, rankListKey, userID, r.Order)
 	if err != nil {
-		logger.ErrorWF("GetUserRank fail",
+		logger.CtxError(ctx, "GetUserRank fail",
 			zap.String("rankListname", rankListKey),
 			zap.Uint64("userID", userID),
 			zap.Error(err))
@@ -73,7 +75,7 @@ func (s *service) GetUserRankWithScoreAndComparator(logger fklog.FKLogI, r *rank
 		var nowRank ranklistmodel.RankItem
 		userIDString, ok := v.Member.(string)
 		if !ok {
-			logger.ErrorWF("GetUserRank type assert fail",
+			logger.CtxError(ctx, "GetUserRank type assert fail",
 				zap.String("name", rankListKey),
 				zap.Uint64("userID", userID),
 				zap.Any("member", v.Member))
@@ -81,7 +83,7 @@ func (s *service) GetUserRankWithScoreAndComparator(logger fklog.FKLogI, r *rank
 		}
 		userID, err := strconv.ParseUint(userIDString, 10, 64)
 		if err != nil {
-			logger.ErrorWF("GetUserRank type assert fail",
+			logger.CtxError(ctx, "GetUserRank type assert fail",
 				zap.String("name", rankListKey),
 				zap.Uint64("userID", userID),
 				zap.Error(err))
@@ -114,7 +116,7 @@ func (s *service) GetUserRankWithScoreAndComparator(logger fklog.FKLogI, r *rank
 		}
 	}
 
-	logger.InfoWF("GetUserRank LoadData",
+	logger.CtxInfo(ctx, "GetUserRank LoadData",
 		zap.String("rankListname", rankListKey),
 		zap.Uint64("userID", userID),
 		zap.Any("tmpRankList", tmpRankList),

@@ -1,10 +1,6 @@
 package pay
 
 import (
-	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fkprometheus"
-	"gitlab.ifreetalk.com/maze-plate/freetk/fkserver/appconfig"
-	"go.uber.org/zap"
-	"google.golang.org/protobuf/proto"
 	"maze_game_server/common/errors"
 	"maze_game_server/common/jwt"
 	"maze_game_server/lib/log"
@@ -12,6 +8,11 @@ import (
 	"maze_game_server/lib/nano/session"
 	"maze_game_server/pb/common/MazePay"
 	"strconv"
+
+	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fkprometheus"
+	"gitlab.ifreetalk.com/maze-plate/freetk/fkserver/appconfig"
+	"go.uber.org/zap"
+	"google.golang.org/protobuf/proto"
 )
 
 type Pay struct {
@@ -30,11 +31,11 @@ func (p *Pay) OnGetPayTokenRQ_10507_10508(s *session.Session, req *MazePay.MazeP
 	res.ErrInfo = errors.NO_ERROR
 
 	uid := uint64(s.UID())
-
+	ctx := s.Context()
 	defer fkprometheus.DebugPMT("OnGetPayTokenRQ")()
 	defer func() {
 		err = s.Response(res)
-		logger.InfoWF("OnGetPayTokenRQ end", zap.Any("req", req), zap.Any("res", res))
+		logger.CtxInfo(ctx, "OnGetPayTokenRQ end", zap.Any("req", req), zap.Any("res", res))
 	}()
 	// todo 检查unique_id是否可以购买
 	// todo 获取用户信息
@@ -42,11 +43,11 @@ func (p *Pay) OnGetPayTokenRQ_10507_10508(s *session.Session, req *MazePay.MazeP
 	serverIdStr := appconfig.GlobalConfig().Global.SectionID
 	serverId, err := strconv.ParseUint(serverIdStr, 10, 32)
 	if err != nil {
-		logger.ErrorWF("ServerId ParseUint failed", zap.Error(err), zap.Any("req", req), zap.Any("serverIdStr", serverIdStr))
+		logger.CtxError(ctx, "ServerId ParseUint failed", zap.Error(err), zap.Any("req", req), zap.Any("serverIdStr", serverIdStr))
 	}
 	payJwt, err := jwt.GeneratePayJWT(uid, req.GetUniqueId(), "", uint32(serverId))
 	if err != nil {
-		logger.ErrorWF("OnGetPayTokenRQ GeneratePayJWT err", zap.Error(err))
+		logger.CtxError(ctx, "OnGetPayTokenRQ GeneratePayJWT err", zap.Error(err))
 		res.ErrInfo = errors.MODULE_ERROR.ToInfo()
 		return
 	}

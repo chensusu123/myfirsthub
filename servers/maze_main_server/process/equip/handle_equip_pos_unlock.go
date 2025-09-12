@@ -8,6 +8,7 @@
 package equip
 
 import (
+	"context"
 	"fmt"
 	"sort"
 
@@ -42,24 +43,25 @@ type UnlockLogic struct {
 	UnlockPos *MazeEquipCache.MazeEquipSlotDb
 }
 
-func ChkEquipPosUnlock(logger fklog.FKLogI, userId uint64, src string, needNotify bool) error {
+func ChkEquipPosUnlock(ctx context.Context, userId uint64, src string, needNotify bool) error {
+	logger := fklog.ContextAppLogger(ctx)
 	allEquipPos := GMazeEquipPosRankV8Cfg.GetAll()
-	equipList, err := dollassembleredis.GetDollEquipPosInfo(logger, userId, len(allEquipPos))
+	equipList, err := dollassembleredis.GetDollEquipPosInfo(ctx, userId, len(allEquipPos))
 	if err != nil {
-		logger.ErrorWF("ChkEquipPosUnlock get pos info fal", zap.Error(err), zap.String("src", src))
+		logger.CtxError(ctx, "ChkEquipPosUnlock get pos info fal", zap.Error(err), zap.String("src", src))
 		return err
 	}
 	// 如果存在未解锁的装备
 	// var finTaskList map[int32]struct{}
 	var mazeLv int64
 	if len(allEquipPos) <= len(equipList) {
-		logger.InfoWF("ChkEquipPosUnlock already all unlock", zap.Int("len", len(equipList)), zap.String("src", src))
+		logger.CtxInfo(ctx, "ChkEquipPosUnlock already all unlock", zap.Int("len", len(equipList)), zap.String("src", src))
 		return nil
 	}
 
-	mazeLv, err = mazelevel.GetMazelLevel(logger, userId)
+	mazeLv, err = mazelevel.GetMazelLevel(ctx, userId)
 	if err != nil {
-		logger.ErrorWF("ChkEquipPosUnlock GetDollLevel fail", zap.Error(err))
+		logger.CtxError(ctx, "ChkEquipPosUnlock GetDollLevel fail", zap.Error(err))
 		return err
 	}
 
@@ -69,14 +71,14 @@ func ChkEquipPosUnlock(logger fklog.FKLogI, userId uint64, src string, needNotif
 	for _, posRow := range allEquipPos {
 		// 已解锁
 		if equipList[posRow.Pos_id] != nil {
-			logger.InfoWF("ChkEquipPosUnlock pos already unlock",
+			logger.CtxInfo(ctx, "ChkEquipPosUnlock pos already unlock",
 				zap.Int32("pos", posRow.Pos_id),
 				zap.String("src", src))
 			continue
 		}
 		unlockCfg := GMazeEquipPosRankV8Cfg.GetMazeEquipPosRankV8Config(posRow.Pos_id)
 		if unlockCfg == nil {
-			logger.ErrorWF("ChkEquipPosUnlock cannot find cfg",
+			logger.CtxError(ctx, "ChkEquipPosUnlock cannot find cfg",
 				zap.Int32("pos", posRow.Pos_id), zap.String("src", src))
 			return nil
 		}
@@ -115,18 +117,18 @@ func ChkEquipPosUnlock(logger fklog.FKLogI, userId uint64, src string, needNotif
 
 	// 汇总新解锁的装备位
 	if len(unLockPosList) == 0 {
-		logger.DebugWF("ChkEquipPosUnlock no unlock pos", zap.String("src", src), zap.Any("unLockLogicList", unLockLogicList))
+		logger.CtxInfo(ctx, "ChkEquipPosUnlock no unlock pos", zap.String("src", src), zap.Any("unLockLogicList", unLockLogicList))
 		return nil
 	}
-	err = dollassembleredis.SetDollEquipPosInfo(logger, userId, unLockPosList)
+	err = dollassembleredis.SetDollEquipPosInfo(ctx, userId, unLockPosList)
 	if err != nil {
-		logger.ErrorWF("ChkEquipPosUnlock unlock fal", zap.Error(err), zap.String("src", src), zap.Any("unLockLogicList", unLockLogicList))
+		logger.CtxError(ctx, "ChkEquipPosUnlock unlock fal", zap.Error(err), zap.String("src", src), zap.Any("unLockLogicList", unLockLogicList))
 	} else {
-		logger.WarnWF("ChkEquipPosUnlock unlock succ", zap.String("src", src), zap.Any("unLockLogicList", unLockLogicList),
+		logger.CtxInfo(ctx, "ChkEquipPosUnlock unlock succ", zap.String("src", src), zap.Any("unLockLogicList", unLockLogicList),
 			zap.Bool("needNotify", needNotify))
 	}
 	if needNotify {
-		assembleidpack.SendAssembleChgID(logger, userId, assembleInfo,
+		assembleidpack.SendAssembleChgID(ctx, userId, assembleInfo,
 			int32(MazeGameEquip.ENUM_MAZE_ASSEMBLE_CHG_TYPE_MASK_EQUIP_POS_MASK), int32(-1), constdef.DollAssembleChgTypeEquipPosUnlock)
 	}
 

@@ -1,6 +1,7 @@
 package mazeequipinstancerecord
 
 import (
+	"context"
 	"time"
 
 	"maze_game_server/io/dispatcher"
@@ -46,18 +47,19 @@ func init() {
 
 var d = dispatcher.NewDispatcher[*MazeGameEquipInstanceRecord]()
 
-func Watch(fn func(logger fklog.FKLogI, msg *MazeGameEquipInstanceRecord)) {
+func Watch(fn func(ctx context.Context, msg *MazeGameEquipInstanceRecord)) {
 	d.Watch(fn)
 }
 
-func PushMazeGameEquipInstanceRecord(agent fklog.FKLogI, data *MazeGameEquipInstanceRecord) (err error) {
+func PushMazeGameEquipInstanceRecord(ctx context.Context, data *MazeGameEquipInstanceRecord) (err error) {
+	agent := fklog.ContextAppLogger(ctx)
 	data.CreateTime = time.Now().UnixNano() / 1000000
 	// data.GroupID = fkconfig.EnvVal.GroupID
 	// cnt, err := json.Marshal(data)
 	// if err != nil {
 	// 	return err
 	// }
-	d.Push(agent, data)
+	d.Push(ctx, data)
 	agent.InfoWF("PushMazeGameEquipInstanceRecord data", zap.Any("userId", data.UserId), zap.Any("detail", data))
 	// err = equipInstanceChgQueue.SendWithUserID(data.UserId, cnt)
 	// if err != nil {

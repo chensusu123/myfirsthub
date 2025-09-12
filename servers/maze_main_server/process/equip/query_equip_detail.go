@@ -27,19 +27,19 @@ func (e *Equip) OnQueryMazeEquipDetailRQ_10407_10408(s *session.Session, req *Ma
 
 	userId := uint64(s.UID())
 
-	logger.InfoWF("OnQueryMazeEquipDetailRQ with", zap.Any("req", req))
+	logger.CtxInfo(s.Context(), "OnQueryMazeEquipDetailRQ with", zap.Any("req", req))
 	defer func() {
 		err = s.Response(res)
-		logger.InfoWF("OnQueryMazeEquipDetailRQ end", zap.Any("res", res))
+		logger.CtxInfo(s.Context(), "OnQueryMazeEquipDetailRQ end", zap.Any("res", res))
 	}()
 	// if !BreedVersionFC.IsDollVersion(logger, userId) {
-	// 	logger.ErrorWF("OnQueryMazeEquipDetailRQ not doll version", zap.Uint64("userID", userId))
+	// 	logger.CtxError(ctx,"OnQueryMazeEquipDetailRQ not doll version", zap.Uint64("userID", userId))
 	// 	return
 	// }
 	if len(req.GetEquipGuids()) <= 0 {
 		return
 	}
-	equipMap, err := mazebagequipredis.GetBatchEquipInfo(logger, userId, req.GetEquipGuids()...)
+	equipMap, err := mazebagequipredis.GetBatchEquipInfo(s.Context(), userId, req.GetEquipGuids()...)
 	bagEquips := make([]*MazeEquipCache.MazeEquipInfoDb, 0)
 	for _, equipInfo := range equipMap {
 		// newEquipInfo, err := pbutil.ConvertIdentifyEquipDb(logger, equipInfo)
@@ -57,10 +57,10 @@ func (e *Equip) OnQueryMazeEquipDetailRQ_10407_10408(s *session.Session, req *Ma
 			EquipGuid: proto.Int64(equipInfo.GetEquipGuid()),
 		}
 		if req.GetQueryType() == 0 {
-			equipCli, err = packtopb.EquipInfoToCliPB(logger, equipInfo)
+			equipCli, err = packtopb.EquipInfoToCliPB(s.Context(), equipInfo)
 			if err != nil {
 				res.ErrInfo = errors.MODULE_ERROR.ToInfo()
-				logger.ErrorWF("OnQueryMazeEquipDetailRQ EquipInfoToCliPB fail", zap.Error(err))
+				logger.CtxError(s.Context(), "OnQueryMazeEquipDetailRQ EquipInfoToCliPB fail", zap.Error(err))
 				return err
 			}
 		}

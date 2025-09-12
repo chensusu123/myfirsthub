@@ -1,6 +1,7 @@
 package GMazeAttrItemAttrV8Cfg
 
 import (
+	"context"
 	"errors"
 	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fklog"
 	"gitlab.ifreetalk.com/maze-plate/freetk/fkserver/config_manager"
@@ -14,7 +15,7 @@ import (
 // MazeAttrItemAttrV8ConfigRow from maze_item_attr_v8【迷宫-道具-道具id对应属性id】.xlsx maze_attr_item_attr_v8
 type MazeAttrItemAttrV8ConfigRow struct {
 	Order    int32 `json:"order"`    // 道具id
-	Add_attr int32 `json:"add_attr"` // 对应的属性id（走属性对应技能逻辑）
+	Add_attr int32 `json:"add_attr"` // 技能属性id
 }
 
 // MazeAttrItemAttrV8Config from maze_item_attr_v8【迷宫-道具-道具id对应属性id】.xlsx maze_attr_item_attr_v8
@@ -77,9 +78,19 @@ func GetMazeAttrItemAttrV8Config(configId int32) *MazeAttrItemAttrV8ConfigRow {
 	return gConfigData.GetMazeAttrItemAttrV8Config(configId)
 }
 
+// Deprecated: 链路追踪信息缺失。推荐使用GetWithCtx
 // Get pkg func. get one config by configId
 func Get(configId int32) *MazeAttrItemAttrV8ConfigRow {
-	return gConfigData.Get(configId)
+	return GetWithCtx(context.Background(), configId)
+}
+
+// GetWithCtx pkg func. get one config by configId
+func GetWithCtx(ctx context.Context, configId int32, otps ...config_manager.QueryOption) *MazeAttrItemAttrV8ConfigRow {
+	cfg := gConfigData.Get(configId)
+	if cfg == nil {
+		config_manager.MissRecord(ctx, "maze_attr_item_attr_v8", configId, otps...)
+	}
+	return cfg
 }
 
 // GetAllMazeAttrItemAttrV8Config pkg func. get all config slice
@@ -282,12 +293,12 @@ func (*gMazeAttrItemAttrV8Parser) Parse(logger fklog.FKLogI, data []string, row 
 		config.Order = int32(tmp)
 	}
 
-	// parse column 1 add_attr : 对应的属性id（走属性对应技能逻辑）
+	// parse column 1 add_attr : 技能属性id
 	if data[1] != "" {
 		tmp, err = strconv.ParseInt(data[1], 10, 64)
 		if err != nil {
-			err = errors.New("parse field add_attr 对应的属性id（走属性对应技能逻辑） to int32 failed")
-			logger.ErrorWF("parse field add_attr 对应的属性id（走属性对应技能逻辑） to int32 failed.",
+			err = errors.New("parse field add_attr 技能属性id to int32 failed")
+			logger.ErrorWF("parse field add_attr 技能属性id to int32 failed.",
 				zap.String("xlsx", "maze_item_attr_v8【迷宫-道具-道具id对应属性id】.xlsx"), zap.String("sheet", "maze_attr_item_attr_v8"),
 				zap.String("parse_data", data[1]),
 				zap.Error(err))

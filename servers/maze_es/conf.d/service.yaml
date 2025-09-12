@@ -1,0 +1,33 @@
+service:
+  - name: BizCfg
+    addr: "127.0.0.1:3306"
+    tags:
+      db_name: maze
+      db_user: root
+      password: mysql
+      sharding_type: 0
+      count: 1
+  - name: Redis # the route name of the service.
+    addr: "127.0.0.1:6379"
+    tags:
+      password: redis
+  - name: Mysql
+    addr: "127.0.0.1:3306"
+    tags:
+      db_name: maze
+      db_user: root
+      password: mysql
+      sharding_type: 0
+      count: 1
+  - name: maze-main-server-dev.gm
+    addr: "127.0.0.1:3306"
+    tags:
+      db_name: maze
+  - name: maze_main_server.redis # the route name of the service.
+    addr: "127.0.0.1:6379"
+    tags:
+      password: redis
+  - name: maze.labs.nats # the route name of the service.
+    addr: "127.0.0.1:4111"
+  - name: test.kafka
+    addr: "127.0.0.1:6379"

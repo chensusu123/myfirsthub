@@ -14,12 +14,12 @@ func getFamilyToAllianceRedisKey(familyID int32) string {
 	return fmt.Sprintf("family:to:alliance:%d", familyID)
 }
 
-func GetFamilyToAlliance(familyID int32) (int32, error) {
+func GetFamilyToAlliance(ctx context.Context, familyID int32) (int32, error) {
 	db, err := globalredis.GCli.GetDB()
 	if err != nil {
 		return 0, err
 	}
-	value, err := db.Get(context.TODO(), db.MakeSectionKey(getFamilyToAllianceRedisKey(familyID))).Result()
+	value, err := db.Get(ctx, db.MakeSectionKey(getFamilyToAllianceRedisKey(familyID))).Result()
 	if err != nil {
 		if err == redis.Nil {
 			return 0, nil
@@ -33,18 +33,18 @@ func GetFamilyToAlliance(familyID int32) (int32, error) {
 	return int32(allianceID), nil
 }
 
-func SetFamilyToAlliance(familyID int32, allianceID int32) error {
+func SetFamilyToAlliance(ctx context.Context, familyID int32, allianceID int32) error {
 	db, err := globalredis.GCli.GetDB()
 	if err != nil {
 		return err
 	}
-	return db.Set(context.TODO(), db.MakeSectionKey(getFamilyToAllianceRedisKey(familyID)), allianceID, 0).Err()
+	return db.Set(ctx, db.MakeSectionKey(getFamilyToAllianceRedisKey(familyID)), allianceID, 0).Err()
 }
 
-func DelFamilyToAlliance(familyID int32) error {
+func DelFamilyToAlliance(ctx context.Context, familyID int32) error {
 	db, err := globalredis.GCli.GetDB()
 	if err != nil {
 		return err
 	}
-	return db.Del(context.TODO(), db.MakeSectionKey(getFamilyToAllianceRedisKey(familyID))).Err()
+	return db.Del(ctx, db.MakeSectionKey(getFamilyToAllianceRedisKey(familyID))).Err()
 }

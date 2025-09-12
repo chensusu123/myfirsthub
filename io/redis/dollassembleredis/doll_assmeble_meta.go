@@ -10,11 +10,12 @@ import (
 	"context"
 	"fmt"
 
+	"maze_game_server/common/constdef"
+
 	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fklog"
 	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fkredis/redis"
 	"gitlab.ifreetalk.com/maze-plate/freetk/fkutil"
 	"go.uber.org/zap"
-	"maze_game_server/common/constdef"
 )
 
 type DollAssembleMetaSt struct {
@@ -44,8 +45,9 @@ func (m *DollAssembleMetaSt) GetInitState() int64 {
 	return 0
 }
 
-func GetDollAssembleMetaInfo(logger fklog.FKLogI, userId uint64, fields ...string) (result *DollAssembleMetaSt, err error) {
+func GetDollAssembleMetaInfo(ctx context.Context, userId uint64, fields ...string) (result *DollAssembleMetaSt, err error) {
 	key := fmt.Sprintf("maze:assemble:info:u:%d", userId)
+	logger := fklog.ContextAppLogger(ctx)
 	var args []interface{}
 	args = append(args, key)
 	for _, field := range fields {
@@ -54,20 +56,20 @@ func GetDollAssembleMetaInfo(logger fklog.FKLogI, userId uint64, fields ...strin
 	if len(args) == 1 {
 		return
 	}
-	res, err := redis.ByteSlices(gRedis.Do(context.TODO(), "hmget", args...))
+	res, err := redis.ByteSlices(gRedis.Do(ctx, "hmget", args...))
 	if err == redis.ErrNil {
 		err = nil
-		logger.InfoWF("GetDollAssembleMetaInfo hmget nil", zap.String("key", key), zap.Any("fields", fields))
+		logger.CtxInfo(ctx, "GetDollAssembleMetaInfo hmget nil", zap.String("key", key), zap.Any("fields", fields))
 		return
 	}
 	if err != nil {
-		logger.ErrorWF("GetDollAssembleMetaInfo hmget fail", zap.Error(err), zap.String("key", key))
+		logger.CtxError(ctx, "GetDollAssembleMetaInfo hmget fail", zap.Error(err), zap.String("key", key))
 		return
 	}
 	result = new(DollAssembleMetaSt)
 	sLen := len(res)
 	if len(fields) != sLen {
-		logger.ErrorWF("GetDollAssembleMetaInfo data len not match", zap.String("key", key),
+		logger.CtxError(ctx, "GetDollAssembleMetaInfo data len not match", zap.String("key", key),
 			zap.Int("vLen", sLen), zap.Int("kLen", len(fields)))
 		return
 	}
@@ -98,12 +100,13 @@ func GetDollAssembleMetaInfo(logger fklog.FKLogI, userId uint64, fields ...strin
 			result.InitState = &v
 		}
 	}
-	logger.InfoWF("GetDollAssembleMetaInfo succ", zap.Any("result", result), zap.String("key", key))
+	logger.CtxInfo(ctx, "GetDollAssembleMetaInfo succ", zap.Any("result", result), zap.String("key", key))
 	return result, err
 }
 
-func SetDollAssmebleMetaInfo(logger fklog.FKLogI, userId uint64, info *DollAssembleMetaSt) (err error) {
+func SetDollAssmebleMetaInfo(ctx context.Context, userId uint64, info *DollAssembleMetaSt) (err error) {
 	key := fmt.Sprintf("maze:assemble:info:u:%d", userId)
+	logger := fklog.ContextAppLogger(ctx)
 	var args []interface{}
 	args = append(args, key)
 
@@ -122,14 +125,14 @@ func SetDollAssmebleMetaInfo(logger fklog.FKLogI, userId uint64, info *DollAssem
 	if len(args) == 1 {
 		return
 	}
-	_, err = gRedis.Do(context.TODO(), "hmset", args...)
+	_, err = gRedis.Do(ctx, "hmset", args...)
 	if err != nil {
-		logger.ErrorWF("SetDollAssmebleMetaInfo hmset fail", zap.Error(err),
+		logger.CtxError(ctx, "SetDollAssmebleMetaInfo hmset fail", zap.Error(err),
 			zap.String("key", key), zap.Any("info", info))
 		return
 	}
 
-	logger.InfoWF("SetDollAssmebleMetaInfo hmset succ",
+	logger.CtxInfo(ctx, "SetDollAssmebleMetaInfo hmset succ",
 		zap.String("key", key), zap.Any("info", info))
 	return
 }

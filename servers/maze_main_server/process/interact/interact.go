@@ -1,7 +1,10 @@
 package interact
 
 import (
+	"context"
 	"fmt"
+	"maze_game_server/common/function/itemutil"
+	"maze_game_server/services/itemservice"
 
 	"maze_game_server/common/cache/simCache"
 	"maze_game_server/common/equipmix"
@@ -18,9 +21,7 @@ import (
 	"maze_game_server/pb/common/MazeEquipMix"
 	"maze_game_server/pb/common/MessageType"
 	"maze_game_server/pb/server/MazeEquipSvr"
-	"maze_game_server/pb/server/MazeItemSvr"
 	equiprpc "maze_game_server/servers/maze_main_server/process/equip"
-	itemrpc "maze_game_server/servers/maze_main_server/process/item"
 
 	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fklog"
 	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fkprometheus"
@@ -51,6 +52,7 @@ func RegTcpHandler() {
 
 func (*Interact) OnMazeEquipMixCostRQ_10441_10442(s *session.Session, req *MazeEquipMix.MazeEquipMixCostRQ) (err error) {
 
+	ctx := s.Context()
 	logger := log.Clone("Interact", uint64(s.UID()), 0)
 	res := &MazeEquipMix.MazeEquipMixCostRS{}
 	res.ErrInfo = errors.NO_ERROR
@@ -59,7 +61,7 @@ func (*Interact) OnMazeEquipMixCostRQ_10441_10442(s *session.Session, req *MazeE
 	defer fkprometheus.DebugPMT("OnMazeEquipMixCostRQ")()
 	defer func() {
 		err = s.Response(res)
-		logger.InfoWF("OnMazeEquipMixCostRQ end",
+		logger.CtxInfo(ctx, "OnMazeEquipMixCostRQ end",
 			zap.Any("req", req),
 			zap.Any("res", res),
 		)
@@ -68,9 +70,9 @@ func (*Interact) OnMazeEquipMixCostRQ_10441_10442(s *session.Session, req *MazeE
 	uid := uint64(s.UID())
 
 	// 查等级
-	lv, err := mazeuserlevelredis.GetUserLevel(logger, uid)
+	lv, err := mazeuserlevelredis.GetUserLevel(ctx, uid)
 	if err != nil {
-		logger.ErrorWF("OnMazeEquipMixCostRQ get user level error", zap.Error(err))
+		logger.CtxError(ctx, "OnMazeEquipMixCostRQ get user level error", zap.Error(err))
 		res.ErrInfo = errors.MODULE_ERROR.ToInfo()
 		return
 	}
@@ -92,7 +94,8 @@ var equipMixCache = simCache.NewCache()
 
 func (*Interact) OnMazeEquipMixRQ_10443_10444(s *session.Session, req *MazeEquipMix.MazeEquipMixRQ) (err error) {
 
-	logger := log.Clone("Interact", uint64(s.UID()), 0)
+	ctx := s.Context()
+	logger := fklog.ContextAppLogger(ctx)
 	res := &MazeEquipMix.MazeEquipMixRS{}
 
 	res.ErrInfo = errors.NO_ERROR
@@ -101,7 +104,7 @@ func (*Interact) OnMazeEquipMixRQ_10443_10444(s *session.Session, req *MazeEquip
 	defer fkprometheus.DebugPMT("OnMazeEquipMixRQ")()
 	defer func() {
 		err = s.Response(res)
-		logger.InfoWF("OnMazeEquipMixRQ end",
+		logger.CtxInfo(ctx, "OnMazeEquipMixRQ end",
 			zap.Any("req", req),
 			zap.Any("res", res),
 		)
@@ -117,9 +120,9 @@ func (*Interact) OnMazeEquipMixRQ_10443_10444(s *session.Session, req *MazeEquip
 	defer equipMixCache.DelCache(uid)
 
 	// 查等级
-	lv, err := mazeuserlevelredis.GetUserLevel(logger, uid)
+	lv, err := mazeuserlevelredis.GetUserLevel(ctx, uid)
 	if err != nil {
-		logger.ErrorWF("OnMazeEquipMixRQ get user level error", zap.Error(err))
+		logger.CtxError(ctx, "OnMazeEquipMixRQ get user level error", zap.Error(err))
 		res.ErrInfo = errors.MODULE_ERROR.ToInfo()
 		return
 	}
@@ -139,9 +142,9 @@ func (*Interact) OnMazeEquipMixRQ_10443_10444(s *session.Session, req *MazeEquip
 	// }
 
 	// 读取合成信息. 取上次等级、配置、索引。 有变化重新随
-	lastData, err := mazeequipmixdb.GetEquipMixData(logger, uid)
+	lastData, err := mazeequipmixdb.GetEquipMixData(ctx, uid)
 	if err != nil {
-		logger.ErrorWF("OnMazeEquipMixRQ get user equip mix data error", zap.Error(err))
+		logger.CtxError(ctx, "OnMazeEquipMixRQ get user equip mix data error", zap.Error(err))
 		res.ErrInfo = errors.MODULE_ERROR.ToInfo()
 		return
 	}
@@ -151,15 +154,15 @@ func (*Interact) OnMazeEquipMixRQ_10443_10444(s *session.Session, req *MazeEquip
 	}
 
 	// 检查合成信息
-	useOld, desc, listCfg, err := checkEquipData(logger, lastData, int32(lv))
+	useOld, desc, listCfg, err := checkEquipData(ctx, lastData, int32(lv))
 	if err != nil {
-		logger.ErrorWF("OnMazeEquipMixRQ check equip data err", zap.Error(err))
+		logger.CtxError(ctx, "OnMazeEquipMixRQ check equip data err", zap.Error(err))
 		res.ErrInfo = errors.COMMON_ERROR_TIPS.Wrap("配表错误")
 		return
 	}
 
 	if useOld {
-		logger.DebugWF("OnMazeEquipMixRQ equip data use old",
+		logger.CtxDebug(ctx, "OnMazeEquipMixRQ equip data use old",
 			zap.Any("lastData", lastData),
 		)
 	} else {
@@ -171,14 +174,14 @@ func (*Interact) OnMazeEquipMixRQ_10443_10444(s *session.Session, req *MazeEquip
 		newData.Idx = 0
 
 		// 使用配置 取装备
-		listCfg = GMazeEquipMixListV8Cfg.Get(newData.Cfg)
+		listCfg = GMazeEquipMixListV8Cfg.GetWithCtx(ctx, newData.Cfg)
 		if listCfg == nil || len(listCfg.Equip_id) == 0 {
-			logger.ErrorWF("OnMazeEquipMixRQ GMazeEquipMixListV8Cfg nil", zap.Int32("id", newData.Cfg))
+			logger.CtxError(ctx, "OnMazeEquipMixRQ GMazeEquipMixListV8Cfg nil", zap.Int32("id", newData.Cfg))
 			res.ErrInfo = errors.COMMON_ERROR_TIPS.Wrap("配表错误")
 			return
 		}
 
-		logger.DebugWF("OnMazeEquipMixRQ equip data use new",
+		logger.CtxDebug(ctx, "OnMazeEquipMixRQ equip data use new",
 			zap.Bool("useOld", useOld),
 			zap.String("desc", desc),
 			zap.Any("lastData", lastData),
@@ -190,7 +193,7 @@ func (*Interact) OnMazeEquipMixRQ_10443_10444(s *session.Session, req *MazeEquip
 
 	// 找装备
 	if lastData.Idx >= len(listCfg.Equip_id) {
-		logger.ErrorWF("OnMazeEquipMixRQ idx more than equip len",
+		logger.CtxError(ctx, "OnMazeEquipMixRQ idx more than equip len",
 			zap.Any("listCfg", listCfg),
 			zap.Any("lastData", lastData),
 		)
@@ -204,9 +207,9 @@ func (*Interact) OnMazeEquipMixRQ_10443_10444(s *session.Session, req *MazeEquip
 	lastData.Idx++
 
 	// 保存 装备合成配置存储
-	err = mazeequipmixdb.SetEquipMixData(logger, uid, lastData)
+	err = mazeequipmixdb.SetEquipMixData(ctx, uid, lastData)
 	if err != nil {
-		logger.ErrorWF("OnMazeEquipMixRQ set user equip mix data error", zap.Error(err))
+		logger.CtxError(ctx, "OnMazeEquipMixRQ set user equip mix data error", zap.Error(err))
 		res.ErrInfo = errors.DB_SAVE_ERROR.ToInfo()
 		return
 	}
@@ -218,28 +221,13 @@ func (*Interact) OnMazeEquipMixRQ_10443_10444(s *session.Session, req *MazeEquip
 		cost := cfg.Cost
 
 		var errorInfo *MessageType.ErrorInfo
-
-		rpcreq := &MazeItemSvr.ConsumeItemRQ{
-			UserId:      proto.Uint64(uid),
-			Items:       cost,
-			OpType:      proto.Int32(695),
-			TradeNumber: proto.Uint64(tradeNo),
-		}
-		rpcres := &MazeItemSvr.ConsumeItemRS{}
-
-		err = itemrpc.OnAddItemRQ(logger, rpcreq, rpcres)
+		items := itemutil.ItemPb2ItemInfo(cfg.Cost)
+		itemservice.GlobalItemService.SubItem(ctx, uid, itemservice.ItemOpTypeEquipMix, tradeNo, items...)
 		if err != nil {
-			logger.ErrorWF("OnMazeEquipMixRQ DeductItems err", zap.Uint64("tradeNo", tradeNo), zap.Any("cost", cost),
+			logger.CtxError(ctx, "OnMazeEquipMixRQ DeductItems err", zap.Uint64("tradeNo", tradeNo), zap.Any("cost", cost),
 				zap.Any("errorInfo", errorInfo), zap.Error(err),
 			)
 			res.ErrInfo = errors.NewCommonCodeError("sub item err")
-			return
-		}
-		if rpcres.ErrInfo != nil {
-			logger.WarnWF("OnMazeEquipMixRQ DeductItems invalid", zap.Uint64("tradeNo", tradeNo), zap.Any("cost", cost),
-				zap.Any("errorInfo", errorInfo), zap.Error(err),
-			)
-			res.ErrInfo = errorInfo
 			return
 		}
 	}
@@ -256,9 +244,9 @@ func (*Interact) OnMazeEquipMixRQ_10443_10444(s *session.Session, req *MazeEquip
 	})
 
 	equipRes := &MazeEquipSvr.SvrAddMazeEquipRS{}
-	err = equiprpc.OnSvrAddMazeEquipRQ(logger, int64(uid), equipReq, equipRes, "")
+	err = equiprpc.OnSvrAddMazeEquipRQ(ctx, int64(uid), equipReq, equipRes, "")
 	if err != nil {
-		logger.ErrorWF("OnMazeEquipMixRQ add equip err",
+		logger.CtxError(ctx, "OnMazeEquipMixRQ add equip err",
 			zap.Uint64("tradeNo", tradeNo),
 			zap.Error(err),
 		)
@@ -310,7 +298,7 @@ func checkReqCost(cost []*MazeCommon.MazeItem, cfgCost []*MazeCommon.MazeItem) b
 	return true
 }
 
-func checkEquipData(logger fklog.FKLogI, lastData *equipmix.MixData,
+func checkEquipData(ctx context.Context, lastData *equipmix.MixData,
 	lv int32) (useOld bool, desc string, listCft *GMazeEquipMixListV8Cfg.MazeEquipMixListV8ConfigRow, err error) {
 	/*
 		配置>0 	校验等级是否变化、配置、索引是否有效。
@@ -334,7 +322,7 @@ func checkEquipData(logger fklog.FKLogI, lastData *equipmix.MixData,
 		return
 	}
 
-	listCft = GMazeEquipMixListV8Cfg.Get(lastData.Cfg)
+	listCft = GMazeEquipMixListV8Cfg.GetWithCtx(ctx, lastData.Cfg)
 	if listCft == nil {
 		desc = fmt.Sprintf("last cfg nil, id=%d", lastData.Cfg)
 		err = errors.New(desc)

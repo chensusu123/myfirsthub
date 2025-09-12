@@ -21,6 +21,7 @@
 package cluster
 
 import (
+	"context"
 	"errors"
 	"fmt"
 	"net"
@@ -28,6 +29,8 @@ import (
 	"sync/atomic"
 	"time"
 
+	"maze_game_server/lib/codec/raw_pkg"
+	"maze_game_server/lib/nano/agentscheduler"
 	"maze_game_server/lib/nano/frame"
 	"maze_game_server/lib/nano/internal/codec"
 	"maze_game_server/lib/nano/internal/env"
@@ -39,7 +42,15 @@ import (
 	"maze_game_server/lib/nano/serialize"
 	"maze_game_server/lib/nano/session"
 
+	packCodec "maze_game_server/lib/codec"
+
 	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fklog"
+	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/protocol/svrheader"
+	"gitlab.ifreetalk.com/maze-plate/freetk/pkg/logidutil"
+	"go.opentelemetry.io/otel"
+	"go.opentelemetry.io/otel/attribute"
+	"go.opentelemetry.io/otel/codes"
+	"go.opentelemetry.io/otel/trace"
 	"go.uber.org/zap"
 )
 
@@ -71,15 +82,21 @@ type (
 		serializer serialize.Serializer
 		pipeline   pipeline.Pipeline
 
-		rpcHandler rpcHandler
-		srv        reflect.Value // cached session reflect.Value
+		rpcHandler  rpcHandler
+		srv         reflect.Value // cached session reflect.Value
+		scheduler   *agentscheduler.AgentScheduler
+		isSvrHeader atomic.Bool
 	}
 
 	pendingMessage struct {
-		typ     message.Type // message type
-		route   string       // message route(push)
-		mid     uint64       // response message id(response)
-		payload interface{}  // payload
+		uid        int64
+		ctx        context.Context
+		typ        message.Type // message type
+		route      string       // message route(push)
+		mid        uint64       // response message id(response)
+		payload    interface{}  // payload
+		isBytes    bool
+		isResponse bool
 	}
 )
 
@@ -96,14 +113,20 @@ func newAgent(conn net.Conn, pipeline pipeline.Pipeline, pcodec frame.PacketCode
 		serializer: pcodec.Serializer(),
 		pipeline:   pipeline,
 		rpcHandler: rpcHandler,
+		scheduler:  agentscheduler.NewAgentScheduler(0),
 	}
 
 	// binding session
 	s := session.New(a)
 	a.session = s
 	a.srv = reflect.ValueOf(s)
-
+	go a.scheduler.Sched()
+	a.scheduler.SetAgentSession(a.session.ID())
 	return a
+}
+
+func (a *agent) PushTask(task func()) (int64, bool) {
+	return a.scheduler.PushTask(task)
 }
 
 func (a *agent) send(m pendingMessage) (err error) {
@@ -122,12 +145,31 @@ func (a *agent) LastMid() uint64 {
 }
 
 // Push, implementation for session.NetworkEntity interface
-func (a *agent) Push(route string, v interface{}) error {
+func (a *agent) Push(ctx context.Context, route string, v interface{}) error {
+	userID := a.session.UID()
+	agentSession := a.session.ID()
+	var payload interface{}
+	var mid uint64
+	var isBytes bool
+	if pushData, ok := v.(*session.NormalPushData); ok {
+		payload = pushData.Payload
+		isBytes = pushData.IsBytes
+		mid = pushData.Mid
+	} else {
+		payload = v
+	}
+
+	ctx, span := agentSendSpan(ctx, "push", mid, userID, agentSession)
+	defer span.End()
 	if a.status() == statusClosed {
+		span.RecordError(ErrBrokenPipe)
+		span.SetStatus(codes.Error, "agent is closed")
 		return ErrBrokenPipe
 	}
 
 	if len(a.chSend) >= agentWriteBacklog {
+		span.RecordError(ErrBufferExceed)
+		span.SetStatus(codes.Error, "ErrBufferExceed")
 		return ErrBufferExceed
 	}
 
@@ -142,11 +184,16 @@ func (a *agent) Push(route string, v interface{}) error {
 		}
 	}
 
-	return a.send(pendingMessage{typ: message.Push, route: route, payload: v})
+	err := a.send(pendingMessage{ctx: ctx, typ: message.Push, route: route, mid: mid, payload: payload, isBytes: isBytes, uid: userID})
+	if err != nil {
+		span.RecordError(err)
+		span.SetStatus(codes.Error, err.Error())
+	}
+	return err
 }
 
 // RPC, implementation for session.NetworkEntity interface
-func (a *agent) RPC(route string, v interface{}) error {
+func (a *agent) RPC(ctx context.Context, route string, v interface{}) error {
 	if a.status() == statusClosed {
 		return ErrBrokenPipe
 	}
@@ -161,28 +208,48 @@ func (a *agent) RPC(route string, v interface{}) error {
 		Route: route,
 		Data:  data,
 	}
-	a.rpcHandler(a.session, msg, true)
+	a.rpcHandler(ctx, a.session, msg, true)
 	return nil
 }
 
 // Response, implementation for session.NetworkEntity interface
 // Response message to session
-func (a *agent) Response(v interface{}) error {
-	return a.ResponseMid(a.lastMid, v)
+func (a *agent) Response(ctx context.Context, v interface{}) error {
+	return a._responseMid(ctx, a.lastMid, v, true)
+}
+
+func (a *agent) ResponseMid(ctx context.Context, mid uint64, v interface{}) error {
+	return a._responseMid(ctx, mid, v, false)
 }
 
 // ResponseMid, implementation for session.NetworkEntity interface
 // Response message to session
-func (a *agent) ResponseMid(mid uint64, v interface{}) error {
+func (a *agent) _responseMid(ctx context.Context, mid uint64, v interface{}, isResponse bool) error {
+	userID := a.session.UID()
+	agentSession := a.session.ID()
+	var sendTypeName string
+	if isResponse {
+		sendTypeName = "response"
+	} else {
+		sendTypeName = "notify"
+	}
+	ctx, span := agentSendSpan(ctx, sendTypeName, mid, userID, agentSession)
+	defer span.End()
 	if a.status() == statusClosed {
+		span.RecordError(ErrBrokenPipe)
+		span.SetStatus(codes.Error, "agent is closed")
 		return ErrBrokenPipe
 	}
 
 	if mid <= 0 {
+		span.RecordError(ErrSessionOnNotify)
+		span.SetStatus(codes.Error, "ErrSessionOnNotify")
 		return ErrSessionOnNotify
 	}
 
 	if len(a.chSend) >= agentWriteBacklog {
+		span.RecordError(ErrBufferExceed)
+		span.SetStatus(codes.Error, "ErrBufferExceed")
 		return ErrBufferExceed
 	}
 
@@ -197,7 +264,12 @@ func (a *agent) ResponseMid(mid uint64, v interface{}) error {
 		}
 	}
 
-	return a.send(pendingMessage{typ: message.Response, mid: mid, payload: v})
+	err := a.send(pendingMessage{ctx: ctx, typ: message.Response, mid: mid, payload: v, uid: userID, isResponse: isResponse})
+	if err != nil {
+		span.RecordError(err)
+		span.SetStatus(codes.Error, err.Error())
+	}
+	return err
 }
 
 // Close, implementation for session.NetworkEntity interface
@@ -222,7 +294,7 @@ func (a *agent) Close() error {
 		close(a.chDie)
 		scheduler.PushTask(func() { session.Lifetime.Close(a.session) })
 	}
-
+	a.scheduler.Close()
 	return a.conn.Close()
 }
 
@@ -247,26 +319,37 @@ func (a *agent) setStatus(state int32) {
 
 func (a *agent) write() {
 	ticker := time.NewTicker(env.Heartbeat)
-	chWrite := make(chan []byte, agentWriteBacklog)
+	chWrite := make(chan WriteItem, agentWriteBacklog)
 
 	// Logger
 	logger := fklog.AppLogger().Clone("nano")
 	var lastErr error
-
+	_ = logger
 	// clean func
 	defer func() {
 		ticker.Stop()
 		close(a.chSend)
 		close(chWrite)
+		closeWriteSpan(chWrite)
+		closeSendMsgSpan(a.chSend)
+		closelogger := logger.Clone("nano")
+		closelogger.SetLogId(logidutil.GenerateLogID())
+		closelogger.SetUid(uint64(a.session.UID()))
+		ctx := fklog.ContextWithLogger(context.Background(), closelogger)
 
+		ctx, span := closeHandleSpan(ctx, a, "write.close")
+		defer span.End()
 		if env.SessionMonitor != nil {
-			env.SessionMonitor.OnClose(a.session, lastErr)
+			env.SessionMonitor.OnClose(ctx, a.session, lastErr)
 		}
 
 		a.Close()
-		if env.Debug {
-			log.Println(fmt.Sprintf("Session write goroutine exit, SessionID=%d, UID=%d", a.session.ID(), a.session.UID()))
-		}
+		// if env.Debug {
+		// 	log.Println(fmt.Sprintf("Session write goroutine exit, SessionID=%d, UID=%d", a.session.ID(), a.session.UID()))
+		// }
+		closelogger.CtxDebug(ctx, "session write goroutine exit",
+			zap.Int64("session_id", a.session.ID()),
+			zap.Int64("uid", a.session.UID()), zap.Any("lastErr", lastErr))
 	}()
 
 	for {
@@ -278,89 +361,123 @@ func (a *agent) write() {
 					log.Println(fmt.Sprintf("Session heartbeat timeout, LastTime=%d, Deadline=%d", atomic.LoadInt64(&a.lastAt), deadline))
 					return
 				}
-				chWrite <- hbd
+				chWrite <- WriteItem{ctx: context.TODO(), data: hbd}
 			}
 
-		case data := <-chWrite:
-			// close agent while low-level conn broken
-			if wCount, err := a.conn.Write(data); err != nil {
-				lastErr = err
-				log.Println(err.Error())
-				logger.ErrorWF("nano write packet failed",
-					zap.Int("data_len", len(data)),
-					zap.String("remote_addr", a.conn.RemoteAddr().String()),
-					zap.Int("write_count", wCount), zap.Error(err))
+		case dataWrite := <-chWrite:
+			err := processDataWrite(a, &dataWrite)
+			if err != nil {
 				return
-			} else {
-				logger.InfoWF("nano write packet",
-					zap.Int("data_len", len(data)),
-					zap.String("remote_addr", a.conn.RemoteAddr().String()),
-					zap.Int("write_count", wCount))
 			}
+			// data := dataWrite.data
+			// ctx := dataWrite.ctx
+			// span := trace.SpanFromContext(ctx)
 
+			// span.AddEvent("conn.write")
+			// // close agent while low-level conn broken
+			// if wCount, err := a.conn.Write(data); err != nil {
+			// 	lastErr = err
+			// 	log.Println(err.Error())
+			// 	logger.ErrorWF("nano write packet failed",
+			// 		zap.Int("data_len", len(data)),
+			// 		zap.String("remote_addr", a.conn.RemoteAddr().String()),
+			// 		zap.Int("write_count", wCount), zap.Error(err))
+			// 	span.RecordError(err)
+			// 	span.SetStatus(codes.Error, "conn.Write failed.")
+			// 	span.End()
+			// 	return
+			// } else {
+			// 	logger.InfoWF("nano write packet",
+			// 		zap.Int("data_len", len(data)),
+			// 		zap.String("remote_addr", a.conn.RemoteAddr().String()),
+			// 		zap.Int("write_count", wCount))
+			// }
+			// span.End()
 		case data := <-a.chSend:
-			payload, err := message.Serialize(data.payload, a.serializer)
+			err := processPendingMessage(a, data, chWrite)
 			if err != nil {
 				lastErr = err
-				switch data.typ {
-				case message.Push:
-					log.Println(fmt.Sprintf("Push: %s error: %s", data.route, err.Error()))
-				case message.Response:
-					log.Println(fmt.Sprintf("Response message(id: %d) error: %s", data.mid, err.Error()))
-				default:
-					// expect
-				}
 				break
 			}
+			_ = err
+			// ctx, span := sendMsgSpan(&data)
+			// span.AddEvent("send.serialize")
+			// payload, err := message.Serialize(data.payload, a.serializer)
+			// if err != nil {
+			// 	lastErr = err
+			// 	span.RecordError(err)
+			// 	span.SetStatus(codes.Error, "message.Serialize failed.")
+			// 	switch data.typ {
+			// 	case message.Push:
+			// 		log.Println(fmt.Sprintf("Push: %s error: %s", data.route, err.Error()))
+			// 	case message.Response:
+			// 		log.Println(fmt.Sprintf("Response message(id: %d) error: %s", data.mid, err.Error()))
+			// 	default:
+			// 		// expect
+			// 	}
+			// 	span.End()
+			// 	break
+			// }
 
-			// construct message and encode
-			m := &message.Message{
-				Type:  data.typ,
-				Data:  payload,
-				Route: data.route,
-				ID:    data.mid,
-			}
-			if pipe := a.pipeline; pipe != nil {
-				err := pipe.Outbound().Process(a.session, m)
-				if err != nil {
-					lastErr = err
-					log.Println("broken pipeline", err.Error())
-					break
-				}
-			}
+			// // construct message and encode
+			// m := &message.Message{
+			// 	Type:  data.typ,
+			// 	Data:  payload,
+			// 	Route: data.route,
+			// 	ID:    data.mid,
+			// }
+			// if pipe := a.pipeline; pipe != nil {
+			// 	err := pipe.Outbound().Process(a.session, m)
+			// 	if err != nil {
+			// 		lastErr = err
+			// 		log.Println("broken pipeline", err.Error())
+			// 		span.End()
+			// 		break
+			// 	}
+			// }
 
-			var p []byte
+			// var p []byte
 
-			if a.pcodec != nil {
-				logger.InfoWF("nano process packet stop",
-					zap.Uint64("ID", m.ID),
-					zap.String("route", m.Route),
-					zap.String("remote_addr", a.conn.RemoteAddr().String()),
-					zap.Int("rs_data_len", len(m.Data)))
+			// if a.pcodec != nil {
+			// 	callLogger := fklog.ContextAppLogger(ctx)
+			// 	callLogger.CtxInfo(ctx, "nano process packet stop",
+			// 		zap.Uint64("ID", m.ID),
+			// 		zap.String("route", m.Route),
+			// 		zap.String("remote_addr", a.conn.RemoteAddr().String()),
+			// 		zap.Int("rs_data_len", len(m.Data)))
+			// 	span.AddEvent("send.encode")
+			// 	p, err = a.pcodec.Encode(m)
+			// 	if err != nil {
+			// 		span.RecordError(err)
+			// 		span.SetStatus(codes.Error, "pcodec.Encode failed.")
+			// 		lastErr = err
+			// 		log.Println(err.Error())
+			// 		span.End()
+			// 		break
+			// 	}
+			// } else {
+			// 	span.AddEvent("send.other.encode")
+			// 	em, err := m.Encode()
+			// 	if err != nil {
+			// 		lastErr = err
+			// 		log.Println(err.Error())
+			// 		span.End()
+			// 		break
+			// 	}
 
-				p, err = a.pcodec.Encode(m)
-				if err != nil {
-					lastErr = err
-					log.Println(err.Error())
-					break
-				}
-			} else {
-				em, err := m.Encode()
-				if err != nil {
-					lastErr = err
-					log.Println(err.Error())
-					break
-				}
-
-				// packet encode
-				p, err = codec.Encode(packet.Data, em)
-				if err != nil {
-					lastErr = err
-					log.Println(err)
-					break
-				}
-			}
-			chWrite <- p
+			// 	// packet encode
+			// 	span.AddEvent("send.pack.encode")
+			// 	p, err = codec.Encode(packet.Data, em)
+			// 	if err != nil {
+			// 		lastErr = err
+			// 		log.Println(err)
+			// 		span.End()
+			// 		break
+			// 	}
+			// }
+			// // span.End()
+			// span.AddEvent("send.to.chWrite")
+			// chWrite <- WriteItem{ctx: ctx, data: p}
 
 		case <-a.chDie: // agent closed signal
 			return
@@ -368,5 +485,201 @@ func (a *agent) write() {
 		case <-env.Die: // application quit
 			return
 		}
+	}
+}
+
+type WriteItem struct {
+	ctx  context.Context
+	data []byte
+}
+
+func sendMsgSpan(data *pendingMessage) (context.Context, trace.Span) {
+	ctx := data.ctx
+	if ctx == nil {
+		ctx = context.Background()
+	}
+	tracer := otel.Tracer("nano.send.message")
+	sessionID, rqTime, rsID := packCodec.SplitSessionAndPackType(data.mid)
+	ctx, span := tracer.Start(ctx, "agent.send.msg")
+	span.SetAttributes(attribute.String("route", data.route),
+		attribute.String("message.type", data.typ.String()),
+		attribute.Int64("packet.session", int64(sessionID)),
+		attribute.Int64("packet.id", int64(rsID)),
+		attribute.Int64("rqTime", int64(rqTime)),
+		attribute.Int64("enduser.id", data.uid),
+	)
+	span.AddEvent("send.init")
+	return ctx, span
+}
+
+func processPendingMessage(a *agent, data pendingMessage, chWrite chan WriteItem) (err error) {
+	ctx, span := sendMsgSpan(&data)
+	span.AddEvent("send.serialize")
+	var payload []byte
+	if data.isBytes {
+		payload = data.payload.([]byte)
+	} else {
+		payload, err = message.Serialize(data.payload, a.serializer)
+	}
+
+	allOK := false
+	defer func() {
+		if !allOK {
+			callLogger := fklog.ContextAppLogger(ctx)
+			callLogger.CtxError(ctx, "processPendingMessage failed",
+				zap.Uint64("ID", data.mid),
+				zap.String("route", data.route),
+				zap.String("remote_addr", a.conn.RemoteAddr().String()),
+				zap.Int("rs_data_len", len(payload)), zap.Error(err))
+			span.End()
+		}
+	}()
+
+	if err != nil {
+		span.RecordError(err)
+		span.SetStatus(codes.Error, "message.Serialize failed.")
+		switch data.typ {
+		case message.Push:
+			log.Println(fmt.Sprintf("Push: %s error: %s", data.route, err.Error()))
+		case message.Response:
+			log.Println(fmt.Sprintf("Response message(id: %d) error: %s", data.mid, err.Error()))
+		default:
+			// expect
+		}
+		return err
+	}
+
+	// construct message and encode
+	m := &message.Message{
+		Type:  data.typ,
+		Data:  payload,
+		Route: data.route,
+		ID:    data.mid,
+	}
+
+	if pipe := a.pipeline; pipe != nil {
+		span.AddEvent("send.pipeline")
+		err = pipe.Outbound().Process(a.session, m)
+		if err != nil {
+			span.RecordError(err)
+			span.SetStatus(codes.Error, "Outbound.process failed.")
+			return err
+		}
+	}
+
+	var p []byte
+
+	if a.pcodec != nil {
+		callLogger := fklog.ContextAppLogger(ctx)
+		callLogger.CtxInfo(ctx, "nano process packet stop",
+			zap.Uint64("ID", m.ID),
+			zap.String("route", m.Route),
+			zap.String("remote_addr", a.conn.RemoteAddr().String()),
+			zap.Int("rs_data_len", len(m.Data)),
+		)
+		span.AddEvent("send.encode")
+		p, err = a.pcodec.Encode(m)
+		if err != nil {
+			span.RecordError(err)
+			span.SetStatus(codes.Error, "pcodec.Encode failed.")
+			return err
+		}
+	} else {
+		span.AddEvent("send.other.encode")
+		em, err := m.Encode()
+		if err != nil {
+			span.RecordError(err)
+			span.SetStatus(codes.Error, "other.msg.Encode failed.")
+			return err
+		}
+
+		// packet encode
+		span.AddEvent("send.pack.encode")
+		p, err = codec.Encode(packet.Data, em)
+		if err != nil {
+			span.RecordError(err)
+			span.SetStatus(codes.Error, "other.packet.Encode failed.")
+			return err
+		}
+	}
+	// span.End()
+	span.AddEvent("send.to.chWrite")
+	allOK = true
+	// chWrite <- WriteItem{ctx: ctx, data: p}
+	if a.isSvrHeader.Load() {
+		xxx := &raw_pkg.StruSvrEsRawBaseHead{
+			Header: make(map[string]string),
+		}
+		if data.isResponse {
+			xxx.Header["X-isResponse"] = "1"
+		}
+		carrier := otel.GetTextMapPropagator()
+		carrier.Inject(ctx, packCodec.NewBaseHeader(xxx))
+		hhh := svrheader.SvrHeader{
+			Header: xxx.Header,
+			Body:   p,
+		}
+
+		span.AddEvent("svrheader.Encode")
+		yyy, errEncode := hhh.Encode()
+		if errEncode != nil {
+			span.RecordError(errEncode)
+			span.SetStatus(codes.Error, "svrheader.Encode failed.")
+			return errEncode
+		}
+		p = yyy
+	}
+	ok := safeSend(chWrite, WriteItem{ctx: ctx, data: p})
+	if !ok {
+		span.RecordError(errors.New("chWrite failed"))
+		span.SetStatus(codes.Error, "safeSend chWrite failed.")
+	}
+	return nil
+}
+
+func processDataWrite(a *agent, dataWrite *WriteItem) (err error) {
+	data := dataWrite.data
+	ctx := dataWrite.ctx
+	span := trace.SpanFromContext(ctx)
+
+	defer span.End()
+	span.AddEvent("conn.write")
+
+	userID := int64(0)
+	agentSeesion := int64(0)
+	if a.session != nil {
+		userID = a.session.UID()
+		agentSeesion = a.session.ID()
+	}
+	// close agent while low-level conn broken
+	if wCount, err := a.conn.Write(data); err != nil {
+		fklog.ContextAppLogger(ctx).CtxError(ctx, "nano write packet failed",
+			zap.Int("data_len", len(data)),
+			zap.Int64("agentSeesion", agentSeesion),
+			zap.String("remote_addr", a.conn.RemoteAddr().String()),
+			zap.Int("write_count", wCount), zap.Error(err),
+			zap.Int64("userID", userID),
+		)
+		span.RecordError(err)
+		span.SetStatus(codes.Error, "conn.Write failed.")
+		return err
+	}
+	span.AddEvent("conn.write.success")
+	return nil
+}
+
+func closeWriteSpan(chWrite chan WriteItem) {
+	for v := range chWrite {
+		ctx := v.ctx
+		span := trace.SpanFromContext(ctx)
+		span.End()
+	}
+}
+
+func closeSendMsgSpan(chPendingMessage chan pendingMessage) {
+	for v := range chPendingMessage {
+		ctx := v.ctx
+		span := trace.SpanFromContext(ctx)
+		span.End()
 	}
 }

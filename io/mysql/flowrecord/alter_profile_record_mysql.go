@@ -1,12 +1,14 @@
 // @Author pangchenyang 2025/6/18 11:05:00
-// @Desc: 
+// @Desc:
 package flowrecord
 
 import (
-	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fklog"
-	"go.uber.org/zap"
-	"maze_game_server/io/mysql"
+	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/database/nanomysql"
 )
+
+type MysqlAlterProfileRecordFlow struct {
+	*nanomysql.NanoMysql
+}
 
 /*
 CREATE TABLE maze_alter_profile_record (
@@ -22,30 +24,34 @@ CREATE TABLE maze_alter_profile_record (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='修改用户资料流水表';
 */
 
+var GlobalAlterProfileRecordMysql *MysqlAlterProfileRecord
+
+type MysqlAlterProfileRecord struct {
+	*nanomysql.NanoMysql
+}
+
+func NewMysqlAlterProfileRecord(serviceName string, name string) *MysqlAlterProfileRecord {
+	GlobalAlterProfileRecordMysql.NanoMysql = nanomysql.NewNanoMysql(serviceName, name)
+	return GlobalAlterProfileRecordMysql
+}
+
 const AlterProfileTableName = "alter_profile_record"
 
 type AlterProfileRecord struct {
-	UserId     uint64 `json:"user_id" gorm:"column:user_id"`         // 用户Id
-	NewVal     string `json:"new_val" gorm:"column:new_val"`         // 新值
-	OldVal     string `json:"old_val" gorm:"column:old_val"`         // 旧值
-	ChgDesc    string `json:"chg_desc" gorm:"column:chg_desc"`       // 变化原因
-	CreateTime int64  `json:"create_time" gorm:"column:create_time"` // 时间戳 ms
+	UserId     uint64 `json:"user_id" gorm:"column:user_id" db:"user_id"`             // 用户Id
+	NewVal     string `json:"new_val" gorm:"column:new_val" db:"new_val"`             // 新值
+	OldVal     string `json:"old_val" gorm:"column:old_val" db:"old_val"`             // 旧值
+	ChgDesc    string `json:"chg_desc" gorm:"column:chg_desc" db:"chg_desc"`          // 变化原因
+	CreateTime int64  `json:"create_time" gorm:"column:create_time" db:"create_time"` // 时间戳 ms
 }
 
 // SaveAlterProfileRecord 保存修改用户资料流水
-func SaveAlterProfileRecord(logger fklog.FKLogI, record AlterProfileRecord) {
-	db, err := mysql.GetMysqlDb()
+func (m *MysqlAlterProfileRecord) SaveAlterProfileRecord(record AlterProfileRecord) error {
+	db, err := m.GetDB()
 	if err != nil {
-		logger.ErrorWF("SaveAlterProfileRecord GetMysqlDb fail",
-			zap.String("table", AlterProfileTableName), zap.Error(err))
-		return
+		return err
 	}
-
-	res := db.Table(mysql.GetFullyQualifiedTableName(AlterProfileTableName)).Create(record)
-	if res.Error != nil {
-		logger.ErrorWF("SaveAlterProfileRecord fail", zap.Error(err), zap.Any("flowrecord", record))
-		return
-	}
-	logger.DebugWF("SaveAlterProfileRecord succ", zap.Any("flowrecord", record))
-	return
+	_, err = db.Exec("INSERT INTO alter_profile_record (user_id, new_val, old_val, chg_desc, create_time) VALUES (?, ?, ?, ?, ?)",
+		record.UserId, record.NewVal, record.OldVal, record.ChgDesc, record.CreateTime)
+	return err
 }

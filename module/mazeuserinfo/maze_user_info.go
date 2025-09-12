@@ -1,11 +1,13 @@
 package mazeuserinfo
 
 import (
+	"context"
 	"errors"
 
-	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fklog"
 	"maze_game_server/config/GMazeLevelV8Cfg"
 	"maze_game_server/io/redis/mazeuserlevelredis"
+
+	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fklog"
 )
 
 const (
@@ -53,10 +55,10 @@ func (u *UserInfo) SetTotalExp(totalExp int64) {
 }
 
 // 加经验
-func (u *UserInfo) AddExp(addExp int64) (err error) {
+func (u *UserInfo) AddExp(ctx context.Context, addExp int64) (err error) {
 
 	for {
-		levelCfg := GMazeLevelV8Cfg.Get(int32(u.Level))
+		levelCfg := GMazeLevelV8Cfg.GetWithCtx(ctx, int32(u.Level))
 		if levelCfg == nil {
 			return errors.New("cant find level cfg")
 		}
@@ -78,10 +80,10 @@ func (u *UserInfo) AddExp(addExp int64) (err error) {
 }
 
 // 根据设置的经验总值更新等级经验
-func (u *UserInfo) CalExp() (err error) {
+func (u *UserInfo) CalExp(ctx context.Context) (err error) {
 	curLevel := int32(1)
 	for {
-		levelCfg := GMazeLevelV8Cfg.Get(int32(curLevel))
+		levelCfg := GMazeLevelV8Cfg.GetWithCtx(ctx, int32(curLevel))
 		if levelCfg == nil {
 			return errors.New("cant find level cfg")
 		}
@@ -136,8 +138,8 @@ func (u *UserInfo) SetEnergyLastTime(lastTime int64) {
 	u.mask |= USER_INFO_MASK_ENERGY_LAST_TIME
 }
 
-func GetUserInfoV2(logger fklog.FKLogI, userId uint64) (userInfo *UserInfo, err error) {
-	userMap, err := mazeuserlevelredis.GetUserInfo(logger, userId)
+func GetUserInfoV2(ctx context.Context, userId uint64) (userInfo *UserInfo, err error) {
+	userMap, err := mazeuserlevelredis.GetUserInfo(ctx, userId)
 	if err != nil {
 		return
 	}
@@ -162,10 +164,10 @@ func GetUserInfoV2(logger fklog.FKLogI, userId uint64) (userInfo *UserInfo, err 
 	return
 }
 
-func SetUserInfoV2(logger fklog.FKLogI, userId uint64, userInfo *UserInfo) (err error) {
-
+func SetUserInfoV2(ctx context.Context, userId uint64, userInfo *UserInfo) (err error) {
+	logger := fklog.ContextAppLogger(ctx)
 	if userInfo == nil {
-		logger.ErrorWF("SetUserInfoV2 userInfo is nil")
+		logger.CtxInfo(ctx, "SetUserInfoV2 userInfo is nil")
 		err = errors.New("userInfo nil")
 		return
 	}
@@ -202,7 +204,7 @@ func SetUserInfoV2(logger fklog.FKLogI, userId uint64, userInfo *UserInfo) (err 
 		return
 	}
 
-	err = mazeuserlevelredis.SetUserInfo(logger, userId, userMap)
+	err = mazeuserlevelredis.SetUserInfo(ctx, userId, userMap)
 	if err != nil {
 		return
 	}

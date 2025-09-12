@@ -1,7 +1,6 @@
 package auth
 
 import (
-	"context"
 	"time"
 
 	"maze_game_server/common/errors"
@@ -13,6 +12,7 @@ import (
 	"maze_game_server/pb/common/UserLogin"
 	"maze_game_server/usecase/online"
 
+	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fklog"
 	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fkprometheus"
 	"gitlab.ifreetalk.com/maze-plate/freetk/fkserver/appconfig"
 	"gitlab.ifreetalk.com/maze-plate/freetk/fkserver/config_manager"
@@ -20,10 +20,20 @@ import (
 	"google.golang.org/protobuf/proto"
 )
 
+func checkResResult(res *UserLogin.UserLoginRs) bool {
+	if res.Error == nil {
+		return false
+	}
+	if res.GetError().GetErrCode() != 0x80000000 {
+		return false
+	}
+	return true
+}
+
 func (a *Auth) OnLoginRQ_10492_10493(s *session.Session, req *UserLogin.UserLoginRq) (err error) {
 	defer fkprometheus.InfoPMT("OnLoginRQ")()
-
-	logger := log.Clone("Auth", uint64(req.GetAuthId()), 0)
+	ctx := s.Context()
+	logger := fklog.ContextAppLogger(ctx)
 	res := &UserLogin.UserLoginRs{}
 
 	res.Session = req.Session
@@ -32,7 +42,11 @@ func (a *Auth) OnLoginRQ_10492_10493(s *session.Session, req *UserLogin.UserLogi
 
 	defer func() {
 		err = s.Response(res)
-		logger.InfoWF("OnLoginRQ end", zap.Any("req", req), zap.Any("res", res))
+		if !checkResResult(res) {
+			// logger.CtxError(ctx, "OnLoginRQ end", zap.Any("req", req), zap.Any("res", res), zap.String("ClientAddr", s.String("ClientAddr")))
+		} else {
+			logger.CtxInfo(ctx, "OnLoginRQ end", zap.Any("req", req), zap.Any("res", res), zap.String("ClientAddr", s.String("ClientAddr")))
+		}
 	}()
 
 	// 认证
@@ -42,7 +56,7 @@ func (a *Auth) OnLoginRQ_10492_10493(s *session.Session, req *UserLogin.UserLogi
 		return nil
 	}
 
-	users, err := UnionIDBindRedis.GetUsersWithUnionID(logger, uint64(req.GetAuthId()))
+	users, err := UnionIDBindRedis.GetUsersWithUnionID(ctx, logger, uint64(req.GetAuthId()))
 	if err != nil {
 		res.Error = errors.COMMON_ERROR_TIPS.Wrap("get users with unionID fail")
 		return nil
@@ -50,24 +64,24 @@ func (a *Auth) OnLoginRQ_10492_10493(s *session.Session, req *UserLogin.UserLogi
 
 	userID := uint64(0)
 	if len(users) == 0 {
-		newUserID := useridredis.Generate(logger)
+		newUserID := useridredis.Generate(ctx, logger)
 		if newUserID == 0 {
 			res.Error = errors.COMMON_ERROR_TIPS.Wrap("generate userID fail")
 			return nil
 		}
-		err = UnionIDBindRedis.AddUnionID2UserID(logger, uint64(req.GetAuthId()), newUserID)
+		err = UnionIDBindRedis.AddUnionID2UserID(ctx, logger, uint64(req.GetAuthId()), newUserID)
 		if err != nil {
 			res.Error = errors.COMMON_ERROR_TIPS.Wrap("add unionID to userID fail")
 			return nil
 		}
-		err = UnionIDBindRedis.AddUserID2UnionID(logger, newUserID, uint64(req.GetAuthId()))
+		err = UnionIDBindRedis.AddUserID2UnionID(ctx, logger, newUserID, uint64(req.GetAuthId()))
 		if err != nil {
 			res.Error = errors.COMMON_ERROR_TIPS.Wrap("add userID to unionID fail")
 			return nil
 		}
-		err = usersection.Set(context.TODO(), newUserID, appconfig.GlobalConfig().Global.SectionID)
+		err = usersection.Set(ctx, newUserID, appconfig.GlobalConfig().Global.SectionID)
 		if err != nil {
-			logger.ErrorWF("usersection.Set fail",
+			logger.CtxError(ctx, "usersection.Set fail",
 				zap.Uint64("userID", userID),
 				zap.Error(err))
 		}
@@ -81,15 +95,15 @@ func (a *Auth) OnLoginRQ_10492_10493(s *session.Session, req *UserLogin.UserLogi
 
 	// ctx.SetTag("userID", userID)
 	s.Bind(int64(userID))
-	online.Bind(logger, s, userID)
+	online.Bind(ctx, s, userID)
 
 	res.ServerTime = proto.Int64(time.Now().UnixMilli())
 
-	time.AfterFunc(time.Second*2, func() {
-		SendArrivePacket(logger, int64(userID), 111, &UserLogin.UserLiveRs{
-			ClientTime: proto.Int64(time.Now().UnixMilli()),
-		})
-	})
+	// time.AfterFunc(time.Second*2, func() {
+	// 	SendArrivePacketWithContext(ctx, logger, int64(userID), 111, &UserLogin.UserLiveRs{
+	// 		ClientTime: proto.Int64(time.Now().UnixMilli()),
+	// 	})
+	// })
 	return nil
 }
 
@@ -102,7 +116,7 @@ func (a *Auth) OnLiveRQ_10494_10495(s *session.Session, req *UserLogin.UserLiveR
 	res.Session = req.Session
 	defer func() {
 		err = s.Response(res)
-		logger.InfoWF("OnLiveRQ end", zap.Any("req", req), zap.Any("res", res))
+		logger.CtxInfo(s.Context(), "OnLiveRQ end", zap.Any("req", req), zap.Any("res", res))
 	}()
 
 	res.Error = errors.NO_ERROR
@@ -118,7 +132,7 @@ func (a *Auth) OnConfigDataMd5Rq_10500_10501(s *session.Session, req *UserLogin.
 
 	defer func() {
 		err = s.Response(res)
-		logger.InfoWF("OnConfigDataMd5Rq end", zap.Any("req", req), zap.Any("res", res))
+		logger.CtxInfo(s.Context(), "OnConfigDataMd5Rq end", zap.Any("req", req), zap.Any("res", res))
 	}()
 
 	res.Error = errors.NO_ERROR

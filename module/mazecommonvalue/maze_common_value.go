@@ -1,16 +1,18 @@
 package mazecommonvalue
 
 import (
+	"context"
 	"errors"
 
-	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fklog"
-	"go.uber.org/zap"
 	"maze_game_server/common/constdef"
 	"maze_game_server/config/GMazeAttributeFormulaV8Cfg"
 	"maze_game_server/io/redis/mazecalcattrredis"
+
+	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fklog"
+	"go.uber.org/zap"
 )
 
-func GetExtraAdditionForce(logger fklog.FKLogI, userId uint64, userLevel, forceVal int64) (money, equip, exp int64, err error) {
+func GetExtraAdditionForce(ctx context.Context, userId uint64, userLevel, forceVal int64) (money, equip, exp int64, err error) {
 	// allCfg := GMazeKongfuExtraCoinV8Cfg.GetAll()
 	// if len(allCfg) == 0 {
 	// 	err = errors.New("maze kongfu extra coin cfg empty")
@@ -31,41 +33,41 @@ func GetExtraAdditionForce(logger fklog.FKLogI, userId uint64, userLevel, forceV
 	return
 }
 
-func GetMoneyExtraAdditionEquip(logger fklog.FKLogI, userId uint64) (money int64, err error) {
-
-	attrMap, err := mazecalcattrredis.BatchGetMazeCalcAttr(logger, userId, []int32{constdef.MazeMoneyBuff10258})
+func GetMoneyExtraAdditionEquip(ctx context.Context, userId uint64) (money int64, err error) {
+	logger := fklog.ContextAppLogger(ctx)
+	attrMap, err := mazecalcattrredis.BatchGetMazeCalcAttr(ctx, userId, []int32{constdef.MazeMoneyBuff10258})
 	if err != nil {
-		logger.ErrorWF("GetMoneyExtraAdditionEquip BatchGetDollCalcAttr fail", zap.Error(err), zap.Any("attrId", constdef.MazeMoneyBuff10258))
+		logger.CtxError(ctx, "GetMoneyExtraAdditionEquip BatchGetDollCalcAttr fail", zap.Error(err), zap.Any("attrId", constdef.MazeMoneyBuff10258))
 		return
 	}
 
 	// pb := attrMap[constdef.MazeMoneyBuff10258]
 	// money = pb.GetAttrVal()
 	money = attrMap[constdef.MazeMoneyBuff10258]
-	logger.InfoWF("GetMoneyExtraAdditionEquip succ ", zap.Any("money", money), zap.Any("attrMap", attrMap))
+	logger.CtxInfo(ctx, "GetMoneyExtraAdditionEquip succ ", zap.Any("money", money), zap.Any("attrMap", attrMap))
 	return
 }
 
-func GetExpExtraAdditionEquip(logger fklog.FKLogI, userId uint64) (money int64, err error) {
-
-	attrMap, err := mazecalcattrredis.BatchGetMazeCalcAttr(logger, userId, []int32{constdef.MazeExpBuff10261})
+func GetExpExtraAdditionEquip(ctx context.Context, userId uint64) (money int64, err error) {
+	logger := fklog.ContextAppLogger(ctx)
+	attrMap, err := mazecalcattrredis.BatchGetMazeCalcAttr(ctx, userId, []int32{constdef.MazeExpBuff10261})
 	if err != nil {
-		logger.ErrorWF("GetExpExtraAdditionEquip BatchGetDollCalcAttr fail", zap.Error(err), zap.Any("attrId", constdef.MazeExpBuff10261))
+		logger.CtxError(ctx, "GetExpExtraAdditionEquip BatchGetDollCalcAttr fail", zap.Error(err), zap.Any("attrId", constdef.MazeExpBuff10261))
 		return
 	}
 
 	// pb := attrMap[constdef.MazeExpBuff10261]
 	// money = pb.GetAttrVal()
 	money = attrMap[constdef.MazeExpBuff10261]
-	logger.InfoWF("GetExpExtraAdditionEquip succ ", zap.Any("money", money), zap.Any("attrMap", attrMap))
+	logger.CtxInfo(ctx, "GetExpExtraAdditionEquip succ ", zap.Any("money", money), zap.Any("attrMap", attrMap))
 	return
 }
 
-func GetCalRet(logger fklog.FKLogI, userId uint64, userLevel, forceVal int64, foeExpBase, foeMoneyBase, foeEquipBase int64) (totalExp, totalMoney int64, totalEquip int64, err error) {
-
+func GetCalRet(ctx context.Context, userId uint64, userLevel, forceVal int64, foeExpBase, foeMoneyBase, foeEquipBase int64) (totalExp, totalMoney int64, totalEquip int64, err error) {
+	logger := fklog.ContextAppLogger(ctx)
 	attrs := make([]int32, 0)
 
-	expFormula := GMazeAttributeFormulaV8Cfg.Get(constdef.MazeExp)
+	expFormula := GMazeAttributeFormulaV8Cfg.GetWithCtx(ctx,constdef.MazeExp)
 	if expFormula == nil {
 		err = errors.New("maze exp formula cfg empty")
 		return
@@ -76,7 +78,7 @@ func GetCalRet(logger fklog.FKLogI, userId uint64, userLevel, forceVal int64, fo
 	attrs = append(attrs, expFormula.Parameter_9...)
 	attrs = append(attrs, expFormula.Parameter_10...)
 
-	moneyFormula := GMazeAttributeFormulaV8Cfg.Get(constdef.MazeMoney)
+	moneyFormula := GMazeAttributeFormulaV8Cfg.GetWithCtx(ctx,constdef.MazeMoney)
 	if moneyFormula == nil {
 		err = errors.New("maze money formula cfg empty")
 		return
@@ -87,19 +89,19 @@ func GetCalRet(logger fklog.FKLogI, userId uint64, userLevel, forceVal int64, fo
 	attrs = append(attrs, moneyFormula.Parameter_9...)
 	attrs = append(attrs, moneyFormula.Parameter_10...)
 
-	logger.InfoWF("GetCalRet dump need attrIds", zap.Any("attrs", attrs))
+	logger.CtxInfo(ctx, "GetCalRet dump need attrIds", zap.Any("attrs", attrs))
 
 	// attrs = append(attrs, constdef.MazeForce)
 
-	attrDbs, err := mazecalcattrredis.BatchGetMazeCalcAttr(logger, userId, attrs)
+	attrDbs, err := mazecalcattrredis.BatchGetMazeCalcAttr(ctx, userId, attrs)
 	if err != nil {
-		logger.ErrorWF("GetCalRet BatchGetDollCalcAttr fail", zap.Error(err), zap.Any("attrs", attrs))
+		logger.CtxError(ctx, "GetCalRet BatchGetDollCalcAttr fail", zap.Error(err), zap.Any("attrs", attrs))
 		return
 	}
 
-	money, equip, exp, err := GetExtraAdditionForce(logger, userId, userLevel, forceVal)
+	money, equip, exp, err := GetExtraAdditionForce(ctx, userId, userLevel, forceVal)
 	if err != nil {
-		logger.ErrorWF("GetCalRet GetExtraAdditionForce fail", zap.Error(err), zap.Any("userLevel", userLevel), zap.Any("forceVal", forceVal))
+		logger.CtxError(ctx, "GetCalRet GetExtraAdditionForce fail", zap.Error(err), zap.Any("userLevel", userLevel), zap.Any("forceVal", forceVal))
 		return
 	}
 
@@ -114,14 +116,15 @@ func GetCalRet(logger fklog.FKLogI, userId uint64, userLevel, forceVal int64, fo
 		}
 	}
 
-	totalExp = calRet(logger, attrMap, expFormula)
-	totalMoney = calRet(logger, attrMap, moneyFormula)
+	totalExp = calRet(ctx, attrMap, expFormula)
+	totalMoney = calRet(ctx, attrMap, moneyFormula)
 	totalEquip = foeEquipBase + equip
-	logger.InfoWF("GetCalRet calRet dump", zap.Any("totalExp", totalExp), zap.Any("totalMoney", totalMoney), zap.Any("totalEquip", totalEquip))
+	logger.CtxInfo(ctx, "GetCalRet calRet dump", zap.Any("totalExp", totalExp), zap.Any("totalMoney", totalMoney), zap.Any("totalEquip", totalEquip))
 	return
 }
 
-func calRet(logger fklog.FKLogI, attrMap map[int32]int64, cfg *GMazeAttributeFormulaV8Cfg.MazeAttributeFormulaV8ConfigRow) (ret int64) {
+func calRet(ctx context.Context, attrMap map[int32]int64, cfg *GMazeAttributeFormulaV8Cfg.MazeAttributeFormulaV8ConfigRow) (ret int64) {
+	logger := fklog.ContextAppLogger(ctx)
 	p1 := attrMap[cfg.Parameter_1]
 	p2 := attrMap[cfg.Parameter_2]
 	p3 := attrMap[cfg.Parameter_3]
@@ -137,7 +140,7 @@ func calRet(logger fklog.FKLogI, attrMap map[int32]int64, cfg *GMazeAttributeFor
 	ret1 := float64(p1) * (1 + float64(p2)/10000.0) * p8 * (1 + float64(p3)/10000.0)
 	ret2 := (ret1 + float64(p4)) * (1 + float64(p5)/10000.0) * p9 * p10
 	ret = int64((ret2 + float64(p11)) * (1 + float64(p12)/10000.0))
-	logger.InfoWF("calRet dump", zap.Any("p1", p1), zap.Any("p2", p2), zap.Any("p3", p3), zap.Any("p4", p4), zap.Any("p5", p5),
+	logger.CtxInfo(ctx, "calRet dump", zap.Any("p1", p1), zap.Any("p2", p2), zap.Any("p3", p3), zap.Any("p4", p4), zap.Any("p5", p5),
 		zap.Any("p8", p8), zap.Any("p9", p9), zap.Any("p10", p10), zap.Any("p11", p11), zap.Any("p12", p12), zap.Any("ret", ret))
 	return
 }

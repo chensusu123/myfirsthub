@@ -27,49 +27,49 @@ func getKey(args ...interface{}) string {
 }
 
 // IsOpenedBox
-func IsOpenedBox(logger fklog.FKLogI, userID uint64, barrierID, boxID int32) (openTime int64, err error) {
+func IsOpenedBox(ctx context.Context, userID uint64, barrierID, boxID int32) (openTime int64, err error) {
+	logger := fklog.ContextAppLogger(ctx)
 	var (
 		key = getKey(userID, barrierID)
-		ctx = context.Background()
 	)
 	openTime, err = redis.Int64(cli.Do(ctx, "ZSCORE", key, boxID))
 	if err != nil {
 		if err == redis.ErrNil {
 			err = nil
 		} else {
-			logger.ErrorWF("IsOpenedBox ZSCORE fail",
+			logger.CtxError(ctx, "IsOpenedBox ZSCORE fail",
 				zap.Error(err),
 				zap.Any("key", key),
 			)
 			return 0, err
 		}
 	}
-	logger.DebugWF("IsOpenedBox success", zap.Uint64("userID", userID), zap.Int32("barrierID", barrierID), zap.Int32("boxID", boxID), zap.Int64("openTime", openTime))
+	logger.CtxDebug(ctx, "IsOpenedBox success", zap.Uint64("userID", userID), zap.Int32("barrierID", barrierID), zap.Int32("boxID", boxID), zap.Int64("openTime", openTime))
 	return
 }
 
 // SetOpenBoxTime
-func SetOpenBoxTime(logger fklog.FKLogI, userID uint64, barrierID, boxID int32) (err error) {
+func SetOpenBoxTime(ctx context.Context, userID uint64, barrierID, boxID int32) (err error) {
+	logger := fklog.ContextAppLogger(ctx)
 	var (
 		key = getKey(userID, barrierID)
-		ctx = context.Background()
 	)
 	_, err = cli.Do(ctx, "ZADD", key, time.Now().Unix(), boxID)
 	if err != nil {
-		logger.ErrorWF("SetOpenBoxTime ZADD fail",
+		logger.CtxError(ctx, "SetOpenBoxTime ZADD fail",
 			zap.Error(err),
 			zap.Any("key", key),
 		)
 		return err
 	}
-	logger.DebugWF("SetOpenBoxTime success", zap.Uint64("userID", userID), zap.Int32("barrierID", barrierID), zap.Int32("boxID", boxID))
+	logger.CtxDebug(ctx, "SetOpenBoxTime success", zap.Uint64("userID", userID), zap.Int32("barrierID", barrierID), zap.Int32("boxID", boxID))
 	return
 }
 
 // ClearOpenBoxTime
-func ClearOpenBoxTime(logger fklog.FKLogI, userID uint64) (err error) {
+func ClearOpenBoxTime(ctx context.Context, userID uint64) (err error) {
+	logger := fklog.ContextAppLogger(ctx)
 	var (
-		ctx  = context.Background()
 		keys = make([]interface{}, 0)
 	)
 	// 查询所有关卡ID
@@ -81,13 +81,13 @@ func ClearOpenBoxTime(logger fklog.FKLogI, userID uint64) (err error) {
 		if err == redis.ErrNil {
 			err = nil
 		} else {
-			logger.ErrorWF("ClearOpenBoxTime DEL fail",
+			logger.CtxError(ctx, "ClearOpenBoxTime DEL fail",
 				zap.Error(err),
 				zap.Any("keys", keys),
 			)
 			return err
 		}
 	}
-	logger.DebugWF("ClearOpenBoxTime success", zap.Uint64("userID", userID), zap.Any("keys", keys))
+	logger.CtxDebug(ctx, "ClearOpenBoxTime success", zap.Uint64("userID", userID), zap.Any("keys", keys))
 	return
 }

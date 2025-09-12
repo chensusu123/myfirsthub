@@ -199,6 +199,169 @@ func (x *QueryMazeEnergyRS) GetEnergyInfo() *EnergyInfo {
 	return nil
 }
 
+//## 10610 UN_TCP_PACK_CLI_ENERGY_CHANGE_ID
+//体力变化ID包
+type EnergyChangeID struct {
+	state         protoimpl.MessageState
+	sizeCache     protoimpl.SizeCache
+	unknownFields protoimpl.UnknownFields
+
+	EnergyInfo *EnergyInfo `protobuf:"bytes,1,opt,name=energy_info,json=energyInfo" json:"energy_info,omitempty"` // 体力信息
+}
+
+func (x *EnergyChangeID) Reset() {
+	*x = EnergyChangeID{}
+	if protoimpl.UnsafeEnabled {
+		mi := &file_common_MazeEnergy_proto_msgTypes[3]
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		ms.StoreMessageInfo(mi)
+	}
+}
+
+func (x *EnergyChangeID) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*EnergyChangeID) ProtoMessage() {}
+
+func (x *EnergyChangeID) ProtoReflect() protoreflect.Message {
+	mi := &file_common_MazeEnergy_proto_msgTypes[3]
+	if protoimpl.UnsafeEnabled && x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use EnergyChangeID.ProtoReflect.Descriptor instead.
+func (*EnergyChangeID) Descriptor() ([]byte, []int) {
+	return file_common_MazeEnergy_proto_rawDescGZIP(), []int{3}
+}
+
+func (x *EnergyChangeID) GetEnergyInfo() *EnergyInfo {
+	if x != nil {
+		return x.EnergyInfo
+	}
+	return nil
+}
+
+//## 10611 	UN_TCP_PACK_CLI_USE_MAZE_ENERGY_ITEM_RQ
+// 使用迷宫体力道具请求
+type UseMazeEnergyItemRQ struct {
+	state         protoimpl.MessageState
+	sizeCache     protoimpl.SizeCache
+	unknownFields protoimpl.UnknownFields
+
+	Header *Common.PacketHeader `protobuf:"bytes,1,opt,name=header" json:"header,omitempty"`
+}
+
+func (x *UseMazeEnergyItemRQ) Reset() {
+	*x = UseMazeEnergyItemRQ{}
+	if protoimpl.UnsafeEnabled {
+		mi := &file_common_MazeEnergy_proto_msgTypes[4]
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		ms.StoreMessageInfo(mi)
+	}
+}
+
+func (x *UseMazeEnergyItemRQ) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*UseMazeEnergyItemRQ) ProtoMessage() {}
+
+func (x *UseMazeEnergyItemRQ) ProtoReflect() protoreflect.Message {
+	mi := &file_common_MazeEnergy_proto_msgTypes[4]
+	if protoimpl.UnsafeEnabled && x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use UseMazeEnergyItemRQ.ProtoReflect.Descriptor instead.
+func (*UseMazeEnergyItemRQ) Descriptor() ([]byte, []int) {
+	return file_common_MazeEnergy_proto_rawDescGZIP(), []int{4}
+}
+
+func (x *UseMazeEnergyItemRQ) GetHeader() *Common.PacketHeader {
+	if x != nil {
+		return x.Header
+	}
+	return nil
+}
+
+//## 10612 	UN_TCP_PACK_CLI_USE_MAZE_ENERGY_ITEM_RS
+// 使用迷宫体力道具应答
+type UseMazeEnergyItemRS struct {
+	state         protoimpl.MessageState
+	sizeCache     protoimpl.SizeCache
+	unknownFields protoimpl.UnknownFields
+
+	Header     *Common.PacketHeader   `protobuf:"bytes,1,opt,name=header" json:"header,omitempty"`
+	ErrInfo    *MessageType.ErrorInfo `protobuf:"bytes,2,opt,name=err_info,json=errInfo" json:"err_info,omitempty"`
+	EnergyInfo *EnergyInfo            `protobuf:"bytes,3,opt,name=energy_info,json=energyInfo" json:"energy_info,omitempty"` // 体力信息
+}
+
+func (x *UseMazeEnergyItemRS) Reset() {
+	*x = UseMazeEnergyItemRS{}
+	if protoimpl.UnsafeEnabled {
+		mi := &file_common_MazeEnergy_proto_msgTypes[5]
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		ms.StoreMessageInfo(mi)
+	}
+}
+
+func (x *UseMazeEnergyItemRS) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*UseMazeEnergyItemRS) ProtoMessage() {}
+
+func (x *UseMazeEnergyItemRS) ProtoReflect() protoreflect.Message {
+	mi := &file_common_MazeEnergy_proto_msgTypes[5]
+	if protoimpl.UnsafeEnabled && x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use UseMazeEnergyItemRS.ProtoReflect.Descriptor instead.
+func (*UseMazeEnergyItemRS) Descriptor() ([]byte, []int) {
+	return file_common_MazeEnergy_proto_rawDescGZIP(), []int{5}
+}
+
+func (x *UseMazeEnergyItemRS) GetHeader() *Common.PacketHeader {
+	if x != nil {
+		return x.Header
+	}
+	return nil
+}
+
+func (x *UseMazeEnergyItemRS) GetErrInfo() *MessageType.ErrorInfo {
+	if x != nil {
+		return x.ErrInfo
+	}
+	return nil
+}
+
+func (x *UseMazeEnergyItemRS) GetEnergyInfo() *EnergyInfo {
+	if x != nil {
+		return x.EnergyInfo
+	}
+	return nil
+}
+
 var File_common_MazeEnergy_proto protoreflect.FileDescriptor
 
 var file_common_MazeEnergy_proto_rawDesc = []byte{
@@ -229,10 +392,30 @@ var file_common_MazeEnergy_proto_rawDesc = []byte{
 	0x65, 0x6e, 0x65, 0x72, 0x67, 0x79, 0x5f, 0x69, 0x6e, 0x66, 0x6f, 0x18, 0x03, 0x20, 0x01, 0x28,
 	0x0b, 0x32, 0x16, 0x2e, 0x4d, 0x61, 0x7a, 0x65, 0x45, 0x6e, 0x65, 0x72, 0x67, 0x79, 0x2e, 0x45,
 	0x6e, 0x65, 0x72, 0x67, 0x79, 0x49, 0x6e, 0x66, 0x6f, 0x52, 0x0a, 0x65, 0x6e, 0x65, 0x72, 0x67,
-	0x79, 0x49, 0x6e, 0x66, 0x6f, 0x42, 0x37, 0x5a, 0x25, 0x6d, 0x61, 0x7a, 0x65, 0x5f, 0x67, 0x61,
-	0x6d, 0x65, 0x5f, 0x73, 0x65, 0x72, 0x76, 0x65, 0x72, 0x2f, 0x70, 0x62, 0x2f, 0x63, 0x6f, 0x6d,
-	0x6d, 0x6f, 0x6e, 0x2f, 0x4d, 0x61, 0x7a, 0x65, 0x45, 0x6e, 0x65, 0x72, 0x67, 0x79, 0xaa, 0x02,
-	0x0d, 0x50, 0x62, 0x2e, 0x4d, 0x61, 0x7a, 0x65, 0x45, 0x6e, 0x65, 0x72, 0x67, 0x79,
+	0x79, 0x49, 0x6e, 0x66, 0x6f, 0x22, 0x49, 0x0a, 0x0e, 0x45, 0x6e, 0x65, 0x72, 0x67, 0x79, 0x43,
+	0x68, 0x61, 0x6e, 0x67, 0x65, 0x49, 0x44, 0x12, 0x37, 0x0a, 0x0b, 0x65, 0x6e, 0x65, 0x72, 0x67,
+	0x79, 0x5f, 0x69, 0x6e, 0x66, 0x6f, 0x18, 0x01, 0x20, 0x01, 0x28, 0x0b, 0x32, 0x16, 0x2e, 0x4d,
+	0x61, 0x7a, 0x65, 0x45, 0x6e, 0x65, 0x72, 0x67, 0x79, 0x2e, 0x45, 0x6e, 0x65, 0x72, 0x67, 0x79,
+	0x49, 0x6e, 0x66, 0x6f, 0x52, 0x0a, 0x65, 0x6e, 0x65, 0x72, 0x67, 0x79, 0x49, 0x6e, 0x66, 0x6f,
+	0x22, 0x43, 0x0a, 0x13, 0x55, 0x73, 0x65, 0x4d, 0x61, 0x7a, 0x65, 0x45, 0x6e, 0x65, 0x72, 0x67,
+	0x79, 0x49, 0x74, 0x65, 0x6d, 0x52, 0x51, 0x12, 0x2c, 0x0a, 0x06, 0x68, 0x65, 0x61, 0x64, 0x65,
+	0x72, 0x18, 0x01, 0x20, 0x01, 0x28, 0x0b, 0x32, 0x14, 0x2e, 0x43, 0x6f, 0x6d, 0x6d, 0x6f, 0x6e,
+	0x2e, 0x50, 0x61, 0x63, 0x6b, 0x65, 0x74, 0x48, 0x65, 0x61, 0x64, 0x65, 0x72, 0x52, 0x06, 0x68,
+	0x65, 0x61, 0x64, 0x65, 0x72, 0x22, 0xaf, 0x01, 0x0a, 0x13, 0x55, 0x73, 0x65, 0x4d, 0x61, 0x7a,
+	0x65, 0x45, 0x6e, 0x65, 0x72, 0x67, 0x79, 0x49, 0x74, 0x65, 0x6d, 0x52, 0x53, 0x12, 0x2c, 0x0a,
+	0x06, 0x68, 0x65, 0x61, 0x64, 0x65, 0x72, 0x18, 0x01, 0x20, 0x01, 0x28, 0x0b, 0x32, 0x14, 0x2e,
+	0x43, 0x6f, 0x6d, 0x6d, 0x6f, 0x6e, 0x2e, 0x50, 0x61, 0x63, 0x6b, 0x65, 0x74, 0x48, 0x65, 0x61,
+	0x64, 0x65, 0x72, 0x52, 0x06, 0x68, 0x65, 0x61, 0x64, 0x65, 0x72, 0x12, 0x31, 0x0a, 0x08, 0x65,
+	0x72, 0x72, 0x5f, 0x69, 0x6e, 0x66, 0x6f, 0x18, 0x02, 0x20, 0x01, 0x28, 0x0b, 0x32, 0x16, 0x2e,
+	0x4d, 0x65, 0x73, 0x73, 0x61, 0x67, 0x65, 0x54, 0x79, 0x70, 0x65, 0x2e, 0x45, 0x72, 0x72, 0x6f,
+	0x72, 0x49, 0x6e, 0x66, 0x6f, 0x52, 0x07, 0x65, 0x72, 0x72, 0x49, 0x6e, 0x66, 0x6f, 0x12, 0x37,
+	0x0a, 0x0b, 0x65, 0x6e, 0x65, 0x72, 0x67, 0x79, 0x5f, 0x69, 0x6e, 0x66, 0x6f, 0x18, 0x03, 0x20,
+	0x01, 0x28, 0x0b, 0x32, 0x16, 0x2e, 0x4d, 0x61, 0x7a, 0x65, 0x45, 0x6e, 0x65, 0x72, 0x67, 0x79,
+	0x2e, 0x45, 0x6e, 0x65, 0x72, 0x67, 0x79, 0x49, 0x6e, 0x66, 0x6f, 0x52, 0x0a, 0x65, 0x6e, 0x65,
+	0x72, 0x67, 0x79, 0x49, 0x6e, 0x66, 0x6f, 0x42, 0x37, 0x5a, 0x25, 0x6d, 0x61, 0x7a, 0x65, 0x5f,
+	0x67, 0x61, 0x6d, 0x65, 0x5f, 0x73, 0x65, 0x72, 0x76, 0x65, 0x72, 0x2f, 0x70, 0x62, 0x2f, 0x63,
+	0x6f, 0x6d, 0x6d, 0x6f, 0x6e, 0x2f, 0x4d, 0x61, 0x7a, 0x65, 0x45, 0x6e, 0x65, 0x72, 0x67, 0x79,
+	0xaa, 0x02, 0x0d, 0x50, 0x62, 0x2e, 0x4d, 0x61, 0x7a, 0x65, 0x45, 0x6e, 0x65, 0x72, 0x67, 0x79,
 }
 
 var (
@@ -247,24 +430,32 @@ func file_common_MazeEnergy_proto_rawDescGZIP() []byte {
 	return file_common_MazeEnergy_proto_rawDescData
 }
 
-var file_common_MazeEnergy_proto_msgTypes = make([]protoimpl.MessageInfo, 3)
+var file_common_MazeEnergy_proto_msgTypes = make([]protoimpl.MessageInfo, 6)
 var file_common_MazeEnergy_proto_goTypes = []interface{}{
 	(*QueryMazeEnergyRQ)(nil),     // 0: MazeEnergy.QueryMazeEnergyRQ
 	(*EnergyInfo)(nil),            // 1: MazeEnergy.EnergyInfo
 	(*QueryMazeEnergyRS)(nil),     // 2: MazeEnergy.QueryMazeEnergyRS
-	(*Common.PacketHeader)(nil),   // 3: Common.PacketHeader
-	(*MessageType.ErrorInfo)(nil), // 4: MessageType.ErrorInfo
+	(*EnergyChangeID)(nil),        // 3: MazeEnergy.EnergyChangeID
+	(*UseMazeEnergyItemRQ)(nil),   // 4: MazeEnergy.UseMazeEnergyItemRQ
+	(*UseMazeEnergyItemRS)(nil),   // 5: MazeEnergy.UseMazeEnergyItemRS
+	(*Common.PacketHeader)(nil),   // 6: Common.PacketHeader
+	(*MessageType.ErrorInfo)(nil), // 7: MessageType.ErrorInfo
 }
 var file_common_MazeEnergy_proto_depIdxs = []int32{
-	3, // 0: MazeEnergy.QueryMazeEnergyRQ.header:type_name -> Common.PacketHeader
-	3, // 1: MazeEnergy.QueryMazeEnergyRS.header:type_name -> Common.PacketHeader
-	4, // 2: MazeEnergy.QueryMazeEnergyRS.err_info:type_name -> MessageType.ErrorInfo
+	6, // 0: MazeEnergy.QueryMazeEnergyRQ.header:type_name -> Common.PacketHeader
+	6, // 1: MazeEnergy.QueryMazeEnergyRS.header:type_name -> Common.PacketHeader
+	7, // 2: MazeEnergy.QueryMazeEnergyRS.err_info:type_name -> MessageType.ErrorInfo
 	1, // 3: MazeEnergy.QueryMazeEnergyRS.energy_info:type_name -> MazeEnergy.EnergyInfo
-	4, // [4:4] is the sub-list for method output_type
-	4, // [4:4] is the sub-list for method input_type
-	4, // [4:4] is the sub-list for extension type_name
-	4, // [4:4] is the sub-list for extension extendee
-	0, // [0:4] is the sub-list for field type_name
+	1, // 4: MazeEnergy.EnergyChangeID.energy_info:type_name -> MazeEnergy.EnergyInfo
+	6, // 5: MazeEnergy.UseMazeEnergyItemRQ.header:type_name -> Common.PacketHeader
+	6, // 6: MazeEnergy.UseMazeEnergyItemRS.header:type_name -> Common.PacketHeader
+	7, // 7: MazeEnergy.UseMazeEnergyItemRS.err_info:type_name -> MessageType.ErrorInfo
+	1, // 8: MazeEnergy.UseMazeEnergyItemRS.energy_info:type_name -> MazeEnergy.EnergyInfo
+	9, // [9:9] is the sub-list for method output_type
+	9, // [9:9] is the sub-list for method input_type
+	9, // [9:9] is the sub-list for extension type_name
+	9, // [9:9] is the sub-list for extension extendee
+	0, // [0:9] is the sub-list for field type_name
 }
 
 func init() { file_common_MazeEnergy_proto_init() }
@@ -309,6 +500,42 @@ func file_common_MazeEnergy_proto_init() {
 				return nil
 			}
 		}
+		file_common_MazeEnergy_proto_msgTypes[3].Exporter = func(v interface{}, i int) interface{} {
+			switch v := v.(*EnergyChangeID); i {
+			case 0:
+				return &v.state
+			case 1:
+				return &v.sizeCache
+			case 2:
+				return &v.unknownFields
+			default:
+				return nil
+			}
+		}
+		file_common_MazeEnergy_proto_msgTypes[4].Exporter = func(v interface{}, i int) interface{} {
+			switch v := v.(*UseMazeEnergyItemRQ); i {
+			case 0:
+				return &v.state
+			case 1:
+				return &v.sizeCache
+			case 2:
+				return &v.unknownFields
+			default:
+				return nil
+			}
+		}
+		file_common_MazeEnergy_proto_msgTypes[5].Exporter = func(v interface{}, i int) interface{} {
+			switch v := v.(*UseMazeEnergyItemRS); i {
+			case 0:
+				return &v.state
+			case 1:
+				return &v.sizeCache
+			case 2:
+				return &v.unknownFields
+			default:
+				return nil
+			}
+		}
 	}
 	type x struct{}
 	out := protoimpl.TypeBuilder{
@@ -316,7 +543,7 @@ func file_common_MazeEnergy_proto_init() {
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
 			RawDescriptor: file_common_MazeEnergy_proto_rawDesc,
 			NumEnums:      0,
-			NumMessages:   3,
+			NumMessages:   6,
 			NumExtensions: 0,
 			NumServices:   0,
 		},

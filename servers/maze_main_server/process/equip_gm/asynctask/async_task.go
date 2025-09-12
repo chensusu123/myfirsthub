@@ -7,6 +7,8 @@
 package asynctask
 
 import (
+	"context"
+
 	"gitlab.ifreetalk.com/maze-plate/freetk/common/fkfmt"
 	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fkconfig"
 	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fkconfig/param"
@@ -33,27 +35,31 @@ func (tb *tWorkGroupBusiness) Name() string {
 	return "tWorkGroupBusiness"
 }
 
-func (tb *tWorkGroupBusiness) OnInit(logger fklog.FKLogI, cfg fkconfig.FkConfigerI) (err error) {
+func (tb *tWorkGroupBusiness) OnInit(ctx context.Context, cfg fkconfig.FkConfigerI) (err error) {
+	logger := fklog.ContextAppLogger(ctx)
 	tb.FkWorkGroup = workergroup.NewFkWrokGroup(int(wgCacheSize), int(wgThreadCount), logger)
-	logger.InfoWF("tWorkGroupBusiness OnInit work group",
+	logger.CtxInfo(ctx, "tWorkGroupBusiness OnInit work group",
 		zap.Uint32("cacheSize", wgCacheSize),
 		zap.Uint32("threadCount", wgThreadCount))
 	return
 }
 
-func (tb *tWorkGroupBusiness) OnStart(logger fklog.FKLogI, cfg fkconfig.FkConfigerI) (err error) {
-	logger.InfoWF("tWorkGroupBusiness OnStart.")
+func (tb *tWorkGroupBusiness) OnStart(ctx context.Context, cfg fkconfig.FkConfigerI) (err error) {
+	logger := fklog.ContextAppLogger(ctx)
+	logger.CtxInfo(ctx, "tWorkGroupBusiness OnStart.")
 	return nil
 }
 
-func (tb *tWorkGroupBusiness) OnStop(logger fklog.FKLogI) (err error) {
-	logger.InfoWF("tWorkGroupBusiness OnStop.")
+func (tb *tWorkGroupBusiness) OnStop(ctx context.Context) (err error) {
+	logger := fklog.ContextAppLogger(ctx)
+	logger.CtxInfo(ctx, "tWorkGroupBusiness OnStop.")
 	tb.FkWorkGroup.Stop()
 	return
 }
 
-func (tb *tWorkGroupBusiness) OnFinish(logger fklog.FKLogI) (err error) {
-	logger.InfoWF("tWorkGroupBusiness OnFinish.")
+func (tb *tWorkGroupBusiness) OnFinish(ctx context.Context) (err error) {
+	logger := fklog.ContextAppLogger(ctx)
+	logger.CtxInfo(ctx, "tWorkGroupBusiness OnFinish.")
 	return
 }
 

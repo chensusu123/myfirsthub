@@ -8,14 +8,16 @@ package equipaassemblegm
 
 import (
 	"bytes"
+	"context"
 
-	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fklog"
-	"go.uber.org/zap"
 	"maze_game_server/config/GMazeEquipInfoV8Cfg"
 	"maze_game_server/io/redis/dollassemblesuitredis"
 	"maze_game_server/io/redis/mazebagequipredis"
 	"maze_game_server/module/effectequip"
 	"maze_game_server/pb/server/MazeEquipCache"
+
+	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fklog"
+	"go.uber.org/zap"
 )
 
 type BagCond struct {
@@ -53,13 +55,15 @@ func CondHelp() string {
 	return bs.String()
 }
 
-func QueryBagByCond(logger fklog.FKLogI, userId uint64, cond BagCond) (equips []*MazeEquipCache.MazeEquipInfoDb, err error) {
+func QueryBagByCond(ctx context.Context, userId uint64, cond BagCond) (equips []*MazeEquipCache.MazeEquipInfoDb, err error) {
+	logger := fklog.ContextAppLogger(ctx)
 	var guidEquip map[int64]*MazeEquipCache.MazeEquipInfoDb
 	if cond.ShowSeal == 1 {
-		guidEquip, err = mazebagequipredis.GetAllEquipInfo(logger, userId)
+		// todo 等装备链路修改 再传入
+		guidEquip, err = mazebagequipredis.GetAllEquipInfo(ctx, userId)
 
 	} else {
-		guidEquip, err = effectequip.GetAllEffectEquipInfo(logger, userId)
+		guidEquip, err = effectequip.GetAllEffectEquipInfo(ctx, userId)
 
 	}
 	if err != nil {
@@ -67,7 +71,7 @@ func QueryBagByCond(logger fklog.FKLogI, userId uint64, cond BagCond) (equips []
 	}
 	// 过滤掉已装配的
 	if cond.QueryInUse == 0 {
-		suitEquips, err1 := dollassemblesuitredis.GetAllDollAssembleSuit(logger, userId)
+		suitEquips, err1 := dollassemblesuitredis.GetAllDollAssembleSuit(ctx, userId)
 		if err1 != nil {
 			err = err1
 			return
@@ -77,7 +81,7 @@ func QueryBagByCond(logger fklog.FKLogI, userId uint64, cond BagCond) (equips []
 				guid := equip.GetEquipGuid()
 				if _, ok := guidEquip[guid]; ok {
 					delete(guidEquip, guid)
-					logger.InfoWF("QueryBagByCond ignore equip", zap.Int64("guid", guid))
+					logger.CtxInfo(ctx, "QueryBagByCond ignore equip", zap.Int64("guid", guid))
 				}
 			}
 		}

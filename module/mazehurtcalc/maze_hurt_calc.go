@@ -8,11 +8,13 @@
 package mazehurtcalc
 
 import (
+	"context"
 	"errors"
+
+	"maze_game_server/config/GFightKongfuMazeV8Cfg"
 
 	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fklog"
 	"go.uber.org/zap"
-	"maze_game_server/config/GFightKongfuMazeV8Cfg"
 )
 
 type MazeAttrInfo struct {
@@ -25,11 +27,12 @@ type MazeLoseHurt struct {
 	FoeLoseHurt    int64 // 怪物每回合损血
 }
 
-func CalcLoseHurt(logger fklog.FKLogI, loseHpType int32, role, monster *MazeAttrInfo) (lose *MazeLoseHurt, err error) {
+func CalcLoseHurt(ctx context.Context, loseHpType int32, role, monster *MazeAttrInfo) (lose *MazeLoseHurt, err error) {
+	logger := fklog.ContextAppLogger(ctx)
 	forceRate := role.Force * 10000 / monster.Force
 	cfg := GetMazeLoseHurtCfg(forceRate, loseHpType)
 	if cfg == nil {
-		logger.ErrorWF("CalcLoseHurt cannot find cfg",
+		logger.CtxError(ctx, "CalcLoseHurt cannot find cfg",
 			zap.Int64("roleForce", role.Force),
 			zap.Int64("MonsterForce", monster.Force),
 			zap.Int32("loseType", loseHpType),
@@ -39,7 +42,7 @@ func CalcLoseHurt(logger fklog.FKLogI, loseHpType int32, role, monster *MazeAttr
 	lose = &MazeLoseHurt{}
 	lose.FoeLoseHurt = LoseHurtFormula(monster.Hp, cfg.Foe_hp_lose, cfg.Round)
 	lose.PlayerLoseHurt = LoseHurtFormula(role.Hp, cfg.Player_hp_lose, cfg.Round)
-	logger.InfoWF("CalcLoseHurt end", zap.Any("playerParam", role),
+	logger.CtxInfo(ctx, "CalcLoseHurt end", zap.Any("playerParam", role),
 		zap.Any("foeParam", monster), zap.Int32("loseType", loseHpType),
 		zap.Any("ret", lose))
 	return lose, nil

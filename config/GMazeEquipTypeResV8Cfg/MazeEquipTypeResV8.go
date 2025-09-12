@@ -1,6 +1,7 @@
 package GMazeEquipTypeResV8Cfg
 
 import (
+	"context"
 	"errors"
 	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fklog"
 	"gitlab.ifreetalk.com/maze-plate/freetk/fkserver/config_manager"
@@ -13,15 +14,16 @@ import (
 
 // MazeEquipTypeResV8ConfigRow from maze_equip_type_res_v8【迷宫-装备-类型与对应资源】.xlsx maze_equip_type_res_v8
 type MazeEquipTypeResV8ConfigRow struct {
-	Order        int32  `json:"order"`        // 序号（品质*1E+部位*100W+子类型*10000+属性枚举*1000+id后3位）
-	Equipment_id int32  `json:"equipment_id"` // 装备id
-	Pos_sub_type int32  `json:"pos_sub_type"` // 部位子类型
-	Attr_id      int32  `json:"attr_id"`      // 攻击属性id
-	Name         string `json:"name"`         // 名称
-	IconAtlas    string `json:"iconAtlas"`    // 图集
-	Icon         string `json:"icon"`         // 图标
-	Weapon_model int32  `json:"weapon_model"` // 武器模型
-	Maze_model   int32  `json:"maze_model"`   // 迷宫模型资源
+	Order               int32  `json:"order"`               // 序号（品质*1E+部位*100W+子类型*10000+属性枚举*1000+id后3位）
+	Equipment_id        int32  `json:"equipment_id"`        // 装备id
+	Pos_sub_type        int32  `json:"pos_sub_type"`        // 部位子类型
+	Attr_id             int32  `json:"attr_id"`             // 攻击属性id
+	Name                string `json:"name"`                // 名称
+	IconAtlas           string `json:"iconAtlas"`           // 图集
+	Icon                string `json:"icon"`                // 图标
+	Weapon_model        int32  `json:"weapon_model"`        // 武器模型
+	Maze_model          int32  `json:"maze_model"`          // 迷宫模型资源
+	Maze_model_group_id int32  `json:"maze_model_group_id"` // 迷宫模型资源组id
 }
 
 // MazeEquipTypeResV8Config from maze_equip_type_res_v8【迷宫-装备-类型与对应资源】.xlsx maze_equip_type_res_v8
@@ -84,9 +86,19 @@ func GetMazeEquipTypeResV8Config(configId int32) *MazeEquipTypeResV8ConfigRow {
 	return gConfigData.GetMazeEquipTypeResV8Config(configId)
 }
 
+// Deprecated: 链路追踪信息缺失。推荐使用GetWithCtx
 // Get pkg func. get one config by configId
 func Get(configId int32) *MazeEquipTypeResV8ConfigRow {
-	return gConfigData.Get(configId)
+	return GetWithCtx(context.Background(), configId)
+}
+
+// GetWithCtx pkg func. get one config by configId
+func GetWithCtx(ctx context.Context, configId int32, otps ...config_manager.QueryOption) *MazeEquipTypeResV8ConfigRow {
+	cfg := gConfigData.Get(configId)
+	if cfg == nil {
+		config_manager.MissRecord(ctx, "maze_equip_type_res_v8", configId, otps...)
+	}
+	return cfg
 }
 
 // GetAllMazeEquipTypeResV8Config pkg func. get all config slice
@@ -373,6 +385,20 @@ func (*gMazeEquipTypeResV8Parser) Parse(logger fklog.FKLogI, data []string, row 
 		}
 		config.Maze_model = int32(tmp)
 	}
+
+	// parse column 9 maze_model_group_id : 迷宫模型资源组id
+	if data[9] != "" {
+		tmp, err = strconv.ParseInt(data[9], 10, 64)
+		if err != nil {
+			err = errors.New("parse field maze_model_group_id 迷宫模型资源组id to int32 failed")
+			logger.ErrorWF("parse field maze_model_group_id 迷宫模型资源组id to int32 failed.",
+				zap.String("xlsx", "maze_equip_type_res_v8【迷宫-装备-类型与对应资源】.xlsx"), zap.String("sheet", "maze_equip_type_res_v8"),
+				zap.String("parse_data", data[9]),
+				zap.Error(err))
+			return
+		}
+		config.Maze_model_group_id = int32(tmp)
+	}
 	return
 }
 
@@ -386,6 +412,7 @@ var gMazeEquipTypeResV8Fields = []string{
 	"icon",
 	"weapon_model",
 	"maze_model",
+	"maze_model_group_id",
 }
 
 // LoadDataManual load data for test

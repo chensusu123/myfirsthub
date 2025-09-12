@@ -1,31 +1,33 @@
 package familyservice
 
 import (
+	"context"
 	"errors"
 	"maze_game_server/model/familymodel"
 	"time"
 
-	"gitlab.ifreetalk.com/nano-ecosystem/fklog"
+	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fklog"
 	"go.uber.org/zap"
 )
 
 // 检查家族申请是否合理
-func (r *service) CheckApplyFamily(logger fklog.FKLogI, familyID int32, applyUser *familymodel.FamilyMember) (bool, error) {
-	familyInfoModel, err := familymodel.LoadFamilyInfoModel(logger, familyID)
+func (r *service) CheckApplyFamily(ctx context.Context, familyID int32, applyUser *familymodel.FamilyMember) (bool, error) {
+	logger := fklog.ContextAppLogger(ctx)
+	familyInfoModel, err := familymodel.LoadFamilyInfoModel(ctx, familyID)
 	if err != nil {
-		logger.ErrorWF("CheckApplyFamily LoadFamilyInfoModel err",
+		logger.CtxError(ctx, "CheckApplyFamily LoadFamilyInfoModel err",
 			zap.Int32("familyID", familyID), zap.Error(err))
 		return false, err
 	}
 	// 检查家族人数
-	if err = familyInfoModel.CheckFamilyMemberCount(logger); err != nil {
-		logger.ErrorWF("CheckApplyFamily CheckFamilyMemberCount err",
+	if err = familyInfoModel.CheckFamilyMemberCount(ctx); err != nil {
+		logger.CtxError(ctx, "CheckApplyFamily CheckFamilyMemberCount err",
 			zap.Int32("familyID", familyID), zap.Uint64("userID", applyUser.UserID))
 		return false, errors.New("家族人数已满")
 	}
 	// 检查用户是否在家族
-	if familyInfoModel.CheckUserInFamily(logger, applyUser.UserID) {
-		logger.ErrorWF("CheckApplyFamily CheckUserInFamily err",
+	if familyInfoModel.CheckUserInFamily(ctx, applyUser.UserID) {
+		logger.CtxError(ctx, "CheckApplyFamily CheckUserInFamily err",
 			zap.Int32("familyID", familyID), zap.Uint64("userID", applyUser.UserID))
 		return false, errors.New("用户已在家族中")
 	}
@@ -33,40 +35,41 @@ func (r *service) CheckApplyFamily(logger fklog.FKLogI, familyID int32, applyUse
 }
 
 // 设置玩家所在家族
-func (r *service) SetUserFamily(logger fklog.FKLogI, userID uint64, familyID int32) error {
-	userFamilyModel := familymodel.NewUserFamilyModel(logger, userID)
-	return userFamilyModel.SetUserFamily(logger, familyID)
+func (r *service) SetUserFamily(ctx context.Context, userID uint64, familyID int32) error {
+	userFamilyModel := familymodel.NewUserFamilyModel(ctx, userID)
+	return userFamilyModel.SetUserFamily(ctx, familyID)
 }
 
 // 获取玩家所在家族
-func (r *service) GetUserFamily(logger fklog.FKLogI, userID uint64) (int32, error) {
-	userFamilyModel := familymodel.NewUserFamilyModel(logger, userID)
-	return userFamilyModel.GetUserFamily(logger)
+func (r *service) GetUserFamily(ctx context.Context, userID uint64) (int32, error) {
+	userFamilyModel := familymodel.NewUserFamilyModel(ctx, userID)
+	return userFamilyModel.GetUserFamily(ctx)
 }
 
-func (r *service) DeleteUserFamily(logger fklog.FKLogI, userID uint64) error {
-	userFamilyModel := familymodel.NewUserFamilyModel(logger, userID)
-	return userFamilyModel.DelUserFamily(logger)
+func (r *service) DeleteUserFamily(ctx context.Context, userID uint64) error {
+	userFamilyModel := familymodel.NewUserFamilyModel(ctx, userID)
+	return userFamilyModel.DelUserFamily(ctx)
 }
 
 // 设置玩家上次退出家族时间
-func (r *service) SetUserLastLeaveFamilyTime(logger fklog.FKLogI, userID uint64) error {
-	userFamilyModel := familymodel.NewUserFamilyModel(logger, userID)
-	return userFamilyModel.SetUserLastLeaveFamilyTime(logger)
+func (r *service) SetUserLastLeaveFamilyTime(ctx context.Context, userID uint64) error {
+	userFamilyModel := familymodel.NewUserFamilyModel(ctx, userID)
+	return userFamilyModel.SetUserLastLeaveFamilyTime(ctx)
 }
 
 // 获取玩家上次退出家族时间
-func (r *service) GetUserLastLeaveFamilyTime(logger fklog.FKLogI, userID uint64) (int64, error) {
-	userFamilyModel := familymodel.NewUserFamilyModel(logger, userID)
-	return userFamilyModel.GetUserLastLeaveFamilyTime(logger)
+func (r *service) GetUserLastLeaveFamilyTime(ctx context.Context, userID uint64) (int64, error) {
+	userFamilyModel := familymodel.NewUserFamilyModel(ctx, userID)
+	return userFamilyModel.GetUserLastLeaveFamilyTime(ctx)
 }
 
 // 检测玩家距离上次退出家族时间是否超过一天
-func (r *service) CheckUserLastLeaveFamilyTime(logger fklog.FKLogI, userID uint64) (bool, error) {
-	userFamilyModel := familymodel.NewUserFamilyModel(logger, userID)
-	lastLeaveFamilyTime, err := userFamilyModel.GetUserLastLeaveFamilyTime(logger)
+func (r *service) CheckUserLastLeaveFamilyTime(ctx context.Context, userID uint64) (bool, error) {
+	logger := fklog.ContextAppLogger(ctx)
+	userFamilyModel := familymodel.NewUserFamilyModel(ctx, userID)
+	lastLeaveFamilyTime, err := userFamilyModel.GetUserLastLeaveFamilyTime(ctx)
 	if err != nil {
-		logger.ErrorWF("CheckUserLastLeaveFamilyTime GetUserLastLeaveFamilyTime err",
+		logger.CtxError(ctx, "CheckUserLastLeaveFamilyTime GetUserLastLeaveFamilyTime err",
 			zap.Uint64("userID", userID), zap.Error(err))
 		return false, err
 	}
@@ -82,11 +85,12 @@ func (r *service) CheckUserLastLeaveFamilyTime(logger fklog.FKLogI, userID uint6
 }
 
 // 检查玩家是否有家族
-func (r *service) CheckUserHaveFamily(logger fklog.FKLogI, userID uint64) (bool, error) {
-	userFamilyModel := familymodel.NewUserFamilyModel(logger, userID)
-	familyID, err := userFamilyModel.GetUserFamily(logger)
+func (r *service) CheckUserHaveFamily(ctx context.Context, userID uint64) (bool, error) {
+	logger := fklog.ContextAppLogger(ctx)
+	userFamilyModel := familymodel.NewUserFamilyModel(ctx, userID)
+	familyID, err := userFamilyModel.GetUserFamily(ctx)
 	if err != nil {
-		logger.ErrorWF("CheckUserHaveFamily GetUserFamily err",
+		logger.CtxError(ctx, "CheckUserHaveFamily GetUserFamily err",
 			zap.Uint64("userID", userID), zap.Error(err))
 		return false, err
 	}
@@ -94,23 +98,25 @@ func (r *service) CheckUserHaveFamily(logger fklog.FKLogI, userID uint64) (bool,
 }
 
 // 检查用户是否在家族的请求列表中
-func (r *service) CheckUserInApplyList(logger fklog.FKLogI, familyID int32, userID uint64) (bool, error) {
-	familyInfoModel, err := familymodel.LoadFamilyInfoModel(logger, familyID)
+func (r *service) CheckUserInApplyList(ctx context.Context, familyID int32, userID uint64) (bool, error) {
+	logger := fklog.ContextAppLogger(ctx)
+	familyInfoModel, err := familymodel.LoadFamilyInfoModel(ctx, familyID)
 	if err != nil {
-		logger.ErrorWF("CheckUserInApplyList LoadFamilyInfoModel err",
+		logger.CtxError(ctx, "CheckUserInApplyList LoadFamilyInfoModel err",
 			zap.Int32("familyID", familyID), zap.Uint64("userID", userID), zap.Error(err))
 		return false, err
 	}
-	return familyInfoModel.CheckUserInApplyList(logger, userID), nil
+	return familyInfoModel.CheckUserInApplyList(ctx, userID), nil
 }
 
 // 检查用户是否在家族中
-func (r *service) CheckUserInFamily(logger fklog.FKLogI, familyID int32, userID uint64) (bool, error) {
-	familyInfoModel, err := familymodel.LoadFamilyInfoModel(logger, familyID)
+func (r *service) CheckUserInFamily(ctx context.Context, familyID int32, userID uint64) (bool, error) {
+	logger := fklog.ContextAppLogger(ctx)
+	familyInfoModel, err := familymodel.LoadFamilyInfoModel(ctx, familyID)
 	if err != nil {
-		logger.ErrorWF("CheckUserInFamily LoadFamilyInfoModel err",
+		logger.CtxError(ctx, "CheckUserInFamily LoadFamilyInfoModel err",
 			zap.Int32("familyID", familyID), zap.Uint64("userID", userID), zap.Error(err))
 		return false, err
 	}
-	return familyInfoModel.CheckUserInFamily(logger, userID), nil
+	return familyInfoModel.CheckUserInFamily(ctx, userID), nil
 }

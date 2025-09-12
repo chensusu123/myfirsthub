@@ -24,7 +24,7 @@ func (g *UserSection) Set(ctx context.Context, userID uint64, section string) er
 	if err != nil {
 		return err
 	}
-	return db.Set(context.TODO(), key, section, 0).Err()
+	return db.Set(ctx, key, section, 0).Err()
 }
 
 var gCli *UserSection

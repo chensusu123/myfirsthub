@@ -1,13 +1,15 @@
 package copyusers
 
 import (
+	"context"
 	"sync"
 	"time"
 
-	"gitlab.ifreetalk.com/maze-plate/freetk/common/fkfmt"
-	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fklog"
 	"maze_game_server/common/function/fileio"
 	"maze_game_server/servers/maze_main_server/process/equip_gm/asynctask"
+
+	"gitlab.ifreetalk.com/maze-plate/freetk/common/fkfmt"
+	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fklog"
 )
 
 type CopyUsers struct {
@@ -25,7 +27,8 @@ func (m *CopyUsers) GetCopyUsers(userId uint64) []uint64 {
 }
 
 // 加载用户
-func (m *CopyUsers) LoadUser(logger fklog.FKLogI, path string, sp string) error {
+func (m *CopyUsers) LoadUser(ctx context.Context, path string, sp string) error {
+	logger := fklog.ContextAppLogger(ctx)
 	fr := fileio.NewDefFReaderEx(logger, sp)
 	err := fr.Open(path)
 	if err != nil {
@@ -47,9 +50,10 @@ func (m *CopyUsers) LoadUser(logger fklog.FKLogI, path string, sp string) error 
 	return nil
 }
 
-type CallBackF func(logger fklog.FKLogI, srcUserId uint64, dstUserId []uint64) bool
+type CallBackF func(ctx context.Context, srcUserId uint64, dstUserId []uint64) bool
 
-func (m *CopyUsers) RangeUser(logger fklog.FKLogI, f CallBackF) {
+func (m *CopyUsers) RangeUser(ctx context.Context, f CallBackF) {
+	logger := fklog.ContextAppLogger(ctx)
 	var wg sync.WaitGroup
 	for src, dstList := range m.UserIdMap {
 		userLogger := logger.Clone("copy_task")
@@ -62,7 +66,7 @@ func (m *CopyUsers) RangeUser(logger fklog.FKLogI, f CallBackF) {
 		wg.Add(1)
 		asynctask.GWorkGroupBusiness.SendTask(tmpSrc, func() {
 			wg.Done()
-			_ = f(userLogger, tmpSrc, tmpDstList)
+			_ = f(ctx, tmpSrc, tmpDstList)
 		})
 	}
 	wg.Wait()

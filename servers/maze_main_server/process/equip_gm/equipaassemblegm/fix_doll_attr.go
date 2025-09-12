@@ -7,30 +7,33 @@
 package equipaassemblegm
 
 import (
-	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fklog"
-	"go.uber.org/zap"
+	"context"
 	"maze_game_server/common/constdef"
 	"maze_game_server/common/structsdef"
 	"maze_game_server/io/redis/mazeattrcalcnotifyqueue"
 	"maze_game_server/io/redis/mazebuffinforedis"
 	"maze_game_server/module/dollassembleinfo"
+
+	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fklog"
+	"go.uber.org/zap"
 )
 
 // 1 修复非武力值buff 2=修复武力值buff
-func ReCalcDollEquipAttr(logger fklog.FKLogI, userId uint64, fixType int32) error {
-	_, effect, err := dollassembleinfo.GetDollAssembleInfoEx(logger, userId)
+func ReCalcDollEquipAttr(ctx context.Context, userId uint64, fixType int32) error {
+	logger := fklog.ContextAppLogger(ctx)
+	_, effect, err := dollassembleinfo.GetDollAssembleInfoEx(ctx, userId)
 	if err != nil {
-		logger.ErrorWF("ReCalcDollEquipAttr Get Assemble info fail", zap.Error(err))
+		logger.CtxError(ctx, "ReCalcDollEquipAttr Get Assemble info fail", zap.Error(err))
 		return err
 	}
 	if effect == nil {
-		logger.InfoWF("ReCalcDollEquipAttr effect nil")
+		logger.CtxInfo(ctx, "ReCalcDollEquipAttr effect nil")
 		return nil
 	}
 	_, otherAttrs := effect.ForceAttrs, effect.Other
 	if fixType&1 > 0 {
 		// 更新buff中心
-		e := mazebuffinforedis.SaveMazeEquipBuff(logger, userId, otherAttrs)
+		e := mazebuffinforedis.SaveMazeEquipBuff(ctx, userId, otherAttrs)
 		if e != nil {
 			return e
 		}
@@ -41,7 +44,7 @@ func ReCalcDollEquipAttr(logger fklog.FKLogI, userId uint64, fixType int32) erro
 		calcAttrNotify.ChgType = constdef.MazeBuffChgTypeEquipGm
 
 		calcAttrNotify.Session = ""
-		mazeattrcalcnotifyqueue.SendMazeAttrCalcNotify(logger, calcAttrNotify)
+		mazeattrcalcnotifyqueue.SendMazeAttrCalcNotify(ctx, calcAttrNotify)
 	}
 	// if fixType&2 > 0 {
 	// 	e := dollassembleattrredis.SetDollAssembleAttr(logger, userId, constdef.AttrFieldEquip, forceAttrs)
@@ -55,11 +58,11 @@ func ReCalcDollEquipAttr(logger fklog.FKLogI, userId uint64, fixType int32) erro
 	return nil
 }
 
-func CalcDollAttrCalc(logger fklog.FKLogI, userId uint64) error {
+func CalcDollAttrCalc(ctx context.Context, userId uint64) error {
 	calcAttrNotify := &structsdef.MazeCalcAttrNotifyMsg{}
 	calcAttrNotify.FromServer = "maze_equip_gm_server"
 	calcAttrNotify.UserId = userId
 	calcAttrNotify.ChgType = constdef.MazeBuffChgTypeGm
 	calcAttrNotify.Session = ""
-	return mazeattrcalcnotifyqueue.SendMazeAttrCalcNotify(logger, calcAttrNotify)
+	return mazeattrcalcnotifyqueue.SendMazeAttrCalcNotify(ctx, calcAttrNotify)
 }

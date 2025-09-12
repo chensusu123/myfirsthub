@@ -1,8 +1,7 @@
 package equipbaggm
 
 import (
-	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fklog"
-	"go.uber.org/zap"
+	"context"
 	"maze_game_server/common/constdef"
 	"maze_game_server/common/function/assemble"
 	"maze_game_server/common/structsdef"
@@ -10,18 +9,22 @@ import (
 	"maze_game_server/io/redis/dollassemblesuitredis"
 	"maze_game_server/io/redis/mazeattrcalcnotifyqueue"
 	"maze_game_server/io/redis/mazebuffinforedis"
+
+	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fklog"
+	"go.uber.org/zap"
 )
 
 // 删除人偶装配信息
-func ClearDollAssembleInfo(logger fklog.FKLogI, userId uint64) error {
+func ClearDollAssembleInfo(ctx context.Context, userId uint64) error {
+	logger := fklog.ContextAppLogger(ctx)
 	var step int
 	var e error
 	defer func() {
-		logger.InfoWF("ClearDollAssembleInfo result", zap.Error(e),
+		logger.CtxInfo(ctx, "ClearDollAssembleInfo result", zap.Error(e),
 			zap.Int("step", step), zap.Uint64("uid", userId))
 	}()
 
-	e = dollassemblesuitredis.DelEquipSuitInfo(logger, userId)
+	e = dollassemblesuitredis.DelEquipSuitInfo(ctx, userId)
 	if e != nil {
 		return e
 	}
@@ -33,13 +36,13 @@ func ClearDollAssembleInfo(logger fklog.FKLogI, userId uint64) error {
 	for i := 1; i <= constdef.EquipPosNum; i++ {
 		delList = append(delList, assemble.EnCodeAssemblePosField(int32(i)))
 	}
-	e = dollassembleredis.BatchDelAssmebleInfo(logger, userId, delList...)
+	e = dollassembleredis.BatchDelAssmebleInfo(ctx, userId, delList...)
 	if e != nil {
 		return e
 	}
 	step = 2
 
-	e = mazebuffinforedis.DelMazeBuffBySrc(logger, userId, constdef.MazeBuffSrcEquip)
+	e = mazebuffinforedis.DelMazeBuffBySrc(ctx, userId, constdef.MazeBuffSrcEquip)
 	if e == nil {
 		step = 4
 		calcAttrNotify := &structsdef.MazeCalcAttrNotifyMsg{}
@@ -48,10 +51,10 @@ func ClearDollAssembleInfo(logger fklog.FKLogI, userId uint64) error {
 		calcAttrNotify.ChgType = constdef.MazeBuffChgTypeEquipGm
 		calcAttrNotify.Session = "gm"
 		calcAttrNotify.BuffSrc = constdef.MazeBuffSrcEquip
-		mazeattrcalcnotifyqueue.SendMazeAttrCalcNotify(logger, calcAttrNotify)
+		mazeattrcalcnotifyqueue.SendMazeAttrCalcNotify(ctx, calcAttrNotify)
 	}
 
-	e = mazebuffinforedis.DelMazeBuffBySrc(logger, userId, constdef.MazeBuffSrcEquipPos)
+	e = mazebuffinforedis.DelMazeBuffBySrc(ctx, userId, constdef.MazeBuffSrcEquipPos)
 	if e == nil {
 		step = 5
 		calcAttrNotify := &structsdef.MazeCalcAttrNotifyMsg{}
@@ -60,7 +63,7 @@ func ClearDollAssembleInfo(logger fklog.FKLogI, userId uint64) error {
 		calcAttrNotify.ChgType = constdef.MazeBuffChgTypeEquipGm
 		calcAttrNotify.Session = "gm"
 		calcAttrNotify.BuffSrc = constdef.MazeBuffSrcEquipPos
-		mazeattrcalcnotifyqueue.SendMazeAttrCalcNotify(logger, calcAttrNotify)
+		mazeattrcalcnotifyqueue.SendMazeAttrCalcNotify(ctx, calcAttrNotify)
 	}
 	return e
 }

@@ -31,26 +31,27 @@ func DealExpirationCardProcess(ctx context.Context, index int, logger fklog.FKLo
 			select {
 			case <-newTicker.C:
 				lg.SetLogId(time.Now().UnixMilli())
-				dealExpirationCardProcess(lg)
+				dealExpirationCardProcess(ctx)
 			}
 		}
 	}(ctx, logger)
 	return nil
 }
 
-func dealExpirationCardProcess(logger fklog.FKLogI) {
+func dealExpirationCardProcess(ctx context.Context) {
+	logger := fklog.ContextAppLogger(ctx)
 	// 查询过期的月卡用户
-	userList, err := mazecardlistgroupredis.GetMazeCardExpirationList(logger)
+	userList, err := mazecardlistgroupredis.GetMazeCardExpirationList(ctx)
 	if err != nil {
-		logger.ErrorWF("dealExpirationCardProcess GetMazeCardExpirationList failed", zap.Error(err))
+		logger.CtxError(ctx, "dealExpirationCardProcess GetMazeCardExpirationList failed", zap.Error(err))
 		return
 	}
 
 	var okCount int32
 	for _, userId := range userList {
-		err = DeleteMazeCard(logger, uint64(userId))
+		err = DeleteMazeCard(ctx, uint64(userId))
 		if err != nil {
-			logger.ErrorWF("dealExpirationCardProcess DeleteMazeCard failed",
+			logger.CtxError(ctx, "dealExpirationCardProcess DeleteMazeCard failed",
 				zap.Int64("userId", userId), zap.Error(err))
 			continue
 		}
@@ -58,6 +59,6 @@ func dealExpirationCardProcess(logger fklog.FKLogI) {
 		okCount++
 	}
 
-	logger.InfoWF("dealExpirationCardProcess end", zap.Int32("okCount", okCount),
+	logger.CtxInfo(ctx, "dealExpirationCardProcess end", zap.Int32("okCount", okCount),
 		zap.Int("TotalCount", len(userList)))
 }

@@ -21,13 +21,14 @@
 package scheduler
 
 import (
-	"fmt"
-	"runtime/debug"
 	"sync/atomic"
 	"time"
 
 	"maze_game_server/lib/nano/internal/env"
 	"maze_game_server/lib/nano/internal/log"
+	"maze_game_server/lib/nano/nanometrics"
+
+	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fkalert"
 )
 
 const (
@@ -45,18 +46,19 @@ type Task func()
 type Hook func()
 
 var (
-	chDie   = make(chan struct{})
-	chExit  = make(chan struct{})
-	chTasks = make(chan Task, 1<<8)
-	started int32
-	closed  int32
+	chDie     = make(chan struct{})
+	chExit    = make(chan struct{})
+	chTasks   = make(chan Task, 1<<8)
+	started   int32
+	closed    int32
+	taskCount atomic.Int64
 )
 
 func try(f func()) {
 	defer func() {
-		if err := recover(); err != nil {
-			log.Println(fmt.Sprintf("Handle message panic: %+v\n%s", err, debug.Stack()))
-		}
+		fkalert.RecoverAlertException()
+		c := taskCount.Add(-1)
+		nanometrics.GlobalTaskGauge.Set(float64(c))
 	}()
 	f()
 }
@@ -96,5 +98,11 @@ func Close() {
 }
 
 func PushTask(task Task) {
+	c := taskCount.Add(1)
+	nanometrics.GlobalTaskGauge.Set(float64(c))
 	chTasks <- task
+}
+
+func TaskCount() int64 {
+	return taskCount.Load()
 }

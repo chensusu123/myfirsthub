@@ -1,6 +1,7 @@
 package dollequipbagrpc
 
 import (
+	"context"
 	"maze_game_server/common/errors"
 	"maze_game_server/pb/server/MazeEquipSvr"
 	"maze_game_server/servers/maze_main_server/process/equip"
@@ -19,111 +20,116 @@ func init() {
 }
 
 // 添加装备
-func MazeBagAddRQ(logger fklog.FKLogI, req *MazeEquipSvr.SvrAddMazeEquipRQ, res *MazeEquipSvr.SvrAddMazeEquipRS) error {
-	logger.InfoWF("MazeBagAddRQ start", zap.Any("req", req))
-	err := equip.OnSvrAddMazeEquipRQ(logger, int64(req.GetUserId()), req, res, "")
+func MazeBagAddRQ(ctx context.Context, req *MazeEquipSvr.SvrAddMazeEquipRQ, res *MazeEquipSvr.SvrAddMazeEquipRS) error {
+	logger := fklog.ContextAppLogger(ctx)
+	logger.CtxInfo(ctx, "MazeBagAddRQ start", zap.Any("req", req))
+	err := equip.OnSvrAddMazeEquipRQ(ctx, int64(req.GetUserId()), req, res, "")
 	if err != nil {
-		logger.ErrorWF("MazeBagAddRQ OnSvrAddMazeEquipRQ failed", zap.Any("req", req), zap.Error(err))
+		logger.CtxError(ctx, "MazeBagAddRQ OnSvrAddMazeEquipRQ failed", zap.Any("req", req), zap.Error(err))
 		return err
 	}
 	if res.GetErrInfo() != nil && res.GetErrInfo().GetErrCode() != errors.NO_ERROR_CODE {
 		err = errors.New(string(res.GetErrInfo().ErrMsg))
-		logger.ErrorWF("MazeBagAddRQ res failed", zap.Any("req", req), zap.Error(err))
+		logger.CtxError(ctx, "MazeBagAddRQ res failed", zap.Any("req", req), zap.Error(err))
 	}
 	return err
 }
 
 // 添加装备
-func MazeBagAddRQWithOpData(logger fklog.FKLogI, req *MazeEquipSvr.SvrAddMazeEquipRQ, res *MazeEquipSvr.SvrAddMazeEquipRS, opData string) error {
-	logger.InfoWF("MazeBagAddRQWithOpData start", zap.Any("req", req))
-	err := equip.OnSvrAddMazeEquipRQ(logger, int64(req.GetUserId()), req, res, opData)
+func MazeBagAddRQWithOpData(ctx context.Context, req *MazeEquipSvr.SvrAddMazeEquipRQ, res *MazeEquipSvr.SvrAddMazeEquipRS, opData string) error {
+	logger := fklog.ContextAppLogger(ctx)
+	logger.CtxInfo(ctx, "MazeBagAddRQWithOpData start", zap.Any("req", req))
+	err := equip.OnSvrAddMazeEquipRQ(ctx, int64(req.GetUserId()), req, res, opData)
 	if err != nil {
-		logger.ErrorWF("MazeBagAddRQWithOpData OnSvrAddMazeEquipRQ failed", zap.Any("req", req), zap.Error(err))
+		logger.CtxError(ctx, "MazeBagAddRQWithOpData OnSvrAddMazeEquipRQ failed", zap.Any("req", req), zap.Error(err))
 		return err
 	}
 	if res.GetErrInfo() != nil && res.GetErrInfo().GetErrCode() != errors.NO_ERROR_CODE {
 		err = errors.New(string(res.GetErrInfo().ErrMsg))
-		logger.ErrorWF("MazeBagAddRQWithOpData res failed", zap.Any("req", req), zap.Error(err))
+		logger.CtxError(ctx, "MazeBagAddRQWithOpData res failed", zap.Any("req", req), zap.Error(err))
 	}
 	return err
 }
 
 // 更换装备rpc
-func MazeEquipAssembleRQ(logger fklog.FKLogI, req *MazeEquipSvr.SvrMazeEquipAssembleRQ, res *MazeEquipSvr.SvrMazeEquipAssembleRS) error {
-	logger.InfoWF("MazeEquipAssembleRQ start", zap.Any("req", req))
-	err := equip.OnSvrMazeEquipAssembleRQ(logger, int64(req.GetUserId()), req, res)
+func MazeEquipAssembleRQ(ctx context.Context, req *MazeEquipSvr.SvrMazeEquipAssembleRQ, res *MazeEquipSvr.SvrMazeEquipAssembleRS) error {
+	logger := fklog.ContextAppLogger(ctx)
+	logger.CtxInfo(ctx, "MazeEquipAssembleRQ start", zap.Any("req", req))
+	err := equip.OnSvrMazeEquipAssembleRQ(ctx, int64(req.GetUserId()), req, res)
 	if err != nil {
-		logger.ErrorWF("MazeEquipAssembleRQ OnSvrMazeEquipAssembleRQ failed", zap.Any("req", req), zap.Error(err))
+		logger.CtxError(ctx, "MazeEquipAssembleRQ OnSvrMazeEquipAssembleRQ failed", zap.Any("req", req), zap.Error(err))
 		return err
 	}
 	if res.GetErrInfo() != nil && res.GetErrInfo().GetErrCode() != errors.NO_ERROR_CODE {
 		err = errors.New(string(res.GetErrInfo().ErrMsg))
-		logger.ErrorWF("MazeEquipAssembleRQ res failed", zap.Any("req", req), zap.Error(err))
+		logger.CtxError(ctx, "MazeEquipAssembleRQ res failed", zap.Any("req", req), zap.Error(err))
 	}
 	return err
 	response, err := gRpcClient.DealTwowayMessage(131423, req, req.GetUserId())
 	err = gRpcClient.CheckReplyType(response, err, 131424)
 	if err != nil {
-		logger.ErrorWF("DollEquipAssembleRQ check res failed", zap.Any("req", req), zap.Error(err))
+		logger.CtxError(ctx, "DollEquipAssembleRQ check res failed", zap.Any("req", req), zap.Error(err))
 		return err
 	}
 
 	err = proto.Unmarshal(response.GetContent(), res)
 	if err != nil {
-		logger.ErrorWF("DollEquipAssembleRQ unmarshal failed", zap.Any("req", req), zap.Error(err))
+		logger.CtxError(ctx, "DollEquipAssembleRQ unmarshal failed", zap.Any("req", req), zap.Error(err))
 		return err
 	}
-	logger.InfoWF("DollEquipAssembleRQ recv rs",
+	logger.CtxInfo(ctx, "DollEquipAssembleRQ recv rs",
 		zap.Any("req", req), zap.Any("rs", res))
 	return nil
 }
 
 // 出售装备rpc
-func MazeEquipSaleRQ(logger fklog.FKLogI, req *MazeEquipSvr.SvrMazeEquipSaleRQ, res *MazeEquipSvr.SvrMazeEquipSaleRS) error {
-	logger.InfoWF("MazeEquipSaleRQ start", zap.Any("req", req))
-	err := equip.OnSvrDollEquipSaleRQ(logger, int64(req.GetUserId()), req, res)
+func MazeEquipSaleRQ(ctx context.Context, req *MazeEquipSvr.SvrMazeEquipSaleRQ, res *MazeEquipSvr.SvrMazeEquipSaleRS) error {
+	logger := fklog.ContextAppLogger(ctx)
+	logger.CtxInfo(ctx, "MazeEquipSaleRQ start", zap.Any("req", req))
+	err := equip.OnSvrDollEquipSaleRQ(context.TODO(), int64(req.GetUserId()), req, res)
 	if err != nil {
-		logger.ErrorWF("MazeEquipSaleRQ OnSvrDollEquipSaleRQ failed", zap.Any("req", req), zap.Error(err))
+		logger.CtxError(ctx, "MazeEquipSaleRQ OnSvrDollEquipSaleRQ failed", zap.Any("req", req), zap.Error(err))
 		return err
 	}
 	if res.GetErrInfo() != nil && res.GetErrInfo().GetErrCode() != errors.NO_ERROR_CODE {
 		err = errors.New(string(res.GetErrInfo().ErrMsg))
-		logger.ErrorWF("MazeEquipSaleRQ res failed", zap.Any("req", req), zap.Error(err))
+		logger.CtxError(ctx, "MazeEquipSaleRQ res failed", zap.Any("req", req), zap.Error(err))
 	}
 	return err
 	response, err := gRpcClient.DealTwowayMessage(131425, req, req.GetUserId())
 	err = gRpcClient.CheckReplyType(response, err, 131426)
 	if err != nil {
-		logger.ErrorWF("DollEquipSaleRQ check res failed", zap.Any("req", req), zap.Error(err))
+		logger.CtxError(ctx, "DollEquipSaleRQ check res failed", zap.Any("req", req), zap.Error(err))
 		return err
 	}
 
 	err = proto.Unmarshal(response.GetContent(), res)
 	if err != nil {
-		logger.ErrorWF("DollEquipSaleRQ unmarshal failed", zap.Any("req", req), zap.Error(err))
+		logger.CtxError(ctx, "DollEquipSaleRQ unmarshal failed", zap.Any("req", req), zap.Error(err))
 		return err
 	}
-	logger.InfoWF("DollEquipSaleRQ recv rs",
+	logger.CtxInfo(ctx, "DollEquipSaleRQ recv rs",
 		zap.Any("req", req), zap.Any("rs", res))
 	return nil
 }
 
 // 实例化装备
-func MazeBagInstanceRQ(logger fklog.FKLogI, req *MazeEquipSvr.SvrMazeEquipInstanceRQ, res *MazeEquipSvr.SvrMazeEquipInstanceRS) error {
+func MazeBagInstanceRQ(ctx context.Context, req *MazeEquipSvr.SvrMazeEquipInstanceRQ, res *MazeEquipSvr.SvrMazeEquipInstanceRS) error {
+	logger := fklog.ContextAppLogger(ctx)
 	now := time.Now()
 	response, err := gRpcClient.DealTwowayMessage(131431, req, req.GetUserId())
 	err = gRpcClient.CheckReplyType(response, err, 131432)
 	if err != nil {
-		logger.ErrorWF("MazeBagInstanceRQ check res failed", zap.Any("req", req), zap.Error(err))
+		logger.CtxError(ctx, "MazeBagInstanceRQ check res failed", zap.Any("req", req), zap.Error(err))
 		return err
 	}
 
 	err = proto.Unmarshal(response.GetContent(), res)
 	if err != nil {
-		logger.ErrorWF("MazeBagInstanceRQ unmarshal failed", zap.Any("req", req), zap.Error(err))
+		logger.CtxError(ctx, "MazeBagInstanceRQ unmarshal failed", zap.Any("req", req), zap.Error(err))
 		return err
 	}
-	logger.InfoWF("MazeBagInstanceRQ recv rs",
+	logger.CtxInfo(ctx, "MazeBagInstanceRQ recv rs",
 		zap.Duration("cost", time.Since(now)),
 		zap.Any("req", req), zap.Any("rs", res))
 	return nil

@@ -31,87 +31,90 @@ func init() {
 }
 
 // 保存非武力值属性
-func SaveMazeEquipBuff(logger fklog.FKLogI, userId uint64, attrs *MazeBuffData.MazeBuffDb) error {
-	return SaveMazeBuffInfo(logger, userId, constdef.MazeBuffSrcEquip, attrs)
+func SaveMazeEquipBuff(ctx context.Context, userId uint64, attrs *MazeBuffData.MazeBuffDb) error {
+	return SaveMazeBuffInfo(ctx, userId, constdef.MazeBuffSrcEquip, attrs)
 }
 
-func SaveMazeLvBuff(logger fklog.FKLogI, userId uint64, attrs *MazeBuffData.MazeBuffDb) error {
-	return SaveMazeBuffInfo(logger, userId, constdef.MazeBuffSrcLv, attrs)
+func SaveMazeLvBuff(ctx context.Context, userId uint64, attrs *MazeBuffData.MazeBuffDb) error {
+	return SaveMazeBuffInfo(ctx, userId, constdef.MazeBuffSrcLv, attrs)
 }
 
-func SaveMazeEquipPosBuff(logger fklog.FKLogI, userId uint64, attrs *MazeBuffData.MazeBuffDb) error {
-	return SaveMazeBuffInfo(logger, userId, constdef.MazeBuffSrcEquipPos, attrs)
+func SaveMazeEquipPosBuff(ctx context.Context, userId uint64, attrs *MazeBuffData.MazeBuffDb) error {
+	return SaveMazeBuffInfo(ctx, userId, constdef.MazeBuffSrcEquipPos, attrs)
 }
 
-func SaveMazeBuffInfo(logger fklog.FKLogI, userId uint64, field int32, attrs *MazeBuffData.MazeBuffDb) error {
+func SaveMazeBuffInfo(ctx context.Context, userId uint64, field int32, attrs *MazeBuffData.MazeBuffDb) error {
+	logger := fklog.ContextAppLogger(ctx)
 	key := fmt.Sprintf("maze:buff:center:u:%d", userId)
 	data, err := proto.Marshal(attrs)
 	if err != nil {
-		logger.ErrorWF("SaveMazeBuffInfo Marshal pb fail",
+		logger.CtxError(ctx, "SaveMazeBuffInfo Marshal pb fail",
 			zap.Error(err),
 			zap.String("key", key),
 			zap.Any("attrs", attrs))
 		return err
 	}
-	_, err = gRedis.Do(context.TODO(), "HSET", key, field, data)
+	_, err = gRedis.Do(ctx, "HSET", key, field, data)
 	if err != nil {
-		logger.ErrorWF("SaveMazeBuffInfo fail",
+		logger.CtxError(ctx, "SaveMazeBuffInfo fail",
 			zap.Error(err),
 			zap.String("key", key),
 			zap.Int32("field", field),
 			zap.Any("attrs", attrs))
 		return err
 	}
-	logger.InfoWF("SaveMazeBuffInfo succ",
+	logger.CtxInfo(ctx, "SaveMazeBuffInfo succ",
 		zap.String("key", key),
 		zap.Int32("field", field),
 		zap.Any("attrs", attrs))
 	return err
 }
 
-func GetMazeBuffBySrc(logger fklog.FKLogI, userId uint64, field int32) (attrDb *MazeBuffData.MazeBuffDb, err error) {
+func GetMazeBuffBySrc(ctx context.Context, userId uint64, field int32) (attrDb *MazeBuffData.MazeBuffDb, err error) {
 	key := fmt.Sprintf("maze:buff:center:u:%d", userId)
-	res, err := redis.Bytes(gRedis.Do(context.TODO(), "hget", key, field))
+	res, err := redis.Bytes(gRedis.Do(ctx, "hget", key, field))
+	logger := fklog.ContextAppLogger(ctx)
 	if err == redis.ErrNil {
 		err = nil
-		logger.WarnWF("GetMazeBuffBySrc hget nil", zap.String("key", key), zap.Int32("field", field))
+		logger.CtxWarn(ctx, "GetMazeBuffBySrc hget nil", zap.String("key", key), zap.Int32("field", field))
 		return
 	}
 
 	if err != nil {
-		logger.ErrorWF("GetMazeBuffBySrc hget fail", zap.Error(err), zap.String("key", key), zap.Int32("field", field))
+		logger.CtxError(ctx, "GetMazeBuffBySrc hget fail", zap.Error(err), zap.String("key", key), zap.Int32("field", field))
 		return
 	}
 
 	attrDb = &MazeBuffData.MazeBuffDb{}
 	err = proto.Unmarshal(res, attrDb)
 	if err != nil {
-		logger.ErrorWF("GetMazeBuffBySrc Unmarshal pb fail", zap.Error(err),
+		logger.CtxError(ctx, "GetMazeBuffBySrc Unmarshal pb fail", zap.Error(err),
 			zap.String("key", key), zap.Int32("field", field))
 		return nil, err
 	}
 
-	logger.InfoWF("GetMazeBuffBySrc succ", zap.Any("attrDb", attrDb), zap.String("key", key),
+	logger.CtxInfo(ctx, "GetMazeBuffBySrc succ", zap.Any("attrDb", attrDb), zap.String("key", key),
 		zap.Int32("field", field))
 	return attrDb, err
 }
 
-func GetMazeEquipBuff(logger fklog.FKLogI, userId uint64) (attrDb *MazeBuffData.MazeBuffDb, err error) {
-	return GetMazeBuffBySrc(logger, userId, constdef.MazeBuffSrcEquip)
+func GetMazeEquipBuff(ctx context.Context, userId uint64) (attrDb *MazeBuffData.MazeBuffDb, err error) {
+	return GetMazeBuffBySrc(ctx, userId, constdef.MazeBuffSrcEquip)
 }
 
 // 1=展示属性 2=实际属性
-func GetMazeBuffsV2(logger fklog.FKLogI, userId uint64, mask int32) (attrDbs map[int32][]*MazeBuffData.MazeBuffAttr, err error) {
+func GetMazeBuffsV2(ctx context.Context, userId uint64, mask int32) (attrDbs map[int32][]*MazeBuffData.MazeBuffAttr, err error) {
+	logger := fklog.ContextAppLogger(ctx)
 	key := fmt.Sprintf("maze:buff:center:u:%d", userId)
-	res, err := redis.ByteSlices(gRedis.Do(context.TODO(), "HGETALL", key))
+	res, err := redis.ByteSlices(gRedis.Do(ctx, "HGETALL", key))
 	if err == redis.ErrNil {
 		err = nil
-		logger.WarnWF("GetMazeBuffsV2 HGETALL nil", zap.String("key", key), zap.Int32("mask", mask))
+		logger.CtxWarn(ctx, "GetMazeBuffsV2 HGETALL nil", zap.String("key", key), zap.Int32("mask", mask))
 		return
 	}
 
 	if err != nil {
-		logger.ErrorWF("GetMazeBuffsV2 HGETALL fail", zap.Error(err), zap.String("key", key), zap.Int32("mask", mask))
+		logger.CtxError(ctx, "GetMazeBuffsV2 HGETALL fail", zap.Error(err), zap.String("key", key), zap.Int32("mask", mask))
 		return
 	}
 	attrDbs = make(map[int32][]*MazeBuffData.MazeBuffAttr)
@@ -124,7 +127,7 @@ func GetMazeBuffsV2(logger fklog.FKLogI, userId uint64, mask int32) (attrDbs map
 		attrDb := &MazeBuffData.MazeBuffDb{}
 		err = proto.Unmarshal(res[i+1], attrDb)
 		if err != nil {
-			logger.ErrorWF("GetMazeBuffsV2 Unmarshal pb fail", zap.Error(err),
+			logger.CtxError(ctx, "GetMazeBuffsV2 Unmarshal pb fail", zap.Error(err),
 				zap.Int32("mask", mask),
 				zap.String("key", key))
 			return nil, err
@@ -139,21 +142,22 @@ func GetMazeBuffsV2(logger fklog.FKLogI, userId uint64, mask int32) (attrDbs map
 		attrDbs[int32(src)] = needAttrs
 	}
 
-	logger.InfoWF("GetMazeBuffsV2 succ", zap.Int32("mask", mask), zap.Any("attrDbs", attrDbs), zap.String("key", key))
+	logger.CtxInfo(ctx, "GetMazeBuffsV2 succ", zap.Int32("mask", mask), zap.Any("attrDbs", attrDbs), zap.String("key", key))
 	return attrDbs, err
 }
 
-func GetAllMazeBuffs(logger fklog.FKLogI, userId uint64) (attrDbs map[int32]*MazeBuffData.MazeBuffDb, err error) {
+func GetAllMazeBuffs(ctx context.Context, userId uint64) (attrDbs map[int32]*MazeBuffData.MazeBuffDb, err error) {
+	logger := fklog.ContextAppLogger(ctx)
 	key := fmt.Sprintf("maze:buff:center:u:%d", userId)
-	res, err := redis.ByteSlices(gRedis.Do(context.TODO(), "HGETALL", key))
+	res, err := redis.ByteSlices(gRedis.Do(ctx, "HGETALL", key))
 	if err == redis.ErrNil {
 		err = nil
-		logger.WarnWF("GetAllMazeBuffs HGETALL nil", zap.String("key", key))
+		logger.CtxWarn(ctx, "GetAllMazeBuffs HGETALL nil", zap.String("key", key))
 		return
 	}
 
 	if err != nil {
-		logger.ErrorWF("GetAllMazeBuffs HGETALL fail", zap.Error(err), zap.String("key", key))
+		logger.CtxError(ctx, "GetAllMazeBuffs HGETALL fail", zap.Error(err), zap.String("key", key))
 		return
 	}
 	attrDbs = make(map[int32]*MazeBuffData.MazeBuffDb)
@@ -166,44 +170,46 @@ func GetAllMazeBuffs(logger fklog.FKLogI, userId uint64) (attrDbs map[int32]*Maz
 		attrDb := &MazeBuffData.MazeBuffDb{}
 		err = proto.Unmarshal(res[i+1], attrDb)
 		if err != nil {
-			logger.ErrorWF("GetAllMazeBuffs Unmarshal pb fail", zap.Error(err),
+			logger.CtxError(ctx, "GetAllMazeBuffs Unmarshal pb fail", zap.Error(err),
 				zap.String("key", key))
 			return nil, err
 		}
 		attrDbs[int32(src)] = attrDb
 	}
 
-	logger.InfoWF("GetAllMazeBuffs succ", zap.Any("attrDbs", attrDbs), zap.String("key", key))
+	logger.CtxInfo(ctx, "GetAllMazeBuffs succ", zap.Any("attrDbs", attrDbs), zap.String("key", key))
 	return attrDbs, err
 }
 
-func DelMazeBuff(logger fklog.FKLogI, userId uint64) error {
+func DelMazeBuff(ctx context.Context, userId uint64) error {
+	logger := fklog.ContextAppLogger(ctx)
 	key := fmt.Sprintf("maze:buff:center:u:%d", userId)
 
-	_, err := gRedis.Do(context.TODO(), "DEL", key)
+	_, err := gRedis.Do(ctx, "DEL", key)
 	if err != nil {
-		logger.ErrorWF("DelMazeBuff fail",
+		logger.CtxError(ctx, "DelMazeBuff fail",
 			zap.Error(err),
 			zap.String("key", key))
 		return err
 	}
-	logger.InfoWF("DelMazeBuff succ",
+	logger.CtxInfo(ctx, "DelMazeBuff succ",
 		zap.String("key", key))
 	return err
 }
 
-func DelMazeBuffBySrc(logger fklog.FKLogI, userId uint64, field int32) error {
+func DelMazeBuffBySrc(ctx context.Context, userId uint64, field int32) error {
+	logger := fklog.ContextAppLogger(ctx)
 	key := fmt.Sprintf("maze:buff:center:u:%d", userId)
 
-	_, err := gRedis.Do(context.TODO(), "HDEL", key, field)
+	_, err := gRedis.Do(ctx, "HDEL", key, field)
 	if err != nil {
-		logger.ErrorWF("DelMazeBuffBySrc fail",
+		logger.CtxError(ctx, "DelMazeBuffBySrc fail",
 			zap.Error(err),
 			zap.Int32("field", field),
 			zap.String("key", key))
 		return err
 	}
-	logger.InfoWF("DelMazeBuffBySrc succ",
+	logger.CtxInfo(ctx, "DelMazeBuffBySrc succ",
 		zap.Int32("field", field),
 		zap.String("key", key))
 	return err

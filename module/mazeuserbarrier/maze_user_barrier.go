@@ -1,8 +1,6 @@
 package mazeuserbarrier
 
-import (
-	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fklog"
-)
+import "context"
 
 type MazeUserBarrier struct {
 	BarrierId   int32
@@ -18,10 +16,10 @@ type BarrierArea struct {
 	CollectEquipNum int32
 }
 
-// func GetUserBarrier(logger fklog.FKLogI, userId uint64, barrierId int32) (userInfo *MazeUserBarrier, err error) {
+// func GetUserBarrier(ctx context.Context, userId uint64, barrierId int32) (userInfo *MazeUserBarrier, err error) {
 // 	areaList, boxInfo, points, err := mazeuserbarrierredis.GetBarrierInfo(logger, userId, barrierId)
 // 	if err != nil {
-// 		logger.ErrorWF("GetUserBarrier GetBarrierInfo fail", zap.Error(err), zap.Any("barrierId", barrierId))
+// 		logger.CtxError(ctx,"GetUserBarrier GetBarrierInfo fail", zap.Error(err), zap.Any("barrierId", barrierId))
 // 		return
 // 	}
 // 	userInfo = &MazeUserBarrier{
@@ -54,7 +52,7 @@ type BarrierArea struct {
 // 	return
 // }
 
-func SetUserBarrierBox(logger fklog.FKLogI, userId uint64, barrierId int32, userInfo *MazeUserBarrier) (err error) {
+func SetUserBarrierBox(ctx context.Context, userId uint64, barrierId int32, userInfo *MazeUserBarrier) (err error) {
 
 	// boxInfo := &DollMazeBarrierCache.DollMazeBoxDb{
 	// 	BoxList: make([]*DollMazeBarrierCache.MazeBox, 0, len(userInfo.BoxState)),
@@ -69,7 +67,7 @@ func SetUserBarrierBox(logger fklog.FKLogI, userId uint64, barrierId int32, user
 
 	// err = mazeuserbarrierredis.SetBox(logger, userId, barrierId, boxInfo)
 	// if err != nil {
-	// 	logger.ErrorWF("SetUserBarrierBox SetBox fail", zap.Error(err),
+	// 	logger.CtxError(ctx,"SetUserBarrierBox SetBox fail", zap.Error(err),
 	// 		zap.Any("barrierId", barrierId), zap.Any("boxInfo", boxInfo))
 	// 	return
 	// }
@@ -77,7 +75,7 @@ func SetUserBarrierBox(logger fklog.FKLogI, userId uint64, barrierId int32, user
 	return
 }
 
-func SetUserBarrier(logger fklog.FKLogI, userId uint64, barrierId int32, userInfo *MazeUserBarrier, reportPb []byte) (err error) {
+func SetUserBarrier(ctx context.Context, userId uint64, barrierId int32, userInfo *MazeUserBarrier, reportPb []byte) (err error) {
 	// areaInfo := make([]*DollMazeBarrierCache.DollMazeAreaDb, 0)
 
 	// for _, v := range userInfo.AreaInfo {
@@ -99,7 +97,7 @@ func SetUserBarrier(logger fklog.FKLogI, userId uint64, barrierId int32, userInf
 
 	// err = mazeuserbarrierredis.SetUserBarrier(logger, userId, barrierId, areaInfo, userInfo.EquipPoints, reportPb)
 	// if err != nil {
-	// 	logger.ErrorWF("SetUserBarrierArea SetUserBarrier fail", zap.Error(err),
+	// 	logger.CtxError(ctx,"SetUserBarrierArea SetUserBarrier fail", zap.Error(err),
 	// 		zap.Any("barrierId", barrierId), zap.Any("areaInfo", areaInfo))
 	// 	return
 	// }

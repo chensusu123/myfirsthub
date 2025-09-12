@@ -1,10 +1,12 @@
 .idea
 servers/maze_main_server/maze_main_server
 servers/maze_main_server/logs
+servers/maze_main_server/polaris
 servers/maze_main_server/extern.conf
 servers/maze_main_server/status.txt
 servers/maze_es/maze_es
 servers/maze_es/logs
+servers/maze_es/polaris
 servers/maze_es/extern.conf
 servers/maze_es/status.txt
 servers/maze_main_server_dev/maze_main_server_dev

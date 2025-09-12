@@ -23,36 +23,38 @@ func init() {
 }
 
 // 查询当前关卡id
-func GetCurrBarrier(logger fklog.FKLogI, userId uint64) (barrierId int32, err error) {
+func GetCurrBarrier(ctx context.Context, userId uint64) (barrierId int32, err error) {
+	logger := fklog.ContextAppLogger(ctx)
 	key := fmt.Sprintf("maze:u:%d:barrier:%d", userId)
 
-	res, err := redis.Int(gRedis.Do(context.TODO(), "hget", key, CURR_BARRIER_FIELD))
+	res, err := redis.Int(gRedis.Do(ctx, "hget", key, CURR_BARRIER_FIELD))
 	if err == redis.ErrNil {
 		err = nil
-		logger.InfoWF("GetCurrBarrier nil", zap.String("key", key))
+		logger.CtxInfo(ctx, "GetCurrBarrier nil", zap.String("key", key))
 		return
 	}
 	if err != nil {
-		logger.ErrorWF("GetCurrBarrier hget fail", zap.String("key", key), zap.Error(err))
+		logger.CtxError(ctx, "GetCurrBarrier hget fail", zap.String("key", key), zap.Error(err))
 		return
 	}
 
 	barrierId = int32(res)
 
-	logger.InfoWF("GetCurrBarrier succ", zap.String("key", key), zap.Any("barrierId", barrierId))
+	logger.CtxInfo(ctx, "GetCurrBarrier succ", zap.String("key", key), zap.Any("barrierId", barrierId))
 	return
 }
 
-func GetBarrierAndArea(logger fklog.FKLogI, userId uint64) (barrierId int32, areaId int32, highArea int32, err error) {
+func GetBarrierAndArea(ctx context.Context, userId uint64) (barrierId int32, areaId int32, highArea int32, err error) {
+	logger := fklog.ContextAppLogger(ctx)
 	key := fmt.Sprintf("maze:u:%d:barrier:%d", userId)
-	res, err := redis.StringMap(gRedis.Do(context.TODO(), "hgetall", key))
+	res, err := redis.StringMap(gRedis.Do(ctx, "hgetall", key))
 	if err == redis.ErrNil {
 		err = nil
-		logger.InfoWF("GetCurrBarrierAndArea nil", zap.String("key", key))
+		logger.CtxInfo(ctx, "GetCurrBarrierAndArea nil", zap.String("key", key))
 		return
 	}
 	if err != nil {
-		logger.ErrorWF("GetCurrBarrierAndArea fail", zap.String("key", key), zap.Error(err))
+		logger.CtxError(ctx, "GetCurrBarrierAndArea fail", zap.String("key", key), zap.Error(err))
 		return
 	}
 
@@ -66,24 +68,26 @@ func GetBarrierAndArea(logger fklog.FKLogI, userId uint64) (barrierId int32, are
 		}
 	}
 
-	logger.InfoWF("GetCurrBarrierAndArea succ", zap.Any("barrierId", barrierId), zap.Any("areaId", areaId), zap.Any("highArea", highArea))
+	logger.CtxInfo(ctx, "GetCurrBarrierAndArea succ", zap.Any("barrierId", barrierId), zap.Any("areaId", areaId), zap.Any("highArea", highArea))
 	return
 }
 
-func SetBarrier(logger fklog.FKLogI, userId uint64, barrierId int32) (err error) {
+func SetBarrier(ctx context.Context, userId uint64, barrierId int32) (err error) {
+	logger := fklog.ContextAppLogger(ctx)
 	setMap := make(map[string]int32)
 	setMap[CURR_BARRIER_FIELD] = barrierId
 
-	err = BatchSet(logger, userId, setMap)
+	err = BatchSet(ctx, userId, setMap)
 	if err != nil {
-		logger.ErrorWF("SetBarrier hmset fail", zap.Error(err), zap.Any("setMap", setMap))
+		logger.CtxError(ctx, "SetBarrier hmset fail", zap.Error(err), zap.Any("setMap", setMap))
 		return
 	}
-	logger.InfoWF("SetBarrier succ", zap.Any("setMap", setMap))
+	logger.CtxInfo(ctx, "SetBarrier succ", zap.Any("setMap", setMap))
 	return
 }
 
-func BatchSet(logger fklog.FKLogI, userId uint64, setMap map[string]int32) (err error) {
+func BatchSet(ctx context.Context, userId uint64, setMap map[string]int32) (err error) {
+	logger := fklog.ContextAppLogger(ctx)
 	key := fmt.Sprintf("maze:u:%d:barrier:%d", userId)
 	var args []interface{}
 	args = append(args, key)
@@ -91,9 +95,9 @@ func BatchSet(logger fklog.FKLogI, userId uint64, setMap map[string]int32) (err 
 		args = append(args, k)
 		args = append(args, v)
 	}
-	_, err = gRedis.Do(context.TODO(), "hmset", args...)
+	_, err = gRedis.Do(ctx, "hmset", args...)
 	if err != nil {
-		logger.ErrorWF("BatchSet hmset fail", zap.String("key", key), zap.Any("args", args), zap.Error(err))
+		logger.CtxError(ctx, "BatchSet hmset fail", zap.String("key", key), zap.Any("args", args), zap.Error(err))
 		return
 	}
 
@@ -101,26 +105,28 @@ func BatchSet(logger fklog.FKLogI, userId uint64, setMap map[string]int32) (err 
 }
 
 // 删除
-func GMDel(logger fklog.FKLogI, userId uint64) (err error) {
+func GMDel(ctx context.Context, userId uint64) (err error) {
+	logger := fklog.ContextAppLogger(ctx)
 	key := fmt.Sprintf("maze:u:%d:barrier:%d", userId)
 
-	_, err = gRedis.Do(context.TODO(), "DEL", key)
+	_, err = gRedis.Do(ctx, "DEL", key)
 	if err != nil {
-		logger.ErrorWF("GMDel fail", zap.Error(err), zap.String("key", key))
+		logger.CtxError(ctx, "GMDel fail", zap.Error(err), zap.String("key", key))
 		return err
 	}
-	logger.InfoWF("GMDel succ ", zap.String("key", key))
+	logger.CtxInfo(ctx, "GMDel succ ", zap.String("key", key))
 	return nil
 }
 
-func GMHDEL(logger fklog.FKLogI, userId uint64, barrierId int32) (err error) {
+func GMHDEL(ctx context.Context, userId uint64, barrierId int32) (err error) {
+	logger := fklog.ContextAppLogger(ctx)
 	key := fmt.Sprintf("maze:u:%d:barrier:%d", userId)
 
-	_, err = gRedis.Do(context.TODO(), "HDEL", key, barrierId)
+	_, err = gRedis.Do(ctx, "HDEL", key, barrierId)
 	if err != nil {
-		logger.ErrorWF("GMHDEL fail", zap.Error(err), zap.String("key", key), zap.Any("barrierId", barrierId))
+		logger.CtxError(ctx, "GMHDEL fail", zap.Error(err), zap.String("key", key), zap.Any("barrierId", barrierId))
 		return err
 	}
-	logger.InfoWF("GMHDEL succ ", zap.String("key", key), zap.Any("barrierId", barrierId))
+	logger.CtxInfo(ctx, "GMHDEL succ ", zap.String("key", key), zap.Any("barrierId", barrierId))
 	return nil
 }

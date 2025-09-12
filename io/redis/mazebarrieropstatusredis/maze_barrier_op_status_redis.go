@@ -31,17 +31,17 @@ func getKey(args ...interface{}) string {
 }
 
 // IsTriggered 用来校验关卡中某个操作是否已经进行过，幂等校验。
-func IsTriggered(logger fklog.FKLogI, userID uint64, barrierID int32, op string) (triggered bool, triggerFn func() (err error), err error) {
+func IsTriggered(ctx context.Context, userID uint64, barrierID int32, op string) (triggered bool, triggerFn func() (err error), err error) {
+	logger := fklog.ContextAppLogger(ctx)
 	var (
 		key = getKey(userID, barrierID)
-		ctx = context.Background()
 	)
 	result, err := redis.Bytes(cli.Do(ctx, "GET", key))
 	if err != nil {
 		if err == redis.ErrNil {
 			err = nil
 		} else {
-			logger.ErrorWF("IsTriggered GET fail",
+			logger.CtxError(ctx, "IsTriggered GET fail",
 				zap.Error(err),
 				zap.Any("key", key),
 				zap.Uint64("userID", userID),
@@ -57,7 +57,7 @@ func IsTriggered(logger fklog.FKLogI, userID uint64, barrierID int32, op string)
 	} else {
 		err = serialize.Unmarshal(result, &status)
 		if err != nil {
-			logger.ErrorWF("IsTriggered Unmarshal fail",
+			logger.CtxError(ctx, "IsTriggered Unmarshal fail",
 				zap.Error(err),
 				zap.Any("key", key),
 				zap.Uint64("userID", userID),
@@ -77,7 +77,7 @@ func IsTriggered(logger fklog.FKLogI, userID uint64, barrierID int32, op string)
 
 			data, err := serialize.Marshal(status)
 			if err != nil {
-				logger.ErrorWF("IsTriggered Marshal fail",
+				logger.CtxError(ctx, "IsTriggered Marshal fail",
 					zap.Error(err),
 					zap.Any("key", key),
 					zap.Uint64("userID", userID),
@@ -90,7 +90,7 @@ func IsTriggered(logger fklog.FKLogI, userID uint64, barrierID int32, op string)
 
 			_, err = redis.Bytes(cli.Do(ctx, "SET", key, data))
 			if err != nil {
-				logger.ErrorWF("IsTriggered SET fail",
+				logger.CtxError(ctx, "IsTriggered SET fail",
 					zap.Error(err),
 					zap.Any("key", key),
 					zap.Uint64("userID", userID),
@@ -100,7 +100,7 @@ func IsTriggered(logger fklog.FKLogI, userID uint64, barrierID int32, op string)
 				return err
 			}
 
-			logger.DebugWF("IsTriggered trigger success",
+			logger.CtxDebug(ctx, "IsTriggered trigger success",
 				zap.Uint64("userID", userID),
 				zap.Int32("barrierID", barrierID),
 				zap.String("op", op),
@@ -111,7 +111,7 @@ func IsTriggered(logger fklog.FKLogI, userID uint64, barrierID int32, op string)
 		triggerFn = func() (err error) { return nil }
 	}
 
-	logger.DebugWF("IsTriggered success",
+	logger.CtxDebug(ctx, "IsTriggered success",
 		zap.Uint64("userID", userID),
 		zap.Int32("barrierID", barrierID),
 		zap.String("op", op),
@@ -121,14 +121,14 @@ func IsTriggered(logger fklog.FKLogI, userID uint64, barrierID int32, op string)
 }
 
 // ClearOpStatus 清理关卡操作状态
-func ClearOpStatus(logger fklog.FKLogI, userID uint64, barrierID int32) (err error) {
+func ClearOpStatus(ctx context.Context, userID uint64, barrierID int32) (err error) {
+	logger := fklog.ContextAppLogger(ctx)
 	var (
 		key = getKey(userID, barrierID)
-		ctx = context.Background()
 	)
 	_, err = cli.Do(ctx, "DEL", key)
 	if err != nil {
-		logger.ErrorWF("ClearOpStatus DEL fail",
+		logger.CtxError(ctx, "ClearOpStatus DEL fail",
 			zap.Error(err),
 			zap.Any("key", key),
 			zap.Uint64("userID", userID),
@@ -136,6 +136,6 @@ func ClearOpStatus(logger fklog.FKLogI, userID uint64, barrierID int32) (err err
 		)
 		return err
 	}
-	logger.DebugWF("ClearOpStatus success", zap.Any("key", key), zap.Uint64("userID", userID), zap.Int32("barrierID", barrierID))
+	logger.CtxDebug(ctx, "ClearOpStatus success", zap.Any("key", key), zap.Uint64("userID", userID), zap.Int32("barrierID", barrierID))
 	return nil
 }

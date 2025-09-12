@@ -7,11 +7,11 @@
 package equip
 
 import (
+	"context"
 	"maze_game_server/common/errors"
 	"maze_game_server/pb/server/KafkaMsgNotify"
 
 	"gitlab.ifreetalk.com/maze-plate/freetk/common/fkfmt"
-	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fklog"
 	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fknet"
 	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fkprometheus"
 	"gitlab.ifreetalk.com/maze-plate/freetk/fkserver"
@@ -58,7 +58,7 @@ func OnKafkaTcpMsgRQ(ctx fknet.TCPContext, shardingID uint64, request proto.Mess
 	return nil
 }
 
-type TcpMsgCallBackFunc func(logger fklog.FKLogI, userId uint64, msg []byte) error
+type TcpMsgCallBackFunc func(ctx context.Context, userId uint64, msg []byte) error
 
 var GTcpMsgCallBackMap = make(map[int32]TcpMsgCallBackFunc)
 

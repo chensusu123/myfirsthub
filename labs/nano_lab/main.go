@@ -55,7 +55,7 @@ package main
 // 	return nil
 // }
 
-// func NewNaonoServiceHandler(logger fklog.FKLogI) *NaonoServiceHandler {
+// func NewNaonoServiceHandler(ctx context.Context) *NaonoServiceHandler {
 // 	return &NaonoServiceHandler{
 // 		FKLogI: logger.Clone("NewNaonoServiceHandler"),
 // 	}
@@ -65,7 +65,7 @@ package main
 // 	fklog.FKLogI
 // }
 
-// func NewNanoService(logger fklog.FKLogI) *NanoService {
+// func NewNanoService(ctx context.Context) *NanoService {
 // 	return &NanoService{
 // 		FKLogI: logger.Clone("NewNanoService"),
 // 	}
@@ -126,11 +126,11 @@ package main
 // 		)
 // 	}()
 
-// 	gTestLogger.InfoWF("websocket-service start")
+// 	gTestlogger.CtxInfo(ctx,"websocket-service start")
 // 	time.Sleep(time.Second * 2)
 // 	u := url.URL{Scheme: "ws", Host: "127.0.0.1:5535", Path: "/echo"}
 
-// 	gTestLogger.InfoWF("connecting to", zap.String("url", u.String()))
+// 	gTestlogger.CtxInfo(ctx,"connecting to", zap.String("url", u.String()))
 
 // 	c, _, err := websocket.DefaultDialer.Dial(u.String(), nil)
 // 	if err != nil {
@@ -185,7 +185,7 @@ package main
 // 	}
 // }
 
-// func makeData(logger fklog.FKLogI) []byte {
+// func makeData(ctx context.Context) []byte {
 // 	r := rand.New(rand.NewSource(time.Now().UnixNano()))
 // 	n := r.Intn(1024)
 // 	if n < 3 {
@@ -199,6 +199,6 @@ package main
 // 	}
 // 	binary.LittleEndian.PutUint16(data[0:2], uint16(n))
 
-// 	logger.InfoWF("makeData", zap.Int("n", n))
+// 	logger.CtxInfo(ctx,"makeData", zap.Int("n", n))
 // 	return data[0:n]
 // }

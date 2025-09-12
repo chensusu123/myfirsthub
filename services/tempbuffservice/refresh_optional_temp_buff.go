@@ -1,38 +1,44 @@
 package tempbuffservice
 
 import (
+	"context"
 	"fmt"
-	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fklog"
-	"go.uber.org/zap"
 	"maze_game_server/common/errors"
+	"maze_game_server/common/function/itemutil"
+	"maze_game_server/common/tradeno"
 	"maze_game_server/excel/mazebarriesv8config"
 	"maze_game_server/excel/mazeenergyresetcostv8config"
+	"maze_game_server/io/kafka/mazetempbuffchgmsg"
 	"maze_game_server/model/tempbuffmodel"
-	"maze_game_server/module/itemmodule"
 	"maze_game_server/pb/common/MazeCommon"
+	"maze_game_server/services/itemservice"
+
+	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fklog"
+	"go.uber.org/zap"
 )
 
-func (s *service) RefreshOptionalMazeTempBuffList(logger fklog.FKLogI, userId uint64, stageId, level, areaId int32, cost []*MazeCommon.MazeItem) (*OptionalBuffInfo, error) {
-	buffInfo, err := tempbuffmodel.NewTempBuffInfoModel(logger, userId, stageId)
+func (s *service) RefreshOptionalMazeTempBuffList(ctx context.Context, userId uint64, barrierId, level, areaId, attrMask int32, cost []*MazeCommon.MazeItem) (*OptionalBuffInfo, error) {
+	logger := fklog.ContextAppLogger(ctx)
+	buffInfo, err := tempbuffmodel.NewTempBuffInfoModel(ctx, userId, barrierId)
 	if err != nil {
-		logger.ErrorWF("RefreshOptionalMazeTempBuffListRQ GetMazeTempBuff failed", zap.Error(err))
+		logger.CtxError(ctx, "RefreshOptionalMazeTempBuffListRQ GetMazeTempBuff failed", zap.Error(err))
 		return nil, fmt.Errorf("获取用户buff信息失败")
 	}
 
 	if buffInfo == nil {
-		logger.WarnWF("RefreshOptionalMazeTempBuffListRQ buff is nil", zap.Error(err))
+		logger.CtxError(ctx, "RefreshOptionalMazeTempBuffListRQ buff is nil", zap.Error(err))
 		return nil, fmt.Errorf("获取用户buff信息失败")
 	}
 
 	// 是否可以刷新
 	config := mazeenergyresetcostv8config.GetEnergyResetCostConfig(buffInfo.BuffSequence.RefreshCount + 1)
 	if config == nil {
-		logger.WarnWF("RefreshOptionalMazeTempBuffListRQ refresh config is nil", zap.Error(err))
+		logger.CtxError(ctx, "RefreshOptionalMazeTempBuffListRQ refresh config is nil", zap.Error(err))
 		return nil, fmt.Errorf("获取刷新配置失败")
 	}
 
 	if !s.checkCost(config.Cost, cost) {
-		logger.WarnWF("RefreshOptionalMazeTempBuffListRQ checkCost failed", zap.Error(err))
+		logger.CtxError(ctx, "RefreshOptionalMazeTempBuffListRQ checkCost failed", zap.Error(err))
 		return nil, fmt.Errorf("刷新消耗异常")
 	}
 
@@ -45,23 +51,24 @@ func (s *service) RefreshOptionalMazeTempBuffList(logger fklog.FKLogI, userId ui
 		newCost = append(newCost, item)
 	}
 
-	logger.InfoWF("RefreshOptionalMazeTempBuffListRQ DeductItems start", zap.Any("cost", newCost))
+	logger.CtxInfo(ctx, "RefreshOptionalMazeTempBuffListRQ DeductItems start", zap.Any("cost", newCost))
 	if len(newCost) > 0 {
-		err = itemmodule.DeductItems(logger, userId, itemmodule.CostRefreshType, newCost)
-		if err != nil {
-			logger.ErrorWF("RefreshOptionalMazeTempBuffListRQ DeductItems failed", zap.Error(err))
+		items := itemutil.ItemPb2ItemInfo(newCost)
+		errInfo := itemservice.GlobalItemService.SubItem(ctx, userId, itemservice.ItemOpTypeRefreshTempBuff, tradeno.GetTradeNum(), items...)
+		if errInfo != nil {
+			logger.CtxError(ctx, "RefreshOptionalMazeTempBuffListRQ DeductItems failed", zap.Error(err))
 			return nil, fmt.Errorf("扣钱失败")
 		}
 	}
 
 	// 刷新可选buff
-	err = s.refreshOptionalBuff(logger, userId, stageId, level, areaId, buffInfo)
+	err = s.refreshOptionalBuff(ctx, userId, barrierId, level, areaId, attrMask, buffInfo)
 	if err != nil {
-		logger.ErrorWF("RefreshOptionalMazeTempBuffListRQ refreshOptionalBuff failed", zap.Error(err))
+		logger.CtxError(ctx, "RefreshOptionalMazeTempBuffListRQ refreshOptionalBuff failed", zap.Error(err))
 		return nil, fmt.Errorf("刷新buff失败")
 	}
 
-	optionalBuffInfo := s.packOptionalInfo(logger, buffInfo)
+	optionalBuffInfo := s.packOptionalInfo(ctx, buffInfo)
 	if optionalBuffInfo != nil {
 		return optionalBuffInfo, nil
 	}
@@ -88,27 +95,41 @@ func (s *service) checkCost(costMap map[int32]int64, costList []*MazeCommon.Maze
 	return true
 }
 
-func (s *service) refreshOptionalBuff(logger fklog.FKLogI, userId uint64, stageId, level, areaId int32,
+func (s *service) refreshOptionalBuff(ctx context.Context, userId uint64, stageId, level, areaId, attrMask int32,
 	buffInfo *tempbuffmodel.TempBuffInfoModel) (err error) {
-	stageConfig := mazebarriesv8config.GetStageConfig(stageId)
+	logger := fklog.ContextAppLogger(ctx)
+	stageConfig := mazebarriesv8config.GetStageConfig(ctx, stageId)
 	if stageConfig == nil {
-		logger.WarnWF("getOptionalBuffList stage config unknown", zap.Int32("stageId", stageId))
+		logger.CtxError(ctx, "getOptionalBuffList stage config unknown", zap.Int32("stageId", stageId))
 		return errors.New("关卡配置异常")
 	}
 
+	nowOptionalBuffList := make([]int32, 0)
+	nowOptionalBuffList = append(nowOptionalBuffList, buffInfo.BuffSequence.OptionalBuffList...)
+
 	buffInfo.BuffSequence.RefreshCount = buffInfo.BuffSequence.RefreshCount + 1
-	buffInfo.BuffSequence.OptionalBuffList, err = s.createOptionalBuffList(logger, buffInfo, level, areaId, stageConfig)
+	buffInfo.BuffSequence.OptionalBuffList, err = s.createOptionalBuffList(ctx, buffInfo, level, areaId, attrMask, stageConfig)
 	if err != nil {
-		logger.ErrorWF("refreshOptionalBuff createOptionalBuffList failed", zap.Error(err))
+		logger.CtxError(ctx, "refreshOptionalBuff createOptionalBuffList failed", zap.Error(err))
 		return err
 	}
 
-	err = buffInfo.Save(logger, userId, stageId)
+	err = buffInfo.Save(ctx, userId, stageId)
 	if err != nil {
-		logger.ErrorWF("refreshOptionalBuff SetMazeTempBuff failed",
+		logger.CtxError(ctx, "refreshOptionalBuff SetMazeTempBuff failed",
 			zap.Int32("stageId", stageId), zap.Any("info", buffInfo), zap.Error(err))
 		return err
 	}
+
+	msg := &mazetempbuffchgmsg.MazeTempBuffChangeMsg{
+		UserId:         userId,
+		StageId:        stageId,
+		ChgType:        3,
+		ChgDesc:        "刷新buff列表",
+		NowSelectAttrs: nowOptionalBuffList,
+	}
+
+	_ = mazetempbuffchgmsg.PushTempBuffChangeMsg(ctx, msg)
 
 	return nil
 }

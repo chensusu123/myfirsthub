@@ -28,12 +28,12 @@ package mail_send_queue
 //	}
 //	cnt, err := proto.Marshal(data)
 //	if err != nil {
-//		logger.ErrorWF("PushInfo error", zap.Error(err))
+//		logger.CtxError(ctx,"PushInfo error", zap.Error(err))
 //		return err // 240204增加,接口返回Marshal错误
 //	}
 //	_, err = redisQueue.Do(ctx, "LPUSH", redisQueue.GetKey(), cnt)
 //	if err != nil {
-//		logger.ErrorWF("PushNewInfo push mail error", zap.Error(err))
+//		logger.CtxError(ctx,"PushNewInfo push mail error", zap.Error(err))
 //	}
 //	return err
 // }

@@ -1,6 +1,11 @@
 package mazeconfigv8config
 
-import "maze_game_server/config/GMazeConfigV8Cfg"
+import (
+	"context"
+	"maze_game_server/config/GMazeConfigV8Cfg"
+
+	"gitlab.ifreetalk.com/maze-plate/freetk/fkserver/config_manager"
+)
 
 /**
  * @Author: liushuhang
@@ -8,8 +13,8 @@ import "maze_game_server/config/GMazeConfigV8Cfg"
  * @Description:
  */
 
-func GetMazeConfig(configId int32) map[int32]int64 {
-	row := GMazeConfigV8Cfg.Get(configId)
+func GetMazeConfig(ctx context.Context, configId int32) map[int32]int64 {
+	row := GMazeConfigV8Cfg.GetWithCtx(ctx, configId)
 	if row == nil {
 		return nil
 	}
@@ -18,19 +23,29 @@ func GetMazeConfig(configId int32) map[int32]int64 {
 }
 
 func GetBuffSelectCount() int64 {
-	config := GMazeConfigV8Cfg.Get(999)
-	if config == nil {
-		return 3
-	}
-
-	return config.Value_int
+	//config := GMazeConfigV8Cfg.GetWithCtx(ctx,999)
+	//if config == nil {
+	//	return 3
+	//}
+	//
+	//return config.Value_int
+	return 3
 }
 
-func GetBuffSelectTime() int32 {
-	config := GMazeConfigV8Cfg.Get(401)
+func GetBuffSelectTime(ctx context.Context) int32 {
+	config := GMazeConfigV8Cfg.GetWithCtx(ctx, 401, config_manager.QueryNullable())
 	if config == nil {
 		return 60
 	}
 
 	return int32(config.Value_int)
+}
+
+func GetMazeValueInt(ctx context.Context, configID int32) int64 {
+	row := GMazeConfigV8Cfg.GetWithCtx(ctx, configID)
+	if row == nil {
+		return 0
+	}
+
+	return row.Value_int
 }

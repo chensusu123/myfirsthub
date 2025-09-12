@@ -7,13 +7,12 @@ import (
 	"gitlab.ifreetalk.com/maze-plate/freetk/fkserver"
 	fileResolver "gitlab.ifreetalk.com/maze-plate/freetk/registry/fileresolver"
 	"maze_game_server/io/redis"
-	"maze_game_server/lib/log"
 	"maze_game_server/model/equipdropmodel"
 	"os"
 	"testing"
 )
 
-var logger = log.Clone("EquipDropTest", 0, 0)
+//var logger = log.Clone("EquipDropTest", 0, 0)
 
 func TestMain(m *testing.M) {
 	originalStdout := os.Stdout
@@ -51,7 +50,7 @@ func TestRedis(t *testing.T) {
 }
 
 func TestEquipSpecialDropRedis(t *testing.T) {
-	model, err := equipdropmodel.NewEquipSpecialDropModel(logger, 40000005)
+	model, err := equipdropmodel.NewEquipSpecialDropModel(t.Context(), 40000005)
 	if err != nil {
 		fmt.Println(err)
 		return

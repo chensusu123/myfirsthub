@@ -1,6 +1,7 @@
 package equip
 
 import (
+	"context"
 	"fmt"
 	"strings"
 	"time"
@@ -18,16 +19,16 @@ type MazeGameEquipInstanceRecord struct {
 	*mazeequipinstancerecord.MazeGameEquipInstanceRecord
 }
 
-func PushMazeEquipInstanceLog(logger fklog.FKLogI, equipInstanceRecordMap map[int64]*MazeGameEquipInstanceRecord, chgType, isFail int32) error {
+func PushMazeEquipInstanceLog(ctx context.Context, equipInstanceRecordMap map[int64]*MazeGameEquipInstanceRecord, chgType, isFail int32) error {
 	for _, equipRecord := range equipInstanceRecordMap {
 		equipRecord.ChgType = chgType
 		equipRecord.IsFail = isFail
-		mazeequipinstancerecord.PushMazeGameEquipInstanceRecord(logger, equipRecord.MazeGameEquipInstanceRecord)
+		mazeequipinstancerecord.PushMazeGameEquipInstanceRecord(ctx, equipRecord.MazeGameEquipInstanceRecord)
 	}
 	return nil
 }
 
-func PushMazeEquipBagLogEx(logger fklog.FKLogI, userId uint64, addEquipList, delEquipList []*MazeEquipCache.MazeEquipInfoDb, tradeNum uint64, opType, chgType int32, tempBagTime int64, isFail int32) error {
+func PushMazeEquipBagLogEx(ctx context.Context, userId uint64, addEquipList, delEquipList []*MazeEquipCache.MazeEquipInfoDb, tradeNum uint64, opType, chgType int32, tempBagTime int64, isFail int32) error {
 	addBagEquipList := make([]*MazeEquipCache.MazeEquipInfoDb, 0)
 	delBagEquipList := make([]*MazeEquipCache.MazeEquipInfoDb, 0)
 	for _, equipInfo := range addEquipList {
@@ -37,12 +38,13 @@ func PushMazeEquipBagLogEx(logger fklog.FKLogI, userId uint64, addEquipList, del
 		delBagEquipList = append(delBagEquipList, equipInfo)
 	}
 	if len(addBagEquipList) > 0 || len(delBagEquipList) > 0 {
-		PushMazeEquipBagLog(logger, userId, addBagEquipList, delBagEquipList, tradeNum, opType, chgType, isFail)
+		PushMazeEquipBagLog(ctx, userId, addBagEquipList, delBagEquipList, tradeNum, opType, chgType, isFail)
 	}
 	return nil
 }
 
-func PushMazeEquipBagLog(logger fklog.FKLogI, userId uint64, addEquipList, delEquipList []*MazeEquipCache.MazeEquipInfoDb, tradeNum uint64, opType, chgType, isFail int32) error {
+func PushMazeEquipBagLog(ctx context.Context, userId uint64, addEquipList, delEquipList []*MazeEquipCache.MazeEquipInfoDb, tradeNum uint64, opType, chgType, isFail int32) error {
+	logger := fklog.ContextAppLogger(ctx)
 	addEquipGuidStr := make([]string, 0)
 	delEquipGuidStr := make([]string, 0)
 	for _, equipInfo := range addEquipList {
@@ -62,8 +64,8 @@ func PushMazeEquipBagLog(logger fklog.FKLogI, userId uint64, addEquipList, delEq
 		// GroupID:       fkconfig.EnvVal.GroupID,
 		CreateTime: time.Now().UnixNano() / 1000000,
 	}
-	if err := mazeequipbagrecord.PushMazeGameEquipBagRecord(logger, record); err != nil {
-		logger.ErrorWF("PushMazeEquipBagLog PushMazeGameEquipBagRecord err", zap.Error(err))
+	if err := mazeequipbagrecord.PushMazeGameEquipBagRecord(ctx, record); err != nil {
+		logger.CtxError(ctx, "PushMazeEquipBagLog PushMazeGameEquipBagRecord err", zap.Error(err))
 	}
 	return nil
 }

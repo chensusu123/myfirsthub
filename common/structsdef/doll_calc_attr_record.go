@@ -6,7 +6,12 @@
  */
 package structsdef
 
+import "maze_game_server/io/kafka/kafkacommonstruct"
+
+type KafkaCommon = kafkacommonstruct.KafkaCommon
+
 type MazeGameAttrChgRecord struct {
+	KafkaCommon
 	UserId     uint64 `json:"user_id" gorm:"column:user_id"`           //用户Id
 	GroupId    uint32 `json:"group_id" gorm:"column:group_id"`         //分组Id
 	AttrId     int32  `json:"attr_id" gorm:"column:attr_id"`           //属性ID
@@ -18,7 +23,6 @@ type MazeGameAttrChgRecord struct {
 	ChgDesc    string `json:"chg_desc" gorm:"column:chg_desc"`         //原因描述
 	CreateTime int64  `json:"create_time" gorm:"column:create_time"`   //时间戳 ms
 	Extra      string `json:"extra" gorm:"column:extra"`               // 扩展信息
-	ServerId   int32  `json:"server_id" gorm:"column:server_id"`
 }
 
 // 武力属性变化流水

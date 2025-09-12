@@ -47,7 +47,7 @@ func (ts *TopicService) NewUser(s *session.Session, msg *protocol.NewUserRequest
 	for _, u := range ts.users {
 		members = append(members, u.nickname)
 	}
-	err := s.Push("onMembers", &ExistsMembersResponse{Members: strings.Join(members, ",")})
+	err := s.Push(s.Context(), "onMembers", &ExistsMembersResponse{Members: strings.Join(members, ",")})
 	if err != nil {
 		return errors.Trace(err)
 	}
@@ -66,7 +66,7 @@ func (ts *TopicService) NewUser(s *session.Session, msg *protocol.NewUserRequest
 		GateUid:   msg.GateUid,
 		MasterUid: uid,
 	}
-	return s.RPC("RoomService.JoinRoom", chat)
+	return s.RPC(s.Context(), "RoomService.JoinRoom", chat)
 }
 
 type UserBalanceResponse struct {
@@ -81,7 +81,7 @@ func (ts *TopicService) Stats(s *session.Session, msg *protocol.MasterStats) err
 	}
 	user.message++
 	user.balance--
-	return s.Push("onBalance", &UserBalanceResponse{user.balance})
+	return s.Push(s.Context(), "onBalance", &UserBalanceResponse{user.balance})
 }
 
 func (ts *TopicService) userDisconnected(s *session.Session) {

@@ -11,7 +11,7 @@ package attr_calc
 // 	msg := &BuffManager.BuffChangeNotify{}
 // 	err := proto.Unmarshal(data, msg)
 // 	if err != nil {
-// 		logger.ErrorWF("MazeBuffKafkaConsumer Unmarshal fail", zap.Error(err), zap.String("msg", string(data)))
+// 		logger.CtxError(ctx,"MazeBuffKafkaConsumer Unmarshal fail", zap.Error(err), zap.String("msg", string(data)))
 // 		return err
 // 	}
 // 	userId := msg.GetUserId()
@@ -28,7 +28,7 @@ package attr_calc
 // 	return err
 // }
 
-// func BCtoAttrChgMsg(logger fklog.FKLogI, userId uint64, subType int32, stamp int64) *structsdef.MazeCalcAttrNotifyMsg {
+// func BCtoAttrChgMsg(ctx context.Context, userId uint64, subType int32, stamp int64) *structsdef.MazeCalcAttrNotifyMsg {
 // 	bcMsg := &structsdef.MazeCalcAttrNotifyMsg{}
 // 	bcMsg.FromServer = "buff中心服务"
 // 	bcMsg.ChgType = constdef.MazeBuffCenter
@@ -39,7 +39,7 @@ package attr_calc
 // 	return bcMsg
 // }
 
-// func HandleBCMazeAttrCalc(logger fklog.FKLogI, userId uint64, msg *BuffManager.BuffChangeNotify) (retry bool, src int32) {
+// func HandleBCMazeAttrCalc(ctx context.Context, userId uint64, msg *BuffManager.BuffChangeNotify) (retry bool, src int32) {
 // 	var needCare bool
 // 	var bcSrc int32
 
@@ -51,7 +51,7 @@ package attr_calc
 // 		}
 // 	}
 
-// 	logger.WarnWF("HandleBCMazeAttrCalc pop maze buff change", zap.Any("msg", msg), zap.Bool("care", needCare))
+// 	logger.CtxWarn(ctx,"HandleBCMazeAttrCalc pop maze buff change", zap.Any("msg", msg), zap.Bool("care", needCare))
 
 // 	if !needCare {
 // 		return

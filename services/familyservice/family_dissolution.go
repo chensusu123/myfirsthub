@@ -1,56 +1,58 @@
 package familyservice
 
 import (
+	"context"
 	"errors"
 	"maze_game_server/model/alliancemodel"
 	"maze_game_server/model/familymodel"
 
-	"gitlab.ifreetalk.com/nano-ecosystem/fklog"
+	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fklog"
 	"go.uber.org/zap"
 )
 
-func (s *service) DissolutionFamily(logger fklog.FKLogI, uid uint64, familyID int32) error {
-	familyModel, err := familymodel.LoadFamilyInfoModel(logger, familyID)
+func (s *service) DissolutionFamily(ctx context.Context, uid uint64, familyID int32) error {
+	logger := fklog.ContextAppLogger(ctx)
+	familyModel, err := familymodel.LoadFamilyInfoModel(ctx, familyID)
 	if err != nil {
-		logger.ErrorWF("LoadFamilyModel err", zap.Int32("familyID", familyID), zap.Error(err))
+		logger.CtxError(ctx, "LoadFamilyModel err", zap.Int32("familyID", familyID), zap.Error(err))
 		return err
 	}
 
 	// 检查用户权限
-	if !familyModel.CheckHaveLeader(logger, []uint64{uid}) {
-		logger.ErrorWF("DissolutionFamily CheckHaveLeader err", zap.Int32("familyID", familyID), zap.Uint64("uid", uid))
+	if !familyModel.CheckHaveLeader(ctx, []uint64{uid}) {
+		logger.CtxError(ctx, "DissolutionFamily CheckHaveLeader err", zap.Int32("familyID", familyID), zap.Uint64("uid", uid))
 		return errors.New("用户没有权限解散家族")
 	}
 
 	// 删除家族
-	familyModel.Delete(logger, familyID)
+	familyModel.Delete(ctx, familyID)
 
 	// 删除家族列表
-	familyListModel, err := familymodel.LoadFamilyListModel(logger)
+	familyListModel, err := familymodel.LoadFamilyListModel(ctx)
 	if err != nil {
-		logger.ErrorWF("LoadFamilyListModel err", zap.Error(err))
+		logger.CtxError(ctx, "LoadFamilyListModel err", zap.Error(err))
 		return err
 	}
-	familyListModel.RemoveFamily(logger, familyID)
+	familyListModel.RemoveFamily(ctx, familyID)
 
 	// 删除联盟内该家族ID
-	familyToAllianceModel := alliancemodel.NewFamilyToAllianceModel(logger, familyID)
-	allianceID, err := familyToAllianceModel.GetUserAlliance(logger)
+	familyToAllianceModel := alliancemodel.NewFamilyToAllianceModel(ctx, familyID)
+	allianceID, err := familyToAllianceModel.GetUserAlliance(ctx)
 	if err != nil {
-		logger.ErrorWF("DissolutionFamily GetUserAlliance err", zap.Int32("familyID", familyID), zap.Error(err))
+		logger.CtxError(ctx, "DissolutionFamily GetUserAlliance err", zap.Int32("familyID", familyID), zap.Error(err))
 		return err
 	}
-	allianceInfoModel, err := alliancemodel.LoadAllianceInfoModel(logger, allianceID)
+	allianceInfoModel, err := alliancemodel.LoadAllianceInfoModel(ctx, allianceID)
 	if err != nil {
-		logger.ErrorWF("DissolutionFamily LoadAllianceInfoModel err", zap.Int32("allianceID", allianceID), zap.Error(err))
+		logger.CtxError(ctx, "DissolutionFamily LoadAllianceInfoModel err", zap.Int32("allianceID", allianceID), zap.Error(err))
 		return err
 	}
-	allianceInfoModel.RemoveFamilyID(logger, familyID)
+	allianceInfoModel.RemoveFamilyID(ctx, familyID)
 
 	// 删除家族对应联盟
-	err = familyToAllianceModel.DelUserAlliance(logger)
+	err = familyToAllianceModel.DelUserAlliance(ctx)
 	if err != nil {
-		logger.ErrorWF("DissolutionFamily DelUserAlliance err", zap.Int32("familyID", familyID), zap.Error(err))
+		logger.CtxError(ctx, "DissolutionFamily DelUserAlliance err", zap.Int32("familyID", familyID), zap.Error(err))
 		return err
 	}
 

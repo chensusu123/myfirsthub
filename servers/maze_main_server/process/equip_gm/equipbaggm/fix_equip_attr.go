@@ -1,6 +1,7 @@
 package equipbaggm
 
 import (
+	"context"
 	"maze_game_server/common/errors"
 	"maze_game_server/config/GMazeEquipAffixRandPoolV8Cfg"
 	"maze_game_server/config/GMazeEquipAffixRollTypeV8Cfg"
@@ -13,17 +14,18 @@ import (
 	"google.golang.org/protobuf/proto"
 )
 
-func fixAllEquipAttrLimit(logger fklog.FKLogI, userId uint64) error {
-	equipInfoMap, err := mazebagequipredis.GetAllEquipInfo(logger, userId)
+func FixAllEquipAttrLimit(ctx context.Context, userId uint64) error {
+	logger := fklog.ContextAppLogger(ctx)
+	equipInfoMap, err := mazebagequipredis.GetAllEquipInfo(ctx, userId)
 	if err != nil {
-		logger.ErrorWF("fixAllEquipAttrLimit GetAllEquipInfo fail", zap.Error(err))
+		logger.CtxError(ctx, "fixAllEquipAttrLimit GetAllEquipInfo fail", zap.Error(err))
 		return err
 	}
 	chgEquipList := make([]*MazeEquipCache.MazeEquipInfoDb, 0)
 	for _, equipInfo := range equipInfoMap {
-		newEquipInfo, chgEquip, err := fixEquipAttr(logger, userId, equipInfo)
+		newEquipInfo, chgEquip, err := fixEquipAttr(ctx, userId, equipInfo)
 		if err != nil {
-			logger.ErrorWF("fixAllEquipAttrLimit fixEquipAttr fail", zap.Error(err))
+			logger.CtxError(ctx, "fixAllEquipAttrLimit fixEquipAttr fail", zap.Error(err))
 			return err
 		}
 		if chgEquip {
@@ -31,27 +33,28 @@ func fixAllEquipAttrLimit(logger fklog.FKLogI, userId uint64) error {
 		}
 	}
 	if len(chgEquipList) > 0 {
-		mazebagequipredis.BatchSaveEquipInfo(logger, userId, chgEquipList)
+		mazebagequipredis.BatchSaveEquipInfo(ctx, userId, chgEquipList)
 	}
 	return err
 }
 
-func fixEquipAttr(logger fklog.FKLogI, userId uint64, equipInfo *MazeEquipCache.MazeEquipInfoDb) (*MazeEquipCache.MazeEquipInfoDb, bool, error) {
+func fixEquipAttr(ctx context.Context, userId uint64, equipInfo *MazeEquipCache.MazeEquipInfoDb) (*MazeEquipCache.MazeEquipInfoDb, bool, error) {
+	logger := fklog.ContextAppLogger(ctx)
 	chgEquip := false
 	for _, attrInfo := range equipInfo.BaseAttrs {
-		cfg := GMazeEquipAffixRandPoolV8Cfg.Get(attrInfo.GetAttrGroup())
+		cfg := GMazeEquipAffixRandPoolV8Cfg.GetWithCtx(ctx, attrInfo.GetAttrGroup())
 		if cfg == nil {
-			logger.ErrorWF("FixEquipAttr GMazeEquipAffixRandPoolV8Cfg fail",
+			logger.CtxError(ctx, "FixEquipAttr GMazeEquipAffixRandPoolV8Cfg fail",
 				zap.Any("attrGroupId", attrInfo.GetAttrGroup()))
 			return nil, false, errors.New("属性配置不存在")
 		}
-		rollTypeCfg := GMazeEquipAffixRollTypeV8Cfg.Get(cfg.Roll_type)
+		rollTypeCfg := GMazeEquipAffixRollTypeV8Cfg.GetWithCtx(ctx, cfg.Roll_type)
 		if rollTypeCfg == nil {
-			logger.ErrorWF("FixEquipAttr GMazeEquipAffixRandPoolV8Cfg err",
+			logger.CtxError(ctx, "FixEquipAttr GMazeEquipAffixRandPoolV8Cfg err",
 				zap.Int32("rollId", cfg.Roll_type))
 			return nil, false, errors.New("配置不存在")
 		}
-		calcAddCount, calcRangeCount := equip.CalcAttrRealRoll(logger, cfg.Add_attr_min, cfg.Add_attr_max, cfg.Show_attr_min, cfg.Show_attr_max, int64(attrInfo.GetRandWeight()), rollTypeCfg.Round_value)
+		calcAddCount, calcRangeCount := equip.CalcAttrRealRoll(ctx, cfg.Add_attr_min, cfg.Add_attr_max, cfg.Show_attr_min, cfg.Show_attr_max, int64(attrInfo.GetRandWeight()), rollTypeCfg.Round_value)
 		for index := 0; index <= len(attrInfo.ShowAttrList); index++ {
 			showAttrInfo := attrInfo.ShowAttrList[index]
 			attrValue := equip.CalcAttrValByRoll(cfg.Show_attr_min[showAttrInfo.GetAttrId()], cfg.Show_attr_max[showAttrInfo.GetAttrId()], rollTypeCfg.Round_value, calcAddCount, calcRangeCount)
@@ -73,17 +76,17 @@ func fixEquipAttr(logger fklog.FKLogI, userId uint64, equipInfo *MazeEquipCache.
 	return equipInfo, chgEquip, nil
 }
 
-// func resetInsAllEquip(logger fklog.FKLogI, userId uint64) error {
+// func resetInsAllEquip(ctx context.Context, userId uint64) error {
 // 	equipInfoMap, err := mazebagequipredis.GetAllEquipInfo(logger, userId)
 // 	if err != nil {
-// 		logger.ErrorWF("fixAllEquipAttrLimit GetAllEquipInfo fail", zap.Error(err))
+// 		logger.CtxError(ctx,"fixAllEquipAttrLimit GetAllEquipInfo fail", zap.Error(err))
 // 		return err
 // 	}
 // 	chgEquipList := make([]*MazeEquipCache.MazeEquipInfoDb, 0)
 // 	for _, equipInfo := range equipInfoMap {
 // 		newEquipInfo, err := resetInsEquip(logger, userId, equipInfo)
 // 		if err != nil {
-// 			logger.ErrorWF("fixAllEquipAttrLimit fixEquipAttr fail", zap.Error(err))
+// 			logger.CtxError(ctx,"fixAllEquipAttrLimit fixEquipAttr fail", zap.Error(err))
 // 			return err
 // 		}
 // 		chgEquipList = append(chgEquipList, newEquipInfo)
@@ -94,7 +97,7 @@ func fixEquipAttr(logger fklog.FKLogI, userId uint64, equipInfo *MazeEquipCache.
 // 	return err
 // }
 
-// func resetInsEquip(logger fklog.FKLogI, userId uint64, equipInfo *MazeEquipCache.MazeEquipInfoDb) (*MazeEquipCache.MazeEquipInfoDb, error) {
+// func resetInsEquip(ctx context.Context, userId uint64, equipInfo *MazeEquipCache.MazeEquipInfoDb) (*MazeEquipCache.MazeEquipInfoDb, error) {
 // 	// 装备实例化开始
 // 	up := &process.DEIUWParam{}
 // 	up.ChargeStage = 1
@@ -111,7 +114,7 @@ func fixEquipAttr(logger fklog.FKLogI, userId uint64, equipInfo *MazeEquipCache.
 // 	ep.Score = equipInfo.GetEquipScore()
 // 	r, e := process.DoInsEquip(logger, userId, up, ep)
 // 	if e != nil {
-// 		logger.ErrorWF("ResetEquipAttr DoInsEquip fail", zap.Error(e))
+// 		logger.CtxError(ctx,"ResetEquipAttr DoInsEquip fail", zap.Error(e))
 // 		return nil, e
 // 	}
 // 	equipInfo.BaseAttrs = r.EquipInfo.BaseAttrs

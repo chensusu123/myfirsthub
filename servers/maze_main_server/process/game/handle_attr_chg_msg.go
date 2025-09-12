@@ -7,37 +7,40 @@
 package game
 
 import (
-	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fklog"
-	"go.uber.org/zap"
+	"context"
 	"maze_game_server/common/constdef"
 	"maze_game_server/common/structsdef"
 	"maze_game_server/io/redis/mazecalcattrredis"
 	"maze_game_server/module/mazecommonvalue"
 	"maze_game_server/module/mazeuserinfo"
 	"maze_game_server/pb/common/MazeGame"
+
+	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fklog"
+	"go.uber.org/zap"
 )
 
-func HandleUserAttrMsg(logger fklog.FKLogI, msg *structsdef.DollAttrChgNotify) {
+func HandleUserAttrMsg(ctx context.Context, msg *structsdef.DollAttrChgNotify) {
+	logger := fklog.ContextAppLogger(ctx)
 	// msg := &structsdef.DollAttrChgNotify{}
 	// err = json.Unmarshal(data, msg)
 	// if err != nil {
-	// 	logger.ErrorWF("HandleUserAttrMsg Unmarshal", zap.Error(err),
+	// 	logger.CtxError(ctx,"HandleUserAttrMsg Unmarshal", zap.Error(err),
 	// 		zap.Int("msg's len", len(data)), zap.Uint64("userId", msg.UserId))
 	// 	return
 	// }
 
 	userId := msg.UserId
-	logger.InfoWF("HandleUserAttrMsg start", zap.Any("msg", msg),
+	logger.CtxInfo(ctx, "HandleUserAttrMsg start", zap.Any("msg", msg),
 		zap.Uint64("userId", userId))
 	if userId <= 0 || len(msg.ChgAttrs) == 0 {
 		return
 	}
-	handleMazeBattleNotify(logger, userId, msg)
-	HandleMazeLvUpgradeAttrChgId(logger, userId, msg)
+	handleMazeBattleNotify(ctx, userId, msg)
+	HandleMazeLvUpgradeAttrChgId(ctx, userId, msg)
 
 	// _ = attrsMap
 	// TODO 处理属性变化包（武力，银子和经验加成属性等）
-	handleMazeCommonValueChg(logger, msg.UserId, msg)
+	handleMazeCommonValueChg(ctx, msg.UserId, msg)
 
 	// TODO 处理战斗数据变化(武力 血量 技能属性等)
 	return
@@ -70,7 +73,8 @@ func HasExpAttr(chgAttrs []*structsdef.AttrChgInfo) int32 {
 	return 0
 }
 
-func handleMazeCommonValueChg(logger fklog.FKLogI, userId uint64, msg *structsdef.DollAttrChgNotify) (err error) {
+func handleMazeCommonValueChg(ctx context.Context, userId uint64, msg *structsdef.DollAttrChgNotify) (err error) {
+	logger := fklog.ContextAppLogger(ctx)
 	var needAttrs []int32
 	// 是否有武力属性
 	mazeForceId := HasForceAttr(msg.ChgAttrs)
@@ -97,9 +101,9 @@ func handleMazeCommonValueChg(logger fklog.FKLogI, userId uint64, msg *structsde
 	if len(needAttrs) == 0 {
 		return
 	}
-	attrsMap, err := mazecalcattrredis.BatchGetMazeCalcAttr(logger, msg.UserId, needAttrs)
+	attrsMap, err := mazecalcattrredis.BatchGetMazeCalcAttr(ctx, msg.UserId, needAttrs)
 	if err != nil {
-		logger.ErrorWF("handleMazeCommonValueChg get attrs fail",
+		logger.CtxError(ctx, "handleMazeCommonValueChg get attrs fail",
 			zap.Error(err),
 			zap.Any("userId", msg.UserId),
 			zap.Any("careId", needAttrs))
@@ -109,16 +113,16 @@ func handleMazeCommonValueChg(logger fklog.FKLogI, userId uint64, msg *structsde
 	//武力及属性变化影响的数值有   武力、额外加成
 	force := attrsMap[constdef.MazeForce]
 
-	userInfo, err := mazeuserinfo.GetUserInfoV2(logger, userId)
+	userInfo, err := mazeuserinfo.GetUserInfoV2(ctx, userId)
 	if err != nil {
-		logger.ErrorWF("handleMazeCommonValueChg GetUserInfoV2 fail", zap.Error(err))
+		logger.CtxError(ctx, "handleMazeCommonValueChg GetUserInfoV2 fail", zap.Error(err))
 		return
 	}
 	level := userInfo.Level
 
-	addMoneyForce, _, addExpForce, err := mazecommonvalue.GetExtraAdditionForce(logger, userId, level, 0)
+	addMoneyForce, _, addExpForce, err := mazecommonvalue.GetExtraAdditionForce(ctx, userId, level, 0)
 	if err != nil {
-		logger.ErrorWF("handleMazeCommonValueChg GetExtraAdditionForce fail", zap.Error(err))
+		logger.CtxError(ctx, "handleMazeCommonValueChg GetExtraAdditionForce fail", zap.Error(err))
 		return
 	}
 	addMoneyEquip, okMoney := attrsMap[constdef.MazeMoneyBuff10258]
@@ -129,7 +133,7 @@ func handleMazeCommonValueChg(logger fklog.FKLogI, userId uint64, msg *structsde
 
 	commonList := make([]*mazecommonvalue.CommonValueStruct, 0)
 	if okMoney {
-		moneyCommon := mazecommonvalue.MakeCommonValueList(logger, map[int32]int64{
+		moneyCommon := mazecommonvalue.MakeCommonValueList(ctx, map[int32]int64{
 			int32(MazeGame.MAZE_DATA_TYPE_ENUM_MAZE_DATA_TYPE_FORCE): force,
 			// int32(MazeGame.MAZE_DATA_TYPE_ENUM_MAZE_DATA_TYPE_EXP_INCOME): expIncome,
 			int32(MazeGame.MAZE_DATA_TYPE_ENUM_MAZE_DATA_TYPE_INCOME): moneyIncome},
@@ -137,7 +141,7 @@ func handleMazeCommonValueChg(logger fklog.FKLogI, userId uint64, msg *structsde
 		commonList = append(commonList, moneyCommon...)
 	}
 	if okExp {
-		expCommon := mazecommonvalue.MakeCommonValueList(logger, map[int32]int64{
+		expCommon := mazecommonvalue.MakeCommonValueList(ctx, map[int32]int64{
 			int32(MazeGame.MAZE_DATA_TYPE_ENUM_MAZE_DATA_TYPE_FORCE):      force,
 			int32(MazeGame.MAZE_DATA_TYPE_ENUM_MAZE_DATA_TYPE_EXP_INCOME): expIncome},
 			// int32(MazeGame.MAZE_DATA_TYPE_ENUM_MAZE_DATA_TYPE_INCOME):     moneyIncome},
@@ -153,25 +157,28 @@ func handleMazeCommonValueChg(logger fklog.FKLogI, userId uint64, msg *structsde
 		// 	map[int32]int32{}, map[int32]string{})
 		// commonList = append(commonList, forceCommon...)
 
-		mazecommonvalue.SendCommonValueIdPack(logger, userId, commonList)
+		mazecommonvalue.SendCommonValueIdPack(ctx, userId, commonList)
 	}
 
 	return
 }
 
-func handleMazeBattleNotify(logger fklog.FKLogI, userId uint64, msg *structsdef.DollAttrChgNotify) {
+func handleMazeBattleNotify(ctx context.Context, userId uint64, msg *structsdef.DollAttrChgNotify) {
+	logger := fklog.ContextAppLogger(ctx)
 	if HasBattleAttr(msg.ChgAttrs) {
-		userInfo, err := mazeuserinfo.GetUserInfoV2(logger, userId)
+		userInfo, err := mazeuserinfo.GetUserInfoV2(ctx, userId)
 		if err != nil {
-			logger.ErrorWF("handleMazeBattleNotify GetUserInfoV2 fail", zap.Error(err))
+			logger.CtxError(ctx, "handleMazeBattleNotify GetUserInfoV2 fail", zap.Error(err))
 			return
 		}
-		mazeBattleInfo, err := GetMazeBattleData(logger, userId, userInfo.Barrier)
-		if err != nil {
-			logger.ErrorWF("handleMazeBattleNotify GetMazeBattleData fail", zap.Error(err))
-			return
+		if userInfo.Barrier > 0 { // 关卡ID为空时不推，可能还未进过关卡
+			mazeBattleInfo, err := GetMazeBattleData(ctx, userId, userInfo.Barrier)
+			if err != nil {
+				logger.CtxError(ctx, "handleMazeBattleNotify GetMazeBattleData fail", zap.Error(err))
+				return
+			}
+			SendMazeBarrierChgPack(ctx, userId, mazeBattleInfo)
 		}
-		SendMazeBarrierChgPack(logger, userId, mazeBattleInfo)
 	}
 	return
 }

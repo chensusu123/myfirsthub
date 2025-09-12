@@ -2,20 +2,15 @@ package item
 
 import (
 	"context"
-	"time"
-
-	"maze_game_server/common/additemdefine"
 	"maze_game_server/common/errors"
-	"maze_game_server/common/iteminterface"
-	"maze_game_server/common/itemutil"
-	"maze_game_server/common/structdefine"
-	"maze_game_server/io/redis/mazebagdb"
-	"maze_game_server/lib/log"
+	"maze_game_server/common/function/itemutil"
 	"maze_game_server/lib/nano/component"
 	"maze_game_server/lib/nano/session"
 	"maze_game_server/pb/common/MazeBag"
-	"maze_game_server/pb/common/MessageType"
-	"maze_game_server/pb/server/MazeItemSvr"
+	"maze_game_server/pb/common/MazeGame"
+	"maze_game_server/services/bagservice"
+	"maze_game_server/services/itemservice"
+	"maze_game_server/usecase/online"
 
 	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fklog"
 	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fkprometheus"
@@ -31,304 +26,99 @@ func NewItem() *Item {
 	return &Item{}
 }
 
-func RegTcpHandler() {
-	// // 获取迷宫背包列表
-	// _ = websocket_service.RegProcSimple(10400, &MazeBag.MazeBagListRQ{},
-	// 	10401, &MazeBag.MazeBagListRS{}, OnMazeBagListRQ)
-
-	// // 重置迷宫背包列表
-	// _ = websocket_service.RegProcSimple(10402, &MazeBag.ResetMazeBagRQ{},
-	// 	10403, &MazeBag.ResetMazeBagRS{}, OnResetMazeBagRQ)
-}
-
+// 获取迷宫背包列表
 func (i *Item) OnMazeBagListRQ_10400_10401(s *session.Session, req *MazeBag.MazeBagListRQ) (err error) {
-
-	logger := log.Clone("Item", uint64(s.UID()), 0)
+	ctx := s.Context()
+	logger := fklog.ContextAppLogger(ctx)
+	logger.CtxInfo(ctx, "OnMazeBagListRQ start", zap.Any("req", req))
 	res := &MazeBag.MazeBagListRS{}
-
 	res.Header = req.Header
 	res.ErrInfo = errors.NO_ERROR
-
 	uid := uint64(s.UID())
-
 	defer fkprometheus.DebugPMT("OnMazeBagListRQ")()
 	defer func() {
 		err = s.Response(res)
-		logger.InfoWF("OnMazeBagListRQ end", zap.Any("req", req), zap.Any("res", res))
+		logger.CtxInfo(ctx, "OnMazeBagListRQ end", zap.Any("req", req), zap.Any("res", res))
 	}()
 
-	bagItemMap, err := mazebagdb.GetAllBagItem(logger, uid, 300)
+	bagItemMap, err := bagservice.GlobalBagService.GetAllBagItem(ctx, uid)
 	if err != nil {
-		logger.ErrorWF("OnMazeBagListRQ GetAllBagItem err", zap.Error(err))
-		res.ErrInfo = errors.MODULE_ERROR.ToInfo()
+		res.ErrInfo = errors.COMMON_ERROR_TIPS.Wrap("获取数据失败")
+		logger.CtxError(ctx, "OnMazeBagListRQ GetAllBagItem err", zap.Error(err))
 		return
 	}
-
 	res.Items = make([]*MazeBag.MazeBagItem, 0, len(bagItemMap))
 	for id, count := range bagItemMap {
 		if id <= 0 || count <= 0 {
 			continue
 		}
-		res.Items = append(res.Items, itemutil.BuildMazeBagItem(logger, id, count))
+		res.Items = append(res.Items, itemutil.BuildMazeBagItem(ctx, id, count))
 	}
 	return
 }
 
+// 重置迷宫背包列表
 func (i *Item) OnResetMazeBagRQ_10402_10403(s *session.Session, req *MazeBag.ResetMazeBagRQ) (err error) {
+	ctx := s.Context()
+	logger := fklog.ContextAppLogger(ctx)
+	logger.CtxInfo(ctx, "OnResetMazeBagRQ start", zap.Any("req", req))
 
-	logger := log.Clone("Item", uint64(s.UID()), 0)
 	res := &MazeBag.ResetMazeBagRS{}
-
 	res.Header = req.Header
 	res.ErrInfo = errors.NO_ERROR
 	uid := uint64(s.UID())
 
 	defer fkprometheus.DebugPMT("OnResetMazeBagRQ")()
-	defer logger.InfoWF("OnResetMazeBagRQ end", zap.Any("req", req), zap.Any("res", res))
+	defer func() {
+		err = s.Response(res)
+		logger.CtxInfo(ctx, "OnResetMazeBagRQ end", zap.Any("req", req), zap.Any("res", res))
+	}()
 
-	err = mazebagdb.DelKey(logger, uid)
+	err = bagservice.GlobalBagService.DelAllBagItem(ctx, uid)
 	if err != nil {
-		logger.ErrorWF("OnResetMazeBagRQ DelKey err", zap.Error(err))
-		res.ErrInfo = errors.DB_SAVE_ERROR.ToInfo()
+		logger.CtxError(ctx, "OnResetMazeBagRQ DelAllBagItem err", zap.Error(err))
 		return
 	}
+
 	return
 }
 
-var GloRegIns = additemdefine.NewRegister()
+func OnSendItemsPack(ctx context.Context, userID uint64, items []*itemservice.ItemInfo, equips []*itemservice.ItemInfo, monsterGuid int64, monsterPos string, reaSon int32) (err error) {
+	logger := fklog.ContextAppLogger(ctx)
+	rs := &MazeGame.MazeDropItemID{}
 
-// func RegisterThriftRPCPackage() {
-//	thrift_service.RegisterTwowaySimple(131437, &MazeItemSvr.AddItemRQ{},
-//		131438, &MazeItemSvr.AddItemRS{}, OnAddItemRQ)
-//
-//	thrift_service.RegisterTwowaySimple(131439, &MazeItemSvr.ConsumeItemRQ{},
-//		131440, &MazeItemSvr.ConsumeItemRS{}, OnConsumeItemRQ)
-//
-//	thrift_service.RegisterTwowaySimple(131441, &MazeItemSvr.QueryItemRQ{},
-//		131442, &MazeItemSvr.QueryItemRS{}, OnQueryItemRQ)
-//
-//	thrift_service.RegisterTwowaySimple(131443, &MazeItemSvr.CheckAddItemRQ{},
-//		131444, &MazeItemSvr.CheckAddItemRS{}, OnCheckAddItemRQ)
-// }
+	logger.CtxInfo(ctx, "OnSendItemsPack start", zap.Any("rs", rs))
 
-func OnAddItemRQ(ctx fklog.FKLogI, rqMsg proto.Message, rsMsg proto.Message) (err error) {
-	req, ok := rqMsg.(*MazeItemSvr.AddItemRQ)
-	if !ok {
-		ctx.ErrorWF("OnAddItemRQ pb is wrong", zap.Any("rqMsg", rqMsg))
-		return
-	}
-	res, ok := rsMsg.(*MazeItemSvr.AddItemRS)
-	if !ok {
-		ctx.ErrorWF("OnAddItemRQ pb is wrong", zap.Any("rsMsg", rsMsg))
-		return
-	}
-	res.ErrInfo = errors.NO_ERROR
-	res.UserId = req.UserId
+	defer func() {
+		logger.CtxInfo(ctx, "OnSendItemsPack end", zap.Any("rs", rs))
+	}()
 
-	startTime := time.Now()
-	defer ctx.InfoWF("OnAddItemRQ end", zap.Any("req", req), zap.Any("res", res), zap.Duration("costTime", time.Since(startTime)))
-
-	defer fkprometheus.DebugPMT("OnAddItemRQ")()
-
-	uid, opType, tradeNo := req.GetUserId(), req.GetOpType(), req.GetTradeNumber()
-	if uid <= 0 || opType <= 0 || tradeNo <= 0 {
-		ctx.WarnWF("OnAddItemRQ invalid args", zap.Any("req", req))
-		res.ErrInfo = errors.ARGS_NOT_MATCH.ToInfo()
-		return
-	}
-
-	userCtx := itemutil.WrapUserContext(context.TODO(), uid, ctx, req.GetHeader())
-
-	// 检查并合并物品
-	realAddItems := itemutil.CheckAndMergeItem(req.GetItems())
-	if len(realAddItems) <= 0 {
-		userCtx.WarnWF("OnAddItemRQ add items nil", zap.Any("addItems", req.GetItems()))
-		res.ErrInfo = errors.ITEM_CHECK_ERROR.Wrap("添加道具为空")
-		return
-	}
-
-	option := &additemdefine.AddItemOption{
-		OpType:      opType,
-		TradeNumber: tradeNo,
-		RegIns:      GloRegIns,
-	}
-
-	var addRes *structdefine.AddItemRes
-	addRes, err = iteminterface.GatherItems(userCtx, option, realAddItems...)
+	equipList, err := itemutil.ItemInfo2EquipPb(ctx, equips)
 	if err != nil {
-		userCtx.WarnWF("OnAddItemRQ GatherItems err", zap.Any("gatherItem", realAddItems),
-			zap.Any("addRes", addRes), zap.Error(err),
+		logger.CtxError(ctx, "OnSendItemsPack ItemInfo2EquipPb",
+			zap.Any("userID", userID),
+			zap.Any("items", items),
+			zap.Any("equips", equips),
 		)
-
-		var rer *errors.CodeError
-		rer, ok = err.(*errors.CodeError)
-		if ok {
-			res.ErrInfo = rer.ToInfo()
-		} else {
-			res.ErrInfo = errors.MODULE_ERROR.ToInfo()
-		}
+		return err
 	}
 
-	res.FailItems = addRes.FailItem
-	res.TimeoutItems = addRes.TimeoutItem
-	res.SucItems = addRes.SucItem
-	return
-}
+	rs.EquipList = equipList
+	rs.ItemList = itemutil.ItemInfo2ItemPb(items)
 
-func OnConsumeItemRQ(ctx fklog.FKLogI, rqMsg proto.Message, rsMsg proto.Message) (err error) {
-	req, ok := rqMsg.(*MazeItemSvr.ConsumeItemRQ)
-	if !ok {
-		ctx.ErrorWF("OnConsumeItemRQ pb is wrong", zap.Any("rqMsg", rqMsg))
-		return
-	}
-	res, ok := rsMsg.(*MazeItemSvr.ConsumeItemRS)
-	if !ok {
-		ctx.ErrorWF("OnConsumeItemRQ pb is wrong", zap.Any("rsMsg", rsMsg))
-		return
-	}
-	res.ErrInfo = errors.NO_ERROR
-	res.UserId = req.UserId
+	rs.MonsterGuid = proto.Int64(monsterGuid)
+	rs.MonsterPos = proto.String(monsterPos)
 
-	startTime := time.Now()
-	defer ctx.InfoWF("OnConsumeItemRQ end", zap.Any("req", req), zap.Any("res", res), zap.Duration("costTime", time.Since(startTime)))
-	defer fkprometheus.DebugPMT("OnConsumeItemRQ")()
+	rs.Reason = proto.Int32(reaSon)
 
-	uid, opType, tradeNo := req.GetUserId(), req.GetOpType(), req.GetTradeNumber()
-	if uid <= 0 || opType <= 0 || tradeNo <= 0 {
-		ctx.WarnWF("OnConsumeItemRQ invalid args", zap.Any("req", req))
-		res.ErrInfo = errors.ARGS_NOT_MATCH.ToInfo()
-		return
-	}
-
-	userCtx := itemutil.WrapUserContext(context.TODO(), uid, ctx, nil)
-
-	// 检查并合并物品
-	realSubItems := itemutil.CheckAndMergeItem(req.GetItems())
-	if len(realSubItems) == 0 {
-		userCtx.WarnWF("OnConsumeItemRQ sub items nil", zap.Any("req", req))
-		res.ErrInfo = errors.ITEM_CHECK_ERROR.Wrap("扣道具数量为空")
-		return
-	}
-
-	option := &additemdefine.AddItemOption{
-		OpType:      opType,
-		TradeNumber: req.GetTradeNumber(),
-		RegIns:      GloRegIns,
-	}
-
-	subRes, errInfo := iteminterface.DeductItems(userCtx, option, realSubItems...)
-	if errInfo != nil && errInfo.GetErrCode() != errors.NO_ERROR_CODE {
-		userCtx.WarnWF("OnConsumeItemRQ DeductItems fail", zap.Any("errInfo", errInfo), zap.Any("realSubItems", realSubItems), zap.Any("subRes", subRes))
-		res.ErrInfo = errInfo
-	}
-
-	res.SucItems = subRes.SucItem
-	res.TimeoutItems = subRes.TimeoutItem
-	res.LessItems = subRes.LessItem
-	return
-}
-
-func OnQueryItemRQ(ctx fklog.FKLogI, rqMsg proto.Message, rsMsg proto.Message) (err error) {
-	req, ok := rqMsg.(*MazeItemSvr.QueryItemRQ)
-	if !ok {
-		ctx.ErrorWF("OnQueryItemRQ pb is wrong", zap.Any("rqMsg", rqMsg))
-		return
-	}
-	res, ok := rsMsg.(*MazeItemSvr.QueryItemRS)
-	if !ok {
-		ctx.ErrorWF("OnQueryItemRQ pb is wrong", zap.Any("rsMsg", rsMsg))
-		return
-	}
-	res.ErrInfo = errors.NO_ERROR
-	res.UserId = req.UserId
-
-	startTime := time.Now()
-	defer ctx.InfoWF("OnQueryItemRQ end", zap.Any("req", req), zap.Any("res", res), zap.Duration("costTime", time.Since(startTime)))
-
-	defer fkprometheus.DebugPMT("OnQueryItemRQ")()
-
-	uid := req.GetUserId()
-	if uid <= 0 {
-		ctx.WarnWF("OnQueryItemRQ invalid args", zap.Any("req", req))
-		res.ErrInfo = errors.ARGS_NOT_MATCH.ToInfo()
-		return
-	}
-
-	userCtx := itemutil.WrapUserContext(context.TODO(), uid, ctx, nil)
-
-	queryItems := itemutil.MergeQueryItems(req.GetItems())
-	if len(queryItems) == 0 {
-		ctx.WarnWF("OnQueryItemSvrRQ MergeQueryItems items nil", zap.Any("items", req.GetItems()))
-		return
-	}
-
-	option := &additemdefine.AddItemOption{
-		RegIns: GloRegIns,
-	}
-
-	var errInfo *MessageType.ErrorInfo
-	res.Items, errInfo = iteminterface.QueryItems(userCtx, option, queryItems)
-	if errInfo != nil {
-		userCtx.WarnWF("OnQueryItemSvrRQ QueryItems err", zap.Error(err))
-		res.ErrInfo = errInfo
-		return
-	}
-
-	return
-}
-
-func OnCheckAddItemRQ(ctx fklog.FKLogI, rqMsg proto.Message, rsMsg proto.Message) (err error) {
-	req, ok := rqMsg.(*MazeItemSvr.CheckAddItemRQ)
-	if !ok {
-		ctx.ErrorWF("OnCheckAddItemRQ pb is wrong", zap.Any("rqMsg", rqMsg))
-		return
-	}
-	res, ok := rsMsg.(*MazeItemSvr.CheckAddItemRS)
-	if !ok {
-		ctx.ErrorWF("OnCheckAddItemRQ pb is wrong", zap.Any("rsMsg", rsMsg))
-		return
-	}
-	res.ErrInfo = errors.NO_ERROR
-	res.UserId = req.UserId
-
-	startTime := time.Now()
-	defer ctx.InfoWF("OnCheckAddItemRQ end", zap.Any("req", req), zap.Any("res", res), zap.Duration("costTime", time.Since(startTime)))
-	defer fkprometheus.DebugPMT("OnCheckAddItemRQ")()
-
-	uid := req.GetUserId()
-	if uid <= 0 {
-		ctx.WarnWF("OnCheckAddItemRQ invalid args", zap.Any("req", req))
-		res.ErrInfo = errors.ARGS_NOT_MATCH.ToInfo()
-		return
-	}
-
-	userCtx := itemutil.WrapUserContext(context.TODO(), uid, ctx, nil)
-
-	mergeItems := itemutil.CheckAndMergeItem(req.GetItems())
-	if len(mergeItems) == 0 {
-		userCtx.WarnWF("OnCheckAddItemRQ check add item nil", zap.Any("req", req))
-		res.ErrInfo = errors.NewCommonCodeError("检查添加道具数量为空")
-		return nil
-	}
-
-	option := &additemdefine.AddItemOption{
-		RegIns: GloRegIns,
-	}
-	checkRes, err := iteminterface.CheckAddItems(userCtx, option, mergeItems)
+	err = online.ClusterPush(ctx, uint64(userID), 10665, rs)
 	if err != nil {
-		userCtx.WarnWF("OnCheckAddItemRQ error", zap.Error(err))
-
-		var errInfo *errors.CodeError
-		errInfo, ok = err.(*errors.CodeError)
-		if ok {
-			res.ErrInfo = errInfo.ToInfo()
-		} else {
-			res.ErrInfo = errors.ITEM_CHECK_ERROR.ToInfo()
-		}
+		logger.CtxError(ctx, "OnSendItemsPack ClusterPush",
+			zap.Any("items", items),
+			zap.Any("equips", equips),
+		)
+		return
 	}
 
-	res.TimeoutItems = checkRes.TimeoutItem
-	res.FailItems = checkRes.FailItem
-	res.LimitItems = checkRes.LimitItem
-	return
+	return err
 }

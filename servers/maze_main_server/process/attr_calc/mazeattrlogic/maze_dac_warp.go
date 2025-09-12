@@ -7,45 +7,46 @@
 package mazeattrlogic
 
 import (
+	"context"
 	"fmt"
 
-	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fklog"
 	"maze_game_server/common/constdef"
 	"maze_game_server/common/structsdef"
 )
 
-func RunDacFromQue(logger fklog.FKLogI, msg *structsdef.MazeCalcAttrNotifyMsg) (needRetry bool, err error) {
+func RunDacFromQue(ctx context.Context, msg *structsdef.MazeCalcAttrNotifyMsg) (needRetry bool, err error) {
 	dacp := NewDACParam()
 	dacp.ChgType = msg.ChgType
 	dacp.ChgDesc = msg.ChgDesc
 	dacp.Session = msg.Session
-	return RunDac(logger, msg.UserId, dacp)
+	return RunDac(ctx, msg.UserId, dacp)
 }
 
-func RunDacFromBC(logger fklog.FKLogI, userId uint64, subType int32) (needRetry bool, err error) {
+func RunDacFromBC(ctx context.Context, userId uint64, subType int32) (needRetry bool, err error) {
 	dacp := NewDACParam()
 	dacp.ChgType = constdef.MazeBuffCenter
 	dacp.ChgSubType = subType
 	dacp.ChgDesc = fmt.Sprintf("oldBc_%d", subType)
 
-	return RunDac(logger, userId, dacp)
+	return RunDac(ctx, userId, dacp)
 }
 
-func RunDac(logger fklog.FKLogI, userId uint64, dacParam *DACParam) (needRetry bool, err error) {
-	dac := NewDAC(logger, userId)
+func RunDac(ctx context.Context, userId uint64, dacParam *DACParam) (needRetry bool, err error) {
+	// logger := fklog.ContextAppLogger(ctx)
+	dac := NewDAC(ctx, userId)
 	defer func() {
 		needRetry = dac.ErrNeedRetry()
 	}()
-	err = dac.InitData(dacParam)
+	err = dac.InitData(ctx, dacParam)
 	if err != nil {
 		return
 	}
 	dac.Prepare()
 
-	err = dac.Calc()
+	err = dac.Calc(ctx)
 	if err != nil {
 		return
 	}
-	err = dac.End()
+	err = dac.End(ctx)
 	return
 }

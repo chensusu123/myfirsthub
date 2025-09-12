@@ -1,6 +1,7 @@
 package GMazeEnergyAffixLibraryV8Cfg
 
 import (
+	"context"
 	"errors"
 	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fklog"
 	"gitlab.ifreetalk.com/maze-plate/freetk/fkserver/config_manager"
@@ -17,7 +18,8 @@ type MazeEnergyAffixLibraryV8ConfigRow struct {
 	Order                   int32   `json:"order"`                   // 词条库id
 	Certainly_affix_id_list []int32 `json:"certainly_affix_id_list"` // 必出库包括的词条id
 	Affix_id_list           []int32 `json:"affix_id_list"`           // 库包括的词条id
-	Weight                  int32   `json:"weight"`                  // 库随机权重
+	Weight_adjust1_add      []int32 `json:"weight_adjust1_add"`      // 库词条已选次数影响权重系数（加值，万分比）
+	Weight_adjust2_sub      []int32 `json:"weight_adjust2_sub"`      // 库已随次数影响权重系数（减值，万分比）
 }
 
 // MazeEnergyAffixLibraryV8Config from maze_energy_affix_library_v8【迷宫-能量词条库权重】.xlsx maze_energy_affix_library_v8
@@ -80,9 +82,19 @@ func GetMazeEnergyAffixLibraryV8Config(configId int32) *MazeEnergyAffixLibraryV8
 	return gConfigData.GetMazeEnergyAffixLibraryV8Config(configId)
 }
 
+// Deprecated: 链路追踪信息缺失。推荐使用GetWithCtx
 // Get pkg func. get one config by configId
 func Get(configId int32) *MazeEnergyAffixLibraryV8ConfigRow {
-	return gConfigData.Get(configId)
+	return GetWithCtx(context.Background(), configId)
+}
+
+// GetWithCtx pkg func. get one config by configId
+func GetWithCtx(ctx context.Context, configId int32, otps ...config_manager.QueryOption) *MazeEnergyAffixLibraryV8ConfigRow {
+	cfg := gConfigData.Get(configId)
+	if cfg == nil {
+		config_manager.MissRecord(ctx, "maze_energy_affix_library_v8", configId, otps...)
+	}
+	return cfg
 }
 
 // GetAllMazeEnergyAffixLibraryV8Config pkg func. get all config slice
@@ -323,18 +335,42 @@ func (*gMazeEnergyAffixLibraryV8Parser) Parse(logger fklog.FKLogI, data []string
 		}
 	}
 
-	// parse column 3 weight : 库随机权重
+	// parse column 3 weight_adjust1_add : 库词条已选次数影响权重系数（加值，万分比）
 	if data[3] != "" {
-		tmp, err = strconv.ParseInt(data[3], 10, 64)
-		if err != nil {
-			err = errors.New("parse field weight 库随机权重 to int32 failed")
-			logger.ErrorWF("parse field weight 库随机权重 to int32 failed.",
-				zap.String("xlsx", "maze_energy_affix_library_v8【迷宫-能量词条库权重】.xlsx"), zap.String("sheet", "maze_energy_affix_library_v8"),
-				zap.String("parse_data", data[3]),
-				zap.Error(err))
-			return
+
+		vals := strings.Split(data[3], ",")
+		for k, v := range vals {
+			tmp, err = strconv.ParseInt(v, 10, 64)
+			if err != nil {
+				err = errors.New("parse array field weight_adjust1_add 库词条已选次数影响权重系数（加值，万分比） to []int32 failed")
+				logger.ErrorWF("parse array field weight_adjust1_add 库词条已选次数影响权重系数（加值，万分比） to []int32 failed.",
+					zap.String("xlsx", "maze_energy_affix_library_v8【迷宫-能量词条库权重】.xlsx"), zap.String("sheet", "maze_energy_affix_library_v8"),
+					// zap.String("field_data",data[3]),
+					zap.String("parse_data", v), zap.Int("index", k),
+					zap.Error(err))
+				return
+			}
+			config.Weight_adjust1_add = append(config.Weight_adjust1_add, int32(tmp))
 		}
-		config.Weight = int32(tmp)
+	}
+
+	// parse column 4 weight_adjust2_sub : 库已随次数影响权重系数（减值，万分比）
+	if data[4] != "" {
+
+		vals := strings.Split(data[4], ",")
+		for k, v := range vals {
+			tmp, err = strconv.ParseInt(v, 10, 64)
+			if err != nil {
+				err = errors.New("parse array field weight_adjust2_sub 库已随次数影响权重系数（减值，万分比） to []int32 failed")
+				logger.ErrorWF("parse array field weight_adjust2_sub 库已随次数影响权重系数（减值，万分比） to []int32 failed.",
+					zap.String("xlsx", "maze_energy_affix_library_v8【迷宫-能量词条库权重】.xlsx"), zap.String("sheet", "maze_energy_affix_library_v8"),
+					// zap.String("field_data",data[4]),
+					zap.String("parse_data", v), zap.Int("index", k),
+					zap.Error(err))
+				return
+			}
+			config.Weight_adjust2_sub = append(config.Weight_adjust2_sub, int32(tmp))
+		}
 	}
 	return
 }
@@ -343,7 +379,8 @@ var gMazeEnergyAffixLibraryV8Fields = []string{
 	"order",
 	"certainly_affix_id_list",
 	"affix_id_list",
-	"weight",
+	"weight_adjust1_add",
+	"weight_adjust2_sub",
 }
 
 // LoadDataManual load data for test

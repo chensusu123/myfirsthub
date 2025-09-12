@@ -1,115 +1,82 @@
 // @Author pangchenyang 2025/6/9 22:02:00
-// @Desc: 
+// @Desc:
 package userprofileredis
 
 import (
 	"context"
-	"encoding/json"
 	"fmt"
 
-	"maze_game_server/pb/common/UserProfile"
-
-	"github.com/go-redis/redis/v8"
-	"sync"
-	"maze_game_server/usecase/redisconfig"
+	"github.com/go-redis/redis"
+	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/database/nanoredis"
 )
 
-var db *redis.Client
-var once sync.Once
+var GlobalUserProfileRedis *UserProfileRedis
 
-const (
-	userProfileCacheKey = "user:profile:%d" // 永不过期 todo 需要优化
-)
-
-// OpUserProfile 用户资料
-type OpUserProfile struct {
-	rdb *redis.Client
+type UserProfileRedis struct {
+	*nanoredis.NanoRedis
 }
 
-func GetKey(userID uint64) string {
-	once.Do(func() {
-		var err error
-		db, err = redisconfig.GetRedisService().GetClient()
-		if err != nil {
-			panic(err)
-		}
-	})
-	return fmt.Sprintf(userProfileCacheKey, userID)
+func NewRedisDemo(serviceName string, name string) *UserProfileRedis {
+	GlobalUserProfileRedis.NanoRedis = nanoredis.NewNanoRedis(serviceName, name)
+	return GlobalUserProfileRedis
 }
 
-// NewOpUserProfile 构造函数
-func NewOpUserProfile(rdb *redis.Client) *OpUserProfile {
-	return &OpUserProfile{rdb: rdb}
+func (r *UserProfileRedis) getKey(userID uint64) string {
+	return fmt.Sprintf("user:profile:%d", userID)
 }
 
 // SetProfile 设置用户资料
-func SetProfile(userID uint64, profile *UserProfile.UserProfile) error {
-	ctx := context.Background()
-	key := GetKey(userID)
-
-	jsonData, err := json.Marshal(profile) // todo 先用json存，后期考虑加密的话用proto打包
+func (r *UserProfileRedis) SetProfile(ctx context.Context, userID uint64, data []byte) error {
+	db, err := r.GetDB()
 	if err != nil {
 		return err
 	}
-
-	return db.Set(ctx, key, jsonData, 0).Err()
+	return db.Set(ctx, r.getKey(userID), data, 0).Err()
 }
 
 // GetProfile 获取用户资料
-func GetProfile(userID uint64) (*UserProfile.UserProfile, error) {
-	ctx := context.Background()
-	key := GetKey(userID)
-
-	data, err := db.Get(ctx, key).Bytes()
+func (r *UserProfileRedis) GetProfile(ctx context.Context, userID uint64) ([]byte, error) {
+	db, err := r.GetDB()
 	if err != nil {
-		if err == redis.Nil {
-			return nil, nil // 资料不存在不返回错误
-		}
 		return nil, err
 	}
-
-	var profile UserProfile.UserProfile
-	if err := json.Unmarshal(data, &profile); err != nil {
-		return nil, err
+	ret, err := db.Get(ctx, r.getKey(userID)).Bytes()
+	if err == redis.Nil {
+		return nil, nil
 	}
-
-	return &profile, nil
-}
-
-// DeleteProfile 删除用户资料 // todo 后续监听用户换服、移民、注销等事件
-func DeleteProfile(userID uint64) error {
-	ctx := context.Background()
-	key := GetKey(userID)
-	return db.Del(ctx, key).Err()
+	return ret, err
 }
 
 // BatchGetProfile 批量获取用户资料
-func BatchGetProfile(userIDs []uint64) ([]*UserProfile.UserProfile, error) {
-	ctx := context.Background()
-
-	keys := make([]string, len(userIDs))
-	for i, userID := range userIDs {
-		keys[i] = GetKey(userID)
-	}
-
-	values, err := db.MGet(ctx, keys...).Result()
+func (r *UserProfileRedis) BatchGetProfile(ctx context.Context, userIDs []uint64) ([][]byte, error) {
+	db, err := r.GetDB()
 	if err != nil {
 		return nil, err
 	}
-
-	result := make([]*UserProfile.UserProfile, len(userIDs))
-
-	for _, value := range values {
-		if value == nil {
-			continue
-		}
-
-		var profile *UserProfile.UserProfile
-		if err := json.Unmarshal([]byte(value.(string)), &profile); err != nil {
-			return nil, err
-		}
-		result = append(result, profile)
+	args := make([]string, len(userIDs))
+	for i, userID := range userIDs {
+		args[i] = r.getKey(userID)
 	}
+	result, err := db.MGet(ctx, args...).Result()
+	if err != redis.Nil {
+		return nil, err
+	}
+	ret := make([][]byte, len(result))
+	for _, v := range result {
+		if v != nil {
+			if b, ok := v.(string); ok {
+				result = append(result, []byte(b))
+			}
+		}
+	}
+	return ret, err
+}
 
-	return result, nil
+// DeleteProfile 删除用户资料
+func (r *UserProfileRedis) DelProfile(ctx context.Context, userID uint64) error {
+	db, err := r.GetDB()
+	if err != nil {
+		return err
+	}
+	return db.Del(ctx, r.getKey(userID)).Err()
 }

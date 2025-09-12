@@ -1,6 +1,7 @@
 package dollassembleinfo
 
 import (
+	"context"
 	"maze_game_server/common/constdef"
 	"maze_game_server/common/errors"
 	"maze_game_server/common/function/assemble"
@@ -17,24 +18,25 @@ import (
 )
 
 // 打包装配信息
-func GetDollAssembleInfo(logger fklog.FKLogI, userId uint64) (assembleInfo *MazeEquipCache.MazeAssembleDb, err error) {
-	assembleInfo, _, err = GetDollAssembleInfoEx(logger, userId)
+func GetDollAssembleInfo(ctx context.Context, userId uint64) (assembleInfo *MazeEquipCache.MazeAssembleDb, err error) {
+	assembleInfo, _, err = GetDollAssembleInfoEx(ctx, userId)
 	return
 }
 
-func GetDollAssembleInfoEx(logger fklog.FKLogI, userId uint64) (assembleInfo *MazeEquipCache.MazeAssembleDb, effectInfo *calcassembleattr.EquipmentEffectInfo, err error) {
-	return GetDollAssembleInfoV2(logger, userId, nil)
+func GetDollAssembleInfoEx(ctx context.Context, userId uint64) (assembleInfo *MazeEquipCache.MazeAssembleDb, effectInfo *calcassembleattr.EquipmentEffectInfo, err error) {
+	return GetDollAssembleInfoV2(ctx, userId, nil)
 }
 
-func CheckIsAssemble(logger fklog.FKLogI, userId uint64, equipGuid int64, equipPos int32) (isAssemble bool, err error) {
-	dollAssembleMetaSt, err := dollassembleredis.GetDollAssembleMetaInfo(logger, userId, constdef.AssemblePrefixCurAssembleSuitIndex)
+func CheckIsAssemble(ctx context.Context, userId uint64, equipGuid int64, equipPos int32) (isAssemble bool, err error) {
+	logger := fklog.ContextAppLogger(ctx)
+	dollAssembleMetaSt, err := dollassembleredis.GetDollAssembleMetaInfo(ctx, userId, constdef.AssemblePrefixCurAssembleSuitIndex)
 	if err != nil {
-		logger.ErrorWF("CheckIsAssemble GetDollAssembleMetaInfo fail", zap.Error(err), zap.Any("equipPos", equipPos))
+		logger.CtxError(ctx, "CheckIsAssemble GetDollAssembleMetaInfo fail", zap.Error(err), zap.Any("equipPos", equipPos))
 		return
 	}
-	equipPosDb, err := dollassemblesuitredis.GetDollAssembleByPos(logger, userId, dollAssembleMetaSt.GetCurSuitIndex(), equipPos)
+	equipPosDb, err := dollassemblesuitredis.GetDollAssembleByPos(ctx, userId, dollAssembleMetaSt.GetCurSuitIndex(), equipPos)
 	if err != nil {
-		logger.ErrorWF("CheckIsAssemble GetDollAssembleByPos fail", zap.Error(err),
+		logger.CtxError(ctx, "CheckIsAssemble GetDollAssembleByPos fail", zap.Error(err),
 			zap.Any("equipPos", equipPos), zap.Any("suitIndex", dollAssembleMetaSt.GetCurSuitIndex()))
 		return
 	}
@@ -46,14 +48,16 @@ type AssParam struct {
 	ReplaeEquipDb *MazeEquipCache.MazeEquipInfoDb
 }
 
-func GetDollAssembleInfoV2(logger fklog.FKLogI, userId uint64, p *AssParam) (assembleInfo *MazeEquipCache.MazeAssembleDb, effectInfo *calcassembleattr.EquipmentEffectInfo, err error) {
+// 装备信息加上每个pos的装备信息和装备效果
+func GetDollAssembleInfoV2(ctx context.Context, userId uint64, p *AssParam) (assembleInfo *MazeEquipCache.MazeAssembleDb, effectInfo *calcassembleattr.EquipmentEffectInfo, err error) {
+	logger := fklog.ContextAppLogger(ctx)
 	// 查询装配信息
-	assembleInfo, err = dollassembleredis.GetAllAssembleInfo(logger, userId)
+	assembleInfo, err = dollassembleredis.GetAllAssembleInfo(ctx, userId)
 	if err != nil {
-		logger.ErrorWF("GetDollAssembleInfo get fail", zap.Error(err))
+		logger.CtxError(ctx, "GetDollAssembleInfo get fail", zap.Error(err))
 		return
 	}
-	effectInfo = calcassembleattr.NewEquipmentEffectInfo(logger)
+	effectInfo = calcassembleattr.NewEquipmentEffectInfo(ctx)
 
 	allEquipPos := GMazeEquipPosRankV8Cfg.GetAll()
 	posNum := len(allEquipPos)
@@ -62,11 +66,12 @@ func GetDollAssembleInfoV2(logger fklog.FKLogI, userId uint64, p *AssParam) (ass
 	if assembleInfo.GetCurSuitIndex() > 0 {
 		suitIndex = assembleInfo.GetCurSuitIndex()
 	}
+	//获取每个位置的装备信息
 	if suitIndex > 0 {
-		equips, err = dollassemblesuitredis.GetDollAssembleSuit(logger, userId,
+		equips, err = dollassemblesuitredis.GetDollAssembleSuit(ctx, userId,
 			assembleInfo.GetCurSuitIndex(), posNum)
 		if err != nil {
-			logger.ErrorWF("GetDollAssembleInfo GetDollAssembleSuit fail", zap.Error(err),
+			logger.CtxError(ctx, "GetDollAssembleInfo GetDollAssembleSuit fail", zap.Error(err),
 				zap.Int32("curSuit", assembleInfo.GetCurSuitIndex()))
 			return
 		}
@@ -95,9 +100,9 @@ func GetDollAssembleInfoV2(logger fklog.FKLogI, userId uint64, p *AssParam) (ass
 		return
 	}
 	// 从背包查询装备信息
-	realEquips, err := effectequip.BatchGetEffectEquipInfo(logger, userId, equipGuids...)
+	realEquips, err := effectequip.BatchGetEffectEquipInfo(ctx, userId, equipGuids...)
 	if err != nil {
-		logger.ErrorWF("GetDollAssembleInfo GetBatchEquipInfo fail", zap.Error(err),
+		logger.CtxError(ctx, "GetDollAssembleInfo GetBatchEquipInfo fail", zap.Error(err),
 			zap.Any("equipGuids", equipGuids))
 		return
 	}
@@ -106,7 +111,7 @@ func GetDollAssembleInfoV2(logger fklog.FKLogI, userId uint64, p *AssParam) (ass
 		if _, ok := realEquips[p.ReplaeEquipDb.GetEquipGuid()]; ok {
 			realEquips[p.ReplaeEquipDb.GetEquipGuid()] = p.ReplaeEquipDb
 		} else {
-			logger.WarnWF("GetDollAssembleInfo no find old equip",
+			logger.CtxWarn(ctx, "GetDollAssembleInfo no find old equip",
 				zap.Any("oldEquips", p.ReplaeEquipDb))
 		}
 	}
@@ -117,7 +122,7 @@ func GetDollAssembleInfoV2(logger fklog.FKLogI, userId uint64, p *AssParam) (ass
 		}
 		equipDetail := realEquips[assemblePos.GetEquipLoadInfo().GetEquipGuid()]
 		if equipDetail == nil || equipDetail.GetEquipGuid() == 0 {
-			logger.ErrorWF("GetDollAssembleInfo equip info no exist",
+			logger.CtxError(ctx, "GetDollAssembleInfo equip info no exist",
 				zap.Int64("guid", assemblePos.GetEquipLoadInfo().GetEquipGuid()))
 			err = errors.New("dressed equip no exist")
 			return
@@ -127,7 +132,7 @@ func GetDollAssembleInfoV2(logger fklog.FKLogI, userId uint64, p *AssParam) (ass
 
 	cond := calcassembleattr.EffectCalcInParam{IsLog: true, IsForce: false}
 	// cond.IsFiveOnlyRead = true
-	effectInfo, err = calcassembleattr.CalcEquipEffectAll(logger, assembleInfo.MazeEquips, cond)
+	effectInfo, err = calcassembleattr.CalcEquipEffectAll(ctx, assembleInfo.MazeEquips, cond)
 	if err != nil {
 		return
 	}

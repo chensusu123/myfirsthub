@@ -7,6 +7,7 @@
 package mazeattrlogic
 
 import (
+	"context"
 	"fmt"
 	"maze_game_server/common/constdef"
 	"maze_game_server/common/structsdef"
@@ -26,6 +27,7 @@ import (
 	"google.golang.org/protobuf/proto"
 )
 
+// DAC是doll attribute calculator 的缩写，主要用于计算人偶属性变化（dollAttrCalc）
 type DAC struct {
 	fklog.FKLogI
 	UserId  uint64
@@ -77,7 +79,8 @@ func NewReplaceData() *ReplaceData {
 	return obj
 }
 
-func NewDAC(logger fklog.FKLogI, userId uint64) *DAC {
+func NewDAC(ctx context.Context, userId uint64) *DAC {
+	logger := fklog.ContextAppLogger(ctx)
 	dac := &DAC{}
 	dac.UserId = userId
 	dac.FKLogI = logger
@@ -93,8 +96,8 @@ func NewDAC(logger fklog.FKLogI, userId uint64) *DAC {
 	return dac
 }
 
-func (m *DAC) CloneData() *DAC {
-	cp := NewDAC(m, m.UserId)
+func (m *DAC) CloneData(ctx context.Context) *DAC {
+	cp := NewDAC(ctx, m.UserId)
 	cp.CalcAttrOldMap = m.CalcAttrOldMap
 	//	cp.BuffCenterAttrsIn = m.BuffCenterAttrsIn
 	cp.ErrNoRetry = m.ErrNoRetry
@@ -112,7 +115,7 @@ func (m *DAC) CloneData() *DAC {
 }
 
 // 初始化
-func (m *DAC) InitData(iParam *DACParam) error {
+func (m *DAC) InitData(ctx context.Context, iParam *DACParam) error {
 	var err error
 	defer func() {
 		if err != nil {
@@ -133,21 +136,21 @@ func (m *DAC) InitData(iParam *DACParam) error {
 	// attrIdSet.Add(constdef.DollAttrTypeForce)
 	// attrSet := commonlogic.GetAllMazeAttrByType(attrIdSet)
 	// if len(attrSet) > 0 {
-	// 	m.BuffCenterAttrsIn, err = BuffManagerRedis.GetBuffs(context.TODO(), m, m.UserId, 0, attrSet)
+	// 	m.BuffCenterAttrsIn, err = BuffManagerRedis.GetBuffs(ctx, m, m.UserId, 0, attrSet)
 	// 	if err != nil {
 	// 		return err
 	// 	}
 	// }
 
 	// 初始化人偶buff中心
-	dollBuffs, e := mazebuffinforedis.GetMazeBuffsV2(m, m.UserId, 3)
+	dollBuffs, e := mazebuffinforedis.GetMazeBuffsV2(ctx, m.UserId, 3)
 	if e != nil {
 		err = e
 		return err
 	}
 	m.DollBuffCenterIn = dollBuffs
 	// 初始化旧值
-	m.CalcAttrOldMap, err = mazecalcattrredis.HScanMazeCalcAttr(m, m.UserId)
+	m.CalcAttrOldMap, err = mazecalcattrredis.HScanMazeCalcAttr(ctx, m.UserId)
 	if err != nil {
 		return err
 	}
@@ -169,7 +172,7 @@ func (m *DAC) Prepare() error {
 }
 
 // 计算
-func (m *DAC) Calc() error {
+func (m *DAC) Calc(ctx context.Context) error {
 
 	var err error
 	var step string
@@ -198,7 +201,7 @@ func (m *DAC) Calc() error {
 			zap.String("srcName", srcName))
 	}
 	// 计算公式属性，比如攻击 防御 耐久需要按公式计算
-	err = m.CalcFormulaAttr()
+	err = m.CalcFormulaAttr(ctx)
 	if err != nil {
 		step = "CalcFormulaAttr"
 		return err
@@ -207,9 +210,9 @@ func (m *DAC) Calc() error {
 }
 
 // 计算公式属性
-func (m *DAC) CalcFormulaAttr() error {
+func (m *DAC) CalcFormulaAttr(ctx context.Context) error {
 	for _, formulaAttrId := range m.FormulaAttrIds {
-		v, ext, e := mazeattrformula.CalcMazeFormulaAttr(m, formulaAttrId, m.AttrResultMap)
+		v, ext, e := mazeattrformula.CalcMazeFormulaAttr(ctx, formulaAttrId, m.AttrResultMap)
 		if e != nil {
 			return e
 		}
@@ -220,7 +223,7 @@ func (m *DAC) CalcFormulaAttr() error {
 }
 
 // 保存通知
-func (m *DAC) End() error {
+func (m *DAC) End(ctx context.Context) error {
 	if m.InParam.IsPreview {
 		return nil
 	}
@@ -240,21 +243,21 @@ func (m *DAC) End() error {
 	if len(chgAttrs) <= 0 {
 		return nil
 	}
-	err = mazecalcattrredis.SaveMazeCalcAttr(m, m.UserId, chgAttrs)
+	err = mazecalcattrredis.SaveMazeCalcAttr(ctx, m.UserId, chgAttrs)
 	if err != nil {
 		return err
 	}
 
 	// 删除0值的ID，节省空间，放置key过大，失败可以忽略
 	if len(delIds) > 0 && len(m.CalcAttrOldMap) > int(commonlogic.CleanIdLen) {
-		mazecalcattrredis.HDelMazeCalcAttr(m, m.UserId, delIds)
+		mazecalcattrredis.HDelMazeCalcAttr(ctx, m.UserId, delIds)
 	}
 
 	// 记录流水
-	m.Record(chgAttrs)
+	m.Record(ctx, chgAttrs)
 
 	// 变化通知
-	m.Notify(chgAttrs)
+	m.Notify(ctx, chgAttrs)
 	return err
 }
 
@@ -291,7 +294,7 @@ func (m *DAC) compareDiff() (chgs map[int32]int64, delIds []int32) {
 	return chgs, delIds
 }
 
-func (m *DAC) Record(chgAttrs map[int32]int64) {
+func (m *DAC) Record(ctx context.Context, chgAttrs map[int32]int64) {
 	// 打消息变化
 	now := time.Now().UnixNano() / 1000000
 	for k, newVal := range chgAttrs {
@@ -325,11 +328,11 @@ func (m *DAC) Record(chgAttrs map[int32]int64) {
 		} else {
 			dacr.Extra = m.Acr.DumpWeightInfo(k)
 		}
-		mazeattrchgrecord.SendMazeGameAttrChgRecord(m, dacr)
+		mazeattrchgrecord.SendMazeGameAttrChgRecord(ctx, dacr)
 	}
 }
 
-func (m *DAC) Notify(chgAttrs map[int32]int64) {
+func (m *DAC) Notify(ctx context.Context, chgAttrs map[int32]int64) {
 	// 打消息变化
 	now := time.Now().UnixNano() / 1000000
 	msg := &structsdef.DollAttrChgNotify{}
@@ -347,8 +350,8 @@ func (m *DAC) Notify(chgAttrs map[int32]int64) {
 		chgAttr.CurVal = newAttr
 		msg.ChgAttrs = append(msg.ChgAttrs, chgAttr)
 	}
-	mazeattrmsg.SendMazeAttrChgNotify(m, msg)
-	commonlogic.NotifyClientAttrChg(m, m.UserId, msg)
+	mazeattrmsg.SendMazeAttrChgNotify(ctx, msg)
+	commonlogic.NotifyClientAttrChg(ctx, m.UserId, msg)
 }
 
 func (m *DAC) NeedReplaceAttr() bool {
@@ -368,13 +371,13 @@ func (m *DAC) GetCareAttrs(careAttrs []int32) map[int32]int64 {
 	return rs
 }
 
-func (m *DAC) SetPreviewInfo(param *PreviewParam) {
+func (m *DAC) SetPreviewInfo(ctx context.Context, param *PreviewParam) {
 	m.ReplaceData.ReplaceSrc = param.BuffSrc
 	m.ReplaceData.ReplaceAttrs = param.RepalceAttrs
 	m.ReplaceData.PreviewId = param.PreviewId
 
 	if len(param.CareAttrs) == 1 && param.CareAttrs[0] == constdef.MazeForce {
-		cares := mazeattrformula.GetGFXFormulaParamAttrs(constdef.MazeForce)
+		cares := mazeattrformula.GetGFXFormulaParamAttrs(ctx, constdef.MazeForce)
 		for _, attr := range cares {
 			m.CareAttrs[attr] = true
 		}

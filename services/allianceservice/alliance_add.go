@@ -1,30 +1,45 @@
 package allianceservice
 
 import (
+	"context"
+
+	"maze_game_server/app"
+
 	"maze_game_server/model/alliancemodel"
 
-	"gitlab.ifreetalk.com/nano-ecosystem/fklog"
+	grouppkg "maze_game_server/io/redis/im/group"
+
+	"maze_game_server/common/constdef"
+
+	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fklog"
 	"go.uber.org/zap"
 )
 
-func (s *service) AddAlliance(logger fklog.FKLogI, allianceName string) error {
-	allianceListModel, err := alliancemodel.LoadAllianceListModel(logger)
+func (s *service) CreateAlliance(ctx context.Context, allianceName string) error {
+	logger := fklog.ContextAppLogger(ctx)
+	allianceListModel, err := alliancemodel.LoadAllianceListModel(ctx)
 	if err != nil {
-		logger.ErrorWF("AddAlliance LoadAllianceListModel err", zap.Error(err))
+		logger.CtxError(ctx, "AddAlliance LoadAllianceListModel err", zap.Error(err))
 		return err
 	}
-	allianceID := allianceListModel.GetAllianceID()
+	allianceID := allianceListModel.GetAllianceID(ctx)
 
-	allianceInfoModel := alliancemodel.NewAllianceInfoModel(logger, allianceID, allianceName)
-	err = allianceInfoModel.Save(logger)
+	allianceInfoModel := alliancemodel.NewAllianceInfoModel(ctx, allianceID, allianceName)
+	err = allianceInfoModel.Save(ctx)
 	if err != nil {
-		logger.ErrorWF("AddAlliance Save allianceInfoModel err", zap.Error(err))
+		logger.CtxError(ctx, "AddAlliance Save allianceInfoModel err", zap.Error(err))
+		return err
+	}
+	// 创建联盟聊天组
+	_, err = grouppkg.CreateGroup(ctx, app.Maze.ID(), uint64(0), allianceInfoModel.AllianceGroupID, constdef.GroupTypeLeague, make([]uint64, 0))
+	if err != nil {
+		logger.CtxError(ctx, "AddAlliance CreateGroup err", zap.Error(err))
 		return err
 	}
 
-	err = allianceListModel.AddAlliance(logger, allianceID)
+	err = allianceListModel.AddAlliance(ctx, allianceID)
 	if err != nil {
-		logger.ErrorWF("AddAlliance AddAlliance err", zap.Error(err))
+		logger.CtxError(ctx, "AddAlliance AddAlliance err", zap.Error(err))
 		return err
 	}
 	return nil
