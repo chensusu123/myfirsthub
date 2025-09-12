@@ -32,6 +32,7 @@ func (im *IM) OnMessageList_10663_10664(s *session.Session, req *MazeIM.MessageL
 		userId    = uint64(s.UID())
 		peerId    = req.GetPeerId()
 		lastMsgID = req.GetLastMsgId()
+		newest    = req.GetNewest()
 	)
 
 	// 检查用户和对端是否存在
@@ -42,7 +43,7 @@ func (im *IM) OnMessageList_10663_10664(s *session.Session, req *MazeIM.MessageL
 		return err
 	}
 
-	messages, err := p2pservice.Default.QueryMessages(ctx, app.Maze, user, peerId, lastMsgID, 20)
+	messages, err := p2pservice.Default.QueryMessages(ctx, app.Maze, user, peerId, lastMsgID, newest)
 	if err != nil {
 		res.ErrInfo = errors.COMMON_ERROR_TIPS.Wrap("获取消息失败")
 		logger.CtxError(ctx, "OnMessageList QueryMessages error", zap.Error(err), zap.Any("req", req))

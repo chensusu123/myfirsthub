@@ -27,7 +27,7 @@ type P2PService interface {
 	//	- peerID: 接收用户
 	//	- lastID: 客户端的最后一条消息ID
 	// 	- limit: 读取时限制读取条数
-	QueryMessages(ctx context.Context, a app.App, user app.User, peerID uint64, lastID uint64, limit int) (messages []app.Message, err error)
+	QueryMessages(ctx context.Context, a app.App, user app.User, peerID uint64, lastID uint64, newest bool) (messages []app.Message, err error)
 
 	// SendMessage 向指定用户发送私聊消息
 	//
@@ -90,14 +90,11 @@ func newP2PService() P2PService {
 }
 
 // QueryMessages implements P2PService.
-func (p *p2p) QueryMessages(ctx context.Context, a app.App, user app.User, peerID uint64, lastID uint64, limit int) (messages []app.Message, err error) {
+func (p *p2p) QueryMessages(ctx context.Context, a app.App, user app.User, peerID uint64, lastID uint64, newest bool) (messages []app.Message, err error) {
 	if lastID <= 0 {
 		lastID = idgenerator.MaxMessageID
 	}
-	if limit <= 0 {
-		limit = 20
-	}
-	return p2pmsg.QueryMessages(ctx, a.ID(), user.UserID(), peerID, lastID, limit)
+	return p2pmsg.QueryMessages(ctx, a.ID(), user.UserID(), peerID, lastID, newest)
 }
 
 // SendMessage implements P2PService.

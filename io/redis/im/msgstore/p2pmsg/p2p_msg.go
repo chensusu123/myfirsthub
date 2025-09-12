@@ -18,13 +18,17 @@ import (
 
 type Message = msgstore.Message
 
+const (
+	limitMessageCount = 20
+)
+
 // getKey 获取缓存操作key。
 func getKey(db nanoredis.NanoRedisClient, args ...interface{}) string {
 	return db.MakeSectionKey(fmt.Sprintf("im:app:%d:p2p:%d:%d:history", args...))
 }
 
 // QueryMessages 分页查询会话中的历史消息
-func QueryMessages(ctx context.Context, appID int32, userID, peerID uint64, lastID uint64, limit int) (messages []Message, err error) {
+func QueryMessages(ctx context.Context, appID int32, userID, peerID uint64, lastID uint64, newest bool) (messages []Message, err error) {
 	logger := fklog.ContextAppLogger(ctx)
 
 	cli, err := globalredis.GCli.GetDB()
@@ -35,7 +39,13 @@ func QueryMessages(ctx context.Context, appID int32, userID, peerID uint64, last
 		return nil, err
 	}
 	key := getKey(cli, appID, userID, peerID)
-	ret, err := cli.ZRevRangeByScore(ctx, key, &redis.ZRangeBy{Max: strconv.FormatUint(exchangeTextId(lastID), 10), Count: 20}).Result()
+	var ret []string
+	if newest {
+		ret, err = cli.ZRevRangeByScore(ctx, key, &redis.ZRangeBy{Max: strconv.FormatUint(exchangeTextId(lastID-1), 10), Count: limitMessageCount}).Result()
+	} else {
+		ret, err = cli.ZRangeByScore(ctx, key, &redis.ZRangeBy{Min: strconv.FormatUint(exchangeTextId(lastID+1), 10), Count: limitMessageCount}).Result()
+	}
+
 	if err != nil {
 		if errors.Is(err, redis.Nil) {
 			err = nil

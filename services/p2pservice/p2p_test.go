@@ -58,7 +58,7 @@ func TestSendMessages(t *testing.T) {
 		logger.ErrorWF("OnSendMessage WrapUser error", zap.Error(err))
 	}
 
-	messageID, err := GlobalP2PService.SendMessage(context.Background(), app.Maze, user, uint64(50000002), int32(1), []byte("hello08"))
+	messageID, err := GlobalP2PService.SendMessage(context.Background(), app.Maze, user, uint64(50000002), int32(1), []byte("hello02"))
 	if err != nil {
 		logger.ErrorWF("OnSendMessage SendMessage error", zap.Error(err))
 	}
@@ -72,7 +72,7 @@ func TestQueryMessages(t *testing.T) {
 	if err != nil {
 		logger.ErrorWF("OnSendMessage WrapUser error", zap.Error(err))
 	}
-	messages, err := GlobalP2PService.QueryMessages(context.Background(), app.Maze, user, uint64(50000002), 0, 10)
+	messages, err := GlobalP2PService.QueryMessages(context.Background(), app.Maze, user, uint64(50000002), 621539715899425009, true)
 	if err != nil {
 		logger.ErrorWF("OnSendMessage QueryMessages error", zap.Error(err))
 	}
