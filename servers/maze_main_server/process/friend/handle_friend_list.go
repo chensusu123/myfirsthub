@@ -13,7 +13,7 @@ import (
 	"google.golang.org/protobuf/proto"
 )
 
-func (f *FriendComponent) OnFriendList_10560_10561(s *session.Session, req *Friend.FriendListRQ) (err error) {
+func (f *FriendComponent) OnFriendList_10704_10705(s *session.Session, req *Friend.FriendListRQ) (err error) {
 	userId := uint64(s.UID())
 	ctx := s.Context()
 	logger := fklog.ContextAppLogger(ctx)
