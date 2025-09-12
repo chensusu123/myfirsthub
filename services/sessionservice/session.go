@@ -36,7 +36,7 @@ type SessionService interface {
 	//	- a: 应用
 	// 	- user: 用户标识
 	//	- peerID: 对方ID
-	CreateNormalSession(ctx context.Context, a app.App, user app.User, peerID int64, messageTime int64) (err error)
+	CreateNormalSession(ctx context.Context, a app.App, user app.User, peerID int64, messageTime int64, isReceiver bool) (err error)
 
 	// CreateGroupSession 创建群聊会话
 	//
@@ -75,7 +75,7 @@ type SessionService interface {
 	// 	- user: 用户标识
 	//	- peerID: 对方ID
 	//	- messageTime: 消息时间
-	SaveNormalSession(ctx context.Context, a app.App, user app.User, peerID int64, messageTime int64) error
+	SaveNormalSession(ctx context.Context, a app.App, user app.User, peerID int64, messageTime int64, isReceiver bool) error
 
 	// NotifyNormalSession 通知 私聊会话
 	//
@@ -92,6 +92,12 @@ type SessionService interface {
 	// 	- notifyUser: 通知用户
 	//	- session: 会话信息
 	NotifyRemoveSession(ctx context.Context, a app.App, notifyUser int64, session *sessionpkg.Session) error
+
+	// GroupSessionID 私人会话ID
+	//
+	// 参数:
+	//	- userID: 用户ID
+	NormalSessionID(userID int64) string
 }
 
 var (
@@ -107,10 +113,10 @@ func (s *session) QueryRecentSessions(ctx context.Context, a app.App, user app.U
 }
 
 // CreateNormalSession implements SessionService.
-func (s *session) CreateNormalSession(ctx context.Context, a app.App, user app.User, peerID int64, messageTime int64) (err error) {
+func (s *session) CreateNormalSession(ctx context.Context, a app.App, user app.User, peerID int64, messageTime int64, isReceiver bool) (err error) {
 	logger := fklog.ContextAppLogger(ctx)
 	sessionID := s.NormalSessionID(peerID)
-	sessionInfo, err := sessionpkg.AddP2PSession(ctx, a.ID(), user.UserID(), sessionID, peerID, messageTime)
+	sessionInfo, err := sessionpkg.AddP2PSession(ctx, a.ID(), user.UserID(), sessionID, peerID, messageTime, isReceiver)
 	if err != nil {
 		logger.CtxError(ctx, "AddP2PSession error", zap.Error(err))
 		return err
@@ -142,7 +148,7 @@ func (s *session) UpdateNormalSession(ctx context.Context, a app.App, user app.U
 }
 
 // SaveNormalSession 保存私人会话
-func (s *session) SaveNormalSession(ctx context.Context, a app.App, user app.User, peerID int64, messageTime int64) error {
+func (s *session) SaveNormalSession(ctx context.Context, a app.App, user app.User, peerID int64, messageTime int64, isReceiver bool) error {
 	logger := fklog.ContextAppLogger(ctx)
 	sessionID := s.NormalSessionID(peerID)
 	//是否存在当前聊天对象perrID的session记录
@@ -153,14 +159,16 @@ func (s *session) SaveNormalSession(ctx context.Context, a app.App, user app.Use
 	}
 	//不存在则创建
 	if session == nil {
-		err = s.CreateNormalSession(ctx, a, user, peerID, messageTime)
+		err = s.CreateNormalSession(ctx, a, user, peerID, messageTime, isReceiver)
 		if err != nil {
 			logger.CtxError(ctx, "CreateNormalSession error", zap.Error(err))
 			return err
 		}
 	} else {
 		//存在则更新
-		session.UnreadCount += 1
+		if isReceiver {
+			session.UnreadCount += 1
+		}
 		session.MessageTime = messageTime
 		err = s.UpdateNormalSession(ctx, a, user, peerID, session)
 		if err != nil {

@@ -2,9 +2,9 @@ package p2pservice
 
 import (
 	"context"
-	"fmt"
 	"maze_game_server/app"
 	"maze_game_server/io/redis/im/msgstore/p2pmsg"
+	"maze_game_server/io/redis/im/session"
 	"maze_game_server/lib/idgenerator"
 	"maze_game_server/services/sessionservice"
 	"time"
@@ -138,30 +138,39 @@ func (p *p2p) SendMessage(ctx context.Context, a app.App, user app.User, peerID 
 	if err != nil {
 		logger.CtxError(ctx, "notifyMessage error", zap.Error(err))
 	}
-	//创建发送者会话
-	sessionservice.Default.CreateNormalSession(ctx, a, user, peerID, message.CreateTime)
-	//创建接收者会话
+
+	//保存发送者会话
+	sessionservice.Default.SaveNormalSession(ctx, a, user, peerID, message.CreateTime, false)
+	//保存接收者会话
 	peerUser, err := app.WrapUser(uint64(peerID), "")
 	if err != nil {
 		logger.CtxError(ctx, "WrapUser error", zap.Error(err))
 		return 0, err
 	}
-	sessionservice.Default.CreateNormalSession(ctx, a, peerUser, int64(user.UserID()), message.CreateTime)
+	sessionservice.Default.SaveNormalSession(ctx, a, peerUser, int64(user.UserID()), message.CreateTime, true)
 	return messageID, nil
 }
 
 // ReadMessage implements P2PService.
 func (p *p2p) ReadMessage(ctx context.Context, a app.App, user app.User, peerID int64, messageID uint64) (err error) {
+	logger := fklog.ContextAppLogger(ctx)
 	//这里peerid是此消息发送者的id user.UserID()是接收者的id
 	err = p2pmsg.ReadMessage(ctx, a.ID(), peerID, int64(user.UserID()), messageID)
 	if err != nil {
-		fmt.Println("ReadMessage error:", err)
+		logger.CtxError(ctx, "ReadMessage error", zap.Error(err), zap.Any("messageID", messageID))
+		return err
+	}
+	//session把未读消息设置成0
+	sessionID := sessionservice.Default.NormalSessionID(peerID)
+	err = session.SetRemoveUnreadCount(ctx, a.ID(), int64(user.UserID()), sessionID)
+	if err != nil {
+		logger.CtxError(ctx, "SetRemoveUnreadCount error", zap.Error(err), zap.Any("messageID", messageID))
 		return err
 	}
 	//通知接收者
 	err = p.MessageReadNotify(ctx, int64(user.UserID()), peerID, messageID)
 	if err != nil {
-		fmt.Println("notifyReadMessage error:", err)
+		logger.CtxError(ctx, "notifyReadMessage error", zap.Error(err), zap.Any("messageID", messageID))
 		return err
 	}
 	return nil

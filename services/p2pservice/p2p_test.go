@@ -6,6 +6,7 @@ import (
 	"maze_game_server/app"
 	globalredis "maze_game_server/io/redis"
 	"maze_game_server/lib/log"
+	"maze_game_server/services/sessionservice"
 	"os"
 	"testing"
 
@@ -52,13 +53,13 @@ func TestRedis(t *testing.T) {
 }
 
 func TestSendMessages(t *testing.T) {
-	userId := uint64(50000001)
+	userId := uint64(50000002)
 	user, err := app.WrapUser(userId, "")
 	if err != nil {
 		logger.ErrorWF("OnSendMessage WrapUser error", zap.Error(err))
 	}
 
-	messageID, err := GlobalP2PService.SendMessage(context.Background(), app.Maze, user, int64(50000002), int32(1), []byte("hello03"))
+	messageID, err := GlobalP2PService.SendMessage(context.Background(), app.Maze, user, int64(50000001), int32(1), []byte("hello006"))
 	if err != nil {
 		logger.ErrorWF("OnSendMessage SendMessage error", zap.Error(err))
 	}
@@ -82,13 +83,15 @@ func TestQueryMessages(t *testing.T) {
 
 // 读消息
 func TestReadMessage(t *testing.T) {
-	userId := uint64(50000002)
+	userId := uint64(50000001)
 	user, err := app.WrapUser(userId, "")
 	if err != nil {
 		logger.ErrorWF("OnSendMessage WrapUser error", zap.Error(err))
 		return
 	}
-	err = GlobalP2PService.ReadMessage(context.Background(), app.Maze, user, int64(50000001), 618382372351268509)
+	err = GlobalP2PService.ReadMessage(context.Background(), app.Maze, user, int64(50000002), 621709749758290018)
+	sessionID := sessionservice.Default.NormalSessionID(int64(50000001))
+	fmt.Println("sessionID:================", sessionID)
 	if err != nil {
 		logger.ErrorWF("OnSendMessage ReadMessage error", zap.Error(err))
 	}
