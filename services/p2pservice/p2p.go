@@ -18,6 +18,11 @@ import (
 	"google.golang.org/protobuf/proto"
 )
 
+const (
+	MessageNotificationID     = 10651 //消息通知ID
+	MessageReadNotificationID = 10688 //消息已读通知ID
+)
+
 type P2PService interface {
 	// QueryMessages 查询群组聊天消息
 	//
@@ -69,6 +74,14 @@ type P2PService interface {
 	CheckUserAndPeer(ctx context.Context, userId uint64, peerId uint64) (user app.User, errInfo string)
 
 	// MessageReadNotify 消息已读通知
+	//
+	// 参数:
+	//	- ctx: 上下文
+	//	- userId: 发送用户
+	//	- peerId: 接收用户
+	//	- messageID: 消息ID
+	// 返回值:
+	//	- error: 错误信息
 	MessageReadNotify(ctx context.Context, userId uint64, peerId uint64, messageID uint64) error
 }
 
@@ -121,19 +134,19 @@ func (p *p2p) SendMessage(ctx context.Context, a app.App, user app.User, peerID 
 		logger.CtxError(ctx, "SaveMessage peer error", zap.Error(err))
 	}
 	// 通知接收者
-	err = p.notifyMessage(ctx, user.UserID(), peerID, messageID, _type, 10651, content)
+	err = p.notifyMessage(ctx, user.UserID(), peerID, messageID, _type, MessageNotificationID, content)
 	if err != nil {
 		logger.CtxError(ctx, "notifyMessage error", zap.Error(err))
 	}
 	//创建发送者会话
-	sessionservice.Default.CreateNormalSession(ctx, a, user, peerID)
+	sessionservice.Default.CreateNormalSession(ctx, a, user, peerID, message.CreateTime)
 	//创建接收者会话
 	peerUser, err := app.WrapUser(peerID, "")
 	if err != nil {
 		logger.CtxError(ctx, "WrapUser error", zap.Error(err))
 		return 0, err
 	}
-	sessionservice.Default.CreateNormalSession(ctx, a, peerUser, user.UserID())
+	sessionservice.Default.CreateNormalSession(ctx, a, peerUser, user.UserID(), message.CreateTime)
 	return messageID, nil
 }
 
@@ -191,7 +204,7 @@ func (p *p2p) MessageReadNotify(ctx context.Context, userId uint64, peerId uint6
 		MsgId:  proto.Uint64(messageID),
 	}
 	logger.CtxInfo(ctx, "MessageReadNotify start", zap.Uint64("userId", userId), zap.Any("notifyMessage", notifyReadMessage))
-	err := online.ClusterPush(ctx, peerId, 10688, notifyReadMessage)
+	err := online.ClusterPush(ctx, peerId, MessageReadNotificationID, notifyReadMessage)
 	if err != nil {
 		logger.CtxError(ctx, "MessageReadNotify error", zap.Error(err), zap.Any("notifyMessage", notifyReadMessage))
 		return err

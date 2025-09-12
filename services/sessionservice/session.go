@@ -6,12 +6,20 @@ import (
 	"encoding/hex"
 	"fmt"
 	"maze_game_server/app"
+	"maze_game_server/io/redis/im/msgstore"
 	"maze_game_server/io/redis/im/msgstore/p2pmsg"
 	sessionpkg "maze_game_server/io/redis/im/session"
+	"maze_game_server/usecase/online"
 
 	"maze_game_server/pb/common/MazeIM"
 
+	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fklog"
+	"go.uber.org/zap"
 	"google.golang.org/protobuf/proto"
+)
+
+const (
+	SessionChangeID = 10693
 )
 
 type SessionService interface {
@@ -28,7 +36,7 @@ type SessionService interface {
 	//	- a: 应用
 	// 	- user: 用户标识
 	//	- peerID: 对方ID
-	CreateNormalSession(ctx context.Context, a app.App, user app.User, peerID uint64) (err error)
+	CreateNormalSession(ctx context.Context, a app.App, user app.User, peerID uint64, messageTime int64) (err error)
 
 	// CreateGroupSession 创建群聊会话
 	//
@@ -52,6 +60,30 @@ type SessionService interface {
 	// 	- user: 用户标识
 	//	- sessions: 会话列表
 	GetMessageInfo(ctx context.Context, a app.App, user app.User, sessions map[string]app.Session) (messageInfo []*MazeIM.Session, err error)
+	// UpdateNormalSession 更新私聊会话
+	//
+	// 参数:
+	//	- a: 应用
+	// 	- user: 用户标识
+	//	- peerID: 对方ID
+	//	- session: 会话信息
+	UpdateNormalSession(ctx context.Context, a app.App, user app.User, peerID uint64, session *sessionpkg.Session) error
+	// SaveNormalSession 保存私人会话
+	//
+	// 参数:
+	//	- a: 应用
+	// 	- user: 用户标识
+	//	- peerID: 对方ID
+	//	- messageTime: 消息时间
+	SaveNormalSession(ctx context.Context, a app.App, user app.User, peerID uint64, messageTime int64) error
+
+	// NotifyNormalSession 通知 私聊会话
+	//
+	// 参数:
+	//	- a: 应用
+	// 	- notifyUser: 通知用户
+	//	- session: 会话信息
+	NotifyNormalSession(ctx context.Context, a app.App, notifyUser uint64, session *sessionpkg.Session) error
 }
 
 var (
@@ -67,9 +99,68 @@ func (s *session) QueryRecentSessions(ctx context.Context, a app.App, user app.U
 }
 
 // CreateNormalSession implements SessionService.
-func (s *session) CreateNormalSession(ctx context.Context, a app.App, user app.User, peerID uint64) (err error) {
+func (s *session) CreateNormalSession(ctx context.Context, a app.App, user app.User, peerID uint64, messageTime int64) (err error) {
+	logger := fklog.ContextAppLogger(ctx)
 	sessionID := s.NormalSessionID(peerID)
-	return sessionpkg.AddP2PSession(ctx, a.ID(), user.UserID(), sessionID, peerID)
+	sessionInfo, err := sessionpkg.AddP2PSession(ctx, a.ID(), user.UserID(), sessionID, peerID, messageTime)
+	if err != nil {
+		logger.CtxError(ctx, "AddP2PSession error", zap.Error(err))
+		return err
+	}
+	//新建私聊会话 通知双方
+	recent, err := sessionpkg.GetMessageRecent(ctx, a.ID(), user.UserID(), peerID)
+	if err != nil {
+		logger.CtxError(ctx, "GetMessageRecent error", zap.Error(err))
+		return err
+	}
+	sessionInfo.Recent = []msgstore.Message{recent}
+	//通知对方
+	err = s.NotifyNormalSession(ctx, a, peerID, sessionInfo)
+	if err != nil {
+		logger.CtxError(ctx, "NotifyNormalSession error", zap.Error(err))
+		return err
+	}
+	//通知自己
+	err = s.NotifyNormalSession(ctx, a, user.UserID(), sessionInfo)
+	if err != nil {
+		logger.CtxError(ctx, "NotifyNormalSession error", zap.Error(err))
+		return err
+	}
+	return nil
+}
+
+func (s *session) UpdateNormalSession(ctx context.Context, a app.App, user app.User, peerID uint64, session *sessionpkg.Session) error {
+	return sessionpkg.UpdateSession(ctx, a.ID(), user.UserID(), s.NormalSessionID(peerID), session)
+}
+
+// SaveNormalSession 保存私人会话
+func (s *session) SaveNormalSession(ctx context.Context, a app.App, user app.User, peerID uint64, messageTime int64) error {
+	logger := fklog.ContextAppLogger(ctx)
+	sessionID := s.NormalSessionID(peerID)
+	//是否存在当前聊天对象perrID的session记录
+	session, err := sessionpkg.GetNormalSession(ctx, a.ID(), user.UserID(), sessionID)
+	if err != nil {
+		logger.CtxError(ctx, "GetNormalSession error", zap.Error(err))
+		return err
+	}
+	//不存在则创建
+	if session == nil {
+		err = s.CreateNormalSession(ctx, a, user, peerID, messageTime)
+		if err != nil {
+			logger.CtxError(ctx, "CreateNormalSession error", zap.Error(err))
+			return err
+		}
+	} else {
+		//存在则更新
+		session.UnreadCount += 1
+		session.MessageTime = messageTime
+		err = s.UpdateNormalSession(ctx, a, user, peerID, session)
+		if err != nil {
+			logger.CtxError(ctx, "UpdateNormalSession error", zap.Error(err))
+			return err
+		}
+	}
+	return nil
 }
 
 // CreateGroupSession implements SessionService.
@@ -97,6 +188,7 @@ func sum(data []byte) string {
 	return hex.EncodeToString(sum[:])
 }
 
+// 获取message信息
 func (s *session) GetMessageInfo(ctx context.Context, a app.App, user app.User, sessions map[string]app.Session) (messageInfo []*MazeIM.Session, err error) {
 	if len(sessions) == 0 {
 		return nil, nil
@@ -134,6 +226,23 @@ func (s *session) GetMessageInfo(ctx context.Context, a app.App, user app.User, 
 	}
 	return messageInfo, nil
 }
+
+// 通知 私聊会话
+func (s *session) NotifyNormalSession(ctx context.Context, a app.App, notifyUser uint64, session *sessionpkg.Session) error {
+	logger := fklog.ContextAppLogger(ctx)
+	// 推送消息给集群
+	notifyMessage := &MazeIM.SessionChangeID{
+		AddSessionList: pbSession(session),
+	}
+	logger.CtxInfo(ctx, "NotifyNormalSession start", zap.Uint64("peerId", notifyUser), zap.Any("NotifyNormalSession", notifyMessage))
+	err := online.ClusterPush(ctx, notifyUser, SessionChangeID, notifyMessage)
+	if err != nil {
+		logger.CtxError(ctx, "NotifyNormalSession error", zap.Error(err), zap.Any("NotifyNormalSession", notifyMessage))
+	}
+	return err
+}
+
+// PbSessionMessage 转换为pb的message
 func PbSessionMessage(messages []p2pmsg.Message) []*MazeIM.Message {
 	pbMessages := make([]*MazeIM.Message, 0, len(messages))
 	for _, message := range messages {
@@ -145,4 +254,15 @@ func PbSessionMessage(messages []p2pmsg.Message) []*MazeIM.Message {
 		})
 	}
 	return pbMessages
+}
+
+// pbSession 转换为pb的session
+func pbSession(session *sessionpkg.Session) []*MazeIM.Session {
+	pbSessions := make([]*MazeIM.Session, 0, 1)
+	pbSessions = append(pbSessions, &MazeIM.Session{
+		SessionId:  proto.String(session.ID),
+		CreateTime: proto.Int64(session.CreateTime),
+		Recent:     PbSessionMessage(session.Recent),
+	})
+	return pbSessions
 }

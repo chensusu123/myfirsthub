@@ -6,6 +6,8 @@ import (
 	"errors"
 	"fmt"
 	globalredis "maze_game_server/io/redis"
+	"maze_game_server/io/redis/im/msgstore"
+	"maze_game_server/io/redis/im/msgstore/p2pmsg"
 	"time"
 
 	"github.com/redis/go-redis/v9"
@@ -15,11 +17,13 @@ import (
 )
 
 type Session struct {
-	ID         string `json:"id,omitempty"`
-	CreateTime int64  `json:"create_time,omitempty"`
-	PeerID     uint64 `json:"peer_id,omitempty"`
-	GroupID    int64  `json:"group_id,omitempty"`
-	OldestID   uint64 `json:"oldest_id,omitempty"`
+	ID          string             `json:"id,omitempty"`
+	CreateTime  int64              `json:"create_time,omitempty"`
+	PeerID      uint64             `json:"peer_id,omitempty"`
+	GroupID     int64              `json:"group_id,omitempty"`
+	MessageTime int64              `json:"message_time,omitempty"`
+	UnreadCount int64              `json:"unread_count,omitempty"`
+	Recent      []msgstore.Message `json:"recent,omitempty"`
 }
 
 // getKey 获取缓存操作key。
@@ -69,12 +73,14 @@ func QuerySessions(ctx context.Context, appID int32, userID uint64) (sessions ma
 }
 
 // AddP2PSession 创建私聊会话
-func AddP2PSession(ctx context.Context, appID int32, userID uint64, sessionID string, peerID uint64) (err error) {
+func AddP2PSession(ctx context.Context, appID int32, userID uint64, sessionID string, peerID uint64, messageTime int64) (session *Session, err error) {
 	logger := fklog.ContextAppLogger(ctx)
 
-	session := Session{
-		PeerID:     peerID,
-		CreateTime: time.Now().Unix(),
+	session = &Session{
+		PeerID:      peerID,
+		CreateTime:  time.Now().Unix(),
+		MessageTime: messageTime,
+		UnreadCount: 1,
 	}
 	value, err := json.Marshal(session)
 	if err != nil {
@@ -83,7 +89,7 @@ func AddP2PSession(ctx context.Context, appID int32, userID uint64, sessionID st
 			zap.String("sessionID", sessionID),
 			zap.Any("session", session),
 		)
-		return err
+		return nil, err
 	}
 	cli, err := globalredis.GCli.GetDB()
 	if err != nil {
@@ -92,7 +98,7 @@ func AddP2PSession(ctx context.Context, appID int32, userID uint64, sessionID st
 			zap.String("sessionID", sessionID),
 			zap.Any("session", session),
 		)
-		return err
+		return nil, err
 	}
 	key := getKey(cli, appID, userID)
 	err = cli.HSet(ctx, key, sessionID, value).Err()
@@ -103,9 +109,46 @@ func AddP2PSession(ctx context.Context, appID int32, userID uint64, sessionID st
 			zap.String("sessionID", sessionID),
 			zap.Any("session", session),
 		)
-		return err
+		return nil, err
 	}
 	logger.CtxInfo(ctx, "AddP2PSession success", zap.Any("key", key), zap.String("sessionID", sessionID), zap.Any("session", session))
+	return
+}
+
+// UpdateSession 更新私聊会话
+func UpdateSession(ctx context.Context, appID int32, userID uint64, sessionID string, session *Session) (err error) {
+	logger := fklog.ContextAppLogger(ctx)
+
+	cli, err := globalredis.GCli.GetDB()
+	if err != nil {
+		logger.CtxError(ctx, "UpdateSession Client fail",
+			zap.Error(err),
+			zap.String("sessionID", sessionID),
+		)
+		return err
+	}
+
+	value, err := json.Marshal(session)
+	if err != nil {
+		logger.CtxError(ctx, "AddP2PSession Marshal fail",
+			zap.Error(err),
+			zap.String("sessionID", sessionID),
+			zap.Any("session", session),
+		)
+		return err
+	}
+	key := getKey(cli, appID, userID)
+	err = cli.HSet(ctx, key, sessionID, value).Err()
+	if err != nil {
+		logger.CtxError(ctx, "UpdateSession HSET fail",
+			zap.Error(err),
+			zap.Any("key", key),
+			zap.String("sessionID", sessionID),
+			zap.Any("session", session),
+		)
+		return err
+	}
+	logger.CtxInfo(ctx, "UpdateSession success", zap.Any("key", key), zap.String("sessionID", sessionID), zap.Any("session", session))
 	return
 }
 
@@ -178,4 +221,84 @@ func RemoveSession(ctx context.Context, appID int32, userID uint64, sessionID st
 	}
 	logger.CtxInfo(ctx, "RemoveSession success", zap.Any("key", key), zap.String("sessionID", sessionID))
 	return
+}
+
+func GetNormalSession(ctx context.Context, appID int32, userID uint64, sessionID string) (session *Session, err error) {
+	logger := fklog.ContextAppLogger(ctx)
+
+	cli, err := globalredis.GCli.GetDB()
+	if err != nil {
+		logger.CtxError(ctx, "GetNormalSession Client fail",
+			zap.Error(err),
+			zap.String("sessionID", sessionID),
+		)
+		return session, err
+	}
+	key := getKey(cli, appID, userID)
+	value, err := cli.HGet(ctx, key, sessionID).Result()
+	if err != nil {
+		if errors.Is(err, redis.Nil) {
+			err = nil
+		} else {
+			logger.CtxError(ctx, "GetNormalSession HGET fail",
+				zap.Error(err),
+				zap.Any("key", key),
+				zap.String("sessionID", sessionID),
+			)
+			return session, err
+		}
+	}
+	err = json.Unmarshal([]byte(value), &session)
+	if err != nil {
+		logger.CtxError(ctx, "GetNormalSession Unmarshal fail",
+			zap.Error(err),
+			zap.Any("key", key),
+			zap.String("sessionID", sessionID),
+			zap.String("value", value),
+		)
+		return session, err
+	}
+	logger.CtxInfo(ctx, "GetNormalSession success", zap.Any("key", key), zap.String("sessionID", sessionID), zap.Any("session", session))
+	return session, nil
+}
+
+// GetMessageRecent 获取最近一条消息
+func GetMessageRecent(ctx context.Context, appID int32, userID uint64, peerID uint64) (message msgstore.Message, err error) {
+	logger := fklog.ContextAppLogger(ctx)
+
+	cli, err := globalredis.GCli.GetDB()
+	if err != nil {
+		logger.CtxError(ctx, "GetMessageRecent Client fail",
+			zap.Error(err),
+			zap.Uint64("peerID", peerID),
+		)
+		return message, err
+	}
+	key := p2pmsg.GetKey(cli, appID, userID, peerID)
+	//获取最新1条消息
+	value, err := cli.LIndex(ctx, key, -1).Result()
+	if err != nil {
+		if errors.Is(err, redis.Nil) {
+			err = nil
+		} else {
+			logger.CtxError(ctx, "GetMessageRecent LRANGE fail",
+				zap.Error(err),
+				zap.Any("key", key),
+				zap.Uint64("peerID", peerID),
+			)
+			return message, err
+		}
+	}
+	err = json.Unmarshal([]byte(value), &message)
+	if err != nil {
+		logger.CtxError(ctx, "GetMessageRecent Unmarshal fail",
+			zap.Error(err),
+			zap.Any("key", key),
+			zap.Uint64("peerID", peerID),
+			zap.String("value", value),
+		)
+		return message, err
+	}
+	logger.CtxInfo(ctx, "GetMessageRecent success", zap.Any("key", key), zap.Uint64("peerID", peerID), zap.Any("messages", message))
+	return message, nil
 }

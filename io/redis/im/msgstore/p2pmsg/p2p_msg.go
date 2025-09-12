@@ -23,7 +23,7 @@ const (
 )
 
 // getKey 获取缓存操作key。
-func getKey(db nanoredis.NanoRedisClient, args ...interface{}) string {
+func GetKey(db nanoredis.NanoRedisClient, args ...interface{}) string {
 	return db.MakeSectionKey(fmt.Sprintf("im:app:%d:p2p:%d:%d:history", args...))
 }
 
@@ -38,7 +38,7 @@ func QueryMessages(ctx context.Context, appID int32, userID, peerID uint64, last
 		)
 		return nil, err
 	}
-	key := getKey(cli, appID, userID, peerID)
+	key := GetKey(cli, appID, userID, peerID)
 	var ret []string
 	if newest {
 		ret, err = cli.ZRevRangeByScore(ctx, key, &redis.ZRangeBy{Max: strconv.FormatUint(exchangeTextId(lastID-1), 10), Count: limitMessageCount}).Result()
@@ -80,7 +80,7 @@ func SaveMessage(ctx context.Context, appID int32, userID, peerID uint64, messag
 		)
 		return err
 	}
-	key := getKey(cli, appID, userID, peerID)
+	key := GetKey(cli, appID, userID, peerID)
 	data, err := json.Marshal(message)
 	if err != nil {
 		logger.CtxError(ctx, "SaveMessage Marshal fail",
@@ -117,7 +117,7 @@ func ReadMessage(ctx context.Context, appID int32, userID, peerID uint64, messag
 		)
 		return err
 	}
-	key := getKey(cli, appID, userID, peerID)
+	key := GetKey(cli, appID, userID, peerID)
 	//取出messageid对应的value
 	member, err := cli.ZRangeByScore(ctx, key, &redis.ZRangeBy{
 		Min: strconv.FormatUint(exchangeTextId(messageID), 10),
@@ -199,7 +199,7 @@ func RemoveMessage(ctx context.Context, appID int32, userID, peerID uint64, mess
 		)
 		return err
 	}
-	key := getKey(cli, appID, userID, peerID)
+	key := GetKey(cli, appID, userID, peerID)
 	//取出messageid对应的value
 	member, err := cli.ZRangeByScore(ctx, key, &redis.ZRangeBy{
 		Min: strconv.FormatUint(exchangeTextId(messageID), 10),
