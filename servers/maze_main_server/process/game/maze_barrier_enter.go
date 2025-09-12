@@ -177,6 +177,16 @@ func (g *Game) OnMazeBarrierEnterRQ_10447_10448(s *session.Session, req *MazeGam
 		return
 	}
 	res.InitPassValue = proto.Int32(int32(initPassValue))
+
+	// 计算当前通关值
+	currentPassValue, err := mazecommonvalue.CalcPassValue(ctx, logger, req.GetBarrierId(), saveData.StageId)
+	if err != nil {
+		logger.CtxError(ctx, "OnMazeBarrierEnterRQ CalcPassValue fail", zap.Error(err))
+		res.ErrInfo = errors.MODULE_ERROR.ToInfo()
+		return
+	}
+	res.CurrentPassValue = proto.Int32(int32(currentPassValue))
+
 	// 推送通关值
 	mazecommonvalue.SendPassValueIdPack(ctx, userId, req.GetBarrierId(), saveData.StageId)
 	// 清理关卡操作状态
