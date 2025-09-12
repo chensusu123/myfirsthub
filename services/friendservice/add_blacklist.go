@@ -1,5 +1,12 @@
 package friendservice
 
+import (
+	"maze_game_server/model/friendmodel"
+
+	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fklog"
+	"go.uber.org/zap"
+)
+
 // func (s *service) AddBlacklist(ctx context.Context, userId, toId uint64) *errors.CodeError {
 // 	logger := fklog.ContextAppLogger(ctx)
 // 	friendModel, err := friendmodel.NewFriendModel(ctx, userId)
@@ -43,17 +50,17 @@ package friendservice
 // 	return nil
 // }
 
-// // 是否在黑名单里面
-// func (s *service) isBlacklist(logger fklog.FKLogI, userId, toId uint64) (bool, error) {
-// 	blacklistModel, err := friendmodel.NewBlacklistModel(logger, userId)
-// 	if err != nil {
-// 		logger.ErrorWF("IsBlacklist NewBlacklistModel err", zap.Error(err))
-// 		return false, err
-// 	}
-// 	for _, b := range blacklistModel.Blacklist {
-// 		if b.UserId == toId {
-// 			return true, nil
-// 		}
-// 	}
-// 	return false, nil
-// }
+// 是否在黑名单里面
+func (s *service) isBlacklist(logger fklog.FKLogI, userId, toId uint64) (bool, error) {
+	blacklistModel, err := friendmodel.NewBlacklistModel(logger, userId)
+	if err != nil {
+		logger.ErrorWF("IsBlacklist NewBlacklistModel err", zap.Error(err))
+		return false, err
+	}
+	for _, b := range blacklistModel.Blacklist {
+		if b.UserId == toId {
+			return true, nil
+		}
+	}
+	return false, nil
+}

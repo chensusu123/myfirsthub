@@ -12,6 +12,7 @@ import (
 var (
 	ExpireTime    = 7 * 24 * 60 * 60 * 1000
 	MaxFriendSize = 500
+	RecommendSize = int32(5)
 )
 
 // 好友信息
