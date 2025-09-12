@@ -84,6 +84,14 @@ type SessionService interface {
 	// 	- notifyUser: 通知用户
 	//	- session: 会话信息
 	NotifyNormalSession(ctx context.Context, a app.App, notifyUser int64, session *sessionpkg.Session) error
+
+	// NotifyRemoveSession 通知 删除会话
+	//
+	// 参数:
+	//	- a: 应用
+	// 	- notifyUser: 通知用户
+	//	- session: 会话信息
+	NotifyRemoveSession(ctx context.Context, a app.App, notifyUser int64, session *sessionpkg.Session) error
 }
 
 var (
@@ -171,7 +179,25 @@ func (s *session) CreateGroupSession(ctx context.Context, a app.App, user app.Us
 
 // RemoveSession implements SessionService.
 func (s *session) RemoveSession(ctx context.Context, a app.App, user app.User, sessionID string) (err error) {
-	return sessionpkg.RemoveSession(ctx, a.ID(), user.UserID(), sessionID)
+	logger := fklog.ContextAppLogger(ctx)
+	//先取出来，等会通知自己
+	session, err := sessionpkg.GetNormalSession(ctx, a.ID(), user.UserID(), sessionID)
+	if err != nil {
+		logger.CtxError(ctx, "GetSession error", zap.Error(err))
+		return err
+	}
+	err = sessionpkg.RemoveSession(ctx, a.ID(), user.UserID(), sessionID)
+	if err != nil {
+		logger.CtxError(ctx, "RemoveSession error", zap.Error(err))
+		return err
+	}
+	//给自己发送删除通知
+	err = s.NotifyRemoveSession(ctx, a, int64(user.UserID()), session)
+	if err != nil {
+		logger.CtxError(ctx, "NotifyRemoveSession error", zap.Error(err))
+		return err
+	}
+	return nil
 }
 
 func (s *session) NormalSessionID(userID int64) string {
@@ -238,6 +264,21 @@ func (s *session) NotifyNormalSession(ctx context.Context, a app.App, notifyUser
 	err := online.ClusterPush(ctx, uint64(notifyUser), SessionChangeID, notifyMessage)
 	if err != nil {
 		logger.CtxError(ctx, "NotifyNormalSession error", zap.Error(err), zap.Any("NotifyNormalSession", notifyMessage))
+	}
+	return err
+}
+
+// 通知 删除会话
+func (s *session) NotifyRemoveSession(ctx context.Context, a app.App, notifyUser int64, session *sessionpkg.Session) error {
+	logger := fklog.ContextAppLogger(ctx)
+	// 推送消息给集群
+	notifyMessage := &MazeIM.SessionChangeID{
+		DelSessionList: pbSession(session),
+	}
+	logger.CtxInfo(ctx, "NotifyRemoveSession start", zap.Int64("peerId", notifyUser), zap.Any("NotifyRemoveSession", notifyMessage))
+	err := online.ClusterPush(ctx, uint64(notifyUser), SessionChangeID, notifyMessage)
+	if err != nil {
+		logger.CtxError(ctx, "NotifyRemoveSession error", zap.Error(err), zap.Any("NotifyRemoveSession", notifyMessage))
 	}
 	return err
 }
