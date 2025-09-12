@@ -28,7 +28,7 @@ func GetKey(db nanoredis.NanoRedisClient, args ...interface{}) string {
 }
 
 // QueryMessages 分页查询会话中的历史消息
-func QueryMessages(ctx context.Context, appID int32, userID, peerID uint64, lastID uint64, newest bool) (messages []Message, err error) {
+func QueryMessages(ctx context.Context, appID int32, userID, peerID int64, lastID uint64, newest bool) (messages []Message, err error) {
 	logger := fklog.ContextAppLogger(ctx)
 
 	cli, err := globalredis.GCli.GetDB()
@@ -71,7 +71,7 @@ func QueryMessages(ctx context.Context, appID int32, userID, peerID uint64, last
 }
 
 // SaveMessage 在会话保存历史消息
-func SaveMessage(ctx context.Context, appID int32, userID, peerID uint64, message Message) (err error) {
+func SaveMessage(ctx context.Context, appID int32, userID, peerID int64, message Message) (err error) {
 	logger := fklog.ContextAppLogger(ctx)
 	cli, err := globalredis.GCli.GetDB()
 	if err != nil {
@@ -107,7 +107,7 @@ func SaveMessage(ctx context.Context, appID int32, userID, peerID uint64, messag
 }
 
 // ReadMessage 标记消息为已读
-func ReadMessage(ctx context.Context, appID int32, userID, peerID uint64, messageID uint64) (err error) {
+func ReadMessage(ctx context.Context, appID int32, userID, peerID int64, messageID uint64) (err error) {
 	logger := fklog.ContextAppLogger(ctx)
 
 	cli, err := globalredis.GCli.GetDB()
@@ -189,7 +189,7 @@ func ReadMessage(ctx context.Context, appID int32, userID, peerID uint64, messag
 }
 
 // 删除消息
-func RemoveMessage(ctx context.Context, appID int32, userID, peerID uint64, messageID uint64) (err error) {
+func RemoveMessage(ctx context.Context, appID int32, userID, peerID int64, messageID uint64) (err error) {
 	logger := fklog.ContextAppLogger(ctx)
 
 	cli, err := globalredis.GCli.GetDB()

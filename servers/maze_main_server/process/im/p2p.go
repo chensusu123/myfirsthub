@@ -29,7 +29,7 @@ func (im *IM) OnMessageList_10663_10664(s *session.Session, req *MazeIM.MessageL
 	}()
 
 	var (
-		userId    = uint64(s.UID())
+		userId    = s.UID()
 		peerId    = req.GetPeerId()
 		lastMsgID = req.GetLastMsgId()
 		newest    = req.GetNewest()
@@ -49,7 +49,7 @@ func (im *IM) OnMessageList_10663_10664(s *session.Session, req *MazeIM.MessageL
 		logger.CtxError(ctx, "OnMessageList QueryMessages error", zap.Error(err), zap.Any("req", req))
 		return err
 	}
-	res.PeerId = proto.Uint64(peerId)
+	res.PeerId = proto.Int64(peerId)
 	for _, message := range messages {
 		res.MsgList = append(res.MsgList, PbMessage(message))
 	}
@@ -72,7 +72,7 @@ func (im *IM) OnSendMessage_10645_10646(s *session.Session, req *MazeIM.SendMess
 	}()
 
 	var (
-		userId  = uint64(s.UID())
+		userId  = s.UID()
 		peerId  = req.GetPeerId()
 		_type   = req.GetType()
 		content = req.GetContent()
@@ -93,7 +93,7 @@ func (im *IM) OnSendMessage_10645_10646(s *session.Session, req *MazeIM.SendMess
 		return err
 	}
 	res.MsgId = proto.Uint64(messageID)
-	res.PeerId = proto.Uint64(peerId)
+	res.PeerId = proto.Int64(peerId)
 	res.Type = proto.Int32(_type)
 	return nil
 }
@@ -113,7 +113,7 @@ func (im *IM) OnReadMessage_10656_10657(s *session.Session, req *MazeIM.ReadMess
 	}()
 
 	var (
-		userId = uint64(s.UID())
+		userId = s.UID()
 		peerId = req.GetPeerId()
 		msgID  = req.GetMsgId()
 	)

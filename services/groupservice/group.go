@@ -37,7 +37,7 @@ type GroupService interface {
 	// 	- sender: 消息发送者
 	//	- _type: 消息类型
 	//	- content: 消息内容
-	SendMessage(ctx context.Context, a app.App, groupID int64, sender uint64, _type int32, content []byte) (messageID uint64, err error)
+	SendMessage(ctx context.Context, a app.App, groupID int64, sender int64, _type int32, content []byte) (messageID uint64, err error)
 
 	// GetGroupInfo 获取聊天组信息
 	//
@@ -52,7 +52,7 @@ type GroupService interface {
 	//	- a: 应用
 	//	- user: 群主用户
 	//	- memberIDs: 成员ID
-	CreateGroup(ctx context.Context, a app.App, userID uint64, groupType string, memberIDs []uint64) (g *app.Group, err error)
+	CreateGroup(ctx context.Context, a app.App, userID int64, groupType string, memberIDs []int64) (g *app.Group, err error)
 
 	// InviteMember 群组邀请成员
 	//
@@ -60,7 +60,7 @@ type GroupService interface {
 	//	- a: 应用
 	//	- groupID: 组ID
 	//	- memberID: 成员ID
-	InviteMember(ctx context.Context, a app.App, groupID int64, memberID uint64) (err error)
+	InviteMember(ctx context.Context, a app.App, groupID int64, memberID int64) (err error)
 }
 
 var (
@@ -93,7 +93,7 @@ func (g *group) QueryMessages(ctx context.Context, a app.App, groupID int64, las
 }
 
 // SendMessage implements GroupService.
-func (g *group) SendMessage(ctx context.Context, a app.App, groupID int64, sender uint64, _type int32, content []byte) (messageID uint64, err error) {
+func (g *group) SendMessage(ctx context.Context, a app.App, groupID int64, sender int64, _type int32, content []byte) (messageID uint64, err error) {
 	logger := fklog.ContextAppLogger(ctx)
 	message := app.Message{}
 	messageID = idgenerator.MessageID(time.Now().UnixMilli(), idgenerator.GenerateSeed())
@@ -108,18 +108,18 @@ func (g *group) SendMessage(ctx context.Context, a app.App, groupID int64, sende
 	message.Content = content
 	err = groupmsg.SaveMessage(ctx, a.ID(), groupID, message)
 	if err != nil {
-		logger.CtxError(ctx, "SendMessage error", zap.Error(err), zap.Uint64("sender", sender), zap.Int32("_type", _type), zap.ByteString("content", content))
+		logger.CtxError(ctx, "SendMessage error", zap.Error(err), zap.Int64("sender", sender), zap.Int32("_type", _type), zap.ByteString("content", content))
 		return 0, err
 	}
 	err = g.notifyGroupMessage(ctx, a, sender, messageID, _type, groupID, GroupMessageNotificationID, content)
 	if err != nil {
-		logger.CtxError(ctx, "notifyGroupMessage error", zap.Error(err), zap.Uint64("sender", sender), zap.Int32("_type", _type), zap.ByteString("content", content))
+		logger.CtxError(ctx, "notifyGroupMessage error", zap.Error(err), zap.Int64("sender", sender), zap.Int32("_type", _type), zap.ByteString("content", content))
 		return 0, err
 	}
 	//创建群组成员会话
-	user, err := app.WrapUser(sender, "")
+	user, err := app.WrapUser(uint64(sender), "")
 	if err != nil {
-		logger.CtxError(ctx, "WrapUser error", zap.Error(err), zap.Uint64("sender", sender))
+		logger.CtxError(ctx, "WrapUser error", zap.Error(err), zap.Int64("sender", sender))
 		return 0, err
 	}
 	sessionservice.Default.CreateGroupSession(ctx, a, user, groupID)
@@ -132,7 +132,7 @@ func (*group) GetGroupInfo(ctx context.Context, a app.App, groupID int64) (g *ap
 }
 
 // CreateGroup implements GroupService.
-func (*group) CreateGroup(ctx context.Context, a app.App, userID uint64, groupType string, memberIDs []uint64) (g *app.Group, err error) {
+func (*group) CreateGroup(ctx context.Context, a app.App, userID int64, groupType string, memberIDs []int64) (g *app.Group, err error) {
 	// TODO 群组ID生成器
 	groupID, err := idgenerator.NextID()
 	if err != nil {
@@ -142,15 +142,15 @@ func (*group) CreateGroup(ctx context.Context, a app.App, userID uint64, groupTy
 }
 
 // InviteMember implements GroupService.
-func (g *group) InviteMember(ctx context.Context, a app.App, groupID int64, memberID uint64) (err error) {
+func (g *group) InviteMember(ctx context.Context, a app.App, groupID int64, memberID int64) (err error) {
 	return grouppkg.InviteMember(ctx, a.ID(), groupID, memberID)
 }
 
-func (g *group) notifyGroupMessage(ctx context.Context, a app.App, userId uint64, messageID uint64, _type int32, groupID int64, packId uint16, content []byte) error {
+func (g *group) notifyGroupMessage(ctx context.Context, a app.App, userID int64, messageID uint64, _type int32, groupID int64, packId uint16, content []byte) error {
 	logger := fklog.ContextAppLogger(ctx)
 	_, err := g.GetGroupInfo(ctx, a, groupID)
 	if err != nil {
-		logger.CtxError(ctx, "notifyGroupMessage error", zap.Error(err), zap.Uint64("userId", userId), zap.Uint64("messageID", messageID), zap.Int32("_type", _type), zap.Int64("groupID", groupID), zap.ByteString("content", content))
+		logger.CtxError(ctx, "notifyGroupMessage error", zap.Error(err), zap.Int64("userId", userID), zap.Uint64("messageID", messageID), zap.Int32("_type", _type), zap.Int64("groupID", groupID), zap.ByteString("content", content))
 		return err
 	}
 	// 推送消息给集群
@@ -160,11 +160,11 @@ func (g *group) notifyGroupMessage(ctx context.Context, a app.App, userId uint64
 			MsgId:      proto.Uint64(messageID),
 			Type:       proto.Int32(_type),
 			Content:    []byte(content),
-			Sender:     proto.Uint64(userId),
+			Sender:     proto.Int64(userID),
 			CreateTime: proto.Int64(time.Now().Unix()),
 		},
 	}
-	logger.CtxInfo(ctx, "notifyMessage group", zap.Uint64("userId", userId), zap.Any("notifyMessage group", notifyMessage))
+	logger.CtxInfo(ctx, "notifyMessage group", zap.Int64("userId", userID), zap.Any("notifyMessage group", notifyMessage))
 	groupType, err := GetGroupType(ctx, a, groupID)
 	if err != nil {
 		logger.CtxError(ctx, "GetGroupType error", zap.Error(err), zap.Int64("groupID", groupID))

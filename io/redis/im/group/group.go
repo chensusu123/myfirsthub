@@ -17,7 +17,7 @@ import (
 
 type Group struct {
 	ID         int64    `json:"id,omitempty"`
-	Creator    uint64   `json:"creator,omitempty"`
+	Creator    int64    `json:"creator,omitempty"`
 	CreateTime int64    `json:"create_time,omitempty"`
 	GroupType  string   `json:"group_type,omitempty"`
 	Members    []Member `json:"-"`
@@ -25,7 +25,7 @@ type Group struct {
 
 type Member struct {
 	CreateTime int64  `json:"create_time,omitempty"`
-	UserID     uint64 `json:"user_id,omitempty"`
+	UserID     int64  `json:"user_id,omitempty"`
 	Nickname   string `json:"nickname,omitempty"`
 }
 
@@ -81,7 +81,7 @@ func GetGroupInfo(ctx context.Context, appID int32, groupID int64) (group *Group
 }
 
 // CreateGroup
-func CreateGroup(ctx context.Context, appID int32, creator uint64, groupID int64, grouptype string, invitees []uint64) (group *Group, err error) {
+func CreateGroup(ctx context.Context, appID int32, creator int64, groupID int64, grouptype string, invitees []int64) (group *Group, err error) {
 	var (
 		now    = time.Now()
 		logger = fklog.ContextAppLogger(ctx)
@@ -129,7 +129,7 @@ func CreateGroup(ctx context.Context, appID int32, creator uint64, groupID int64
 				zap.Error(err),
 				zap.Any("key", key),
 				zap.Int64("groupID", groupID),
-				zap.Uint64("memberID", memberID),
+				zap.Int64("memberID", memberID),
 				zap.Any("member", member),
 			)
 			return nil, err
@@ -153,14 +153,14 @@ func CreateGroup(ctx context.Context, appID int32, creator uint64, groupID int64
 }
 
 // InviteMember
-func InviteMember(ctx context.Context, appID int32, groupID int64, memberID uint64) (err error) {
+func InviteMember(ctx context.Context, appID int32, groupID int64, memberID int64) (err error) {
 	logger := fklog.ContextAppLogger(ctx)
 	cli, err := globalredis.GCli.GetDB()
 	if err != nil {
 		logger.CtxError(ctx, "InviteMember Client fail",
 			zap.Error(err),
 			zap.Int64("groupID", groupID),
-			zap.Uint64("memberID", memberID),
+			zap.Int64("memberID", memberID),
 		)
 		return err
 	}
@@ -175,7 +175,7 @@ func InviteMember(ctx context.Context, appID int32, groupID int64, memberID uint
 			zap.Error(err),
 			zap.Any("key", key),
 			zap.Int64("groupID", groupID),
-			zap.Uint64("memberID", memberID),
+			zap.Int64("memberID", memberID),
 			zap.Any("member", member),
 		)
 		return err
@@ -189,25 +189,25 @@ func InviteMember(ctx context.Context, appID int32, groupID int64, memberID uint
 				zap.Error(err),
 				zap.Any("key", key),
 				zap.Int64("groupID", groupID),
-				zap.Uint64("memberID", memberID),
+				zap.Int64("memberID", memberID),
 				zap.Any("member", member),
 			)
 			return err
 		}
 	}
-	logger.CtxInfo(ctx, "InviteMember success", zap.Any("key", key), zap.Int64("groupID", groupID), zap.Uint64("memberID", memberID))
+	logger.CtxInfo(ctx, "InviteMember success", zap.Any("key", key), zap.Int64("groupID", groupID), zap.Int64("memberID", memberID))
 	return
 }
 
 // 是否为群成员
-func IsMember(ctx context.Context, appID int32, groupID int64, memberID uint64) (is bool, err error) {
+func IsMember(ctx context.Context, appID int32, groupID int64, memberID int64) (is bool, err error) {
 	logger := fklog.ContextAppLogger(ctx)
 	cli, err := globalredis.GCli.GetDB()
 	if err != nil {
 		logger.CtxError(ctx, "IsMember Client fail",
 			zap.Error(err),
 			zap.Int64("groupID", groupID),
-			zap.Uint64("memberID", memberID),
+			zap.Int64("memberID", memberID),
 		)
 		return false, err
 	}
@@ -221,13 +221,13 @@ func IsMember(ctx context.Context, appID int32, groupID int64, memberID uint64) 
 				zap.Error(err),
 				zap.Any("key", key),
 				zap.Int64("groupID", groupID),
-				zap.Uint64("memberID", memberID),
+				zap.Int64("memberID", memberID),
 			)
 			return false, err
 		}
 	}
 
-	logger.CtxInfo(ctx, "IsMember success", zap.Any("key", key), zap.Int64("groupID", groupID), zap.Uint64("memberID", memberID), zap.Bool("is", is))
+	logger.CtxInfo(ctx, "IsMember success", zap.Any("key", key), zap.Int64("groupID", groupID), zap.Int64("memberID", memberID), zap.Bool("is", is))
 	return ret, nil
 }
 

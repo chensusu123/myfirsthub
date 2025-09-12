@@ -439,7 +439,7 @@ func (f *Family) OnConfirmApplyFamilyRQ_10589_10590(s *session.Session, req *Maz
 			return err
 		}
 		//加入家族群聊
-		err = groupservice.Default.InviteMember(ctx, app.Maze, int64(familyInfo.FamilyGroupID), req.GetApplyUser().GetUserId())
+		err = groupservice.Default.InviteMember(ctx, app.Maze, int64(familyInfo.FamilyGroupID), int64(req.GetApplyUser().GetUserId()))
 		if err != nil {
 			res.ErrInfo = errors.MODULE_ERROR.Wrap("加入家族群聊失败")
 			logger.CtxError(ctx, "加入家族群聊失败", zap.Error(err))

@@ -127,14 +127,14 @@ func (g *Game) OnMazeLoginRQ_10451_10452(s *session.Session, req *MazeGame.MazeL
 		return
 	}
 	//是否为联盟群组成员，不是的话加入
-	IsMember, err := grouppkg.IsMember(ctx, app.Maze.ID(), allianceInfo.AllianceGroupID, userId)
+	IsMember, err := grouppkg.IsMember(ctx, app.Maze.ID(), allianceInfo.AllianceGroupID, int64(userId))
 	if err != nil {
 		logger.CtxError(ctx, "OnMazeLoginRQ GetGroupInfo Fail",
 			zap.Error(err))
 		return
 	}
 	if !IsMember {
-		err = grouppkg.InviteMember(ctx, app.Maze.ID(), allianceInfo.AllianceGroupID, userId)
+		err = grouppkg.InviteMember(ctx, app.Maze.ID(), allianceInfo.AllianceGroupID, int64(userId))
 		if err != nil {
 			logger.CtxError(ctx, "OnMazeLoginRQ InviteMember Fail",
 				zap.Error(err))

@@ -19,7 +19,7 @@ import (
 type Session struct {
 	ID          string             `json:"id,omitempty"`
 	CreateTime  int64              `json:"create_time,omitempty"`
-	PeerID      uint64             `json:"peer_id,omitempty"`
+	PeerID      int64              `json:"peer_id,omitempty"`
 	GroupID     int64              `json:"group_id,omitempty"`
 	MessageTime int64              `json:"message_time,omitempty"`
 	UnreadCount int64              `json:"unread_count,omitempty"`
@@ -73,7 +73,7 @@ func QuerySessions(ctx context.Context, appID int32, userID uint64) (sessions ma
 }
 
 // AddP2PSession 创建私聊会话
-func AddP2PSession(ctx context.Context, appID int32, userID uint64, sessionID string, peerID uint64, messageTime int64) (session *Session, err error) {
+func AddP2PSession(ctx context.Context, appID int32, userID uint64, sessionID string, peerID int64, messageTime int64) (session *Session, err error) {
 	logger := fklog.ContextAppLogger(ctx)
 
 	session = &Session{
@@ -263,14 +263,14 @@ func GetNormalSession(ctx context.Context, appID int32, userID uint64, sessionID
 }
 
 // GetMessageRecent 获取最近一条消息
-func GetMessageRecent(ctx context.Context, appID int32, userID uint64, peerID uint64) (message msgstore.Message, err error) {
+func GetMessageRecent(ctx context.Context, appID int32, userID uint64, peerID int64) (message msgstore.Message, err error) {
 	logger := fklog.ContextAppLogger(ctx)
 
 	cli, err := globalredis.GCli.GetDB()
 	if err != nil {
 		logger.CtxError(ctx, "GetMessageRecent Client fail",
 			zap.Error(err),
-			zap.Uint64("peerID", peerID),
+			zap.Int64("peerID", peerID),
 		)
 		return message, err
 	}
@@ -284,7 +284,7 @@ func GetMessageRecent(ctx context.Context, appID int32, userID uint64, peerID ui
 			logger.CtxError(ctx, "GetMessageRecent LRANGE fail",
 				zap.Error(err),
 				zap.Any("key", key),
-				zap.Uint64("peerID", peerID),
+				zap.Int64("peerID", peerID),
 			)
 			return message, err
 		}
@@ -294,11 +294,11 @@ func GetMessageRecent(ctx context.Context, appID int32, userID uint64, peerID ui
 		logger.CtxError(ctx, "GetMessageRecent Unmarshal fail",
 			zap.Error(err),
 			zap.Any("key", key),
-			zap.Uint64("peerID", peerID),
+			zap.Int64("peerID", peerID),
 			zap.String("value", value),
 		)
 		return message, err
 	}
-	logger.CtxInfo(ctx, "GetMessageRecent success", zap.Any("key", key), zap.Uint64("peerID", peerID), zap.Any("messages", message))
+	logger.CtxInfo(ctx, "GetMessageRecent success", zap.Any("key", key), zap.Int64("peerID", peerID), zap.Any("messages", message))
 	return message, nil
 }

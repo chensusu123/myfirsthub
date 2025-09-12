@@ -62,7 +62,7 @@ func (im *IM) OnSendGroupMessage_10649_10650(s *session.Session, req *MazeIM.Sen
 	}()
 
 	var (
-		userId  = uint64(s.UID())
+		userId  = s.UID()
 		groupId = req.GetGroupId()
 		_type   = req.GetType()
 		content = req.GetContent()

@@ -58,7 +58,7 @@ func TestSendMessages(t *testing.T) {
 		logger.ErrorWF("OnSendMessage WrapUser error", zap.Error(err))
 	}
 
-	messageID, err := GlobalP2PService.SendMessage(context.Background(), app.Maze, user, uint64(50000002), int32(1), []byte("hello03"))
+	messageID, err := GlobalP2PService.SendMessage(context.Background(), app.Maze, user, int64(50000002), int32(1), []byte("hello03"))
 	if err != nil {
 		logger.ErrorWF("OnSendMessage SendMessage error", zap.Error(err))
 	}
@@ -72,7 +72,7 @@ func TestQueryMessages(t *testing.T) {
 	if err != nil {
 		logger.ErrorWF("OnSendMessage WrapUser error", zap.Error(err))
 	}
-	messages, err := GlobalP2PService.QueryMessages(context.Background(), app.Maze, user, uint64(50000002), 621539715899425009, true)
+	messages, err := GlobalP2PService.QueryMessages(context.Background(), app.Maze, user, int64(50000002), 621539715899425009, true)
 	if err != nil {
 		logger.ErrorWF("OnSendMessage QueryMessages error", zap.Error(err))
 	}
@@ -88,7 +88,7 @@ func TestReadMessage(t *testing.T) {
 		logger.ErrorWF("OnSendMessage WrapUser error", zap.Error(err))
 		return
 	}
-	err = GlobalP2PService.ReadMessage(context.Background(), app.Maze, user, uint64(50000001), 618382372351268509)
+	err = GlobalP2PService.ReadMessage(context.Background(), app.Maze, user, int64(50000001), 618382372351268509)
 	if err != nil {
 		logger.ErrorWF("OnSendMessage ReadMessage error", zap.Error(err))
 	}
@@ -101,7 +101,7 @@ func TestRemoveMessage(t *testing.T) {
 	if err != nil {
 		logger.ErrorWF("OnSendMessage WrapUser error", zap.Error(err))
 	}
-	err = GlobalP2PService.RemoveMessage(context.Background(), app.Maze, user, uint64(50000001), 34719007919596739)
+	err = GlobalP2PService.RemoveMessage(context.Background(), app.Maze, user, int64(50000001), 34719007919596739)
 	if err != nil {
 		logger.ErrorWF("OnSendMessage RemoveMessage error", zap.Error(err))
 	}

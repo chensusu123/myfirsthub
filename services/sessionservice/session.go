@@ -36,7 +36,7 @@ type SessionService interface {
 	//	- a: 应用
 	// 	- user: 用户标识
 	//	- peerID: 对方ID
-	CreateNormalSession(ctx context.Context, a app.App, user app.User, peerID uint64, messageTime int64) (err error)
+	CreateNormalSession(ctx context.Context, a app.App, user app.User, peerID int64, messageTime int64) (err error)
 
 	// CreateGroupSession 创建群聊会话
 	//
@@ -67,7 +67,7 @@ type SessionService interface {
 	// 	- user: 用户标识
 	//	- peerID: 对方ID
 	//	- session: 会话信息
-	UpdateNormalSession(ctx context.Context, a app.App, user app.User, peerID uint64, session *sessionpkg.Session) error
+	UpdateNormalSession(ctx context.Context, a app.App, user app.User, peerID int64, session *sessionpkg.Session) error
 	// SaveNormalSession 保存私人会话
 	//
 	// 参数:
@@ -75,7 +75,7 @@ type SessionService interface {
 	// 	- user: 用户标识
 	//	- peerID: 对方ID
 	//	- messageTime: 消息时间
-	SaveNormalSession(ctx context.Context, a app.App, user app.User, peerID uint64, messageTime int64) error
+	SaveNormalSession(ctx context.Context, a app.App, user app.User, peerID int64, messageTime int64) error
 
 	// NotifyNormalSession 通知 私聊会话
 	//
@@ -83,7 +83,7 @@ type SessionService interface {
 	//	- a: 应用
 	// 	- notifyUser: 通知用户
 	//	- session: 会话信息
-	NotifyNormalSession(ctx context.Context, a app.App, notifyUser uint64, session *sessionpkg.Session) error
+	NotifyNormalSession(ctx context.Context, a app.App, notifyUser int64, session *sessionpkg.Session) error
 }
 
 var (
@@ -99,7 +99,7 @@ func (s *session) QueryRecentSessions(ctx context.Context, a app.App, user app.U
 }
 
 // CreateNormalSession implements SessionService.
-func (s *session) CreateNormalSession(ctx context.Context, a app.App, user app.User, peerID uint64, messageTime int64) (err error) {
+func (s *session) CreateNormalSession(ctx context.Context, a app.App, user app.User, peerID int64, messageTime int64) (err error) {
 	logger := fklog.ContextAppLogger(ctx)
 	sessionID := s.NormalSessionID(peerID)
 	sessionInfo, err := sessionpkg.AddP2PSession(ctx, a.ID(), user.UserID(), sessionID, peerID, messageTime)
@@ -115,13 +115,13 @@ func (s *session) CreateNormalSession(ctx context.Context, a app.App, user app.U
 	}
 	sessionInfo.Recent = []msgstore.Message{recent}
 	//通知对方
-	err = s.NotifyNormalSession(ctx, a, peerID, sessionInfo)
+	err = s.NotifyNormalSession(ctx, a, int64(peerID), sessionInfo)
 	if err != nil {
 		logger.CtxError(ctx, "NotifyNormalSession error", zap.Error(err))
 		return err
 	}
 	//通知自己
-	err = s.NotifyNormalSession(ctx, a, user.UserID(), sessionInfo)
+	err = s.NotifyNormalSession(ctx, a, int64(user.UserID()), sessionInfo)
 	if err != nil {
 		logger.CtxError(ctx, "NotifyNormalSession error", zap.Error(err))
 		return err
@@ -129,12 +129,12 @@ func (s *session) CreateNormalSession(ctx context.Context, a app.App, user app.U
 	return nil
 }
 
-func (s *session) UpdateNormalSession(ctx context.Context, a app.App, user app.User, peerID uint64, session *sessionpkg.Session) error {
+func (s *session) UpdateNormalSession(ctx context.Context, a app.App, user app.User, peerID int64, session *sessionpkg.Session) error {
 	return sessionpkg.UpdateSession(ctx, a.ID(), user.UserID(), s.NormalSessionID(peerID), session)
 }
 
 // SaveNormalSession 保存私人会话
-func (s *session) SaveNormalSession(ctx context.Context, a app.App, user app.User, peerID uint64, messageTime int64) error {
+func (s *session) SaveNormalSession(ctx context.Context, a app.App, user app.User, peerID int64, messageTime int64) error {
 	logger := fklog.ContextAppLogger(ctx)
 	sessionID := s.NormalSessionID(peerID)
 	//是否存在当前聊天对象perrID的session记录
@@ -174,7 +174,7 @@ func (s *session) RemoveSession(ctx context.Context, a app.App, user app.User, s
 	return sessionpkg.RemoveSession(ctx, a.ID(), user.UserID(), sessionID)
 }
 
-func (s *session) NormalSessionID(userID uint64) string {
+func (s *session) NormalSessionID(userID int64) string {
 	return sum([]byte(fmt.Sprintf("p2p:%d", userID)))
 }
 
@@ -196,7 +196,7 @@ func (s *session) GetMessageInfo(ctx context.Context, a app.App, user app.User, 
 	for _, session := range sessions {
 		peerID := session.PeerID
 		if peerID > 0 {
-			p2pmsg, err := p2pmsg.QueryMessages(ctx, a.ID(), user.UserID(), peerID, uint64(0), true)
+			p2pmsg, err := p2pmsg.QueryMessages(ctx, a.ID(), int64(user.UserID()), peerID, uint64(0), true)
 			if err != nil {
 				return nil, err
 			}
@@ -210,7 +210,7 @@ func (s *session) GetMessageInfo(ctx context.Context, a app.App, user app.User, 
 		} else {
 			groupID := session.GroupID
 			if groupID > 0 {
-				groupmsg, err := p2pmsg.QueryMessages(ctx, a.ID(), user.UserID(), 0, uint64(0), true)
+				groupmsg, err := p2pmsg.QueryMessages(ctx, a.ID(), int64(user.UserID()), 0, uint64(0), true)
 				if err != nil {
 					return nil, err
 				}
@@ -228,14 +228,14 @@ func (s *session) GetMessageInfo(ctx context.Context, a app.App, user app.User, 
 }
 
 // 通知 私聊会话
-func (s *session) NotifyNormalSession(ctx context.Context, a app.App, notifyUser uint64, session *sessionpkg.Session) error {
+func (s *session) NotifyNormalSession(ctx context.Context, a app.App, notifyUser int64, session *sessionpkg.Session) error {
 	logger := fklog.ContextAppLogger(ctx)
 	// 推送消息给集群
 	notifyMessage := &MazeIM.SessionChangeID{
 		AddSessionList: pbSession(session),
 	}
-	logger.CtxInfo(ctx, "NotifyNormalSession start", zap.Uint64("peerId", notifyUser), zap.Any("NotifyNormalSession", notifyMessage))
-	err := online.ClusterPush(ctx, notifyUser, SessionChangeID, notifyMessage)
+	logger.CtxInfo(ctx, "NotifyNormalSession start", zap.Int64("peerId", notifyUser), zap.Any("NotifyNormalSession", notifyMessage))
+	err := online.ClusterPush(ctx, uint64(notifyUser), SessionChangeID, notifyMessage)
 	if err != nil {
 		logger.CtxError(ctx, "NotifyNormalSession error", zap.Error(err), zap.Any("NotifyNormalSession", notifyMessage))
 	}
@@ -250,7 +250,7 @@ func PbSessionMessage(messages []p2pmsg.Message) []*MazeIM.Message {
 			MsgId:   proto.Uint64(message.MessageID),
 			Type:    proto.Int32(message.Type),
 			Content: []byte(message.Content),
-			Sender:  proto.Uint64(message.UserID),
+			Sender:  proto.Int64(message.UserID),
 		})
 	}
 	return pbMessages
