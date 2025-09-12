@@ -15,6 +15,7 @@ import (
 // DollMapPuzzleNewV8ConfigRow from doll_map_puzzle_new_v8【人偶-地图数据-新解谜】.xlsx doll_map_puzzle_new_v8
 type DollMapPuzzleNewV8ConfigRow struct {
 	Order        int32  `json:"order"`        // 序号
+	Uid          int32  `json:"uid"`          // 格子id
 	Show_type    int32  `json:"show_type"`    // 道具大类型（比如门）
 	Sub_type     int32  `json:"sub_type"`     // 分类小类型（比如红门、黄门等）
 	Level        int32  `json:"level"`        // 关卡
@@ -298,66 +299,80 @@ func (*gDollMapPuzzleNewV8Parser) Parse(logger fklog.FKLogI, data []string, row 
 		config.Order = int32(tmp)
 	}
 
-	// parse column 1 show_type : 道具大类型（比如门）
+	// parse column 1 uid : 格子id
 	if data[1] != "" {
 		tmp, err = strconv.ParseInt(data[1], 10, 64)
+		if err != nil {
+			err = errors.New("parse field uid 格子id to int32 failed")
+			logger.ErrorWF("parse field uid 格子id to int32 failed.",
+				zap.String("xlsx", "doll_map_puzzle_new_v8【人偶-地图数据-新解谜】.xlsx"), zap.String("sheet", "doll_map_puzzle_new_v8"),
+				zap.String("parse_data", data[1]),
+				zap.Error(err))
+			return
+		}
+		config.Uid = int32(tmp)
+	}
+
+	// parse column 2 show_type : 道具大类型（比如门）
+	if data[2] != "" {
+		tmp, err = strconv.ParseInt(data[2], 10, 64)
 		if err != nil {
 			err = errors.New("parse field show_type 道具大类型（比如门） to int32 failed")
 			logger.ErrorWF("parse field show_type 道具大类型（比如门） to int32 failed.",
 				zap.String("xlsx", "doll_map_puzzle_new_v8【人偶-地图数据-新解谜】.xlsx"), zap.String("sheet", "doll_map_puzzle_new_v8"),
-				zap.String("parse_data", data[1]),
+				zap.String("parse_data", data[2]),
 				zap.Error(err))
 			return
 		}
 		config.Show_type = int32(tmp)
 	}
 
-	// parse column 2 sub_type : 分类小类型（比如红门、黄门等）
-	if data[2] != "" {
-		tmp, err = strconv.ParseInt(data[2], 10, 64)
+	// parse column 3 sub_type : 分类小类型（比如红门、黄门等）
+	if data[3] != "" {
+		tmp, err = strconv.ParseInt(data[3], 10, 64)
 		if err != nil {
 			err = errors.New("parse field sub_type 分类小类型（比如红门、黄门等） to int32 failed")
 			logger.ErrorWF("parse field sub_type 分类小类型（比如红门、黄门等） to int32 failed.",
 				zap.String("xlsx", "doll_map_puzzle_new_v8【人偶-地图数据-新解谜】.xlsx"), zap.String("sheet", "doll_map_puzzle_new_v8"),
-				zap.String("parse_data", data[2]),
+				zap.String("parse_data", data[3]),
 				zap.Error(err))
 			return
 		}
 		config.Sub_type = int32(tmp)
 	}
 
-	// parse column 3 level : 关卡
-	if data[3] != "" {
-		tmp, err = strconv.ParseInt(data[3], 10, 64)
+	// parse column 4 level : 关卡
+	if data[4] != "" {
+		tmp, err = strconv.ParseInt(data[4], 10, 64)
 		if err != nil {
 			err = errors.New("parse field level 关卡 to int32 failed")
 			logger.ErrorWF("parse field level 关卡 to int32 failed.",
 				zap.String("xlsx", "doll_map_puzzle_new_v8【人偶-地图数据-新解谜】.xlsx"), zap.String("sheet", "doll_map_puzzle_new_v8"),
-				zap.String("parse_data", data[3]),
+				zap.String("parse_data", data[4]),
 				zap.Error(err))
 			return
 		}
 		config.Level = int32(tmp)
 	}
 
-	// parse column 4 monster_area : 区域id_战区
-	if data[4] != "" {
-		config.Monster_area = data[4]
-	}
-
-	// parse column 5 config_id : type*1000+index
+	// parse column 5 monster_area : 区域id_战区
 	if data[5] != "" {
-		config.Config_id = data[5]
+		config.Monster_area = data[5]
 	}
 
-	// parse column 6 stage : 区域阶段属性
+	// parse column 6 config_id : type*1000+index
 	if data[6] != "" {
-		tmp, err = strconv.ParseInt(data[6], 10, 64)
+		config.Config_id = data[6]
+	}
+
+	// parse column 7 stage : 区域阶段属性
+	if data[7] != "" {
+		tmp, err = strconv.ParseInt(data[7], 10, 64)
 		if err != nil {
 			err = errors.New("parse field stage 区域阶段属性 to int32 failed")
 			logger.ErrorWF("parse field stage 区域阶段属性 to int32 failed.",
 				zap.String("xlsx", "doll_map_puzzle_new_v8【人偶-地图数据-新解谜】.xlsx"), zap.String("sheet", "doll_map_puzzle_new_v8"),
-				zap.String("parse_data", data[6]),
+				zap.String("parse_data", data[7]),
 				zap.Error(err))
 			return
 		}
@@ -368,6 +383,7 @@ func (*gDollMapPuzzleNewV8Parser) Parse(logger fklog.FKLogI, data []string, row 
 
 var gDollMapPuzzleNewV8Fields = []string{
 	"order",
+	"uid",
 	"show_type",
 	"sub_type",
 	"level",
