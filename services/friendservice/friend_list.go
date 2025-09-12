@@ -22,7 +22,7 @@ func (s *service) FriendList(ctx context.Context, userId uint64, page, pageSize 
 	start, end := (page-1)*pageSize, page*pageSize-1
 
 	count := int32(len(friendModel.FriendList))
-	if count < start {
+	if count < start || start > end || start < 0 || end < 0 {
 		return []*friendmodel.FriendInfo{}, true, nil
 	}
 	if count < end {
