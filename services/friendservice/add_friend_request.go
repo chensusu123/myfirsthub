@@ -33,17 +33,17 @@ func (s *service) AddFriendRequest(ctx context.Context, userId, toId uint64) err
 	}
 
 	// 1.是否在我的黑名单中
-	// inBlk, err := s.isBlacklist(logger, userId, toId)
-	// if err != nil {
-	// 	logger.CtxError(ctx, "AddFriendRequest IsBlacklist err", zap.Uint64("userID", userId),
-	// 		zap.Uint64("toID", toId),
-	// 		zap.Error(err))
-	// 	return err
-	// }
+	inBlk, err := s.isBlacklist(logger, userId, toId)
+	if err != nil {
+		logger.CtxError(ctx, "AddFriendRequest IsBlacklist err", zap.Uint64("userID", userId),
+			zap.Uint64("toID", toId),
+			zap.Error(err))
+		return err
+	}
 
-	// if inBlk {
-	// 	return fmt.Errorf("对方在你的黑名单中")
-	// }
+	if inBlk {
+		return fmt.Errorf("对方在你的黑名单中")
+	}
 
 	// 3.判断是否已经是好友了
 	if isFriend := s.IsFriend(friends, toId); isFriend {
@@ -93,16 +93,16 @@ func (s *service) AddFriendRequest(ctx context.Context, userId, toId uint64) err
 // 等待actor逻辑完成处理
 // 收到好友请求事件
 func (s *service) AddFriendRequestEvent(ctx context.Context, userId, fromId uint64) error {
-	// logger := fklog.ContextAppLogger(ctx)
+	logger := fklog.ContextAppLogger(ctx)
 	// 是否在我的黑名单中
-	// inBlk, err := s.isBlacklist(logger, userId, fromId)
-	// if err != nil {
-	// 	logger.CtxError(ctx, "AddFriendRequestEvent isBlacklist err", zap.Error(err))
-	// 	return err
-	// }
-	// if inBlk {
-	// 	return fmt.Errorf("已被对方拉黑")
-	// }
+	inBlk, err := s.isBlacklist(logger, userId, fromId)
+	if err != nil {
+		logger.CtxError(ctx, "AddFriendRequestEvent isBlacklist err", zap.Error(err))
+		return err
+	}
+	if inBlk {
+		return fmt.Errorf("已被对方拉黑")
+	}
 
 	// 设置待处理好友请求
 	if err := s.addReceiveFriendRequest(ctx, userId, fromId); err != nil {

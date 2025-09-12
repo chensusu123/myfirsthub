@@ -13,17 +13,17 @@ import (
 	"google.golang.org/protobuf/proto"
 )
 
-func (f *FriendComponent) OnFriendList_10560_10561(s *session.Session, req *Friend.FriendListRQ) (err error) {
+func (f *FriendComponent) OnFriendList_10704_10705(s *session.Session, req *Friend.FriendListRQ) (err error) {
 	userId := uint64(s.UID())
 	ctx := s.Context()
 	logger := fklog.ContextAppLogger(ctx)
 	res := &Friend.FriendListRS{}
 	res.Page = req.Page
 
-	logger.InfoWF("OnFriendList start", zap.Any("req", req))
+	logger.CtxInfo(ctx, "OnFriendList start", zap.Any("req", req))
 	defer func() {
 		err = s.Response(res)
-		logger.InfoWF("OnFriendList end", zap.Any("res", res))
+		logger.CtxInfo(ctx, "OnFriendList end", zap.Any("res", res))
 	}()
 
 	page := req.GetPage()
@@ -35,7 +35,7 @@ func (f *FriendComponent) OnFriendList_10560_10561(s *session.Session, req *Frie
 
 	friends, finish, err := friendservice.GlobalFriendService.FriendList(ctx, userId, page, pageSize)
 	if err != nil {
-		logger.ErrorWF("OnFriendList FriendList err ", zap.Error(err), zap.Int32("page", page), zap.Int32("pageSize", pageSize))
+		logger.CtxError(ctx, "OnFriendList FriendList err ", zap.Error(err), zap.Int32("page", page), zap.Int32("pageSize", pageSize))
 		res.ErrInfo = errors.COMMON_ERROR_TIPS.ToInfo()
 		return err
 	}

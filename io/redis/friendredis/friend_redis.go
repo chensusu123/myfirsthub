@@ -5,6 +5,7 @@ import (
 	"fmt"
 	globalredis "maze_game_server/io/redis"
 
+	"github.com/go-redis/redis"
 	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fklog"
 	"go.uber.org/zap"
 )
@@ -59,7 +60,7 @@ func GetSendFriendRequest(logger fklog.FKLogI, userId uint64) ([]byte, error) {
 	}
 	key := db.MakeSectionKey(getKeySendFriendRequest(userId))
 	bytes, err := db.Get(context.TODO(), key).Bytes()
-	if err != nil {
+	if err != nil && err != redis.Nil {
 		logger.ErrorWF("GetSendFriendRequest get err", zap.String("key", key), zap.Error(err))
 		return nil, err
 	}
@@ -107,7 +108,7 @@ func GetReceiveFriendRequest(ctx context.Context, userId uint64) ([]byte, error)
 	}
 	key := db.MakeSectionKey(getKeyReceiveFriendRequest(userId))
 	bytes, err := db.Get(ctx, key).Bytes()
-	if err != nil {
+	if err != nil && err != redis.Nil {
 		logger.CtxError(ctx, "GetReceiveFriendRequest get err", zap.String("key", key), zap.Error(err))
 		return nil, err
 	}
@@ -139,7 +140,7 @@ func GetFriends(logger fklog.FKLogI, userId uint64) ([]byte, error) {
 	}
 	key := db.MakeSectionKey(getKeyFriends(userId))
 	bytes, err := db.Get(context.TODO(), key).Bytes()
-	if err != nil {
+	if err != nil && err != redis.Nil {
 		logger.ErrorWF("GetFriends get err", zap.String("key", key), zap.Error(err))
 		return nil, err
 	}
@@ -201,7 +202,7 @@ func GetBlacklist(logger fklog.FKLogI, userId uint64) ([]byte, error) {
 	}
 	key := db.MakeSectionKey(getKeyBlacklist(userId))
 	bytes, err := db.Get(context.TODO(), key).Bytes()
-	if err != nil {
+	if err != nil && err != redis.Nil {
 		logger.ErrorWF("GetBlacklist get err", zap.String("key", key), zap.Error(err), zap.Uint64("userId", userId))
 		return nil, err
 	}
