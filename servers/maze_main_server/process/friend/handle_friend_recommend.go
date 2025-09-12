@@ -17,6 +17,8 @@ func (f *FriendComponent) OnFriendListRecommend_10711_10712(s *session.Session, 
 	ctx := s.Context()
 	logger := fklog.ContextAppLogger(ctx)
 	res := &Friend.FriendListRecommendRS{}
+	res.Header = req.Header
+	res.ErrInfo = errors.NO_ERROR
 
 	logger.CtxInfo(ctx, "OnFriendListRecommend start", zap.Any("req", req))
 	defer func() {

@@ -18,6 +18,7 @@ func (f *FriendComponent) OnFriendList_10704_10705(s *session.Session, req *Frie
 	ctx := s.Context()
 	logger := fklog.ContextAppLogger(ctx)
 	res := &Friend.FriendListRS{}
+	res.Header = req.Header
 	res.Page = req.Page
 
 	logger.CtxInfo(ctx, "OnFriendList start", zap.Any("req", req))
