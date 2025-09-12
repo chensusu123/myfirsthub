@@ -8,9 +8,9 @@ import (
 	"maze_game_server/services/friendservice"
 	"maze_game_server/services/userprofileservice"
 
-	"github.com/gogo/protobuf/proto"
 	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fklog"
 	"go.uber.org/zap"
+	"google.golang.org/protobuf/proto"
 )
 
 func (f *FriendComponent) OnFriendListRecommend_10711_10712(s *session.Session, req *Friend.FriendListRecommendRQ) (err error) {
