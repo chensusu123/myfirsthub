@@ -31,7 +31,7 @@ func (f *FriendComponent) OnSearchUserRQ_10709_10710(s *session.Session, req *Fr
 
 	if nowUserProfile == nil {
 		res.UserInfo = &Friend.User{
-			UserId:     proto.Uint64(uint64(req.GetUserId())),
+			UserId:     proto.Int64(int64(req.GetUserId())),
 			UserName:   proto.String("爱地牢"),
 			UserGender: proto.Int32(1),
 			AvaterUrl:  proto.String(""),

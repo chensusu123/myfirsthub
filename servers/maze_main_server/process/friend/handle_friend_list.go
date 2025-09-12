@@ -54,7 +54,7 @@ func (f *FriendComponent) OnFriendList_10560_10561(s *session.Session, req *Frie
 		}
 		res.FriendList = append(res.FriendList, &Friend.FriendInfo{
 			UserInfo: &Friend.User{
-				UserId:     proto.Uint64(friend.UserId),
+				UserId:     proto.Int64(int64(friend.UserId)),
 				UserName:   proto.String(nowUserProfile.NickName),
 				UserGender: proto.Int32(nowUserProfile.Sex),
 				AvaterUrl:  proto.String(nowUserProfile.Avatar),
