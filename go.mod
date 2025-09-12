@@ -24,6 +24,7 @@ require (
 	github.com/redis/go-redis/v9 v9.12.1
 	github.com/samber/slog-zap/v2 v2.6.2
 	github.com/spf13/cast v1.9.2
+	github.com/stretchr/testify v1.10.0
 	github.com/urfave/cli v1.22.16
 	gitlab.ifreetalk.com/maze-plate/freetk v1.0.1-0.20250908061745-cc5e832ace89
 	gitlab.ifreetalk.com/nano-ecosystem/fklog v0.0.0-20250813072008-4577841956ed // indirect
