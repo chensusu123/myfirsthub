@@ -1,6 +1,7 @@
 package friendservice
 
 import (
+	"context"
 	"maze_game_server/model/friendmodel"
 
 	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fklog"
@@ -51,10 +52,11 @@ import (
 // }
 
 // 是否在黑名单里面
-func (s *service) isBlacklist(logger fklog.FKLogI, userId, toId uint64) (bool, error) {
-	blacklistModel, err := friendmodel.NewBlacklistModel(logger, userId)
+func (s *service) isBlacklist(ctx context.Context, userId, toId uint64) (bool, error) {
+	logger := fklog.ContextAppLogger(ctx)
+	blacklistModel, err := friendmodel.NewBlacklistModel(ctx, userId)
 	if err != nil {
-		logger.ErrorWF("IsBlacklist NewBlacklistModel err", zap.Error(err))
+		logger.CtxError(ctx, "IsBlacklist NewBlacklistModel err", zap.Error(err))
 		return false, err
 	}
 	for _, b := range blacklistModel.Blacklist {

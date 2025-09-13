@@ -25,7 +25,7 @@ func (s *service) AddFriendRequest(ctx context.Context, userId, toId uint64, fro
 
 	sends, err := friendmodel.NewSendFriendRequestModel(ctx, userId)
 	if err != nil {
-		logger.ErrorWF("AddFriendRequest NewSendFriendRequestModel err",
+		logger.CtxError(ctx, "AddFriendRequest NewSendFriendRequestModel err",
 			zap.Uint64("userID", userId),
 			zap.Uint64("toID", toId),
 			zap.Error(err))
@@ -33,7 +33,7 @@ func (s *service) AddFriendRequest(ctx context.Context, userId, toId uint64, fro
 	}
 
 	// 1.是否在我的黑名单中
-	inBlk, err := s.isBlacklist(logger, userId, toId)
+	inBlk, err := s.isBlacklist(ctx, userId, toId)
 	if err != nil {
 		logger.CtxError(ctx, "AddFriendRequest IsBlacklist err", zap.Uint64("userID", userId),
 			zap.Uint64("toID", toId),
@@ -55,7 +55,7 @@ func (s *service) AddFriendRequest(ctx context.Context, userId, toId uint64, fro
 	}
 	// 5.发送给对方
 	if err := s.AddFriendRequestEvent(ctx, toId, userId, from); err != nil {
-		logger.ErrorWF("AddFriendRequestEvent err",
+		logger.CtxError(ctx, "AddFriendRequestEvent err",
 			zap.Uint64("userID", userId),
 			zap.Uint64("toID", toId),
 			zap.Error(err))
@@ -65,7 +65,7 @@ func (s *service) AddFriendRequest(ctx context.Context, userId, toId uint64, fro
 	var applyTime int64
 	// 6.设置已发送好友请求
 	if applyTime, err = s.addSendFriendRequest(logger, sends, userId, toId); err != nil {
-		logger.ErrorWF("AddFriendRequest addSendFriendRequest err",
+		logger.CtxError(ctx, "AddFriendRequest addSendFriendRequest err",
 			zap.Uint64("userID", userId),
 			zap.Uint64("toID", toId),
 			zap.Error(err))
@@ -96,7 +96,7 @@ func (s *service) AddFriendRequest(ctx context.Context, userId, toId uint64, fro
 func (s *service) AddFriendRequestEvent(ctx context.Context, userId, fromId uint64, from int32) error {
 	logger := fklog.ContextAppLogger(ctx)
 	// 是否在我的黑名单中
-	inBlk, err := s.isBlacklist(logger, userId, fromId)
+	inBlk, err := s.isBlacklist(ctx, userId, fromId)
 	if err != nil {
 		logger.CtxError(ctx, "AddFriendRequestEvent isBlacklist err", zap.Error(err))
 		return err
@@ -139,7 +139,7 @@ func (s *service) addReceiveFriendRequest(ctx context.Context, userId, fromId ui
 		From:       from,
 	})
 
-	err = receiveModel.Save(logger, userId)
+	err = receiveModel.Save(ctx, userId)
 	if err != nil {
 		logger.ErrorWF("addReceiveFriendRequest SetReceiveFriendRequest err", zap.Error(err), zap.Uint64("fromId", fromId))
 		return errors.MODULE_ERROR
@@ -195,4 +195,24 @@ func (s *service) IsFriend(friends *friendmodel.FriendModel, toId uint64) bool {
 		}
 	}
 	return false
+}
+
+func (s *service) CheckFriend(ctx context.Context, userID uint64, toID uint64) (bool, error) {
+	logger := fklog.ContextAppLogger(ctx)
+	// 好友列表
+	friends, err := friendmodel.NewFriendModel(ctx, userID)
+	if err != nil {
+		logger.CtxError(ctx, "CheckFriend NewFriendModel err",
+			zap.Uint64("userID", userID),
+			zap.Uint64("toID", toID),
+			zap.Error(err))
+		return false, err
+	}
+
+	for _, friend := range friends.FriendList {
+		if friend.UserId == toID {
+			return true, nil
+		}
+	}
+	return false, nil
 }

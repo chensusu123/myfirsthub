@@ -1,16 +1,19 @@
 package friendservice
 
 import (
-	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fklog"
-	"go.uber.org/zap"
+	"context"
 	"maze_game_server/common/errors"
 	"maze_game_server/model/friendmodel"
+
+	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fklog"
+	"go.uber.org/zap"
 )
 
-func (s *service) RemoveBlacklist(logger fklog.FKLogI, userID, toId uint64) *errors.CodeError {
-	blacklistModel, err := friendmodel.NewBlacklistModel(logger, userID)
+func (s *service) RemoveBlacklist(ctx context.Context, userID, toId uint64) *errors.CodeError {
+	logger := fklog.ContextAppLogger(ctx)
+	blacklistModel, err := friendmodel.NewBlacklistModel(ctx, userID)
 	if err != nil {
-		logger.ErrorWF("RemoveBlacklist GetBlacklist err", zap.Error(err), zap.Uint64("toId", toId))
+		logger.CtxError(ctx, "RemoveBlacklist GetBlacklist err", zap.Error(err), zap.Uint64("toId", toId))
 		return errors.MODULE_ERROR
 	}
 	index := -1
@@ -26,8 +29,8 @@ func (s *service) RemoveBlacklist(logger fklog.FKLogI, userID, toId uint64) *err
 	}
 	blacklistModel.Blacklist = append(blacklistModel.Blacklist[:index], blacklistModel.Blacklist[index+1:]...)
 	// 删除黑名单
-	if err = blacklistModel.Save(logger, userID); err != nil {
-		logger.ErrorWF("RemoveBlacklist SetBlacklist err", zap.Error(err), zap.Uint64("toId", toId))
+	if err = blacklistModel.Save(ctx, userID); err != nil {
+		logger.CtxError(ctx, "RemoveBlacklist SetBlacklist err", zap.Error(err), zap.Uint64("toId", toId))
 		return errors.MODULE_ERROR
 	}
 	return nil
