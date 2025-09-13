@@ -3,6 +3,7 @@ package userprofilemodel
 import (
 	"context"
 	"fmt"
+	"maze_game_server/io"
 	"maze_game_server/io/redis/userprofileredis"
 	"maze_game_server/lib/serialize"
 	"maze_game_server/pb/common/UserProfile"
@@ -43,9 +44,14 @@ type UserProfileModel struct {
 
 type UserProfileModels []*UserProfileModel
 
+func getKey(userID uint64) string {
+	return fmt.Sprintf("user:profile:%d", userID)
+}
+
 func LoadUserProfileModel(ctx context.Context, userID uint64) (um *UserProfileModel, err error) {
 	logger := fklog.ContextAppLogger(ctx)
-	if um, err = load(ctx, userID); err != nil {
+	um = &UserProfileModel{}
+	if err = um.load(ctx, userID); err != nil {
 		logger.CtxError(ctx, "LoadUserProfileModel err",
 			zap.Uint64("userID", userID), zap.Error(err))
 		return nil, err
@@ -80,38 +86,12 @@ func LoadBatchUserProfileModel(ctx context.Context, userIDs []uint64) (um UserPr
 	return
 }
 
-func load(ctx context.Context, userID uint64) (up *UserProfileModel, err error) {
-	logger := fklog.ContextAppLogger(ctx)
-	value, err := userprofileredis.GlobalUserProfileRedis.GetProfile(ctx, userID)
-	if err != nil {
-		logger.CtxError(ctx, "LoadUserProfileModel err",
-			zap.Uint64("userID", userID), zap.Error(err))
-		return nil, err
-	}
-	err = serialize.Unmarshal(value, up)
-	if err != nil {
-		logger.CtxError(ctx, "LoadUserProfileModel err",
-			zap.Uint64("userID", userID), zap.Error(err))
-		return nil, err
-	}
-	return
+func (up *UserProfileModel) load(ctx context.Context, userID uint64) (err error) {
+	return io.LoadSvrData(ctx, getKey(userID), up)
 }
 
 func (up *UserProfileModel) Save(ctx context.Context, userID uint64) (err error) {
-	logger := fklog.ContextAppLogger(ctx)
-	value, err := serialize.Marshal(up)
-	if err != nil {
-		logger.CtxError(ctx, "save Marshal err",
-			zap.Uint64("userID", userID), zap.Error(err))
-		return err
-	}
-	err = userprofileredis.GlobalUserProfileRedis.SetProfile(ctx, userID, value)
-	if err != nil {
-		logger.CtxError(ctx, "save SetProfile err",
-			zap.Uint64("userID", userID), zap.Error(err))
-		return err
-	}
-	return
+	return io.SaveSvrData(ctx, getKey(userID), up)
 }
 
 func (up *UserProfileModel) Delete(ctx context.Context, userID uint64) (err error) {

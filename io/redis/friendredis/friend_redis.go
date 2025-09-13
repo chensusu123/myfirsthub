@@ -140,7 +140,10 @@ func GetFriends(logger fklog.FKLogI, userId uint64) ([]byte, error) {
 	}
 	key := db.MakeSectionKey(getKeyFriends(userId))
 	bytes, err := db.Get(context.TODO(), key).Bytes()
-	if err != nil && err != redis.Nil {
+	if err != nil {
+		if err == redis.Nil {
+			return bytes, nil
+		}
 		logger.ErrorWF("GetFriends get err", zap.String("key", key), zap.Error(err))
 		return nil, err
 	}

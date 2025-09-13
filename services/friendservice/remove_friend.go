@@ -1,5 +1,13 @@
 package friendservice
 
+import (
+	"context"
+	"maze_game_server/model/friendmodel"
+
+	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fklog"
+	"go.uber.org/zap"
+)
+
 // import (
 // 	"context"
 // 	"maze_game_server/common/errors"
@@ -95,60 +103,62 @@ package friendservice
 // 	return nil
 // }
 
-// func (s *service) delReceiveFriendRequestNotGet(logger fklog.FKLogI, receiveModel *friendmodel.ReceiveFriendRequestModel, userId, fromUserId uint64) error {
-// 	var index = -1
-// 	for i, j := range receiveModel.ReceiveList {
-// 		if j.FromUserId == fromUserId {
-// 			index = i
-// 			break
-// 		}
-// 	}
-// 	if index == -1 {
-// 		logger.InfoWF("delReceiveFriendRequestNotGet fromUserId not found", zap.Uint64("fromUserId", fromUserId))
-// 		return nil
-// 	}
-// 	receiveModel.ReceiveList = append(receiveModel.ReceiveList[:index], receiveModel.ReceiveList[index+1:]...)
-// 	if err := receiveModel.Save(logger, userId); err != nil {
-// 		logger.ErrorWF("delReceiveFriendRequestNotGet SetReceiveFriendRequest err", zap.Error(err), zap.Uint64("fromUserId", fromUserId))
-// 		return err
-// 	}
-// 	logger.InfoWF("delReceiveFriendRequestNotGet success", zap.Any("fromUserId", fromUserId))
-// 	return nil
-// }
+func (s *service) delReceiveFriendRequestNotGet(logger fklog.FKLogI, receiveModel *friendmodel.ReceiveFriendRequestModel, userId, fromUserId uint64) error {
+	var index = -1
+	for i, j := range receiveModel.ReceiveList {
+		if j.FromUserId == fromUserId {
+			index = i
+			break
+		}
+	}
+	if index == -1 {
+		logger.InfoWF("delReceiveFriendRequestNotGet fromUserId not found", zap.Uint64("fromUserId", fromUserId))
+		return nil
+	}
+	receiveModel.ReceiveList = append(receiveModel.ReceiveList[:index], receiveModel.ReceiveList[index+1:]...)
+	if err := receiveModel.Save(logger, userId); err != nil {
+		logger.ErrorWF("delReceiveFriendRequestNotGet SetReceiveFriendRequest err", zap.Error(err), zap.Uint64("fromUserId", fromUserId))
+		return err
+	}
+	logger.InfoWF("delReceiveFriendRequestNotGet success", zap.Any("fromUserId", fromUserId))
+	return nil
+}
 
-// func (s *service) delSendFriendRequest(logger fklog.FKLogI, userId, toId uint64) error {
-// 	sendModel, err := friendmodel.NewSendFriendRequestModel(logger, userId)
-// 	if err != nil {
-// 		logger.ErrorWF("delSendFriendRequest GetSendFriendRequest failed", zap.Error(err))
-// 		return err
-// 	}
-// 	if err = s.delSendFriendRequestNotGet(logger, sendModel, userId, toId); err != nil {
-// 		return err
-// 	}
+func (s *service) delSendFriendRequest(ctx context.Context, userId, toId uint64) error {
+	logger := fklog.ContextAppLogger(ctx)
+	sendModel, err := friendmodel.NewSendFriendRequestModel(ctx, userId)
+	if err != nil {
+		logger.CtxError(ctx, "delSendFriendRequest GetSendFriendRequest failed", zap.Error(err))
+		return err
+	}
+	if err = s.delSendFriendRequestNotGet(ctx, sendModel, userId, toId); err != nil {
+		return err
+	}
 
-// 	return nil
-// }
+	return nil
+}
 
-// func (s *service) delSendFriendRequestNotGet(logger fklog.FKLogI, sendModel *friendmodel.SendFriendRequestModel, userId, toId uint64) error {
-// 	var index = -1
-// 	for i, j := range sendModel.SendList {
-// 		if j.ToUserId == toId {
-// 			index = i
-// 			break
-// 		}
-// 	}
-// 	if index == -1 {
-// 		logger.InfoWF("delSendFriendRequest toId not found", zap.Uint64("toId", toId))
-// 		return nil
-// 	}
-// 	sendModel.SendList = append(sendModel.SendList[:index], sendModel.SendList[index+1:]...)
-// 	if err := sendModel.Save(logger, userId); err != nil {
-// 		logger.ErrorWF("delSendFriendRequest SetSendFriendRequest err", zap.Error(err), zap.Uint64("toId", toId))
-// 		return err
-// 	}
-// 	logger.InfoWF("delSendFriendRequest success", zap.Any("toId", toId))
-// 	return nil
-// }
+func (s *service) delSendFriendRequestNotGet(ctx context.Context, sendModel *friendmodel.SendFriendRequestModel, userId, toId uint64) error {
+	logger := fklog.ContextAppLogger(ctx)
+	var index = -1
+	for i, j := range sendModel.SendList {
+		if j.ToUserId == toId {
+			index = i
+			break
+		}
+	}
+	if index == -1 {
+		logger.CtxInfo(ctx, "delSendFriendRequest toId not found", zap.Uint64("toId", toId))
+		return nil
+	}
+	sendModel.SendList = append(sendModel.SendList[:index], sendModel.SendList[index+1:]...)
+	if err := sendModel.Save(logger, userId); err != nil {
+		logger.CtxError(ctx, "delSendFriendRequest SetSendFriendRequest err", zap.Error(err), zap.Uint64("toId", toId))
+		return err
+	}
+	logger.CtxInfo(ctx, "delSendFriendRequest success", zap.Any("toId", toId))
+	return nil
+}
 
 // // 删除用户全部的好友, 发送的申请, 收到的申请, 黑名单
 // func (s *service) DeleteUserAll(logger fklog.FKLogI, userId uint64) error {

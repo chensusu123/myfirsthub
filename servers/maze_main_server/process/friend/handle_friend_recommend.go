@@ -17,6 +17,8 @@ func (f *FriendComponent) OnFriendListRecommend_10711_10712(s *session.Session, 
 	ctx := s.Context()
 	logger := fklog.ContextAppLogger(ctx)
 	res := &Friend.FriendListRecommendRS{}
+	res.Header = req.Header
+	res.ErrInfo = errors.NO_ERROR
 
 	logger.CtxInfo(ctx, "OnFriendListRecommend start", zap.Any("req", req))
 	defer func() {
@@ -33,6 +35,10 @@ func (f *FriendComponent) OnFriendListRecommend_10711_10712(s *session.Session, 
 		res.ErrInfo = errors.COMMON_ERROR_TIPS.ToInfo()
 		return
 	}
+
+	logger.CtxInfo(ctx, "OnFriendListRecommend FriendRecommend Successful",
+		zap.Any("recommendUsers", recommendUsers),
+	)
 
 	for _, recommendUser := range recommendUsers {
 		nowUserProfile, err := userprofileservice.GlobalUserProfileService.GetUserProfile(ctx, recommendUser)
@@ -51,7 +57,10 @@ func (f *FriendComponent) OnFriendListRecommend_10711_10712(s *session.Session, 
 			UserGender: proto.Int32(nowUserProfile.Sex),
 			AvaterUrl:  proto.String(nowUserProfile.Avatar),
 		})
+		logger.CtxInfo(ctx, "OnFriendListRecommend res append data",
+			zap.Any("res", res),
+		)
 	}
 
-	return
+	return nil
 }
