@@ -43,20 +43,20 @@ import (
 // 	return nil
 // }
 
-func (s *service) RefuseFriendApply(ctx context.Context, userID uint64, toID []uint64) error {
+func (s *service) RefuseFriendApply(ctx context.Context, userID uint64, toID []int64) (rs []*friendmodel.ReceiveFriendRequestInfo, err error) {
 	logger := fklog.ContextAppLogger(ctx)
 	// 检查有没有收到过好友请求
 	receiveModel, err := friendmodel.NewReceiveFriendRequestModel(ctx, userID)
 	if err != nil {
 		logger.CtxError(ctx, "RefuseFriendApply GetReceiveFriendRequest err", zap.Error(err))
-		return err
+		return
 	}
 
 	// toID 可靠性校验
 	for _, realyID := range toID {
 		index := -1
 		for j, i := range receiveModel.ReceiveList {
-			if i.FromUserId == realyID {
+			if i.FromUserId == uint64(realyID) {
 				index = j
 				break
 			}
@@ -72,14 +72,14 @@ func (s *service) RefuseFriendApply(ctx context.Context, userID uint64, toID []u
 		}
 
 		// 通知对方拒绝 todo
-		if codeErr := s.RejectFriendRequestEvent(ctx, realyID, userID); codeErr != nil {
+		if codeErr := s.RejectFriendRequestEvent(ctx, uint64(realyID), userID); codeErr != nil {
 			logger.CtxError(ctx, "RejectFriendRequestEvent err", zap.Error(codeErr))
-			return codeErr
+			return
 		}
 
 		receiveModel.ReceiveList = append(receiveModel.ReceiveList[:index], receiveModel.ReceiveList[index+1:]...)
 	}
-	return nil
+	return
 }
 
 // 收到拒绝好友请求事件

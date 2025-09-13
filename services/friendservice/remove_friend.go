@@ -153,7 +153,7 @@ func (s *service) delSendFriendRequestNotGet(ctx context.Context, sendModel *fri
 		return nil
 	}
 	sendModel.SendList = append(sendModel.SendList[:index], sendModel.SendList[index+1:]...)
-	if err := sendModel.Save(logger, userId); err != nil {
+	if err := sendModel.Save(ctx, userId); err != nil {
 		logger.CtxError(ctx, "delSendFriendRequest SetSendFriendRequest err", zap.Error(err), zap.Uint64("toId", toId))
 		return err
 	}

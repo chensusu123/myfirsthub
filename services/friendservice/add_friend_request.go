@@ -64,7 +64,7 @@ func (s *service) AddFriendRequest(ctx context.Context, userId, toId uint64, fro
 
 	var applyTime int64
 	// 6.设置已发送好友请求
-	if applyTime, err = s.addSendFriendRequest(logger, sends, userId, toId); err != nil {
+	if applyTime, err = s.addSendFriendRequest(ctx, sends, userId, toId); err != nil {
 		logger.CtxError(ctx, "AddFriendRequest addSendFriendRequest err",
 			zap.Uint64("userID", userId),
 			zap.Uint64("toID", toId),
@@ -172,16 +172,17 @@ func (s *service) checkRepeatSendFriendRequest(sendModel *friendmodel.SendFriend
 }
 
 // 设置好友请求
-func (s *service) addSendFriendRequest(logger fklog.FKLogI, sendModel *friendmodel.SendFriendRequestModel, userId, toUserId uint64) (applyTime int64, err error) {
+func (s *service) addSendFriendRequest(ctx context.Context, sendModel *friendmodel.SendFriendRequestModel, userId, toUserId uint64) (applyTime int64, err error) {
+	logger := fklog.ContextAppLogger(ctx)
 	nowTime := time.Now()
 	sendModel.SendList = append(sendModel.SendList, &friendmodel.SendFriendRequestInfo{
 		ToUserId: toUserId,
 		CreateAt: nowTime.UnixMilli(),
 	})
 
-	err = sendModel.Save(logger, userId)
+	err = sendModel.Save(ctx, userId)
 	if err != nil {
-		logger.ErrorWF("addSendFriendRequest err", zap.Error(err))
+		logger.CtxError(ctx, "addSendFriendRequest err", zap.Error(err))
 		return 0, err
 	}
 	return nowTime.UnixMilli(), nil

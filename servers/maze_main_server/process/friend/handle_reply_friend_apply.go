@@ -30,17 +30,22 @@ func (f *FriendComponent) OnReplyFriendApply_10697_10698(s *session.Session, req
 
 	toID := req.GetUserId()
 
-	agreeUserList := make([]*friendmodel.ReceiveFriendRequestInfo, 0)
+	handlerUserList := make([]*friendmodel.ReceiveFriendRequestInfo, 0)
 	switch req.GetReplyResult() {
 	case int32(Friend.REPLY_FRIEND_APPLY_RESULT_AGREE):
-		agreeUserList, err = friendservice.GlobalFriendService.AgreeFriendApply(ctx, userId, toID)
+		handlerUserList, err = friendservice.GlobalFriendService.AgreeFriendApply(ctx, userId, toID)
 		if err != nil {
 			logger.CtxError(ctx, "OnReplyFriendApply AgreeFriendApply failed", zap.Error(err), zap.Any("toID", toID))
 			res.ErrInfo = errors.COMMON_ERROR_TIPS.ToInfo()
 			return err
 		}
 	case int32(Friend.REPLY_FRIEND_APPLY_RESULT_REFUSE):
-
+		handlerUserList, err = friendservice.GlobalFriendService.RefuseFriendApply(ctx, userId, toID)
+		if err != nil {
+			logger.CtxError(ctx, "OnReplyFriendApply AgreeFriendApply failed", zap.Error(err), zap.Any("toID", toID))
+			res.ErrInfo = errors.COMMON_ERROR_TIPS.ToInfo()
+			return err
+		}
 	}
 
 	nowUserProfile, err := userprofileservice.GlobalUserProfileService.GetUserProfile(ctx, userId)
@@ -55,7 +60,7 @@ func (f *FriendComponent) OnReplyFriendApply_10697_10698(s *session.Session, req
 
 	applyID := &Friend.FriendApplyID{}
 	// 推请求处理包
-	for _, handlerUser := range agreeUserList {
+	for _, handlerUser := range handlerUserList {
 		userProfile, err := userprofileservice.GlobalUserProfileService.GetUserProfile(ctx, handlerUser.FromUserId)
 		if err != nil {
 			logger.CtxError(ctx, "OnReplyFriendApply GetUserProfile Fail",
@@ -72,8 +77,14 @@ func (f *FriendComponent) OnReplyFriendApply_10697_10698(s *session.Session, req
 				AvaterUrl:  proto.String(userProfile.Avatar),
 			},
 			CreateTime:  proto.Int64(handlerUser.CreateAt),
-			ReplyResult: proto.Int32(int32(Friend.REPLY_FRIEND_APPLY_RESULT_AGREE)),
+			ReplyResult: proto.Int32(req.GetReplyResult()),
 			From:        proto.Int32(handlerUser.From),
+		}
+
+		if req.GetReplyResult() == int32(Friend.REPLY_FRIEND_APPLY_RESULT_AGREE) {
+
+		} else {
+
 		}
 
 		applyID.DelReceiveInfo = append(applyID.DelReceiveInfo, &Friend.ReceiveInfo{

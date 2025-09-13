@@ -33,7 +33,7 @@ type FriendService interface {
 	// 批量同意好友请求
 	AgreeFriendApply(ctx context.Context, userID uint64, toID []int64) (rs []*friendmodel.ReceiveFriendRequestInfo, err error)
 	// 批量拒绝好友请求
-	RefuseFriendApply(ctx context.Context, userID uint64, toID []uint64) error
+	RefuseFriendApply(ctx context.Context, userID uint64, toID []int64) (rs []*friendmodel.ReceiveFriendRequestInfo, err error)
 
 	// 好友推荐
 	FriendRecommend(ctx context.Context, userID uint64, pageSize int32) ([]uint64, error)

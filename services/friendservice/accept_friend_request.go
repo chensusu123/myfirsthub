@@ -174,17 +174,17 @@ func (s *service) addFriend(ctx context.Context, friendModel *friendmodel.Friend
 }
 
 // 收到同意好友请求事件, 已经是好友了将忽略错误
-func (s *service) AcceptFriendRequestEvent(ctx context.Context, userId, fromId uint64) *errors.CodeError {
+func (s *service) AcceptFriendRequestEvent(ctx context.Context, userId, fromId uint64) error {
 	logger := fklog.ContextAppLogger(ctx)
 	// 好友列表
 	friendModel, err := friendmodel.NewFriendModel(ctx, userId)
 	if err != nil {
 		logger.CtxError(ctx, "AcceptFriendRequestEvent GetFriends err", zap.Error(err))
-		return errors.MODULE_ERROR
+		return err
 	}
 	sendModel, err := friendmodel.NewSendFriendRequestModel(ctx, userId)
 	if err != nil {
-		return errors.MODULE_ERROR
+		return err
 	}
 
 	index := -1
@@ -196,9 +196,9 @@ func (s *service) AcceptFriendRequestEvent(ctx context.Context, userId, fromId u
 	}
 	if index != -1 {
 		sendModel.SendList = append(sendModel.SendList[:index], sendModel.SendList[index+1:]...)
-		if err = sendModel.Save(logger, userId); err != nil {
+		if err = sendModel.Save(ctx, userId); err != nil {
 			logger.CtxError(ctx, "AcceptFriendRequestEvent SetSendFriendRequest err", zap.Error(err))
-			return errors.MODULE_ERROR
+			return err
 		}
 	}
 
@@ -209,7 +209,7 @@ func (s *service) AcceptFriendRequestEvent(ctx context.Context, userId, fromId u
 	// 设置好友
 	if err = s.addFriend(ctx, friendModel, userId, fromId); err != nil {
 		logger.CtxError(ctx, "AcceptFriendRequestEvent addFriend err", zap.Error(err))
-		return errors.MODULE_ERROR
+		return err
 	}
 	logger.CtxInfo(ctx, "AcceptFriendRequestEvent success", zap.Uint64("userId", userId), zap.Uint64("fromId", fromId))
 	return nil
