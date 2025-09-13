@@ -118,7 +118,6 @@ func (g *Game) OnMazeBarrierEnterRQ_10447_10448(s *session.Session, req *MazeGam
 
 	//	res.Energy = proto.Int32(userInfo.Energy)
 	var isNewBarrier bool
-	storageInfo, _ := syncmazestorageinforedis.GetSyncMazeStorageInfo(ctx, userId, req.GetBarrierId())
 
 	// 获取存档数据 new
 	saveData, err := barriersavedataservice.GlobalBarrierSaveDataService.GetBarrierSaveData(ctx, userId, req.GetBarrierId())
@@ -127,34 +126,32 @@ func (g *Game) OnMazeBarrierEnterRQ_10447_10448(s *session.Session, req *MazeGam
 		res.ErrInfo = errors.MODULE_ERROR.ToInfo()
 		return err
 	}
-	if storageInfo != nil || saveData.StageId != 0 {
-		// 有存档的情况需要检查三选一是否有问题
-		tempBuff, err := tempbuffservice.GlobalTempBuffService.CheckTempBuff(ctx, userId, req.GetBarrierId(), saveData.StageId)
-		if err != nil {
-			logger.CtxError(ctx, "OnMazeBarrierEnterRQ checkTempBuff", zap.Error(err))
-			res.ErrInfo = errors.MODULE_ERROR.ToInfo()
-			return err
-		}
-		if tempBuff != nil && tempBuff.BuffSequence != nil {
-			res.EnergyLevel = proto.Int32(tempBuff.BuffSequence.Level)
-		}
 
-		// 有存档的情况需要把未通过的区域杀怪记录删除
-		err = barrierstagecounterservice.GlobalBarrierStageCounterService.DelBarrierStageCounter(ctx, userId, req.GetBarrierId(), saveData.StageId)
-		if err != nil {
-			logger.CtxError(ctx, "OnMazeBarrierEnterRQ DelBarrierAreaRecord fail", zap.Error(err))
-			res.ErrInfo = errors.MODULE_ERROR.ToInfo()
-			return err
-		}
+	// 有存档的情况需要检查三选一是否有问题
+	tempBuff, err := tempbuffservice.GlobalTempBuffService.CheckTempBuff(ctx, userId, req.GetBarrierId(), saveData.StageId)
+	if err != nil {
+		logger.CtxError(ctx, "OnMazeBarrierEnterRQ checkTempBuff", zap.Error(err))
+		res.ErrInfo = errors.MODULE_ERROR.ToInfo()
+		return err
+	}
+	if tempBuff != nil && tempBuff.BuffSequence != nil {
+		res.EnergyLevel = proto.Int32(tempBuff.BuffSequence.Level)
+	}
 
-		// 存档的情况需要buff能力点存储删除
-		err = tempbuffservice.GlobalTempBuffService.ClearBuffCountingPoints(ctx, userId, req.GetBarrierId(), saveData.StageId)
-		if err != nil {
-			logger.CtxError(ctx, "OnMazeBarrierEnterRQ ClearBuffCountingPoints fail", zap.Error(err))
-			res.ErrInfo = errors.MODULE_ERROR.ToInfo()
-			return err
-		}
+	// 有存档的情况需要把未通过的区域杀怪记录删除
+	err = barrierstagecounterservice.GlobalBarrierStageCounterService.DelBarrierStageCounter(ctx, userId, req.GetBarrierId(), saveData.StageId)
+	if err != nil {
+		logger.CtxError(ctx, "OnMazeBarrierEnterRQ DelBarrierAreaRecord fail", zap.Error(err))
+		res.ErrInfo = errors.MODULE_ERROR.ToInfo()
+		return err
+	}
 
+	// 存档的情况需要buff能力点存储删除
+	err = tempbuffservice.GlobalTempBuffService.ClearBuffCountingPoints(ctx, userId, req.GetBarrierId(), saveData.StageId)
+	if err != nil {
+		logger.CtxError(ctx, "OnMazeBarrierEnterRQ ClearBuffCountingPoints fail", zap.Error(err))
+		res.ErrInfo = errors.MODULE_ERROR.ToInfo()
+		return err
 	}
 
 	rescueItems := make([]*MazeGame.RescueItemInfo, 0, len(saveData.RescueItems))
