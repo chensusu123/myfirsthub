@@ -52,7 +52,13 @@ func (s *service) FriendRecommend(ctx context.Context, userID uint64, pageSize i
 		if len(res) == int(pageSize) {
 			break
 		}
+
 		isPass := false
+
+		if nowID == userID {
+			isPass = true
+		}
+
 		for _, friendInfo := range friendModel.FriendList {
 			if nowID == friendInfo.UserId {
 				isPass = true
