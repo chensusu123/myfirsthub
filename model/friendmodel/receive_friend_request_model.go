@@ -19,7 +19,10 @@ type ReceiveFriendRequestModel struct {
 }
 
 // 待处理好友请求key
-var KeyReceiveFriendRequest = "friend:receive:%d"
+var (
+	KeyReceiveFriendRequest = "friend:receive:%d"
+	ReceivePage             = 10
+)
 
 func getKeyReceiveFriendRequest(userId uint64) string {
 	return fmt.Sprintf(KeyReceiveFriendRequest, userId)
