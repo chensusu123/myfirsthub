@@ -8,6 +8,7 @@ import (
 	"maze_game_server/services/friendservice"
 	"maze_game_server/services/userprofileservice"
 	"maze_game_server/usecase/online"
+	"time"
 
 	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fklog"
 	"go.uber.org/zap"
@@ -67,16 +68,19 @@ func (f *FriendComponent) OnReplyFriendApply_10697_10698(s *session.Session, req
 			)
 			continue
 		}
-		pushMsg := &Friend.FriendApplyResultID{
-			UserInfo: &Friend.User{
-				UserId:     proto.Int64(int64(userId)),
-				UserName:   proto.String(nowUserProfile.NickName),
-				UserGender: proto.Int32(nowUserProfile.Sex),
-				AvaterUrl:  proto.String(nowUserProfile.Avatar),
+		pushMsg := &Friend.FriendListChangeID{
+			AddFriendList: []*Friend.FriendInfo{
+				{
+					UserInfo: &Friend.User{
+						UserId:     proto.Int64(int64(userId)),
+						UserName:   proto.String(nowUserProfile.NickName),
+						UserGender: proto.Int32(nowUserProfile.Sex),
+						AvaterUrl:  proto.String(nowUserProfile.Avatar),
+					},
+					FriendType: proto.Int32(req.GetReplyResult()),
+					AddTime:    proto.Int64(time.Now().UnixMilli()),
+				},
 			},
-			CreateTime:  proto.Int64(handlerUser.CreateAt),
-			ReplyResult: proto.Int32(req.GetReplyResult()),
-			From:        proto.Int32(handlerUser.From),
 		}
 
 		applyID.DelReceiveInfo = append(applyID.DelReceiveInfo, &Friend.ReceiveInfo{
@@ -92,21 +96,24 @@ func (f *FriendComponent) OnReplyFriendApply_10697_10698(s *session.Session, req
 
 		res.UserId = append(res.UserId, int64(handlerUser.FromUserId))
 		// 告诉对方好友列表变化
-		online.ClusterPush(ctx, handlerUser.FromUserId, 10699, pushMsg)
+		online.ClusterPush(ctx, handlerUser.FromUserId, 10708, pushMsg)
 
 		// 告诉自己好友列表变化
-		handlerUserMsg := &Friend.FriendApplyResultID{
-			UserInfo: &Friend.User{
-				UserId:     proto.Int64(int64(handlerUser.FromUserId)),
-				UserName:   proto.String(userProfile.NickName),
-				UserGender: proto.Int32(userProfile.Sex),
-				AvaterUrl:  proto.String(userProfile.Avatar),
+		handlerUserMsg := &Friend.FriendListChangeID{
+			AddFriendList: []*Friend.FriendInfo{
+				{
+					UserInfo: &Friend.User{
+						UserId:     proto.Int64(int64(handlerUser.FromUserId)),
+						UserName:   proto.String(userProfile.NickName),
+						UserGender: proto.Int32(userProfile.Sex),
+						AvaterUrl:  proto.String(userProfile.Avatar),
+					},
+					FriendType: proto.Int32(req.GetReplyResult()),
+					AddTime:    proto.Int64(time.Now().UnixMilli()),
+				},
 			},
-			CreateTime:  proto.Int64(handlerUser.CreateAt),
-			ReplyResult: proto.Int32(req.GetReplyResult()),
-			From:        proto.Int32(handlerUser.From),
 		}
-		online.ClusterPush(ctx, userId, 10699, handlerUserMsg)
+		online.ClusterPush(ctx, userId, 10708, handlerUserMsg)
 	}
 
 	if len(handlerUserList) != 0 {
