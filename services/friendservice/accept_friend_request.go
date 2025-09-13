@@ -132,17 +132,17 @@ func (s *service) AgreeFriendApply(ctx context.Context, userID uint64, toID []in
 			// 把对方的发送也删掉
 			s.delSendFriendRequestEvent(ctx, uint64(realyID), userID)
 			// 忽略错误 已经是好友了就把收到的申请删掉
-			s.delReceiveFriendRequestNotGet(logger, receiveModel, userID, uint64(realyID))
+			s.delReceiveFriendRequestNotGet(ctx, receiveModel, userID, uint64(realyID))
 		}
 
 		// 4.通知同意好友申请 todo
 		if err = s.AcceptFriendRequestEvent(ctx, uint64(realyID), userID); err != nil {
-			logger.ErrorWF("AgreeFriendApply err", zap.Error(err), zap.Uint64("realyID", uint64(realyID)))
+			logger.CtxError(ctx, "AgreeFriendApply err", zap.Error(err), zap.Uint64("realyID", uint64(realyID)))
 			return
 		}
 		// 5.设置好友
 		if err = s.addFriend(ctx, friendModel, userID, uint64(realyID)); err != nil {
-			logger.ErrorWF("AgreeFriendApply addFriend err", zap.Error(err))
+			logger.CtxError(ctx, "AgreeFriendApply addFriend err", zap.Error(err))
 			return
 		}
 		// 6.删除收到的申请
@@ -150,9 +150,9 @@ func (s *service) AgreeFriendApply(ctx context.Context, userID uint64, toID []in
 		rs = append(rs, request)
 	}
 
-	err = receiveModel.Save(logger, userID)
+	err = receiveModel.Save(ctx, userID)
 	if err != nil {
-		logger.ErrorWF("AgreeFriendApply SetReceiveFriendRequest err", zap.Error(err))
+		logger.CtxError(ctx, "AgreeFriendApply SetReceiveFriendRequest err", zap.Error(err))
 		return
 	}
 	return
@@ -166,10 +166,10 @@ func (s *service) addFriend(ctx context.Context, friendModel *friendmodel.Friend
 	})
 	err := friendModel.Save(ctx, userId)
 	if err != nil {
-		logger.ErrorWF("addFriend SetFriends failed", zap.Error(err))
+		logger.CtxError(ctx, "addFriend SetFriends failed", zap.Error(err))
 		return errors.MODULE_ERROR
 	}
-	logger.InfoWF("addFriend success", zap.Uint64("userId", userId), zap.Uint64("toId", toID))
+	logger.CtxInfo(ctx, "addFriend success", zap.Uint64("userId", userId), zap.Uint64("toId", toID))
 	return nil
 }
 
@@ -179,7 +179,7 @@ func (s *service) AcceptFriendRequestEvent(ctx context.Context, userId, fromId u
 	// 好友列表
 	friendModel, err := friendmodel.NewFriendModel(ctx, userId)
 	if err != nil {
-		logger.ErrorWF("AcceptFriendRequestEvent GetFriends err", zap.Error(err))
+		logger.CtxError(ctx, "AcceptFriendRequestEvent GetFriends err", zap.Error(err))
 		return errors.MODULE_ERROR
 	}
 	sendModel, err := friendmodel.NewSendFriendRequestModel(ctx, userId)
@@ -197,21 +197,21 @@ func (s *service) AcceptFriendRequestEvent(ctx context.Context, userId, fromId u
 	if index != -1 {
 		sendModel.SendList = append(sendModel.SendList[:index], sendModel.SendList[index+1:]...)
 		if err = sendModel.Save(logger, userId); err != nil {
-			logger.ErrorWF("AcceptFriendRequestEvent SetSendFriendRequest err", zap.Error(err))
+			logger.CtxError(ctx, "AcceptFriendRequestEvent SetSendFriendRequest err", zap.Error(err))
 			return errors.MODULE_ERROR
 		}
 	}
 
 	if isFriend := s.IsFriend(friendModel, fromId); isFriend {
-		logger.WarnWF("AcceptFriendRequestEvent 对方已经是你的好友了")
+		logger.CtxWarn(ctx, "AcceptFriendRequestEvent 对方已经是你的好友了")
 		return nil
 	}
 	// 设置好友
 	if err = s.addFriend(ctx, friendModel, userId, fromId); err != nil {
-		logger.ErrorWF("AcceptFriendRequestEvent addFriend err", zap.Error(err))
+		logger.CtxError(ctx, "AcceptFriendRequestEvent addFriend err", zap.Error(err))
 		return errors.MODULE_ERROR
 	}
-	logger.InfoWF("AcceptFriendRequestEvent success", zap.Uint64("userId", userId), zap.Uint64("fromId", fromId))
+	logger.CtxInfo(ctx, "AcceptFriendRequestEvent success", zap.Uint64("userId", userId), zap.Uint64("fromId", fromId))
 	return nil
 }
 

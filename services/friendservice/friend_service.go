@@ -37,6 +37,8 @@ type FriendService interface {
 
 	// 好友推荐
 	FriendRecommend(ctx context.Context, userID uint64, pageSize int32) ([]uint64, error)
+	// 检测是否是好友
+	CheckFriend(ctx context.Context, userID uint64, toID uint64) (bool, error)
 }
 
 // GlobalFriendService 好友服务可用全局唯一对象

@@ -103,7 +103,8 @@ import (
 // 	return nil
 // }
 
-func (s *service) delReceiveFriendRequestNotGet(logger fklog.FKLogI, receiveModel *friendmodel.ReceiveFriendRequestModel, userId, fromUserId uint64) error {
+func (s *service) delReceiveFriendRequestNotGet(ctx context.Context, receiveModel *friendmodel.ReceiveFriendRequestModel, userId, fromUserId uint64) error {
+	logger := fklog.ContextAppLogger(ctx)
 	var index = -1
 	for i, j := range receiveModel.ReceiveList {
 		if j.FromUserId == fromUserId {
@@ -116,7 +117,7 @@ func (s *service) delReceiveFriendRequestNotGet(logger fklog.FKLogI, receiveMode
 		return nil
 	}
 	receiveModel.ReceiveList = append(receiveModel.ReceiveList[:index], receiveModel.ReceiveList[index+1:]...)
-	if err := receiveModel.Save(logger, userId); err != nil {
+	if err := receiveModel.Save(ctx, userId); err != nil {
 		logger.ErrorWF("delReceiveFriendRequestNotGet SetReceiveFriendRequest err", zap.Error(err), zap.Uint64("fromUserId", fromUserId))
 		return err
 	}
