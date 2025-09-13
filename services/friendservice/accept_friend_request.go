@@ -2,6 +2,7 @@ package friendservice
 
 import (
 	"context"
+	"fmt"
 	"maze_game_server/common/errors"
 	"maze_game_server/model/friendmodel"
 	"time"
@@ -124,6 +125,7 @@ func (s *service) AgreeFriendApply(ctx context.Context, userID uint64, toID []in
 				zap.Any("userID", userID),
 				zap.Any("toID", toID),
 			)
+			err = fmt.Errorf("好友关系不存在")
 			continue
 		}
 
@@ -136,12 +138,12 @@ func (s *service) AgreeFriendApply(ctx context.Context, userID uint64, toID []in
 		}
 
 		// 4.通知同意好友申请 todo
-		if err = s.AcceptFriendRequestEvent(ctx, uint64(realyID), userID); err != nil {
+		if err = s.AcceptFriendRequestEvent(ctx, uint64(realyID), userID, request.From); err != nil {
 			logger.CtxError(ctx, "AgreeFriendApply err", zap.Error(err), zap.Uint64("realyID", uint64(realyID)))
 			return
 		}
 		// 5.设置好友
-		if err = s.addFriend(ctx, friendModel, userID, uint64(realyID)); err != nil {
+		if err = s.addFriend(ctx, friendModel, userID, uint64(realyID), request.From); err != nil {
 			logger.CtxError(ctx, "AgreeFriendApply addFriend err", zap.Error(err))
 			return
 		}
@@ -158,11 +160,12 @@ func (s *service) AgreeFriendApply(ctx context.Context, userID uint64, toID []in
 	return
 }
 
-func (s *service) addFriend(ctx context.Context, friendModel *friendmodel.FriendModel, userId, toID uint64) error {
+func (s *service) addFriend(ctx context.Context, friendModel *friendmodel.FriendModel, userId, toID uint64, from int32) error {
 	logger := fklog.ContextAppLogger(ctx)
 	friendModel.FriendList = append(friendModel.FriendList, &friendmodel.FriendInfo{
-		UserId:   toID,
-		CreateAt: time.Now().UnixMilli(),
+		UserId:     toID,
+		FriendType: from,
+		CreateAt:   time.Now().UnixMilli(),
 	})
 	err := friendModel.Save(ctx, userId)
 	if err != nil {
@@ -174,7 +177,7 @@ func (s *service) addFriend(ctx context.Context, friendModel *friendmodel.Friend
 }
 
 // 收到同意好友请求事件, 已经是好友了将忽略错误
-func (s *service) AcceptFriendRequestEvent(ctx context.Context, userId, fromId uint64) error {
+func (s *service) AcceptFriendRequestEvent(ctx context.Context, userId, fromId uint64, from int32) error {
 	logger := fklog.ContextAppLogger(ctx)
 	// 好友列表
 	friendModel, err := friendmodel.NewFriendModel(ctx, userId)
@@ -207,7 +210,7 @@ func (s *service) AcceptFriendRequestEvent(ctx context.Context, userId, fromId u
 		return nil
 	}
 	// 设置好友
-	if err = s.addFriend(ctx, friendModel, userId, fromId); err != nil {
+	if err = s.addFriend(ctx, friendModel, userId, fromId, from); err != nil {
 		logger.CtxError(ctx, "AcceptFriendRequestEvent addFriend err", zap.Error(err))
 		return err
 	}
