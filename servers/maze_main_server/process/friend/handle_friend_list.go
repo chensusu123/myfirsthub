@@ -6,7 +6,6 @@ import (
 	"maze_game_server/pb/common/Friend"
 	"maze_game_server/services/friendservice"
 	"maze_game_server/services/userprofileservice"
-	"time"
 
 	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fklog"
 	"go.uber.org/zap"
@@ -64,21 +63,6 @@ func (f *FriendComponent) OnFriendList_10704_10705(s *session.Session, req *Frie
 			FriendType: proto.Int32(friend.FriendType),
 			AddTime:    proto.Int64(friend.CreateAt),
 		})
-	}
-
-	if len(res.FriendList) == 0 {
-		for i := 10010; i <= 10020; i++ {
-			res.FriendList = append(res.FriendList, &Friend.FriendInfo{
-				UserInfo: &Friend.User{
-					UserId:     proto.Int64(int64(i)),
-					UserName:   proto.String("爱地牢"),
-					UserGender: proto.Int32(1),
-					AvaterUrl:  proto.String(""),
-				},
-				FriendType: proto.Int32(1),
-				AddTime:    proto.Int64(time.Now().UnixMilli()),
-			})
-		}
 	}
 
 	return nil
