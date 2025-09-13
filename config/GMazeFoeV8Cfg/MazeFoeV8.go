@@ -52,6 +52,7 @@ type MazeFoeV8ConfigRow struct {
 	Attacked_back_range_after    int32           `json:"attacked_back_range_after"`    // 被击退距离系数（破除韧性后）（万分比）
 	Threat_value                 int32           `json:"threat_value"`                 // 威胁值
 	Arrow_threat_value           int32           `json:"arrow_threat_value"`           // 远程威胁值
+	Extra_attr_list              []int32         `json:"extra_attr_list"`              // 额外属性id列表
 }
 
 // MazeFoeV8Config from maze_foe_v8【迷宫-敌人信息】.xlsx maze_foe_v8
@@ -879,6 +880,25 @@ func (*gMazeFoeV8Parser) Parse(logger fklog.FKLogI, data []string, row interface
 		}
 		config.Arrow_threat_value = int32(tmp)
 	}
+
+	// parse column 37 extra_attr_list : 额外属性id列表
+	if data[37] != "" {
+
+		vals := strings.Split(data[37], ",")
+		for k, v := range vals {
+			tmp, err = strconv.ParseInt(v, 10, 64)
+			if err != nil {
+				err = errors.New("parse array field extra_attr_list 额外属性id列表 to []int32 failed")
+				logger.ErrorWF("parse array field extra_attr_list 额外属性id列表 to []int32 failed.",
+					zap.String("xlsx", "maze_foe_v8【迷宫-敌人信息】.xlsx"), zap.String("sheet", "maze_foe_v8"),
+					// zap.String("field_data",data[37]),
+					zap.String("parse_data", v), zap.Int("index", k),
+					zap.Error(err))
+				return
+			}
+			config.Extra_attr_list = append(config.Extra_attr_list, int32(tmp))
+		}
+	}
 	return
 }
 
@@ -920,6 +940,7 @@ var gMazeFoeV8Fields = []string{
 	"attacked_back_range_after",
 	"threat_value",
 	"arrow_threat_value",
+	"extra_attr_list",
 }
 
 // LoadDataManual load data for test
