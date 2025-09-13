@@ -36,6 +36,10 @@ func (f *FriendComponent) OnFriendListRecommend_10711_10712(s *session.Session, 
 		return
 	}
 
+	logger.CtxInfo(ctx, "OnFriendListRecommend FriendRecommend Successful",
+		zap.Any("recommendUsers", recommendUsers),
+	)
+
 	for _, recommendUser := range recommendUsers {
 		nowUserProfile, err := userprofileservice.GlobalUserProfileService.GetUserProfile(ctx, recommendUser)
 		if err != nil {
@@ -53,7 +57,10 @@ func (f *FriendComponent) OnFriendListRecommend_10711_10712(s *session.Session, 
 			UserGender: proto.Int32(nowUserProfile.Sex),
 			AvaterUrl:  proto.String(nowUserProfile.Avatar),
 		})
+		logger.CtxInfo(ctx, "OnFriendListRecommend res append data",
+			zap.Any("res", res),
+		)
 	}
 
-	return
+	return nil
 }
