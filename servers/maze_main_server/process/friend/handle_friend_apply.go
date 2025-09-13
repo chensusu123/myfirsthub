@@ -59,7 +59,7 @@ func (f *FriendComponent) OnFriendApply_10694_10695(s *session.Session, req *Fri
 		AddReceiveInfo: []*Friend.ReceiveInfo{
 			{
 				UserInfo: &Friend.User{
-					UserId:     proto.Int64(int64(toID)),
+					UserId:     proto.Int64(s.UID()),
 					UserName:   proto.String(userProfiel.NickName),
 					UserGender: proto.Int32(userProfiel.Sex),
 					AvaterUrl:  proto.String(userProfiel.Avatar),

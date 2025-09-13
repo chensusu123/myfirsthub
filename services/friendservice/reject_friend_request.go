@@ -2,6 +2,7 @@ package friendservice
 
 import (
 	"context"
+	"fmt"
 	"maze_game_server/common/errors"
 	"maze_game_server/model/friendmodel"
 
@@ -54,6 +55,7 @@ func (s *service) RefuseFriendApply(ctx context.Context, userID uint64, toID []i
 
 	// toID 可靠性校验
 	for _, realyID := range toID {
+		var result *friendmodel.ReceiveFriendRequestInfo
 		index := -1
 		for j, i := range receiveModel.ReceiveList {
 			if i.FromUserId == uint64(realyID) {
@@ -68,6 +70,7 @@ func (s *service) RefuseFriendApply(ctx context.Context, userID uint64, toID []i
 				zap.Any("userID", userID),
 				zap.Any("toID", realyID),
 			)
+			err = fmt.Errorf("好友关系不存在")
 			continue
 		}
 
@@ -76,7 +79,7 @@ func (s *service) RefuseFriendApply(ctx context.Context, userID uint64, toID []i
 			logger.CtxError(ctx, "RejectFriendRequestEvent err", zap.Error(codeErr))
 			return
 		}
-
+		rs = append(rs, result)
 		receiveModel.ReceiveList = append(receiveModel.ReceiveList[:index], receiveModel.ReceiveList[index+1:]...)
 	}
 	return
