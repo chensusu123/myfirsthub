@@ -7,8 +7,8 @@ import (
 
 // 外部系统可调用方法
 type FriendService interface {
-	// // 好友请求
-	// AddFriendRequest(ctx context.Context, fromID, toID uint64) error
+	// 好友请求
+	AddFriendRequest(ctx context.Context, userId, toId uint64, from int32) (int64, error)
 	// // // 同意好友请求   同意后会把双方的申请记录删除
 	// // AcceptFriendRequest(logger fklog.FKLogI, userId, toID uint64) *errors.CodeError
 	// // 拒绝好友请求   拒绝后能看见拒绝信息
@@ -31,7 +31,7 @@ type FriendService interface {
 	// DeleteUserAll(logger fklog.FKLogI, userId uint64) error
 
 	// 批量同意好友请求
-	AgreeFriendApply(ctx context.Context, userID uint64, toID []uint64) error
+	AgreeFriendApply(ctx context.Context, userID uint64, toID []int64) (rs []*friendmodel.ReceiveFriendRequestInfo, err error)
 	// 批量拒绝好友请求
 	RefuseFriendApply(ctx context.Context, userID uint64, toID []uint64) error
 

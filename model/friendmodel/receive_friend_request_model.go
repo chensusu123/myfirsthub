@@ -14,6 +14,7 @@ type ReceiveFriendRequestInfo struct {
 	FromUserId uint64 `json:"from_user_id,omitempty"`
 	CreateAt   int64  `json:"create_at,omitempty"`
 	Status     int32  `json:"status,omitempty"`
+	From       int32  `json:"from,omitempty"`
 }
 
 type ReceiveFriendRequestModel struct {

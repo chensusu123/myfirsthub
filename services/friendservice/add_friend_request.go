@@ -11,7 +11,7 @@ import (
 	"go.uber.org/zap"
 )
 
-func (s *service) AddFriendRequest(ctx context.Context, userId, toId uint64) error {
+func (s *service) AddFriendRequest(ctx context.Context, userId, toId uint64, from int32) (int64, error) {
 	logger := fklog.ContextAppLogger(ctx)
 	// 好友列表
 	friends, err := friendmodel.NewFriendModel(ctx, userId)
@@ -20,7 +20,7 @@ func (s *service) AddFriendRequest(ctx context.Context, userId, toId uint64) err
 			zap.Uint64("userID", userId),
 			zap.Uint64("toID", toId),
 			zap.Error(err))
-		return err
+		return 0, err
 	}
 
 	sends, err := friendmodel.NewSendFriendRequestModel(ctx, userId)
@@ -29,7 +29,7 @@ func (s *service) AddFriendRequest(ctx context.Context, userId, toId uint64) err
 			zap.Uint64("userID", userId),
 			zap.Uint64("toID", toId),
 			zap.Error(err))
-		return err
+		return 0, err
 	}
 
 	// 1.是否在我的黑名单中
@@ -38,40 +38,41 @@ func (s *service) AddFriendRequest(ctx context.Context, userId, toId uint64) err
 		logger.CtxError(ctx, "AddFriendRequest IsBlacklist err", zap.Uint64("userID", userId),
 			zap.Uint64("toID", toId),
 			zap.Error(err))
-		return err
+		return 0, err
 	}
 
 	if inBlk {
-		return fmt.Errorf("对方在你的黑名单中")
+		return 0, fmt.Errorf("对方在你的黑名单中")
 	}
 
 	// 3.判断是否已经是好友了
 	if isFriend := s.IsFriend(friends, toId); isFriend {
-		return fmt.Errorf("对方已经是你的好友了")
+		return 0, fmt.Errorf("对方已经是你的好友了")
 	}
 	// 4.检查重复发送
 	if canSend := s.checkRepeatSendFriendRequest(sends, toId); !canSend {
-		return fmt.Errorf("已经发送过好友请求了")
+		return 0, fmt.Errorf("已经发送过好友请求了")
 	}
 	// 5.发送给对方
-	if err := s.AddFriendRequestEvent(ctx, toId, userId); err != nil {
+	if err := s.AddFriendRequestEvent(ctx, toId, userId, from); err != nil {
 		logger.ErrorWF("AddFriendRequestEvent err",
 			zap.Uint64("userID", userId),
 			zap.Uint64("toID", toId),
 			zap.Error(err))
-		return err
+		return 0, err
 	}
 
+	var applyTime int64
 	// 6.设置已发送好友请求
-	if err = s.addSendFriendRequest(logger, sends, userId, toId); err != nil {
+	if applyTime, err = s.addSendFriendRequest(logger, sends, userId, toId); err != nil {
 		logger.ErrorWF("AddFriendRequest addSendFriendRequest err",
 			zap.Uint64("userID", userId),
 			zap.Uint64("toID", toId),
 			zap.Error(err))
-		return err
+		return 0, err
 	}
 
-	return nil
+	return applyTime, nil
 }
 
 // // 获取好友数量，好友数量包括已经成为好友的+发出去的申请
@@ -92,7 +93,7 @@ func (s *service) AddFriendRequest(ctx context.Context, userId, toId uint64) err
 
 // 等待actor逻辑完成处理
 // 收到好友请求事件
-func (s *service) AddFriendRequestEvent(ctx context.Context, userId, fromId uint64) error {
+func (s *service) AddFriendRequestEvent(ctx context.Context, userId, fromId uint64, from int32) error {
 	logger := fklog.ContextAppLogger(ctx)
 	// 是否在我的黑名单中
 	inBlk, err := s.isBlacklist(logger, userId, fromId)
@@ -105,7 +106,7 @@ func (s *service) AddFriendRequestEvent(ctx context.Context, userId, fromId uint
 	}
 
 	// 设置待处理好友请求
-	if err := s.addReceiveFriendRequest(ctx, userId, fromId); err != nil {
+	if err := s.addReceiveFriendRequest(ctx, userId, fromId, from); err != nil {
 		return err
 	}
 
@@ -113,7 +114,7 @@ func (s *service) AddFriendRequestEvent(ctx context.Context, userId, fromId uint
 }
 
 // 设置好友请求待处理
-func (s *service) addReceiveFriendRequest(ctx context.Context, userId, fromId uint64) error {
+func (s *service) addReceiveFriendRequest(ctx context.Context, userId, fromId uint64, from int32) error {
 	logger := fklog.ContextAppLogger(ctx)
 	receiveModel, err := friendmodel.NewReceiveFriendRequestModel(ctx, userId)
 	if err != nil {
@@ -135,6 +136,7 @@ func (s *service) addReceiveFriendRequest(ctx context.Context, userId, fromId ui
 		FromUserId: fromId,
 		CreateAt:   time.Now().UnixMilli(),
 		Status:     friendmodel.FriendRequestStatusPending,
+		From:       from,
 	})
 
 	err = receiveModel.Save(logger, userId)
@@ -170,18 +172,19 @@ func (s *service) checkRepeatSendFriendRequest(sendModel *friendmodel.SendFriend
 }
 
 // 设置好友请求
-func (s *service) addSendFriendRequest(logger fklog.FKLogI, sendModel *friendmodel.SendFriendRequestModel, userId, toUserId uint64) (err error) {
+func (s *service) addSendFriendRequest(logger fklog.FKLogI, sendModel *friendmodel.SendFriendRequestModel, userId, toUserId uint64) (applyTime int64, err error) {
+	nowTime := time.Now()
 	sendModel.SendList = append(sendModel.SendList, &friendmodel.SendFriendRequestInfo{
 		ToUserId: toUserId,
-		CreateAt: time.Now().UnixMilli(),
+		CreateAt: nowTime.UnixMilli(),
 	})
 
 	err = sendModel.Save(logger, userId)
 	if err != nil {
 		logger.ErrorWF("addSendFriendRequest err", zap.Error(err))
-		return err
+		return 0, err
 	}
-	return nil
+	return nowTime.UnixMilli(), nil
 }
 
 // 是否是好友

@@ -2,11 +2,8 @@ package friendmodel
 
 import (
 	"context"
-	"maze_game_server/io/redis/friendredis"
-	"maze_game_server/lib/serialize"
-
-	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fklog"
-	"go.uber.org/zap"
+	"fmt"
+	"maze_game_server/io"
 )
 
 var (
@@ -14,6 +11,14 @@ var (
 	MaxFriendSize = 500
 	RecommendSize = int32(5)
 )
+
+// 好友key
+var KeyFriends = "friend:list:%d"
+
+// 黑名单key
+func getKeyFriends(userId uint64) string {
+	return fmt.Sprintf(KeyFriends, userId)
+}
 
 // 好友信息
 type FriendInfo struct {
@@ -34,44 +39,14 @@ func NewFriendModel(ctx context.Context, userID uint64) (*FriendModel, error) {
 }
 
 func (f *FriendModel) load(ctx context.Context, userId uint64) (err error) {
-	logger := fklog.ContextAppLogger(ctx)
-	bytes, err := friendredis.GetFriends(logger, userId)
-	if err != nil {
-		logger.CtxError(ctx, "load redis err", zap.Error(err))
-		return nil
-	}
-	if len(bytes) == 0 {
-		f.FriendList = make([]*FriendInfo, 0)
-		return nil
-	}
-	err = serialize.Unmarshal(bytes, f)
-	if err != nil {
-		logger.CtxError(ctx, "load unmarshal err", zap.Error(err), zap.Any("bytes", string(bytes)))
-		return err
-	}
-
-	return nil
+	return io.LoadSvrData(ctx, getKeyFriends(userId), f)
 }
 
-func (f *FriendModel) Save(logger fklog.FKLogI, userId uint64) (err error) {
-	bytes, err := serialize.Marshal(f)
-	if err != nil {
-		logger.ErrorWF("SetFriends marshal failed", zap.Error(err), zap.Any("friends", f.FriendList))
-		return err
-	}
-	if err = friendredis.SetFriends(logger, userId, bytes); err != nil {
-		logger.ErrorWF("SetFriends failed", zap.Error(err), zap.Any("friends", f.FriendList))
-		return err
-	}
-	logger.InfoWF("SetFriends success", zap.Any("friends", f.FriendList))
-	return nil
+func (f *FriendModel) Save(ctx context.Context, userId uint64) (err error) {
+	return io.SaveSvrData(ctx, getKeyFriends(userId), f)
 }
 
-func (f *FriendModel) Del(logger fklog.FKLogI, userId uint64) (err error) {
-	if err = friendredis.DelFriends(logger, userId); err != nil {
-		logger.ErrorWF("DelFriends err", zap.Error(err))
-		return err
-	}
-	logger.InfoWF("DelFriends success")
-	return nil
+// todo 删除接口暴露出来
+func (f *FriendModel) Del(ctx context.Context, userId uint64) (err error) {
+	return io.SaveSvrData(ctx, getKeyFriends(userId), f)
 }
