@@ -59,7 +59,7 @@ func TestSendMessages(t *testing.T) {
 		logger.ErrorWF("OnSendMessage WrapUser error", zap.Error(err))
 	}
 
-	messageID, err := GlobalP2PService.SendMessage(context.Background(), app.Maze, user, int64(50000001), int32(1), []byte("hello006"))
+	messageID, err := GlobalP2PService.SendMessage(context.Background(), app.Maze, user, int64(50000003), int32(1), []byte("hello007"))
 	if err != nil {
 		logger.ErrorWF("OnSendMessage SendMessage error", zap.Error(err))
 	}
@@ -104,7 +104,7 @@ func TestRemoveMessage(t *testing.T) {
 	if err != nil {
 		logger.ErrorWF("OnSendMessage WrapUser error", zap.Error(err))
 	}
-	err = GlobalP2PService.RemoveMessage(context.Background(), app.Maze, user, int64(50000001), 34719007919596739)
+	err = GlobalP2PService.RemoveMessage(context.Background(), app.Maze, user, int64(50000001), 621709749758290018)
 	if err != nil {
 		logger.ErrorWF("OnSendMessage RemoveMessage error", zap.Error(err))
 	}
