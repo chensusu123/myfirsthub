@@ -14,7 +14,7 @@ import (
 	"google.golang.org/protobuf/proto"
 )
 
-func (f *FriendComponent) OnFriendApplySendList_10568_10569(s *session.Session, req *Friend.FriendApplySendListRQ) (err error) {
+func (f *FriendComponent) OnFriendApplySendList_10702_10703(s *session.Session, req *Friend.FriendApplySendListRQ) (err error) {
 	userId := uint64(s.UID())
 	ctx := s.Context()
 	logger := fklog.ContextAppLogger(ctx)
