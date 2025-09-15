@@ -59,6 +59,7 @@ func (s *service) RefuseFriendApply(ctx context.Context, userID uint64, toID []i
 		index := -1
 		for j, i := range receiveModel.ReceiveList {
 			if i.FromUserId == uint64(realyID) {
+				result = i
 				index = j
 				break
 			}
