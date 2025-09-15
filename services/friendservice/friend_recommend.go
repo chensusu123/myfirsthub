@@ -2,9 +2,8 @@ package friendservice
 
 import (
 	"context"
-	"maze_game_server/lib/nano/session"
+	"maze_game_server/io/redis/onlineredis"
 	"maze_game_server/model/friendmodel"
-	"maze_game_server/usecase/online"
 
 	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fklog"
 	"go.uber.org/zap"
@@ -29,7 +28,7 @@ func (s *service) FriendRecommend(ctx context.Context, userID uint64, pageSize i
 
 	sends, err := friendmodel.NewSendFriendRequestModel(ctx, userID)
 	if err != nil {
-		logger.ErrorWF("FriendRecommend NewSendFriendRequestModel err",
+		logger.CtxError(ctx, "FriendRecommend NewSendFriendRequestModel err",
 			zap.Uint64("userID", userID),
 			zap.Error(err))
 		return nil, err
@@ -39,16 +38,19 @@ func (s *service) FriendRecommend(ctx context.Context, userID uint64, pageSize i
 
 	res := make([]uint64, 0)
 	nowUser := make(map[uint64]struct{})
-	// 暂时做成推荐在线玩家
-	online.Scan(func(id int64, s *session.Session) {
-		s.RLock()
-		defer s.RUnlock()
-		if userID := s.UID(); userID <= 0 {
-			return
-		} else {
-			nowUser[uint64(s.UID())] = struct{}{}
-		}
-	})
+
+	onlineUser, err := onlineredis.GetAllOnline(ctx)
+	if err != nil {
+		logger.CtxError(ctx, "FriendRecommend GetAllOnline fail",
+			zap.Uint64("userID", userID),
+			zap.Error(err),
+		)
+		return nil, err
+	}
+
+	for _, uid := range onlineUser {
+		nowUser[uid] = struct{}{}
+	}
 
 	for nowID := range nowUser {
 		if len(res) == int(pageSize) {

@@ -6,6 +6,7 @@ import (
 	"sync"
 	"time"
 
+	"maze_game_server/io/redis/onlineredis"
 	"maze_game_server/lib/codec"
 	"maze_game_server/lib/nano/session"
 
@@ -42,6 +43,7 @@ func (m *Monitor) OnClose(ctx context.Context, s *session.Session, err error) {
 	if err != nil {
 		lastErr = err.Error()
 	}
+	onlineredis.DelOnline(ctx, uint64(s.UID()))
 	fklog.ContextAppLogger(ctx).CtxInfo(ctx, "Monitor OnClose session closed", zap.Int64("SessionID", s.ID()), zap.Int64("UID", s.UID()), zap.String("lastErr", lastErr))
 }
 
@@ -60,6 +62,8 @@ func Bind(ctx context.Context, s *session.Session, userID uint64) (err error) {
 	}
 	monitor.online.Store(userID, value)
 	fklog.ContextAppLogger(ctx).CtxInfo(ctx, "Monitor session bound", zap.Int64("SessionID", s.ID()), zap.Uint64("userID", userID))
+
+	onlineredis.AddOnline(ctx, userID)
 	return
 }
 
