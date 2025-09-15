@@ -26,6 +26,11 @@ func (f *FriendComponent) OnSearchUserRQ_10709_10710(s *session.Session, req *Fr
 		logger.CtxInfo(ctx, "OnSearchUserRQ end", zap.Any("res", res))
 	}()
 
+	if req.GetUserId() == userID {
+		res.ErrInfo = errors.COMMON_ERROR_TIPS.Wrap("搜索id为自身id")
+		return
+	}
+
 	// 检测用户是否存在
 	toInfo, err := userinfomodel.NewUserInfoModel(ctx, uint64(req.GetUserId()))
 	if err != nil {

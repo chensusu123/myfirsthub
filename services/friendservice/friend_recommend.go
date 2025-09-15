@@ -87,6 +87,7 @@ func (s *service) FriendRecommend(ctx context.Context, userID uint64, pageSize i
 	logger.CtxInfo(ctx, "FriendRecommend GetUser",
 		zap.Any("nowUser", nowUser),
 		zap.Any("res", res),
+		zap.Any("pageSize", pageSize),
 	)
 	return res, nil
 }
