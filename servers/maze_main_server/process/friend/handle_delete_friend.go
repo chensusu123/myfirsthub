@@ -18,6 +18,8 @@ func (f *FriendComponent) OnDeleteFriend_10706_10707(s *session.Session, req *Fr
 	ctx := s.Context()
 	logger := fklog.ContextAppLogger(ctx)
 	res := &Friend.DeleteFriendRS{}
+	res.Header = req.Header
+	res.UserId = req.UserId
 
 	logger.CtxInfo(ctx, "OnDeleteFriend start", zap.Any("req", req))
 	defer func() {

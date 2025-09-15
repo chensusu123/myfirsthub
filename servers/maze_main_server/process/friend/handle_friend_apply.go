@@ -37,40 +37,38 @@ func (f *FriendComponent) OnFriendApply_10694_10695(s *session.Session, req *Fri
 		return err
 	}
 
-	applyTime, err := friendservice.GlobalFriendService.AddFriendRequest(ctx, userId, toID, req.GetFrom())
+	sendrq, err := friendservice.GlobalFriendService.AddFriendRequest(ctx, userId, toID, req.GetFrom())
 	if err != nil {
 		logger.ErrorWF("OnFriendApply FriendRequest failed ", zap.Error(err), zap.Uint64("userId", userId), zap.Uint64("toID", toID))
 		res.ErrInfo = errors.COMMON_ERROR_TIPS.ToInfo()
 		return
 	}
 
-	userProfiel, err := userprofileservice.GlobalUserProfileService.GetUserProfile(ctx, toID)
+	nowUserProfiel, err := userprofileservice.GlobalUserProfileService.GetUserProfile(ctx, userId)
 	if err != nil {
 		logger.CtxError(ctx, "OnFriendApply GetUserProfile Fail",
 			zap.Uint64("userID", userId),
-			zap.Uint64("toID", toID),
 			zap.Error(err),
 		)
 		res.ErrInfo = errors.COMMON_ERROR_TIPS.ToInfo()
 		return
 	}
 
-	pushMsg := &Friend.FriendApplyID{
+	friendApplyChangeID := &Friend.FriendApplyID{
 		AddReceiveInfo: []*Friend.ReceiveInfo{
 			{
 				UserInfo: &Friend.User{
-					UserId:     proto.Int64(s.UID()),
-					UserName:   proto.String(userProfiel.NickName),
-					UserGender: proto.Int32(userProfiel.Sex),
-					AvaterUrl:  proto.String(userProfiel.Avatar),
+					UserId:     proto.Int64(int64(userId)),
+					UserName:   proto.String(nowUserProfiel.NickName),
+					UserGender: proto.Int32(nowUserProfiel.Sex),
+					AvaterUrl:  proto.String(nowUserProfiel.Avatar),
 				},
-				ReceiveTime: proto.Int64(applyTime),
-				ExpireTime:  proto.Int64(applyTime + int64(friendmodel.ExpireTime)),
+				ReceiveTime: proto.Int64(sendrq.CreateAt),
+				ExpireTime:  proto.Int64(sendrq.CreateAt + int64(friendmodel.ExpireTime)),
 			},
 		},
 	}
 	// 通知对方请求加好友
-	online.ClusterPush(ctx, toID, 10696, pushMsg)
-
+	online.ClusterPush(ctx, toID, 10696, friendApplyChangeID)
 	return nil
 }

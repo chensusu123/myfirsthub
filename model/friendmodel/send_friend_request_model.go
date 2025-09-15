@@ -18,6 +18,7 @@ type SendFriendRequestInfo struct {
 	ToUserId uint64 `json:"to_user_id,omitempty"`
 	CreateAt int64  `json:"create_at,omitempty"`
 	Status   int32  `json:"status,omitempty"`
+	From     int32  `json:"from,omitempty"`
 }
 
 type SendFriendRequestModel struct {

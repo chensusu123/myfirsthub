@@ -8,7 +8,6 @@ import (
 	"maze_game_server/services/friendservice"
 	"maze_game_server/services/userprofileservice"
 	"maze_game_server/usecase/online"
-	"time"
 
 	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fklog"
 	"go.uber.org/zap"
@@ -57,10 +56,11 @@ func (f *FriendComponent) OnReplyFriendApply_10697_10698(s *session.Session, req
 		}
 	}
 
-	applyID := &Friend.FriendApplyID{}
-	// 推请求处理包
+	// 推收到请求列表变化包
+	toapplyID := &Friend.FriendApplyID{}
+
 	for _, handlerUser := range handlerUserList {
-		userProfile, err := userprofileservice.GlobalUserProfileService.GetUserProfile(ctx, handlerUser.FromUserId)
+		touserProfile, err := userprofileservice.GlobalUserProfileService.GetUserProfile(ctx, handlerUser.FromUserId)
 		if err != nil {
 			logger.CtxError(ctx, "OnReplyFriendApply GetUserProfile Fail",
 				zap.Any("handlerUser.FromUserId", handlerUser.FromUserId),
@@ -68,6 +68,8 @@ func (f *FriendComponent) OnReplyFriendApply_10697_10698(s *session.Session, req
 			)
 			continue
 		}
+
+		//推好友列表变化包
 		pushMsg := &Friend.FriendListChangeID{
 			AddFriendList: []*Friend.FriendInfo{
 				{
@@ -77,24 +79,25 @@ func (f *FriendComponent) OnReplyFriendApply_10697_10698(s *session.Session, req
 						UserGender: proto.Int32(nowUserProfile.Sex),
 						AvaterUrl:  proto.String(nowUserProfile.Avatar),
 					},
-					FriendType: proto.Int32(req.GetReplyResult()),
-					AddTime:    proto.Int64(time.Now().UnixMilli()),
+					FriendType: proto.Int32(handlerUser.From),
+					AddTime:    proto.Int64(handlerUser.CreateAt),
 				},
 			},
 		}
 
-		applyID.DelReceiveInfo = append(applyID.DelReceiveInfo, &Friend.ReceiveInfo{
+		toapplyID.DelReceiveInfo = append(toapplyID.DelReceiveInfo, &Friend.ReceiveInfo{
 			UserInfo: &Friend.User{
 				UserId:     proto.Int64(int64(handlerUser.FromUserId)),
-				UserName:   proto.String(userProfile.NickName),
-				UserGender: proto.Int32(userProfile.Sex),
-				AvaterUrl:  proto.String(userProfile.Avatar),
+				UserName:   proto.String(touserProfile.NickName),
+				UserGender: proto.Int32(touserProfile.Sex),
+				AvaterUrl:  proto.String(touserProfile.Avatar),
 			},
 			ReceiveTime: proto.Int64(handlerUser.CreateAt),
 			ExpireTime:  proto.Int64(handlerUser.CreateAt + int64(friendmodel.ExpireTime)),
 		})
 
 		res.UserId = append(res.UserId, int64(handlerUser.FromUserId))
+
 		// 告诉对方好友列表变化
 		online.ClusterPush(ctx, handlerUser.FromUserId, 10708, pushMsg)
 
@@ -104,21 +107,36 @@ func (f *FriendComponent) OnReplyFriendApply_10697_10698(s *session.Session, req
 				{
 					UserInfo: &Friend.User{
 						UserId:     proto.Int64(int64(handlerUser.FromUserId)),
-						UserName:   proto.String(userProfile.NickName),
-						UserGender: proto.Int32(userProfile.Sex),
-						AvaterUrl:  proto.String(userProfile.Avatar),
+						UserName:   proto.String(touserProfile.NickName),
+						UserGender: proto.Int32(touserProfile.Sex),
+						AvaterUrl:  proto.String(touserProfile.Avatar),
 					},
-					FriendType: proto.Int32(req.GetReplyResult()),
-					AddTime:    proto.Int64(time.Now().UnixMilli()),
+					FriendType: proto.Int32(handlerUser.From),
+					AddTime:    proto.Int64(handlerUser.CreateAt),
 				},
 			},
 		}
 		online.ClusterPush(ctx, userId, 10708, handlerUserMsg)
+
+		// 推发送请求变化
+		sendRqMsg := &Friend.FriendApplyResultID{
+			UserInfo: &Friend.User{
+				UserId:     proto.Int64(int64(userId)),
+				UserName:   proto.String(nowUserProfile.NickName),
+				UserGender: proto.Int32(nowUserProfile.Sex),
+				AvaterUrl:  proto.String(nowUserProfile.Avatar),
+			},
+			CreateTime:  proto.Int64(handlerUser.CreateAt),
+			ReplyResult: proto.Int32(req.GetReplyResult()),
+			From:        proto.Int32(handlerUser.From),
+		}
+
+		online.ClusterPush(ctx, handlerUser.FromUserId, 10699, sendRqMsg)
 	}
 
 	if len(handlerUserList) != 0 {
 		// 推好友请求变化包 删除我的收到好友请求列表
-		online.ClusterPush(ctx, userId, 10696, applyID)
+		online.ClusterPush(ctx, userId, 10696, toapplyID)
 	}
 
 	return nil

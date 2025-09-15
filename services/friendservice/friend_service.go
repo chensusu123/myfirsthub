@@ -8,7 +8,7 @@ import (
 // 外部系统可调用方法
 type FriendService interface {
 	// 好友请求
-	AddFriendRequest(ctx context.Context, userId, toId uint64, from int32) (int64, error)
+	AddFriendRequest(ctx context.Context, userId, toId uint64, from int32) (sendrq *friendmodel.SendFriendRequestInfo, err error)
 	// // // 同意好友请求   同意后会把双方的申请记录删除
 	// // AcceptFriendRequest(logger fklog.FKLogI, userId, toID uint64) *errors.CodeError
 	// // 拒绝好友请求   拒绝后能看见拒绝信息
@@ -23,8 +23,8 @@ type FriendService interface {
 	RemoveFriend(ctx context.Context, userId, toId uint64) (to *friendmodel.FriendInfo, in *friendmodel.FriendInfo, err error)
 	// // 收到的好友请求列表  申请列表30天清除
 	ReceiveFriendRequestList(ctx context.Context, userId uint64, page, pageSize int32) ([]*friendmodel.ReceiveFriendRequestInfo, bool, error)
-	// // 发送的好友请求列表  发送列表30天清除
-	// SendFriendRequestList(logger fklog.FKLogI, userId uint64, page, pageSize int32) ([]*friendmodel.SendFriendRequestInfo, *errors.CodeError)
+	// 发送的好友请求列表  发送列表30天清除
+	SendFriendRequestList(ctx context.Context, userId uint64, page, pageSize int32) ([]*friendmodel.SendFriendRequestInfo, bool, error)
 	// // 黑名单列表
 	// Blacklist(logger fklog.FKLogI, userId uint64, page, pageSize int32) ([]*friendmodel.BlacklistInfo, *errors.CodeError)
 	// // 删除用户全部的好友, 发送的申请, 收到的申请, 黑名单
