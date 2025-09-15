@@ -57,6 +57,9 @@ type gmService interface {
 	CreateAlliance(writer http.ResponseWriter, request *http.Request)
 	GetAllianceInfo(writer http.ResponseWriter, request *http.Request)
 
+	// tmp
+	SetRecommendSize(writer http.ResponseWriter, request *http.Request)
+
 	// 统一注册http接口
 	RegHttp(ctx context.Context)
 }

@@ -42,4 +42,7 @@ func (s *service) RegHttp(ctx context.Context) {
 	// alliance
 	s.SafeGETRegister(ctx, "/CreateAlliance", s.CreateAlliance)
 	s.SafeGETRegister(ctx, "/GetAllianceInfo", s.GetAllianceInfo)
+
+	// tmp
+	s.SafeGETRegister(ctx, "/SetRecommendSize", s.SetRecommendSize)
 }
