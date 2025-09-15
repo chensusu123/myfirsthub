@@ -469,18 +469,18 @@ type QueryUserDetailInfoRS struct {
 	sizeCache     protoimpl.SizeCache
 	unknownFields protoimpl.UnknownFields
 
-	ErrInfo      *MessageType.ErrorInfo       `protobuf:"bytes,1,opt,name=err_info,json=errInfo" json:"err_info,omitempty"`
-	Header       *Common.PacketHeader         `protobuf:"bytes,2,opt,name=header" json:"header,omitempty"`
-	UserId       *int64                       `protobuf:"varint,3,opt,name=user_id,json=userId" json:"user_id,omitempty"`                   // 用户id
-	NickName     *string                      `protobuf:"bytes,4,opt,name=nick_name,json=nickName" json:"nick_name,omitempty"`              // 用户昵称
-	Sex          *int32                       `protobuf:"varint,5,opt,name=sex" json:"sex,omitempty"`                                       // 用户性别 0默认,1男, 2女
-	IconToken    *int32                       `protobuf:"varint,6,opt,name=icon_token,json=iconToken" json:"icon_token,omitempty"`          // 头像Id
-	IsBlack      *bool                        `protobuf:"varint,7,opt,name=is_black,json=isBlack" json:"is_black,omitempty"`                // 是否黑名单
-	IsFriend     *bool                        `protobuf:"varint,8,opt,name=is_friend,json=isFriend" json:"is_friend,omitempty"`             // 是否是好友
-	ShowId       *int32                       `protobuf:"varint,9,opt,name=show_id,json=showId" json:"show_id,omitempty"`                   // 秀id
-	AllianceInfo *MazeFamily.AllianceInfo     `protobuf:"bytes,10,opt,name=alliance_info,json=allianceInfo" json:"alliance_info,omitempty"` // 公会信息
-	CostumeInfo  *Costume.CostumeInfo         `protobuf:"bytes,11,opt,name=costume_info,json=costumeInfo" json:"costume_info,omitempty"`    // 装扮列表
-	EquipInfo    *MazeGameEquip.MazeEquipInfo `protobuf:"bytes,12,opt,name=equip_info,json=equipInfo" json:"equip_info,omitempty"`          // 装备信息
+	ErrInfo      *MessageType.ErrorInfo         `protobuf:"bytes,1,opt,name=err_info,json=errInfo" json:"err_info,omitempty"`
+	Header       *Common.PacketHeader           `protobuf:"bytes,2,opt,name=header" json:"header,omitempty"`
+	UserId       *int64                         `protobuf:"varint,3,opt,name=user_id,json=userId" json:"user_id,omitempty"`                   // 用户id
+	NickName     *string                        `protobuf:"bytes,4,opt,name=nick_name,json=nickName" json:"nick_name,omitempty"`              // 用户昵称
+	Sex          *int32                         `protobuf:"varint,5,opt,name=sex" json:"sex,omitempty"`                                       // 用户性别 0默认,1男, 2女
+	IconToken    *int32                         `protobuf:"varint,6,opt,name=icon_token,json=iconToken" json:"icon_token,omitempty"`          // 头像Id
+	IsBlack      *bool                          `protobuf:"varint,7,opt,name=is_black,json=isBlack" json:"is_black,omitempty"`                // 是否黑名单
+	IsFriend     *bool                          `protobuf:"varint,8,opt,name=is_friend,json=isFriend" json:"is_friend,omitempty"`             // 是否是好友
+	ShowId       *int32                         `protobuf:"varint,9,opt,name=show_id,json=showId" json:"show_id,omitempty"`                   // 秀id
+	AllianceInfo *MazeFamily.AllianceInfo       `protobuf:"bytes,10,opt,name=alliance_info,json=allianceInfo" json:"alliance_info,omitempty"` // 公会信息
+	CostumeInfo  []*Costume.CostumeInfo         `protobuf:"bytes,11,rep,name=costume_info,json=costumeInfo" json:"costume_info,omitempty"`    // 装扮列表
+	EquipInfo    []*MazeGameEquip.MazeEquipInfo `protobuf:"bytes,12,rep,name=equip_info,json=equipInfo" json:"equip_info,omitempty"`          // 装备信息
 }
 
 func (x *QueryUserDetailInfoRS) Reset() {
@@ -585,14 +585,14 @@ func (x *QueryUserDetailInfoRS) GetAllianceInfo() *MazeFamily.AllianceInfo {
 	return nil
 }
 
-func (x *QueryUserDetailInfoRS) GetCostumeInfo() *Costume.CostumeInfo {
+func (x *QueryUserDetailInfoRS) GetCostumeInfo() []*Costume.CostumeInfo {
 	if x != nil {
 		return x.CostumeInfo
 	}
 	return nil
 }
 
-func (x *QueryUserDetailInfoRS) GetEquipInfo() *MazeGameEquip.MazeEquipInfo {
+func (x *QueryUserDetailInfoRS) GetEquipInfo() []*MazeGameEquip.MazeEquipInfo {
 	if x != nil {
 		return x.EquipInfo
 	}
@@ -682,10 +682,10 @@ var file_common_UserProfile_proto_rawDesc = []byte{
 	0x6c, 0x79, 0x2e, 0x41, 0x6c, 0x6c, 0x69, 0x61, 0x6e, 0x63, 0x65, 0x49, 0x6e, 0x66, 0x6f, 0x52,
 	0x0c, 0x61, 0x6c, 0x6c, 0x69, 0x61, 0x6e, 0x63, 0x65, 0x49, 0x6e, 0x66, 0x6f, 0x12, 0x37, 0x0a,
 	0x0c, 0x63, 0x6f, 0x73, 0x74, 0x75, 0x6d, 0x65, 0x5f, 0x69, 0x6e, 0x66, 0x6f, 0x18, 0x0b, 0x20,
-	0x01, 0x28, 0x0b, 0x32, 0x14, 0x2e, 0x43, 0x6f, 0x73, 0x74, 0x75, 0x6d, 0x65, 0x2e, 0x43, 0x6f,
+	0x03, 0x28, 0x0b, 0x32, 0x14, 0x2e, 0x43, 0x6f, 0x73, 0x74, 0x75, 0x6d, 0x65, 0x2e, 0x43, 0x6f,
 	0x73, 0x74, 0x75, 0x6d, 0x65, 0x49, 0x6e, 0x66, 0x6f, 0x52, 0x0b, 0x63, 0x6f, 0x73, 0x74, 0x75,
 	0x6d, 0x65, 0x49, 0x6e, 0x66, 0x6f, 0x12, 0x3b, 0x0a, 0x0a, 0x65, 0x71, 0x75, 0x69, 0x70, 0x5f,
-	0x69, 0x6e, 0x66, 0x6f, 0x18, 0x0c, 0x20, 0x01, 0x28, 0x0b, 0x32, 0x1c, 0x2e, 0x4d, 0x61, 0x7a,
+	0x69, 0x6e, 0x66, 0x6f, 0x18, 0x0c, 0x20, 0x03, 0x28, 0x0b, 0x32, 0x1c, 0x2e, 0x4d, 0x61, 0x7a,
 	0x65, 0x47, 0x61, 0x6d, 0x65, 0x45, 0x71, 0x75, 0x69, 0x70, 0x2e, 0x4d, 0x61, 0x7a, 0x65, 0x45,
 	0x71, 0x75, 0x69, 0x70, 0x49, 0x6e, 0x66, 0x6f, 0x52, 0x09, 0x65, 0x71, 0x75, 0x69, 0x70, 0x49,
 	0x6e, 0x66, 0x6f, 0x42, 0x39, 0x5a, 0x26, 0x6d, 0x61, 0x7a, 0x65, 0x5f, 0x67, 0x61, 0x6d, 0x65,
