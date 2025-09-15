@@ -54,7 +54,7 @@ func (s *service) AddBlacklist(ctx context.Context, userId, toId uint64) (err er
 }
 
 // 是否在黑名单里面
-func (s *service) isBlacklist(ctx context.Context, userId, toId uint64) (bool, error) {
+func (s *service) IsBlacklist(ctx context.Context, userId, toId uint64) (bool, error) {
 	logger := fklog.ContextAppLogger(ctx)
 	blacklistModel, err := friendmodel.NewBlacklistModel(ctx, userId)
 	if err != nil {

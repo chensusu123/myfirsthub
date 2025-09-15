@@ -4,10 +4,15 @@ package userprofile
 
 import (
 	"maze_game_server/common/errors"
+	"maze_game_server/common/function/packtopb"
+	"maze_game_server/io/redis/mazebagequipredis"
 	"maze_game_server/lib/nano/component"
 	"maze_game_server/lib/nano/session"
 	"maze_game_server/model/userprofilemodel"
+	"maze_game_server/pb/common/Costume"
 	"maze_game_server/pb/common/UserProfile"
+	"maze_game_server/services/allianceservice"
+	"maze_game_server/services/costumeservice"
 	"maze_game_server/services/userprofileservice"
 
 	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fklog"
@@ -162,4 +167,92 @@ func (p *Profile) OnQueryAvatarToken_10511_10512(s *session.Session, req *UserPr
 	}
 	res.Token = proto.String(token)
 	return
+}
+
+// 用于当前用户查询其他人的详细信息
+func OnQueryUserDetailInfo_10719_10720(s *session.Session, req *UserProfile.QueryUserDetailInfoRQ) (err error) {
+	defer fkprometheus.DebugPMT("OnQueryUserDetailInfo")()
+	ctx := s.Context()
+	logger := fklog.ContextAppLogger(ctx)
+	res := &UserProfile.QueryUserDetailInfoRS{}
+	res.ErrInfo = errors.NO_ERROR
+
+	logger.CtxInfo(ctx, "OnQueryUserDetailInfo with", zap.Any("rq", req))
+
+	defer func() {
+		err = s.Response(res)
+		if err != nil {
+			logger.CtxError(ctx, "OnQueryUserDetailInfo Response failed", zap.Error(err))
+		}
+		logger.CtxInfo(ctx, "OnQueryUserDetailInfo end ", zap.Any("req", req), zap.Any("res", res),
+			zap.String("errMsg", string(res.GetErrInfo().GetErrMsg())))
+	}()
+
+	// 检查rq
+	if req.GetUserId() <= 0 {
+		res.ErrInfo = errors.COMMON_ERROR_TIPS.Wrap("无效参数")
+		return
+	}
+	// 查询用户资料
+	userDetailProfile, err := userprofileservice.GlobalUserProfileService.GetUserDetailInfo(ctx, uint64(s.ID()), uint64(req.GetUserId()))
+	if err != nil {
+		logger.CtxError(ctx, "OnQueryUserDetailInfo get user profile fail", zap.Error(err))
+		res.ErrInfo = errors.MODULE_ERROR.ToInfo()
+		return
+	}
+	res.UserId = proto.Int64(int64(req.GetUserId()))
+	res.NickName = proto.String(userDetailProfile.NickName)
+	res.Sex = proto.Int32(int32(userDetailProfile.Sex))
+	res.IconToken = proto.String(userDetailProfile.IconToken)
+	res.IsBlack = proto.Bool(userDetailProfile.IsBlack)
+	res.IsFriend = proto.Bool(userDetailProfile.IsFriend)
+	res.ShowId = proto.Int32(int32(userDetailProfile.ShowID))
+
+	// 查询用户联盟信息
+	allianceID, err := allianceservice.GlobalAllianceService.QueryUserAlliance(ctx, uint64(req.GetUserId()))
+	if err != nil {
+		logger.CtxError(ctx, "OnQueryUserDetailInfo get user alliance fail", zap.Error(err))
+		res.ErrInfo = errors.MODULE_ERROR.ToInfo()
+		return
+	}
+	allianceInfo, err := allianceservice.GlobalAllianceService.QueryAllianceInfo(ctx, allianceID)
+	if err != nil {
+		logger.CtxError(ctx, "OnQueryUserDetailInfo get alliance info fail", zap.Error(err))
+		res.ErrInfo = errors.MODULE_ERROR.ToInfo()
+		return
+	}
+	res.AllianceInfo = allianceInfo.DataToAllianceInfoPb()
+
+	//查询用户装扮列表
+	costumeList, err := costumeservice.GlobalCostumeService.GetUserCostume(ctx, uint64(req.GetUserId()))
+	if err != nil {
+		logger.CtxError(ctx, "OnQueryUserDetailInfo get user costume fail", zap.Error(err))
+		res.ErrInfo = errors.MODULE_ERROR.ToInfo()
+		return
+	}
+	res.CostumeInfo = make([]*Costume.CostumeInfo, 0, len(costumeList))
+	for k, v := range costumeList {
+		res.CostumeInfo = append(res.CostumeInfo, &Costume.CostumeInfo{
+			Pos:     proto.Int32(k),
+			ModelId: proto.Int32(v),
+		})
+	}
+	//装备信息
+	equipInfoMap, err := mazebagequipredis.GetAllEquipInfo(ctx, uint64(req.GetUserId()))
+	if err != nil {
+		logger.CtxError(ctx, "OnQueryUserDetailInfo GetAllEquipInfo fail", zap.Error(err))
+		res.ErrInfo = errors.MODULE_ERROR.ToInfo()
+		return
+	}
+
+	for _, equip := range equipInfoMap {
+		equipInfoPb, err := packtopb.EquipSimplifyToCliPB(ctx, equip)
+		if err != nil {
+			res.ErrInfo = errors.MODULE_ERROR.ToInfo()
+			logger.CtxError(ctx, "OnQueryUserDetailInfo EquipSimplifyToCliPB fail", zap.Error(err))
+			return err
+		}
+		res.EquipInfo = append(res.EquipInfo, equipInfoPb)
+	}
+	return nil
 }

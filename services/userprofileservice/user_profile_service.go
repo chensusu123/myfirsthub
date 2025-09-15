@@ -14,6 +14,8 @@ type UserProfileService interface {
 	GetUserProfile(ctx context.Context, userID uint64) (profile *userprofilemodel.UserProfileModel, err error)
 	// 修改用户资料
 	AlterUserProfile(ctx context.Context, userId uint64, alterProfile *userprofilemodel.UserProfileModel) (err error)
+	//用于当前用户查询其他人的详细信息
+	GetUserDetailInfo(ctx context.Context, userID uint64, peerID uint64) (detail *userprofilemodel.UserDetailModel, err error)
 }
 
 type service struct {

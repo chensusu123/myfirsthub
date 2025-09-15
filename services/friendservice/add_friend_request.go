@@ -33,7 +33,7 @@ func (s *service) AddFriendRequest(ctx context.Context, userId, toId uint64, fro
 	}
 
 	// 1.是否在我的黑名单中
-	inBlk, err := s.isBlacklist(ctx, userId, toId)
+	inBlk, err := s.IsBlacklist(ctx, userId, toId)
 	if err != nil {
 		logger.CtxError(ctx, "AddFriendRequest IsBlacklist err", zap.Uint64("userID", userId),
 			zap.Uint64("toID", toId),
@@ -98,7 +98,7 @@ func (s *service) AddFriendRequest(ctx context.Context, userId, toId uint64, fro
 func (s *service) AddFriendRequestEvent(ctx context.Context, userId, fromId uint64, from int32) error {
 	logger := fklog.ContextAppLogger(ctx)
 	// 是否在我的黑名单中
-	inBlk, err := s.isBlacklist(ctx, userId, fromId)
+	inBlk, err := s.IsBlacklist(ctx, userId, fromId)
 	if err != nil {
 		logger.CtxError(ctx, "AddFriendRequestEvent isBlacklist err", zap.Error(err))
 		return err
