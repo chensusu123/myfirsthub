@@ -23,7 +23,7 @@ func AddOnline(ctx context.Context, userID uint64) error {
 		return err
 	}
 
-	err = db.SAdd(ctx, getKey(ctx), userID).Err()
+	err = db.SAdd(ctx, db.MakeSectionKey(getKey(ctx)), userID).Err()
 	if err != nil {
 		logger.ErrorWF("AddOnline SAdd err", zap.Error(err), zap.Any("userID", userID))
 		return err
@@ -40,7 +40,7 @@ func DelOnline(ctx context.Context, userID uint64) error {
 		return err
 	}
 
-	err = db.SRem(ctx, getKey(ctx), userID).Err()
+	err = db.SRem(ctx, db.MakeSectionKey(getKey(ctx)), userID).Err()
 	if err != nil {
 		logger.ErrorWF("DelOnline SRem err", zap.Error(err), zap.Any("userID", userID))
 		return err
@@ -57,7 +57,7 @@ func GetAllOnline(ctx context.Context) ([]uint64, error) {
 		return nil, err
 	}
 
-	members, err := db.SMembers(ctx, getKey(ctx)).Result()
+	members, err := db.SMembers(ctx, db.MakeSectionKey(getKey(ctx))).Result()
 	if err != nil {
 		logger.ErrorWF("GetAllOnline SMembers err", zap.Error(err))
 		return nil, err
