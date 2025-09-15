@@ -15,35 +15,37 @@ import (
 
 // MazeSkilleffectV8ConfigRow from maze_skill_effect_v8【迷宫-技能-技能效果】.xlsx maze_skilleffect_v8
 type MazeSkilleffectV8ConfigRow struct {
-	Effect__id                    int32           `json:"effect__id"`                    // effect_id
-	Effect_group                  int32           `json:"effect_group"`                  // effect组id
-	In_group_weight               int32           `json:"in_group_weight"`               // 同组优先级
-	Cool_down                     int32           `json:"cool_down"`                     // 重复中buff组的cd时间（毫毫秒）
-	Attr                          int32           `json:"attr"`                          // 逻辑属性id
-	Attr_value_variable_id        map[int32]int32 `json:"attr_value_variable_id"`        // 参数1关联的变量id
-	Attr_value_type               int32           `json:"attr_value_type"`               // 参数1数值类型
-	Attr_value                    int32           `json:"attr_value"`                    // 参数1
-	Attr_value_2_variable_id      map[int32]int32 `json:"attr_value_2_variable_id"`      // 参数2关联的变量id
-	Attr_value_2_type             int32           `json:"attr_value_2_type"`             // 参数2数值类型
-	Attr_value_2                  int32           `json:"attr_value_2"`                  // 参数2
-	Attr_value_3_variable_id      map[int32]int32 `json:"attr_value_3_variable_id"`      // 参数3关联的变量id
-	Attr_value_3_type             int32           `json:"attr_value_3_type"`             // 参数3数值类型
-	Attr_value_3                  int32           `json:"attr_value_3"`                  // 参数3
-	Attr_value_4                  []int32         `json:"attr_value_4"`                  // 参数4
-	Last_time_variable_id         map[int32]int32 `json:"last_time_variable_id"`         // 持续时长（毫秒）关联的变量id
-	Last_time                     int32           `json:"last_time"`                     // 持续时长（毫秒）
-	Base_hitrate_variable_id      map[int32]int32 `json:"base_hitrate_variable_id"`      // 基础命中率变量
-	Base_hitrate                  int32           `json:"base_hitrate"`                  // 基础命中率（万分比）
-	Attr_value_7_variable_id      map[int32]int32 `json:"attr_value_7_variable_id"`      // 参数7关联的变量id
-	Attr_value_7_type             int32           `json:"attr_value_7_type"`             // 参数7数值类型
-	Attr_value_7                  int32           `json:"attr_value_7"`                  // 参数7
-	Attr_value_8_variable_id      map[int32]int32 `json:"attr_value_8_variable_id"`      // 参数8关联的变量id
-	Attr_value_8_type             int32           `json:"attr_value_8_type"`             // 参数8数值类型
-	Attr_value_8                  int32           `json:"attr_value_8"`                  // 参数8结算间隔时间
-	Modify_attr_value_variable_id map[int32]int32 `json:"modify_attr_value_variable_id"` // 修改属性关联变量id
-	Modify_attr_value_type        map[int32]int32 `json:"modify_attr_value_type"`        // 修改属性数值类型
-	Modify_attr_value_attr_id     map[int32]int32 `json:"modify_attr_value_attr_id"`     // 修改属性影响属性id
-	Modify_attr_value             map[int32]int32 `json:"modify_attr_value"`             // 修改属性影响数值
+	Effect__id                            int32           `json:"effect__id"`                            // effect_id
+	Effect_group                          int32           `json:"effect_group"`                          // effect组id
+	In_group_weight                       int32           `json:"in_group_weight"`                       // 同组优先级
+	Cool_down                             int32           `json:"cool_down"`                             // 重复中buff组的cd时间（毫毫秒）
+	Attr                                  int32           `json:"attr"`                                  // 逻辑属性id
+	Attr_value_variable_id                map[int32]int32 `json:"attr_value_variable_id"`                // 参数1关联的变量id
+	Attr_value_type                       int32           `json:"attr_value_type"`                       // 参数1数值类型
+	Attr_value                            int32           `json:"attr_value"`                            // 参数1
+	Attr_value_2_variable_id              map[int32]int32 `json:"attr_value_2_variable_id"`              // 参数2关联的变量id
+	Attr_value_2_type                     int32           `json:"attr_value_2_type"`                     // 参数2数值类型
+	Attr_value_2                          int32           `json:"attr_value_2"`                          // 参数2
+	Attr_value_3_variable_id              map[int32]int32 `json:"attr_value_3_variable_id"`              // 参数3关联的变量id
+	Attr_value_3_type                     int32           `json:"attr_value_3_type"`                     // 参数3数值类型
+	Attr_value_3                          int32           `json:"attr_value_3"`                          // 参数3
+	Attr_value_4_base_hitrate_variable_id map[int32]int32 `json:"attr_value_4_base_hitrate_variable_id"` // 参数4命中率关联的变量id
+	Attr_value_4_base_hitrate             int32           `json:"attr_value_4_base_hitrate"`             // 参数4的命中率（万分比）
+	Attr_value_4                          []int32         `json:"attr_value_4"`                          // 参数4
+	Last_time_variable_id                 map[int32]int32 `json:"last_time_variable_id"`                 // 持续时长（毫秒）关联的变量id
+	Last_time                             int32           `json:"last_time"`                             // 持续时长（毫秒）
+	Base_hitrate_variable_id              map[int32]int32 `json:"base_hitrate_variable_id"`              // 基础命中率变量
+	Base_hitrate                          int32           `json:"base_hitrate"`                          // 基础命中率（万分比）
+	Attr_value_7_variable_id              map[int32]int32 `json:"attr_value_7_variable_id"`              // 参数7关联的变量id
+	Attr_value_7_type                     int32           `json:"attr_value_7_type"`                     // 参数7数值类型
+	Attr_value_7                          int32           `json:"attr_value_7"`                          // 参数7
+	Attr_value_8_variable_id              map[int32]int32 `json:"attr_value_8_variable_id"`              // 参数8关联的变量id
+	Attr_value_8_type                     int32           `json:"attr_value_8_type"`                     // 参数8数值类型
+	Attr_value_8                          int32           `json:"attr_value_8"`                          // 参数8结算间隔时间
+	Modify_attr_value_variable_id         map[int32]int32 `json:"modify_attr_value_variable_id"`         // 修改属性关联变量id
+	Modify_attr_value_type                map[int32]int32 `json:"modify_attr_value_type"`                // 修改属性数值类型
+	Modify_attr_value_attr_id             map[int32]int32 `json:"modify_attr_value_attr_id"`             // 修改属性影响属性id
+	Modify_attr_value                     map[int32]int32 `json:"modify_attr_value"`                     // 修改属性影响数值
 }
 
 // MazeSkilleffectV8Config from maze_skill_effect_v8【迷宫-技能-技能效果】.xlsx maze_skilleffect_v8
@@ -572,17 +574,68 @@ func (*gMazeSkilleffectV8Parser) Parse(logger fklog.FKLogI, data []string, row i
 		config.Attr_value_3 = int32(tmp)
 	}
 
-	// parse column 14 attr_value_4 : 参数4
+	// parse column 14 attr_value_4_base_hitrate_variable_id : 参数4命中率关联的变量id
 	if data[14] != "" {
 
-		vals := strings.Split(data[14], ",")
+		config.Attr_value_4_base_hitrate_variable_id = make(map[int32]int32)
+		var key int32
+		var value int32
+		vals := strings.Split(data[14], "_")
+		for k, val := range vals {
+			items := strings.Split(val, ":")
+			tmp, err = strconv.ParseInt(items[0], 10, 64)
+			if err != nil {
+				err = errors.New("parse map field attr_value_4_base_hitrate_variable_id 参数4命中率关联的变量id to key int32 failed")
+				logger.ErrorWF("parse map field attr_value_4_base_hitrate_variable_id 参数4命中率关联的变量id to key int32 failed.",
+					zap.String("xlsx", "maze_skill_effect_v8【迷宫-技能-技能效果】.xlsx"), zap.String("sheet", "maze_skilleffect_v8"),
+					// zap.String("field_data",data[14]),
+					zap.String("item_data", val), zap.Int("index", k),
+					zap.String("parse_data", items[0]),
+					zap.Error(err))
+				return
+			}
+			key = int32(tmp)
+			tmp, err = strconv.ParseInt(items[1], 10, 64)
+			if err != nil {
+				err = errors.New("parse map field attr_value_4_base_hitrate_variable_id 参数4命中率关联的变量id to value int32 failed")
+				logger.ErrorWF("parse map field attr_value_4_base_hitrate_variable_id 参数4命中率关联的变量id to value int32 failed.",
+					zap.String("xlsx", "maze_skill_effect_v8【迷宫-技能-技能效果】.xlsx"), zap.String("sheet", "maze_skilleffect_v8"),
+					// zap.String("field_data",data[14]),
+					zap.String("item_data", val), zap.Int("index", k),
+					zap.String("parse_data", items[1]),
+					zap.Error(err))
+				return
+			}
+			value = int32(tmp)
+			config.Attr_value_4_base_hitrate_variable_id[key] = value
+		}
+	}
+
+	// parse column 15 attr_value_4_base_hitrate : 参数4的命中率（万分比）
+	if data[15] != "" {
+		tmp, err = strconv.ParseInt(data[15], 10, 64)
+		if err != nil {
+			err = errors.New("parse field attr_value_4_base_hitrate 参数4的命中率（万分比） to int32 failed")
+			logger.ErrorWF("parse field attr_value_4_base_hitrate 参数4的命中率（万分比） to int32 failed.",
+				zap.String("xlsx", "maze_skill_effect_v8【迷宫-技能-技能效果】.xlsx"), zap.String("sheet", "maze_skilleffect_v8"),
+				zap.String("parse_data", data[15]),
+				zap.Error(err))
+			return
+		}
+		config.Attr_value_4_base_hitrate = int32(tmp)
+	}
+
+	// parse column 16 attr_value_4 : 参数4
+	if data[16] != "" {
+
+		vals := strings.Split(data[16], ",")
 		for k, v := range vals {
 			tmp, err = strconv.ParseInt(v, 10, 64)
 			if err != nil {
 				err = errors.New("parse array field attr_value_4 参数4 to []int32 failed")
 				logger.ErrorWF("parse array field attr_value_4 参数4 to []int32 failed.",
 					zap.String("xlsx", "maze_skill_effect_v8【迷宫-技能-技能效果】.xlsx"), zap.String("sheet", "maze_skilleffect_v8"),
-					// zap.String("field_data",data[14]),
+					// zap.String("field_data",data[16]),
 					zap.String("parse_data", v), zap.Int("index", k),
 					zap.Error(err))
 				return
@@ -591,13 +644,13 @@ func (*gMazeSkilleffectV8Parser) Parse(logger fklog.FKLogI, data []string, row i
 		}
 	}
 
-	// parse column 15 last_time_variable_id : 持续时长（毫秒）关联的变量id
-	if data[15] != "" {
+	// parse column 17 last_time_variable_id : 持续时长（毫秒）关联的变量id
+	if data[17] != "" {
 
 		config.Last_time_variable_id = make(map[int32]int32)
 		var key int32
 		var value int32
-		vals := strings.Split(data[15], "_")
+		vals := strings.Split(data[17], "_")
 		for k, val := range vals {
 			items := strings.Split(val, ":")
 			tmp, err = strconv.ParseInt(items[0], 10, 64)
@@ -605,7 +658,7 @@ func (*gMazeSkilleffectV8Parser) Parse(logger fklog.FKLogI, data []string, row i
 				err = errors.New("parse map field last_time_variable_id 持续时长（毫秒）关联的变量id to key int32 failed")
 				logger.ErrorWF("parse map field last_time_variable_id 持续时长（毫秒）关联的变量id to key int32 failed.",
 					zap.String("xlsx", "maze_skill_effect_v8【迷宫-技能-技能效果】.xlsx"), zap.String("sheet", "maze_skilleffect_v8"),
-					// zap.String("field_data",data[15]),
+					// zap.String("field_data",data[17]),
 					zap.String("item_data", val), zap.Int("index", k),
 					zap.String("parse_data", items[0]),
 					zap.Error(err))
@@ -617,7 +670,7 @@ func (*gMazeSkilleffectV8Parser) Parse(logger fklog.FKLogI, data []string, row i
 				err = errors.New("parse map field last_time_variable_id 持续时长（毫秒）关联的变量id to value int32 failed")
 				logger.ErrorWF("parse map field last_time_variable_id 持续时长（毫秒）关联的变量id to value int32 failed.",
 					zap.String("xlsx", "maze_skill_effect_v8【迷宫-技能-技能效果】.xlsx"), zap.String("sheet", "maze_skilleffect_v8"),
-					// zap.String("field_data",data[15]),
+					// zap.String("field_data",data[17]),
 					zap.String("item_data", val), zap.Int("index", k),
 					zap.String("parse_data", items[1]),
 					zap.Error(err))
@@ -628,27 +681,27 @@ func (*gMazeSkilleffectV8Parser) Parse(logger fklog.FKLogI, data []string, row i
 		}
 	}
 
-	// parse column 16 last_time : 持续时长（毫秒）
-	if data[16] != "" {
-		tmp, err = strconv.ParseInt(data[16], 10, 64)
+	// parse column 18 last_time : 持续时长（毫秒）
+	if data[18] != "" {
+		tmp, err = strconv.ParseInt(data[18], 10, 64)
 		if err != nil {
 			err = errors.New("parse field last_time 持续时长（毫秒） to int32 failed")
 			logger.ErrorWF("parse field last_time 持续时长（毫秒） to int32 failed.",
 				zap.String("xlsx", "maze_skill_effect_v8【迷宫-技能-技能效果】.xlsx"), zap.String("sheet", "maze_skilleffect_v8"),
-				zap.String("parse_data", data[16]),
+				zap.String("parse_data", data[18]),
 				zap.Error(err))
 			return
 		}
 		config.Last_time = int32(tmp)
 	}
 
-	// parse column 17 base_hitrate_variable_id : 基础命中率变量
-	if data[17] != "" {
+	// parse column 19 base_hitrate_variable_id : 基础命中率变量
+	if data[19] != "" {
 
 		config.Base_hitrate_variable_id = make(map[int32]int32)
 		var key int32
 		var value int32
-		vals := strings.Split(data[17], "_")
+		vals := strings.Split(data[19], "_")
 		for k, val := range vals {
 			items := strings.Split(val, ":")
 			tmp, err = strconv.ParseInt(items[0], 10, 64)
@@ -656,7 +709,7 @@ func (*gMazeSkilleffectV8Parser) Parse(logger fklog.FKLogI, data []string, row i
 				err = errors.New("parse map field base_hitrate_variable_id 基础命中率变量 to key int32 failed")
 				logger.ErrorWF("parse map field base_hitrate_variable_id 基础命中率变量 to key int32 failed.",
 					zap.String("xlsx", "maze_skill_effect_v8【迷宫-技能-技能效果】.xlsx"), zap.String("sheet", "maze_skilleffect_v8"),
-					// zap.String("field_data",data[17]),
+					// zap.String("field_data",data[19]),
 					zap.String("item_data", val), zap.Int("index", k),
 					zap.String("parse_data", items[0]),
 					zap.Error(err))
@@ -668,7 +721,7 @@ func (*gMazeSkilleffectV8Parser) Parse(logger fklog.FKLogI, data []string, row i
 				err = errors.New("parse map field base_hitrate_variable_id 基础命中率变量 to value int32 failed")
 				logger.ErrorWF("parse map field base_hitrate_variable_id 基础命中率变量 to value int32 failed.",
 					zap.String("xlsx", "maze_skill_effect_v8【迷宫-技能-技能效果】.xlsx"), zap.String("sheet", "maze_skilleffect_v8"),
-					// zap.String("field_data",data[17]),
+					// zap.String("field_data",data[19]),
 					zap.String("item_data", val), zap.Int("index", k),
 					zap.String("parse_data", items[1]),
 					zap.Error(err))
@@ -679,27 +732,27 @@ func (*gMazeSkilleffectV8Parser) Parse(logger fklog.FKLogI, data []string, row i
 		}
 	}
 
-	// parse column 18 base_hitrate : 基础命中率（万分比）
-	if data[18] != "" {
-		tmp, err = strconv.ParseInt(data[18], 10, 64)
+	// parse column 20 base_hitrate : 基础命中率（万分比）
+	if data[20] != "" {
+		tmp, err = strconv.ParseInt(data[20], 10, 64)
 		if err != nil {
 			err = errors.New("parse field base_hitrate 基础命中率（万分比） to int32 failed")
 			logger.ErrorWF("parse field base_hitrate 基础命中率（万分比） to int32 failed.",
 				zap.String("xlsx", "maze_skill_effect_v8【迷宫-技能-技能效果】.xlsx"), zap.String("sheet", "maze_skilleffect_v8"),
-				zap.String("parse_data", data[18]),
+				zap.String("parse_data", data[20]),
 				zap.Error(err))
 			return
 		}
 		config.Base_hitrate = int32(tmp)
 	}
 
-	// parse column 19 attr_value_7_variable_id : 参数7关联的变量id
-	if data[19] != "" {
+	// parse column 21 attr_value_7_variable_id : 参数7关联的变量id
+	if data[21] != "" {
 
 		config.Attr_value_7_variable_id = make(map[int32]int32)
 		var key int32
 		var value int32
-		vals := strings.Split(data[19], "_")
+		vals := strings.Split(data[21], "_")
 		for k, val := range vals {
 			items := strings.Split(val, ":")
 			tmp, err = strconv.ParseInt(items[0], 10, 64)
@@ -707,7 +760,7 @@ func (*gMazeSkilleffectV8Parser) Parse(logger fklog.FKLogI, data []string, row i
 				err = errors.New("parse map field attr_value_7_variable_id 参数7关联的变量id to key int32 failed")
 				logger.ErrorWF("parse map field attr_value_7_variable_id 参数7关联的变量id to key int32 failed.",
 					zap.String("xlsx", "maze_skill_effect_v8【迷宫-技能-技能效果】.xlsx"), zap.String("sheet", "maze_skilleffect_v8"),
-					// zap.String("field_data",data[19]),
+					// zap.String("field_data",data[21]),
 					zap.String("item_data", val), zap.Int("index", k),
 					zap.String("parse_data", items[0]),
 					zap.Error(err))
@@ -719,7 +772,7 @@ func (*gMazeSkilleffectV8Parser) Parse(logger fklog.FKLogI, data []string, row i
 				err = errors.New("parse map field attr_value_7_variable_id 参数7关联的变量id to value int32 failed")
 				logger.ErrorWF("parse map field attr_value_7_variable_id 参数7关联的变量id to value int32 failed.",
 					zap.String("xlsx", "maze_skill_effect_v8【迷宫-技能-技能效果】.xlsx"), zap.String("sheet", "maze_skilleffect_v8"),
-					// zap.String("field_data",data[19]),
+					// zap.String("field_data",data[21]),
 					zap.String("item_data", val), zap.Int("index", k),
 					zap.String("parse_data", items[1]),
 					zap.Error(err))
@@ -730,41 +783,41 @@ func (*gMazeSkilleffectV8Parser) Parse(logger fklog.FKLogI, data []string, row i
 		}
 	}
 
-	// parse column 20 attr_value_7_type : 参数7数值类型
-	if data[20] != "" {
-		tmp, err = strconv.ParseInt(data[20], 10, 64)
+	// parse column 22 attr_value_7_type : 参数7数值类型
+	if data[22] != "" {
+		tmp, err = strconv.ParseInt(data[22], 10, 64)
 		if err != nil {
 			err = errors.New("parse field attr_value_7_type 参数7数值类型 to int32 failed")
 			logger.ErrorWF("parse field attr_value_7_type 参数7数值类型 to int32 failed.",
 				zap.String("xlsx", "maze_skill_effect_v8【迷宫-技能-技能效果】.xlsx"), zap.String("sheet", "maze_skilleffect_v8"),
-				zap.String("parse_data", data[20]),
+				zap.String("parse_data", data[22]),
 				zap.Error(err))
 			return
 		}
 		config.Attr_value_7_type = int32(tmp)
 	}
 
-	// parse column 21 attr_value_7 : 参数7
-	if data[21] != "" {
-		tmp, err = strconv.ParseInt(data[21], 10, 64)
+	// parse column 23 attr_value_7 : 参数7
+	if data[23] != "" {
+		tmp, err = strconv.ParseInt(data[23], 10, 64)
 		if err != nil {
 			err = errors.New("parse field attr_value_7 参数7 to int32 failed")
 			logger.ErrorWF("parse field attr_value_7 参数7 to int32 failed.",
 				zap.String("xlsx", "maze_skill_effect_v8【迷宫-技能-技能效果】.xlsx"), zap.String("sheet", "maze_skilleffect_v8"),
-				zap.String("parse_data", data[21]),
+				zap.String("parse_data", data[23]),
 				zap.Error(err))
 			return
 		}
 		config.Attr_value_7 = int32(tmp)
 	}
 
-	// parse column 22 attr_value_8_variable_id : 参数8关联的变量id
-	if data[22] != "" {
+	// parse column 24 attr_value_8_variable_id : 参数8关联的变量id
+	if data[24] != "" {
 
 		config.Attr_value_8_variable_id = make(map[int32]int32)
 		var key int32
 		var value int32
-		vals := strings.Split(data[22], "_")
+		vals := strings.Split(data[24], "_")
 		for k, val := range vals {
 			items := strings.Split(val, ":")
 			tmp, err = strconv.ParseInt(items[0], 10, 64)
@@ -772,7 +825,7 @@ func (*gMazeSkilleffectV8Parser) Parse(logger fklog.FKLogI, data []string, row i
 				err = errors.New("parse map field attr_value_8_variable_id 参数8关联的变量id to key int32 failed")
 				logger.ErrorWF("parse map field attr_value_8_variable_id 参数8关联的变量id to key int32 failed.",
 					zap.String("xlsx", "maze_skill_effect_v8【迷宫-技能-技能效果】.xlsx"), zap.String("sheet", "maze_skilleffect_v8"),
-					// zap.String("field_data",data[22]),
+					// zap.String("field_data",data[24]),
 					zap.String("item_data", val), zap.Int("index", k),
 					zap.String("parse_data", items[0]),
 					zap.Error(err))
@@ -784,7 +837,7 @@ func (*gMazeSkilleffectV8Parser) Parse(logger fklog.FKLogI, data []string, row i
 				err = errors.New("parse map field attr_value_8_variable_id 参数8关联的变量id to value int32 failed")
 				logger.ErrorWF("parse map field attr_value_8_variable_id 参数8关联的变量id to value int32 failed.",
 					zap.String("xlsx", "maze_skill_effect_v8【迷宫-技能-技能效果】.xlsx"), zap.String("sheet", "maze_skilleffect_v8"),
-					// zap.String("field_data",data[22]),
+					// zap.String("field_data",data[24]),
 					zap.String("item_data", val), zap.Int("index", k),
 					zap.String("parse_data", items[1]),
 					zap.Error(err))
@@ -795,41 +848,41 @@ func (*gMazeSkilleffectV8Parser) Parse(logger fklog.FKLogI, data []string, row i
 		}
 	}
 
-	// parse column 23 attr_value_8_type : 参数8数值类型
-	if data[23] != "" {
-		tmp, err = strconv.ParseInt(data[23], 10, 64)
+	// parse column 25 attr_value_8_type : 参数8数值类型
+	if data[25] != "" {
+		tmp, err = strconv.ParseInt(data[25], 10, 64)
 		if err != nil {
 			err = errors.New("parse field attr_value_8_type 参数8数值类型 to int32 failed")
 			logger.ErrorWF("parse field attr_value_8_type 参数8数值类型 to int32 failed.",
 				zap.String("xlsx", "maze_skill_effect_v8【迷宫-技能-技能效果】.xlsx"), zap.String("sheet", "maze_skilleffect_v8"),
-				zap.String("parse_data", data[23]),
+				zap.String("parse_data", data[25]),
 				zap.Error(err))
 			return
 		}
 		config.Attr_value_8_type = int32(tmp)
 	}
 
-	// parse column 24 attr_value_8 : 参数8结算间隔时间
-	if data[24] != "" {
-		tmp, err = strconv.ParseInt(data[24], 10, 64)
+	// parse column 26 attr_value_8 : 参数8结算间隔时间
+	if data[26] != "" {
+		tmp, err = strconv.ParseInt(data[26], 10, 64)
 		if err != nil {
 			err = errors.New("parse field attr_value_8 参数8结算间隔时间 to int32 failed")
 			logger.ErrorWF("parse field attr_value_8 参数8结算间隔时间 to int32 failed.",
 				zap.String("xlsx", "maze_skill_effect_v8【迷宫-技能-技能效果】.xlsx"), zap.String("sheet", "maze_skilleffect_v8"),
-				zap.String("parse_data", data[24]),
+				zap.String("parse_data", data[26]),
 				zap.Error(err))
 			return
 		}
 		config.Attr_value_8 = int32(tmp)
 	}
 
-	// parse column 25 modify_attr_value_variable_id : 修改属性关联变量id
-	if data[25] != "" {
+	// parse column 27 modify_attr_value_variable_id : 修改属性关联变量id
+	if data[27] != "" {
 
 		config.Modify_attr_value_variable_id = make(map[int32]int32)
 		var key int32
 		var value int32
-		vals := strings.Split(data[25], "_")
+		vals := strings.Split(data[27], "_")
 		for k, val := range vals {
 			items := strings.Split(val, ":")
 			tmp, err = strconv.ParseInt(items[0], 10, 64)
@@ -837,7 +890,7 @@ func (*gMazeSkilleffectV8Parser) Parse(logger fklog.FKLogI, data []string, row i
 				err = errors.New("parse map field modify_attr_value_variable_id 修改属性关联变量id to key int32 failed")
 				logger.ErrorWF("parse map field modify_attr_value_variable_id 修改属性关联变量id to key int32 failed.",
 					zap.String("xlsx", "maze_skill_effect_v8【迷宫-技能-技能效果】.xlsx"), zap.String("sheet", "maze_skilleffect_v8"),
-					// zap.String("field_data",data[25]),
+					// zap.String("field_data",data[27]),
 					zap.String("item_data", val), zap.Int("index", k),
 					zap.String("parse_data", items[0]),
 					zap.Error(err))
@@ -849,7 +902,7 @@ func (*gMazeSkilleffectV8Parser) Parse(logger fklog.FKLogI, data []string, row i
 				err = errors.New("parse map field modify_attr_value_variable_id 修改属性关联变量id to value int32 failed")
 				logger.ErrorWF("parse map field modify_attr_value_variable_id 修改属性关联变量id to value int32 failed.",
 					zap.String("xlsx", "maze_skill_effect_v8【迷宫-技能-技能效果】.xlsx"), zap.String("sheet", "maze_skilleffect_v8"),
-					// zap.String("field_data",data[25]),
+					// zap.String("field_data",data[27]),
 					zap.String("item_data", val), zap.Int("index", k),
 					zap.String("parse_data", items[1]),
 					zap.Error(err))
@@ -860,13 +913,13 @@ func (*gMazeSkilleffectV8Parser) Parse(logger fklog.FKLogI, data []string, row i
 		}
 	}
 
-	// parse column 26 modify_attr_value_type : 修改属性数值类型
-	if data[26] != "" {
+	// parse column 28 modify_attr_value_type : 修改属性数值类型
+	if data[28] != "" {
 
 		config.Modify_attr_value_type = make(map[int32]int32)
 		var key int32
 		var value int32
-		vals := strings.Split(data[26], "_")
+		vals := strings.Split(data[28], "_")
 		for k, val := range vals {
 			items := strings.Split(val, ":")
 			tmp, err = strconv.ParseInt(items[0], 10, 64)
@@ -874,7 +927,7 @@ func (*gMazeSkilleffectV8Parser) Parse(logger fklog.FKLogI, data []string, row i
 				err = errors.New("parse map field modify_attr_value_type 修改属性数值类型 to key int32 failed")
 				logger.ErrorWF("parse map field modify_attr_value_type 修改属性数值类型 to key int32 failed.",
 					zap.String("xlsx", "maze_skill_effect_v8【迷宫-技能-技能效果】.xlsx"), zap.String("sheet", "maze_skilleffect_v8"),
-					// zap.String("field_data",data[26]),
+					// zap.String("field_data",data[28]),
 					zap.String("item_data", val), zap.Int("index", k),
 					zap.String("parse_data", items[0]),
 					zap.Error(err))
@@ -886,7 +939,7 @@ func (*gMazeSkilleffectV8Parser) Parse(logger fklog.FKLogI, data []string, row i
 				err = errors.New("parse map field modify_attr_value_type 修改属性数值类型 to value int32 failed")
 				logger.ErrorWF("parse map field modify_attr_value_type 修改属性数值类型 to value int32 failed.",
 					zap.String("xlsx", "maze_skill_effect_v8【迷宫-技能-技能效果】.xlsx"), zap.String("sheet", "maze_skilleffect_v8"),
-					// zap.String("field_data",data[26]),
+					// zap.String("field_data",data[28]),
 					zap.String("item_data", val), zap.Int("index", k),
 					zap.String("parse_data", items[1]),
 					zap.Error(err))
@@ -897,13 +950,13 @@ func (*gMazeSkilleffectV8Parser) Parse(logger fklog.FKLogI, data []string, row i
 		}
 	}
 
-	// parse column 27 modify_attr_value_attr_id : 修改属性影响属性id
-	if data[27] != "" {
+	// parse column 29 modify_attr_value_attr_id : 修改属性影响属性id
+	if data[29] != "" {
 
 		config.Modify_attr_value_attr_id = make(map[int32]int32)
 		var key int32
 		var value int32
-		vals := strings.Split(data[27], "_")
+		vals := strings.Split(data[29], "_")
 		for k, val := range vals {
 			items := strings.Split(val, ":")
 			tmp, err = strconv.ParseInt(items[0], 10, 64)
@@ -911,7 +964,7 @@ func (*gMazeSkilleffectV8Parser) Parse(logger fklog.FKLogI, data []string, row i
 				err = errors.New("parse map field modify_attr_value_attr_id 修改属性影响属性id to key int32 failed")
 				logger.ErrorWF("parse map field modify_attr_value_attr_id 修改属性影响属性id to key int32 failed.",
 					zap.String("xlsx", "maze_skill_effect_v8【迷宫-技能-技能效果】.xlsx"), zap.String("sheet", "maze_skilleffect_v8"),
-					// zap.String("field_data",data[27]),
+					// zap.String("field_data",data[29]),
 					zap.String("item_data", val), zap.Int("index", k),
 					zap.String("parse_data", items[0]),
 					zap.Error(err))
@@ -923,7 +976,7 @@ func (*gMazeSkilleffectV8Parser) Parse(logger fklog.FKLogI, data []string, row i
 				err = errors.New("parse map field modify_attr_value_attr_id 修改属性影响属性id to value int32 failed")
 				logger.ErrorWF("parse map field modify_attr_value_attr_id 修改属性影响属性id to value int32 failed.",
 					zap.String("xlsx", "maze_skill_effect_v8【迷宫-技能-技能效果】.xlsx"), zap.String("sheet", "maze_skilleffect_v8"),
-					// zap.String("field_data",data[27]),
+					// zap.String("field_data",data[29]),
 					zap.String("item_data", val), zap.Int("index", k),
 					zap.String("parse_data", items[1]),
 					zap.Error(err))
@@ -934,13 +987,13 @@ func (*gMazeSkilleffectV8Parser) Parse(logger fklog.FKLogI, data []string, row i
 		}
 	}
 
-	// parse column 28 modify_attr_value : 修改属性影响数值
-	if data[28] != "" {
+	// parse column 30 modify_attr_value : 修改属性影响数值
+	if data[30] != "" {
 
 		config.Modify_attr_value = make(map[int32]int32)
 		var key int32
 		var value int32
-		vals := strings.Split(data[28], "_")
+		vals := strings.Split(data[30], "_")
 		for k, val := range vals {
 			items := strings.Split(val, ":")
 			tmp, err = strconv.ParseInt(items[0], 10, 64)
@@ -948,7 +1001,7 @@ func (*gMazeSkilleffectV8Parser) Parse(logger fklog.FKLogI, data []string, row i
 				err = errors.New("parse map field modify_attr_value 修改属性影响数值 to key int32 failed")
 				logger.ErrorWF("parse map field modify_attr_value 修改属性影响数值 to key int32 failed.",
 					zap.String("xlsx", "maze_skill_effect_v8【迷宫-技能-技能效果】.xlsx"), zap.String("sheet", "maze_skilleffect_v8"),
-					// zap.String("field_data",data[28]),
+					// zap.String("field_data",data[30]),
 					zap.String("item_data", val), zap.Int("index", k),
 					zap.String("parse_data", items[0]),
 					zap.Error(err))
@@ -960,7 +1013,7 @@ func (*gMazeSkilleffectV8Parser) Parse(logger fklog.FKLogI, data []string, row i
 				err = errors.New("parse map field modify_attr_value 修改属性影响数值 to value int32 failed")
 				logger.ErrorWF("parse map field modify_attr_value 修改属性影响数值 to value int32 failed.",
 					zap.String("xlsx", "maze_skill_effect_v8【迷宫-技能-技能效果】.xlsx"), zap.String("sheet", "maze_skilleffect_v8"),
-					// zap.String("field_data",data[28]),
+					// zap.String("field_data",data[30]),
 					zap.String("item_data", val), zap.Int("index", k),
 					zap.String("parse_data", items[1]),
 					zap.Error(err))
@@ -988,6 +1041,8 @@ var gMazeSkilleffectV8Fields = []string{
 	"attr_value_3_variable_id",
 	"attr_value_3_type",
 	"attr_value_3",
+	"attr_value_4_base_hitrate_variable_id",
+	"attr_value_4_base_hitrate",
 	"attr_value_4",
 	"last_time_variable_id",
 	"last_time",
