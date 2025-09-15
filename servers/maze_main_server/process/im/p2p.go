@@ -21,6 +21,7 @@ func (im *IM) OnMessageList_10663_10664(s *session.Session, req *MazeIM.MessageL
 	res := &MazeIM.MessageListRS{}
 	res.Header = req.Header
 	res.ErrInfo = errors.NO_ERROR
+	res.LastMsgId = req.LastMsgId
 
 	logger.CtxInfo(ctx, "OnMessageList start", zap.Any("req", req))
 	defer func() {
