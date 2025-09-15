@@ -3,6 +3,7 @@ package friend
 import (
 	"maze_game_server/common/errors"
 	"maze_game_server/lib/nano/session"
+	"maze_game_server/model/userinfomodel"
 	"maze_game_server/pb/common/Friend"
 	"maze_game_server/services/friendservice"
 	"maze_game_server/services/userprofileservice"
@@ -17,12 +18,33 @@ func (f *FriendComponent) OnSearchUserRQ_10709_10710(s *session.Session, req *Fr
 	ctx := s.Context()
 	logger := fklog.ContextAppLogger(ctx)
 	res := &Friend.SearchUserRS{}
+	res.Header = req.Header
 
 	logger.CtxInfo(ctx, "OnSearchUserRQ start", zap.Any("req", req))
 	defer func() {
 		err = s.Response(res)
 		logger.CtxInfo(ctx, "OnSearchUserRQ end", zap.Any("res", res))
 	}()
+
+	// 检测用户是否存在
+	toInfo, err := userinfomodel.NewUserInfoModel(ctx, uint64(req.GetUserId()))
+	if err != nil {
+		logger.CtxError(ctx, "OnSearchUserRQ NewUserInfoModel Fail",
+			zap.Any("userID", userID),
+			zap.Any("toID", req.GetUserId()),
+		)
+		res.ErrInfo = errors.COMMON_ERROR_TIPS.ToInfo()
+		return
+	}
+
+	if toInfo.Level < 1 {
+		logger.CtxWarn(ctx, "OnSearchUserRQ Not Found User",
+			zap.Any("userID", userID),
+			zap.Any("toID", req.GetUserId()),
+		)
+		res.ErrInfo = errors.COMMON_ERROR_TIPS.Wrap("用户不存在")
+		return
+	}
 
 	nowUserProfile, err := userprofileservice.GlobalUserProfileService.GetUserProfile(ctx, uint64(req.GetUserId()))
 	if err != nil {
@@ -31,14 +53,11 @@ func (f *FriendComponent) OnSearchUserRQ_10709_10710(s *session.Session, req *Fr
 		return
 	}
 
-	if nowUserProfile == nil {
-		res.UserInfo = &Friend.User{
-			UserId:     proto.Int64(int64(req.GetUserId())),
-			UserName:   proto.String("爱地牢"),
-			UserGender: proto.Int32(1),
-			AvaterUrl:  proto.String(""),
-		}
-		res.IsFriend = proto.Bool(false)
+	res.UserInfo = &Friend.User{
+		UserId:     proto.Int64(req.GetUserId()),
+		UserName:   proto.String(nowUserProfile.NickName),
+		UserGender: proto.Int32(nowUserProfile.Sex),
+		AvaterUrl:  proto.String(nowUserProfile.Avatar),
 	}
 
 	// todo check 是否为好友

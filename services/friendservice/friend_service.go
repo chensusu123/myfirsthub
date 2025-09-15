@@ -19,8 +19,8 @@ type FriendService interface {
 	// AddBlacklist(logger fklog.FKLogI, userID, toUserID uint64) *errors.CodeError
 	// // 移除黑名单
 	// RemoveBlacklist(logger fklog.FKLogI, userID, toId uint64) *errors.CodeError
-	// // 移除好友
-	// RemoveFriend(logger fklog.FKLogI, userId, toId uint64) *errors.CodeError
+	// 移除好友
+	RemoveFriend(ctx context.Context, userId, toId uint64) (to *friendmodel.FriendInfo, in *friendmodel.FriendInfo, err error)
 	// // 收到的好友请求列表  申请列表30天清除
 	ReceiveFriendRequestList(ctx context.Context, userId uint64, page, pageSize int32) ([]*friendmodel.ReceiveFriendRequestInfo, bool, error)
 	// // 发送的好友请求列表  发送列表30天清除
