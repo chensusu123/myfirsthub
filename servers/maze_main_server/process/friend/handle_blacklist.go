@@ -52,7 +52,7 @@ func (f *FriendComponent) OnBlacklist_10717_10718(s *session.Session, req *Frien
 		}
 		res.BlackUserList = append(res.BlackUserList, &Friend.BlackUserInfo{
 			UserInfo: &Friend.User{
-				UserId:     proto.Int64(int64(userProfile.UserID)),
+				UserId:     proto.Int64(int64(friend.UserId)),
 				UserName:   proto.String(userProfile.NickName),
 				UserGender: proto.Int32(userProfile.Sex),
 				AvaterUrl:  proto.String(userProfile.Avatar),
