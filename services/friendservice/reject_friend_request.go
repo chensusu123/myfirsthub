@@ -76,18 +76,27 @@ func (s *service) RefuseFriendApply(ctx context.Context, userID uint64, toID []i
 		}
 
 		// 通知对方拒绝 todo
-		if codeErr := s.RejectFriendRequestEvent(ctx, uint64(realyID), userID); codeErr != nil {
-			logger.CtxError(ctx, "RejectFriendRequestEvent err", zap.Error(codeErr))
+		if err = s.RejectFriendRequestEvent(ctx, uint64(realyID), userID); err != nil {
+			logger.CtxError(ctx, "RefuseFriendApply err", zap.Error(err))
 			return
 		}
 		rs = append(rs, result)
 		receiveModel.ReceiveList = append(receiveModel.ReceiveList[:index], receiveModel.ReceiveList[index+1:]...)
+	}
+	err = receiveModel.Save(ctx, userID)
+	if err != nil {
+		logger.CtxError(ctx, "RefuseFriendApply Save Fail",
+			zap.Any("userID", userID),
+			zap.Any("toID", toID),
+		)
+		return
 	}
 	return
 }
 
 // 收到拒绝好友请求事件
 func (s *service) RejectFriendRequestEvent(ctx context.Context, userId, fromId uint64) error {
+	logger := fklog.ContextAppLogger(ctx)
 	sendModel, err := friendmodel.NewSendFriendRequestModel(ctx, userId)
 	if err != nil {
 		return err
@@ -106,5 +115,12 @@ func (s *service) RejectFriendRequestEvent(ctx context.Context, userId, fromId u
 		return err
 	}
 
+	sendModel.SendList = append(sendModel.SendList[:index], sendModel.SendList[index+1:]...)
+
+	err = sendModel.Save(ctx, userId)
+	if err != nil {
+		logger.CtxError(ctx, "RejectFriendRequestEvent Save Fail", zap.Error(err), zap.Uint64("userID", userId), zap.Uint64("fromID", fromId))
+		return err
+	}
 	return nil
 }

@@ -69,22 +69,6 @@ func (f *FriendComponent) OnReplyFriendApply_10697_10698(s *session.Session, req
 			continue
 		}
 
-		//推好友列表变化包
-		pushMsg := &Friend.FriendListChangeID{
-			AddFriendList: []*Friend.FriendInfo{
-				{
-					UserInfo: &Friend.User{
-						UserId:     proto.Int64(int64(userId)),
-						UserName:   proto.String(nowUserProfile.NickName),
-						UserGender: proto.Int32(nowUserProfile.Sex),
-						AvaterUrl:  proto.String(nowUserProfile.Avatar),
-					},
-					FriendType: proto.Int32(handlerUser.From),
-					AddTime:    proto.Int64(handlerUser.CreateAt),
-				},
-			},
-		}
-
 		toapplyID.DelReceiveInfo = append(toapplyID.DelReceiveInfo, &Friend.ReceiveInfo{
 			UserInfo: &Friend.User{
 				UserId:     proto.Int64(int64(handlerUser.FromUserId)),
@@ -98,25 +82,42 @@ func (f *FriendComponent) OnReplyFriendApply_10697_10698(s *session.Session, req
 
 		res.UserId = append(res.UserId, int64(handlerUser.FromUserId))
 
-		// 告诉对方好友列表变化
-		online.ClusterPush(ctx, handlerUser.FromUserId, 10708, pushMsg)
-
-		// 告诉自己好友列表变化
-		handlerUserMsg := &Friend.FriendListChangeID{
-			AddFriendList: []*Friend.FriendInfo{
-				{
-					UserInfo: &Friend.User{
-						UserId:     proto.Int64(int64(handlerUser.FromUserId)),
-						UserName:   proto.String(touserProfile.NickName),
-						UserGender: proto.Int32(touserProfile.Sex),
-						AvaterUrl:  proto.String(touserProfile.Avatar),
+		if req.GetReplyResult() == int32(Friend.REPLY_FRIEND_APPLY_RESULT_AGREE) {
+			//推好友列表变化包
+			pushMsg := &Friend.FriendListChangeID{
+				AddFriendList: []*Friend.FriendInfo{
+					{
+						UserInfo: &Friend.User{
+							UserId:     proto.Int64(int64(userId)),
+							UserName:   proto.String(nowUserProfile.NickName),
+							UserGender: proto.Int32(nowUserProfile.Sex),
+							AvaterUrl:  proto.String(nowUserProfile.Avatar),
+						},
+						FriendType: proto.Int32(handlerUser.From),
+						AddTime:    proto.Int64(handlerUser.CreateAt),
 					},
-					FriendType: proto.Int32(handlerUser.From),
-					AddTime:    proto.Int64(handlerUser.CreateAt),
 				},
-			},
+			}
+			// 告诉对方好友列表变化
+			online.ClusterPush(ctx, handlerUser.FromUserId, 10708, pushMsg)
+
+			// 告诉自己好友列表变化
+			handlerUserMsg := &Friend.FriendListChangeID{
+				AddFriendList: []*Friend.FriendInfo{
+					{
+						UserInfo: &Friend.User{
+							UserId:     proto.Int64(int64(handlerUser.FromUserId)),
+							UserName:   proto.String(touserProfile.NickName),
+							UserGender: proto.Int32(touserProfile.Sex),
+							AvaterUrl:  proto.String(touserProfile.Avatar),
+						},
+						FriendType: proto.Int32(handlerUser.From),
+						AddTime:    proto.Int64(handlerUser.CreateAt),
+					},
+				},
+			}
+			online.ClusterPush(ctx, userId, 10708, handlerUserMsg)
 		}
-		online.ClusterPush(ctx, userId, 10708, handlerUserMsg)
 
 		// 推发送请求变化
 		sendRqMsg := &Friend.FriendApplyResultID{
