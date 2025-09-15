@@ -100,22 +100,6 @@ func (g *Game) OnMazeBarrierEnterRQ_10447_10448(s *session.Session, req *MazeGam
 		return
 	}
 
-	// 删除关卡内物品和装备存储
-	max, cd, err := barrieritemservice.GbarrierItemsService.ClearBarrierItems(ctx, userId, req.GetBarrierId())
-	if err != nil {
-		logger.CtxError(ctx, "OnMazeBarrierEnterRQ ClearBarrierItems",
-			zap.Uint64("userID", userId),
-			zap.Int32("barrierID", req.GetBarrierId()),
-		)
-		res.ErrInfo = errors.MODULE_ERROR.ToInfo()
-		return
-	}
-
-	res.BloodDrugUseInfo = &MazeGame.BloodDrugUseInfo{
-		MaxCount: proto.Int32(int32(max)),
-		Cooldown: proto.Int32(int32(cd)),
-	}
-
 	//	res.Energy = proto.Int32(userInfo.Energy)
 	var isNewBarrier bool
 
@@ -144,6 +128,23 @@ func (g *Game) OnMazeBarrierEnterRQ_10447_10448(s *session.Session, req *MazeGam
 		logger.CtxError(ctx, "OnMazeBarrierEnterRQ DelBarrierAreaRecord fail", zap.Error(err))
 		res.ErrInfo = errors.MODULE_ERROR.ToInfo()
 		return err
+	}
+
+	// 清理当前关卡内杀怪积分相关等
+	// 删除关卡内物品和装备存储
+	max, cd, err := barrieritemservice.GbarrierItemsService.ClearBarrierItems(ctx, userId, req.GetBarrierId(), saveData.StageId)
+	if err != nil {
+		logger.CtxError(ctx, "OnMazeBarrierEnterRQ ClearBarrierItems",
+			zap.Uint64("userID", userId),
+			zap.Int32("barrierID", req.GetBarrierId()),
+		)
+		res.ErrInfo = errors.MODULE_ERROR.ToInfo()
+		return
+	}
+
+	res.BloodDrugUseInfo = &MazeGame.BloodDrugUseInfo{
+		MaxCount: proto.Int32(int32(max)),
+		Cooldown: proto.Int32(int32(cd)),
 	}
 
 	// 存档的情况需要buff能力点存储删除

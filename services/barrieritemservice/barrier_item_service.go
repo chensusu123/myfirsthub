@@ -8,7 +8,7 @@ import (
 // 关卡内物品统一掉落存储
 type barrierItemsService interface {
 	// 清除当前关卡存储
-	ClearBarrierItems(ctx context.Context, userID uint64, barrierID int32) (int64, int64, error)
+	ClearBarrierItems(ctx context.Context, userID uint64, barrierID int32, stageID int32) (int64, int64, error)
 	// 清除装备以外的物品
 	DelInAdditionToEquips(ctx context.Context, userID uint64, barrierID int32) error
 	// 尝试扣除道具
