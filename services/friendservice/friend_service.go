@@ -16,17 +16,17 @@ type FriendService interface {
 	// // 好友列表
 	FriendList(ctx context.Context, userId uint64, page, pageSize int32) ([]*friendmodel.FriendInfo, bool, error)
 	// // 添加到黑名单   会把好友和好友申请记录都删除
-	// AddBlacklist(logger fklog.FKLogI, userID, toUserID uint64) *errors.CodeError
-	// // 移除黑名单
-	// RemoveBlacklist(logger fklog.FKLogI, userID, toId uint64) *errors.CodeError
+	AddBlacklist(ctx context.Context, userId, toId uint64) error
+	// 移除黑名单
+	RemoveBlacklist(ctx context.Context, userID, toId uint64) error
 	// 移除好友
 	RemoveFriend(ctx context.Context, userId, toId uint64) (to *friendmodel.FriendInfo, in *friendmodel.FriendInfo, err error)
 	// // 收到的好友请求列表  申请列表30天清除
 	ReceiveFriendRequestList(ctx context.Context, userId uint64, page, pageSize int32) ([]*friendmodel.ReceiveFriendRequestInfo, bool, error)
 	// 发送的好友请求列表  发送列表30天清除
 	SendFriendRequestList(ctx context.Context, userId uint64, page, pageSize int32) ([]*friendmodel.SendFriendRequestInfo, bool, error)
-	// // 黑名单列表
-	// Blacklist(logger fklog.FKLogI, userId uint64, page, pageSize int32) ([]*friendmodel.BlacklistInfo, *errors.CodeError)
+	// 黑名单列表
+	Blacklist(ctx context.Context, userId uint64, page, pageSize int32) ([]*friendmodel.BlacklistInfo, bool, error)
 	// // 删除用户全部的好友, 发送的申请, 收到的申请, 黑名单
 	// DeleteUserAll(logger fklog.FKLogI, userId uint64) error
 

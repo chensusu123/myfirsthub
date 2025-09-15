@@ -35,6 +35,8 @@ func (s *service) FriendRecommend(ctx context.Context, userID uint64, pageSize i
 		return nil, err
 	}
 
+	// todo 清理过期请求
+
 	res := make([]uint64, 0)
 	nowUser := make(map[uint64]struct{})
 	// 暂时做成推荐在线玩家

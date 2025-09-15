@@ -9,7 +9,7 @@ import (
 	"go.uber.org/zap"
 )
 
-func (s *service) RemoveBlacklist(ctx context.Context, userID, toId uint64) *errors.CodeError {
+func (s *service) RemoveBlacklist(ctx context.Context, userID, toId uint64) error {
 	logger := fklog.ContextAppLogger(ctx)
 	blacklistModel, err := friendmodel.NewBlacklistModel(ctx, userID)
 	if err != nil {

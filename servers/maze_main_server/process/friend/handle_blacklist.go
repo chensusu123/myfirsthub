@@ -1,38 +1,65 @@
 package friend
 
-// func (f *FriendComponent) OnBlacklist_10572_10573(s *session.Session, req *Friend.BlacklistRQ) (err error) {
-// 	userId := uint64(s.UID())
-// 	logger := log.Clone("OnBlacklist", userId, 0)
-// 	res := &Friend.BlacklistRS{}
+import (
+	"maze_game_server/common/errors"
+	"maze_game_server/lib/nano/session"
+	"maze_game_server/pb/common/Friend"
+	"maze_game_server/services/friendservice"
+	"maze_game_server/services/userprofileservice"
 
-// 	logger.InfoWF("OnBlacklist start", zap.Any("req", req))
-// 	defer func() {
-// 		err = s.Response(res)
-// 		logger.InfoWF("OnBlacklist end", zap.Any("res", res))
-// 	}()
+	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fklog"
+	"go.uber.org/zap"
+	"google.golang.org/protobuf/proto"
+)
 
-// 	page := req.GetPage()
-// 	pageSize := req.GetPageSize()
-// 	if page < 0 || pageSize < 0 {
-// 		return errors.COMMON_ERROR_TIPS.WrapMsg("page 和 pageSize 必须为正数")
-// 	}
+func (f *FriendComponent) OnBlacklist_10717_10718(s *session.Session, req *Friend.BlacklistRQ) (err error) {
+	userId := uint64(s.UID())
+	ctx := s.Context()
+	logger := fklog.ContextAppLogger(ctx)
+	res := &Friend.BlacklistRS{}
+	res.Header = req.Header
+	res.Page = req.Page
 
-// 	friends, codeErr := friendservice.GlobalFriendService.Blacklist(logger, userId, page, pageSize)
-// 	if codeErr != nil {
-// 		logger.ErrorWF("OnBlacklist Blacklist err ", zap.Error(err), zap.Int32("page", page), zap.Int32("pageSize", pageSize))
-// 		res.ErrInfo = codeErr.ToInfo()
-// 		return codeErr
-// 	}
-// 	res.Page = req.Page
-// 	res.PageSize = req.PageSize
-// 	res.BlackUserList = make([]*Friend.BlackUserInfo, 0, len(friends))
-// 	// todo 头像昵称
-// 	for _, friend := range friends {
-// 		res.BlackUserList = append(res.BlackUserList, &Friend.BlackUserInfo{
-// 			UserId:  proto.Uint64(friend.UserId),
-// 			AddTime: proto.Int64(friend.CreateAt),
-// 		})
-// 	}
+	logger.CtxInfo(ctx, "OnBlacklist start", zap.Any("req", req))
+	defer func() {
+		err = s.Response(res)
+		logger.CtxInfo(ctx, "OnBlacklist end", zap.Any("res", res))
+	}()
 
-// 	return nil
-// }
+	page := req.GetPage()
+	pageSize := int32(10)
+
+	if page < 0 {
+		return errors.COMMON_ERROR_TIPS.WrapMsg("page必须为正数")
+	}
+
+	friends, isFinsh, err := friendservice.GlobalFriendService.Blacklist(ctx, userId, page, pageSize)
+	if err != nil {
+		logger.CtxError(ctx, "OnBlacklist Blacklist err ", zap.Error(err), zap.Int32("page", page), zap.Int32("pageSize", pageSize))
+		res.ErrInfo = errors.COMMON_ERROR_TIPS.ToInfo()
+		return
+	}
+
+	res.IsFinish = proto.Bool(isFinsh)
+	for _, friend := range friends {
+		userProfile, err := userprofileservice.GlobalUserProfileService.GetUserProfile(ctx, friend.UserId)
+		if err != nil {
+			logger.CtxError(ctx, "OnBlacklist GetUserProfile Fail",
+				zap.Any("toID", friend.UserId),
+				zap.Error(err),
+			)
+			return err
+		}
+		res.BlackUserList = append(res.BlackUserList, &Friend.BlackUserInfo{
+			UserInfo: &Friend.User{
+				UserId:     proto.Int64(int64(userProfile.UserID)),
+				UserName:   proto.String(userProfile.NickName),
+				UserGender: proto.Int32(userProfile.Sex),
+				AvaterUrl:  proto.String(userProfile.Avatar),
+			},
+			AddTime: proto.Int64(friend.CreateAt),
+		})
+	}
+
+	return nil
+}
