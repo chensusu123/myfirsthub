@@ -23,7 +23,7 @@ func (s *service) Blacklist(ctx context.Context, userId uint64, page, pageSize i
 	if count < start {
 		return []*friendmodel.BlacklistInfo{}, true, nil
 	}
-	if count < end {
+	if count <= end {
 		end = int32(len(blacklistModel.Blacklist))
 		isFinsh = true
 	}

@@ -14,7 +14,7 @@ func (s *service) FriendList(ctx context.Context, userId uint64, page, pageSize 
 	friendModel, err := friendmodel.NewFriendModel(ctx, userId)
 	if err != nil {
 		logger.CtxError(ctx, "FriendList err", zap.Error(err), zap.Int32("page", page), zap.Int32("pageSize", pageSize))
-		return nil, false, err
+		return nil, true, err
 	}
 
 	// 客户端0是开始
@@ -27,7 +27,7 @@ func (s *service) FriendList(ctx context.Context, userId uint64, page, pageSize 
 	if count < start || start > end || start < 0 || end < 0 {
 		return []*friendmodel.FriendInfo{}, true, nil
 	}
-	if count < end {
+	if count <= end {
 		end = int32(len(friendModel.FriendList))
 		finsh = true
 	}

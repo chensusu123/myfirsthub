@@ -19,16 +19,19 @@ func (s *service) ReceiveFriendRequestList(ctx context.Context, userId uint64, p
 	receiveModel, err := friendmodel.NewReceiveFriendRequestModel(ctx, userId)
 	if err != nil {
 		logger.CtxError(ctx, "ReceiveFriendRequestList NewReceiveFriendRequestModel err", zap.Error(err), zap.Int32("page", page), zap.Int32("pageSize", pageSize))
-		return nil, false, errors.MODULE_ERROR
+		return nil, true, errors.MODULE_ERROR
 	}
+
+	isFinish := false
 	count := int32(len(receiveModel.ReceiveList))
 	if count < start {
-		return []*friendmodel.ReceiveFriendRequestInfo{}, false, nil
+		return []*friendmodel.ReceiveFriendRequestInfo{}, true, nil
 	}
-	if count < end {
+	if count <= end {
 		end = int32(len(receiveModel.ReceiveList))
+		isFinish = true
 	}
 	res := receiveModel.ReceiveList[start:end]
 
-	return res, true, nil
+	return res, isFinish, nil
 }
