@@ -84,7 +84,7 @@ import (
 // 	return nil
 // }
 
-func (s *service) AgreeFriendApply(ctx context.Context, userID uint64, toID []int64) (rs []*friendmodel.ReceiveFriendRequestInfo, err error) {
+func (s *service) AgreeFriendApply(ctx context.Context, userID uint64, toID []int64) (rs []*friendmodel.ReceiveFriendRequestInfo, change []*friendmodel.ReceiveFriendRequestInfo, err error) {
 	logger := fklog.ContextAppLogger(ctx)
 	// 好友列表
 	friendModel, err := friendmodel.NewFriendModel(ctx, userID)
@@ -136,6 +136,7 @@ func (s *service) AgreeFriendApply(ctx context.Context, userID uint64, toID []in
 			// 忽略错误 已经是好友了就把收到的申请删掉
 			s.delReceiveFriendRequestNotGet(ctx, receiveModel, userID, uint64(realyID))
 			rs = append(rs, request)
+			err = fmt.Errorf("已经是好友了")
 			continue
 		}
 
@@ -152,6 +153,7 @@ func (s *service) AgreeFriendApply(ctx context.Context, userID uint64, toID []in
 		// 6.删除收到的申请
 		receiveModel.ReceiveList = append(receiveModel.ReceiveList[:index], receiveModel.ReceiveList[index+1:]...)
 		rs = append(rs, request)
+		change = append(change, request)
 	}
 
 	err = receiveModel.Save(ctx, userID)

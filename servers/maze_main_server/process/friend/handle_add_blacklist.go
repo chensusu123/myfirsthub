@@ -31,8 +31,8 @@ func (f *FriendComponent) OnAddBlack_10713_10714(s *session.Session, req *Friend
 		return err
 	}
 
-	codeErr := friendservice.GlobalFriendService.AddBlacklist(ctx, uint64(userId), uint64(toID))
-	if codeErr != nil {
+	err = friendservice.GlobalFriendService.AddBlacklist(ctx, uint64(userId), uint64(toID))
+	if err != nil {
 		logger.CtxError(ctx, "OnAddBlack AddBlacklist failed", zap.Error(err), zap.Int64("toID", toID))
 		res.ErrInfo = errors.COMMON_ERROR_TIPS.ToInfo()
 		return err
