@@ -134,10 +134,15 @@ func (p *p2p) SendMessage(ctx context.Context, a app.App, user app.User, peerID 
 	if err != nil {
 		logger.CtxError(ctx, "SaveMessage peer error", zap.Error(err))
 	}
+	//通知发送者
+	err = p.notifyMessage(ctx, int64(user.UserID()), int64(user.UserID()), messageID, _type, MessageNotificationID, content)
+	if err != nil {
+		logger.CtxError(ctx, "notifyMessage sender error", zap.Error(err))
+	}
 	// 通知接收者
 	err = p.notifyMessage(ctx, int64(user.UserID()), peerID, messageID, _type, MessageNotificationID, content)
 	if err != nil {
-		logger.CtxError(ctx, "notifyMessage error", zap.Error(err))
+		logger.CtxError(ctx, "notifyMessage peer error", zap.Error(err))
 	}
 
 	//保存发送者会话
