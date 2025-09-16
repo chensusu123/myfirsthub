@@ -12,24 +12,24 @@ import (
 
 func (s *service) AddBlacklist(ctx context.Context, userId, toId uint64) (err error) {
 	logger := fklog.ContextAppLogger(ctx)
-	friendModel, err := friendmodel.NewFriendModel(ctx, userId)
-	if err != nil {
-		logger.CtxError(ctx, "AddBlacklist GetFriends error", zap.Error(err))
-		return
-	}
-	// 1.判断是否是好友
-	if isFriend := s.IsFriend(friendModel, toId); isFriend {
-		// 先通知对方删除 todo
-		if _, err = s.RemoveFriendEvent(ctx, toId, userId); err != nil {
-			logger.CtxError(ctx, "RemoveFriendEvent err", zap.Error(err))
-			return
-		}
-		// 删除好友
-		if err = s.delFriendAndFriendRequest(ctx, friendModel, userId, toId); err != nil {
-			logger.CtxError(ctx, "AddBlacklist delFriendAndFriendRequest err", zap.Error(err), zap.Uint64("toId", toId))
-			return
-		}
-	}
+	// friendModel, err := friendmodel.NewFriendModel(ctx, userId)
+	// if err != nil {
+	// 	logger.CtxError(ctx, "AddBlacklist GetFriends error", zap.Error(err))
+	// 	return
+	// }
+	// // 1.判断是否是好友
+	// if isFriend := s.IsFriend(friendModel, toId); isFriend {
+	// 	// 先通知对方删除 todo
+	// 	if _, err = s.RemoveFriendEvent(ctx, toId, userId); err != nil {
+	// 		logger.CtxError(ctx, "RemoveFriendEvent err", zap.Error(err))
+	// 		return
+	// 	}
+	// 	// 删除好友
+	// 	if err = s.delFriendAndFriendRequest(ctx, friendModel, userId, toId); err != nil {
+	// 		logger.CtxError(ctx, "AddBlacklist delFriendAndFriendRequest err", zap.Error(err), zap.Uint64("toId", toId))
+	// 		return
+	// 	}
+	// }
 	blacklistModel, err := friendmodel.NewBlacklistModel(ctx, userId)
 	if err != nil {
 		logger.CtxError(ctx, "AddBlacklist NewBlacklistModel err", zap.Error(err), zap.Uint64("toId", toId))
