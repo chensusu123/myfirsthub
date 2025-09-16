@@ -194,7 +194,7 @@ func (p *Profile) OnQueryUserDetailInfo_10719_10720(s *session.Session, req *Use
 		return
 	}
 	// 查询用户资料
-	userDetailProfile, err := userprofileservice.GlobalUserProfileService.GetUserDetailInfo(ctx, uint64(s.ID()), uint64(req.GetUserId()))
+	userDetailProfile, err := userprofileservice.GlobalUserProfileService.GetUserDetailInfo(ctx, uint64(s.UID()), uint64(req.GetUserId()))
 	if err != nil {
 		logger.CtxError(ctx, "OnQueryUserDetailInfo get user profile fail", zap.Error(err))
 		res.ErrInfo = errors.MODULE_ERROR.ToInfo()
