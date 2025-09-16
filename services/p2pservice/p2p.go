@@ -135,12 +135,12 @@ func (p *p2p) SendMessage(ctx context.Context, a app.App, user app.User, peerID 
 		logger.CtxError(ctx, "SaveMessage peer error", zap.Error(err))
 	}
 	//通知发送者
-	err = p.notifyMessage(ctx, int64(user.UserID()), int64(user.UserID()), messageID, _type, MessageNotificationID, content)
+	err = p.notifyMessage(ctx, int64(user.UserID()), int64(peerID), int64(user.UserID()), messageID, _type, MessageNotificationID, content)
 	if err != nil {
 		logger.CtxError(ctx, "notifyMessage sender error", zap.Error(err))
 	}
 	// 通知接收者
-	err = p.notifyMessage(ctx, int64(user.UserID()), peerID, messageID, _type, MessageNotificationID, content)
+	err = p.notifyMessage(ctx, int64(user.UserID()), int64(user.UserID()), peerID, messageID, _type, MessageNotificationID, content)
 	if err != nil {
 		logger.CtxError(ctx, "notifyMessage peer error", zap.Error(err))
 	}
@@ -189,11 +189,11 @@ func (p *p2p) RemoveMessage(ctx context.Context, a app.App, user app.User, peerI
 }
 
 // notifyMessage 通知接收者
-func (p *p2p) notifyMessage(ctx context.Context, userID int64, peerID int64, messageID uint64, _type int32, packId uint16, content []byte) error {
+func (p *p2p) notifyMessage(ctx context.Context, senderID, peerID, notifyID int64, messageID uint64, _type int32, packId uint16, content []byte) error {
 	logger := fklog.ContextAppLogger(ctx)
-	userInfo, err := session.GetUserInfo(ctx, userID)
+	userInfo, err := session.GetUserInfo(ctx, senderID)
 	if err != nil {
-		logger.CtxError(ctx, "GetUserInfo error", zap.Error(err), zap.Any("userId", userID))
+		logger.CtxError(ctx, "GetUserInfo error", zap.Error(err), zap.Any("senderID", senderID))
 		return err
 	}
 	// 推送消息给集群
@@ -203,13 +203,13 @@ func (p *p2p) notifyMessage(ctx context.Context, userID int64, peerID int64, mes
 			MsgId:      proto.Uint64(messageID),
 			Type:       proto.Int32(_type),
 			Content:    []byte(content),
-			Sender:     proto.Int64(userID),
+			Sender:     proto.Int64(senderID),
 			CreateTime: proto.Int64(time.Now().Unix()),
 		},
 		UserInfo: userInfo,
 	}
 	logger.CtxInfo(ctx, "notifyMessage start", zap.Int64("peerId", peerID), zap.Any("notifyMessage", notifyMessage))
-	err = online.ClusterPush(ctx, uint64(peerID), packId, notifyMessage)
+	err = online.ClusterPush(ctx, uint64(notifyID), packId, notifyMessage)
 	if err != nil {
 		logger.CtxError(ctx, "notifyMessage error", zap.Error(err), zap.Any("notifyMessage", notifyMessage))
 	}
