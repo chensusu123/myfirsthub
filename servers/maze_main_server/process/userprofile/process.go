@@ -170,7 +170,7 @@ func (p *Profile) OnQueryAvatarToken_10511_10512(s *session.Session, req *UserPr
 }
 
 // 用于当前用户查询其他人的详细信息
-func OnQueryUserDetailInfo_10719_10720(s *session.Session, req *UserProfile.QueryUserDetailInfoRQ) (err error) {
+func (p *Profile) OnQueryUserDetailInfo_10719_10720(s *session.Session, req *UserProfile.QueryUserDetailInfoRQ) (err error) {
 	defer fkprometheus.DebugPMT("OnQueryUserDetailInfo")()
 	ctx := s.Context()
 	logger := fklog.ContextAppLogger(ctx)
@@ -254,5 +254,5 @@ func OnQueryUserDetailInfo_10719_10720(s *session.Session, req *UserProfile.Quer
 		}
 		res.EquipPosList = append(res.EquipPosList, cliEquip)
 	}
-	return nil
+	return
 }
