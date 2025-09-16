@@ -34,6 +34,12 @@ func (s *service) FriendRecommend(ctx context.Context, userID uint64, pageSize i
 		return nil, err
 	}
 
+	blacklistModel, err := friendmodel.NewBlacklistModel(ctx, userID)
+	if err != nil {
+		logger.CtxError(ctx, "FriendRecommend NewBlacklistModel err", zap.Error(err), zap.Uint64("userID", userID))
+		return nil, err
+	}
+
 	// todo 清理过期请求
 
 	res := make([]uint64, 0)
@@ -74,6 +80,12 @@ func (s *service) FriendRecommend(ctx context.Context, userID uint64, pageSize i
 			if nowID == send.ToUserId {
 				isPass = true
 				break
+			}
+		}
+
+		for _, black := range blacklistModel.Blacklist {
+			if nowID == black.UserId {
+				isPass = true
 			}
 		}
 
