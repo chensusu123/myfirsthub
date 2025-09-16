@@ -241,6 +241,7 @@ func (p *Profile) OnQueryUserDetailInfo_10719_10720(s *session.Session, req *Use
 	//装备位数据
 	// 查询装配信息
 	assembleInfo, err := dollassembleredis.GetAllAssembleInfo(ctx, uint64(req.GetUserId()))
+	logger.CtxInfo(ctx, "OnQueryUserDetailInfo get assemble info", zap.Int64("userId", req.GetUserId()), zap.Any("assembleInfo", assembleInfo))
 	if err != nil {
 		logger.CtxError(ctx, "GetDollAssembleInfo get fail", zap.Error(err))
 		return
