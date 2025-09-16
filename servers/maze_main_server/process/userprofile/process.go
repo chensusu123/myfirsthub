@@ -4,8 +4,8 @@ package userprofile
 
 import (
 	"maze_game_server/common/errors"
-	"maze_game_server/common/function/packtopb"
-	"maze_game_server/io/redis/mazebagequipredis"
+	"maze_game_server/common/function/packtopb/packequipostopb"
+	"maze_game_server/io/redis/dollassembleredis"
 	"maze_game_server/lib/nano/component"
 	"maze_game_server/lib/nano/session"
 	"maze_game_server/model/userprofilemodel"
@@ -237,22 +237,22 @@ func OnQueryUserDetailInfo_10719_10720(s *session.Session, req *UserProfile.Quer
 			ModelId: proto.Int32(v),
 		})
 	}
-	//装备信息
-	equipInfoMap, err := mazebagequipredis.GetAllEquipInfo(ctx, uint64(req.GetUserId()))
+
+	//装备位数据
+	// 查询装配信息
+	assembleInfo, err := dollassembleredis.GetAllAssembleInfo(ctx, uint64(req.GetUserId()))
 	if err != nil {
-		logger.CtxError(ctx, "OnQueryUserDetailInfo GetAllEquipInfo fail", zap.Error(err))
-		res.ErrInfo = errors.MODULE_ERROR.ToInfo()
+		logger.CtxError(ctx, "GetDollAssembleInfo get fail", zap.Error(err))
 		return
 	}
-
-	for _, equip := range equipInfoMap {
-		equipInfoPb, err := packtopb.EquipSimplifyToCliPB(ctx, equip)
+	for _, equip := range assembleInfo.MazeEquips {
+		cliEquip, err := packequipostopb.PackEquipPosPb(ctx, equip, -1)
 		if err != nil {
 			res.ErrInfo = errors.MODULE_ERROR.ToInfo()
-			logger.CtxError(ctx, "OnQueryUserDetailInfo EquipSimplifyToCliPB fail", zap.Error(err))
+			logger.CtxError(ctx, "OnQueryUserDetailInfo PackEquipPosPb fail", zap.Error(err))
 			return err
 		}
-		res.EquipInfo = append(res.EquipInfo, equipInfoPb)
+		res.EquipPosList = append(res.EquipPosList, cliEquip)
 	}
 	return nil
 }
