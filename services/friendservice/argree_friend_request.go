@@ -11,80 +11,7 @@ import (
 	"go.uber.org/zap"
 )
 
-// func (s *service) AcceptFriendRequest(logger fklog.FKLogI, userId, toId uint64) *errors.CodeError {
-// 	// 检查有没有收到好友申请
-// 	receiveModel, err := friendmodel.NewReceiveFriendRequestModel(logger, userId)
-// 	if err != nil {
-// 		logger.ErrorWF("AcceptFriendRequest NewReceiveFriendRequestModel err", zap.Error(err))
-// 		return errors.MODULE_ERROR
-// 	}
-// 	index := -1
-// 	var receive *friendmodel.ReceiveFriendRequestInfo
-// 	for j, i := range receiveModel.ReceiveList {
-// 		if i.FromUserId == toId {
-// 			index = j
-// 			receive = i
-// 			break
-// 		}
-// 	}
-// 	// 1. 检查申请记录
-// 	if receive == nil {
-// 		logger.ErrorWF("AcceptFriendRequest failed 没有好友申请记录")
-// 		return errors.COMMON_ERROR_TIPS.WrapMsg("没有好友申请记录")
-// 	}
-// 	if receive.Status != friendmodel.FriendRequestStatusPending {
-// 		logger.ErrorWF("AcceptFriendRequest failed 好友请求已经处理过了")
-// 		return errors.COMMON_ERROR_TIPS.WrapMsg("好友请求已经处理过了")
-// 	}
-// 	// 好友列表
-// 	friendModel, err := friendmodel.NewFriendModel(logger, userId)
-// 	if err != nil {
-// 		logger.ErrorWF("AcceptFriendRequest NewFriendModel err", zap.Error(err))
-// 		return errors.MODULE_ERROR
-// 	}
-// 	// 2.检查好友
-// 	if isFriend := s.IsFriend(friendModel, toId); isFriend {
-// 		// 把对方的发送也删掉
-// 		s.delSendFriendRequestEvent(logger, toId, userId)
-// 		// 忽略错误 已经是好友了就把收到的申请删掉
-// 		s.delReceiveFriendRequestNotGet(logger, receiveModel, userId, toId)
-// 		return errors.COMMON_ERROR_TIPS.WrapMsg("对方已经是你的好友了")
-// 	}
-// 	// 查一下发出去的申请数量
-// 	sendModel, err := friendmodel.NewSendFriendRequestModel(logger, userId)
-// 	if err != nil {
-// 		logger.ErrorWF("AddFriendRequest GetSendFriendRequest err", zap.Error(err))
-// 		return errors.MODULE_ERROR
-// 	}
-// 	// 3.检查好友数量
-// 	friendCount := int64(len(friendModel.FriendList)) + int64(len(sendModel.SendList))
-// 	// todo 读取好友数量配置
-// 	if friendCount >= 100 {
-// 		logger.InfoWF("AcceptFriendRequest 好友数量达到上限了", zap.Int64("friendCount", friendCount))
-// 		return errors.COMMON_ERROR_TIPS.WrapMsg("好友数量达到上限了")
-// 	}
-// 	// 4.通知同意好友申请 todo
-// 	if codeErr := s.AcceptFriendRequestEvent(logger, toId, userId); codeErr != nil {
-// 		logger.ErrorWF("AcceptFriendRequestEvent err", zap.Error(codeErr), zap.Uint64("toId", toId))
-// 		return codeErr
-// 	}
-// 	// 5.设置好友
-// 	if err = s.addFriend(logger, friendModel, userId, toId); err != nil {
-// 		logger.ErrorWF("AcceptFriendRequest addFriend err", zap.Error(err))
-// 		return errors.MODULE_ERROR
-// 	}
-// 	// 6.删除收到的申请
-// 	receiveModel.ReceiveList = append(receiveModel.ReceiveList[:index], receiveModel.ReceiveList[index+1:]...)
-// 	// 7.更新待处理记录
-// 	err = receiveModel.Save(logger, userId)
-// 	if err != nil {
-// 		logger.ErrorWF("AcceptFriendRequest SetReceiveFriendRequest err", zap.Error(err))
-// 		return errors.MODULE_ERROR
-// 	}
-// 	return nil
-// }
-
-func (s *service) AgreeFriendApply(ctx context.Context, userID uint64, toID []int64) (rs []*friendmodel.ReceiveFriendRequestInfo, change []*friendmodel.ReceiveFriendRequestInfo, err error) {
+func (s *service) AgreeFriendApply(ctx context.Context, userID uint64, toID []int64) (rs []*friendmodel.ReceiveFriendRequestInfo, change []*friendmodel.ReceiveFriendRequestInfo, isSkip bool, err error) {
 	logger := fklog.ContextAppLogger(ctx)
 	// 好友列表
 	friendModel, err := friendmodel.NewFriendModel(ctx, userID)
@@ -129,19 +56,45 @@ func (s *service) AgreeFriendApply(ctx context.Context, userID uint64, toID []in
 			continue
 		}
 
+		rs = append(rs, request)
+
+		// 删除对方的发送请求
+		s.delSendFriendRequestEvent(ctx, uint64(realyID), userID)
+		// 删除自己的收到请求
+		s.delReceiveFriendRequestNotGet(ctx, receiveModel, userID, uint64(realyID))
+
+		// 校验是否在黑名单
+		var isBlack bool
+		isBlack, err = s.IsBlacklist(ctx, userID, uint64(realyID))
+		if err != nil {
+			logger.CtxError(ctx, "AgreeFriendApply IsBlacklist Fail", zap.Any("userID", userID), zap.Any("toID", toID), zap.Error(err))
+			return
+		}
+
+		if isBlack {
+			err = errors.New("对方在黑名单中")
+			isSkip = true
+			return
+		}
+
 		// 逐步处理好友请求
 		if isFriend := s.IsFriend(friendModel, uint64(realyID)); isFriend {
-			// 把对方的发送也删掉
-			s.delSendFriendRequestEvent(ctx, uint64(realyID), userID)
-			// 忽略错误 已经是好友了就把收到的申请删掉
-			s.delReceiveFriendRequestNotGet(ctx, receiveModel, userID, uint64(realyID))
-			rs = append(rs, request)
-			err = fmt.Errorf("已经是好友了")
+			logger.CtxWarn(ctx, "AgreeFriendApply IsFriend", zap.Any("err", "已经是好友了"), zap.Any("userID", userID), zap.Any("realyID", realyID))
+			err = errors.New("已经是好友了")
+			isSkip = true
+			continue
+		}
+
+		// 判断好友列表长度
+		if len(friendModel.FriendList) >= friendmodel.MaxFriendSize {
+			logger.CtxWarn(ctx, "AgreeFriendApply Equal to Limit", zap.Any("err", "当前用户好友满了"), zap.Any("userID", userID), zap.Any("realyID", realyID))
+			err = errors.New("当前用户好友满了")
+			isSkip = true
 			continue
 		}
 
 		// 4.通知同意好友申请 todo
-		if err = s.AcceptFriendRequestEvent(ctx, uint64(realyID), userID, request.From); err != nil {
+		if isSkip, err = s.AcceptFriendRequestEvent(ctx, uint64(realyID), userID, request.From); err != nil {
 			logger.CtxError(ctx, "AgreeFriendApply err", zap.Error(err), zap.Uint64("realyID", uint64(realyID)))
 			return
 		}
@@ -152,7 +105,6 @@ func (s *service) AgreeFriendApply(ctx context.Context, userID uint64, toID []in
 		}
 		// 6.删除收到的申请
 		receiveModel.ReceiveList = append(receiveModel.ReceiveList[:index], receiveModel.ReceiveList[index+1:]...)
-		rs = append(rs, request)
 		change = append(change, request)
 	}
 
@@ -162,6 +114,38 @@ func (s *service) AgreeFriendApply(ctx context.Context, userID uint64, toID []in
 		return
 	}
 	return
+}
+
+// userID校验toID是否合法
+func (s *service) checkReliability(ctx context.Context, userID, toID uint64) (bool, error) {
+	logger := fklog.ContextAppLogger(ctx)
+	friendList, err := friendmodel.NewFriendModel(ctx, userID)
+	if err != nil {
+		logger.CtxError(ctx, "checkReliability NewFriendModel Fail", zap.Any("userID", userID), zap.Any("toID", toID), zap.Error(err))
+		return false, err
+	}
+	// 校验容量
+	if len(friendList.FriendList) >= friendmodel.MaxFriendSize {
+		return false, nil
+	}
+
+	// 校验黑名单
+	isBlack, err := s.IsBlacklist(ctx, userID, toID)
+	if err != nil {
+		logger.CtxError(ctx, "checkReliability IsBlacklist Fail", zap.Any("userID", userID), zap.Any("toID", toID), zap.Error(err))
+		return false, err
+	}
+	if isBlack {
+		return !isBlack, nil
+	}
+
+	// 校验好友列表是否存在对方
+	isFriend := s.IsFriend(friendList, toID)
+	if isFriend {
+		return !isFriend, nil
+	}
+
+	return true, nil
 }
 
 func (s *service) addFriend(ctx context.Context, friendModel *friendmodel.FriendModel, userId, toID uint64, from int32) error {
@@ -181,17 +165,17 @@ func (s *service) addFriend(ctx context.Context, friendModel *friendmodel.Friend
 }
 
 // 收到同意好友请求事件, 已经是好友了将忽略错误
-func (s *service) AcceptFriendRequestEvent(ctx context.Context, userId, fromId uint64, from int32) error {
+func (s *service) AcceptFriendRequestEvent(ctx context.Context, userId, fromId uint64, from int32) (bool, error) {
 	logger := fklog.ContextAppLogger(ctx)
 	// 好友列表
 	friendModel, err := friendmodel.NewFriendModel(ctx, userId)
 	if err != nil {
 		logger.CtxError(ctx, "AcceptFriendRequestEvent GetFriends err", zap.Error(err))
-		return err
+		return false, err
 	}
 	sendModel, err := friendmodel.NewSendFriendRequestModel(ctx, userId)
 	if err != nil {
-		return err
+		return false, err
 	}
 
 	index := -1
@@ -205,21 +189,40 @@ func (s *service) AcceptFriendRequestEvent(ctx context.Context, userId, fromId u
 		sendModel.SendList = append(sendModel.SendList[:index], sendModel.SendList[index+1:]...)
 		if err = sendModel.Save(ctx, userId); err != nil {
 			logger.CtxError(ctx, "AcceptFriendRequestEvent SetSendFriendRequest err", zap.Error(err))
-			return err
+			return false, err
 		}
 	}
 
 	if isFriend := s.IsFriend(friendModel, fromId); isFriend {
 		logger.CtxWarn(ctx, "AcceptFriendRequestEvent 对方已经是你的好友了")
-		return nil
+		return true, fmt.Errorf("对方已经是你的好友了")
 	}
+
+	// 检测容量
+	if len(friendModel.FriendList) >= friendmodel.MaxFriendSize {
+		logger.CtxWarn(ctx, "AcceptFriendRequestEvent Equal to limit", zap.String("err", "好友容量满了"), zap.Any("userId", userId), zap.Any("fromId", fromId), zap.Any("from", from))
+		return true, fmt.Errorf("对方好友容量满了")
+	}
+
+	// 检测黑名单
+	isBlack, err := s.IsBlacklist(ctx, userId, fromId)
+	if err != nil {
+		logger.CtxError(ctx, "AcceptFriendRequestEvent IsBlacklist Fail", zap.Uint64("userId", userId), zap.Uint64("fromId", fromId), zap.Error(err))
+		return false, err
+	}
+
+	if isBlack {
+		logger.CtxWarn(ctx, "AcceptFriendRequestEvent isBlack", zap.String("err", "对方已经将你拉黑"), zap.Any("userId", userId), zap.Any("fromId", fromId), zap.Any("from", from))
+		return true, fmt.Errorf("对方已经将你拉黑")
+	}
+
 	// 设置好友
 	if err = s.addFriend(ctx, friendModel, userId, fromId, from); err != nil {
 		logger.CtxError(ctx, "AcceptFriendRequestEvent addFriend err", zap.Error(err))
-		return err
+		return false, err
 	}
 	logger.CtxInfo(ctx, "AcceptFriendRequestEvent success", zap.Uint64("userId", userId), zap.Uint64("fromId", fromId))
-	return nil
+	return false, nil
 }
 
 // 删除好友请求事件
