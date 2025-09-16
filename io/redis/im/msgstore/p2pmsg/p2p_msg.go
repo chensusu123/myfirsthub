@@ -40,10 +40,14 @@ func QueryMessages(ctx context.Context, appID int32, userID, peerID int64, lastI
 	}
 	key := GetKey(cli, appID, userID, peerID)
 	var ret []string
-	if newest {
-		ret, err = cli.ZRevRangeByScore(ctx, key, &redis.ZRangeBy{Max: strconv.FormatUint(exchangeTextId(lastID-1), 10), Count: limitMessageCount}).Result()
+	if lastID == 0 {
+		ret, err = cli.ZRange(ctx, key, 0, limitMessageCount-1).Result()
 	} else {
-		ret, err = cli.ZRangeByScore(ctx, key, &redis.ZRangeBy{Min: strconv.FormatUint(exchangeTextId(lastID+1), 10), Count: limitMessageCount}).Result()
+		if newest {
+			ret, err = cli.ZRangeByScore(ctx, key, &redis.ZRangeBy{Min: strconv.FormatUint(exchangeTextId(lastID), 10), Count: limitMessageCount}).Result()
+		} else {
+			ret, err = cli.ZRevRangeByScore(ctx, key, &redis.ZRangeBy{Max: strconv.FormatUint(exchangeTextId(lastID), 10), Count: limitMessageCount}).Result()
+		}
 	}
 
 	if err != nil {
