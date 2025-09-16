@@ -125,7 +125,7 @@ func (s *service) AgreeFriendApply(ctx context.Context, userID uint64, toID []in
 				zap.Any("userID", userID),
 				zap.Any("toID", toID),
 			)
-			err = fmt.Errorf("好友关系不存在")
+			err = fmt.Errorf("请求好友不存在")
 			continue
 		}
 
@@ -135,6 +135,8 @@ func (s *service) AgreeFriendApply(ctx context.Context, userID uint64, toID []in
 			s.delSendFriendRequestEvent(ctx, uint64(realyID), userID)
 			// 忽略错误 已经是好友了就把收到的申请删掉
 			s.delReceiveFriendRequestNotGet(ctx, receiveModel, userID, uint64(realyID))
+			rs = append(rs, request)
+			continue
 		}
 
 		// 4.通知同意好友申请 todo
