@@ -26,7 +26,7 @@ func (f *FriendComponent) OnRemoveBlack_10715_10716(s *session.Session, req *Fri
 
 	toID := req.GetUserId()
 	if userId == uint64(toID) {
-		res.ErrInfo = errors.COMMON_ERROR_TIPS.Wrap("不能加自己为好友")
+		res.ErrInfo = errors.COMMON_ERROR_TIPS.Wrap("用户id不合法")
 		return
 	}
 

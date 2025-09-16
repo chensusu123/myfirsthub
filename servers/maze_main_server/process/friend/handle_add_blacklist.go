@@ -26,7 +26,7 @@ func (f *FriendComponent) OnAddBlack_10713_10714(s *session.Session, req *Friend
 
 	toID := req.GetUserId()
 	if userId == toID {
-		logger.CtxError(ctx, "OnAddBlack userId args error", zap.Any("req", req))
+		logger.CtxWarn(ctx, "OnAddBlack userId args error", zap.Any("req", req))
 		res.ErrInfo = errors.COMMON_ERROR_TIPS.Wrap("不能加自己为黑名单")
 		return err
 	}

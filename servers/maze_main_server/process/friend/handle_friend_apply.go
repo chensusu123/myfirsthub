@@ -27,7 +27,7 @@ func (f *FriendComponent) OnFriendApply_10694_10695(s *session.Session, req *Fri
 	logger.CtxInfo(ctx, "OnFriendApply start", zap.Any("req", req))
 	defer func() {
 		err = s.Response(res)
-		logger.InfoWF("OnFriendApply end", zap.Any("res", res))
+		logger.CtxInfo(ctx, "OnFriendApply end", zap.Any("res", res))
 	}()
 
 	toID := uint64(req.GetUserId())
@@ -38,8 +38,9 @@ func (f *FriendComponent) OnFriendApply_10694_10695(s *session.Session, req *Fri
 	}
 
 	sendrq, err := friendservice.GlobalFriendService.AddFriendRequest(ctx, userId, toID, req.GetFrom())
-	if err != nil {
-		logger.ErrorWF("OnFriendApply FriendRequest failed ", zap.Error(err), zap.Uint64("userId", userId), zap.Uint64("toID", toID))
+	// 过滤黑名单等错误
+	if err != nil && err.Error() != "SKIP" {
+		logger.CtxError(ctx, "OnFriendApply FriendRequest failed ", zap.Error(err), zap.Uint64("userId", userId), zap.Uint64("toID", toID))
 		res.ErrInfo = errors.COMMON_ERROR_TIPS.ToInfo()
 		return
 	}
