@@ -228,7 +228,7 @@ func (s *session) GetMessageInfo(ctx context.Context, a app.App, user app.User, 
 		return nil, nil
 	}
 	for _, session := range sessions {
-		peerID := session.PeerID
+		peerID := session.PeerInfo.GetUserId()
 		if peerID > 0 {
 			p2pmsg, err := p2pmsg.QueryMessages(ctx, a.ID(), int64(user.UserID()), peerID, uint64(0), true)
 			if err != nil {
