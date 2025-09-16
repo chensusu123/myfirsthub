@@ -36,6 +36,11 @@ func (f *FriendComponent) OnDeleteFriend_10706_10707(s *session.Session, req *Fr
 		return
 	}
 
+	logger.CtxError(ctx, "OnDeleteFriend RemoveFriend Successful",
+		zap.Any("toInfo", toInfo),
+		zap.Any("inInfo", inInfo),
+	)
+
 	delUserInfo, err := userprofileservice.GlobalUserProfileService.GetUserProfile(ctx, uint64(toID))
 	if err != nil {
 		logger.CtxError(ctx, "OnDeleteFriend GetUserProfile Fail",
@@ -56,39 +61,43 @@ func (f *FriendComponent) OnDeleteFriend_10706_10707(s *session.Session, req *Fr
 		return
 	}
 
-	// 推给自己好友列表变化包
-	tofriendListChange := &Friend.FriendListChangeID{
-		DelFriendList: []*Friend.FriendInfo{
-			{
-				UserInfo: &Friend.User{
-					UserId:     proto.Int64(toID),
-					UserName:   proto.String(delUserInfo.NickName),
-					UserGender: proto.Int32(delUserInfo.Sex),
-					AvaterUrl:  proto.String(delUserInfo.Avatar),
+	if toInfo != nil {
+		// 推给自己好友列表变化包
+		tofriendListChange := &Friend.FriendListChangeID{
+			DelFriendList: []*Friend.FriendInfo{
+				{
+					UserInfo: &Friend.User{
+						UserId:     proto.Int64(toID),
+						UserName:   proto.String(delUserInfo.NickName),
+						UserGender: proto.Int32(delUserInfo.Sex),
+						AvaterUrl:  proto.String(delUserInfo.Avatar),
+					},
+					FriendType: proto.Int32(toInfo.FriendType),
+					AddTime:    proto.Int64(toInfo.CreateAt),
 				},
-				FriendType: proto.Int32(toInfo.FriendType),
-				AddTime:    proto.Int64(toInfo.CreateAt),
 			},
-		},
+		}
+		online.ClusterPush(ctx, uint64(userId), 10708, tofriendListChange)
 	}
-	online.ClusterPush(ctx, uint64(userId), 10708, tofriendListChange)
 
-	// 推给对方好友列表变化包
-	infriendListChange := &Friend.FriendListChangeID{
-		DelFriendList: []*Friend.FriendInfo{
-			{
-				UserInfo: &Friend.User{
-					UserId:     proto.Int64(userId),
-					UserName:   proto.String(nowUserInfo.NickName),
-					UserGender: proto.Int32(nowUserInfo.Sex),
-					AvaterUrl:  proto.String(nowUserInfo.Avatar),
+	if inInfo != nil {
+		// 推给对方好友列表变化包
+		infriendListChange := &Friend.FriendListChangeID{
+			DelFriendList: []*Friend.FriendInfo{
+				{
+					UserInfo: &Friend.User{
+						UserId:     proto.Int64(userId),
+						UserName:   proto.String(nowUserInfo.NickName),
+						UserGender: proto.Int32(nowUserInfo.Sex),
+						AvaterUrl:  proto.String(nowUserInfo.Avatar),
+					},
+					FriendType: proto.Int32(inInfo.FriendType),
+					AddTime:    proto.Int64(inInfo.CreateAt),
 				},
-				FriendType: proto.Int32(inInfo.FriendType),
-				AddTime:    proto.Int64(inInfo.CreateAt),
 			},
-		},
+		}
+		online.ClusterPush(ctx, uint64(toID), 10708, infriendListChange)
 	}
-	online.ClusterPush(ctx, uint64(toID), 10708, infriendListChange)
 
 	return nil
 }
