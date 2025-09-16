@@ -40,23 +40,33 @@ func (f *FriendComponent) OnReplyFriendApply_10697_10698(s *session.Session, req
 		return err
 	}
 
+	var skip bool
 	handlerUserList := make([]*friendmodel.ReceiveFriendRequestInfo, 0)
 	changeUserList := make([]*friendmodel.ReceiveFriendRequestInfo, 0)
 	switch req.GetReplyResult() {
 	case int32(Friend.REPLY_FRIEND_APPLY_RESULT_AGREE):
-		handlerUserList, changeUserList, err = friendservice.GlobalFriendService.AgreeFriendApply(ctx, userId, toID)
+		handlerUserList, changeUserList, skip, err = friendservice.GlobalFriendService.AgreeFriendApply(ctx, userId, toID)
 		if err != nil {
-			logger.CtxError(ctx, "OnReplyFriendApply AgreeFriendApply failed", zap.Error(err), zap.Any("toID", toID))
-			res.ErrInfo = errors.COMMON_ERROR_TIPS.ToInfo()
+			if !skip {
+				logger.CtxError(ctx, "OnReplyFriendApply AgreeFriendApply failed", zap.Error(err), zap.Any("toID", toID))
+				res.ErrInfo = errors.COMMON_ERROR_TIPS.ToInfo()
+			} else {
+				res.ErrInfo = errors.COMMON_ERROR_TIPS.Wrap(err.Error())
+			}
 		}
 	case int32(Friend.REPLY_FRIEND_APPLY_RESULT_REFUSE):
-		handlerUserList, changeUserList, err = friendservice.GlobalFriendService.RefuseFriendApply(ctx, userId, toID)
+		handlerUserList, changeUserList, skip, err = friendservice.GlobalFriendService.RefuseFriendApply(ctx, userId, toID)
 		if err != nil {
-			logger.CtxError(ctx, "OnReplyFriendApply AgreeFriendApply failed", zap.Error(err), zap.Any("toID", toID))
-			res.ErrInfo = errors.COMMON_ERROR_TIPS.ToInfo()
+			if !skip {
+				logger.CtxError(ctx, "OnReplyFriendApply AgreeFriendApply failed", zap.Error(err), zap.Any("toID", toID))
+				res.ErrInfo = errors.COMMON_ERROR_TIPS.ToInfo()
+			} else {
+				res.ErrInfo = errors.COMMON_ERROR_TIPS.Wrap(err.Error())
+			}
 		}
 	}
 
+	logger.CtxInfo(ctx, "OnReplyFriendApply handler", zap.Any("handlerUserList", handlerUserList), zap.Any("changeUserList", changeUserList))
 	// 推收到请求列表变化包
 	toapplyID := &Friend.FriendApplyID{}
 

@@ -44,7 +44,7 @@ import (
 // 	return nil
 // }
 
-func (s *service) RefuseFriendApply(ctx context.Context, userID uint64, toID []int64) (rs []*friendmodel.ReceiveFriendRequestInfo, change []*friendmodel.ReceiveFriendRequestInfo, err error) {
+func (s *service) RefuseFriendApply(ctx context.Context, userID uint64, toID []int64) (rs []*friendmodel.ReceiveFriendRequestInfo, change []*friendmodel.ReceiveFriendRequestInfo, isSkip bool, err error) {
 	logger := fklog.ContextAppLogger(ctx)
 	// 检查有没有收到过好友请求
 	receiveModel, err := friendmodel.NewReceiveFriendRequestModel(ctx, userID)
