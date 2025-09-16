@@ -13,18 +13,20 @@ ENV_CONFIG = {
         "redis_host": "10.101.110.239",
         "redis_port": 65001,
         "http_url": "https://test-reg.midudutech.com/user/register/mail",
-        "gm_url_template": "http://test-gm.midudutech.com/s5/%s/generateUser?user_id=%s"
+        "bind_url": "https://test-reg.midudutech.com/user/bindServer?account_id=%s&server_id=%s",
+        "gm_url_template": "http://test-gm.midudutech.com/s%s/%s/generateUser?user_id=%s"
     },
     "play": {
         "redis_host": "10.101.110.239",
         "redis_port": 65002,
         "http_url": "https://play-reg.midudutech.com/user/register/mail",
-        "gm_url_template": "http://play-gm.midudutech.com/s4/%s/generateUser?user_id=%s"
+        "bind_url": "https://play-reg.midudutech.com/user/bindServer?account_id=%s&server_id=%s",
+        "gm_url_template": "http://play-gm.midudutech.com/s%s/%s/generateUser?user_id=%s"
     }
 }
 
-def call_gm_api(auth_id, env):
-    gm_url = ENV_CONFIG[env]["gm_url_template"] % (auth_id, auth_id)
+def call_gm_api(auth_id, env, server):
+    gm_url = ENV_CONFIG[env]["gm_url_template"] % (server, auth_id, auth_id)
     try:
         response = requests.get(gm_url)
         response.raise_for_status()
@@ -42,7 +44,7 @@ def call_gm_api(auth_id, env):
     except ValueError:
         return False, 0, "无法解析 GM 接口返回的 JSON 数据"
 
-def create_email_accounts(email_prefix, count, env):
+def create_email_accounts(email_prefix, count, env, server):
     if env not in ENV_CONFIG:
         print(f"不支持的环境: {env}，请使用 test 或 play")
         return
@@ -52,6 +54,7 @@ def create_email_accounts(email_prefix, count, env):
     r = redis.Redis(host=config["redis_host"], port=config["redis_port"], decode_responses=True)
 
     url = config["http_url"]
+    bind_url = config["bind_url"]
     headers = {
         'Accept': '*/*',
         'Accept-Encoding': 'gzip, deflate, br',
@@ -97,17 +100,30 @@ def create_email_accounts(email_prefix, count, env):
         }
 
         try:
+            # 1. 注册账号
             response = requests.post(url, headers=headers, data=data)
             response.raise_for_status()  # 检查请求是否成功
             result = response.json()
             if result.get("status") == 200:
                 auth_id = result.get("data", {}).get("auth_info", {}).get("auth_id")
-                success, user_id, error_msg = call_gm_api(auth_id, env)
-                if success:
-                    print(f"\"{email}\",\"{password}\",\"{auth_id}\",\"{user_id}\"")
-                    failCount = 0
+                # 2. 绑定账号
+                response = requests.get(bind_url % (str(auth_id), server), headers=headers)
+                response.raise_for_status()  # 检查请求是否成功
+                result = response.json()
+                if result.get("status") == 200:
+                    # 3. 生成服角色
+                    success, user_id, error_msg = call_gm_api(auth_id, env, server)
+                    if success:
+                        print(f"\"{email}\",\"{password}\",\"{auth_id}\",\"{user_id}\"")
+                        failCount = 0
+                    else:
+                        print(f"创建邮箱账号 {email} 后，调用 GM 接口失败: {error_msg}") 
+                elif result.get("status") == 500:
+                    count += 1
+                    r.incrby('s:0:account:id:pool', 1)
+                    failCount += 1
                 else:
-                    print(f"创建邮箱账号 {email} 后，调用 GM 接口失败: {error_msg}") 
+                    print(f"创建邮箱账号 {email} 失败，接口返回非 200 状态码: {result.get('desc', '未知错误')}")
             elif result.get("status") == 500:
                 count += 1
                 r.incrby('s:0:account:id:pool', 1)
@@ -122,12 +138,13 @@ def create_email_accounts(email_prefix, count, env):
         i+=1
 
 if __name__ == "__main__":
-    if len(sys.argv) != 4:
-        print("用法: python make_account.py <邮箱前缀> <数量> <test/play）>")
+    if len(sys.argv) != 5:
+        print("用法: python make_account.py <邮箱前缀> <数量> <test/play> <服ID>")
         sys.exit(1)
 
     email_prefix = sys.argv[1]
     count = int(sys.argv[2])
     env = sys.argv[3]
+    server = sys.argv[4]
 
-    create_email_accounts(email_prefix, count, env)
+    create_email_accounts(email_prefix, count, env, server)

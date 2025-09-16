@@ -218,6 +218,7 @@ func (s *service) CheckFriend(ctx context.Context, userID uint64, toID uint64) (
 	logger := fklog.ContextAppLogger(ctx)
 	// 好友列表
 	friends, err := friendmodel.NewFriendModel(ctx, userID)
+	logger.CtxDebug(ctx, "CheckFriend GetSuccesful", zap.Any("friends", friends))
 	if err != nil {
 		logger.CtxError(ctx, "CheckFriend NewFriendModel err",
 			zap.Uint64("userID", userID),
