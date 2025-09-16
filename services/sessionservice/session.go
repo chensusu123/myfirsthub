@@ -151,6 +151,7 @@ func (s *session) UpdateNormalSession(ctx context.Context, a app.App, user app.U
 func (s *session) SaveNormalSession(ctx context.Context, a app.App, user app.User, peerID int64, messageTime int64, isReceiver bool) error {
 	logger := fklog.ContextAppLogger(ctx)
 	sessionID := s.NormalSessionID(peerID)
+	logger.CtxInfo(ctx, "SaveNormalSession start", zap.Int64("peerID", peerID), zap.Uint64("userID", user.UserID()), zap.String("sessionID", sessionID))
 	//是否存在当前聊天对象perrID的session记录
 	session, err := sessionpkg.GetNormalSession(ctx, a.ID(), user.UserID(), sessionID)
 	if err != nil {
@@ -159,6 +160,7 @@ func (s *session) SaveNormalSession(ctx context.Context, a app.App, user app.Use
 	}
 	//不存在则创建
 	if session == nil {
+		logger.CtxInfo(ctx, "SaveNormalSession create session", zap.Int64("peerID", peerID), zap.Uint64("userID", user.UserID()), zap.String("sessionID", sessionID))
 		err = s.CreateNormalSession(ctx, a, user, peerID, messageTime, isReceiver)
 		if err != nil {
 			logger.CtxError(ctx, "CreateNormalSession error", zap.Error(err))
