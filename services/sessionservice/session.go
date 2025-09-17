@@ -129,11 +129,11 @@ func (s *session) CreateNormalSession(ctx context.Context, a app.App, user app.U
 	}
 	sessionInfo.Recent = []msgstore.Message{recent}
 	//通知对方
-	err = s.NotifyNormalSession(ctx, a, int64(peerID), sessionInfo)
-	if err != nil {
-		logger.CtxError(ctx, "NotifyNormalSession error", zap.Error(err))
-		return err
-	}
+	// err = s.NotifyNormalSession(ctx, a, int64(peerID), sessionInfo)
+	// if err != nil {
+	// 	logger.CtxError(ctx, "NotifyNormalSession error", zap.Error(err))
+	// 	return err
+	// }
 	//通知自己
 	err = s.NotifyNormalSession(ctx, a, int64(user.UserID()), sessionInfo)
 	if err != nil {
@@ -158,11 +158,11 @@ func (s *session) UpdateNormalSession(ctx context.Context, a app.App, user app.U
 	}
 	session.Recent = []msgstore.Message{recent}
 	//通知对方
-	err = s.NotifyUpdateSession(ctx, a, int64(peerID), session)
-	if err != nil {
-		logger.CtxError(ctx, "UpdateNormalSession NotifyNormalSession error", zap.Error(err))
-		return err
-	}
+	// err = s.NotifyUpdateSession(ctx, a, int64(peerID), session)
+	// if err != nil {
+	// 	logger.CtxError(ctx, "UpdateNormalSession NotifyNormalSession error", zap.Error(err))
+	// 	return err
+	// }
 	//通知自己
 	err = s.NotifyUpdateSession(ctx, a, int64(user.UserID()), session)
 	if err != nil {
