@@ -42,6 +42,10 @@ func (s *service) RegHttp(ctx context.Context) {
 	// alliance
 	s.SafeGETRegister(ctx, "/CreateAlliance", s.CreateAlliance)
 	s.SafeGETRegister(ctx, "/GetAllianceInfo", s.GetAllianceInfo)
+	s.SafeGETRegister(ctx, "/ChangeAllianceInfo", s.ChangeAllianceInfo)
+	s.SafeGETRegister(ctx, "/BatchChangeAlliance", s.BatchChangeAlliance)
+	s.SafeGETRegister(ctx, "/GetAllianceList", s.GetAllianceList)
+	s.SafeGETRegister(ctx, "/GetUserAlliance", s.GetUserAlliance)
 
 	// tmp
 	s.SafeGETRegister(ctx, "/SetRecommendSize", s.SetRecommendSize)

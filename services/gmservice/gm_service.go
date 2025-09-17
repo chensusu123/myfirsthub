@@ -56,6 +56,10 @@ type gmService interface {
 	// family alliacne
 	CreateAlliance(writer http.ResponseWriter, request *http.Request)
 	GetAllianceInfo(writer http.ResponseWriter, request *http.Request)
+	ChangeAllianceInfo(writer http.ResponseWriter, request *http.Request)
+	BatchChangeAlliance(writer http.ResponseWriter, request *http.Request)
+	GetAllianceList(writer http.ResponseWriter, request *http.Request)
+	GetUserAlliance(writer http.ResponseWriter, request *http.Request)
 
 	// tmp
 	SetRecommendSize(writer http.ResponseWriter, request *http.Request)

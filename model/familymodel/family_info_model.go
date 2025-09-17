@@ -64,6 +64,7 @@ type FamilyInfoModel struct {
 	FamilyMembers    []*FamilyMember `json:"family_members,omitempty"`
 	FamilyApplyUsers []*FamilyMember `json:"family_apply_users,omitempty"`
 	FamilyGroupID    int64           `json:"group_id,omitempty"`
+	IsDefault        bool            `json:"is_default,omitempty"`
 }
 
 type FamilysInfoModel []*FamilyInfoModel
@@ -125,6 +126,29 @@ func CreateFamilyInfoModel(ctx context.Context, familyName string, joinType int3
 		},
 		MemberCountLimit: memberCountLimit,
 	}
+	return r, nil
+}
+
+// 系统创建家族
+func SysCreateFamilyInfoModel(ctx context.Context) (*FamilyInfoModel, error) {
+	logger := fklog.ContextAppLogger(ctx)
+	familyID, err := familyredis.CreateFamilyId(ctx)
+	if err != nil {
+		logger.CtxError(ctx, "SysCreateFamilyInfoModel err",
+			zap.String("familyName", "系统默认联盟"),
+			zap.Error(err))
+		return nil, err
+	}
+	r := &FamilyInfoModel{
+		FamilyName: "",
+		FamilyID:   familyID,
+		FamilySetting: FamilySetting{
+			FamilyJoinType: 1,
+		},
+		MemberCountLimit: 1000000000,
+		IsDefault:        true,
+	}
+
 	return r, nil
 }
 

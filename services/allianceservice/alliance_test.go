@@ -51,7 +51,7 @@ func TestRedis(t *testing.T) {
 }
 
 func TestCreateAlliance(t *testing.T) {
-	err := GlobalAllianceService.CreateAlliance(context.Background(), "test002")
+	_, err := GlobalAllianceService.CreateAlliance(context.Background(), "test002")
 	if err != nil {
 		logger.ErrorWF("TestCreateAlliance error", zap.Error(err))
 	}
