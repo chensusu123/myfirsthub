@@ -196,7 +196,16 @@ func (s *session) SaveNormalSession(ctx context.Context, a app.App, user app.Use
 		if isReceiver {
 			session.UnreadCount += 1
 		}
+		peerInfo, err := sessionpkg.GetUserInfo(ctx, peerID)
+		if err != nil {
+			logger.CtxError(ctx, "SaveNormalSession GetUserInfo fail",
+				zap.Error(err),
+				zap.Int64("peerID", peerID),
+			)
+			return err
+		}
 		session.MessageTime = messageTime
+		session.PeerInfo = peerInfo
 		err = s.UpdateNormalSession(ctx, a, user, peerID, session)
 		if err != nil {
 			logger.CtxError(ctx, "UpdateNormalSession error", zap.Error(err))
