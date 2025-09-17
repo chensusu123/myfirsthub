@@ -241,6 +241,46 @@ func RemoveMessage(ctx context.Context, appID int32, userID, peerID int64, messa
 	return
 }
 
+// 获取会话中最新的一条消息
+func GetLastMsg(ctx context.Context, appID int32, userID, peerID int64) (messages []Message, err error) {
+	logger := fklog.ContextAppLogger(ctx)
+
+	cli, err := globalredis.GCli.GetDB()
+	if err != nil {
+		logger.CtxError(ctx, "GetLastMsgId Client fail",
+			zap.Error(err),
+		)
+		return nil, err
+	}
+	key := GetKey(cli, appID, userID, peerID)
+	//取出最后一条消息的id
+	lastMsg, err := cli.ZRevRange(ctx, key, 0, 0).Result()
+	if err != nil {
+		if errors.Is(err, redis.Nil) {
+			err = nil
+		} else {
+			logger.CtxError(ctx, "GetLastMsgId ZRevRange fail",
+				zap.Error(err),
+				zap.Any("key", key),
+			)
+			return nil, err
+		}
+	}
+	if len(lastMsg) == 0 {
+		return nil, nil
+	}
+	message := Message{}
+	// 反序列化消息
+	err = json.Unmarshal([]byte(lastMsg[0]), &message)
+	if err != nil {
+		logger.CtxError(ctx, "GetLastMsgId Unmarshal fail", zap.Error(err), zap.String("value", lastMsg[0]))
+		return nil, err
+	}
+	messages = append(messages, message)
+	logger.CtxInfo(ctx, "GetLastMsgId success", zap.Any("key", key), zap.Any("message", message))
+	return messages, nil
+}
+
 func exchangeTextId(textId uint64) uint64 {
 	t1 := (textId >> 12) & 0xffffffff00000
 	t2 := (textId & 0xfffff)

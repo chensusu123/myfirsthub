@@ -3,6 +3,7 @@ package im
 import (
 	"maze_game_server/app"
 	"maze_game_server/common/errors"
+	sessionpkg "maze_game_server/io/redis/im/session"
 	"maze_game_server/lib/nano/session"
 	"maze_game_server/pb/common/MazeIM"
 	"maze_game_server/services/p2pservice"
@@ -50,10 +51,18 @@ func (im *IM) OnMessageList_10663_10664(s *session.Session, req *MazeIM.MessageL
 		logger.CtxError(ctx, "OnMessageList QueryMessages error", zap.Error(err), zap.Any("req", req))
 		return err
 	}
-	res.PeerId = proto.Int64(peerId)
+
 	for _, message := range messages {
 		res.MsgList = append(res.MsgList, PbMessage(message))
 	}
+	res.PeerId = proto.Int64(peerId)
+	peerInfo, err := sessionpkg.GetUserInfo(ctx, peerId)
+	if err != nil {
+		res.ErrInfo = errors.COMMON_ERROR_TIPS.Wrap("获取对端信息失败")
+		logger.CtxError(ctx, "OnMessageList GetUserInfo error", zap.Error(err), zap.Any("req", req))
+		return err
+	}
+	res.PeerInfo = peerInfo
 	return nil
 }
 

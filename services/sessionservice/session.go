@@ -196,6 +196,10 @@ func (s *session) RemoveSession(ctx context.Context, a app.App, user app.User, s
 		logger.CtxError(ctx, "GetSession error", zap.Error(err))
 		return err
 	}
+	if session == nil {
+		logger.CtxWarn(ctx, "RemoveSession session not found", zap.String("sessionID", sessionID))
+		return nil
+	}
 	err = sessionpkg.RemoveSession(ctx, a.ID(), user.UserID(), sessionID)
 	if err != nil {
 		logger.CtxError(ctx, "RemoveSession error", zap.Error(err))
@@ -232,7 +236,7 @@ func (s *session) GetMessageInfo(ctx context.Context, a app.App, user app.User, 
 	for _, session := range sessions {
 		peerID := session.PeerInfo.GetUserId()
 		if peerID > 0 {
-			p2pmsg, err := p2pmsg.QueryMessages(ctx, a.ID(), int64(user.UserID()), peerID, uint64(0), true)
+			p2pmsg, err := p2pmsg.GetLastMsg(ctx, a.ID(), int64(user.UserID()), peerID)
 			if err != nil {
 				return nil, err
 			}
@@ -241,12 +245,13 @@ func (s *session) GetMessageInfo(ctx context.Context, a app.App, user app.User, 
 					SessionId:  proto.String(session.ID),
 					CreateTime: proto.Int64(session.CreateTime),
 					Recent:     PbSessionMessage(p2pmsg),
+					PeerInfo:   session.PeerInfo,
 				})
 			}
 		} else {
 			groupID := session.GroupID
 			if groupID > 0 {
-				groupmsg, err := p2pmsg.QueryMessages(ctx, a.ID(), int64(user.UserID()), 0, uint64(0), true)
+				groupmsg, err := p2pmsg.GetLastMsg(ctx, a.ID(), int64(user.UserID()), groupID)
 				if err != nil {
 					return nil, err
 				}
@@ -255,6 +260,7 @@ func (s *session) GetMessageInfo(ctx context.Context, a app.App, user app.User, 
 						SessionId:  proto.String(session.ID),
 						CreateTime: proto.Int64(session.CreateTime),
 						Recent:     PbSessionMessage(groupmsg),
+						PeerInfo:   session.PeerInfo,
 					})
 				}
 			}
