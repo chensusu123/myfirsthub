@@ -21,7 +21,7 @@ func (s *service) AddBlacklist(ctx context.Context, userId, toId uint64) (err er
 	for _, i := range blacklistModel.Blacklist {
 		if i.UserId == toId {
 			logger.CtxWarn(ctx, "AddBlacklist fail", zap.Any("err", "已经拉黑对方"))
-			return fmt.Errorf("SKIP")
+			return fmt.Errorf("已经拉黑对方")
 		}
 	}
 	blacklistModel.Blacklist = append(blacklistModel.Blacklist, &friendmodel.BlacklistInfo{
