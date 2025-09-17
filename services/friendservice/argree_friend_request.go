@@ -57,6 +57,10 @@ func (s *service) AgreeFriendApply(ctx context.Context, userID uint64, toID []in
 		}
 
 		rs = append(rs, request)
+		// 删除对方的发送请求
+		s.delSendFriendRequestEvent(ctx, uint64(realyID), userID)
+		// 删除自己的收到请求
+		s.delReceiveFriendRequestNotGet(ctx, receiveModel, userID, uint64(realyID))
 
 		// 校验是否在黑名单
 		var isBlack bool
@@ -77,7 +81,7 @@ func (s *service) AgreeFriendApply(ctx context.Context, userID uint64, toID []in
 			logger.CtxWarn(ctx, "AgreeFriendApply IsFriend", zap.Any("err", "已经是好友了"), zap.Any("userID", userID), zap.Any("realyID", realyID))
 			err = errors.New("已经是好友了")
 			isSkip = true
-			continue
+			return
 		}
 
 		// 判断好友列表长度
@@ -99,13 +103,7 @@ func (s *service) AgreeFriendApply(ctx context.Context, userID uint64, toID []in
 			return
 		}
 		// 6.删除收到的申请
-		receiveModel.ReceiveList = append(receiveModel.ReceiveList[:index], receiveModel.ReceiveList[index+1:]...)
 		change = append(change, request)
-
-		// 删除对方的发送请求
-		s.delSendFriendRequestEvent(ctx, uint64(realyID), userID)
-		// 删除自己的收到请求
-		s.delReceiveFriendRequestNotGet(ctx, receiveModel, userID, uint64(realyID))
 	}
 
 	err = receiveModel.Save(ctx, userID)

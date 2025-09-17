@@ -20,6 +20,7 @@ func (f *FriendComponent) OnReplyFriendApply_10697_10698(s *session.Session, req
 	ctx := s.Context()
 	logger := fklog.ContextAppLogger(ctx)
 	res := &Friend.ReplyFriendApplyRS{}
+	res.Header = req.Header
 	res.ReplyResult = req.ReplyResult
 
 	logger.CtxInfo(ctx, "OnReplyFriendApply start", zap.Any("req", req))

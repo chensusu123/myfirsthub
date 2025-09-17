@@ -72,17 +72,19 @@ func (s *service) RefuseFriendApply(ctx context.Context, userID uint64, toID []i
 				zap.Any("toID", realyID),
 			)
 			err = fmt.Errorf("好友关系不存在")
-			continue
+			return
 		}
+
+		rs = append(rs, result)
+		change = append(change, result)
+		receiveModel.ReceiveList = append(receiveModel.ReceiveList[:index], receiveModel.ReceiveList[index+1:]...)
 
 		// 通知对方拒绝 todo
 		if err = s.RejectFriendRequestEvent(ctx, uint64(realyID), userID); err != nil {
 			logger.CtxError(ctx, "RefuseFriendApply err", zap.Error(err))
 			return
 		}
-		rs = append(rs, result)
-		change = append(change, result)
-		receiveModel.ReceiveList = append(receiveModel.ReceiveList[:index], receiveModel.ReceiveList[index+1:]...)
+
 	}
 	err = receiveModel.Save(ctx, userID)
 	if err != nil {
