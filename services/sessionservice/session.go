@@ -373,5 +373,6 @@ func pbSessionInfo(session *sessionpkg.Session) *MazeIM.Session {
 		SessionId:  proto.String(session.ID),
 		CreateTime: proto.Int64(session.CreateTime),
 		Recent:     PbSessionMessage(session.Recent),
+		PeerInfo:   session.PeerInfo,
 	}
 }
