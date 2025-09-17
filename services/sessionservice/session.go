@@ -144,7 +144,32 @@ func (s *session) CreateNormalSession(ctx context.Context, a app.App, user app.U
 }
 
 func (s *session) UpdateNormalSession(ctx context.Context, a app.App, user app.User, peerID int64, session *sessionpkg.Session) error {
-	return sessionpkg.UpdateSession(ctx, a.ID(), user.UserID(), s.NormalSessionID(peerID), session)
+	logger := fklog.ContextAppLogger(ctx)
+	err := sessionpkg.UpdateSession(ctx, a.ID(), user.UserID(), s.NormalSessionID(peerID), session)
+	if err != nil {
+		logger.CtxError(ctx, "UpdateNormalSession  error", zap.Error(err))
+		return err
+	}
+	//新建私聊会话 通知双方
+	recent, err := sessionpkg.GetMessageRecent(ctx, a.ID(), user.UserID(), peerID)
+	if err != nil {
+		logger.CtxError(ctx, "UpdateNormalSession GetMessageRecent error", zap.Error(err))
+		return err
+	}
+	session.Recent = []msgstore.Message{recent}
+	//通知对方
+	err = s.NotifyUpdateSession(ctx, a, int64(peerID), session)
+	if err != nil {
+		logger.CtxError(ctx, "UpdateNormalSession NotifyNormalSession error", zap.Error(err))
+		return err
+	}
+	//通知自己
+	err = s.NotifyUpdateSession(ctx, a, int64(user.UserID()), session)
+	if err != nil {
+		logger.CtxError(ctx, "UpdateNormalSession NotifyNormalSession error", zap.Error(err))
+		return err
+	}
+	return nil
 }
 
 // SaveNormalSession 保存私人会话
@@ -284,6 +309,21 @@ func (s *session) NotifyNormalSession(ctx context.Context, a app.App, notifyUser
 	return err
 }
 
+// 通知 更新会话
+func (s *session) NotifyUpdateSession(ctx context.Context, a app.App, notifyUser int64, session *sessionpkg.Session) error {
+	logger := fklog.ContextAppLogger(ctx)
+	// 推送消息给集群
+	notifyMessage := &MazeIM.SessionChangeID{
+		UpdateSession: pbSessionInfo(session),
+	}
+	logger.CtxInfo(ctx, "NotifyUpdateSession start", zap.Int64("peerId", notifyUser), zap.Any("NotifyUpdateSession", notifyMessage))
+	err := online.ClusterPush(ctx, uint64(notifyUser), SessionChangeID, notifyMessage)
+	if err != nil {
+		logger.CtxError(ctx, "NotifyUpdateSession error", zap.Error(err), zap.Any("NotifyUpdateSession", notifyMessage))
+	}
+	return err
+}
+
 // 通知 删除会话
 func (s *session) NotifyRemoveSession(ctx context.Context, a app.App, notifyUser int64, session *sessionpkg.Session) error {
 	logger := fklog.ContextAppLogger(ctx)
@@ -316,10 +356,13 @@ func PbSessionMessage(messages []p2pmsg.Message) []*MazeIM.Message {
 // pbSession 转换为pb的session
 func pbSession(session *sessionpkg.Session) []*MazeIM.Session {
 	pbSessions := make([]*MazeIM.Session, 0, 1)
-	pbSessions = append(pbSessions, &MazeIM.Session{
+	pbSessions = append(pbSessions, pbSessionInfo(session))
+	return pbSessions
+}
+func pbSessionInfo(session *sessionpkg.Session) *MazeIM.Session {
+	return &MazeIM.Session{
 		SessionId:  proto.String(session.ID),
 		CreateTime: proto.Int64(session.CreateTime),
 		Recent:     PbSessionMessage(session.Recent),
-	})
-	return pbSessions
+	}
 }
