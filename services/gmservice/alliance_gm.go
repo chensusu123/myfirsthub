@@ -105,12 +105,6 @@ func (s *service) BatchChangeAlliance(writer http.ResponseWriter, request *http.
 	ctx := request.Context()
 	logger := fklog.ContextAppLogger(ctx)
 
-	page := request.Form.Get("page")
-	count := request.Form.Get("count")
-
-	_ = page
-	_ = count
-
 	var outPut gmmodel.Output
 	defer func() {
 		jsonOut, err := json.Marshal(outPut)
@@ -152,6 +146,12 @@ func (s *service) BatchChangeAlliance(writer http.ResponseWriter, request *http.
 func (s *service) GetAllianceList(writer http.ResponseWriter, request *http.Request) {
 	ctx := request.Context()
 	logger := fklog.ContextAppLogger(ctx)
+
+	page := request.Form.Get("page")
+	count := request.Form.Get("count")
+
+	_ = page
+	_ = count
 
 	var outPut gmmodel.Output
 	defer func() {
