@@ -163,6 +163,8 @@ func (s *service) GetAllianceList(writer http.ResponseWriter, request *http.Requ
 		return
 	}
 
+	page -= 1
+
 	if pageSize <= 0 {
 		pageSize = 10
 	}
