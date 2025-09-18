@@ -7,9 +7,10 @@ import (
 	"maze_game_server/model/gmmodel"
 	"maze_game_server/services/allianceservice"
 	"net/http"
+	"sort"
+	"strconv"
 	"strings"
 
-	"github.com/iancoleman/orderedmap"
 	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fklog"
 	"gitlab.ifreetalk.com/maze-plate/freetk/fkutil"
 	"go.uber.org/zap"
@@ -147,51 +148,79 @@ func (s *service) GetAllianceList(writer http.ResponseWriter, request *http.Requ
 	ctx := request.Context()
 	logger := fklog.ContextAppLogger(ctx)
 
-	page := request.Form.Get("page")
-	count := request.Form.Get("count")
+	pageSizeString := request.Form.Get("page_size")
+	pageString := request.Form.Get("page")
 
-	_ = page
-	_ = count
+	pageSize, err := strconv.ParseInt(pageSizeString, 10, 64)
+	if err != nil {
+		writer.Write([]byte(err.Error()))
+		return
+	}
 
-	var outPut gmmodel.Output
-	defer func() {
-		jsonOut, err := json.Marshal(outPut)
-		if err != nil {
-			logger.CtxError(ctx, "Post: /GetAllianceList  Marshal Fail",
-				zap.Any("request", request),
-				zap.Any("ouput", outPut),
-				zap.Error(err),
-			)
-		}
-		writer.Write(jsonOut)
-	}()
+	page, err := strconv.ParseInt(pageString, 10, 64)
+	if err != nil {
+		writer.Write([]byte(err.Error()))
+		return
+	}
+
+	if pageSize <= 0 {
+		pageSize = 10
+	}
 
 	allianceList, err := allianceservice.GlobalAllianceService.QueryAllianceList(ctx)
 	if err != nil {
 		logger.CtxError(ctx, "GetAllianceListGM QueryAllianceList Fail")
-		outPut = *gmmodel.NewOutPut(http.StatusBadGateway, err.Error(), gmmodel.DynamicData{})
+		writer.Write([]byte(err.Error()))
 		return
 	}
 
-	var records []*orderedmap.OrderedMap
+	allianceListInfo := make([]*gmmodel.AllianceInfo, 0)
 	for _, allianceID := range allianceList.Alliances {
-
 		allianceInfoModel, err := alliancemodel.LoadAllianceInfoModel(ctx, allianceID)
 		if err != nil {
 			logger.CtxError(ctx, "GetAllianceListGM LoadAllianceInfoModel err",
 				zap.Int32("allianceID", allianceID), zap.Error(err))
-			outPut = *gmmodel.NewOutPut(http.StatusBadGateway, err.Error(), gmmodel.DynamicData{})
+			writer.Write([]byte(err.Error()))
 			return
 		}
 
-		descRecord := orderedmap.New()
-		descRecord.Set("alliance_id", allianceInfoModel.AllianceID)
-		descRecord.Set("alliance_name", allianceInfoModel.AllianceName)
-		descRecord.Set("create_at", allianceInfoModel.CreateTime)
-		records = append(records, descRecord)
+		allianceListInfo = append(allianceListInfo, &gmmodel.AllianceInfo{
+			AllianceID:   int(allianceInfoModel.AllianceGroupID),
+			AllianceName: allianceInfoModel.AllianceName,
+			CreateAt:     allianceInfoModel.CreateTime,
+		})
+	}
+	total := len(allianceListInfo)
+
+	sort.Slice(allianceListInfo, func(i, j int) bool {
+		return allianceListInfo[i].CreateAt < allianceListInfo[j].CreateAt
+	})
+
+	rtAllianceListInfo := make([]*gmmodel.AllianceInfo, 0)
+	for i := page * pageSize; i < (page+1)*pageSize; i++ {
+		if i >= int64(total) {
+			break
+		}
+		rtAllianceListInfo = append(rtAllianceListInfo, allianceListInfo[i])
 	}
 
-	outPut = *gmmodel.NewOutPut(http.StatusOK, "操作成功", *gmmodel.NewDynamicData(records, len(records)))
+	userList := &gmmodel.ListInfo{
+		List:     rtAllianceListInfo,
+		Total:    total,
+		Count:    len(rtAllianceListInfo),
+		Page:     int(page),
+		PageSize: int(pageSize),
+	}
+
+	ret := gmmodel.MakeSuccessReturnMsg(userList)
+
+	retJson, err := json.Marshal(ret)
+	if err != nil {
+		writer.Write([]byte(err.Error()))
+		return
+	}
+
+	writer.Write(retJson)
 }
 
 func (s *service) GetUserAlliance(writer http.ResponseWriter, request *http.Request) {

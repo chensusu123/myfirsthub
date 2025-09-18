@@ -41,3 +41,31 @@ func NewDynamicData(list []*orderedmap.OrderedMap, total int) *DynamicData {
 		Total: total,
 	}
 }
+
+type AllianceInfo struct {
+	AllianceID   int    `json:"alliance_id,omitempty"`
+	AllianceName string `json:"alliance_name,omitempty"`
+	CreateAt     int64  `json:"create_at,omitempty"`
+}
+
+type ListInfo struct {
+	List     []*AllianceInfo `json:"list,omitempty"`
+	Count    int             `json:"count,omitempty"`
+	Total    int             `json:"total,omitempty"`
+	Page     int             `json:"page,omitempty"`
+	PageSize int             `json:"page_size,omitempty"`
+}
+
+type ReturnMsg struct {
+	Code int    `json:"status"`
+	Msg  string `json:"desc"`
+	Data any    `json:"data,omitempty"`
+}
+
+func MakeSuccessReturnMsg(data any) ReturnMsg {
+	return ReturnMsg{
+		Code: 200,
+		Msg:  "success",
+		Data: data,
+	}
+}
