@@ -40,10 +40,10 @@ func (s *service) RegHttp(ctx context.Context) {
 	s.SafeGETRegister(ctx, "/GetExcelData", s.GetExcelData)
 
 	// alliance
-	s.SafeGETRegister(ctx, "/CreateAlliance", s.CreateAlliance)
+	s.SafePOSTRegister(ctx, "/CreateAlliance", s.CreateAlliance)
 	s.SafeGETRegister(ctx, "/GetAllianceInfo", s.GetAllianceInfo)
-	s.SafeGETRegister(ctx, "/ChangeAllianceInfo", s.ChangeAllianceInfo)
-	s.SafeGETRegister(ctx, "/BatchChangeAlliance", s.BatchChangeAlliance)
+	s.SafePOSTRegister(ctx, "/ChangeAllianceInfo", s.ChangeAllianceInfo)
+	s.SafePOSTRegister(ctx, "/BatchChangeAlliance", s.BatchChangeAlliance)
 	s.SafeGETRegister(ctx, "/GetAllianceList", s.GetAllianceList)
 	s.SafeGETRegister(ctx, "/GetUserAlliance", s.GetUserAlliance)
 

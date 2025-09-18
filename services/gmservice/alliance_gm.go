@@ -4,10 +4,12 @@ import (
 	"encoding/json"
 	"fmt"
 	"maze_game_server/model/alliancemodel"
+	"maze_game_server/model/gmmodel"
 	"maze_game_server/services/allianceservice"
 	"net/http"
 	"strings"
 
+	"github.com/iancoleman/orderedmap"
 	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fklog"
 	"gitlab.ifreetalk.com/maze-plate/freetk/fkutil"
 	"go.uber.org/zap"
@@ -17,16 +19,29 @@ func (s *service) CreateAlliance(writer http.ResponseWriter, request *http.Reque
 	ctx := request.Context()
 	logger := fklog.ContextAppLogger(ctx)
 
+	var outPut gmmodel.Output
+	defer func() {
+		jsonOut, err := json.Marshal(outPut)
+		if err != nil {
+			logger.CtxError(ctx, "Post: /CreateAlliance  Marshal Fail",
+				zap.Any("request", request),
+				zap.Any("ouput", outPut),
+				zap.Error(err),
+			)
+		}
+		writer.Write(jsonOut)
+	}()
+
 	name := request.Form.Get("name")
 	allianceID, err := allianceservice.GlobalAllianceService.CreateAlliance(ctx, name)
 	if err != nil {
 		logger.CtxError(ctx, "CreateAlliance Gm Fail",
 			zap.Error(err),
 		)
-		writer.Write([]byte(err.Error()))
+		outPut = *gmmodel.NewOutPut(http.StatusBadGateway, err.Error(), gmmodel.DynamicData{})
 		return
 	}
-	writer.Write([]byte(fmt.Sprintf("ok 联盟id:%d", allianceID)))
+	outPut = *gmmodel.NewOutPut(http.StatusOK, fmt.Sprintf("ok 联盟id:%d", allianceID), gmmodel.DynamicData{})
 }
 
 func (s *service) GetAllianceInfo(writer http.ResponseWriter, request *http.Request) {
@@ -59,6 +74,19 @@ func (s *service) ChangeAllianceInfo(writer http.ResponseWriter, request *http.R
 	name := request.Form.Get("name")
 	allianceID := fkutil.ToInt32(request.Form.Get("alliance_id"))
 
+	var outPut gmmodel.Output
+	defer func() {
+		jsonOut, err := json.Marshal(outPut)
+		if err != nil {
+			logger.CtxError(ctx, "Post: /ChangeAllianceInfo  Marshal Fail",
+				zap.Any("request", request),
+				zap.Any("ouput", outPut),
+				zap.Error(err),
+			)
+		}
+		writer.Write(jsonOut)
+	}()
+
 	err := allianceservice.GlobalAllianceService.ChangeAllianceInfo(ctx, allianceID, name)
 	if err != nil {
 		logger.CtxError(ctx, "ChangeAllianceInfoGM  ChangeAllianceInfo Fail",
@@ -66,16 +94,35 @@ func (s *service) ChangeAllianceInfo(writer http.ResponseWriter, request *http.R
 			zap.Any("name", name),
 			zap.Any("allianceID", allianceID),
 		)
-		writer.Write([]byte(err.Error()))
+		outPut = *gmmodel.NewOutPut(http.StatusBadGateway, err.Error(), gmmodel.DynamicData{})
 		return
 	}
 
-	writer.Write([]byte("ok"))
+	outPut = *gmmodel.NewOutPut(http.StatusOK, "ok", gmmodel.DynamicData{})
 }
 
 func (s *service) BatchChangeAlliance(writer http.ResponseWriter, request *http.Request) {
 	ctx := request.Context()
 	logger := fklog.ContextAppLogger(ctx)
+
+	page := request.Form.Get("page")
+	count := request.Form.Get("count")
+
+	_ = page
+	_ = count
+
+	var outPut gmmodel.Output
+	defer func() {
+		jsonOut, err := json.Marshal(outPut)
+		if err != nil {
+			logger.CtxError(ctx, "Post: /ChangeAllianceInfo  Marshal Fail",
+				zap.Any("request", request),
+				zap.Any("ouput", outPut),
+				zap.Error(err),
+			)
+		}
+		writer.Write(jsonOut)
+	}()
 
 	userIDs := request.Form.Get("user_ids")
 	allianceID := fkutil.ToInt32(request.Form.Get("alliance_id"))
@@ -95,26 +142,56 @@ func (s *service) BatchChangeAlliance(writer http.ResponseWriter, request *http.
 			zap.Any("userIDs", userIDs),
 			zap.Any("allianceID", allianceID),
 		)
-		writer.Write([]byte(err.Error()))
+		outPut = *gmmodel.NewOutPut(http.StatusBadGateway, err.Error(), gmmodel.DynamicData{})
 		return
 	}
 
-	writer.Write([]byte("ok"))
+	outPut = *gmmodel.NewOutPut(http.StatusOK, "ok", gmmodel.DynamicData{})
 }
 
 func (s *service) GetAllianceList(writer http.ResponseWriter, request *http.Request) {
 	ctx := request.Context()
 	logger := fklog.ContextAppLogger(ctx)
+
+	var outPut gmmodel.Output
+	defer func() {
+		jsonOut, err := json.Marshal(outPut)
+		if err != nil {
+			logger.CtxError(ctx, "Post: /GetAllianceList  Marshal Fail",
+				zap.Any("request", request),
+				zap.Any("ouput", outPut),
+				zap.Error(err),
+			)
+		}
+		writer.Write(jsonOut)
+	}()
+
 	allianceList, err := allianceservice.GlobalAllianceService.QueryAllianceList(ctx)
 	if err != nil {
 		logger.CtxError(ctx, "GetAllianceListGM QueryAllianceList Fail")
-		writer.Write([]byte(err.Error()))
+		outPut = *gmmodel.NewOutPut(http.StatusBadGateway, err.Error(), gmmodel.DynamicData{})
 		return
 	}
 
-	for _, alallianceID := range allianceList.Alliances {
-		writer.Write([]byte(fmt.Sprintf("联盟id:%d\n", alallianceID)))
+	var records []*orderedmap.OrderedMap
+	for _, allianceID := range allianceList.Alliances {
+
+		allianceInfoModel, err := alliancemodel.LoadAllianceInfoModel(ctx, allianceID)
+		if err != nil {
+			logger.CtxError(ctx, "GetAllianceListGM LoadAllianceInfoModel err",
+				zap.Int32("allianceID", allianceID), zap.Error(err))
+			outPut = *gmmodel.NewOutPut(http.StatusBadGateway, err.Error(), gmmodel.DynamicData{})
+			return
+		}
+
+		descRecord := orderedmap.New()
+		descRecord.Set("alliance_id", allianceInfoModel.AllianceID)
+		descRecord.Set("alliance_name", allianceInfoModel.AllianceName)
+		descRecord.Set("create_at", allianceInfoModel.CreateTime)
+		records = append(records, descRecord)
 	}
+
+	outPut = *gmmodel.NewOutPut(http.StatusOK, "操作成功", *gmmodel.NewDynamicData(records, len(records)))
 }
 
 func (s *service) GetUserAlliance(writer http.ResponseWriter, request *http.Request) {
