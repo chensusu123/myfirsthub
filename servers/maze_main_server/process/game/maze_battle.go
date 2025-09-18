@@ -351,7 +351,9 @@ func GetMazeAIMonsterConfig(ctx context.Context, userId uint64, force int64, foe
 	}
 	if len(foeCfg.Passive_skill_id) > 0 {
 		for _, skillId := range foeCfg.Passive_skill_id {
-			skillIds = append(skillIds, skillId)
+			if skillId > 0 {
+				skillIds = append(skillIds, skillId)
+			}
 		}
 	}
 	skillTotalInfo := &MazeAIBattle.MazeAISkillTotalInfo{}
