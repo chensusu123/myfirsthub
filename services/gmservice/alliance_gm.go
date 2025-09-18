@@ -187,7 +187,7 @@ func (s *service) GetAllianceList(writer http.ResponseWriter, request *http.Requ
 		}
 
 		allianceListInfo = append(allianceListInfo, &gmmodel.AllianceInfo{
-			AllianceID:   int(allianceInfoModel.AllianceGroupID),
+			AllianceID:   int(allianceInfoModel.AllianceID),
 			AllianceName: allianceInfoModel.AllianceName,
 			CreateAt:     allianceInfoModel.CreateTime,
 		})
