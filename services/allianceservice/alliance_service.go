@@ -14,10 +14,14 @@ type AllianceService interface {
 	QueryUserAlliance(ctx context.Context, userID uint64) (allianceID int32, err error)
 	// 申请更改联盟
 	ApplyChangeAlliance(ctx context.Context, userID uint64, allianceID int32) error
+	// 批量更改联盟
+	BatchChangeAlliance(ctx context.Context, userID []uint64, allianceID int32) error
 	// 增加联盟
-	CreateAlliance(ctx context.Context, allianceName string) error
-	//订阅联盟
+	CreateAlliance(ctx context.Context, allianceName string) (int32, error)
+	// 订阅联盟
 	SubscribeAllianceChat(ctx context.Context, userID uint64, allianceID int32, group_ids []int64) error
+	// 编辑联盟信息
+	ChangeAllianceInfo(ctx context.Context, allianceID int32, allianceName string) error
 }
 
 var GlobalAllianceService AllianceService

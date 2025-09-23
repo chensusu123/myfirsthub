@@ -31,21 +31,25 @@ func (s *service) RemoveFriend(ctx context.Context, userId, toId uint64) (to *fr
 		return
 	}
 
+	// 删除自己的好友以及申请等
 	if err = s.delFriendAndFriendRequest(ctx, friendModel, userId, toId); err != nil {
 		logger.CtxError(ctx, "RemoveFriend delFriend err", zap.Error(err))
 		return
 	}
 
+	logger.CtxInfo(ctx, "RemoveFriend successful", zap.Any("userId", userId), zap.Any("toId", toId))
 	return
 }
 
 func (s *service) getFriendInfo(ctx context.Context, friendModel *friendmodel.FriendModel, toId uint64) (to *friendmodel.FriendInfo) {
+	logger := fklog.ContextAppLogger(ctx)
 	for _, friendInfo := range friendModel.FriendList {
 		if friendInfo.UserId == toId {
 			to = friendInfo
 			return
 		}
 	}
+	logger.CtxInfo(ctx, "getFriendInfo Successful", zap.Any("friendModel", friendModel), zap.Any("toId", toId))
 	return
 }
 
@@ -71,7 +75,7 @@ func (s *service) delFriendAndFriendRequest(ctx context.Context, friendModel *fr
 	// 失败了也没关系，好友删除了就行
 	s.delReceiveFriendRequest(ctx, userId, toId)
 	s.delSendFriendRequest(ctx, userId, toId)
-	logger.CtxInfo(ctx, "delFriendAndFriendRequest success", zap.Any("toId", toId))
+	logger.CtxInfo(ctx, "delFriendAndFriendRequest success", zap.Any("friendModel", friendModel), zap.Any("userId", userId), zap.Any("toId", toId), zap.Any("index", index))
 	return nil
 }
 
@@ -145,7 +149,7 @@ func (s *service) delSendFriendRequest(ctx context.Context, userId, toId uint64)
 	if err = s.delSendFriendRequestNotGet(ctx, sendModel, userId, toId); err != nil {
 		return err
 	}
-
+	logger.CtxInfo(ctx, "delSendFriendRequest Successful", zap.Any("userId", userId), zap.Any("toId", toId), zap.Any("sendModel", sendModel))
 	return nil
 }
 

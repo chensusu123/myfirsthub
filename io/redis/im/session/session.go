@@ -8,8 +8,11 @@ import (
 	globalredis "maze_game_server/io/redis"
 	"maze_game_server/io/redis/im/msgstore"
 	"maze_game_server/io/redis/im/msgstore/p2pmsg"
+	"maze_game_server/pb/common/MazeIM"
+	"maze_game_server/services/userprofileservice"
 	"time"
 
+	"github.com/gogo/protobuf/proto"
 	"github.com/redis/go-redis/v9"
 	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/database/nanoredis"
 	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fklog"
@@ -19,7 +22,7 @@ import (
 type Session struct {
 	ID          string             `json:"id,omitempty"`
 	CreateTime  int64              `json:"create_time,omitempty"`
-	PeerID      int64              `json:"peer_id,omitempty"`
+	PeerInfo    *MazeIM.User       `json:"peer_info,omitempty"`
 	GroupID     int64              `json:"group_id,omitempty"`
 	MessageTime int64              `json:"message_time,omitempty"`
 	UnreadCount int64              `json:"unread_count,omitempty"`
@@ -80,8 +83,16 @@ func AddP2PSession(ctx context.Context, appID int32, userID uint64, sessionID st
 	if isReceiver {
 		initUnreadCount = 1
 	}
+	peerInfo, err := GetUserInfo(ctx, peerID)
+	if err != nil {
+		logger.CtxError(ctx, "AddP2PSession GetUserInfo fail",
+			zap.Error(err),
+			zap.Int64("peerID", peerID),
+		)
+		return nil, err
+	}
 	session = &Session{
-		PeerID:      peerID,
+		PeerInfo:    peerInfo,
 		CreateTime:  time.Now().Unix(),
 		MessageTime: messageTime,
 		UnreadCount: initUnreadCount,
@@ -371,4 +382,22 @@ func SetRemoveUnreadCount(ctx context.Context, appID int32, userID int64, sessio
 
 	logger.CtxInfo(ctx, "SetRemoveUnreadCount success", zap.Any("key", key), zap.Any("jsonValue", jsonValue))
 	return nil
+}
+
+func GetUserInfo(ctx context.Context, userID int64) (user *MazeIM.User, err error) {
+	logger := fklog.ContextAppLogger(ctx)
+	curProfile, err := userprofileservice.GlobalUserProfileService.GetUserProfile(ctx, uint64(userID))
+	if err != nil {
+		logger.CtxError(ctx, "GetUserInfo get user profile fail", zap.Error(err))
+		return
+	}
+
+	user = &MazeIM.User{
+		UserId:     proto.Int64(userID),
+		UserName:   proto.String(curProfile.NickName),
+		UserGender: proto.Int32(int32(curProfile.Sex)),
+		AvaterUrl:  proto.String(curProfile.Avatar),
+		Endpoint:   proto.String(""),
+	}
+	return
 }

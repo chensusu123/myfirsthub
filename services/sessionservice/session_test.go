@@ -53,7 +53,7 @@ func TestRedis(t *testing.T) {
 }
 
 func TestQueryRecentSessions(t *testing.T) {
-	userId := uint64(50000002)
+	userId := uint64(50000001)
 	user, err := app.WrapUser(userId, "")
 	if err != nil {
 		logger.ErrorWF("OnSendMessage WrapUser error", zap.Error(err))
@@ -111,6 +111,7 @@ func TestGetMessageInfo(t *testing.T) {
 	if err != nil {
 		logger.ErrorWF("OnSendMessage QueryMessages error", zap.Error(err))
 	}
+	fmt.Println("messages:", session)
 	messageInfo, err := Default.GetMessageInfo(context.Background(), app.Maze, user, session)
 	if err != nil {
 		logger.ErrorWF("OnSendMessage GetMessageInfo error", zap.Error(err))

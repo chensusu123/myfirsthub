@@ -26,18 +26,6 @@ func (f *FriendComponent) OnFriendListRecommend_10711_10712(s *session.Session, 
 		logger.CtxInfo(ctx, "OnFriendListRecommend end", zap.Any("res", res))
 	}()
 
-	// // 临时测试使用
-	// // 固定推荐
-	// nowUsers := []uint64{10003384, 10003386, 10003388, 10003390, 10003392, 10003394}
-	// for _, nowUser := range nowUsers {
-	// 	res.UserInfo = append(res.UserInfo, &Friend.User{
-	// 		UserId:     proto.Int64(int64(nowUser)),
-	// 		UserName:   proto.String("爱地牢"),
-	// 		UserGender: proto.Int32(1),
-	// 		AvaterUrl:  proto.String(""),
-	// 	})
-	// }
-
 	recommendUsers, err := friendservice.GlobalFriendService.FriendRecommend(ctx, uint64(s.UID()), friendmodel.RecommendSize)
 	if err != nil {
 		logger.CtxError(ctx, "OnFriendListRecommend FriendRecommend fail",

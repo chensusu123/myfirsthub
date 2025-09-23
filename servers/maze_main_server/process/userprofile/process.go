@@ -5,10 +5,10 @@ package userprofile
 import (
 	"maze_game_server/common/errors"
 	"maze_game_server/common/function/packtopb/packequipostopb"
-	"maze_game_server/io/redis/dollassembleredis"
 	"maze_game_server/lib/nano/component"
 	"maze_game_server/lib/nano/session"
 	"maze_game_server/model/userprofilemodel"
+	"maze_game_server/module/dollassembleinfo"
 	"maze_game_server/pb/common/Costume"
 	"maze_game_server/pb/common/UserProfile"
 	"maze_game_server/services/allianceservice"
@@ -194,7 +194,7 @@ func (p *Profile) OnQueryUserDetailInfo_10719_10720(s *session.Session, req *Use
 		return
 	}
 	// 查询用户资料
-	userDetailProfile, err := userprofileservice.GlobalUserProfileService.GetUserDetailInfo(ctx, uint64(s.ID()), uint64(req.GetUserId()))
+	userDetailProfile, err := userprofileservice.GlobalUserProfileService.GetUserDetailInfo(ctx, uint64(s.UID()), uint64(req.GetUserId()))
 	if err != nil {
 		logger.CtxError(ctx, "OnQueryUserDetailInfo get user profile fail", zap.Error(err))
 		res.ErrInfo = errors.MODULE_ERROR.ToInfo()
@@ -240,7 +240,8 @@ func (p *Profile) OnQueryUserDetailInfo_10719_10720(s *session.Session, req *Use
 
 	//装备位数据
 	// 查询装配信息
-	assembleInfo, err := dollassembleredis.GetAllAssembleInfo(ctx, uint64(req.GetUserId()))
+	assembleInfo, err := dollassembleinfo.GetDollAssembleInfo(ctx, uint64(req.GetUserId()))
+	logger.CtxInfo(ctx, "OnQueryUserDetailInfo get assemble info", zap.Int64("userId", req.GetUserId()), zap.Any("assembleInfo", assembleInfo))
 	if err != nil {
 		logger.CtxError(ctx, "GetDollAssembleInfo get fail", zap.Error(err))
 		return

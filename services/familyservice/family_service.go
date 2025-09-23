@@ -74,6 +74,9 @@ type FamilyService interface {
 	DissolutionFamily(ctx context.Context, userID uint64, familyID int32) error
 	//订阅家族群聊
 	SubscribeFamilyChat(ctx context.Context, familyID int32, userID uint64, group_ids []int64) error
+
+	// 系统默认创建家族
+	SysCreateFamily(ctx context.Context, allianceID int32) (r *familymodel.FamilyInfoModel, err error)
 }
 
 var GlobalFamilyService FamilyService

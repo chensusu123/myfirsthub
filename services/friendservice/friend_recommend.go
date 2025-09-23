@@ -86,6 +86,21 @@ func (s *service) FriendRecommend(ctx context.Context, userID uint64, pageSize i
 		for _, black := range blacklistModel.Blacklist {
 			if nowID == black.UserId {
 				isPass = true
+				break
+			}
+		}
+
+		// 对方黑名单
+		recommendblacklistModel, err := friendmodel.NewBlacklistModel(ctx, nowID)
+		if err != nil {
+			logger.CtxError(ctx, "FriendRecommend NewBlacklistModel err", zap.Error(err), zap.Uint64("nowID", nowID))
+			return nil, err
+		}
+
+		for _, black := range recommendblacklistModel.Blacklist {
+			if userID == black.UserId {
+				isPass = true
+				break
 			}
 		}
 

@@ -1,4 +1,4 @@
-package allianceservice
+package userprofileservice
 
 import (
 	"context"
@@ -14,7 +14,7 @@ import (
 	"go.uber.org/zap"
 )
 
-var logger = log.Clone("allianceservice", 0, 0)
+var logger = log.Clone("userprofileservice", 0, 0)
 
 func TestMain(m *testing.M) {
 	originalStdout := os.Stdout
@@ -50,19 +50,18 @@ func TestRedis(t *testing.T) {
 	fmt.Println(res)
 }
 
-func TestCreateAlliance(t *testing.T) {
-	_, err := GlobalAllianceService.CreateAlliance(context.Background(), "test002")
-	if err != nil {
-		logger.ErrorWF("TestCreateAlliance error", zap.Error(err))
-	}
-	fmt.Println("TestCreateAlliance success")
-}
+func TestGetUserDetailInfo(t *testing.T) {
+	userId := uint64(50000007)
+	// _, err := app.WrapUser(userId, "")
+	// if err != nil {
+	// 	logger.ErrorWF("TestGetUserDetailInfo WrapUser error", zap.Error(err))
+	// }
 
-func TestSubscribeAllianceChat(t *testing.T) {
-	err := GlobalAllianceService.SubscribeAllianceChat(context.Background(), 50000002, 1, []int64{10000003, 10000005})
-
+	detail, err := GlobalUserProfileService.GetUserDetailInfo(context.Background(), userId, 50000001)
 	if err != nil {
-		logger.ErrorWF("TestSubscribeAllianceChat error", zap.Error(err))
+		logger.ErrorWF("TestGetUserDetailInfo SendMessage error", zap.Error(err))
 	}
-	fmt.Println("TestSubscribeAllianceChat success")
+	fmt.Println("detail==================:", detail)
+
+	// GlobalUserProfileService.GetEquipPosInfo(context.Background(), userId)
 }

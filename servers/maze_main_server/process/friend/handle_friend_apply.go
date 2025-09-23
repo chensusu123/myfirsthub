@@ -27,7 +27,7 @@ func (f *FriendComponent) OnFriendApply_10694_10695(s *session.Session, req *Fri
 	logger.CtxInfo(ctx, "OnFriendApply start", zap.Any("req", req))
 	defer func() {
 		err = s.Response(res)
-		logger.InfoWF("OnFriendApply end", zap.Any("res", res))
+		logger.CtxInfo(ctx, "OnFriendApply end", zap.Any("res", res))
 	}()
 
 	toID := uint64(req.GetUserId())
@@ -38,8 +38,11 @@ func (f *FriendComponent) OnFriendApply_10694_10695(s *session.Session, req *Fri
 	}
 
 	sendrq, err := friendservice.GlobalFriendService.AddFriendRequest(ctx, userId, toID, req.GetFrom())
+	// 过滤黑名单等错误
 	if err != nil {
-		logger.ErrorWF("OnFriendApply FriendRequest failed ", zap.Error(err), zap.Uint64("userId", userId), zap.Uint64("toID", toID))
+		if err.Error() != "SKIP" {
+			logger.CtxError(ctx, "OnFriendApply FriendRequest failed ", zap.Error(err), zap.Uint64("userId", userId), zap.Uint64("toID", toID))
+		}
 		res.ErrInfo = errors.COMMON_ERROR_TIPS.ToInfo()
 		return
 	}
@@ -54,21 +57,24 @@ func (f *FriendComponent) OnFriendApply_10694_10695(s *session.Session, req *Fri
 		return
 	}
 
-	friendApplyChangeID := &Friend.FriendApplyID{
-		AddReceiveInfo: []*Friend.ReceiveInfo{
-			{
-				UserInfo: &Friend.User{
-					UserId:     proto.Int64(int64(userId)),
-					UserName:   proto.String(nowUserProfiel.NickName),
-					UserGender: proto.Int32(nowUserProfiel.Sex),
-					AvaterUrl:  proto.String(nowUserProfiel.Avatar),
+	if sendrq != nil {
+		friendApplyChangeID := &Friend.FriendApplyID{
+			AddReceiveInfo: []*Friend.ReceiveInfo{
+				{
+					UserInfo: &Friend.User{
+						UserId:     proto.Int64(int64(userId)),
+						UserName:   proto.String(nowUserProfiel.NickName),
+						UserGender: proto.Int32(nowUserProfiel.Sex),
+						AvaterUrl:  proto.String(nowUserProfiel.Avatar),
+					},
+					ReceiveTime: proto.Int64(sendrq.CreateAt),
+					ExpireTime:  proto.Int64(sendrq.CreateAt + int64(friendmodel.ExpireTime)),
 				},
-				ReceiveTime: proto.Int64(sendrq.CreateAt),
-				ExpireTime:  proto.Int64(sendrq.CreateAt + int64(friendmodel.ExpireTime)),
 			},
-		},
+		}
+		// 通知对方请求加好友
+		online.ClusterPush(ctx, toID, 10696, friendApplyChangeID)
 	}
-	// 通知对方请求加好友
-	online.ClusterPush(ctx, toID, 10696, friendApplyChangeID)
+
 	return nil
 }

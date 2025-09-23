@@ -2,6 +2,7 @@ package alliancemodel
 
 import (
 	"context"
+	"time"
 
 	"maze_game_server/io/redis/allianceredis"
 	"maze_game_server/lib/serialize"
@@ -19,11 +20,13 @@ const (
 )
 
 type AllianceInfoModel struct {
-	AllianceID         int32   `json:"alliance_id"`
-	AllianceName       string  `json:"alliance_name"`
-	AllianceCountLimit int32   `json:"alliance_count_limit"` // 联盟中家族数量限制
-	FamilyIDs          []int32 `json:"family_ids"`           // 联盟中家族ID列表
-	AllianceGroupID    int64   `json:"alliance_group_id"`    // 联盟所属组ID
+	AllianceID         int32   `json:"alliance_id,omitempty"`
+	AllianceName       string  `json:"alliance_name,omitempty"`
+	AllianceCountLimit int32   `json:"alliance_count_limit,omitempty"` // 联盟中家族数量限制
+	FamilyIDs          []int32 `json:"family_ids,omitempty"`           // 联盟中家族ID列表
+	AllianceGroupID    int64   `json:"alliance_group_id,omitempty"`    // 联盟所属组ID
+	DefaultFamilyID    int32   `json:"default_family_id,omitempty"`    // 默认家族ID
+	CreateTime         int64   `json:"create_time,omitempty"`          // 创建时间
 }
 
 func LoadAllianceInfoModel(ctx context.Context, allianceID int32) (r *AllianceInfoModel, err error) {
@@ -44,6 +47,7 @@ func NewAllianceInfoModel(ctx context.Context, allianceID int32, allianceName st
 		AllianceCountLimit: allianceCountLimit,
 		FamilyIDs:          []int32{},
 		AllianceGroupID:    NewAllianceGroupID(ctx),
+		CreateTime:         time.Now().UnixMilli(),
 	}
 }
 
@@ -65,6 +69,10 @@ func (r *AllianceInfoModel) load(ctx context.Context, allianceID int32) (err err
 		return err
 	}
 	return
+}
+
+func (r *AllianceInfoModel) SetDeafultFamily(familydID int32) {
+	r.DefaultFamilyID = familydID
 }
 
 func (r *AllianceInfoModel) Save(ctx context.Context) (err error) {

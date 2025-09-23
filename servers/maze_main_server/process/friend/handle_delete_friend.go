@@ -36,7 +36,7 @@ func (f *FriendComponent) OnDeleteFriend_10706_10707(s *session.Session, req *Fr
 		return
 	}
 
-	logger.CtxError(ctx, "OnDeleteFriend RemoveFriend Successful",
+	logger.CtxInfo(ctx, "OnDeleteFriend RemoveFriend Successful",
 		zap.Any("toInfo", toInfo),
 		zap.Any("inInfo", inInfo),
 	)

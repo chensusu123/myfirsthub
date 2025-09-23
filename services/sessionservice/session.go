@@ -129,11 +129,11 @@ func (s *session) CreateNormalSession(ctx context.Context, a app.App, user app.U
 	}
 	sessionInfo.Recent = []msgstore.Message{recent}
 	//通知对方
-	err = s.NotifyNormalSession(ctx, a, int64(peerID), sessionInfo)
-	if err != nil {
-		logger.CtxError(ctx, "NotifyNormalSession error", zap.Error(err))
-		return err
-	}
+	// err = s.NotifyNormalSession(ctx, a, int64(peerID), sessionInfo)
+	// if err != nil {
+	// 	logger.CtxError(ctx, "NotifyNormalSession error", zap.Error(err))
+	// 	return err
+	// }
 	//通知自己
 	err = s.NotifyNormalSession(ctx, a, int64(user.UserID()), sessionInfo)
 	if err != nil {
@@ -144,13 +144,39 @@ func (s *session) CreateNormalSession(ctx context.Context, a app.App, user app.U
 }
 
 func (s *session) UpdateNormalSession(ctx context.Context, a app.App, user app.User, peerID int64, session *sessionpkg.Session) error {
-	return sessionpkg.UpdateSession(ctx, a.ID(), user.UserID(), s.NormalSessionID(peerID), session)
+	logger := fklog.ContextAppLogger(ctx)
+	err := sessionpkg.UpdateSession(ctx, a.ID(), user.UserID(), s.NormalSessionID(peerID), session)
+	if err != nil {
+		logger.CtxError(ctx, "UpdateNormalSession  error", zap.Error(err))
+		return err
+	}
+	//新建私聊会话 通知双方
+	recent, err := sessionpkg.GetMessageRecent(ctx, a.ID(), user.UserID(), peerID)
+	if err != nil {
+		logger.CtxError(ctx, "UpdateNormalSession GetMessageRecent error", zap.Error(err))
+		return err
+	}
+	session.Recent = []msgstore.Message{recent}
+	//通知对方
+	// err = s.NotifyUpdateSession(ctx, a, int64(peerID), session)
+	// if err != nil {
+	// 	logger.CtxError(ctx, "UpdateNormalSession NotifyNormalSession error", zap.Error(err))
+	// 	return err
+	// }
+	//通知自己
+	err = s.NotifyUpdateSession(ctx, a, int64(user.UserID()), session)
+	if err != nil {
+		logger.CtxError(ctx, "UpdateNormalSession NotifyNormalSession error", zap.Error(err))
+		return err
+	}
+	return nil
 }
 
 // SaveNormalSession 保存私人会话
 func (s *session) SaveNormalSession(ctx context.Context, a app.App, user app.User, peerID int64, messageTime int64, isReceiver bool) error {
 	logger := fklog.ContextAppLogger(ctx)
 	sessionID := s.NormalSessionID(peerID)
+	logger.CtxInfo(ctx, "SaveNormalSession start", zap.Int64("peerID", peerID), zap.Uint64("userID", user.UserID()), zap.String("sessionID", sessionID))
 	//是否存在当前聊天对象perrID的session记录
 	session, err := sessionpkg.GetNormalSession(ctx, a.ID(), user.UserID(), sessionID)
 	if err != nil {
@@ -159,6 +185,7 @@ func (s *session) SaveNormalSession(ctx context.Context, a app.App, user app.Use
 	}
 	//不存在则创建
 	if session == nil {
+		logger.CtxInfo(ctx, "SaveNormalSession create session", zap.Int64("peerID", peerID), zap.Uint64("userID", user.UserID()), zap.String("sessionID", sessionID))
 		err = s.CreateNormalSession(ctx, a, user, peerID, messageTime, isReceiver)
 		if err != nil {
 			logger.CtxError(ctx, "CreateNormalSession error", zap.Error(err))
@@ -169,7 +196,16 @@ func (s *session) SaveNormalSession(ctx context.Context, a app.App, user app.Use
 		if isReceiver {
 			session.UnreadCount += 1
 		}
+		peerInfo, err := sessionpkg.GetUserInfo(ctx, peerID)
+		if err != nil {
+			logger.CtxError(ctx, "SaveNormalSession GetUserInfo fail",
+				zap.Error(err),
+				zap.Int64("peerID", peerID),
+			)
+			return err
+		}
 		session.MessageTime = messageTime
+		session.PeerInfo = peerInfo
 		err = s.UpdateNormalSession(ctx, a, user, peerID, session)
 		if err != nil {
 			logger.CtxError(ctx, "UpdateNormalSession error", zap.Error(err))
@@ -193,6 +229,10 @@ func (s *session) RemoveSession(ctx context.Context, a app.App, user app.User, s
 	if err != nil {
 		logger.CtxError(ctx, "GetSession error", zap.Error(err))
 		return err
+	}
+	if session == nil {
+		logger.CtxWarn(ctx, "RemoveSession session not found", zap.String("sessionID", sessionID))
+		return nil
 	}
 	err = sessionpkg.RemoveSession(ctx, a.ID(), user.UserID(), sessionID)
 	if err != nil {
@@ -228,9 +268,9 @@ func (s *session) GetMessageInfo(ctx context.Context, a app.App, user app.User, 
 		return nil, nil
 	}
 	for _, session := range sessions {
-		peerID := session.PeerID
+		peerID := session.PeerInfo.GetUserId()
 		if peerID > 0 {
-			p2pmsg, err := p2pmsg.QueryMessages(ctx, a.ID(), int64(user.UserID()), peerID, uint64(0), true)
+			p2pmsg, err := p2pmsg.GetLastMsg(ctx, a.ID(), int64(user.UserID()), peerID)
 			if err != nil {
 				return nil, err
 			}
@@ -239,12 +279,13 @@ func (s *session) GetMessageInfo(ctx context.Context, a app.App, user app.User, 
 					SessionId:  proto.String(session.ID),
 					CreateTime: proto.Int64(session.CreateTime),
 					Recent:     PbSessionMessage(p2pmsg),
+					PeerInfo:   session.PeerInfo,
 				})
 			}
 		} else {
 			groupID := session.GroupID
 			if groupID > 0 {
-				groupmsg, err := p2pmsg.QueryMessages(ctx, a.ID(), int64(user.UserID()), 0, uint64(0), true)
+				groupmsg, err := p2pmsg.GetLastMsg(ctx, a.ID(), int64(user.UserID()), groupID)
 				if err != nil {
 					return nil, err
 				}
@@ -253,6 +294,7 @@ func (s *session) GetMessageInfo(ctx context.Context, a app.App, user app.User, 
 						SessionId:  proto.String(session.ID),
 						CreateTime: proto.Int64(session.CreateTime),
 						Recent:     PbSessionMessage(groupmsg),
+						PeerInfo:   session.PeerInfo,
 					})
 				}
 			}
@@ -272,6 +314,21 @@ func (s *session) NotifyNormalSession(ctx context.Context, a app.App, notifyUser
 	err := online.ClusterPush(ctx, uint64(notifyUser), SessionChangeID, notifyMessage)
 	if err != nil {
 		logger.CtxError(ctx, "NotifyNormalSession error", zap.Error(err), zap.Any("NotifyNormalSession", notifyMessage))
+	}
+	return err
+}
+
+// 通知 更新会话
+func (s *session) NotifyUpdateSession(ctx context.Context, a app.App, notifyUser int64, session *sessionpkg.Session) error {
+	logger := fklog.ContextAppLogger(ctx)
+	// 推送消息给集群
+	notifyMessage := &MazeIM.SessionChangeID{
+		UpdateSession: pbSessionInfo(session),
+	}
+	logger.CtxInfo(ctx, "NotifyUpdateSession start", zap.Int64("peerId", notifyUser), zap.Any("NotifyUpdateSession", notifyMessage))
+	err := online.ClusterPush(ctx, uint64(notifyUser), SessionChangeID, notifyMessage)
+	if err != nil {
+		logger.CtxError(ctx, "NotifyUpdateSession error", zap.Error(err), zap.Any("NotifyUpdateSession", notifyMessage))
 	}
 	return err
 }
@@ -308,10 +365,14 @@ func PbSessionMessage(messages []p2pmsg.Message) []*MazeIM.Message {
 // pbSession 转换为pb的session
 func pbSession(session *sessionpkg.Session) []*MazeIM.Session {
 	pbSessions := make([]*MazeIM.Session, 0, 1)
-	pbSessions = append(pbSessions, &MazeIM.Session{
+	pbSessions = append(pbSessions, pbSessionInfo(session))
+	return pbSessions
+}
+func pbSessionInfo(session *sessionpkg.Session) *MazeIM.Session {
+	return &MazeIM.Session{
 		SessionId:  proto.String(session.ID),
 		CreateTime: proto.Int64(session.CreateTime),
 		Recent:     PbSessionMessage(session.Recent),
-	})
-	return pbSessions
+		PeerInfo:   session.PeerInfo,
+	}
 }

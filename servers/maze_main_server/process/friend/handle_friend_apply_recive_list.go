@@ -20,10 +20,10 @@ func (f *FriendComponent) OnFriendApplyReceiveList_10700_10701(s *session.Sessio
 	logger := fklog.ContextAppLogger(ctx)
 	res := &Friend.FriendApplyReceiveListRS{}
 
-	logger.InfoWF("OnFriendApplyReceiveList start", zap.Any("req", req))
+	logger.CtxInfo(ctx, "OnFriendApplyReceiveList start", zap.Any("req", req))
 	defer func() {
 		err = s.Response(res)
-		logger.InfoWF("OnFriendApplyReceiveList end", zap.Any("res", res))
+		logger.CtxInfo(ctx, "OnFriendApplyReceiveList end", zap.Any("res", res))
 	}()
 
 	page := req.GetPage()

@@ -26,13 +26,13 @@ func (f *FriendComponent) OnAddBlack_10713_10714(s *session.Session, req *Friend
 
 	toID := req.GetUserId()
 	if userId == toID {
-		logger.CtxError(ctx, "OnAddBlack userId args error", zap.Any("req", req))
+		logger.CtxWarn(ctx, "OnAddBlack userId args error", zap.Any("req", req))
 		res.ErrInfo = errors.COMMON_ERROR_TIPS.Wrap("不能加自己为黑名单")
 		return err
 	}
 
-	codeErr := friendservice.GlobalFriendService.AddBlacklist(ctx, uint64(userId), uint64(toID))
-	if codeErr != nil {
+	err = friendservice.GlobalFriendService.AddBlacklist(ctx, uint64(userId), uint64(toID))
+	if err != nil {
 		logger.CtxError(ctx, "OnAddBlack AddBlacklist failed", zap.Error(err), zap.Int64("toID", toID))
 		res.ErrInfo = errors.COMMON_ERROR_TIPS.ToInfo()
 		return err

@@ -42,30 +42,37 @@ func (s *service) AddFriendRequest(ctx context.Context, userId, toId uint64, fro
 	}
 
 	if inBlk {
-		err = fmt.Errorf("对方在你的黑名单中")
+		logger.CtxWarn(ctx, "AddFriendRequest isBlk", zap.String("err", "对方中你的黑名单中"))
+		err = fmt.Errorf("SKIP")
 		return
 	}
 
 	// 3.判断是否已经是好友了
 	if isFriend := s.IsFriend(friends, toId); isFriend {
-		err = fmt.Errorf("对方已经是你的好友了")
+		logger.CtxWarn(ctx, "AddFriendRequest isBlk", zap.String("err", "对方已经是你的好友了"))
+		err = fmt.Errorf("SKIP")
 		return
 	}
 	// 4.检查重复发送
 	if canSend := s.checkRepeatSendFriendRequest(sends, toId); !canSend {
-		err = fmt.Errorf("已经发送过好友请求了")
+		logger.CtxWarn(ctx, "AddFriendRequest isBlk", zap.String("err", "已经发送过好友请求了, 2分钟内不能重复发送"))
+		err = fmt.Errorf("SKIP")
 		return
 	}
-	// 5.发送给对方
+
+	// // 5.检测长度
+	// if
+
+	// 6.发送给对方
 	if err = s.AddFriendRequestEvent(ctx, toId, userId, from); err != nil {
-		logger.CtxError(ctx, "AddFriendRequestEvent err",
+		logger.CtxError(ctx, "AddFriendRequest AddFriendRequestEvent err",
 			zap.Uint64("userID", userId),
 			zap.Uint64("toID", toId),
 			zap.Error(err))
 		return
 	}
 
-	// 6.设置已发送好友请求
+	// 7.设置已发送好友请求
 	if sendrq, err = s.addSendFriendRequest(ctx, sends, userId, toId, from); err != nil {
 		logger.CtxError(ctx, "AddFriendRequest addSendFriendRequest err",
 			zap.Uint64("userID", userId),
@@ -74,6 +81,7 @@ func (s *service) AddFriendRequest(ctx context.Context, userId, toId uint64, fro
 		return
 	}
 
+	logger.CtxInfo(ctx, "AddFriendRequest Successful", zap.Any("userId", userId), zap.Any("toId", toId), zap.Any("from", from), zap.Any("sendrq", sendrq))
 	return
 }
 
@@ -112,6 +120,7 @@ func (s *service) AddFriendRequestEvent(ctx context.Context, userId, fromId uint
 		return err
 	}
 
+	logger.CtxInfo(ctx, "AddFriendRequestEvent Successful", zap.Any("userId", userId), zap.Any("fromId", fromId), zap.Any("from", from))
 	return nil
 }
 
@@ -131,7 +140,7 @@ func (s *service) addReceiveFriendRequest(ctx context.Context, userId, fromId ui
 	}
 	// 可以不报错
 	if exist {
-		logger.WarnWF("addReceiveFriendRequest 已经申请过了", zap.Uint64("fromId", fromId))
+		logger.CtxWarn(ctx, "addReceiveFriendRequest 已经申请过了", zap.Uint64("fromId", fromId))
 		return nil
 	}
 	receiveModel.ReceiveList = append(receiveModel.ReceiveList, &friendmodel.ReceiveFriendRequestInfo{
@@ -143,10 +152,11 @@ func (s *service) addReceiveFriendRequest(ctx context.Context, userId, fromId ui
 
 	err = receiveModel.Save(ctx, userId)
 	if err != nil {
-		logger.ErrorWF("addReceiveFriendRequest SetReceiveFriendRequest err", zap.Error(err), zap.Uint64("fromId", fromId))
+		logger.CtxError(ctx, "addReceiveFriendRequest SetReceiveFriendRequest err", zap.Error(err), zap.Uint64("fromId", fromId))
 		return errors.MODULE_ERROR
 	}
 
+	logger.CtxInfo(ctx, "addReceiveFriendRequest Successful", zap.Any("userId", userId), zap.Any("fromId", fromId), zap.Any("from", from))
 	return nil
 }
 
@@ -166,7 +176,7 @@ func (s *service) checkRepeatSendFriendRequest(sendModel *friendmodel.SendFriend
 	}
 	// 30分钟内不可以重复发送
 	sendTime := time.UnixMilli(send.CreateAt)
-	if time.Since(sendTime) > 30*time.Minute {
+	if time.Since(sendTime) > 2*time.Minute {
 		sendModel.SendList = append(sendModel.SendList[:index], sendModel.SendList[index+1:]...)
 		return true
 	}
@@ -189,6 +199,8 @@ func (s *service) addSendFriendRequest(ctx context.Context, sendModel *friendmod
 		logger.CtxError(ctx, "addSendFriendRequest err", zap.Error(err))
 		return
 	}
+
+	logger.CtxInfo(ctx, "addSendFriendRequest Successful", zap.Any("sendModel", sendModel), zap.Any("userId", userId), zap.Any("toUserId", toUserId), zap.Any("from", from), zap.Any("sendFriend", sendFriend))
 	return
 }
 
@@ -206,6 +218,7 @@ func (s *service) CheckFriend(ctx context.Context, userID uint64, toID uint64) (
 	logger := fklog.ContextAppLogger(ctx)
 	// 好友列表
 	friends, err := friendmodel.NewFriendModel(ctx, userID)
+	logger.CtxDebug(ctx, "CheckFriend GetSuccesful", zap.Any("friends", friends))
 	if err != nil {
 		logger.CtxError(ctx, "CheckFriend NewFriendModel err",
 			zap.Uint64("userID", userID),
