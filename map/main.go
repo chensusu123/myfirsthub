@@ -406,11 +406,13 @@ type SpatialGrid struct {
 
 // 碰撞检测系统
 type CollisionSystem struct {
-	entities    []Entity     // 实体数组
-	activeCount int          // 活跃实体数量
-	grid        *SpatialGrid // 空间分割
-	workerPool  *WorkerPool  // 工作池
-	resultPool  sync.Pool    // 结果对象池
+	entities    []Entity       // 实体数组
+	activeCount int            // 活跃实体数量
+	grid        *SpatialGrid   // 空间分割
+	workerPool  *WorkerPool    // 工作池
+	resultPool  sync.Pool      // 结果对象池
+	stats       CollisionStats // 碰撞统计
+	statsMutex  sync.Mutex     // 统计数据互斥锁
 }
 
 // 工作池用于并发处理
@@ -423,10 +425,12 @@ type WorkerPool struct {
 
 // 碰撞检测任务
 type CollisionTask struct {
-	startIdx int
-	endIdx   int
-	entities *[]Entity
-	grid     *SpatialGrid
+	startIdx   int
+	endIdx     int
+	entities   *[]Entity
+	grid       *SpatialGrid
+	stats      *CollisionStats
+	statsMutex *sync.Mutex
 }
 
 // 碰撞结果（重命名避免冲突）
@@ -434,6 +438,14 @@ type CollisionResult struct {
 	entity1  uint32
 	entity2  uint32
 	distance float32
+}
+
+// 碰撞检测统计
+type CollisionStats struct {
+	TotalChecks      int64 // 总检测次数
+	ActualCollisions int64 // 实际碰撞数
+	EntitiesChecked  int64 // 被检查的实体数
+	GridCellsVisited int64 // 访问的网格数
 }
 
 // Mac优化的碰撞检测器
@@ -445,12 +457,39 @@ type MacSIMDCollisionDetector struct {
 	collisionPairs []uint32
 	results        []uint32
 	maxEntities    int
+	// 新增空间网格系统
+	spatialGrid *SIMDSpatialGrid
+	worldWidth  float32
+	worldHeight float32
+}
+
+// SIMD专用的空间网格
+type SIMDSpatialGrid struct {
+	cellSize    float32
+	invCellSize float32
+	width       int
+	height      int
+	cells       [][]int // 存储实体索引
+	entityGrid  []int   // 每个实体所在的网格索引
 }
 
 // 创建Mac优化的SIMD检测器
 func NewMacSIMDCollisionDetector(maxEntities int) *MacSIMDCollisionDetector {
+	return NewMacSIMDCollisionDetectorWithWorld(maxEntities, 2000.0, 2000.0)
+}
+
+// 创建带世界大小的SIMD检测器
+func NewMacSIMDCollisionDetectorWithWorld(maxEntities int, worldWidth, worldHeight float32) *MacSIMDCollisionDetector {
 	detector := &MacSIMDCollisionDetector{
 		maxEntities: maxEntities,
+		worldWidth:  worldWidth,
+		worldHeight: worldHeight,
+	}
+
+	// 检查是否限制为单核
+	if os.Getenv("SINGLE_CORE") == "1" {
+		runtime.GOMAXPROCS(1)
+		fmt.Printf("SIMD检测器限制为单核运行 (GOMAXPROCS=1)\n")
 	}
 
 	// 检测CPU特性
@@ -463,8 +502,70 @@ func NewMacSIMDCollisionDetector(maxEntities int) *MacSIMDCollisionDetector {
 	detector.collisionPairs = make([]uint32, maxEntities*2)
 	detector.results = make([]uint32, maxEntities*2)
 
+	// 初始化空间网格
+	detector.initSpatialGrid()
+
 	detector.printSystemInfo()
 	return detector
+}
+
+// 初始化空间网格
+func (m *MacSIMDCollisionDetector) initSpatialGrid() {
+	cellSize := float32(50.0) // 使用与空间分割系统相同的网格大小
+	invCellSize := 1.0 / cellSize
+	width := int(math.Ceil(float64(m.worldWidth * invCellSize)))
+	height := int(math.Ceil(float64(m.worldHeight * invCellSize)))
+
+	m.spatialGrid = &SIMDSpatialGrid{
+		cellSize:    cellSize,
+		invCellSize: invCellSize,
+		width:       width,
+		height:      height,
+		cells:       make([][]int, width*height),
+		entityGrid:  make([]int, m.maxEntities),
+	}
+
+	// 初始化网格
+	for i := range m.spatialGrid.cells {
+		m.spatialGrid.cells[i] = make([]int, 0, 16)
+	}
+
+	fmt.Printf("SIMD空间网格初始化: %dx%d网格, 网格大小%.1f\n", width, height, cellSize)
+}
+
+// 获取网格坐标
+func (sg *SIMDSpatialGrid) getGridCoords(x, y float32) (int, int) {
+	gx := int(x * sg.invCellSize)
+	gy := int(y * sg.invCellSize)
+
+	if gx < 0 {
+		gx = 0
+	} else if gx >= sg.width {
+		gx = sg.width - 1
+	}
+
+	if gy < 0 {
+		gy = 0
+	} else if gy >= sg.height {
+		gy = sg.height - 1
+	}
+
+	return gx, gy
+}
+
+// 清空网格
+func (sg *SIMDSpatialGrid) clear() {
+	for i := range sg.cells {
+		sg.cells[i] = sg.cells[i][:0]
+	}
+}
+
+// 添加实体到网格
+func (sg *SIMDSpatialGrid) addEntity(entityId int, x, y float32) {
+	gx, gy := sg.getGridCoords(x, y)
+	cellIdx := gy*sg.width + gx
+	sg.cells[cellIdx] = append(sg.cells[cellIdx], entityId)
+	sg.entityGrid[entityId] = cellIdx
 }
 
 // 检测CPU特性
@@ -519,6 +620,80 @@ func (m *MacSIMDCollisionDetector) UpdateEntity(id int, x, y, radius float32) {
 		m.entitiesY[id] = y
 		m.entitiesR[id] = radius
 	}
+}
+
+// 重建空间网格
+func (m *MacSIMDCollisionDetector) RebuildSpatialGrid(entityCount int) {
+	// 清空网格
+	m.spatialGrid.clear()
+
+	// 添加所有活跃实体到网格
+	for i := 0; i < entityCount; i++ {
+		if i < m.maxEntities {
+			m.spatialGrid.addEntity(i, m.entitiesX[i], m.entitiesY[i])
+		}
+	}
+}
+
+// 基于空间网格生成候选配对
+func (m *MacSIMDCollisionDetector) GenerateSpatialPairs(entityCount int) [][2]int {
+	// 重建空间网格
+	m.RebuildSpatialGrid(entityCount)
+
+	var pairs [][2]int
+	maxPairs := 1000000 // 限制最大配对数为100万，避免内存问题
+
+	// 遍历每个实体，检查其周围9个网格
+	for entityId := 0; entityId < entityCount && len(pairs) < maxPairs; entityId++ {
+		if entityId >= m.maxEntities {
+			break
+		}
+
+		x, y := m.entitiesX[entityId], m.entitiesY[entityId]
+		gx, gy := m.spatialGrid.getGridCoords(x, y)
+
+		// 检查周围9个网格 (3x3)
+		for dy := -1; dy <= 1 && len(pairs) < maxPairs; dy++ {
+			for dx := -1; dx <= 1 && len(pairs) < maxPairs; dx++ {
+				ngx, ngy := gx+dx, gy+dy
+
+				// 边界检查
+				if ngx < 0 || ngx >= m.spatialGrid.width ||
+					ngy < 0 || ngy >= m.spatialGrid.height {
+					continue
+				}
+
+				cellIdx := ngy*m.spatialGrid.width + ngx
+				cellEntities := m.spatialGrid.cells[cellIdx]
+
+				// 与该网格中的其他实体配对
+				for _, otherEntityId := range cellEntities {
+					if len(pairs) >= maxPairs {
+						break
+					}
+
+					// 避免重复检查和自己与自己配对
+					if otherEntityId <= entityId {
+						continue
+					}
+
+					// 添加配对
+					pairs = append(pairs, [2]int{entityId, otherEntityId})
+				}
+			}
+		}
+	}
+
+	return pairs
+}
+
+// 空间优化的SIMD碰撞检测
+func (m *MacSIMDCollisionDetector) SpatialDetectCollisions(entityCount int) []SIMDCollisionResult {
+	// 生成基于空间网格的候选配对
+	pairs := m.GenerateSpatialPairs(entityCount)
+
+	// 使用SIMD批量处理这些配对
+	return m.DetectCollisions(pairs)
 }
 
 // SIMD优化的碰撞检测
@@ -1057,14 +1232,17 @@ func (wp *WorkerPool) processCollisionTask(task CollisionTask) {
 		}
 
 		// 获取周围9个格子的实体
-		wp.checkEntityCollisions(entity, entities, grid)
+		wp.checkEntityCollisions(entity, entities, grid, task.stats, task.statsMutex)
 	}
 }
 
 // 检查单个实体的碰撞
-func (wp *WorkerPool) checkEntityCollisions(entity *Entity, entities []Entity, grid *SpatialGrid) {
+func (wp *WorkerPool) checkEntityCollisions(entity *Entity, entities []Entity, grid *SpatialGrid, stats *CollisionStats, statsMutex *sync.Mutex) {
 	gx, gy := int(entity.GridX), int(entity.GridY)
 	checkCount := 0
+	localChecks := int64(0)
+	localCollisions := int64(0)
+	localCellsVisited := int64(0)
 
 	// 检查周围9个格子 (3x3)
 	for dy := -1; dy <= 1; dy++ {
@@ -1078,9 +1256,17 @@ func (wp *WorkerPool) checkEntityCollisions(entity *Entity, entities []Entity, g
 
 			cellIdx := ngy*grid.width + ngx
 			cellEntities := grid.cells[cellIdx]
+			localCellsVisited++
 
 			for _, otherID := range cellEntities {
 				if checkCount >= MAX_COLLISION_CHECKS {
+					// 更新统计
+					statsMutex.Lock()
+					stats.TotalChecks += localChecks
+					stats.ActualCollisions += localCollisions
+					stats.GridCellsVisited += localCellsVisited
+					stats.EntitiesChecked++
+					statsMutex.Unlock()
 					return // 限制检查数量
 				}
 
@@ -1093,6 +1279,9 @@ func (wp *WorkerPool) checkEntityCollisions(entity *Entity, entities []Entity, g
 					continue
 				}
 
+				// 记录一次检测
+				localChecks++
+
 				// 快速距离检查 (避免sqrt)
 				dx := entity.Pos.X - other.Pos.X
 				dy := entity.Pos.Y - other.Pos.Y
@@ -1101,6 +1290,7 @@ func (wp *WorkerPool) checkEntityCollisions(entity *Entity, entities []Entity, g
 
 				if distSq < radiusSum*radiusSum {
 					// 发生碰撞
+					localCollisions++
 					result := CollisionResult{
 						entity1:  entity.ID,
 						entity2:  otherID,
@@ -1118,11 +1308,26 @@ func (wp *WorkerPool) checkEntityCollisions(entity *Entity, entities []Entity, g
 			}
 		}
 	}
+
+	// 更新统计
+	statsMutex.Lock()
+	stats.TotalChecks += localChecks
+	stats.ActualCollisions += localCollisions
+	stats.GridCellsVisited += localCellsVisited
+	stats.EntitiesChecked++
+	statsMutex.Unlock()
 }
 
 // 创建碰撞系统
 func NewCollisionSystem(worldWidth, worldHeight float32) *CollisionSystem {
 	numCPU := runtime.NumCPU()
+
+	// 检查是否限制为单核
+	if os.Getenv("SINGLE_CORE") == "1" {
+		numCPU = 1
+		runtime.GOMAXPROCS(1)
+		fmt.Printf("限制为单核运行 (GOMAXPROCS=1)\n")
+	}
 
 	system := &CollisionSystem{
 		entities:   make([]Entity, MAX_ENTITIES_SPATIAL),
@@ -1174,12 +1379,17 @@ func (cs *CollisionSystem) DetectCollisions() []CollisionResult {
 	}
 	cs.activeCount = activeCount
 
-	// 3. 清空结果通道
+	// 3. 重置统计数据
+	cs.statsMutex.Lock()
+	cs.stats = CollisionStats{}
+	cs.statsMutex.Unlock()
+
+	// 4. 清空结果通道
 	for len(cs.workerPool.resultChan) > 0 {
 		<-cs.workerPool.resultChan
 	}
 
-	// 4. 分发任务到工作池
+	// 5. 分发任务到工作池
 	numWorkers := cs.workerPool.workers
 	entitiesPerWorker := MAX_ENTITIES_SPATIAL / numWorkers
 
@@ -1191,10 +1401,12 @@ func (cs *CollisionSystem) DetectCollisions() []CollisionResult {
 		}
 
 		task := CollisionTask{
-			startIdx: startIdx,
-			endIdx:   endIdx,
-			entities: &cs.entities,
-			grid:     cs.grid,
+			startIdx:   startIdx,
+			endIdx:     endIdx,
+			entities:   &cs.entities,
+			grid:       cs.grid,
+			stats:      &cs.stats,
+			statsMutex: &cs.statsMutex,
 		}
 
 		cs.workerPool.wg.Add(1)
@@ -1214,11 +1426,23 @@ func (cs *CollisionSystem) DetectCollisions() []CollisionResult {
 
 	elapsed := time.Since(startTime)
 
+	// 详细统计信息
+	cs.statsMutex.Lock()
+	totalChecks := cs.stats.TotalChecks
+	actualCollisions := cs.stats.ActualCollisions
+	entitiesChecked := cs.stats.EntitiesChecked
+	cellsVisited := cs.stats.GridCellsVisited
+	cs.statsMutex.Unlock()
+
 	// 性能统计
-	if len(results) > 0 {
-		fmt.Printf("碰撞检测: %d活跃实体, %d碰撞, 耗时: %.2fms\n",
-			activeCount, len(results), float64(elapsed.Nanoseconds())/1e6)
-	}
+	fmt.Printf("碰撞检测详细统计: %d活跃实体, %d碰撞, 耗时: %.2fms\n",
+		activeCount, len(results), float64(elapsed.Nanoseconds())/1e6)
+	fmt.Printf("  总检测次数: %d, 实际碰撞: %d, 碰撞率: %.4f%%\n",
+		totalChecks, actualCollisions, float64(actualCollisions)/float64(totalChecks)*100)
+	fmt.Printf("  被检查实体: %d, 平均每实体检测: %.1f次\n",
+		entitiesChecked, float64(totalChecks)/float64(entitiesChecked))
+	fmt.Printf("  访问网格数: %d, 平均每实体访问: %.1f个网格\n",
+		cellsVisited, float64(cellsVisited)/float64(entitiesChecked))
 
 	return results
 }
@@ -1303,7 +1527,7 @@ func runRealtime100KTest() {
 	fmt.Printf("目标FPS: %.1f\n", targetFPS)
 
 	// 创建检测系统
-	simdDetector := NewMacSIMDCollisionDetector(entityCount)
+	simdDetector := NewMacSIMDCollisionDetectorWithWorld(entityCount, worldSize, worldSize)
 	spatialSystem := NewCollisionSystem(worldSize, worldSize)
 
 	// 创建实体数组
@@ -1406,38 +1630,9 @@ func runRealtime100KTest() {
 		}
 		updateTime := time.Since(updateStart)
 
-		// 2. SIMD碰撞检测 - 生成智能配对
-		pairCount := 20000 // 2万个配对
-		pairs := make([][2]int, pairCount)
-
-		for i := 0; i < pairCount; i++ {
-			id1 := rand.Intn(entityCount)
-			// 优先选择附近的实体
-			baseX := entities[id1].X
-			baseY := entities[id1].Y
-			searchRadius := float32(100.0)
-
-			id2 := id1
-			attempts := 0
-			for attempts < 5 && id2 == id1 {
-				candidate := rand.Intn(entityCount)
-				dx := entities[candidate].X - baseX
-				dy := entities[candidate].Y - baseY
-				if dx*dx+dy*dy <= searchRadius*searchRadius {
-					id2 = candidate
-				}
-				attempts++
-			}
-
-			if id2 == id1 {
-				id2 = rand.Intn(entityCount)
-			}
-
-			pairs[i] = [2]int{id1, id2}
-		}
-
+		// 2. SIMD碰撞检测 - 使用空间优化
 		simdStart := time.Now()
-		simdResults := simdDetector.DetectCollisions(pairs)
+		simdResults := simdDetector.SpatialDetectCollisions(entityCount)
 		simdTime := time.Since(simdStart)
 		simdTotalTime += simdTime
 		simdTotalCollisions += len(simdResults)
