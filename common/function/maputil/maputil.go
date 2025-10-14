@@ -15,6 +15,16 @@ import (
 	"maze_game_server/common/structsdef"
 )
 
+func MapEach[K comparable, V any](m map[K]V, fn func(key K, val V) bool) int {
+	count := 0
+	for k, v := range m {
+		count++
+		if !fn(k, v) {
+			break
+		}
+	}
+	return count
+}
 func Int64MapAppend32(in map[int32]int64, adds map[int32]int32) map[int32]int64 {
 	for k, v := range adds {
 		if k <= 0 { //忽略key=0 v 不能忽略
