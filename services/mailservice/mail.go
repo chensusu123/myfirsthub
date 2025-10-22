@@ -1,14 +1,17 @@
 package mailservice
 
 import (
-	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fklog"
-	"go.uber.org/zap"
+	"context"
 	"maze_game_server/common/errors"
 	"maze_game_server/common/function/uniqueid"
+	"maze_game_server/common/structsdef"
 	"maze_game_server/model/mailmodel"
 	"maze_game_server/usecase/online"
 	"sort"
 	"time"
+
+	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fklog"
+	"go.uber.org/zap"
 )
 
 func (s service) GetMailListByLabel(logger fklog.FKLogI, userId uint64, label, start, end int32) (mailList []*mailmodel.MailInfo, err error) {
@@ -310,6 +313,63 @@ func (s service) GetMailAttachmentAfter(logger fklog.FKLogI, userId uint64, mail
 	return nil
 }
 
+func (s service) GetAllMailList(logger fklog.FKLogI, userId uint64) (mailMap map[int32][]*mailmodel.MailInfo, err error) {
+	mailModel, err := mailmodel.NewMailModel(logger, userId)
+	if err != nil {
+		logger.ErrorWF("GetAllMailList NewMailModel fail", zap.Error(err))
+		return
+	}
+
+	mailMap = make(map[int32][]*mailmodel.MailInfo)
+	delList := make(map[int32][]uint64) // 按label分组的过期邮件ID列表
+
+	// 遍历所有标签的邮件
+	for label, labelMailMap := range mailModel.MailMap {
+		mailList := make([]*mailmodel.MailInfo, 0)
+		labelDelList := make([]uint64, 0)
+
+		for _, info := range labelMailMap {
+			// 检查邮件是否过期
+			if checkMailExpire(logger, info) {
+				labelDelList = append(labelDelList, info.ID)
+				continue
+			}
+			mailList = append(mailList, info)
+		}
+
+		// 按发送时间排序（最新的在前）
+		sort.Slice(mailList, func(i, j int) bool {
+			return mailList[i].SendTime > mailList[j].SendTime
+		})
+
+		mailMap[label] = mailList
+		if len(labelDelList) > 0 {
+			delList[label] = labelDelList
+		}
+	}
+
+	// 删除过期邮件
+	if len(delList) > 0 {
+		for label, labelDelList := range delList {
+			for _, mailId := range labelDelList {
+				delete(mailModel.MailMap[label], mailId)
+			}
+		}
+
+		err = mailModel.Save(logger, userId)
+		if err != nil {
+			logger.ErrorWF("GetAllMailList del mail Save fail", zap.Error(err))
+			return mailMap, err
+		}
+	}
+
+	logger.InfoWF("GetAllMailList success",
+		zap.Uint64("userId", userId),
+		zap.Int("totalLabels", len(mailMap)))
+
+	return mailMap, nil
+}
+
 func newMail(logger fklog.FKLogI, title, context, senderName string, label int32, reciverID uint64, attachments []*mailmodel.Attachment, expireTime int64) *mailmodel.MailInfo {
 	if len(attachments) == 0 || attachments == nil {
 		attachments = make([]*mailmodel.Attachment, 0)
@@ -360,4 +420,98 @@ func checkMailExpire(logger fklog.FKLogI, mailInfo *mailmodel.MailInfo) bool {
 		return true
 	}
 	return false
+}
+
+// 实现新增的接口方法 - 这些方法将委托给相应的服务
+func (s service) BatchSendMail(ctx context.Context, req *BatchMailRequest) (result *BatchMailResult, err error) {
+	return GlobalMailBatchService.BatchSendMail(ctx, req)
+}
+
+func (s service) BatchSendSystemMail(ctx context.Context, title, content, senderName string, receiverIds []uint64, useQueue bool) (result *BatchMailResult, err error) {
+	return GlobalMailBatchService.BatchSendSystemMail(ctx, title, content, senderName, receiverIds, useQueue)
+}
+
+func (s service) BatchSendRewardMail(ctx context.Context, title, content, senderName string, attachments []*mailmodel.Attachment, receiverIds []uint64, useQueue bool) (result *BatchMailResult, err error) {
+	return GlobalMailBatchService.BatchSendRewardMail(ctx, title, content, senderName, attachments, receiverIds, useQueue)
+}
+
+func (s service) BatchSendRichTextMail(ctx context.Context, title, content, senderName string, panelInfo *structsdef.MailPanelInfo, receiverIds []uint64, useQueue bool) (result *BatchMailResult, err error) {
+	return GlobalMailBatchService.BatchSendRichTextMail(ctx, title, content, senderName, panelInfo, receiverIds, useQueue)
+}
+
+func (s service) CheckDeleteRestrictions(ctx context.Context, userId, mailId uint64, label int32) (result *DeleteRestrictionResult, err error) {
+	return GlobalMailDeleteRestrictions.CheckDeleteRestrictions(ctx, userId, mailId, label)
+}
+
+func (s service) ForceDeleteMail(ctx context.Context, userId, mailId uint64, label int32, adminId uint64) (err error) {
+	return GlobalMailDeleteRestrictions.ForceDeleteMail(ctx, userId, mailId, label, adminId)
+}
+
+func (s service) BatchCheckDeleteRestrictions(ctx context.Context, userId uint64, mailIds []uint64, label int32) (results map[uint64]*DeleteRestrictionResult, err error) {
+	return GlobalMailDeleteRestrictions.BatchCheckDeleteRestrictions(ctx, userId, mailIds, label)
+}
+
+func (s service) GetDeletableMails(ctx context.Context, userId uint64, label int32) (mails []*mailmodel.MailInfo, err error) {
+	return GlobalMailDeleteRestrictions.GetDeletableMails(ctx, userId, label)
+}
+
+func (s service) ClaimMailAttachment(ctx context.Context, userId, mailId uint64, label int32) (result *AttachmentClaimResult, err error) {
+	return GlobalMailAttachmentClaim.ClaimMailAttachment(ctx, userId, mailId, label)
+}
+
+func (s service) ClaimAllMailAttachments(ctx context.Context, userId uint64, label int32) (result *AttachmentClaimResult, err error) {
+	return GlobalMailAttachmentClaim.ClaimAllMailAttachments(ctx, userId, label)
+}
+
+func (s service) GetClaimableAttachments(ctx context.Context, userId uint64, label int32) (mails []*mailmodel.MailInfo, err error) {
+	return GlobalMailAttachmentClaim.GetClaimableAttachments(ctx, userId, label)
+}
+
+func (s service) AddAttachmentsToBag(ctx context.Context, userId uint64, attachments []*mailmodel.Attachment) (result *BagIntegrationResult, err error) {
+	return GlobalMailBagIntegration.AddAttachmentsToBag(ctx, userId, attachments)
+}
+
+func (s service) GetBagSpaceInfo(ctx context.Context, userId uint64) (currentSpace, remainingSpace int32, err error) {
+	return GlobalMailBagIntegration.GetBagSpaceInfo(ctx, userId)
+}
+
+func (s service) CheckBagSpaceForAttachments(ctx context.Context, userId uint64, attachments []*mailmodel.Attachment) (hasEnoughSpace bool, remainingSpace int32, err error) {
+	return GlobalMailBagIntegration.CheckBagSpaceForAttachments(ctx, userId, attachments)
+}
+
+func (s service) BatchAddAttachmentsToBag(ctx context.Context, userId uint64, mailAttachments map[uint64][]*mailmodel.Attachment) (result *BagIntegrationResult, err error) {
+	return GlobalMailBagIntegration.BatchAddAttachmentsToBag(ctx, userId, mailAttachments)
+}
+
+// 高级邮件功能实现
+func (s service) SendRichTextMail(ctx context.Context, title, content, senderName string, panelInfo *structsdef.MailPanelInfo, receiverId uint64, attachments []*mailmodel.Attachment, expireTime int64) (err error) {
+	return GlobalMailAdvancedService.SendRichTextMail(ctx, title, content, senderName, panelInfo, receiverId, attachments, expireTime)
+}
+
+func (s service) SendVoteMail(ctx context.Context, req *VoteMailRequest) (err error) {
+	return GlobalMailAdvancedService.SendVoteMail(ctx, req)
+}
+
+func (s service) SendBattleReportMail(ctx context.Context, req *BattleReportMailRequest) (err error) {
+	return GlobalMailAdvancedService.SendBattleReportMail(ctx, req)
+}
+
+func (s service) SendGiftBoxMail(ctx context.Context, req *GiftBoxMailRequest) (err error) {
+	return GlobalMailAdvancedService.SendGiftBoxMail(ctx, req)
+}
+
+func (s service) SendLinkMail(ctx context.Context, req *LinkMailRequest) (err error) {
+	return GlobalMailAdvancedService.SendLinkMail(ctx, req)
+}
+
+func (s service) BroadcastMail(ctx context.Context, req *BroadcastMailRequest) (result *BroadcastResult, err error) {
+	return GlobalMailBroadcastService.BroadcastMail(ctx, req)
+}
+
+func (s service) SendMailWithConfig(ctx context.Context, configId int32, userId uint64, wildcardData map[string]interface{}) (err error) {
+	return GlobalMailConfigService.SendMailWithConfig(ctx, configId, userId, wildcardData)
+}
+
+func (s service) GetMailMetrics(ctx context.Context) (metrics map[string]interface{}, err error) {
+	return GlobalMailMonitorService.GetMailMetrics(ctx)
 }

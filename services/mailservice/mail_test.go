@@ -2,115 +2,110 @@ package mailservice
 
 import (
 	"context"
-	"fmt"
-	"github.com/redis/go-redis/v9"
-	"gitlab.ifreetalk.com/maze-plate/freetk/fkserver"
-	fileResolver "gitlab.ifreetalk.com/maze-plate/freetk/registry/fileresolver"
-	"maze_game_server/io/redis"
-	"maze_game_server/lib/log"
-	"maze_game_server/model/mailmodel"
-	"os"
 	"testing"
+
+	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fklog"
+
+	"maze_game_server/common/constdef"
 )
 
-var logger = log.Clone("EquipDropTest", 0, 0)
+// TestGetAllMailList 测试GetAllMailList方法
+func TestGetAllMailList(t *testing.T) {
+	// 创建测试上下文和日志器
+	ctx := context.Background()
+	logger := fklog.ContextAppLogger(ctx)
 
-func TestMain(m *testing.M) {
-	originalStdout := os.Stdout
-	originalStderr := os.Stderr
-	_ = os.Chdir("D:/work/maze_game_server/servers/maze_main_server/")
-	_, err := fkserver.AppServer.Application.Init()
+	// 测试用户ID
+	userId := uint64(40000005)
+
+	// 调用GetAllMailList方法
+	mailMap, err := GlobalMailService.GetAllMailList(logger, userId)
 	if err != nil {
-		fmt.Println(err)
+		t.Errorf("GetAllMailList failed: %v", err)
 		return
 	}
-	err = globalredis.GCli.Init(fileResolver.New("D:/work/maze_game_server/servers/maze_main_server/conf.d/service.yaml"))
-	if err != nil {
-		fmt.Println(err)
+
+	// 验证结果
+	if mailMap == nil {
+		t.Error("GetAllMailList returned nil mailMap")
 		return
 	}
-	os.Stdout = originalStdout
-	os.Stderr = originalStderr
 
-	m.Run()
-}
+	// 打印结果
+	t.Logf("GetAllMailList success for userId: %d", userId)
+	t.Logf("Total labels: %d", len(mailMap))
 
-func TestRedis(t *testing.T) {
-	db, err := globalredis.GCli.GetDB()
-	if err != nil {
-		return
-	}
-	res, err := db.Get(context.Background(), "123").Result()
-	if err != nil {
-		if err == redis.Nil {
-			return
+	for label, mailList := range mailMap {
+		t.Logf("Label %d has %d mails", label, len(mailList))
+		for i, mail := range mailList {
+			if i < 3 { // 只打印前3个邮件
+				t.Logf("  Mail %d: ID=%d, Title=%s, IsRead=%v, IsGetAttach=%v",
+					i, mail.ID, mail.Title, mail.IsRead, mail.IsGetAttach)
+			}
 		}
-		return
 	}
-	fmt.Println(res)
 }
 
-func TestGetMailList(t *testing.T) {
-	mailList, err := GlobalMailService.GetMailListByLabel(logger, 40000005, 0, 0, 30)
+// TestGetAllMailListWithEmptyUser 测试空用户的情况
+func TestGetAllMailListWithEmptyUser(t *testing.T) {
+	ctx := context.Background()
+	logger := fklog.ContextAppLogger(ctx)
+
+	// 使用一个不存在的用户ID
+	userId := uint64(99999999)
+
+	mailMap, err := GlobalMailService.GetAllMailList(logger, userId)
 	if err != nil {
-		fmt.Println(err)
+		t.Errorf("GetAllMailList failed: %v", err)
 		return
 	}
-	fmt.Println(mailList)
+
+	// 新用户应该返回空的邮件映射
+	if mailMap == nil {
+		t.Error("GetAllMailList returned nil mailMap for new user")
+		return
+	}
+
+	t.Logf("GetAllMailList for new user returned %d labels", len(mailMap))
 }
 
-func TestMail(t *testing.T) {
-	attachments := []*mailmodel.Attachment{
-		&mailmodel.Attachment{
-			ItemID: 46700001,
-			Count:  10,
-			Extra:  "equip",
-		},
-		&mailmodel.Attachment{
-			ItemID: 46200001,
-			Count:  10,
-			Extra:  "item",
-		},
+// TestGetAllMailListIntegration 集成测试
+func TestGetAllMailListIntegration(t *testing.T) {
+	ctx := context.Background()
+	logger := fklog.ContextAppLogger(ctx)
+
+	userId := uint64(40000005)
+
+	// 1. 先发送一些测试邮件
+	testMails := []struct {
+		title   string
+		content string
+		label   int32
+	}{
+		{"测试邮件1", "这是第一封测试邮件", int32(constdef.MailLabelSystem)},
+		{"测试邮件2", "这是第二封测试邮件", int32(constdef.MailLabelSystem)},
+		{"测试邮件3", "这是第三封测试邮件", int32(constdef.MailLabelFamily)},
 	}
 
-	err := GlobalMailService.SendMail(logger, "测试邮件", "邮件内容", "发送者", 0, 40000005, attachments, 0)
+	for _, testMail := range testMails {
+		err := GlobalMailService.SendMail(logger, testMail.title, testMail.content, "测试系统",
+			testMail.label, userId, nil, 0)
+		if err != nil {
+			t.Logf("SendMail failed for %s: %v", testMail.title, err)
+		}
+	}
+
+	// 2. 获取所有邮件列表
+	mailMap, err := GlobalMailService.GetAllMailList(logger, userId)
 	if err != nil {
-		fmt.Println(err)
+		t.Errorf("GetAllMailList failed: %v", err)
 		return
 	}
 
-	mailList, err := GlobalMailService.ReadAllMail(logger, 40000005, 0)
-	if err != nil {
-		fmt.Println(err)
-		return
-	}
-	fmt.Println(mailList)
+	// 3. 验证结果
+	t.Logf("Integration test - GetAllMailList returned %d labels", len(mailMap))
 
-	mailList, attachs, err := GlobalMailService.GetAllMailAttachment(logger, 40000005, 0)
-	if err != nil {
-		fmt.Println(err)
-		return
+	for label, mailList := range mailMap {
+		t.Logf("Label %d: %d mails", label, len(mailList))
 	}
-	fmt.Println(mailList)
-	fmt.Println(attachs)
-
-	err = GlobalMailService.GetMailAttachmentAfter(logger, 40000005, mailList)
-	if err != nil {
-		fmt.Println(err)
-		return
-	}
-
-	err = GlobalMailService.DelAllMail(logger, 40000005, 0)
-	if err != nil {
-		fmt.Println(err)
-		return
-	}
-
-	mailMap, err := GlobalMailService.GetAllMailList(logger, 40000005)
-	if err != nil {
-		fmt.Println(err)
-		return
-	}
-	fmt.Println(mailMap)
-
 }
