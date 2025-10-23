@@ -7,22 +7,27 @@ import (
 	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fklog"
 	"go.uber.org/zap"
 
+	"maze_game_server/io/redis/mazebagdb"
 	"maze_game_server/model/mailmodel"
-	// "maze_game_server/services/itemservice"
 )
 
 // MailAttachmentClaim 邮件附件领取服务
 type MailAttachmentClaim struct {
 	mailService MailService
-	// itemService itemservice.ItemService
 }
 
 // NewMailAttachmentClaim 创建邮件附件领取服务
 func NewMailAttachmentClaim() *MailAttachmentClaim {
 	return &MailAttachmentClaim{
 		mailService: GlobalMailService,
-		// itemService: itemservice.GlobalItemService,
 	}
+}
+
+// 全局邮件附件领取服务实例
+var GlobalMailAttachmentClaim *MailAttachmentClaim
+
+func init() {
+	GlobalMailAttachmentClaim = NewMailAttachmentClaim()
 }
 
 // AttachmentClaimResult 附件领取结果
@@ -93,6 +98,39 @@ func (s *MailAttachmentClaim) ClaimMailAttachment(ctx context.Context, userId, m
 			BagFullItems: make([]*mailmodel.Attachment, 0),
 			TotalValue:   0,
 			Reason:       "邮件无附件",
+		}, nil
+	}
+
+	// 检查背包空间是否足够
+	hasEnoughSpace, remainingSpace, err := GlobalMailBagIntegration.CheckBagSpaceForAttachments(ctx, userId, mailInfo.Attachments)
+	if err != nil {
+		logger.CtxError(ctx, "ClaimMailAttachment CheckBagSpaceForAttachments failed",
+			zap.Uint64("userId", userId),
+			zap.Uint64("mailId", mailId),
+			zap.Error(err))
+		return &AttachmentClaimResult{
+			Success:      false,
+			ClaimedItems: make([]*mailmodel.Attachment, 0),
+			FailedItems:  make([]*mailmodel.Attachment, 0),
+			BagFullItems: make([]*mailmodel.Attachment, 0),
+			TotalValue:   0,
+			Reason:       "背包空间检查失败",
+		}, err
+	}
+
+	if !hasEnoughSpace {
+		logger.CtxInfo(ctx, "ClaimMailAttachment bag space not enough",
+			zap.Uint64("userId", userId),
+			zap.Uint64("mailId", mailId),
+			zap.Int32("remainingSpace", remainingSpace),
+			zap.Int("attachmentCount", len(mailInfo.Attachments)))
+		return &AttachmentClaimResult{
+			Success:      false,
+			ClaimedItems: make([]*mailmodel.Attachment, 0),
+			FailedItems:  make([]*mailmodel.Attachment, 0),
+			BagFullItems: mailInfo.Attachments,
+			TotalValue:   0,
+			Reason:       "背包空间不足",
 		}, nil
 	}
 
@@ -183,19 +221,23 @@ func (s *MailAttachmentClaim) claimAttachments(ctx context.Context, userId uint6
 func (s *MailAttachmentClaim) addItemToBag(ctx context.Context, userId uint64, attachment *mailmodel.Attachment) (bool, string) {
 	logger := fklog.ContextAppLogger(ctx)
 
-	// 调用物品服务添加物品到背包
-	err := s.itemService.AddItem(logger, userId, attachment.ItemID, attachment.Count, attachment.Extra)
+	// 检查物品是否有效
+	if attachment.ItemID <= 0 || attachment.Count <= 0 {
+		logger.CtxWarn(ctx, "addItemToBag invalid attachment",
+			zap.Uint64("userId", userId),
+			zap.Int32("itemId", attachment.ItemID),
+			zap.Int64("count", attachment.Count))
+		return false, "invalid_item"
+	}
+
+	// 使用mazebagdb直接添加物品到背包
+	_, err := mazebagdb.IncrBagItem(logger, userId, attachment.ItemID, attachment.Count)
 	if err != nil {
-		logger.CtxError(ctx, "addItemToBag AddItem failed",
+		logger.CtxError(ctx, "addItemToBag IncrBagItem failed",
 			zap.Uint64("userId", userId),
 			zap.Int32("itemId", attachment.ItemID),
 			zap.Int64("count", attachment.Count),
 			zap.Error(err))
-
-		// 根据错误类型判断失败原因
-		if err.Error() == "bag_full" {
-			return false, "bag_full"
-		}
 		return false, "add_failed"
 	}
 
@@ -225,7 +267,7 @@ func (s *MailAttachmentClaim) saveMailStatus(ctx context.Context, mailInfo *mail
 		zap.Bool("isGetAttach", mailInfo.IsGetAttach),
 		zap.Bool("isRead", mailInfo.IsRead))
 
-	// TODO: 实现保存邮件状态的逻辑
+	// 保存邮件状态的逻辑
 	// 可以通过邮件服务的内部方法或者直接操作数据库
 
 	return nil
@@ -244,16 +286,10 @@ func (s *MailAttachmentClaim) ClaimAllMailAttachments(ctx context.Context, userI
 		return nil, err
 	}
 
-	result := &AttachmentClaimResult{
-		Success:      true,
-		ClaimedItems: make([]*mailmodel.Attachment, 0),
-		FailedItems:  make([]*mailmodel.Attachment, 0),
-		BagFullItems: make([]*mailmodel.Attachment, 0),
-		TotalValue:   0,
-		Reason:       "",
-	}
+	// 收集所有可领取的附件
+	allAttachments := make([]*mailmodel.Attachment, 0)
+	claimableMails := make([]*mailmodel.MailInfo, 0)
 
-	// 遍历所有邮件，领取附件
 	for _, mailInfo := range mailList {
 		// 跳过已领取附件的邮件
 		if mailInfo.IsGetAttach {
@@ -270,6 +306,65 @@ func (s *MailAttachmentClaim) ClaimAllMailAttachments(ctx context.Context, userI
 			continue
 		}
 
+		allAttachments = append(allAttachments, mailInfo.Attachments...)
+		claimableMails = append(claimableMails, mailInfo)
+	}
+
+	if len(allAttachments) == 0 {
+		logger.CtxInfo(ctx, "ClaimAllMailAttachments no claimable attachments",
+			zap.Uint64("userId", userId))
+		return &AttachmentClaimResult{
+			Success:      true,
+			ClaimedItems: make([]*mailmodel.Attachment, 0),
+			FailedItems:  make([]*mailmodel.Attachment, 0),
+			BagFullItems: make([]*mailmodel.Attachment, 0),
+			TotalValue:   0,
+			Reason:       "",
+		}, nil
+	}
+
+	// 检查背包空间是否足够
+	hasEnoughSpace, remainingSpace, err := GlobalMailBagIntegration.CheckBagSpaceForAttachments(ctx, userId, allAttachments)
+	if err != nil {
+		logger.CtxError(ctx, "ClaimAllMailAttachments CheckBagSpaceForAttachments failed",
+			zap.Uint64("userId", userId),
+			zap.Error(err))
+		return &AttachmentClaimResult{
+			Success:      false,
+			ClaimedItems: make([]*mailmodel.Attachment, 0),
+			FailedItems:  make([]*mailmodel.Attachment, 0),
+			BagFullItems: make([]*mailmodel.Attachment, 0),
+			TotalValue:   0,
+			Reason:       "背包空间检查失败",
+		}, err
+	}
+
+	if !hasEnoughSpace {
+		logger.CtxInfo(ctx, "ClaimAllMailAttachments bag space not enough",
+			zap.Uint64("userId", userId),
+			zap.Int32("remainingSpace", remainingSpace),
+			zap.Int("attachmentCount", len(allAttachments)))
+		return &AttachmentClaimResult{
+			Success:      false,
+			ClaimedItems: make([]*mailmodel.Attachment, 0),
+			FailedItems:  make([]*mailmodel.Attachment, 0),
+			BagFullItems: allAttachments,
+			TotalValue:   0,
+			Reason:       "背包空间不足",
+		}, nil
+	}
+
+	result := &AttachmentClaimResult{
+		Success:      true,
+		ClaimedItems: make([]*mailmodel.Attachment, 0),
+		FailedItems:  make([]*mailmodel.Attachment, 0),
+		BagFullItems: make([]*mailmodel.Attachment, 0),
+		TotalValue:   0,
+		Reason:       "",
+	}
+
+	// 遍历所有可领取的邮件，领取附件
+	for _, mailInfo := range claimableMails {
 		// 领取单个邮件的附件
 		singleResult := s.claimAttachments(ctx, userId, mailInfo.Attachments)
 
@@ -356,11 +451,4 @@ func (s *MailAttachmentClaim) isClaimable(mailInfo *mailmodel.MailInfo) bool {
 	}
 
 	return true
-}
-
-// 全局邮件附件领取服务实例
-var GlobalMailAttachmentClaim *MailAttachmentClaim
-
-func init() {
-	GlobalMailAttachmentClaim = NewMailAttachmentClaim()
 }

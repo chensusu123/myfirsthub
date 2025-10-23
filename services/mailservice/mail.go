@@ -184,10 +184,50 @@ func (s service) GetMailAttachment(logger fklog.FKLogI, userId, mailId uint64, l
 		return mailInfo, nil, errors.New("mail not found")
 	}
 
-	attachments = append(attachments, mailInfo.Attachments...)
+	// 检查背包空间是否足够
+	hasEnoughSpace, remainingSpace, err := GlobalMailBagIntegration.CheckBagSpaceForAttachments(context.Background(), userId, mailInfo.Attachments)
+	if err != nil {
+		logger.ErrorWF("GetMailAttachment CheckBagSpaceForAttachments failed", zap.Error(err))
+		return mailInfo, nil, err
+	}
 
+	if !hasEnoughSpace {
+		logger.InfoWF("GetMailAttachment bag space not enough",
+			zap.Uint64("userId", userId),
+			zap.Int32("remainingSpace", remainingSpace),
+			zap.Int("attachmentCount", len(mailInfo.Attachments)))
+		return mailInfo, nil, errors.New("背包空间不足")
+	}
+
+	// 将附件添加到背包
+	result, err := GlobalMailBagIntegration.AddAttachmentsToBag(context.Background(), userId, mailInfo.Attachments)
+	if err != nil {
+		logger.ErrorWF("GetMailAttachment AddAttachmentsToBag failed", zap.Error(err))
+		return mailInfo, nil, err
+	}
+
+	if !result.Success {
+		logger.ErrorWF("GetMailAttachment AddAttachmentsToBag failed", zap.String("reason", result.Reason))
+		return mailInfo, nil, errors.New(result.Reason)
+	}
+
+	// 成功添加到背包后，标记邮件为已领取
+	attachments = append(attachments, mailInfo.Attachments...)
 	mailInfo.IsGetAttach = true
 	mailInfo.IsRead = true
+
+	// 保存邮件状态
+	err = s.saveMailStatus(mailInfo)
+	if err != nil {
+		logger.ErrorWF("GetMailAttachment saveMailStatus failed", zap.Error(err))
+		// 即使保存失败，附件已经成功添加到背包，不返回错误
+	}
+
+	logger.InfoWF("GetMailAttachment success",
+		zap.Uint64("userId", userId),
+		zap.Uint64("mailId", mailId),
+		zap.Int("attachmentCount", len(attachments)))
+
 	return
 }
 
@@ -199,9 +239,11 @@ func (s service) GetAllMailAttachment(logger fklog.FKLogI, userId uint64, label 
 	}
 
 	mailList = make([]*mailmodel.MailInfo, 0)
+	allAttachments := make([]*mailmodel.Attachment, 0)
+	claimableMails := make([]*mailmodel.MailInfo, 0)
 
+	// 第一步：收集所有可领取的邮件和附件
 	for _, info := range mailModel.MailMap[label] {
-
 		if checkMailExpire(logger, info) {
 			logger.InfoWF("GetAllMailAttachment already expire", zap.Any("mailInfo", info))
 			continue
@@ -210,17 +252,70 @@ func (s service) GetAllMailAttachment(logger fklog.FKLogI, userId uint64, label 
 			logger.InfoWF("GetAllMailAttachment Attachments is nil", zap.Any("mailInfo", info))
 			continue
 		}
-
 		if info.IsGetAttach {
 			logger.InfoWF("GetAllMailAttachment already GetAttach", zap.Any("info", info))
 			continue
 		}
 
+		allAttachments = append(allAttachments, info.Attachments...)
+		claimableMails = append(claimableMails, info)
+	}
+
+	if len(allAttachments) == 0 {
+		logger.InfoWF("GetAllMailAttachment no claimable attachments")
+		return mailList, attachments, nil
+	}
+
+	// 第二步：检查背包空间是否足够
+	hasEnoughSpace, remainingSpace, err := GlobalMailBagIntegration.CheckBagSpaceForAttachments(context.Background(), userId, allAttachments)
+	if err != nil {
+		logger.ErrorWF("GetAllMailAttachment CheckBagSpaceForAttachments failed", zap.Error(err))
+		return mailList, attachments, err
+	}
+
+	if !hasEnoughSpace {
+		logger.InfoWF("GetAllMailAttachment bag space not enough",
+			zap.Uint64("userId", userId),
+			zap.Int32("remainingSpace", remainingSpace),
+			zap.Int("attachmentCount", len(allAttachments)))
+		return mailList, attachments, errors.New("背包空间不足")
+	}
+
+	// 第三步：批量将附件添加到背包
+	mailAttachments := make(map[uint64][]*mailmodel.Attachment)
+	for _, mail := range claimableMails {
+		mailAttachments[mail.ID] = mail.Attachments
+	}
+	result, err := GlobalMailBagIntegration.BatchAddAttachmentsToBag(context.Background(), userId, mailAttachments)
+	if err != nil {
+		logger.ErrorWF("GetAllMailAttachment BatchAddAttachmentsToBag failed", zap.Error(err))
+		return mailList, attachments, err
+	}
+
+	if !result.Success {
+		logger.ErrorWF("GetAllMailAttachment BatchAddAttachmentsToBag failed", zap.String("reason", result.Reason))
+		return mailList, attachments, errors.New(result.Reason)
+	}
+
+	// 第四步：成功添加到背包后，标记所有邮件为已领取
+	for _, info := range claimableMails {
 		attachments = append(attachments, info.Attachments...)
 		info.IsGetAttach = true
 		info.IsRead = true
 		mailList = append(mailList, info)
 	}
+
+	// 第五步：保存所有邮件状态
+	err = s.GetMailAttachmentAfter(logger, userId, mailList)
+	if err != nil {
+		logger.ErrorWF("GetAllMailAttachment GetMailAttachmentAfter failed", zap.Error(err))
+		// 即使保存失败，附件已经成功添加到背包，不返回错误
+	}
+
+	logger.InfoWF("GetAllMailAttachment success",
+		zap.Uint64("userId", userId),
+		zap.Int("mailCount", len(mailList)),
+		zap.Int("attachmentCount", len(attachments)))
 
 	return
 }
@@ -510,6 +605,73 @@ func (s service) BroadcastMail(ctx context.Context, req *BroadcastMailRequest) (
 
 func (s service) SendMailWithConfig(ctx context.Context, configId int32, userId uint64, wildcardData map[string]interface{}) (err error) {
 	return GlobalMailConfigService.SendMailWithConfig(ctx, configId, userId, wildcardData)
+}
+
+// saveMailStatus 保存邮件状态
+func (s service) saveMailStatus(mailInfo *mailmodel.MailInfo) error {
+	logger := fklog.ContextAppLogger(context.Background())
+
+	// 创建邮件模型实例
+	mailModel, err := mailmodel.NewMailModel(logger, mailInfo.ReciverID)
+	if err != nil {
+		logger.CtxError(context.Background(), "saveMailStatus NewMailModel failed",
+			zap.Uint64("userId", mailInfo.ReciverID),
+			zap.Error(err))
+		return err
+	}
+
+	// 更新邮件状态
+	err = s.updateMailStatusInModel(mailModel, mailInfo)
+	if err != nil {
+		logger.CtxError(context.Background(), "saveMailStatus updateMailStatusInModel failed",
+			zap.Uint64("mailId", mailInfo.ID),
+			zap.Uint64("userId", mailInfo.ReciverID),
+			zap.Error(err))
+		return err
+	}
+
+	logger.CtxInfo(context.Background(), "saveMailStatus success",
+		zap.Uint64("mailId", mailInfo.ID),
+		zap.Uint64("userId", mailInfo.ReciverID),
+		zap.Bool("isGetAttach", mailInfo.IsGetAttach),
+		zap.Bool("isRead", mailInfo.IsRead))
+
+	return nil
+}
+
+// updateMailStatusInModel 在邮件模型中更新邮件状态
+func (s service) updateMailStatusInModel(mailModel *mailmodel.MailModel, mailInfo *mailmodel.MailInfo) error {
+	// 获取邮件标签
+	label := int32(mailInfo.Label)
+
+	// 在邮件映射中查找并更新邮件
+	if mailMap, exists := mailModel.MailMap[label]; exists {
+		for _, existingMail := range mailMap {
+			if existingMail.ID == mailInfo.ID {
+				// 更新邮件状态
+				existingMail.IsRead = mailInfo.IsRead
+				existingMail.IsGetAttach = mailInfo.IsGetAttach
+
+				// 这里可以添加数据库保存逻辑
+				// 例如：调用数据库更新方法
+				// err := s.saveMailToDatabase(existingMail)
+				// if err != nil {
+				//     return err
+				// }
+
+				return nil
+			}
+		}
+	}
+
+	// 如果找不到邮件，记录警告但不返回错误
+	logger := fklog.ContextAppLogger(context.Background())
+	logger.CtxWarn(context.Background(), "updateMailStatusInModel mail not found",
+		zap.Uint64("mailId", mailInfo.ID),
+		zap.Uint64("userId", mailInfo.ReciverID),
+		zap.Int32("label", label))
+
+	return nil
 }
 
 func (s service) GetMailMetrics(ctx context.Context) (metrics map[string]interface{}, err error) {

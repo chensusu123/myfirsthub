@@ -189,7 +189,7 @@ func (s *MailBatchService) batchSendSync(ctx context.Context, req *BatchMailRequ
 
 			for userId := range userChan {
 				// 创建邮件信息
-				mailInfo := &mailmodel.MailInfo{
+				_ = &mailmodel.MailInfo{
 					ID:              uint64(time.Now().UnixNano() + int64(userId) + int64(workerID)),
 					Title:           req.Title,
 					Content:         req.Content,

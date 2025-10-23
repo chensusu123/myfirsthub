@@ -24,6 +24,13 @@ func NewMailDeleteRestrictions() *MailDeleteRestrictions {
 	}
 }
 
+// 全局邮件删除限制服务实例
+var GlobalMailDeleteRestrictions *MailDeleteRestrictions
+
+func init() {
+	GlobalMailDeleteRestrictions = NewMailDeleteRestrictions()
+}
+
 // DeleteRestrictionType 删除限制类型
 type DeleteRestrictionType int32
 
@@ -255,11 +262,4 @@ func (s *MailDeleteRestrictions) GetDeletableMails(ctx context.Context, userId u
 		zap.Int("deletableCount", len(deletableMails)))
 
 	return deletableMails, nil
-}
-
-// 全局邮件删除限制服务实例
-var GlobalMailDeleteRestrictions *MailDeleteRestrictions
-
-func init() {
-	GlobalMailDeleteRestrictions = NewMailDeleteRestrictions()
 }

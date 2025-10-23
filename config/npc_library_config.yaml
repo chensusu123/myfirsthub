@@ -1,0 +1,198 @@
+# 图鉴系统配置文件
+
+# 图鉴基础配置
+npc_library:
+  # 分片配置
+  sharding:
+    # 分片数量
+    shard_count: 64
+    # 分片规则：根据用户ID的后8位进行分片 (userID >> 8) % 64
+    shard_rule: "user_id_mod"
+  
+  # 缓存配置
+  cache:
+    # Redis缓存过期时间（秒）
+    expire_time: 3600
+    # 缓存前缀
+    key_prefix: "npc_library"
+    # 是否启用缓存
+    enabled: true
+  
+  # 数据库配置
+  database:
+    # 连接池大小
+    max_connections: 100
+    # 连接超时时间（秒）
+    connection_timeout: 30
+    # 查询超时时间（秒）
+    query_timeout: 10
+  
+  # 业务配置
+  business:
+    # 默认图鉴级别
+    default_level: 1
+    # 最大图鉴级别
+    max_level: 10
+    # 升级消耗配置
+    upgrade_cost:
+      # 基础消耗
+      base_cost: 100
+      # 每级递增消耗
+      level_multiplier: 1.5
+      # 消耗类型：1-金币，2-钻石，3-碎片
+      cost_type: 1
+    
+    # 合成配置
+    compose:
+      # 合成所需碎片数量
+      required_fragments: 10
+      # 合成成功率
+      success_rate: 0.8
+      # 合成消耗
+      compose_cost: 50
+  
+  # 分页配置
+  pagination:
+    # 默认每页数量
+    default_limit: 20
+    # 最大每页数量
+    max_limit: 100
+    # 游标过期时间（秒）
+    cursor_expire: 300
+  
+  # 通知配置
+  notification:
+    # 是否启用变化通知
+    enabled: true
+    # 通知队列名称
+    queue_name: "npc_library_notify"
+    # 批量通知大小
+    batch_size: 100
+  
+  # 统计配置
+  statistics:
+    # 是否启用统计
+    enabled: true
+    # 统计更新间隔（秒）
+    update_interval: 60
+    # 统计保留天数
+    retention_days: 30
+
+# 图鉴来源类型配置
+from_types:
+  # 战斗抓取
+  cli_refresh: 1
+  # 跟班打工掉落
+  npc_valet_drop: 2
+  # 普通抽卡掉落
+  treasure_box_drop: 3
+  # 顺
+  loot: 4
+  # 免费开宝箱掉落
+  free_treasure_box_drop: 5
+  # 新手引导掉落
+  new_user_guide_award: 6
+  # vip抽卡
+  vip_treasure_box_drop: 7
+  # 客户端购买
+  client_buy_npc: 8
+  # vip领取奖励
+  vip_receive_awards: 100
+  # 新注册赠送星卡
+  new_register_awards: 9
+  # h5版小程序用户到客户端登录注册迁移星卡
+  mini_apps_new_register: 10
+  # 商城购买
+  mall_buy: 11
+  # PHP活动
+  php_active: 12
+  # 领取槽位奖励
+  loot_slot: 13
+  # 打劫槽位奖励
+  rob_slot: 14
+  # 游戏探索奖励
+  explore_award: 15
+  # 提现页兑换星卡
+  exchange_npc: 270
+  # 后台操作
+  background: 2000
+  # 使用碎片
+  up_progress: 2001
+  # 升星
+  up_star: 2002
+  # 满星后清除碎片
+  full_star_clean: 2003
+  # 日常任务
+  day_task: 3000
+  # 章节任务
+  section_task: 3001
+  # 成就
+  achievement: 3002
+  # 资源站奖励星卡碎片
+  resource_battle: 3003
+  # 钻石商店发送
+  diamond_shop: 3004
+  # web商店-礼包
+  web_shop: 3005
+  # 红包商城
+  redpacket_shop: 3006
+  # 后台造账号
+  send_sys_user_id: 3007
+  # 培育ai账号
+  peiyu_ai: 3008
+  # 暴击升星时,暴击出的额外碎片
+  crit_add_value: 9000
+
+# 图鉴品质配置
+qualities:
+  # 普通
+  common: 1
+  # 稀有
+  rare: 2
+  # 史诗
+  epic: 3
+  # 传说
+  legendary: 4
+  # 神话
+  mythic: 5
+
+# 图鉴组配置
+groups:
+  # 基础组
+  basic: 1
+  # 进阶组
+  advanced: 2
+  # 高级组
+  high: 3
+  # 顶级组
+  top: 4
+
+# 日志配置
+logging:
+  # 日志级别
+  level: "info"
+  # 日志文件路径
+  file_path: "logs/npc_library.log"
+  # 日志轮转大小（MB）
+  max_size: 100
+  # 日志保留天数
+  max_age: 7
+  # 日志备份数量
+  max_backups: 3
+
+# 监控配置
+monitoring:
+  # 是否启用监控
+  enabled: true
+  # 监控指标收集间隔（秒）
+  collect_interval: 30
+  # 告警阈值
+  alerts:
+    # 错误率阈值
+    error_rate_threshold: 0.05
+    # 响应时间阈值（毫秒）
+    response_time_threshold: 1000
+    # 数据库连接数阈值
+    db_connection_threshold: 80
+
+

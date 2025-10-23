@@ -11,6 +11,8 @@ import (
 	"maze_game_server/common/constdef"
 	"maze_game_server/common/structsdef"
 	"maze_game_server/model/mailmodel"
+
+	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fklog"
 )
 
 // IMailSender 邮件发送接口
@@ -68,6 +70,9 @@ func (s *MailSender) ErrorMailSender(ctx context.Context, mailID int32, errorMsg
 		AllSupportPop:   true,
 	}
 
+	// 获取logger
+	logger := fklog.ContextAppLogger(ctx)
+
 	// 发送邮件
 	err := s.mailService.SendMail(logger, title, content, "系统监控",
 		int32(constdef.MailLabelSystem), 0, nil, mailInfo.ExpireTime)
@@ -118,6 +123,9 @@ func (s *MailSender) AlertMailSender(ctx context.Context, mailID int32, alertMsg
 		AllSupportPop:   false,
 	}
 
+	// 获取logger
+	logger := fklog.ContextAppLogger(ctx)
+
 	// 发送邮件
 	err := s.mailService.SendMail(logger, title, content, "系统监控",
 		int32(constdef.MailLabelSystem), 0, nil, mailInfo.ExpireTime)
@@ -167,6 +175,9 @@ func (s *MailSender) NotifyMailSender(ctx context.Context, mailID int32, notifyM
 		PagePopUp:       false, // 通知邮件不需要弹框
 		AllSupportPop:   false,
 	}
+
+	// 获取logger
+	logger := fklog.ContextAppLogger(ctx)
 
 	// 发送邮件
 	err := s.mailService.SendMail(logger, title, content, "系统监控",

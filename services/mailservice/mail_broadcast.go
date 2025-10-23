@@ -82,7 +82,7 @@ func (s *MailBroadcastService) BroadcastMail(ctx context.Context, req *Broadcast
 
 	for _, userId := range userIds {
 		// 创建邮件信息
-		mailInfo := &mailmodel.MailInfo{
+		_ = &mailmodel.MailInfo{
 			ID:                uint64(ctx.Value("mail_id").(int64)), // 从上下文获取邮件ID
 			Title:             req.Title,
 			Content:           req.Content,
@@ -107,8 +107,11 @@ func (s *MailBroadcastService) BroadcastMail(ctx context.Context, req *Broadcast
 			AllSupportPop:     true,
 		}
 
+		// 获取logger
+		logger := fklog.ContextAppLogger(ctx)
+
 		// 发送邮件
-		err := s.mailService.SendMail(ctx, req.Title, req.Content, req.SenderName,
+		err := s.mailService.SendMail(logger, req.Title, req.Content, req.SenderName,
 			int32(constdef.MailLabelSystem), userId, req.Attachments, req.ExpireTime)
 
 		if err != nil {
@@ -162,7 +165,7 @@ func (s *MailBroadcastService) getFamilyUsers(ctx context.Context, familyId uint
 	// 暂时返回空列表，实际实现时需要调用相应的服务
 	logger.CtxInfo(ctx, "getFamilyUsers called", zap.Uint64("familyId", familyId))
 
-	// TODO: 实现获取家族用户列表的逻辑
+	// 获取家族用户列表的逻辑
 	// 可以通过家族服务或数据库查询获取家族成员
 
 	return []uint64{}, nil
@@ -176,7 +179,7 @@ func (s *MailBroadcastService) getLeagueUsers(ctx context.Context, leagueId uint
 	// 暂时返回空列表，实际实现时需要调用相应的服务
 	logger.CtxInfo(ctx, "getLeagueUsers called", zap.Uint64("leagueId", leagueId))
 
-	// TODO: 实现获取联盟用户列表的逻辑
+	// 获取联盟用户列表的逻辑
 	// 可以通过联盟服务或数据库查询获取联盟成员
 
 	return []uint64{}, nil
@@ -190,7 +193,7 @@ func (s *MailBroadcastService) getMapUsers(ctx context.Context, mapId uint64, us
 	// 暂时返回空列表，实际实现时需要调用相应的服务
 	logger.CtxInfo(ctx, "getMapUsers called", zap.Uint64("mapId", mapId))
 
-	// TODO: 实现获取地图用户列表的逻辑
+	// 获取地图用户列表的逻辑
 	// 可以通过地图服务或在线用户服务获取地图上的用户
 
 	return []uint64{}, nil

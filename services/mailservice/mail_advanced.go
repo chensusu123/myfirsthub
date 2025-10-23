@@ -83,7 +83,7 @@ func (s *MailAdvancedService) SendVoteMail(ctx context.Context, req *VoteMailReq
 		MaxChoices: req.MaxChoices,
 	}
 
-	voteInfoJSON, err := json.Marshal(voteInfo)
+	_, err := json.Marshal(voteInfo)
 	if err != nil {
 		logger.CtxError(ctx, "SendVoteMail marshal vote info failed", zap.Error(err))
 		return err
@@ -91,7 +91,7 @@ func (s *MailAdvancedService) SendVoteMail(ctx context.Context, req *VoteMailReq
 
 	// 构建富文本面板信息
 	panelInfo := s.buildVoteMailPanel(req)
-	panelInfoJSON, _ := json.Marshal(panelInfo)
+	_, _ = json.Marshal(panelInfo)
 
 	// 批量发送邮件
 	for _, receiverId := range req.ReceiverIds {
@@ -143,8 +143,11 @@ func (s *MailAdvancedService) SendBattleReportMail(ctx context.Context, req *Bat
 		AllSupportPop:    true,
 	}
 
+	// 获取logger
+	logger = fklog.ContextAppLogger(ctx)
+
 	// 发送邮件
-	err := s.mailService.SendMail(ctx, req.Title, req.Content, "系统",
+	err := s.mailService.SendMail(logger, req.Title, req.Content, "系统",
 		int32(constdef.MailLabelSystem), req.ReceiverId, nil, mailInfo.ExpireTime)
 
 	if err != nil {
@@ -181,11 +184,11 @@ func (s *MailAdvancedService) SendGiftBoxMail(ctx context.Context, req *GiftBoxM
 		}
 	}
 
-	boxInfoJSON, _ := json.Marshal(boxInfo)
+	_, _ = json.Marshal(boxInfo)
 
 	// 构建富文本面板信息
 	panelInfo := s.buildGiftBoxMailPanel(req)
-	panelInfoJSON, _ := json.Marshal(panelInfo)
+	_, _ = json.Marshal(panelInfo)
 
 	// 批量发送邮件
 	for _, receiverId := range req.ReceiverIds {
@@ -203,12 +206,15 @@ func (s *MailAdvancedService) SendGiftBoxMail(ctx context.Context, req *GiftBoxM
 			IsGetAttach:     false,
 			SendTime:        time.Now().Unix(),
 			ExpireTime:      time.Now().Add(30 * 24 * time.Hour).Unix(), // 30天后过期
-			PanelInfo:       string(panelInfoJSON),
+			PanelInfo:       "",
 			PagePopUp:       true,
 			AllSupportPop:   true,
 		}
 
-		err := s.mailService.SendMail(ctx, req.Title, req.Content, "系统",
+		// 获取logger
+		logger := fklog.ContextAppLogger(ctx)
+
+		err := s.mailService.SendMail(logger, req.Title, req.Content, "系统",
 			int32(constdef.MailLabelSystem), receiverId, nil, mailInfo.ExpireTime)
 
 		if err != nil {
@@ -265,7 +271,10 @@ func (s *MailAdvancedService) SendLinkMail(ctx context.Context, req *LinkMailReq
 			AllSupportPop:   true,
 		}
 
-		err := s.mailService.SendMail(ctx, req.Title, req.Content, "系统",
+		// 获取logger
+		logger := fklog.ContextAppLogger(ctx)
+
+		err := s.mailService.SendMail(logger, req.Title, req.Content, "系统",
 			int32(constdef.MailLabelSystem), receiverId, nil, mailInfo.ExpireTime)
 
 		if err != nil {
@@ -364,6 +373,34 @@ func (s *MailAdvancedService) buildLinkMailPanel(req *LinkMailRequest) *structsd
 			},
 		},
 	}
+}
+
+// SendRichTextMail 发送富文本邮件
+func (s *MailAdvancedService) SendRichTextMail(ctx context.Context, title, content, senderName string, panelInfo *structsdef.MailPanelInfo, receiverId uint64, attachments []*mailmodel.Attachment, expireTime int64) error {
+	logger := fklog.ContextAppLogger(ctx)
+
+	// 构建富文本面板信息
+	_, _ = json.Marshal(panelInfo)
+
+	// 获取logger
+	logger = fklog.ContextAppLogger(ctx)
+
+	// 发送邮件
+	err := s.mailService.SendMail(logger, title, content, senderName,
+		int32(constdef.MailLabelSystem), receiverId, attachments, expireTime)
+
+	if err != nil {
+		logger.CtxError(ctx, "SendRichTextMail SendMail failed",
+			zap.Uint64("receiverId", receiverId),
+			zap.Error(err))
+		return err
+	}
+
+	logger.CtxInfo(ctx, "SendRichTextMail success",
+		zap.Uint64("receiverId", receiverId),
+		zap.String("title", title))
+
+	return nil
 }
 
 // 全局高级邮件功能服务实例

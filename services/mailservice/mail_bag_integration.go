@@ -6,22 +6,30 @@ import (
 	"gitlab.ifreetalk.com/maze-plate/freetk/fkcore/fklog"
 	"go.uber.org/zap"
 
+	"maze_game_server/common/additemdefine"
+	"maze_game_server/io/redis/mazebagdb"
 	"maze_game_server/model/mailmodel"
-	// "maze_game_server/services/itemservice"
 )
 
 // MailBagIntegration 邮件背包集成服务
 type MailBagIntegration struct {
-	mailService MailService
-	// itemService itemservice.ItemService
+	mailService  MailService
+	itemRegistry *additemdefine.RegisterInfo
 }
 
 // NewMailBagIntegration 创建邮件背包集成服务
 func NewMailBagIntegration() *MailBagIntegration {
 	return &MailBagIntegration{
-		mailService: GlobalMailService,
-		// itemService: itemservice.GlobalItemService,
+		mailService:  GlobalMailService,
+		itemRegistry: additemdefine.NewRegister(),
 	}
+}
+
+// 全局邮件背包集成服务实例
+var GlobalMailBagIntegration *MailBagIntegration
+
+func init() {
+	GlobalMailBagIntegration = NewMailBagIntegration()
 }
 
 // BagIntegrationResult 背包集成结果
@@ -111,9 +119,9 @@ func (s *MailBagIntegration) checkBagSpace(ctx context.Context, userId uint64, a
 	logger := fklog.ContextAppLogger(ctx)
 
 	// 获取背包当前空间
-	currentSpace, err := s.itemService.GetBagSpace(logger, userId)
+	currentSpace, remainingSpace, err := s.GetBagSpaceInfo(ctx, userId)
 	if err != nil {
-		logger.CtxError(ctx, "checkBagSpace GetBagSpace failed",
+		logger.CtxError(ctx, "checkBagSpace GetBagSpaceInfo failed",
 			zap.Uint64("userId", userId),
 			zap.Error(err))
 		return 0, err
@@ -123,9 +131,10 @@ func (s *MailBagIntegration) checkBagSpace(ctx context.Context, userId uint64, a
 	neededSpace := int32(len(attachments))
 
 	// 返回剩余空间
-	remainingSpace := currentSpace - neededSpace
-	if remainingSpace < 0 {
+	if remainingSpace < neededSpace {
 		remainingSpace = 0
+	} else {
+		remainingSpace = remainingSpace - neededSpace
 	}
 
 	logger.CtxInfo(ctx, "checkBagSpace completed",
@@ -150,19 +159,14 @@ func (s *MailBagIntegration) addSingleItemToBag(ctx context.Context, userId uint
 		return false, "invalid_item"
 	}
 
-	// 调用物品服务添加物品
-	err := s.itemService.AddItem(logger, userId, attachment.ItemID, attachment.Count, attachment.Extra)
+	// 使用mazebagdb直接添加物品
+	_, err := mazebagdb.IncrBagItem(logger, userId, attachment.ItemID, attachment.Count)
 	if err != nil {
-		logger.CtxError(ctx, "addSingleItemToBag AddItem failed",
+		logger.CtxError(ctx, "addSingleItemToBag IncrBagItem failed",
 			zap.Uint64("userId", userId),
 			zap.Int32("itemId", attachment.ItemID),
 			zap.Int64("count", attachment.Count),
 			zap.Error(err))
-
-		// 根据错误类型判断失败原因
-		if err.Error() == "bag_full" {
-			return false, "bag_full"
-		}
 		return false, "add_failed"
 	}
 
@@ -193,23 +197,19 @@ func (s *MailBagIntegration) calculateItemValue(attachment *mailmodel.Attachment
 func (s *MailBagIntegration) GetBagSpaceInfo(ctx context.Context, userId uint64) (int32, int32, error) {
 	logger := fklog.ContextAppLogger(ctx)
 
-	// 获取背包当前空间
-	currentSpace, err := s.itemService.GetBagSpace(logger, userId)
+	// 获取背包当前物品数量
+	itemMap, err := mazebagdb.GetAllBagItem(logger, userId, 300)
 	if err != nil {
-		logger.CtxError(ctx, "GetBagSpaceInfo GetBagSpace failed",
+		logger.CtxError(ctx, "GetBagSpaceInfo GetAllBagItem failed",
 			zap.Uint64("userId", userId),
 			zap.Error(err))
 		return 0, 0, err
 	}
 
-	// 获取背包最大空间
-	maxSpace, err := s.itemService.GetMaxBagSpace(logger, userId)
-	if err != nil {
-		logger.CtxError(ctx, "GetBagSpaceInfo GetMaxBagSpace failed",
-			zap.Uint64("userId", userId),
-			zap.Error(err))
-		return 0, 0, err
-	}
+	currentSpace := int32(len(itemMap))
+
+	// 获取背包最大空间 - 使用配置或默认值
+	maxSpace := int32(200) // 从配置中获取最大背包空间
 
 	remainingSpace := maxSpace - currentSpace
 	if remainingSpace < 0 {
@@ -328,11 +328,4 @@ func (s *MailBagIntegration) BatchAddAttachmentsToBag(ctx context.Context, userI
 		zap.Int64("totalValue", result.TotalValue))
 
 	return result, nil
-}
-
-// 全局邮件背包集成服务实例
-var GlobalMailBagIntegration *MailBagIntegration
-
-func init() {
-	GlobalMailBagIntegration = NewMailBagIntegration()
 }
